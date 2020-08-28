@@ -24,7 +24,7 @@ def record_size(folder_path):
         folder_size += os.path.getsize(os.path.join(folder_path, filename))
 
     # 文件大小默认以Bytes计， 转换为MB
-    msg = f'{datetime.now()} ==>> The size of all files in the folder {folder_path} = {folder_size / 1024 / 1024:.2f} MB'
+    msg = f'{datetime.now()} ==>> The size of all files in the folder {folder_path} = {folder_size / 2048 / 2048:.2f} MB'
     with open(os.path.join(folder_path, 'folder_size.txt'), encoding='utf-8', mode='w') as f:
         f.write(msg)
 
