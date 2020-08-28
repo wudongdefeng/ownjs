@@ -60,7 +60,8 @@ var tools = {
 
 var HTV009 = {
     toUrl: function (input) {
-        try {
+        try {
+
             var json = JSON.parse(fetch(input, {}));
             var url = (json.code == '200' ? json.url + '#HTV009.mp4' : '');
             if (url != '') {
