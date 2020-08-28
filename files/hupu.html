@@ -1,0 +1,35 @@
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style type="text/css">:root{overflow-y: auto;overflow-x: hidden;}:root body{position: absolute;}.browse{margin-left:5px;color:#999;vertical-align:center;height:14px;line-height:14px;font-size:12px}h1{display:inline;background:0 0;line-height:20px;padding:0;margin-bottom:0;font-weight:700;font-size:18px}.w_reply h5{height: 25px;font-size: 18px;color: #025aa8;padding: 6px 0 0 8px;overflow: hidden;}.floor_box{position: static; overflow: visible; margin:0 0.8em 0 0.8em; white-space: normal;  background: #f1f1f1; padding-bottom: 0;}.div{display:block}.floor{width: 100%; clear: both; border-bottom: 1px solid #BBB; border-top: 1px solid #BBB; margin: 6px 0; background: #f1f1f1;}.post-owner{font-size:12px; display: inline-block; border-radius: 3px; background-color: #ccc; color: #6a6a6a; line-height: 16px; padding: 0 3px;}.u{font-size:12px;color:#005eac} .stime{color:#888;font-size:11px;font-weight:100}.case h3{font-size:14px;background:0 0;border:0;color:#000;height:auto;line-height:1.6;padding:0;margin:0}.case .subhead span{color:#000}.log_detail .brief ol li,.case ol li{list-style:decimal;margin-left:40px;padding:5px 0}.log_detail .brief ul li,.case ul li{list-style:disc;margin-left:40px;padding:5px 0}.floor .case table{border-top:1px solid #999;border-left:1px solid #999}.floor .case table td{min-width:40px;line-height:1.6;vertical-align:top;border-bottom:1px solid #999;border-right:1px solid #999}.case .subhead{color:#BBB;padding-bottom:14px}.case .subhead a{color:#BBB}.case .subhead a:hover{color:#999;background:0 0;text-decoration:underline}.case .img_outer{position:relative}.case .author{padding:0;border:0;height:auto;line-height:1.6}.case h1{font-size:14px;background:0 0;padding:0}.case h3{font-size:14px;background:0 0;border:0;color:#000;height:auto;line-height:1.6;padding:0;margin:0}</style>
+<style type="text/css">body{width:100vw;overflow: hidden;margin-left:0;margin-right:0;color:#3b3b3b;font-size:17px;font-family:Microsoft Yahei; text-rendering: optimizeLegibility;}blockquote, q {font-size:16px;color: rgba(0, 0, 0, 0.5);border-left: 3px solid rgba(0, 0, 0, 0.1); margin-left: 2px;margin-right: 6px;padding-left: 16px}section{max-width:100%}img{height:auto;max-width:100%;display:block;padding:20px 0 20px 0}p{line-height:1.76em}.page{padding:3.5% 0 3.5% 0;text-align:start;word-wrap:break-word;line-height:1.5em;}.extendsBeyondTextColumn{max-width: none; }.olink{display:block;font-weight:bold;font:12px 'Helvetica Neue';right:16px;top:32px;position:absolute;}.olink a:link{color: #999}.header_title{font-size:1.25em;font-weight: 700;color: #3b3b3b;height: auto;line-height: 1.4em;padding: 32px 0 0;margin-bottom: 5px;}.header_info{position:relative; left:2px;line-height:15px;font-size:0.7em;color:#666;padding-top:16px;padding-bottom:42px; }.header_info:after{content: '';position: absolute;top: 0px;left: 0px;height:4px;width: 20px;background: #3B3B3B; }.header_author{font-weight:700;}.page p > p:empty, .page div p:empty, .page p > div:empty, .page div > div:empty, .page p + br, .page img + br {display: none; }.article-paragraph{line-height:1.76em;margin: 21px 0 !important;}.right,.user,.f666,.f444,.f999,.subhead,.bbstopic_set,.breadCrumbs,.downpage,#back{display:none}</style>
+<script>function layoutImg(){for(var t=document.querySelectorAll('img'),n=t.length,i=0;n>i;++i){setImgBeyondTxt(t[i])}for(var v=document.querySelectorAll('video'),n=v.length,i=0;n>i;++i){v[i].style.setProperty('width','100%'),v[i].style.setProperty('height','auto')}}function setImgBeyondTxt(e){if(!e.closest('blockquote, table, .float')){var n,i=parseFloat(getComputedStyle(document.querySelector('.page')).width),a=parseFloat(e.getAttribute('width'));n=isNaN(a)?e.naturalWidth:a;var o=Math.min(n,document.documentElement.clientWidth);if(o>i){e.classList.add('extendsBeyondTextColumn'),e.style.setProperty('width',o+'px'),e.style.setProperty('height','auto'),e.style.setProperty('-webkit-margin-start',(i-o)/2-calMargin(e)+'px')}}}function calMargin(e){for(var t=0,n=e.parentElement;n&&!n.classList.contains('page');){var i=getComputedStyle(n);t+=parseFloat(i['-webkit-padding-start'])+parseFloat(i['-webkit-margin-start']),n=n.parentElement}return t}
+function getArticle()
+      {
+         var url = window.location.search.substring(1);
+//alert(fy_bridge_app.request)
+
+         document.querySelector("#article").innerHTML= fy_bridge_app.getVar(url).split("$$")[1];
+document.querySelector("#ourl").href=url;
+document.querySelector("#title").innerText=fy_bridge_app.getVar(url).split("$$")[0];
+         return(false);
+      }
+</script>
+<script src="http://w1.hoopchina.com.cn/b1/web/channel/bbs/static/common/lazyload_7180c59.js"></script>
+</head>
+<body onload="getArticle();layoutImg();">
+<div class="page">
+<div class="header_info">
+<span class="header_author">虎扑社区</span>
+</div>
+<div class="olink">
+<a id="ourl" >原网页</a>
+</div>
+<h1 id="title"></h1>
+<div style="padding-top:6px" id="article">
+
+
+</div>
+</div>
+</body>
+</html>
