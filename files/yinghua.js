@@ -31,8 +31,19 @@ function erji() {
                 playurl = 'http://v.jialingmm.net/qy.php?id=' + playarg + '@lazyRule=.js:' + lazy;
             }
             else if (lists[2] == 'qqy') {
-                let lazy = `let qiyirescode_1=fetch(input,{});let qiyiurl_1=parseDom(qiyirescode_1,'body&&script,2&&src');let qiyirescode_2=fetch(qiyiurl_1,{});eval(qiyirescode_2);var code=tvInfoJs["code"];var cip=tvInfoJs["data"]["vidl"];for(var i=0,l=cip.length;i<l;i++){for(var key in cip[i]){if(cip[i].vd==14||cip[i].vd==17||cip[i].vd==21||cip[i].vd==1||cip[i].vd==96){}else{if(cip[i].vd==4){var m3u=cip[i].m3u}else{var m3=cip[i].m3u}}}}var video=m3u;if(video=="undefined"||video==null||video==""){video=m3}video`;
-                playurl = 'http://v.jialingmm.net/qy.php?id=' + playarg + '@lazyRule=.js:' + lazy;
+                //https://api.52wyb.com/
+                // https://api.52wyb.com/webcloud/?v=http://www.iqiyi.com/v_19rrok4nt0.html
+                // referer http://www.imomoe.in
+                // let jiexirescode_1=fetch(input,
+                //     {
+                //         headers:
+                //         {
+                //             'referer': 'http://www.imomoe.in'
+                //         }
+                //     }
+                // )
+                let lazy=`let jiexirescode_1=fetch(input,{headers:{'referer':'http://www.imomoe.in'}});setError(jiexirescode_1)`;
+                playurl = 'https://api.52wyb.com/webcloud/?v=http://www.iqiyi.com/v_' + playarg + '.html' + '@lazyRule=.js:' + lazy;
             }
             else {
                 playurl = 'http://baidu.com';
