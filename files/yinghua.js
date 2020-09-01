@@ -34,25 +34,10 @@ function erji() {
                 //https://api.52wyb.com/
                 // https://api.52wyb.com/webcloud/?v=http://www.iqiyi.com/v_19rrok4nt0.html
                 // referer http://www.imomoe.in
-                // let jiexirescode_1=fetch(input,
-                //     {
-                //         headers:
-                //         {
-                //             'referer': 'http://www.imomoe.in'
-                //         }
-                //     }
-                // );
-                // let jiexirescode_2=fetch('https://api.52wyb.com/action/playinfo?sver=1.4',
-                //     {
-                //         method:'POST',
-                //         body:'k=mark(vd + "1430382e0a9d52965c6b526695a857ff")&k2=md5(k3)&k3=encodeURIComponent(get(k4))&ep=ep&cip=36.45.45.97&cip_hex=242d2d61&csign=$("#get").val()&tm=$("#tm").val()&v='+oriurl+'&pt=auto&nip=null&from="http://www.imomoe.in"&mode=""'
-                //     }
-                // );
 
                 let oriurl = 'http://www.iqiyi.com/v_' + playarg+'.html';
-                let lazy=`let jiexirescode_1=fetch(input,{headers:{'referer':'http://www.imomoe.in'}});setError(jiexirescode_1)`;
-                // playurl = 'https://api.52wyb.com/webcloud/?v=' + oriurl + '@lazyRule=.js:' + lazy;
-                playurl = getUrl();
+                let lazy=`let jiexirescode_1=fetch(input,{headers:{'referer':'http://www.imomoe.in'}});let hx=jiexirescode_1.match(/合作.*/g);eval('/*'+hx[0]);let sojson=jiexirescode_1.match(/var encode_version.*/g);eval(sojson[0]);let tm=jiexirescode_1.match(/"tm" value="(.*?)"/)[1];let csign=jiexirescode_1.match(/"get" value="(.*?)"/)[1];let v=jiexirescode_1.match(/"v": "(.*?)"/)[1];let cip=jiexirescode_1.match(/"cip": "(.*?)"/)[1];let cip_hex=jiexirescode_1.match(/"cip_hex": "(.*?)"/)[1];eval(fetch('https://api.52wyb.com/js/md5.js?v=170726',{}));let k2=md5(k3);let cache=jiexirescode_1.match(/cache = (.*?);/)[1];setError(sojson[0]);let jiexirescode_2=fetch('https://api.52wyb.com/action/playinfo?sver=1.4',{method:'POST',body:'k=&k2='+k2+'&k3=&ep='+ep+'&cip='+cip+'&cip_hex='+cip_hex+'&csign='+csign+'&tm='+tm+'&v='+v+'&pt=auto&nip=null&from=http://www.imomoe.in&mode='});`;
+                playurl = 'https://api.52wyb.com/webcloud/?v=' + oriurl + '@lazyRule=.js:' + lazy;
             }
             else {
                 playurl = getUrl();
