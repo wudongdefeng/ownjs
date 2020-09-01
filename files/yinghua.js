@@ -41,12 +41,21 @@ function erji() {
                 //             'referer': 'http://www.imomoe.in'
                 //         }
                 //     }
-                // )
+                // );
+                // let jiexirescode_2=fetch('https://api.52wyb.com/action/playinfo?sver=1.4',
+                //     {
+                //         method:'POST',
+                //         body:'k=mark(vd + "1430382e0a9d52965c6b526695a857ff")&k2=md5(k3)&k3=encodeURIComponent(get(k4))&ep=ep&cip=36.45.45.97&cip_hex=242d2d61&csign=$("#get").val()&tm=$("#tm").val()&v='+oriurl+'&pt=auto&nip=null&from="http://www.imomoe.in"&mode=""'
+                //     }
+                // );
+
+                let oriurl = 'http://www.iqiyi.com/v_' + playarg+'.html';
                 let lazy=`let jiexirescode_1=fetch(input,{headers:{'referer':'http://www.imomoe.in'}});setError(jiexirescode_1)`;
-                playurl = 'https://api.52wyb.com/webcloud/?v=http://www.iqiyi.com/v_' + playarg + '.html' + '@lazyRule=.js:' + lazy;
+                // playurl = 'https://api.52wyb.com/webcloud/?v=' + oriurl + '@lazyRule=.js:' + lazy;
+                playurl = getUrl();
             }
             else {
-                playurl = 'http://baidu.com';
+                playurl = getUrl();
             }
             d.push({
                 title: lists[0],
