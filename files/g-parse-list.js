@@ -41,10 +41,14 @@ var parse_list = [
     `④Mao全网￥https://www.cuan.la/m3u8.php?url=￥@lazyRule=.js:eval(fetch('hiker://files/rules/js/g-parse-list.js',{}));var url = Mao全网.toUrl(input);url!=''?url:getUrl(input)`,
     `⑤TX￥https://qq.79da.com/api.php?url=￥@lazyRule=.js:eval(fetch('hiker://files/rules/js/g-parse-list.js',{}));var url = TX.toUrl(input);url!=''?url:getUrl(input)`,
     `⑥黑云￥https://jiexi.380k.com/?url=￥@lazyRule=.js:eval(fetch('hiker://files/rules/js/g-parse-list.js',{}));var url = 黑云.toUrl(input);url!=''?url:getUrl(input)`
+,
+    `⑦Maosp￥http://39.maosp.me/jx/?url=￥@lazyRule=.js:eval(fetch('hiker://files/rules/js/g-parse-list.js',{}));var url = Maosp.toUrl(input);url!=''?url:getUrl(input)`,
+    `⑧wkjx￥https://www.wkjx.me/apii/?url=￥@lazyRule=.js:eval(fetch('hiker://files/rules/js/g-parse-list.js',{}));var url = wkjx.toUrl(input);url!=''?url:getUrl(input)`
 ];
 
 eval(getCryptoJS());
 var tools = {
+    kem: 'https://gitee.com/KemPetrichor/hiker.resolver/raw/master/kem.js',
     MD5: function (data) {
         return CryptoJS.MD5(data).toString(CryptoJS.enc.Hex);
     },
@@ -119,17 +123,6 @@ var Mao全网 = {
         }
     }
 };
-var 大白 = {
-    toUrl: function (input) {
-        try {
-            var key = fetch(input, {}).split("key: '")[1].split("'")[0];
-            var url = decodeURIComponent(JSON.parse(fetch('https://jx.dabaiapi.com/api.php', { headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: 'key=' + key, method: 'POST' })).url) + '#大白.mp4';
-            return url.indexOf('url=') > 0 ? url.split('url=')[1] : url;
-        } catch (e) {
-            return '';
-        }
-    }
-};
 var TX = {
     toUrl: function (input) {
         try {
@@ -144,13 +137,96 @@ var TX = {
         }
     }
 };
-var fileUrl='https://gitee.com/KemPetrichor/hiker.resolver/raw/master/kem.js';
-var js=fetch(fileUrl,{});
-eval(js);
-var 黑云 = daheiyun;
-黑云.toUrl = function (src_url){
-return daheiyun.getUrl(src_url)
-}
+var 黑云 = { //此解析来自KEM大佬和Reborn吐大佬, 特此感谢
+    mode: 0, // kem大佬网络版：0 , 本地：1
+    api: "https://jx.shunyiwenxiu.com/dhyjx_ver_9.1.php",
+    parse_url_prefix: 'https://jiexi.380k.com/?url=',
+    encrypt_file: "https://jx.shunyiwenxiu.com/js/ACCot.js",
+    base_key: "daheiyunjiexi0614",
+    local_got_key: "daheiyun1888",
+    local_token_key: "_wp6f",
+    keyEncryption: function (key) {
+        key = tools.MD5(key + this.local_got_key);
+        key = tools.MD5(key + this.local_got_key);
+        return key;
+    },
+    tokenEncryption: function (key) {
+        return tools.MD5(key + this.local_token_key);
+    },
+    toUrl: function (src_url) {
+        try {
+            if (this.mode) {
+                src_url = this.rebuildUrl(src_url);
+                let url = src_url.split('=')[1];
+                let time = parseInt((new Date().getTime() / 1000).toString());
+                let key = this.keyEncryption(url + time + this.base_key);
+                let data = 'url=' + url
+                    + '&tm=' + time
+                    + '&key=' + key
+                    // + '&key2=' + this.key2
+                    + '&token=' + this.tokenEncryption(key)
+                    + '&sdky=' + this.tokenEncryption(time);
+                let options = {
+                    headers: {
+                        "content-type": "application/x-www-form-urlencoded",
+                    },
+                    body: data,
+                    method: "POST"
+                };
+                let result = fetch(this.api, options);
+                let playUrl = JSON.parse(result).url;
+                if (playUrl.indexOf("http") === -1) {
+                    playUrl = "https://" + playUrl;
+                }
+                return playUrl + '#黑云.mp4';
+            } else {
+                eval(fetch(tools.kem, {}));
+                return daheiyun.getUrl(src_url) + '#黑云w.mp4';
+            }
+        } catch (e) {
+            return '';
+        }
+    },
+    rebuildUrl: function (old_url) {
+        return old_url.indexOf(this.parse_url_prefix) > -1 ? old_url : this.parse_url_prefix + old_url;
+    },
+};
+var Maosp = {
+    mode: 0, // kem大佬网络版：0 , 本地：1
+    toUrl: function (input) {
+        try {
+            if (this.mode) {
+                var html = fetch(input, {});
+                var url = decodeURIComponent(tools.decrypt(html.split('"url":"')[1].split('"')[0], "dvyYRQlnPRCMdQSe", html.split('bt_token = "')[1].split('"')[0])) + '#Maosp.mp4';
+                if (url.indexOf('titan.mgtv') > -1) {
+                    url = url + ';{Referer@http://39.maosp.me}';
+                }
+                return url.indexOf('url=') > -1 ? url.split('url=')[1] : url;
+            } else {
+                eval(fetch(tools.kem, {}));
+                return maosp.getUrl(input);
+            }
+        } catch (e) {
+            return '';
+        }
+    }
+};
+var wkjx = {
+    toUrl: function (input) {
+        try {
+            var html = fetch(input, {});
+            var vkey = html.split("vkey = '")[1].split("'")[0];
+            var json = JSON.parse(fetch('https://www.wkjx.me/apii/api.php', { headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: 'vkey=' + vkey, method: 'POST' }));
+            var url = (json.ckflv == 200 ? json.url + '##wkjx.mp4' : '');
+            if (url != '') {
+                url = (url.indexOf('titan.mgtv') > -1 ? url + ';{Referer@https://www.wkjx.me}' : url);
+            }
+            return url;
+        } catch (e) {
+            return '';
+        }
+    }
+};
 
 function getUrl(input) {
     var input_arr = input.split('url=');
