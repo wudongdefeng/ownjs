@@ -5,6 +5,103 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
+<guid>9a51b23943f1541b26afe2af4ec916f2</guid>
+<title>快速搭建 HTTP 静态服务的 10 种方法</title>
+<link>https://toutiao.io/k/re4fx9c</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;pos-relative js-post-content&quot;&gt;
+                
+                &lt;p&gt;作为程序员，需要经常起一个&lt;strong&gt;静态服务器&lt;/strong&gt;（http static server，在命令执行的所在路径启动一个 http 服务器，即可通过浏览器访问该路径下的所有文件），来完成一些任务，如局域网内传文件，或者测试网页等；本文主旨即分享，如何快速搭建 HTTP 静态服务的 10 种方法，对于非程序员人也可以使用。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/content/images/2020/09/http-static-server.jpg&quot; alt=&quot;快速搭建 HTTP 静态服务的 10 种方法&quot;/&gt;&lt;/p&gt;
+&lt;h2 id=&quot;python&quot;&gt;Python&lt;/h2&gt;
+&lt;h3 id=&quot;python2x&quot;&gt;基于 Python 2.x&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;python -m SimpleHTTPServer 8000
+# Serving HTTP on 0.0.0.0 port 8000 ...
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&quot;python3x&quot;&gt;基于 Python 3.x&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;python -m http.server 8000
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&quot;livereload&quot;&gt;基于 Livereload 库&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;pip install livereload
+#serves current dir with port 35729 which livereload extensions use
+livereload
+# 指定端口和路径      
+livereload ~/testing -p 8000
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;nodejs&quot;&gt;Node.js&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;# 安装依赖
+npm i arya-jarvis -g
+
+# 默认 8080 端口，如被占用，自增长
+arya server
+# 👏 Or Use Alias
+arya s
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;或者直接使用 npx 来完成✅：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;# 安装 + 使用
+npx arya-jarvis server
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&quot;httpserver&quot;&gt;基于 http-server&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;# 安装依赖
+npm install -g http-server
+http-server -p 8000
+
+# 或者基于 npx 
+npx http-server
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;# 安装依赖
+npm install -g anywhere
+
+anywhere
+# 自定义端口
+anywhere -p 8000
+
+# 或者基于 npx 
+npx anywhere -p 8000
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&quot;nodestatic&quot;&gt;基于 node-static&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&quot;language-shell&quot;&gt;# 安装依赖
+npm install -g node-static 
+static -p 8000
+
+# 或者基于 npx 
+npx node-static -p 8000
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;go&quot;&gt;Go&lt;/h2&gt;
+&lt;h3 id=&quot;spark&quot;&gt;基于 spark&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;go get github.com/rif/spark
+spark -port 8000 .
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;php&quot;&gt;PHP&lt;/h2&gt;
+&lt;h3 id=&quot;php54&quot;&gt;基于 PHP (&amp;gt;= 5.4)&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;php -S 127.0.0.1:8000
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;ruby&quot;&gt;Ruby&lt;/h2&gt;
+&lt;h3 id=&quot;ruby192&quot;&gt;基于 Ruby 1.9.2+&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;ruby -run -ehttpd . -p8000
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;如果您使用 Mac 或 Linux 操作系统，可以在 &lt;code&gt;.zshrc&lt;/code&gt; 配置中添加如下这句，即可在终端，使用 &lt;code&gt;server&lt;/code&gt; 命令开启静态服务（当然，您将方式替换成如上提到的方法也可以）：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;alias server=&quot;ruby -run -ehttpd . -p 8080&quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&quot;serve&quot;&gt;基于 serve 库&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;# 安装工具库
+gem install serve
+serve
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;golang&quot;&gt;Golang&lt;/h2&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;# 安装工具库
+go get github.com/vwochnik/gost
+gost
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&quot;curl&quot;&gt;基于 curl&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;curl lama.sh | sh
+&lt;/code&gt;&lt;/pre&gt;
+
+              &lt;/div&gt;
+            &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
 <guid>b93b512443ed8f91b10007c6fa41f47e</guid>
 <title>秋天的第一份 IT 技术周刊 | 码农周刊第 320 期</title>
 <link>https://toutiao.io/k/9ew44gv</link>
@@ -121,101 +218,10 @@
 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>9a51b23943f1541b26afe2af4ec916f2</guid>
-<title>快速搭建 HTTP 静态服务的 10 种方法</title>
-<link>https://toutiao.io/k/re4fx9c</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;pos-relative js-post-content&quot;&gt;
-                
-                &lt;p&gt;作为程序员，需要经常起一个&lt;strong&gt;静态服务器&lt;/strong&gt;（http static server，在命令执行的所在路径启动一个 http 服务器，即可通过浏览器访问该路径下的所有文件），来完成一些任务，如局域网内传文件，或者测试网页等；本文主旨即分享，如何快速搭建 HTTP 静态服务的 10 种方法，对于非程序员人也可以使用。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;/content/images/2020/09/http-static-server.jpg&quot; alt=&quot;快速搭建 HTTP 静态服务的 10 种方法&quot;/&gt;&lt;/p&gt;
-&lt;h2 id=&quot;python&quot;&gt;Python&lt;/h2&gt;
-&lt;h3 id=&quot;python2x&quot;&gt;基于 Python 2.x&lt;/h3&gt;
-&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;python -m SimpleHTTPServer 8000
-# Serving HTTP on 0.0.0.0 port 8000 ...
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&quot;python3x&quot;&gt;基于 Python 3.x&lt;/h3&gt;
-&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;python -m http.server 8000
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&quot;livereload&quot;&gt;基于 Livereload 库&lt;/h3&gt;
-&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;pip install livereload
-#serves current dir with port 35729 which livereload extensions use
-livereload
-# 指定端口和路径      
-livereload ~/testing -p 8000
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&quot;nodejs&quot;&gt;Node.js&lt;/h2&gt;
-
-&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;# 安装依赖
-npm i arya-jarvis -g
-
-# 默认 8080 端口，如被占用，自增长
-arya server
-# 👏 Or Use Alias
-arya s
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;或者直接使用 npx 来完成✅：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;# 安装 + 使用
-npx arya-jarvis server
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&quot;httpserver&quot;&gt;基于 http-server&lt;/h3&gt;
-&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;# 安装依赖
-npm install -g http-server
-http-server -p 8000
-
-# 或者基于 npx 
-npx http-server
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;# 安装依赖
-npm install -g anywhere
-
-anywhere
-# 自定义端口
-anywhere -p 8000
-
-# 或者基于 npx 
-npx anywhere -p 8000
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&quot;nodestatic&quot;&gt;基于 node-static&lt;/h3&gt;
-&lt;pre&gt;&lt;code class=&quot;language-shell&quot;&gt;# 安装依赖
-npm install -g node-static 
-static -p 8000
-
-# 或者基于 npx 
-npx node-static -p 8000
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&quot;go&quot;&gt;Go&lt;/h2&gt;
-&lt;h3 id=&quot;spark&quot;&gt;基于 spark&lt;/h3&gt;
-&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;go get github.com/rif/spark
-spark -port 8000 .
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&quot;php&quot;&gt;PHP&lt;/h2&gt;
-&lt;h3 id=&quot;php54&quot;&gt;基于 PHP (&amp;gt;= 5.4)&lt;/h3&gt;
-&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;php -S 127.0.0.1:8000
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&quot;ruby&quot;&gt;Ruby&lt;/h2&gt;
-&lt;h3 id=&quot;ruby192&quot;&gt;基于 Ruby 1.9.2+&lt;/h3&gt;
-&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;ruby -run -ehttpd . -p8000
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;如果您使用 Mac 或 Linux 操作系统，可以在 &lt;code&gt;.zshrc&lt;/code&gt; 配置中添加如下这句，即可在终端，使用 &lt;code&gt;server&lt;/code&gt; 命令开启静态服务（当然，您将方式替换成如上提到的方法也可以）：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;alias server=&quot;ruby -run -ehttpd . -p 8080&quot;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&quot;serve&quot;&gt;基于 serve 库&lt;/h3&gt;
-&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;# 安装工具库
-gem install serve
-serve
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&quot;golang&quot;&gt;Golang&lt;/h2&gt;
-&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;# 安装工具库
-go get github.com/vwochnik/gost
-gost
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&quot;curl&quot;&gt;基于 curl&lt;/h3&gt;
-&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;curl lama.sh | sh
-&lt;/code&gt;&lt;/pre&gt;
-
-              &lt;/div&gt;
-            &lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>0153a26151e991a68e1eacb277ed22bf</guid>
+<title>如何从 0 到 1 搭建用户标签体系</title>
+<link>https://toutiao.io/k/78gg94x</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;span&gt;|0x00 前言&lt;/span&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;用户标签，其实发展到现在已经不是新鲜概念了。&lt;/p&gt;&lt;p&gt;各大公司在推进精细化的过程中，无论是技术方还是业务方，都已经从过去粗放的“流量运营”思维，转变为如今人人都在谈论的“用户运营”思维。这时，用户不再是一个个整齐划一的流量，而是有血有肉的个体。&lt;/p&gt;&lt;p&gt;但受限了于客观条件，我们无法一一去接触我们用户，了解他们的习惯喜欢，只能从他们产生的行为和数据，去抽象、总结出特征规律，这就引入了“用户标签”这个概念。当用户被打上的标签越来越丰富、越来越精准，也就越贴合人本身，勾勒出一个个立体的形象了。&lt;/p&gt;&lt;p&gt;鉴于市面上已有许多理论知识，丰富的实战分享，我也就不班门弄斧了。本文只讲讲那些在执行中，新手容易遇到的踩坑点，帮助大家排雷。&lt;/p&gt;&lt;h3&gt;&lt;span&gt;|0x01 切勿“大而全”标签&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;刚接到这个项目时，我已开始抑制不住内心的激动了。从毕业开始做用户研究，脑中已经构建起了一个框架，希望通过这次从0到1的机会，将美好蓝图实施落地。于是我洋洋洒洒写下一个功能强大的脑图，头脑风暴出用户的所有特性，目标是构建一套成熟的标签体系和画像后台。&lt;/p&gt;&lt;p&gt;这样的结局自然是当头棒喝，第一次需求评审就遇到了很大阻力，现在想来，有两个问题是需要提前想透彻的：①虽说标签需要做得精细，但始终是有主次的，当前为什么会用到标签，具体用来做什么？②在需求调研阶段，什么样的调研是意义的？你会发现有许多做得不错的第三方平台，标签体系非常成熟全面，但像第三方平台这样的to B公司，为了适用于所有的公司业务，所以尽善尽美。而以我们当前的业务量来说，是否需要做到如此全面？以当前的资源来说，是否有能力进行开发和维护？&lt;/p&gt;&lt;p&gt;实际上，我们现阶段是从0到1，要想一步到位是不现实的，应该按照业务需求进行取舍。所以，真正有效的方法不是穷举法，而是由业务场景进行倒推：我们发现，当前标签首先会运用在消息推送上，其中很重要的一个场景是，圈选预流失用户，通过app push、短信等方式进行召回。&lt;/p&gt;&lt;p&gt;目的与场景明确了，接下来就是流失标签的定义了。作为PM，我立马与运营进行了沟通，了解一线业务人员对于流失的理解。这时，很容易又踩到了第二个坑：询问技巧。&lt;/p&gt;&lt;p&gt;错误方式：我：咱们现在要对用户打标签用于召回了，你觉得“流失1天以上”和“流失30天以上”，哪个更合适？运营：我觉得都是需要的，不同的流失程度我都会关心。我：好吧.....那针对活跃标签，你觉得“最近7天登录”“最近14天登录”“最近30天登录”，哪个最合适？运营：那肯定都要啊，这都是我们平时会关注的指标。emmmm天数能不能不要固定？我们能自定义是最好的。&lt;/p&gt;&lt;p&gt;与业务方沟通会发现，在对方对标签不甚熟悉的情况下，会误将标签与业务指标相混淆，从而显得“贪心”起来——什么标签都想要。这时，你需要转换一种提问方式，得到最有价值的答案&lt;/p&gt;&lt;p&gt;正确方式：我：咱们现在要对用户打标签用于召回了，平时你想对哪些用户进行召回呀？运营：我想想.....我平时看数据，大多用户会在前期流失，3日留存率就只有xx啦！是我的话，我会在3日这个节点去召回。我：soga，那我们可以提供“流失3天”这个标签，方便你进行召回操作。精简标签之后，留下最重要、最迫切的一些标签，作为第一期的实现内容。之后你会发现，一些基础标签，已经能满足百分之六七十的需求啦，这样既不会造成开发资源的浪费，也避免业务人员在使用时，面对着海量标签犹豫不决。&lt;/p&gt;&lt;h3&gt;&lt;span&gt;|0x02 用户标签的分类&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;如果看过很多文章会发现，大家对于标签有非常多的不同描述，也少有文章有去认真讲解这个认知前提。这也导致初期容易对标签的理解产生混淆，因为从不同的维度去认识，标签有着不同的分类。&lt;/p&gt;&lt;p&gt;经过一些整合后，我认为大致可以从五个角度去理解标签：&lt;/p&gt;&lt;p&gt;1、从更新频率来分：静态标签、动态标签 例如“性别”这个标签，一般来说是不会随着时间变动的，所以它属于静态标签；而“最近一次访问时间”会随着每次用户登录而更新，也就是动态标签。&lt;/p&gt;&lt;p&gt;2、从主题上分：属性标签、行为标签等 随着业务的进行，标签往往会越来越多，而“主题”帮助我们从业务角度对标签进行归类，方便后续有秩序地补充新的标签。例如我可以分为“属性标签”和“行为标签”，将“性别”“年龄”这样描述用户的自然属性的标签归于“属性标签”，而将“近30日下单次数”这样的涉及到用户下单行为的标签归属到“行为标签”。主题的划分并没有规定，不同的公司可以根据自己的业务需求进行归类整合，避免标签体系杂乱。&lt;/p&gt;&lt;p&gt;3、从层级上分：一级标签、二级标签等 同样，层级也是为了业务理解更加有序才产生的，例如上述的“近30日下单次数”可以作为“二级标签”，归属于“近30日行为”这个一级标签，那么下次添加“近30日登陆次数”这个标签时，就可以同样归于“近30日行为”这个一级标签之下。当然，如果业务逻辑复杂，可能还会有三级标签。&lt;/p&gt;&lt;p&gt;4、从开发方式分：统计类标签、规则类标签、算法类标签（又称：事实标签、模型标签、预测标签） 这一种分类方式是从技术开发角度产生的。“统计类标签”（有些又称为“事实标签”）是从底层数据表中取出原始数据，进行简单的加减乘除运算得到的标签，例如“最近一次登录距今天数”这个标签，就是将用户的最后一次登录时间与今天做减法，得到距今天数，它反映基本事实。而“规则类标签”（有些又称“模型标签”）则是进行了业务定义后的标签，例如“流失用户”这个标签，基于我们的业务认知，将“最近一次登录距今天数”大于30天的用户定义为流失用户，不同公司会有自己的定义方式，例如“抖音”这样高频的社交产品，他的流失的定义一定会严格于“携程”这样低频的出行产品。“算法类标签”（又称“预测标签”）顾名思义，就是需要利用算法才能得到的标签了，例如电商产品常通过用户的下单行为，去猜测用户的性别。通常算法类标签涉及复杂的逻辑与权重，开发难度大，在所有标签中占比不高。&lt;/p&gt;&lt;p&gt;5、从生成规则分：单一标签、复合标签 一般来说，上述的统计类标签可以说是单一标签，而规则类和算法类标签就是需要多个单一标签组合而成的复合标签。&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.9517544&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/jWg3EibnYW98aFiaUUhWznOkrlss6JfCtUs4gtEuncWa1rjibAj9EodxvDnXcTboAfEp9fxsOSe6cS0NOhFpAzg7Q/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;684&quot;/&gt;&lt;/p&gt;&lt;p&gt;搞清楚标签的分类之后，大家在搭建过程中对齐口径，再去制定相应的标签值就容易推进了。&lt;/p&gt;&lt;h3&gt;&lt;span&gt;|0xFF 用户标签与画像的关系&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;起初在开始做标签的时候，我一度混淆标签与画像的概念。平时，我们常把两个词捆绑在一起说，但是标签=画像吗？我们先来看看百度百科的解释。&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.2635585&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/jWg3EibnYW98aFiaUUhWznOkrlss6JfCtUWCZMGun9MuobHfj01ugYsOuSXMMzO6PRicDsq6Es9aWg4pV9kZrkvvg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1051&quot;/&gt;&lt;/p&gt;&lt;p&gt;度娘的解释是，画像需要“利用标签将用户形象具体化”，意味着，画像需要建立在标签的基础之上，存在依赖关系，但又不尽相同。&lt;/p&gt;&lt;p&gt;标签是对于用户，更偏底层的一种描述，当我们给用户打标签时，此用户的数据表中填充了“26岁”“女性”“北京”“白领”等标签值。对个体用户而言，我们一般不将其标签描述为画像，而叫做“典型用户”，用于直观阐述我们的目标群体是谁，或者用于客服回访时，快速了解用户的相关信息。&lt;/p&gt;&lt;p&gt;而我们常说的用户画像系统，一般针对的是一个群体。当每个个人都被打上标签之后，通过统计的方式将一个群体的特征进行汇总，才是我们想要得到的画像——当前我们的活跃用户主要来自哪些渠道？主要位于哪个年龄层？从而反向推导出哪些是最适合我们产品的用户，调整广告投放策略。&lt;/p&gt;&lt;p&gt;如果说标签是底层数据的标识，那么画像可以说是一个应用场景，同样，标签还有另一个重要的应用场景——分群。上述例子中，当我们要进行一次app push时，业务人员需要利用标签，选择精准的目标用户进行推送，从而达到最高的ROI。例如电商常见的，针对“偏好短裙”和“偏好美妆”的女性用户，编辑不同的文案和折扣信息，吸引点击转化。&lt;/p&gt;&lt;p&gt;综上所述，标签与画像有一定的联系，但又不完全一致，切勿混为一谈。标签的使用场景，还需要我们在深入业务的同时，不断去挖掘，让其价值最大化，才是我们所说的真正的“精细化运营”。&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
 <guid>a76ff4473d3b1220a4998dfdc9366608</guid>
@@ -327,11 +333,5 @@ return Pager(
      pagingSourceFactory = pagingSourceFactory
 ).flow
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;您可以参阅文档了解 &lt;b&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//developer.android.google.cn/topic/libraries/architecture/paging/v3-network-db&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;使用 RemoteMediator&lt;/a&gt;&lt;/b&gt; 的详细信息。如果您需要 RemoteMediator 在应用中的完整实现，可以参阅 &lt;b&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//codelabs.developers.google.com/codelabs/android-paging/%2314&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;Paging codelab&lt;/a&gt;&lt;/b&gt; 和 &lt;b&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//github.com/googlecodelabs/android-paging/blob/step13-19_network_and_database/app/src/main/java/com/example/android/codelabs/paging/data/GithubRemoteMediator.kt&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;Paging 相关代码&lt;/a&gt;&lt;/b&gt;。&lt;/p&gt;&lt;p&gt;我们将 Paging 3 设计为一个帮您涵盖简单和复杂情形下的分页加载的库。它可以让您更方便地使用大规模数据集合，无论数据来自网络、数据库、内存缓存还是上述几种情况的组合。Paging 库基于 &lt;b&gt;&lt;a href=&quot;https://zhuanlan.zhihu.com/p/140314207&quot; class=&quot;internal&quot;&gt;协程和 Flow&lt;/a&gt;&lt;/b&gt; 实现，使得它可以很简单地调用挂起函数并且处理数据流。&lt;/p&gt;&lt;p&gt;Paging 3 仍然处于 alpha 版本，我们需要您帮助我们进一步优化！请参阅以下资源开始使用 Paging:&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>0153a26151e991a68e1eacb277ed22bf</guid>
-<title>如何从 0 到 1 搭建用户标签体系</title>
-<link>https://toutiao.io/k/78gg94x</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;span&gt;|0x00 前言&lt;/span&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;用户标签，其实发展到现在已经不是新鲜概念了。&lt;/p&gt;&lt;p&gt;各大公司在推进精细化的过程中，无论是技术方还是业务方，都已经从过去粗放的“流量运营”思维，转变为如今人人都在谈论的“用户运营”思维。这时，用户不再是一个个整齐划一的流量，而是有血有肉的个体。&lt;/p&gt;&lt;p&gt;但受限了于客观条件，我们无法一一去接触我们用户，了解他们的习惯喜欢，只能从他们产生的行为和数据，去抽象、总结出特征规律，这就引入了“用户标签”这个概念。当用户被打上的标签越来越丰富、越来越精准，也就越贴合人本身，勾勒出一个个立体的形象了。&lt;/p&gt;&lt;p&gt;鉴于市面上已有许多理论知识，丰富的实战分享，我也就不班门弄斧了。本文只讲讲那些在执行中，新手容易遇到的踩坑点，帮助大家排雷。&lt;/p&gt;&lt;h3&gt;&lt;span&gt;|0x01 切勿“大而全”标签&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;刚接到这个项目时，我已开始抑制不住内心的激动了。从毕业开始做用户研究，脑中已经构建起了一个框架，希望通过这次从0到1的机会，将美好蓝图实施落地。于是我洋洋洒洒写下一个功能强大的脑图，头脑风暴出用户的所有特性，目标是构建一套成熟的标签体系和画像后台。&lt;/p&gt;&lt;p&gt;这样的结局自然是当头棒喝，第一次需求评审就遇到了很大阻力，现在想来，有两个问题是需要提前想透彻的：①虽说标签需要做得精细，但始终是有主次的，当前为什么会用到标签，具体用来做什么？②在需求调研阶段，什么样的调研是意义的？你会发现有许多做得不错的第三方平台，标签体系非常成熟全面，但像第三方平台这样的to B公司，为了适用于所有的公司业务，所以尽善尽美。而以我们当前的业务量来说，是否需要做到如此全面？以当前的资源来说，是否有能力进行开发和维护？&lt;/p&gt;&lt;p&gt;实际上，我们现阶段是从0到1，要想一步到位是不现实的，应该按照业务需求进行取舍。所以，真正有效的方法不是穷举法，而是由业务场景进行倒推：我们发现，当前标签首先会运用在消息推送上，其中很重要的一个场景是，圈选预流失用户，通过app push、短信等方式进行召回。&lt;/p&gt;&lt;p&gt;目的与场景明确了，接下来就是流失标签的定义了。作为PM，我立马与运营进行了沟通，了解一线业务人员对于流失的理解。这时，很容易又踩到了第二个坑：询问技巧。&lt;/p&gt;&lt;p&gt;错误方式：我：咱们现在要对用户打标签用于召回了，你觉得“流失1天以上”和“流失30天以上”，哪个更合适？运营：我觉得都是需要的，不同的流失程度我都会关心。我：好吧.....那针对活跃标签，你觉得“最近7天登录”“最近14天登录”“最近30天登录”，哪个最合适？运营：那肯定都要啊，这都是我们平时会关注的指标。emmmm天数能不能不要固定？我们能自定义是最好的。&lt;/p&gt;&lt;p&gt;与业务方沟通会发现，在对方对标签不甚熟悉的情况下，会误将标签与业务指标相混淆，从而显得“贪心”起来——什么标签都想要。这时，你需要转换一种提问方式，得到最有价值的答案&lt;/p&gt;&lt;p&gt;正确方式：我：咱们现在要对用户打标签用于召回了，平时你想对哪些用户进行召回呀？运营：我想想.....我平时看数据，大多用户会在前期流失，3日留存率就只有xx啦！是我的话，我会在3日这个节点去召回。我：soga，那我们可以提供“流失3天”这个标签，方便你进行召回操作。精简标签之后，留下最重要、最迫切的一些标签，作为第一期的实现内容。之后你会发现，一些基础标签，已经能满足百分之六七十的需求啦，这样既不会造成开发资源的浪费，也避免业务人员在使用时，面对着海量标签犹豫不决。&lt;/p&gt;&lt;h3&gt;&lt;span&gt;|0x02 用户标签的分类&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;如果看过很多文章会发现，大家对于标签有非常多的不同描述，也少有文章有去认真讲解这个认知前提。这也导致初期容易对标签的理解产生混淆，因为从不同的维度去认识，标签有着不同的分类。&lt;/p&gt;&lt;p&gt;经过一些整合后，我认为大致可以从五个角度去理解标签：&lt;/p&gt;&lt;p&gt;1、从更新频率来分：静态标签、动态标签 例如“性别”这个标签，一般来说是不会随着时间变动的，所以它属于静态标签；而“最近一次访问时间”会随着每次用户登录而更新，也就是动态标签。&lt;/p&gt;&lt;p&gt;2、从主题上分：属性标签、行为标签等 随着业务的进行，标签往往会越来越多，而“主题”帮助我们从业务角度对标签进行归类，方便后续有秩序地补充新的标签。例如我可以分为“属性标签”和“行为标签”，将“性别”“年龄”这样描述用户的自然属性的标签归于“属性标签”，而将“近30日下单次数”这样的涉及到用户下单行为的标签归属到“行为标签”。主题的划分并没有规定，不同的公司可以根据自己的业务需求进行归类整合，避免标签体系杂乱。&lt;/p&gt;&lt;p&gt;3、从层级上分：一级标签、二级标签等 同样，层级也是为了业务理解更加有序才产生的，例如上述的“近30日下单次数”可以作为“二级标签”，归属于“近30日行为”这个一级标签，那么下次添加“近30日登陆次数”这个标签时，就可以同样归于“近30日行为”这个一级标签之下。当然，如果业务逻辑复杂，可能还会有三级标签。&lt;/p&gt;&lt;p&gt;4、从开发方式分：统计类标签、规则类标签、算法类标签（又称：事实标签、模型标签、预测标签） 这一种分类方式是从技术开发角度产生的。“统计类标签”（有些又称为“事实标签”）是从底层数据表中取出原始数据，进行简单的加减乘除运算得到的标签，例如“最近一次登录距今天数”这个标签，就是将用户的最后一次登录时间与今天做减法，得到距今天数，它反映基本事实。而“规则类标签”（有些又称“模型标签”）则是进行了业务定义后的标签，例如“流失用户”这个标签，基于我们的业务认知，将“最近一次登录距今天数”大于30天的用户定义为流失用户，不同公司会有自己的定义方式，例如“抖音”这样高频的社交产品，他的流失的定义一定会严格于“携程”这样低频的出行产品。“算法类标签”（又称“预测标签”）顾名思义，就是需要利用算法才能得到的标签了，例如电商产品常通过用户的下单行为，去猜测用户的性别。通常算法类标签涉及复杂的逻辑与权重，开发难度大，在所有标签中占比不高。&lt;/p&gt;&lt;p&gt;5、从生成规则分：单一标签、复合标签 一般来说，上述的统计类标签可以说是单一标签，而规则类和算法类标签就是需要多个单一标签组合而成的复合标签。&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.9517544&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/jWg3EibnYW98aFiaUUhWznOkrlss6JfCtUs4gtEuncWa1rjibAj9EodxvDnXcTboAfEp9fxsOSe6cS0NOhFpAzg7Q/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;684&quot;/&gt;&lt;/p&gt;&lt;p&gt;搞清楚标签的分类之后，大家在搭建过程中对齐口径，再去制定相应的标签值就容易推进了。&lt;/p&gt;&lt;h3&gt;&lt;span&gt;|0xFF 用户标签与画像的关系&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;起初在开始做标签的时候，我一度混淆标签与画像的概念。平时，我们常把两个词捆绑在一起说，但是标签=画像吗？我们先来看看百度百科的解释。&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.2635585&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/jWg3EibnYW98aFiaUUhWznOkrlss6JfCtUWCZMGun9MuobHfj01ugYsOuSXMMzO6PRicDsq6Es9aWg4pV9kZrkvvg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1051&quot;/&gt;&lt;/p&gt;&lt;p&gt;度娘的解释是，画像需要“利用标签将用户形象具体化”，意味着，画像需要建立在标签的基础之上，存在依赖关系，但又不尽相同。&lt;/p&gt;&lt;p&gt;标签是对于用户，更偏底层的一种描述，当我们给用户打标签时，此用户的数据表中填充了“26岁”“女性”“北京”“白领”等标签值。对个体用户而言，我们一般不将其标签描述为画像，而叫做“典型用户”，用于直观阐述我们的目标群体是谁，或者用于客服回访时，快速了解用户的相关信息。&lt;/p&gt;&lt;p&gt;而我们常说的用户画像系统，一般针对的是一个群体。当每个个人都被打上标签之后，通过统计的方式将一个群体的特征进行汇总，才是我们想要得到的画像——当前我们的活跃用户主要来自哪些渠道？主要位于哪个年龄层？从而反向推导出哪些是最适合我们产品的用户，调整广告投放策略。&lt;/p&gt;&lt;p&gt;如果说标签是底层数据的标识，那么画像可以说是一个应用场景，同样，标签还有另一个重要的应用场景——分群。上述例子中，当我们要进行一次app push时，业务人员需要利用标签，选择精准的目标用户进行推送，从而达到最高的ROI。例如电商常见的，针对“偏好短裙”和“偏好美妆”的女性用户，编辑不同的文案和折扣信息，吸引点击转化。&lt;/p&gt;&lt;p&gt;综上所述，标签与画像有一定的联系，但又不完全一致，切勿混为一谈。标签的使用场景，还需要我们在深入业务的同时，不断去挖掘，让其价值最大化，才是我们所说的真正的“精细化运营”。&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
