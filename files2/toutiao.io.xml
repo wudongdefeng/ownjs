@@ -51,134 +51,6 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>19539e0bd21c8f08c382564234f31818</guid>
-<title>DDDplus 中台开发框架（痛点分析）</title>
-<link>https://toutiao.io/k/pbiudrp</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div id=&quot;wiki-body&quot; class=&quot;gollum-markdown-content&quot;&gt;
-            &lt;div class=&quot;markdown-body&quot;&gt;
-              &lt;h2&gt;
-&lt;a id=&quot;user-content-时代特征&quot; class=&quot;anchor&quot; href=&quot;#%E6%97%B6%E4%BB%A3%E7%89%B9%E5%BE%81&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;时代特征&lt;/h2&gt;
-&lt;p&gt;不确定性和变化是这个时代的主旋律。&lt;/p&gt;
-&lt;p&gt;业务需要快速上线，并根据用户的反馈不停地调整和升级，有生命力的业务主动寻求变化，不变则亡是很多行业目前的共识，企业应对变化的响应力成了成败的关键。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;鸡蛋，从里面破开，结果是生命；从外面破开，是食物。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;h2&gt;
-&lt;a id=&quot;user-content-业务开发的痛点&quot; class=&quot;anchor&quot; href=&quot;#%E4%B8%9A%E5%8A%A1%E5%BC%80%E5%8F%91%E7%9A%84%E7%97%9B%E7%82%B9&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;业务开发的痛点&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;如何更好地构建软件？
-&lt;ul&gt;
-&lt;li&gt;现有的代码我不满意，我知道它乱，但不知如何入手解决&lt;/li&gt;
-&lt;li&gt;听说过业务架构整体优雅，允许局部腐化，但没见过&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;如何管理代码的复杂度？
-&lt;ul&gt;
-&lt;li&gt;系统越来越不可控&lt;/li&gt;
-&lt;li&gt;尤其是，倒排期现象不止，新PRD不断涌入&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;如何让代码成为领域知识？
-&lt;ul&gt;
-&lt;li&gt;如何让代码反映业务？&lt;/li&gt;
-&lt;li&gt;系统是否支持我以不同粒度不同视角从不同维度低成本地梳理出业务？&lt;/li&gt;
-&lt;li&gt;代码如何能反应PRD的内容？&lt;/li&gt;
-&lt;li&gt;如何让产品和技术间形成一致性产出物？&lt;/li&gt;
-&lt;li&gt;听说过&lt;code&gt;code is documentation&lt;/code&gt;，但什么是&lt;code&gt;code is domain knowledge&lt;/code&gt;?&lt;/li&gt;
-&lt;li&gt;代码的结构化，是什么意思？&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;如何让业务代码和技术代码解耦？
-&lt;ul&gt;
-&lt;li&gt;业务是业务，技术是技术&lt;/li&gt;
-&lt;li&gt;有的技术底座，我想用外包实现，可我是一个代码库，我也不敢相信外包质量，如何解决？&lt;/li&gt;
-&lt;li&gt;我的团队，有的人明显适合业务领域开发，有的适合技术性系统开发，如何人员分层管理？&lt;/li&gt;
-&lt;li&gt;想从代码里捋业务，就会变成这样：Q：“晚饭吃了啥？”。  A：“我用勺子一口一口地吃了鸡生下的蛋和番茄再加上油一起炒的菜。”&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;业务不确定，尤其是2B业务，如果有KA更惨
-&lt;ul&gt;
-&lt;li&gt;如何优雅地解决：业务逻辑的扩展，业务模型的扩展，业务流程的扩展&lt;/li&gt;
-&lt;li&gt;有些if条件，场景已经不存在了，可不敢删，因为它的逻辑散落各处&lt;/li&gt;
-&lt;li&gt;某个特殊业务，我们开发了好几个月，我们如何统计这个业务特有的代码？&lt;/li&gt;
-&lt;li&gt;经常有特殊创建要我加字段，甚至加表&lt;/li&gt;
-&lt;li&gt;又来个新场景，流程跟之前不同。我已经使用模板方法固化流程了，这可怎么办？&lt;/li&gt;
-&lt;li&gt;如何快速响应千奇百怪的个性化需求，同时保持自身不腐化&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;研发痛点
-&lt;ul&gt;
-&lt;li&gt;如何让研发拿到需求立刻就知道代码写在哪里，不各显神通地造轮子造概念&lt;/li&gt;
-&lt;li&gt;不要跟我讲各种方法论，架构思想，我只想知道这个PRD怎么好地实现：donot make me think!&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2&gt;
-&lt;a id=&quot;user-content-业务开发的复杂性来源&quot; class=&quot;anchor&quot; href=&quot;#%E4%B8%9A%E5%8A%A1%E5%BC%80%E5%8F%91%E7%9A%84%E5%A4%8D%E6%9D%82%E6%80%A7%E6%9D%A5%E6%BA%90&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;业务开发的复杂性来源&lt;/h2&gt;
-&lt;p&gt;业务开发，不同于技术开发：&lt;/p&gt;
-
-&lt;h3&gt;
-&lt;a id=&quot;user-content-根本来源&quot; class=&quot;anchor&quot; href=&quot;#%E6%A0%B9%E6%9C%AC%E6%9D%A5%E6%BA%90&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;根本来源&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;业务场景多，差异大&lt;/li&gt;
-&lt;li&gt;个性化需求多&lt;/li&gt;
-&lt;li&gt;业务术语多，每个术语可能都对应一大堆字段、逻辑和流程&lt;/li&gt;
-&lt;li&gt;业务流程长，任何一个节点错误都会造成整体bug&lt;/li&gt;
-&lt;li&gt;2B业务更严重，每个行业每个企业都有不同的业务诉求&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3&gt;
-&lt;a id=&quot;user-content-附属来源&quot; class=&quot;anchor&quot; href=&quot;#%E9%99%84%E5%B1%9E%E6%9D%A5%E6%BA%90&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;附属来源&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;缺乏顶层设计，造成的代码随意
-
-&lt;/li&gt;
-&lt;li&gt;业务和技术的耦合，代码本身无法透析业务本质&lt;/li&gt;
-&lt;li&gt;代码质量差&lt;/li&gt;
-&lt;li&gt;代码自身的可解释性差&lt;/li&gt;
-&lt;li&gt;团队规模&lt;/li&gt;
-&lt;li&gt;人员流动&lt;/li&gt;
-&lt;li&gt;项目流动&lt;/li&gt;
-&lt;li&gt;交付周期&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2&gt;
-&lt;a id=&quot;user-content-业务中台的痛点&quot; class=&quot;anchor&quot; href=&quot;#%E4%B8%9A%E5%8A%A1%E4%B8%AD%E5%8F%B0%E7%9A%84%E7%97%9B%E7%82%B9&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;业务中台的痛点&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;中台，是&lt;code&gt;企业级能力复用平台&lt;/code&gt;，到底什么意思
-&lt;ul&gt;
-&lt;li&gt;什么是能力&lt;/li&gt;
-&lt;li&gt;业务资产是什么，与数据资产什么关系？此外，还有哪些软资产？如何落地？&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;如何支持前台、中台协同开发，破除中台单点瓶颈，各司其职，人员解耦，开发解耦&lt;/li&gt;
-&lt;li&gt;到处都在讲中台，中台的代码应该长什么样？&lt;/li&gt;
-&lt;li&gt;前台、中台组织到底该如何分工
-&lt;ul&gt;
-&lt;li&gt;前台做什么，中台做什么&lt;/li&gt;
-&lt;li&gt;业务演化如何进行&lt;/li&gt;
-&lt;li&gt;前台业务如何下沉到中台，风险如何控制&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;如何解决前、中台速率匹配问题，让中台不阻塞前台业务发展&lt;/li&gt;
-&lt;li&gt;中台如何实现各个前台的业务隔离，防止相互干扰？&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2&gt;
-&lt;a id=&quot;user-content-业务开发的本源&quot; class=&quot;anchor&quot; href=&quot;#%E4%B8%9A%E5%8A%A1%E5%BC%80%E5%8F%91%E7%9A%84%E6%9C%AC%E6%BA%90&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;业务开发的本源&lt;/h2&gt;
-&lt;p&gt;如果能做到如下几点，业务代码质量就不会太差：&lt;/p&gt;
-
-&lt;h2&gt;
-&lt;a id=&quot;user-content-业务开发框架现状&quot; class=&quot;anchor&quot; href=&quot;#%E4%B8%9A%E5%8A%A1%E5%BC%80%E5%8F%91%E6%A1%86%E6%9E%B6%E7%8E%B0%E7%8A%B6&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;业务开发框架现状&lt;/h2&gt;
-&lt;p&gt;市场上有很多技术框架，也有一些&lt;code&gt;low code&lt;/code&gt;甚至&lt;code&gt;codeless&lt;/code&gt;框架来满足简单业务场景，但开源的解决复杂业务场景问题的业务开发框架，目前是空白。&lt;/p&gt;
-&lt;p&gt;中台架构，更多停留在思想和方法论上，具体在代码层面如何落地，目前是空白。&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://github.com/funkygao/cp-ddd-framework&quot;&gt;DDDplus&lt;/a&gt;，一套轻量级业务中台开发框架，解决了这些空白。&lt;/p&gt;
-
-            &lt;/div&gt;
-
-            
-        &lt;/div&gt;
-
-&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
 <guid>03fedcbc8792dfc458686f1c29f0a9dc</guid>
 <title>疫情下的线上会议和社交</title>
 <link>https://toutiao.io/k/ojgvqdo</link>
@@ -522,6 +394,134 @@
 
 &lt;p&gt;文章地址：&lt;a href=&quot;https://webrtc.ventures/2020/09/virtual-conferences-and-networking-in-the-pandemic/&quot; target=&quot;_blank&quot; rel=&quot;noreferrer noopener&quot;&gt;https://webrtc.ventures/2020/09/virtual-conferences-and-networking-in-the-pandemic/&lt;/a&gt;&lt;/p&gt;
 &lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>19539e0bd21c8f08c382564234f31818</guid>
+<title>DDDplus 中台开发框架（痛点分析）</title>
+<link>https://toutiao.io/k/pbiudrp</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div id=&quot;wiki-body&quot; class=&quot;gollum-markdown-content&quot;&gt;
+            &lt;div class=&quot;markdown-body&quot;&gt;
+              &lt;h2&gt;
+&lt;a id=&quot;user-content-时代特征&quot; class=&quot;anchor&quot; href=&quot;#%E6%97%B6%E4%BB%A3%E7%89%B9%E5%BE%81&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;时代特征&lt;/h2&gt;
+&lt;p&gt;不确定性和变化是这个时代的主旋律。&lt;/p&gt;
+&lt;p&gt;业务需要快速上线，并根据用户的反馈不停地调整和升级，有生命力的业务主动寻求变化，不变则亡是很多行业目前的共识，企业应对变化的响应力成了成败的关键。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;鸡蛋，从里面破开，结果是生命；从外面破开，是食物。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2&gt;
+&lt;a id=&quot;user-content-业务开发的痛点&quot; class=&quot;anchor&quot; href=&quot;#%E4%B8%9A%E5%8A%A1%E5%BC%80%E5%8F%91%E7%9A%84%E7%97%9B%E7%82%B9&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;业务开发的痛点&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;如何更好地构建软件？
+&lt;ul&gt;
+&lt;li&gt;现有的代码我不满意，我知道它乱，但不知如何入手解决&lt;/li&gt;
+&lt;li&gt;听说过业务架构整体优雅，允许局部腐化，但没见过&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;如何管理代码的复杂度？
+&lt;ul&gt;
+&lt;li&gt;系统越来越不可控&lt;/li&gt;
+&lt;li&gt;尤其是，倒排期现象不止，新PRD不断涌入&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;如何让代码成为领域知识？
+&lt;ul&gt;
+&lt;li&gt;如何让代码反映业务？&lt;/li&gt;
+&lt;li&gt;系统是否支持我以不同粒度不同视角从不同维度低成本地梳理出业务？&lt;/li&gt;
+&lt;li&gt;代码如何能反应PRD的内容？&lt;/li&gt;
+&lt;li&gt;如何让产品和技术间形成一致性产出物？&lt;/li&gt;
+&lt;li&gt;听说过&lt;code&gt;code is documentation&lt;/code&gt;，但什么是&lt;code&gt;code is domain knowledge&lt;/code&gt;?&lt;/li&gt;
+&lt;li&gt;代码的结构化，是什么意思？&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;如何让业务代码和技术代码解耦？
+&lt;ul&gt;
+&lt;li&gt;业务是业务，技术是技术&lt;/li&gt;
+&lt;li&gt;有的技术底座，我想用外包实现，可我是一个代码库，我也不敢相信外包质量，如何解决？&lt;/li&gt;
+&lt;li&gt;我的团队，有的人明显适合业务领域开发，有的适合技术性系统开发，如何人员分层管理？&lt;/li&gt;
+&lt;li&gt;想从代码里捋业务，就会变成这样：Q：“晚饭吃了啥？”。  A：“我用勺子一口一口地吃了鸡生下的蛋和番茄再加上油一起炒的菜。”&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;业务不确定，尤其是2B业务，如果有KA更惨
+&lt;ul&gt;
+&lt;li&gt;如何优雅地解决：业务逻辑的扩展，业务模型的扩展，业务流程的扩展&lt;/li&gt;
+&lt;li&gt;有些if条件，场景已经不存在了，可不敢删，因为它的逻辑散落各处&lt;/li&gt;
+&lt;li&gt;某个特殊业务，我们开发了好几个月，我们如何统计这个业务特有的代码？&lt;/li&gt;
+&lt;li&gt;经常有特殊创建要我加字段，甚至加表&lt;/li&gt;
+&lt;li&gt;又来个新场景，流程跟之前不同。我已经使用模板方法固化流程了，这可怎么办？&lt;/li&gt;
+&lt;li&gt;如何快速响应千奇百怪的个性化需求，同时保持自身不腐化&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;研发痛点
+&lt;ul&gt;
+&lt;li&gt;如何让研发拿到需求立刻就知道代码写在哪里，不各显神通地造轮子造概念&lt;/li&gt;
+&lt;li&gt;不要跟我讲各种方法论，架构思想，我只想知道这个PRD怎么好地实现：donot make me think!&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;
+&lt;a id=&quot;user-content-业务开发的复杂性来源&quot; class=&quot;anchor&quot; href=&quot;#%E4%B8%9A%E5%8A%A1%E5%BC%80%E5%8F%91%E7%9A%84%E5%A4%8D%E6%9D%82%E6%80%A7%E6%9D%A5%E6%BA%90&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;业务开发的复杂性来源&lt;/h2&gt;
+&lt;p&gt;业务开发，不同于技术开发：&lt;/p&gt;
+
+&lt;h3&gt;
+&lt;a id=&quot;user-content-根本来源&quot; class=&quot;anchor&quot; href=&quot;#%E6%A0%B9%E6%9C%AC%E6%9D%A5%E6%BA%90&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;根本来源&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;业务场景多，差异大&lt;/li&gt;
+&lt;li&gt;个性化需求多&lt;/li&gt;
+&lt;li&gt;业务术语多，每个术语可能都对应一大堆字段、逻辑和流程&lt;/li&gt;
+&lt;li&gt;业务流程长，任何一个节点错误都会造成整体bug&lt;/li&gt;
+&lt;li&gt;2B业务更严重，每个行业每个企业都有不同的业务诉求&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;
+&lt;a id=&quot;user-content-附属来源&quot; class=&quot;anchor&quot; href=&quot;#%E9%99%84%E5%B1%9E%E6%9D%A5%E6%BA%90&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;附属来源&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;缺乏顶层设计，造成的代码随意
+
+&lt;/li&gt;
+&lt;li&gt;业务和技术的耦合，代码本身无法透析业务本质&lt;/li&gt;
+&lt;li&gt;代码质量差&lt;/li&gt;
+&lt;li&gt;代码自身的可解释性差&lt;/li&gt;
+&lt;li&gt;团队规模&lt;/li&gt;
+&lt;li&gt;人员流动&lt;/li&gt;
+&lt;li&gt;项目流动&lt;/li&gt;
+&lt;li&gt;交付周期&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;
+&lt;a id=&quot;user-content-业务中台的痛点&quot; class=&quot;anchor&quot; href=&quot;#%E4%B8%9A%E5%8A%A1%E4%B8%AD%E5%8F%B0%E7%9A%84%E7%97%9B%E7%82%B9&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;业务中台的痛点&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;中台，是&lt;code&gt;企业级能力复用平台&lt;/code&gt;，到底什么意思
+&lt;ul&gt;
+&lt;li&gt;什么是能力&lt;/li&gt;
+&lt;li&gt;业务资产是什么，与数据资产什么关系？此外，还有哪些软资产？如何落地？&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;如何支持前台、中台协同开发，破除中台单点瓶颈，各司其职，人员解耦，开发解耦&lt;/li&gt;
+&lt;li&gt;到处都在讲中台，中台的代码应该长什么样？&lt;/li&gt;
+&lt;li&gt;前台、中台组织到底该如何分工
+&lt;ul&gt;
+&lt;li&gt;前台做什么，中台做什么&lt;/li&gt;
+&lt;li&gt;业务演化如何进行&lt;/li&gt;
+&lt;li&gt;前台业务如何下沉到中台，风险如何控制&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;如何解决前、中台速率匹配问题，让中台不阻塞前台业务发展&lt;/li&gt;
+&lt;li&gt;中台如何实现各个前台的业务隔离，防止相互干扰？&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;
+&lt;a id=&quot;user-content-业务开发的本源&quot; class=&quot;anchor&quot; href=&quot;#%E4%B8%9A%E5%8A%A1%E5%BC%80%E5%8F%91%E7%9A%84%E6%9C%AC%E6%BA%90&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;业务开发的本源&lt;/h2&gt;
+&lt;p&gt;如果能做到如下几点，业务代码质量就不会太差：&lt;/p&gt;
+
+&lt;h2&gt;
+&lt;a id=&quot;user-content-业务开发框架现状&quot; class=&quot;anchor&quot; href=&quot;#%E4%B8%9A%E5%8A%A1%E5%BC%80%E5%8F%91%E6%A1%86%E6%9E%B6%E7%8E%B0%E7%8A%B6&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;业务开发框架现状&lt;/h2&gt;
+&lt;p&gt;市场上有很多技术框架，也有一些&lt;code&gt;low code&lt;/code&gt;甚至&lt;code&gt;codeless&lt;/code&gt;框架来满足简单业务场景，但开源的解决复杂业务场景问题的业务开发框架，目前是空白。&lt;/p&gt;
+&lt;p&gt;中台架构，更多停留在思想和方法论上，具体在代码层面如何落地，目前是空白。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://github.com/funkygao/cp-ddd-framework&quot;&gt;DDDplus&lt;/a&gt;，一套轻量级业务中台开发框架，解决了这些空白。&lt;/p&gt;
+
+            &lt;/div&gt;
+
+            
+        &lt;/div&gt;
+
 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
