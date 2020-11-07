@@ -169,6 +169,12 @@
 &lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
+<guid>52700d0932c1be83fc86d3a0335cfff4</guid>
+<title>浅谈 Java 中的 AutoCloseable 接口</title>
+<link>https://toutiao.io/k/znohjci</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;Closes this resource, relinquishing any underlying resources. This method is invoked automatically on objects managed by the try-with-resources statement.&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;While this interface method is declared to throw Exception, implementers are strongly encouraged to declare concrete implementations of the close method to throw more specific exceptions, or to throw no exception at all if the close operation cannot fail.&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;Cases where the close operation may fail require careful attention by implementers. It is strongly advised to relinquish the underlying resources and to internally mark the resource as closed, prior to throwing the exception. The close method is unlikely to be invoked more than once and so this ensures that the resources are released in a timely manner. Furthermore it reduces problems that could arise when the resource wraps, or is wrapped, by another resource.&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;Implementers of this interface are also strongly advised to not have the close method throw InterruptedException.&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;This exception interacts with a thread&#x27;s interrupted status, and runtime misbehavior is likely to occur if an InterruptedException is suppressed.&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;More generally, if it would cause problems for an exception to be suppressed, the AutoCloseable.close method should not throw it.&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;Note that unlike the java.io.Closeable#close close method of java.io.Closeable, this close method is not required to be idempotent. In other words, calling this close method more than once may have some visible side effect, unlike Closeable.close which is required to have no effect if called more than once.&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;However, implementers of this interface are strongly encouraged to make their close methods idempotent.&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
 <guid>269a06f1eba68f0280b1e96c514087fd</guid>
 <title>现代 Web 开发语法基础与工程实践</title>
 <link>https://toutiao.io/k/uhz45j5</link>
@@ -599,28 +605,5 @@
     
 
     &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>6d3051b69a94b208a3f2420684a798f9</guid>
-<title>双十一，买它买它买它！</title>
-<link>https://toutiao.io/k/pr492jn</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
-
-                    
-
-                    
-                    
-                    &lt;p&gt;&lt;span&gt;大家好，我是周刊菌。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;一周过得好快啊！又快周五啦！&lt;span&gt;第 029 期「码农周刊 VIP 会员专属邮件周报」，将于本周五晚发送。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;数位上市公司 CTO 都在订阅的「码农周刊 VIP 会员专属邮件周报」，你还等什么？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-cropselx1=&quot;0&quot; data-cropselx2=&quot;255&quot; data-cropsely1=&quot;0&quot; data-cropsely2=&quot;255&quot; data-ratio=&quot;1&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/t8lpVibticjQ4LlicrXjOxMtaQDWoib2X24FnCibVaaZDqGa6VhDuw5a6cJtG8eg35xVuS75hozib0Z3Kib07lhzJsTSA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;274&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;「码农周刊 VIP 会员」是什么？&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;简介版&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;码农周刊 VIP 会员 = 全年 52 期「VIP 会员专属邮件周报」 + 只限 VIP 会员加入的交流圈子 + 大厂「内推机会」 + N 多福利&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;详细版&lt;/span&gt;&lt;br/&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;点击「阅读原文」即可查看详细介绍&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;加入「码农周刊 VIP 会员」，与上市公司 CTO 一起成长！&lt;br/&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;全年 52 期「VIP 会员专属邮件周报」 + 只限 VIP 会员加入的交流圈子 + 大厂「内推机会」 + N 多福利，你值得拥有！&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;&lt;strong&gt;原价 365 元/年&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;&lt;strong&gt;，现价仅需 108 元！&lt;/strong&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-cropselx1=&quot;0&quot; data-cropselx2=&quot;260&quot; data-cropsely1=&quot;0&quot; data-cropsely2=&quot;350&quot; data-ratio=&quot;1.3478260869565217&quot; data-s=&quot;300,640&quot; data-type=&quot;jpeg&quot; data-w=&quot;690&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/t8lpVibticjQ55lkiaIfFtAvQ7oklJLhfYEwMXeZORosBgxxRzEaXjYiapBSev2CQfYfl7kTiaFqsoiaicGyvcKIHzcSg/640?wx_fmt=jpeg&quot;/&gt;&lt;/p&gt;
-                &lt;/div&gt;
-
-                
-
-                
-
-
-
-                
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
