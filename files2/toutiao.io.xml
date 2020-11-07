@@ -5,318 +5,622 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>a2a5708d7eb20b282bf96f4ae7859fe9</guid>
-<title>Docker 底层原理浅析</title>
-<link>https://toutiao.io/k/nvbge2t</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.1575&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/j3gficicyOvasIjZpiaTNIPReJVWEJf7UGpmokI3LL4NbQDb8fO48fYROmYPXUhXFN8IdDqPcI1gA6OfSLsQHxB4w/640?wx_fmt=gif&quot; data-type=&quot;gif&quot; data-w=&quot;400&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;作者：vitovzhong，腾讯 TEG 应用开发工程师&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;容器的实质是进程，与宿主机上的其他进程是共用一个内核，但与直接在宿主机执行的进程不同，容器进程运行在属于自己的独立的命名空间。命名空间隔离了进程间的资源，使得 a,b 进程可以看到 S 资源，而 c 进程看不到。&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;1.  演进&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;对于统一开发、测试、生产环境的渴望，要远远早于 docker 的出现。我们先来了解一下在 docker 之前出现过哪些解决方案。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;1.1 vagrant&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Vagarant 是笔者最早接触到的一个解决环境配置不统一的技术方案。它使用 Ruby 语言编写，由 HashCorp 公司在 2010 年 1 月发布。Vagrant 的底层是虚拟机，最开始选用的是 virtualbox。一个个已经配置好的虚拟机被称作 box。用户可自由在虚拟机内部的安装依赖库和软件服务，并将 box 发布。通过简单的命令，就能够拉取 box，将环境搭建起来。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;// 拉取一个ubuntu12.04的box&lt;br/&gt;$ vagrant init hashicorp/precise32&lt;br/&gt;&lt;br/&gt;// 运行该虚拟机&lt;br/&gt;$ vagrant up&lt;br/&gt;&lt;br/&gt;// 查看当前本地都有哪些box&lt;br/&gt;$ vagrant box list&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果需要运行多个服务，也可以通过编写 vagrantfile，将相互依赖的服务一起运行，颇有如今 docker-compose 的味道。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;config.vm.define(&lt;span&gt;&quot;web&quot;&lt;/span&gt;) &lt;span&gt;do&lt;/span&gt; |web|web.vm.box = &lt;span&gt;&quot;apache&quot;&lt;/span&gt;&lt;br/&gt;end&lt;br/&gt;config.vm.define(&lt;span&gt;&quot;db&quot;&lt;/span&gt;) &lt;span&gt;do&lt;/span&gt; |db|db.vm.box = &lt;span&gt;&quot;mysql”&lt;br/&gt;end&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.7592592592592593&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmLHibX7PrevicHnsnVshLfria4srekIQ9ibETqzE4Jaic4gmR9hEKzkDiaByyA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;864&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;1.2 LXC (LinuX Container)&lt;/strong&gt;&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;1.0236559139784946&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmLgP86LTkBOIu4yyWEBrHKveaMZbhXM3oGCeNqKbMXcREbWPc1YJ7F4g/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;465&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在 2008 年，Linux 2.6.24 将 cgroups 特性合入了主干。Linux Container 是 Canonical 公司基于 namespace 和 cgroups 等技术，瞄准容器世界而开发的一个项目，目标就是要创造出运行在 Linux 系统中，并且隔离性良好的容器环境。当然它最早也就见于 Ubuntu 操作系统上。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;2013 年，在 PyCon 大会上 Docker 正式面世。当时的 Docker 是在 Ubuntu 12.04 上开发实现的，只是基于 LXC 之上的一个工具，屏蔽掉了 LXC 的使用细节（类似于 vagrant 屏蔽了底层虚拟机），让用户可以一句  docker run  命令行便创建出自己的容器环境。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;2.  技术发展&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;容器技术是操作系统层面的虚拟化技术，可以概括为使用  Linux 内核的 cgroup，namespace 等技术，对进程进行的封装隔离。早在  Docker 之前，Linux 就已经提供了今天的 Docker 所使用的那些基础技术。Docker 一夜之间火爆全球，但技术上的积累并不是瞬间完成的。我们摘取其中几个关键技术节点进行介绍。&lt;span/&gt;&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.19133574007220217&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmLtqibDhUFmUyhx92jvtAefEdXTS9THopiawPj8euxfqc0yjAQicAfK7OxQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;554&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;2.1 Chroot&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;软件主要分为系统软件和应用软件，而容器中运行的程序并非系统软件。容器中的进程实质上是运行在宿主机上，与宿主机上的其他进程共用一个内核。而每个应用软件运行都需要有必要的环境，包括一些 lib 库依赖之类的。所以，为了避免不同应用程序的 lib 库依赖冲突，很自然地我们会想是否可以把他们进行隔离，让他们看到的库是不一样的。基于这个朴素的想法，1979 年， chroot 系统调用首次问世。来举个例子感受一下。在 devcloud 上申请的云主机，现在我的 home 目录下准备好了一个 alpine 系统的 rootfs，如下：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.11079943899018233&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmLiaaiaSWYZq9RPIEZeBiclwB6V8fa7EEg3teMB7dZdZVB9p648IPEdRG3g/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;713&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在该目录下执行：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;chroot rootfs/ /bin/bash&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;然后将/etc/os-release 打印出来，就看到是”Alpine Linux”，说明新运行的 bash 跟 devcloud 主机上的 rootfs 隔离了。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.26810477657935283&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmL3HNXD88cPkpbY0H9QheibCtH7dXvicdtNZbua88PIWcZ5543oIu1n3iaA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;649&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;2.1 Namespace&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;简单来说  namespace 是由 Linux 内核提供的，用于进程间资源隔离的一种技术，使得 a,b 进程可以看到 S 资源；而 c 进程看不到。它是在 2002 年 Linux 2.4.19 开始加入内核的特性，到 2013 年 Linux 3.8 中 user namespace 的引入，对于我们现在所熟知的容器所需的全部 namespace 就都实现了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Linux 提供了多种 namespace，用于对多种不同资源进行隔离。容器的实质是进程，但与直接在宿主机执行的进程不同，容器进程运行在属于自己的独立的命名空间。因此容器可以拥有自己的 root 文件系统、自己的网络配置、自己的进程空间，甚至自己的用户 ID 空间。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;还是来看一个简单的例子，让我们有个感性认识，namespace 到底是啥，在哪里能直观的看到。在 devcloud 云主机上，执行：&lt;em&gt;ls-l /proc/self/ns  看到的就是当前系统所支持的 namespace。&lt;/em&gt;&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.17687747035573123&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmL5nxb8m8CJrgicOR3Y86xe7AUic9ys5zdsV3fMHfiatPYolWEDKibO7CYZA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1012&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;接着我们使用 unshare 命令，运行一个 bash，让它不使用当前的 pid namespace：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;unshare --pid --fork --mount-proc bash&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;然后运行: &lt;em&gt;ps -a&lt;/em&gt; 看看当前 pid namespace 下的进程都有哪些：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.1553398058252427&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmLK75YbibWvuRX3mQO8wE1ttQjcGQmZYAJDQGSRIsnkibXoZ3ziaV5SEaRg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;515&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在新起的 bash 上执行：&lt;em&gt;ls -l /proc/self/ns，&lt;/em&gt; 发现当前 bash 的 pid namespace 与之前是不相同的。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.17676767676767677&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmLKkfs89x4hcPib4DrvAZ7ibODcQib0pdiaJ28ib8ZmXKELvqlmicZHl9PicEhg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;990&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;既然 docker 就是基于内核的 namespace 特性来实现的，那么我们可以简单来认证一下，执行指令：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt; docker run –pid host --rm -it alpine sh&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;运行一个简单的 alpine 容器，让它与主机共用同一个 pid namespace。然后在容器内部执行指令 ps -a 会发现进程数量与 devcloud 机器上的一样；执行指令 &lt;em&gt;ls -l /proc/self/ns/&lt;/em&gt; 同样会看到容器内部的 pid namespace 与 devcloud 机器上的也是一样。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;2.2 cgroups&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;cgroups 是 namespace 的一种，是为了实现虚拟化而采取的资源管理机制，决定哪些分配给容器的资源可被我们管理，分配容器使用资源的多少。容器内的进程是运行在一个隔离的环境里，使用起来，就好像是在一个独立于宿主的系统下操作一样。这种特性使得容器封装的应用比直接在宿主运行更加安全。例如可以设定一个 memory 使用上限，一旦进程组（容器）使用的内存达到限额再申请内存，就会出发 OOM（out of memory），这样就不会因为某个进程消耗的内存过大而影响到其他进程的运行。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;还是来看个例子感受一下。在 devcloud 机器上运行一个 apline 容器，限制只能使用前 2 个 CPU 且只能使用 1.5 个核：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;docker run --rm -it --cpus &lt;span&gt;&quot;1.5&quot;&lt;/span&gt; --cpuset-cpus 0,1 alpine&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;然后再开启一个新的终端，先看看系统上有哪些资源是我们可以控制的：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;nginx&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attribute&quot;&gt;cat&lt;/span&gt; /proc/cgroups&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.39526184538653364&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmLLORZskAEV0YBb7JUVllJv9MmDqPfMWkYr4ibxQ2bXjzzeUz7yFIMerw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;802&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;最左边一侧就是可以设置的资源了。接着我们需要找到这些控制资源分配的信息都放在哪个目录下：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;nginx&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attribute&quot;&gt;mount&lt;/span&gt; | grep cgroup&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.21585903083700442&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmL76IK6RWwfuh84DtIljmzZicLhWdZiaSJJY9Cd6TkwQS6uNibplXJYBF2w/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1362&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;然后我们找到刚刚运行的 alpine 镜像的 cgroups 配置：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;cat /proc/`docker inspect --format=&lt;span&gt;&#x27;{{.State.Pid}}&#x27;&lt;/span&gt; $(docker ps -ql)`/cgroup&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.2237936772046589&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmLkriaiaiaNtiagKlHkE0Y5bCaeMOzAEFzdToichU3usrv6ic17BiahxH8KtcpA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1202&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这样，把二者拼接起来，就可以看到这个容器的资源配置了。我们先来验证 cpu 的用量是否是 1.5 个核：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;cat /sys/fs/cgroup/cpu,cpuacct/docker/c1f68e86241f9babb84a9556dfce84ec01e447bf1b8f918520de06656fa50ab4/cpu.cfs_period_us&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;输出 100000，可以认为是单位，然后再看配额：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;cat /sys/fs/cgroup/cpu,cpuacct/docker/c1f68e86241f9babb84a9556dfce84ec01e447bf1b8f918520de06656fa50ab4/cpu.cfs_quota_us&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;输出 150000，与单位相除正好是设置的 1.5 个核，接着验证是否使用的是前两个核心：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;cat /sys/fs/cgroup/cpuset/docker/c1f68e86241f9babb84a9556dfce84ec01e447bf1b8f918520de06656fa50ab4/cpuset.cpus&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;输出 0-1。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;目前来看，容器的资源配置都是按照我们设定的来分配的，但实际真能在 CPU0-CPU1 上限制使用 1.5 个核吗？我们先看一下当前 CPU 的用量：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;docker stats $(docker ps -ql)&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.15146579804560262&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmLeYIDdBxfJZUb42crauDXpBpnlrgVfSfkkysrCy2YpYoKR0UEgYnFzQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;614&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因为没有在 alpine 中运行程序，所以 CPU 用量为 0，我们现在回到最开始执行 docker 指令的 alpine 终端，执行一个死循环：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;i=0; &lt;span&gt;while&lt;/span&gt; &lt;span&gt;true&lt;/span&gt;; &lt;span&gt;do&lt;/span&gt; i=i+i; &lt;span&gt;done&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;再来观察当前的 CPU 用量：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.1492776886035313&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmL8WgWcW2rV65GSjhFCyGofnwkRgWyG8uu1bbtB01ia0Su3vFbK3Q8ofA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;623&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;接近 1，但为啥不是 1.5？因为刚刚运行的死循环只能跑在一个核上，所以我们再打开一个终端，进入到 alpine 镜像中，同样执行死循环的指令，看到 CPU 用量稳定在了 1.5，说明资源的使用量确实是限制住了的。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.1646153846153846&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmLCibiaAtJ7z4YlUPzqAcOrr6QrNCK4GWqfkEFOb1X2vPFvb4mYiclow0lw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;650&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;现在我们对 docker 容器实现了进程间资源隔离的黑科技有了一定认识。如果单单就隔离性来说，vagrant 也已经做到了。那么为什么是 docker 火爆全球？是因为它允许用户将容器环境打包成为一个镜像进行分发，而且镜像是分层增量构建的，这可以大大降低用户使用的门槛。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;3.  存储&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Image 是 Docker 部署的基本单位，它包含了程序文件，以及这个程序依赖的资源的环境。Docker Image 是以一个 mount 点挂载到容器内部的。容器可以近似理解为镜像的运行时实例，默认情况下也算是在镜像层的基础上增加了一个可写层。所以，一般情况下如果你在容器内做出的修改，均包含在这个可写层中。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;3.1  联合文件系统（UFS）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Union File System 从字面意思上来理解就是“联合文件系统”。它将多个物理位置不同的文件目录联合起来，挂载到某一个目录下，形成一个抽象的文件系统。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.25596816976127323&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmLg5g4w460yZIzLceoCY7wGoDXOPvRV1jsEib4IGhcQFOaXMPNUAedysw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;754&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如上图，从右侧以 UFS 的视角来看，lowerdir 和 upperdir 是两个不同的目录，UFS 将二者合并起来，得到 merged 层展示给调用方。从左侧的 docker 角度来理解，lowerdir 就是镜像，upperdir 就相当于是容器默认的可写层。在运行的容器中修改了文件，可以使用 docker commit 指令保存成为一个新镜像。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;3.2 Docker 镜像的存储管理&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;有了 UFS 的分层概念，我们就很好理解这样的一个简单 Dockerfile：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;FROM alpine&lt;br/&gt;COPY foo /foo&lt;br/&gt;COPY bar /bar&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在构建时的输出所代表的含义了。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.36885245901639346&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmLV5EPhea68A7VBz6EfhiauqU4WX2Nj0tU5Cw6U1YJUgxCtZnUuWaG5SA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;488&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但是使用 docker pull 拉取的镜像文件，在本地机器上存储在哪，又是如何管理的呢？还是来实际操作认证一下。在 devcloud 上确认当前 docker 所使用的存储驱动（默认是 overlay2）：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;docker info --format &lt;span&gt;&#x27;{{.Driver}}&#x27;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;以及镜像下载后的存储路径（默认存储在/var/lib/docker）：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;docker info --format &lt;span&gt;&#x27;{{.DockerRootDir}}&#x27;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当前我的 docker 修改了默认存储路径，配置到/data/docker-data，我们就以它为例进行展示。先查看一下该目录下的结构：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;kotlin&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;tree -L &lt;span class=&quot;code-snippet__number&quot;&gt;1&lt;/span&gt; /&lt;span class=&quot;code-snippet__keyword&quot;&gt;data&lt;/span&gt;/docker-&lt;span class=&quot;code-snippet__keyword&quot;&gt;data&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.5904255319148937&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmLy2FiaXDAoxmQl2B4ica06UAOJ5spBYhhqEqj124hf6NWAdWicDRpRnNjQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;564&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;关注一下其中的 image 和 overlay2 目录。前者就是存放镜像信息的地方，后者则是存放具体每一分层的文件内容。我们先深入看一下 image 目录结构：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;kotlin&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;tree -L &lt;span class=&quot;code-snippet__number&quot;&gt;2&lt;/span&gt; /&lt;span class=&quot;code-snippet__keyword&quot;&gt;data&lt;/span&gt;/docker-&lt;span class=&quot;code-snippet__keyword&quot;&gt;data&lt;/span&gt;/image/&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.39165009940357853&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmLqlavAsZkzmBQGkS30fuoHB2BRq3vIx19VaI8yHy4icpoK5zj4xNibsWg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;503&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;留心这个 imagedb 目录，接下来以我们以最新的 alpine 镜像为例子，看看 docker 是如何管理镜像的。执行指令：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;css&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__selector-tag&quot;&gt;docker&lt;/span&gt; &lt;span class=&quot;code-snippet__selector-tag&quot;&gt;pull&lt;/span&gt; &lt;span class=&quot;code-snippet__selector-tag&quot;&gt;alpine&lt;/span&gt;&lt;span class=&quot;code-snippet__selector-pseudo&quot;&gt;:latest&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.09414990859232175&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmLXkwhzdE6VicPhg8EShdJD2dqibyWta4doI3BDLTUzm9yV3XuBHpyTvJw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1094&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;紧接着查看它的镜像 ID：docker image ls alpine:latest&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.050397877984084884&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmLDUIwZIWdU4Vq4uBGrdhyibs6GN3IBWe13Qq1QVefQXXt4FDk6IXEsiaA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1131&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;记住这个 ID a24bb4013296，现在可以看一下 imagedb 目录下的变化：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;kotlin&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;tree -L &lt;span class=&quot;code-snippet__number&quot;&gt;2&lt;/span&gt; /&lt;span class=&quot;code-snippet__keyword&quot;&gt;data&lt;/span&gt;/docker-&lt;span class=&quot;code-snippet__keyword&quot;&gt;data&lt;/span&gt;/image/overlay2/imagedb/content/ | grep&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;a24bb4013296&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.03232533889468196&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmLRWI8G93MI8pChrUA4cFiaRKDfFOibwYndDz5DQVicXnWVdmWiaziaxic0DCQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;959&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;多了这么一个镜像 ID 的文件，它是一个 json 格式的文件，这里包含了该镜像的参数信息：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;jq .&lt;br/&gt;/data/docker-data/image/overlay2/imagedb/content/sha256/a24bb4013296f61e89ba57005a7b3e52274d8edd3ae2077d04395f806b63d83e&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.5502183406113537&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmLpfUxYIOxWBYQ2oXpCwibRYHF4RWR3a6KaKBuiax4f882D2rT2XwFWcrg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1145&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;接下来我们看看将一个镜像运行起来之后会有什么变化。运行一个 alpine 容器，让它 sleep10 分钟：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;nginx&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attribute&quot;&gt;docker&lt;/span&gt; run --rm -d alpine sleep &lt;span class=&quot;code-snippet__number&quot;&gt;600&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;然后找到它的 overlay 挂载点：&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;javascript&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;docker inspect --format=&lt;span class=&quot;code-snippet__string&quot;&gt;&#x27;{{.GraphDriver.Data}}&#x27;&lt;/span&gt; $(docker ps -ql) | grep MergedDir&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.11620553359683794&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmL69z5DDt5N3pbjJs9dxxAGTTViarztD9U1VibwZ6dFaXiaoiasf66jM9nGQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1265&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;结合上一节讲到的 UFS 文件系统，可以 ls 一下：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;kotlin&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;ls /&lt;span class=&quot;code-snippet__keyword&quot;&gt;data&lt;/span&gt;/docker-&lt;span class=&quot;code-snippet__keyword&quot;&gt;data&lt;/span&gt;/overlay2/&lt;span class=&quot;code-snippet__number&quot;&gt;74e92699164736980&lt;/span&gt;c9e20475388568f482671625a177cb946c4b136e4d94a64/merged&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.02702702702702703&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmLy8TWLUdcCecclEic9U5RqSjAWC5Tn7jarF6s2lA8KoIgOZbQ5PkzMGA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1184&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;看到它就是合并后所呈现在 alpine 容器的文件系统。先进入到容器内：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;javascript&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;docker exec -it $(docker ps -ql) sh&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;紧接着新开一个终端查看容器运行起来后跟镜像相比，有哪些修改：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;javascript&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;docker diff $(docker ps -ql)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.09532062391681109&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmLqE9gzc47ibJ1KkcoRQb52vVvFX9qPkGq8h12Iib1D40Ats4cWQplPG3Q/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;577&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在/root 目录下，增加了 sh 的历史记录文件。然后我们在容器中手动增加一个 hello.txt 文件：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;bash&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__built_in&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;code-snippet__string&quot;&gt;&#x27;Hello Docker&#x27;&lt;/span&gt; &amp;gt; hello.txt&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.09473684210526316&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmL8B6toa9mj3V85LY7t7PsWibRcUAdQibGaT2icQq9fs7fF20e7ZsXxujRw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;855&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这时候来看看容器默认在镜像之上增加的可写层 UpperDir 目录的变化：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;ls /data/docker-data/overlay2/74e92699164736980c9e20475388568f482671625a177cb946c4b136e4d94a64/diff&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.08753315649867374&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmLnH2F8Fe33ZN34Nt2wSYh7AFRBxVhibm45tPic8O1y0kXJqhzBsnNeyjA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;377&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这就认证了 overlay2 驱动是将镜像和可写层的内容 merged 之后，供容器作为文件系统使用。多个运行的容器共用一份基础镜像，而各自有独立的可写层，节省了存储空间。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这个时候，我们也可以回答一下镜像的实际内容是存储在哪里呢：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;cat /data/docker-data/overlay2/74e92699164736980c9e20475388568f482671625a177cb946c4b136e4d94a64/lower&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.049597855227882036&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmLrMibhT5OHlBodQ8zDcJfXLaPzzuCr7tECXJouBM0xnjKicF9XkTpZRHg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;746&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;查看这些分层：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;kotlin&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;ls /&lt;span class=&quot;code-snippet__keyword&quot;&gt;data&lt;/span&gt;/docker-&lt;span class=&quot;code-snippet__keyword&quot;&gt;data&lt;/span&gt;/overlay2/l/ZIIZFSQUQ4CIKRNCMOXXY4VZHY/&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.02951096121416526&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/j3gficicyOvasYrf0CiabxIpGJ7hz90zBmL4icliaOmOibRoMZDc8ZVJ8m6WDkkcRbtYfs9yrxFwaMCaiaSp4sP1q7kzw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1186&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;就是 UFS 中低层的镜像内容。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;总结&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这一次跟大家分享了 Docker 所使用的底层技术，包括 namespace，cgroups 和 overlay2 联合文件系统，着重介绍了隔离环境是如何在宿主机上演进实现的。通过实际手动操作，对这些概念有了真实的感受。希望下一次为大家再介绍 docker 的网络实现机制。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;欢迎关注我们的视频号：腾讯程序员&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;最新视频：程序员的小黄鸭&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section class=&quot;channels_iframe_wrp&quot;&gt;&lt;mpvideosnap class=&quot;js_uneditable custom_select_card channels_iframe&quot; data-pluginname=&quot;videosnap&quot; data-id=&quot;export/UzFfAgtgekIEAQAAAAAAxLsOFFRclwAAAAstQy6ubaLX4KHWvLEZgBPE0KEoSl8EUIf5zNPgMIv_YSbcv_JUf3cKJRK3cceq&quot; data-url=&quot;https://findermp.video.qq.com/251/20350/stodownload?encfilekey=jEXicia3muM3GjTlk1Z3kYCefzc4VU4EASxaTR8JjOuRys8V7z5mKRvspuHsIyqwoyop6whb6lGwFxHQMWJqtZgPLGBiaXuFVbzZb74ibfA8SSTF1m5krShvU36xNSkqlOwUxodcUr5Fw52hB8oJjY3Z4m4mwpWzwqnH4ku6lVLyU9c&amp;amp;bizid=1023&amp;amp;dotrans=0&amp;amp;hy=SH&amp;amp;idx=1&amp;amp;m=7c22cd450d3542f057205489bcba868f&amp;amp;token=x5Y29zUxcibBv0wC1vh8PiaPC5Rba6WZeibgI8cDic93T5pjiagnlsuib6f4NBlFv3ZPbF&quot; data-headimgurl=&quot;http://wx.qlogo.cn/finderhead/I7awtksbibjQe7RZAy84xEecUymmic8cw4v7Y2zbnVDuo/0&quot; data-username=&quot;v2_060000231003b20faec8c6e08e1ac1d4cf06ea31b07760a16cba92d83444bd9a5d9d55ffaede@finder&quot; data-nickname=&quot;腾讯程序员&quot; data-desc=&quot;有人试过“小黄鸭调试法”吗？@腾讯程序员 &amp;#10;鹅厂某程序员答：试过，屡试不爽！有时候一个奇怪的问题卡好久，晚上回家跟我老婆讲一会儿，虽然她听不懂，但就是会突然产生灵感，然后发现问题的所在。&amp;#10;&amp;#10;你的小黄鸭长啥样，有什么功能呢？&amp;#10;#程序员 #bug #小黄鸭调试法&amp;#10;&quot; data-nonceid=&quot;6638268027426320372&quot; data-type=&quot;video&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;腾讯技术官方交流微信群已经开放&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;进群添加微信：journeylife1900&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;（备注：腾讯技术）&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.729264475743349&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/j3gficicyOvatricjRxhpM1x45aB6doaVg7WMhINPwOiaqpskia1kH7hgibO0dicW2HLcW8HRGMzESQwehIcyckLXtwsA/640?wx_fmt=gif&quot; data-type=&quot;gif&quot; data-w=&quot;639&quot;/&gt;&lt;/p&gt;&lt;/section&gt;
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>b06985e025a1f9dda326c8a8a0680f61</guid>
-<title>Webpack 从 v4 升级至 v5 遇到问题记录</title>
-<link>https://toutiao.io/k/yk4wh7p</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;pos-relative js-post-content&quot;&gt;
-                
-                &lt;h2 id=&quot;webpackv4v5&quot;&gt;Webpack 从 v4 迁移至 v5 问题记录&lt;/h2&gt;
-&lt;p&gt;最近，出于工作中对项目优化，有打算将用到的 Webpack 从 &lt;code&gt;4.*&lt;/code&gt; 升级至最新版本（Webpack@5.3.0）；鉴于之前就有 Webpack 相关经验，略看了点文档&lt;a href=&quot;https://webpack.docschina.org/migrate/5/&quot;&gt; Webpack 从 v4 升级到 v5&lt;/a&gt; 后，就基于 &lt;a href=&quot;https://github.com/nicejade/nicelinks-vue-client&quot;&gt;nicelinks-vue-client&lt;/a&gt; 项目开始了升级之旅。因为强行升级，过程也较为曲折，有将遇到的一些问题做下梳理记录，希望对之后欲升级 webpack 的朋友，形成参考。&lt;/p&gt;
-&lt;h3 id=&quot;webpack5vue&quot;&gt;webpack5 构建 vue 编译报错&lt;/h3&gt;
-&lt;h4 id=&quot;typeerrorcannotreadpropertypropertiesofundefined&quot;&gt;TypeError: Cannot read property &#x27;properties&#x27; of undefined&lt;/h4&gt;
-&lt;p&gt;重新安装依赖 &lt;code&gt;webpack-cli&lt;/code&gt;；&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;yarn remove webpack-cli
-yarn add webpack-cli -D
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h4 id=&quot;webpackcliinvalidconfigurationobject&quot;&gt;[webpack-cli] Invalid configuration object.&lt;/h4&gt;
-&lt;blockquote&gt;
-&lt;p&gt;[webpack-cli] &lt;span&gt;Invalid configuration object. Webpack has been initialized using a configuration object that does not match the API schema. configuration.module.rules[5] should be one of these:&lt;br/&gt;
-[&quot;...&quot; | object { compiler?, dependency?, descriptionData?, enforce?, exclude?, generator?, include?, issuer?, loader?, mimetype?, oneOf?, options?, parser?, realResource?, resolve?, resource?, resourceFragment?, resourceQuery?, rules?, sideEffects?, test?, type?, use? }, ...] -&amp;gt; A rule.  Details: * configuration.module.rules[4] has an unknown property &#x27;query&#x27;. &lt;/span&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;h4 id=&quot;compilingrulesetfailed&quot;&gt;Compiling RuleSet failed&lt;/h4&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;span&gt;ERROR&lt;/span&gt;: Compiling RuleSet failed: A Rule must not have a &#x27;options&#x27; property when it has a &#x27;use&#x27; property&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;在 Webpack 最新版本中，&lt;code&gt;rules&lt;/code&gt; 属性中的配置，可以有 &lt;code&gt;test&lt;/code&gt;、&lt;code&gt;exclude&lt;/code&gt;、&lt;code&gt;use&lt;/code&gt;、&lt;code&gt;include&lt;/code&gt; 等字段，但不允许有 &lt;code&gt;options&lt;/code&gt; 了；如果需要，可以写成下面这样：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;language-js&quot;&gt;{
-  test: /\.m?js$/,
-  exclude: /(node_modules|bower_components)/,
-  use: {
-    loader: &#x27;babel-loader&#x27;,
-    options: {
-      presets: [&#x27;@babel/preset-env&#x27;]
-    }
-  }
-},
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h4 id=&quot;typeerrorcannotreadpropertyvueofundefined&quot;&gt;TypeError: Cannot read property &#x27;vue&#x27; of undefined&lt;/h4&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;span&gt;Module build failed (from ./node_modules/vue-loader/index.js):&lt;br/&gt;
-TypeError: Cannot read property &#x27;vue&#x27; of undefined&lt;/span&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;重新安装 vue-loader 插件:&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;yarn remove vue-loader &amp;amp;&amp;amp; yarn add vue-loader -D
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&quot;moduleparsefailedunexpectedcharacter&quot;&gt;Module parse failed: Unexpected character&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;span&gt;ERROR&lt;/span&gt; in ./src/assets/scss/style.scss 1:0&lt;br/&gt;
-Module parse failed: Unexpected character&lt;br/&gt;
-&lt;span&gt;ERROR&lt;/span&gt; in ./src/components/markdown/markdown.css 1:0&lt;br/&gt;
-Module parse failed: Unexpected token&lt;br/&gt;
-&lt;span&gt;ERROR&lt;/span&gt; in ./src/views/manage/Users.vue?vue&amp;amp;type=template&amp;amp;id=85a68250&amp;amp; 2:0&lt;br/&gt;
-Module parse failed: Unexpected token (2:0)&lt;br/&gt;
-File was processed with these loaders:&lt;br/&gt;
-* ./node_modules/vue-loader/lib/index.js&lt;br/&gt;
-You may need an additional loader to handle the result of these loaders.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;是因为在 webpack.config.js 中没有添加对 &lt;code&gt;css&lt;/code&gt;、&lt;code&gt;scss&lt;/code&gt; 等文件进行处理操作，添加对应规则即可：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;language-js&quot;&gt;rules: [
-  {
-    test: /\.s[ac]ss$/i,
-    use: [
-      // Creates `style` nodes from JS strings
-      &#x27;style-loader&#x27;,
-      // Translates CSS into CommonJS
-      &#x27;css-loader&#x27;,
-      // Compiles Sass to CSS
-      &#x27;sass-loader&#x27;,
-    ],
-  },
-  {
-    test: /\.css$/i,
-    use: [
-      // Creates `style` nodes from JS strings
-      &#x27;style-loader&#x27;,
-      // Translates CSS into CommonJS
-      &#x27;css-loader&#x27;
-    ],
-  }
-]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h4 id=&quot;vueloaderwasusedwithoutthecorrespondingpluginmakesuretoincludevueloaderplugininyourwebpackconfig&quot;&gt;vue-loader was used without the corresponding plugin. Make sure to include VueLoaderPlugin in your webpack config.&lt;/h4&gt;
-&lt;p&gt;Vue-loader在 15.* 之后的版本都是 vue-loader 的使用都是需要伴生 VueLoaderPlugin 的。在webpack.config.js中加入&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;language-js&quot;&gt;const VueLoaderPlugin = require(&#x27;vue-loader/lib/plugin&#x27;);
-
-module.exports = {
-    // ......
-    plugins: [
-        // make sure to include the plugin for the magic
-        new VueLoaderPlugin()
-    ],
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h4 id=&quot;errorinreferenceerrorwebpackisnotdefined&quot;&gt;ERROR in   ReferenceError: webpack is not defined&lt;/h4&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;span&gt;ERROR&lt;/span&gt; in Template execution failed: ReferenceError: webpack is not defined&lt;br/&gt;
-&lt;span&gt;ERROR&lt;/span&gt; in   ReferenceError: webpack is not defined&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;在 &lt;code&gt;HtmlWebpackPlugin&lt;/code&gt; 插件的自定义模版中用到了 webpack 变量；而最新版本已经不再支持这个变量，因此去掉下面这些就好：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;&amp;lt;% for (var chunk of webpack.chunks) {
-for (var file of chunk.files) {
-if (file.match(/\.(css)$/)) { %&amp;gt;
-&amp;lt;link rel=&quot;&amp;lt;%= chunk.initial ? &#x27;preload&#x27; : &#x27;prefetch&#x27; %&amp;gt;&quot; href=&quot;&amp;lt;%= htmlWebpackPlugin.files.publicPath + file %&amp;gt;&quot; as=&quot;&amp;lt;%= file.match(/\.css$/)?&#x27;style&#x27;:&#x27;script&#x27; %&amp;gt;&quot;&amp;gt;
-&amp;lt;% }}} %&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&quot;typeerrorcannotreadpropertybabelofundefined&quot;&gt;TypeError: Cannot read property &#x27;babel&#x27; of undefined&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Module build failed (from ./node_modules/babel-loader/lib/index.js):&lt;br/&gt;
-TypeError: Cannot read property &#x27;babel&#x27; of undefined&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;所依赖的 &lt;code&gt;babel-loader&lt;/code&gt; 不是最新版本，更新下即可：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;yarn remove babel-loader &amp;amp;&amp;amp; yarn add babel-loader -D
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&quot;language-js&quot;&gt;new webpack.DllReferencePlugin({
-      context: path.resolve(__dirname, &#x27;..&#x27;),
-      manifest: require(&#x27;./vendor-manifest.json&#x27;)
-}),
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h4 id=&quot;webpackclitypeerrorcompilerpluginisnotafunction&quot;&gt;[webpack-cli] TypeError: compiler.plugin is not a function&lt;/h4&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;span&gt;[webpack-cli] TypeError: compiler.plugin is not a function&lt;br/&gt;
-at AddAssetHtmlPlugin.apply (/Users/x/y/z/node_modules/add-asset-html-webpack-plugin/lib/index.js:10:14)&lt;/span&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;是因为所依赖的 add-asset-html-webpack-plugin 插件不匹配新版本，更新至最新版即可：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;yarn remove add-asset-html-webpack-plugin &amp;amp;&amp;amp; yarn add add-asset-html-webpack-plugin -D
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&quot;webpack5vue&quot;&gt;webpack5 构建 vue 运行报错&lt;/h3&gt;
-&lt;h4 id=&quot;cannotaccesswebpack_default_exportbeforeinitialization&quot;&gt;Cannot access &#x27;&lt;strong&gt;WEBPACK_DEFAULT_EXPORT&lt;/strong&gt;&#x27; before initialization&lt;/h4&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;span&gt; index.js:3 Uncaught ReferenceError: Cannot access &#x27;&lt;strong&gt;WEBPACK_DEFAULT_EXPORT&lt;/strong&gt;&#x27; before initialization at Module.default (index.js:3) &lt;/span&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;是因为在构建配置中，有部分依赖出现重复所致；重新启用 DllReferencePlugin 插件，去除这部分重复的组件即可：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;language-js&quot;&gt;new webpack.DllReferencePlugin({
-  context: path.resolve(__dirname, &#x27;..&#x27;),
-  manifest: require(&#x27;./vendor-manifest.json&#x27;)
-}),
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h4 id=&quot;uncaughttypeerrorcannotreadpropertycallofundefined&quot;&gt;Uncaught TypeError: Cannot read property &#x27;call&#x27; of undefined&lt;/h4&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;span&gt;Uncaught TypeError: Cannot read property &#x27;call&#x27; of undefined&lt;/span&gt;&lt;br/&gt;
-at &lt;strong&gt;webpack_require&lt;/strong&gt; (vendor.dll.js:24767)&lt;br/&gt;
-at eval (index.js?9552:1)&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;根据控制台错误提示，点击进去发现，在 &lt;em&gt;webpack:///./src/index.js&lt;/em&gt; 下存在这样的代码：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;language-js&quot;&gt;import ContentPlaceholder from &#x27;./ContentPlaceholder.vue&#x27;
-export default ContentPlaceholder
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;事实上代码中的写法是：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;language-js&quot;&gt;import ContentPlaceholder from &#x27;vue-content-placeholder&#x27;
-export default {
-component: {
-ContentPlaceholder
-}
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;有尝试移除对该组件的依赖，就不会存在此问题，所构建出的包，也能在本地正常运行起来；略做了查纠，发现 &lt;code&gt;vue-content-placeholder&lt;/code&gt; 该组件库，并未提供源代码，node_modules 中存在的也是构建后的内容，与当前版本 webpack(5) 不匹配所致。后续考虑重新写或者替换一个库来予以解决。&lt;/p&gt;
-&lt;p&gt;当然，webpack 打包，能引起类似报错的种类繁多，上述这种解决方法，不一定适合其他项目，具体问题需，要具体分析。&lt;/p&gt;
-&lt;h4 id=&quot;uncaughtreferenceerrorvendor_libraryisnotdefined&quot;&gt;Uncaught ReferenceError: vendor_library is not defined&lt;/h4&gt;
-&lt;p&gt;是因为自定义的映射文件没有注入，使用 add-asset-html-webpack-plugin 插件导入即可（&lt;code&gt;vendor.dll.js&lt;/code&gt;）：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;language-js&quot;&gt;new AddAssetHtmlPlugin({
-      filepath: path.resolve(__dirname, &#x27;dist/*.dll.js&#x27;),
-}),
-&lt;/code&gt;&lt;/pre&gt;
-
-              &lt;/div&gt;
-            &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>c2ce8935fba3e903eb462aa95d8da3a3</guid>
-<title>有效评估 JS 开发者软实力的十条面试题</title>
-<link>https://toutiao.io/k/htnaa9j</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;post-content&quot;&gt;
-&lt;p&gt;为了顺利的再进职场，最近一个月来都在做有目的训练，训练自己的实操能力（因为这是我的一个弱项——前端项目经验薄弱，加上在特长上，编码和分析更倾向后者），而不是任意的自由的学习。然而，在具体的学习主题上，除了参考和对比常规面试题，找出一些基础主题外，对什么是“最有价值”的学习主题，我没有指引。&lt;/p&gt;
-&lt;p&gt;其实我一真很相信自己的直觉，但是难免有盲区，和价值冲突，我不清楚明天面对面的考官他希望我具备什么能力。我的担心不是没有原因的，因为软件开发技术岗位向来都是既难招亦难找，企业不知道怎么考核应聘者实力，求职者不知道学什么最重要。&lt;/p&gt;
-&lt;p&gt;这里边有一个推理，在面试和通过面试的情景里，假设把企业，和求职者分两类：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;企业 分为懂得评估技术岗位（C1），和缺乏评估技术的企业（C2）&lt;/li&gt;
-&lt;li&gt;求职者分为有实力但不懂求职技巧的（P1），实力很弱但是刷题是高手（P2）&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;那么会出现四种面试情况：C1P1 &lt;strong&gt;C1P2&lt;/strong&gt; C2P1 &lt;strong&gt;C2P2&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;如果假设成立，那么通过面试的只有 C1P1 和C2P2，但是真正算成功面试只有C1P1，因为只有这种结合才是良性的。&lt;span id=&quot;more-1371&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;要创造一次良性的结合，关键点其实也很明显了，就是 企业掌握了评估技术岗位候选者能力的技术，包括考核的目标（T），和考核的方法；同时，求职者通过掌握同样的学习目标（T）和学习方法，更有效提高的水平。&lt;a href=&quot;http://nakeman.cn/wp-content/uploads/2020/11/s28051072.jpg&quot;&gt;&lt;img class=&quot;alignright wp-image-1377&quot; src=&quot;http://nakeman.cn/wp-content/uploads/2020/11/s28051072.jpg&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;这里 关于T的认识 是重中之重，它是对招聘者和求职者都极具意义的一点。最近在研习 函数式编程过程中，从Eric Elliott（《Programming JavaScript Applications》一书的作者）的这篇文章《&lt;a href=&quot;https://medium.com/javascript-scene/10-interview-questions-every-javascript-developer-should-know-6fa6bdf5ad95&quot;&gt;10 Interview Questions Every JavaScript Developer Should Know&lt;/a&gt;》中，找到了一些相关有价值的观点，尝试转译出来。&lt;/p&gt;
-
-&lt;h1&gt;&lt;span class=&quot;ez-toc-section&quot; id=&quot;10_Interview_Questions_Every_JavaScript_Developer_Should_Know&quot;&gt;10 Interview Questions Every JavaScript Developer Should Know&lt;/span&gt;&lt;/h1&gt;
-&lt;p&gt;我写过一篇文章叫《 &lt;a class=&quot;cl kb&quot; href=&quot;https://medium.com/javascript-scene/why-hiring-is-so-hard-in-tech-c462c3230017&quot; rel=&quot;noopener&quot;&gt;Why Hiring is So Hard in Tech&lt;/a&gt;》， 其中给出评估 技术岗位候选者 的一些 常规原则，以什么是应该和不应该的形式罗列出来，其中有一条：&lt;/p&gt;
-&lt;blockquote&gt;&lt;p&gt;&lt;em&gt;The best way to evaluate a candidate is a pair programming exercise.&lt;/em&gt;&lt;br/&gt;
-&lt;em&gt;评估候选者最有效的方法是「和候选者结伴的完成编程练习」。&lt;/em&gt;&lt;/p&gt;&lt;/blockquote&gt;
-&lt;p&gt;意思是说，与候选人坐一起，让候选人敲键盘，你在旁边多看多听，少说。例如演示例如从Twitter API中提取tweet数据项，并在时间轴上显示出来。&lt;/p&gt;
-&lt;p&gt;虽然结伴练习很有价值，但是不存在一个单独的练习能决断一切，面对面交谈（的面试）也是一个非常有用的工具&lt;sup&gt;[em]&lt;/sup&gt;。不过， &lt;strong&gt;&lt;span&gt;不要浪费时间询问语法或语言怪癖&lt;/span&gt;&lt;/strong&gt;。你需要看到大局，询问有关架构设计（architecture）和编程范型（paradigms） 等对整个项目有重大影响的经验知识。&lt;/p&gt;
-&lt;p&gt;&lt;sub&gt;EM：临场小练习能测试到能力（种类）是有限的，有很多深层经验或知识只能通过 别的手段探测 到，例如交谈，主题试题；而且没有很具体的答案（检测标准），例如怎么检测候选人 功能编程 的能力？&lt;/sub&gt;&lt;/p&gt;
-&lt;p&gt;语法细节和API功能特性的知识 是很容易搜索的，但对于像&lt;strong&gt;&lt;span&gt; 软件工程的智慧或 JavaScript开发人员 从经验中获得的 范型特性和习惯用法&lt;/span&gt;&lt;/strong&gt; 这些经验知识，是很难短时间通过搜索学到的。&lt;/p&gt;
-&lt;p&gt;&lt;sub&gt;EM：这里提到了重点，作为招聘方，测试 候选人 的那些 不能在半小时查资料能习得的技能，求职者同样要明白这个道理。&lt;/sub&gt;&lt;br/&gt;
-&lt;sub&gt;EM：当然，作者提到的工程智慧，和编程经验具体指什么，有待研发&lt;/sub&gt;&lt;/p&gt;
-&lt;p&gt;鉴于以上结论，对于Web开发和Javascript方面，我认为以下十个问题用在面试中，能比较有效评估候选人开发实力：&lt;/p&gt;
-&lt;p&gt;（&lt;strong&gt;&lt;span&gt;EM：我不完成同意作者的这十条，并且翻译上有所增删，观点和内容都有，根据个人的看法，实则是我自己将这些问题回答了一遍&lt;/span&gt;&lt;/strong&gt;）&lt;/p&gt;
-&lt;h2&gt;&lt;span class=&quot;ez-toc-section&quot; id=&quot;_JavaScript&quot;&gt;第一，你知道哪两种 编程范型对 JavaScript开发者来很有用？&lt;/span&gt;&lt;/h2&gt;
-&lt;p&gt;JavaScript 是一种多范型（ multi-paradigm ）编程语言，支持过程式编程，面向对象编程，和函数式编程，三种（实质两种）编程范型。JavaScript通过 原型继承（ prototypal inheritance） 支持面向对象编程，和 函数作值（所谓一等公民）支持函数式编程。&lt;/p&gt;
-&lt;h2&gt;&lt;span class=&quot;ez-toc-section&quot; id=&quot;i&quot;&gt;第二，什么是函数式编程？&lt;/span&gt;&lt;/h2&gt;
-&lt;p&gt;函数式编程是使用 纯函数（或数学函数）构造 程序的一种编程范型，纯函数的优点是没有副作用（避免使用共享数据 shared state），和不使用可变数据（mutable data）&lt;sup&gt;[em]&lt;/sup&gt;；&lt;/p&gt;
-&lt;p&gt;Lisp（1958年）是最早支持函数式编程的语言之一，并且受到了lambda演算的极大启发。Lisp和很多Lisp家族语言至今仍在流行。&lt;/p&gt;
-&lt;p&gt;JavaScript 支持函数式编程，并且越来越流行，例如JavaScript社区流行的闭包，高阶函数，函数作参数传递都是 重要表现。&lt;/p&gt;
-&lt;p&gt;&lt;sub&gt;EM：纯函数的优点有待实证，纯函数（功能）和类对象的区别有待分析&lt;/sub&gt;&lt;/p&gt;
-&lt;h2&gt;&lt;span class=&quot;ez-toc-section&quot; id=&quot;i-2&quot;&gt;第三，传统类继承和原型继承的区别在哪里？&lt;/span&gt;&lt;/h2&gt;
-&lt;p&gt;传统类继承是说，类（class）是「一个功能」的模板或设计样板（blueprint），它可以用来派生子类（子类继承父类所有功能，并可以有所扩展），和创建多个对象实例（使用new操作）； 通过类继承的设计可实现程序的一种精致的分类层次结构（hierarchical class taxonomies）。&lt;/p&gt;
-&lt;p&gt;但是，由于子类和父类继承关系是一种白箱复用（父类不是完全封装，对子类可见），最终的类层次结构会高度耦合，这是类继承最大的问题。&lt;/p&gt;
-&lt;p&gt;与类继承不同，原型继承没有类概念（类是一个抽象的功能的“模子”），一切都是对象实例。「功能代码继承复用」通过 直接连接两个对象实例 实现，例如通过一个特殊的对象工厂函数（ factory functions）生成新复用的对象，或复制（Object.create()）。一个「目标新对象实例」&lt;sup&gt;[em]&lt;/sup&gt;可以将需要的功能小对象直接连入其中来实现复用功能，这是一种非常灵活的代码复用方法。&lt;/p&gt;
-&lt;p&gt;&lt;sub&gt;EM：无论何种代码复用技术（类继承，或是原型组合，或是其它），目标任务都是生成新的对象实例，实现软件功能的开发。&lt;/sub&gt;&lt;/p&gt;
-&lt;p&gt;在 JavaScript中，原型继承有以下几种应用表现：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;原型链（concatenative inheritance），&lt;/li&gt;
-&lt;li&gt;原型委托（prototype delegation），&lt;/li&gt;
-&lt;li&gt;功能继承／闭包（functional inheritance），&lt;/li&gt;
-&lt;li&gt;对象构成（object composition）；&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2&gt;&lt;span class=&quot;ez-toc-section&quot; id=&quot;FPOO&quot;&gt;第四，函数式编程（FP）和面向对象编程（OO）各自优点和不足是什么？&lt;/span&gt;&lt;/h2&gt;
-&lt;p&gt;FP和OOP作为完成编程这个「任务」的「工具」，有各自的适用和优点与不足。&lt;/p&gt;
-&lt;h3&gt;&lt;span class=&quot;ez-toc-section&quot; id=&quot;OOP&quot;&gt;OOP的优点&lt;/span&gt;&lt;/h3&gt;
-&lt;p&gt;直观，对象由数据和方法组成的概念很容易理解，也容易解释方法调用的意义。OOP倾向于使用命令式风格，而不是声明式风格，命令式风格读起来像是一组供计算机遵循的直接指令，很形象。&lt;/p&gt;
-&lt;h3&gt;&lt;span class=&quot;ez-toc-section&quot; id=&quot;OOP-2&quot;&gt;OOP的缺点&lt;/span&gt;&lt;/h3&gt;
-&lt;p&gt;OOP通常依赖于共享状态。对象和行为通常被绑定在同一个实体上，可以被任意数量的顺序不确定的函数随机访问，这可能会导致不希望的行为，比如竞态事件（race conditions）。&lt;/p&gt;
-&lt;h3&gt;&lt;span class=&quot;ez-toc-section&quot; id=&quot;FP&quot;&gt;FP的优点&lt;/span&gt;&lt;/h3&gt;
-&lt;p&gt;使用 纯函数作为功能单元，程序员可以避免任何共享状态或副作用&lt;sup&gt;[em]&lt;/sup&gt;，从而消除多个功能竞争相同资源所导致的bug。与OOP相比，FP的大功能的复合方式，例如所谓的无参数风格（point-free ），大大简化复杂功能的组合方式，和改善代码可重用方式。&lt;/p&gt;
-&lt;p&gt;&lt;sub&gt;EM：使用和不使用共享状态都是技术，重点是那个「功能的实现」的任务；就是为什么一定要使用中间状态？「纯函数」和「类对象」是两种编程范式最大「工具」区别。&lt;/sub&gt;&lt;/p&gt;
-&lt;p&gt;另外，FP 倾向于 声明式和符号指代（denotational）的功能命名风格&lt;sup&gt;[em]&lt;/sup&gt;，FP不倾向通过详细说明功能操作的步骤，而是关注「功能要做什么」。这为重构和性能优化留下了巨大的空间，它甚至允许你用更高效的算法替换整个旧算法，而代码更改很少(例如，memoize，或者用惰性求值来代替eager 求值）。&lt;/p&gt;
-&lt;p&gt;&lt;sub&gt;EM：就是更倾向使用名词， 而不是动词表达「功能」&lt;/sub&gt;&lt;br/&gt;
-&lt;sub&gt;EM：两种工具思想区别在于，FP是关注功能的形式和逻辑关系，OOP关于功能实现的数据的处理&lt;/sub&gt;&lt;/p&gt;
-&lt;p&gt;使用纯函数实现的计算功能也很容易移植到多处理器，或分布式计算集群环境上，而不用担心线程资源冲突、竞态事件（race conditions）等。&lt;/p&gt;
-&lt;h3&gt;&lt;span class=&quot;ez-toc-section&quot; id=&quot;FP-2&quot;&gt;FP的缺点&lt;/span&gt;&lt;/h3&gt;
-&lt;p&gt;过度使用FP风格的代码（例如大量使用无参数式风格分割和组合 &lt;strong&gt;&lt;span&gt;大功能&lt;/span&gt;&lt;/strong&gt; ）可能会降低代码可读性，因为生成的代码通常很抽象，它简洁且不够具体。&lt;/p&gt;
-&lt;p&gt;与函数式编程相比，习惯OOP和命令式编程的人会更多，更深厚，因此，即使是函数式编程中的常见习惯用法也会让新团队成员感到困惑。&lt;/p&gt;
-&lt;p&gt;另外，FP的学习曲线要比OOP陡峭得多，因为OOP的广泛流行使得OOP的语言和学习材料变得更加对话化，而FP的语言则更加学术化和形式化。&lt;/p&gt;
-&lt;p&gt;总的来说，OOP使用共享状态「&lt;strong&gt;&lt;span&gt;实现复合功&lt;/span&gt;&lt;/strong&gt;」能是有害的，虽然它很直观；高度使用OOP的codebase比较“顽固”和脆弱，难改又错误百出；FP除了没有OOP的这些不足外，程序比较易读易维护，只是适应FP风格需要一些时间。&lt;/p&gt;
-&lt;h2&gt;&lt;span class=&quot;ez-toc-section&quot; id=&quot;i-3&quot;&gt;第五，在什么场景下最适合使用 类继承？&lt;/span&gt;&lt;/h2&gt;
-&lt;p&gt;几乎没有适用的场景， 类继承能免则免，除非只有一层的继承；&lt;/p&gt;
-&lt;p&gt;第六，在什么场景下最适合使用 原型继承？&lt;/p&gt;
-&lt;p&gt;在JS中，当需要复用代码时都几乎可以使用原型继承，当然包括不适用函数式复用（FP也提供了复用机制）的时候。JS中有三类的原型继承：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;第一，委托（Delegation），例如使用原型链；&lt;/li&gt;
-&lt;li&gt;第二，接合（Concatenative），例如mixins, `Object.assign()`；&lt;/li&gt;
-&lt;li&gt;第三，创建新（Functional），例如闭包；&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;每一类 原型继承都有各自适用场景，不过，它们都归结为 构成（composition）复用，是一种 has-a or uses-a or can-do 的关系，与类继承的 is-a关系相反。&lt;/p&gt;
-&lt;h2&gt;&lt;span class=&quot;ez-toc-section&quot; id=&quot;i-4&quot;&gt;第七，“对象构成优于类继承”是什么意思？&lt;/span&gt;&lt;/h2&gt;
-&lt;h2&gt;&lt;span class=&quot;ez-toc-section&quot; id=&quot;i-5&quot;&gt;第八，什么是双向绑定和单向数据流，它们有什么不同？&lt;/span&gt;&lt;/h2&gt;
-&lt;h2&gt;&lt;span class=&quot;ez-toc-section&quot; id=&quot;i-6&quot;&gt;第九，单体架构和微构架的优点和不足是什么？&lt;/span&gt;&lt;/h2&gt;
-&lt;h2&gt;&lt;span class=&quot;ez-toc-section&quot; id=&quot;Web&quot;&gt;第十，什么是异步编程，为什么说它对Web开发很重要？&lt;/span&gt;&lt;/h2&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>8d2102fc41968adeef669a8953862218</guid>
-<title>一文说透 “依赖注入”</title>
-<link>https://toutiao.io/k/nch71kt</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div _ngcontent-awesomeangularapp-c136=&quot;&quot;&gt;&lt;h1 id=&quot;一文说透依赖注入&quot;&gt;一文说透“依赖注入”&lt;a href=&quot;http://localhost:4000/articles/01fe3063_%E4%B8%80%E6%96%87%E8%AF%B4%E9%80%8F_%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5_#%E4%B8%80%E6%96%87%E8%AF%B4%E9%80%8F%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5&quot; title=&quot;点击链接到此标题&quot; class=&quot;header-link&quot; aria-hidden=&quot;true&quot;&gt;&lt;i class=&quot;material-icons&quot;&gt;link&lt;/i&gt;&lt;/a&gt;&lt;/h1&gt;
-
-&lt;p&gt;每个软件，都是由很多“组件”构成的。这里的“组件”是指广义的组件 —— 组成部件，它可能是函数，可能是类，可能是包，也可能是微服务。软件的架构，就是组件以及组件之间的关系。而这些组件之间的关系，就是（广义的）依赖关系。&lt;/p&gt;
-
-&lt;p&gt;软件的维护工作，本质上都是由“变化”引起的，只要软件还活着，我们就无法对抗变化，只能顺应它。而组件之间的依赖关系决定了变化的传导范围。&lt;/p&gt;
-&lt;p&gt;一般来说，当被依赖的组件变化时，其依赖者也会随之变化。软件开发最怕的就是牵一发而动全身。所幸，并不是每次变化都必然会传导给它的依赖者们。&lt;/p&gt;
-&lt;p&gt;对于具体实现细节的修改，只要没有改变其外部契约（可简单理解为接口），其依赖者就不需要修改。对于更大规模的修改，比如更换计费策略，我们是不是就无法控制其传播了？也不见得。只要我们的设计能让两者的接口保持一致，就可以把变化控制在尽可能小的范围内。&lt;/p&gt;
-&lt;h2 id=&quot;整洁架构与-ioc&quot;&gt;整洁架构与 IoC&lt;a href=&quot;http://localhost:4000/articles/01fe3063_%E4%B8%80%E6%96%87%E8%AF%B4%E9%80%8F_%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5_#%E6%95%B4%E6%B4%81%E6%9E%B6%E6%9E%84%E4%B8%8E-ioc&quot; title=&quot;点击链接到此标题&quot; class=&quot;header-link&quot; aria-hidden=&quot;true&quot;&gt;&lt;i class=&quot;material-icons&quot;&gt;link&lt;/i&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;对于减少变更传播的方式，Bob 大叔在《架构整洁之道》中做过系统性的阐述，如下图：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;/assets/content/articles/%E6%8A%80%E6%9C%AF%E5%8E%9F%E5%88%9B/.%E4%B8%80%E6%96%87%E8%AF%B4%E9%80%8F%E2%80%9C%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%E2%80%9D_images/%E6%95%B4%E6%B4%81%E6%9E%B6%E6%9E%84.png&quot; alt=&quot;整洁架构&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;在这张图中，我们要注意箭头的指向，箭头的指向就是依赖的方向。我们看到，所有的依赖都指向了用例（领域服务）并最终指向了业务实体。这样的架构很理想，因为业务实体的变化通常都比较少，即使变，通常也是必要的、无法回避的变化。反之，支持新的用户界面、换数据库、换外部系统等方面的变化都只会在很小的范围内传播。回顾一下你维护过的系统的各种变更，都属于哪一类呢？&lt;/p&gt;
-&lt;p&gt;这张图看起来很美，却和我们传统的编程方式截然不同。以展示器为例，在传统的编程方式下，我们需要在展示器中创建用户界面类的实例，并且设置用户界面的值以及接收来自用户界面的事件。这时候，我们就不得不让展示器“引用”用户界面的类，这样就产生了一个从展示器指向用户界面的依赖，破坏了架构的整洁性。&lt;/p&gt;
-&lt;p&gt;所以，我们要找到这样一种方式，让展示器能“控制”界面类。更泛化的说法是，让位于架构内层的组件，“控制”位于架构外层的组件，“控制”的方向与“依赖”的方向相反，所以，我们称其为“控制反转”（IoC）。&lt;/p&gt;
-&lt;h2 id=&quot;为什么要用依赖注入来管理依赖？&quot;&gt;为什么要用依赖注入来管理依赖？&lt;a href=&quot;http://localhost:4000/articles/01fe3063_%E4%B8%80%E6%96%87%E8%AF%B4%E9%80%8F_%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5_#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E7%94%A8%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%E6%9D%A5%E7%AE%A1%E7%90%86%E4%BE%9D%E8%B5%96%EF%BC%9F&quot; title=&quot;点击链接到此标题&quot; class=&quot;header-link&quot; aria-hidden=&quot;true&quot;&gt;&lt;i class=&quot;material-icons&quot;&gt;link&lt;/i&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;要想解除展示器对界面类的这种错误依赖，我们可以从界面类抽象出一个接口，展示器定义这样一个接口，然后让界面类实现它，这样展示器就不需要再知道界面类的存在了。唯一的问题是：接口本身是抽象的，所以它不能被直接实例化。如果让展示器负责实例化界面类，那么展示器又必须引用界面类了。好吧，一切似乎又回到了原点……不过，我们有另外的办法打破这种僵局。&lt;/p&gt;
-&lt;p&gt;引入第三方，通常是打破僵局的最佳方式之一。我们需要这样一个第三方：&lt;/p&gt;
+<guid>86f48cb8792d5df8a06fe1dad75dbdbc</guid>
+<title>分布式一致性协议：ZAB</title>
+<link>https://toutiao.io/k/r6571za</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;post-content&quot;&gt;&lt;h3 id=&quot;ZAB-背景&quot;&gt;&lt;a href=&quot;#ZAB-背景&quot; class=&quot;headerlink&quot; title=&quot;ZAB 背景&quot;/&gt;ZAB 背景&lt;/h3&gt;&lt;p&gt;学习ZAB，非常有必要聊聊它诞生的背景。因为在paxos的光芒下，还有必要折腾这样类似的算法吗？这个问题是我们初步了解ZAB关键。&lt;/p&gt;
+&lt;p&gt;看到这里，我断定大家都使用过zookeeper，并且知道zookeeper的核心就是ZAB协议。如果没有的话，需要先学习下zookeeper。毕竟基础不牢，地动山摇。&lt;/p&gt;
+&lt;p&gt;这里多提一句，ZAB的作者说ZAB不是paxos，但是后面我们又把ZAB归纳为paxos。这里我认为啊，这两个说法都对，只是他们描述的时间不一致。在ZAB诞生的时候，它解决了paxos不能保证顺序执行的问题，从某些角度来说ZAB是要paxos优秀的，说它不是paxos也没问题。但是后来随来越来越多分布式算法诞生，例如raft，因为他们都类似paxos执行逻辑，所以将这类算法归纳为paxos的变种。&lt;/p&gt;
+&lt;h4 id=&quot;为何不使用paxos来实现zookeeper&quot;&gt;&lt;a href=&quot;#为何不使用paxos来实现zookeeper&quot; class=&quot;headerlink&quot; title=&quot;为何不使用paxos来实现zookeeper&quot;/&gt;为何不使用paxos来实现zookeeper&lt;/h4&gt;&lt;p&gt;回过头来，ZAB诞生的原因，我们先考虑zookeeper能不能直接使用paxos作为分布式一致性算法？答案肯定是否定的，我们举个例子，假设有个客户端需要分别创建目录：/foo, /foo/ofcoder。&lt;/p&gt;
+&lt;p&gt;在前文我们学习过了paxos，知道paxos能集群就某个值达成共识，但是却不关心达成共识的值是什么。如果zookeeper直接使用paxos，就会出现在没有创建/foo的时候，创建/foo/ofcoder。显然这就报错了，因为ofcoder的上级目录不存在。为了描述这个问题，我们描述下过程。&lt;/p&gt;
+&lt;p&gt;假如有同一个业务请求，因为入参不一样，导致最后要达成共识的值也不一样。例如proposerA，收到请求先后创建/foo, /foo/ofcoder两个节点。proposerB收到请求先后创建/method，/method/far节点。&lt;br/&gt;&lt;img src=&quot;/images/theory/distributed/zab_1.png&quot; alt=&quot;paxos不适合实现zookeeper&quot;/&gt;&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;它既知道如何将界面类实例化，又知道谁要控制这个实例所实现的接口。&lt;/li&gt;
-&lt;li&gt;它必须是个通用逻辑，也就是说它不应该关心界面类如何实例化的细节，它唯一要了解的信息是界面接口和界面类之间的“实现”关系，以及展示器与界面接口之间的“需要”关系。&lt;/li&gt;
-&lt;li&gt;它应该超然于整洁架构之外，作为整个架构的大管家，揽下所有“脏活儿”，让架构中的各个组件保持整洁。&lt;/li&gt;
-&lt;li&gt;展示器通常不用主动找这位大管家，因为大管家能看懂展示器的每一个眼神，展示器只要过“衣来伸手，饭来张口”的生活就可以了。当然，必要时展示器也可以主动跟大管家要这要那，不过，宅是一种幸福，费口舌的事情当然是越少越好。&lt;/li&gt;
+&lt;li&gt;proposerB先发起paxos的prepare阶段，并获得大多数选票，开始accept阶段。&lt;/li&gt;
+&lt;li&gt;在proposerB的accept阶段，只有acceptA接收了提案[1, /method]，其他节点都通过了proposerA的prepare请求。&lt;/li&gt;
+&lt;li&gt;根据规定，proposeA的accept的提案应该为[2, /method]，并通过该提案。&lt;/li&gt;
+&lt;li&gt;此时proposerB重新开始paxos的两个阶段，得到达成共识的提案是[2, /method]。&lt;/li&gt;
+&lt;li&gt;proposerA开始第二个值的paxos过程，即/foo/ofcoder。&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;这种“衣来伸手，饭来张口”的模式就叫做依赖注入，简称 DI。它是实现 IoC 最常见的方式。这个大管家，有个人尽皆知的名片，上面写着几个大字：&lt;code&gt;Injector&lt;/code&gt;（注入器），当然也有人写得啰嗦一点：&lt;code&gt;DI Container&lt;/code&gt;（注入容器）。&lt;/p&gt;
-&lt;h2 id=&quot;依赖注入实现原理简介&quot;&gt;依赖注入实现原理简介&lt;a href=&quot;http://localhost:4000/articles/01fe3063_%E4%B8%80%E6%96%87%E8%AF%B4%E9%80%8F_%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5_#%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E7%AE%80%E4%BB%8B&quot; title=&quot;点击链接到此标题&quot; class=&quot;header-link&quot; aria-hidden=&quot;true&quot;&gt;&lt;i class=&quot;material-icons&quot;&gt;link&lt;/i&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;依赖注入的工作逻辑是这样的：&lt;/p&gt;
+&lt;p&gt;到此为止，可以看到当proposerA开始创建/foo/ofcoder时，则会发现/foo没有创建而导致失败。因为在第一轮paxos在集群中达成共识的值/method。&lt;/p&gt;
+&lt;p&gt;通过上面的过程，我们更加论证了，paxos只适合在集群中使某个值达成共识，而不关心达成共识的值是什么。而在zookeeper中，这显然是不能满足业务需求的。&lt;/p&gt;
+&lt;h3 id=&quot;ZAB术语科普&quot;&gt;&lt;a href=&quot;#ZAB术语科普&quot; class=&quot;headerlink&quot; title=&quot;ZAB术语科普&quot;/&gt;ZAB术语科普&lt;/h3&gt;&lt;p&gt;ZAB并不像paxos，是一种通用的分布式一致性算法，ZAB是一种专门为zookeeper设计的崩溃可恢复的原子广播协议。相比于paxos，&lt;strong&gt;ZAB主要解决了事务操作的顺序性&lt;/strong&gt;，在ZAB协议中，如果一个事务操作被处理了，那么所有其依赖的事务操作都应该被提前处理了。&lt;/p&gt;
+&lt;p&gt;在学习ZAB之前，我们需要先整理几个术语、因为在ZAB的论文中，术语相对比较多，并且概念冗余。例如：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;提案（proposal）：进行协商的基本单元，在一些文档中，也有称之为操作（operation）、指令（command）。&lt;/li&gt;
+&lt;li&gt;事务（transaction）：也是指提案，常出现在代码中，并非指具有ACID特性的一组操作。&lt;/li&gt;
+&lt;li&gt;已提出的Proposal：指广播的第一阶段所提出的Proposal，未提交到状态机的Proposal。&lt;/li&gt;
+&lt;li&gt;已提交的Proposal：指广播的第二阶段已提交到状态机的Proposal。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;为了帮助我们理解，ZAB定义了三个角色、四种节点状态、四种ZAB运行状态、以及两种运行模式。大家别看到我罗列了这么多，就打退堂鼓。从多个角度来归纳，只是为了更好的给大家呈现ZAB内部原理。&lt;/p&gt;
+&lt;h4 id=&quot;三个角色&quot;&gt;&lt;a href=&quot;#三个角色&quot; class=&quot;headerlink&quot; title=&quot;三个角色&quot;/&gt;三个角色&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;观察者（observer）&lt;br/&gt;跟paxos中学习者类似，增加observer，可以在不影响集群写性能的情况下，提升读性能。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&quot;四种节点状态&quot;&gt;&lt;a href=&quot;#四种节点状态&quot; class=&quot;headerlink&quot; title=&quot;四种节点状态&quot;/&gt;四种节点状态&lt;/h4&gt;&lt;p&gt;这是一个容易忽视的点，ZAB虽然规定了三种角色，但是他是通过定义四种状态来描述当前节点所处的角色的。包含以下状态：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;LOOKING，竞选状态，当前集群不存在Leader。该状态下会发起领导者选举。&lt;/li&gt;
+&lt;li&gt;FOLLOWING，随从状态，同步Leader状态，参与投票。&lt;/li&gt;
+&lt;li&gt;OBSERVING，观察状态，同步Leader状态，不参与投票。&lt;/li&gt;
+&lt;li&gt;LEADING，领导者状态，对应Leader角色。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这里与角色对应多出来一个状态，是因为ZAB是支持自动Leader选举的，LOOKING是属于选举中的一个过渡状态。&lt;/p&gt;
+&lt;h4 id=&quot;四种ZAB运行状态&quot;&gt;&lt;a href=&quot;#四种ZAB运行状态&quot; class=&quot;headerlink&quot; title=&quot;四种ZAB运行状态&quot;/&gt;四种ZAB运行状态&lt;/h4&gt;&lt;p&gt;这里是指ZAB集群的运行状态，因为ZAB除了正常向外部提供服务，还得有故障恢复功能。从整个集群的状态，我们可以了解ZAB的运行过程。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;ELECTION，选举状态，表明节点正在进行Leader选举&lt;/li&gt;
+&lt;li&gt;DISCOVERY，成员发现状态，在选举出新Leader后集群所处的状态，用于节点协商沟通Leader的合法性&lt;/li&gt;
+&lt;li&gt;SYNCHRONIZATION，数据同步状态，在确认新Leader后，以Leader的数据为基础，修复各个节点的数据一致性&lt;/li&gt;
+&lt;li&gt;BROADCARST，广播状态，集群处于正常运行状态，可向外提供服务&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&quot;两种运行模式&quot;&gt;&lt;a href=&quot;#两种运行模式&quot; class=&quot;headerlink&quot; title=&quot;两种运行模式&quot;/&gt;两种运行模式&lt;/h4&gt;&lt;p&gt;从上述ZAB运行状态中，可以归纳为两种运行模式，即消息广播模式、崩溃恢复模式。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;崩溃恢复模式：&lt;br/&gt;在整个服务框架启动过程中、或者Leader服务器出现网络中断、崩溃退出等异常情况时，ZAB协议就会进入崩溃恢复模式并选举新的Leader服务器。当新的Leader服务器在集群中有过半的Follower与其完成成数据同步后，ZAB就会退出崩溃恢复模式。&lt;/li&gt;
+&lt;li&gt;消息广播模式：&lt;br/&gt;当集群中已有过半的Follower与Leader完成数据同步，那么整个集群就会进入消息广播模式。此时整个集群才可以对外提供服务，即数据的查询、修改。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;值得注意是，当一台新的ZAB节点加入集群时，该节点会先进入崩溃恢复模式，找到Leader，并与其进行数据同步，然后一起参与到消息广播流程中。所以崩溃恢复模式还分为两个阶段：发现、同步。具体后文会详细讲解。&lt;/p&gt;
+&lt;p&gt;后文讲解思路也是从这两种模式入手，在崩溃恢复模式中，再细分为三个阶段，也就是四种运行状态的前三种（ELECTION、DISCOVERY、SYNCHRONIZATION）。&lt;/p&gt;
+&lt;h4 id=&quot;zxid&quot;&gt;&lt;a href=&quot;#zxid&quot; class=&quot;headerlink&quot; title=&quot;zxid&quot;/&gt;zxid&lt;/h4&gt;&lt;p&gt;这里把zxid单独拎出来描述，zxid在ZAB占据很重要的位置。Leader在收到事务请求，将其封装成Proposal时，会为每个Proposal生成对应的zxid。&lt;/p&gt;
+&lt;p&gt;在消息广播模式中zxid标志者事务请求的先后顺序，在崩溃恢复模式中zxid是Leader的选举的判断依据，以及在Leader选举后，数据同步中zxid能方便的帮助ZAB抛弃上一个Leader没完成的Proposal。所以在学习下面的内容时，要及时参考zxid的设计逻辑。&lt;/p&gt;
+&lt;p&gt;zxid它是一个64位，其中低32位可以看成一个简单的&lt;strong&gt;计数器&lt;/strong&gt;，而高32位则代表了Leader周期的&lt;strong&gt;epoch编号&lt;/strong&gt;。后文中使用&amp;lt;epoch, counter&amp;gt;标示一个zxid，例如&amp;lt;1, 101&amp;gt;。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;epoch，则标示者当前集群所处的周期（年代），或者说当前Leader的周期（年代）。在每一次Leader变更后，新Leader产生的epoch则会在上一任Leader的epoch上进行加1，作为自己的epoch。&lt;/li&gt;
+&lt;li&gt;计数器，则是针对客户端每一个事务请求，Leader在产生新的Proposal事务时，都会对该计数器加1。而Leader变更后，该计数器则会重置为0。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这样做的好处：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;在应用启动时，会把界面类注册到注入器的“提供者映射表”（&lt;code&gt;界面接口: 界面类&lt;/code&gt;）中，并且以界面接口作为自己的标记（Token）。也就是说把这个界面类注册为这个界面接口的提供者，当需要界面接口的实例时，可以由这个界面类来提供它。&lt;/li&gt;
-&lt;li&gt;在应用启动时，会把展示器类注册到注入器的“依赖树”（&lt;code&gt;展示器 ---&amp;gt; 界面接口&lt;/code&gt;）中，表示展示器依赖一个界面接口的实例。如果展示器还依赖其它接口，那就还有更多类似的条目。而界面接口的提供者（界面类）还可能有其自身的依赖，最终形成一棵巨大的树。&lt;/li&gt;
-&lt;li&gt;当应用开始运行时，展示器会被实例化。注入器在实例化它的时候会发现展示器依赖一个界面接口的实例，于是注入器会尝试在其“实例映射表”（&lt;code&gt;界面接口：界面接口实例&lt;/code&gt;）中根据这个界面接口查找相应的实例。如果找不到，就会去“提供者映射表”中查找这个界面接口的提供者，这里找到的是界面类。于是，注入器将这个界面类实例化，并将其记入“实例映射表”中，下次就不必再重新初始化它了。如果界面类还有自己的依赖，这个过程就会递归进行。&lt;/li&gt;
+&lt;li&gt;计数器，可以定义Proposal的先后顺序，保证发送提交事务消息广播顺序。&lt;/li&gt;
+&lt;li&gt;epoch+计数器，能有效的避免zxid的冲突，不会出现Leader使用了相同编号的zxid提出了不一样的Proposal。&lt;/li&gt;
+&lt;li&gt;能随时获取到最新的Leader周期（epoch），当Leader收到在网络故障后，收到比他大的epoch的Proposal，则证明集群中已有其他Leader，自己则变更为Follower。&lt;/li&gt;
+&lt;li&gt;新Leader产生的zxid一定比上一任Leader产生zxid大。当上一任Leader宕机恢复后（以Follower角色）加入集群，如果有尚未提交的事务，则可以对比zxid进行抛弃（回退）那一些Proposal，直到回退到一个确实已经被集群中过半机器Commit的最新Proposal。&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;所以，注入器是这个依赖注入体系中的核心角色，它通过三个内部数据结构：提供者映射表、依赖树、实例映射表来完成整个过程。&lt;/p&gt;
-&lt;p&gt;但是，往“提供者映射表”中注册的过程该由谁来做呢？如果由界面类或展示器类自己做，那么它们将不得不“引用”注入器，而这不符合注入器的“人设”，理想的注入器应该是默默无闻的，最好让谁都不需要知道它。&lt;/p&gt;
-&lt;p&gt;那就只能让注入器自行完成这项工作了。&lt;/p&gt;
-&lt;p&gt;问题在于，注入器要怎么知道哪些类是可注入的呢？所以，我们要让这些可注入的类在实例化之前就具有某些特征，比如静态属性、静态方法，或者注解（Annotation）。&lt;/p&gt;
-&lt;p&gt;注解是最常见的方式，它像注释一样不被当做代码来执行，而是专门供别人阅读。但注释的读者完全是人类，而注解的主要读者除了人类之外还有框架或预编译器。&lt;/p&gt;
-&lt;p&gt;启动的时候，注入器会搜集具有指定特征的类，并将其注册到提供者映射表中，并且查找这些类的构造函数或具有某些特征的属性等，分析出其依赖关系，构建出“依赖树”。&lt;/p&gt;
+&lt;p&gt;第3, 4点如果现在看不明白，在讲述崩溃恢复模式时，我会回过头来再讲讲的。&lt;/p&gt;
+&lt;h3 id=&quot;消息广播模式&quot;&gt;&lt;a href=&quot;#消息广播模式&quot; class=&quot;headerlink&quot; title=&quot;消息广播模式&quot;/&gt;消息广播模式&lt;/h3&gt;&lt;p&gt;总的来说，消息广播模式是一个类似于二阶段提交（2PC）过程，针对客户端事务请求，Leader将其生成对应的Proposal，并发给所有的Follower，收集各自的选票后，最后进行事务提交。&lt;strong&gt;与2PC不同的是，ZAB移除了第二阶段的中断逻辑&lt;/strong&gt;。所有的Follower要么接收该Proposal，要么抛弃Leader服务器。这意味着Leader收到过半的Ack响应后就可以提交该事务了，而不需要等待所有的Follower都返回Ack。&lt;/p&gt;
+&lt;p&gt;由于ZAB为了严格保证Proposal的因果关系，即事务请求的顺序性，ZAB为每个Proposal生成对应的zxid，并严格按照zxid的顺序，进行消息的广播。具体的，Leader会为了Follower分配一个单独的队列，将消息广播前，先将Proposal按照zxid顺序依次放入这些队列中，并根据FIFO策略进行消息发送。&lt;/p&gt;
+&lt;p&gt;Follower在收到事务Proposal之后，都会将其以事务日志的形式写入本地磁盘中，并在写入成功后，返回给Leader一个Ack响应。当Leader服务器收到过半的Follower的Ack响应后，就会广播Commit消息给所有Follower通知其进行事务提交，同时Leader自身也会完成事务的提交。至此整个消息广播模式完成。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/images/theory/distributed/zab_4.png&quot; alt=&quot;消息广播&quot;/&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;客户端发起事务请求，由Leader进行处理&lt;/li&gt;
+&lt;li&gt;Leader将该请求转换为事务Proposal，同时为Proposal分配一个全局的ID，即zxid&lt;/li&gt;
+&lt;li&gt;Leader为每个Follower维护一个FIFO队列，将上一步生成的Proposal放入队列中，进行广播&lt;/li&gt;
+&lt;li&gt;Follower收到Proposal后，会首先将其以事务日志的方式写入本地磁盘中，写入成功后向Leader反馈一个&lt;/li&gt;
+&lt;li&gt;响应消息&lt;/li&gt;
+&lt;li&gt;Leader收到过半的Ack响应后，自己完成对该Proposal的提交后，向每个Follower的队列中，写入Commit消息进行广播&lt;/li&gt;
+&lt;li&gt;Follower接收到Commit消息后，会将上一条事务提交&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id=&quot;如何保证事务执行的顺序&quot;&gt;&lt;a href=&quot;#如何保证事务执行的顺序&quot; class=&quot;headerlink&quot; title=&quot;如何保证事务执行的顺序&quot;/&gt;如何保证事务执行的顺序&lt;/h4&gt;&lt;p&gt;此时，我们得回到zxid的构成那部分，ZAB就是通过zxid中计数器，来保证提交顺序的，具体如下：&lt;/p&gt;
+&lt;p&gt;在Leader收到客户端&lt;code&gt;set X、set Y&lt;/code&gt;两个请求后，会将其封装成两个Proposal（&amp;lt;1, 101&amp;gt;: X， &amp;lt;1, 102&amp;gt;: Y）进行广播所有的Follower。&lt;br/&gt;&lt;img src=&quot;/images/theory/distributed/zab_5.png&quot; alt=&quot;消息广播&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;当Leader收到过半的Ack响应后，则会进行Commit消息的广播。这里需要注意，&lt;strong&gt;Leader提交提案是有顺序性的&lt;/strong&gt;，按照zxid的大小，按顺序提交提案，&lt;strong&gt;如果前一个提案未提交，此时是不会提交后一个提案的&lt;/strong&gt;。因此X一定在Y之前提交。&lt;br/&gt;&lt;img src=&quot;/images/theory/distributed/zab_6.png&quot; alt=&quot;消息广播&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;最后，Leader返回执行成功响应给客户端。完成本次消息广播。&lt;/p&gt;
+&lt;h3 id=&quot;崩溃恢复模式&quot;&gt;&lt;a href=&quot;#崩溃恢复模式&quot; class=&quot;headerlink&quot; title=&quot;崩溃恢复模式&quot;/&gt;崩溃恢复模式&lt;/h3&gt;&lt;p&gt;通过上面的了解，我们知道了ZAB其实是一个强领导者模型的协议。消息广播模式，只能在ZAB正常运行中向外部提供服务。这也要求ZAB设计者不得不考虑，当Leader宕机或者失去过半的Follower节点后，如何恢复整个集群。&lt;/p&gt;
+&lt;p&gt;为了更好理解崩溃恢复模式原理，通常会把他分为两个阶段或者三个阶段，即（Leader选举、Leader发现）、数据同步。&lt;/p&gt;
+&lt;h4 id=&quot;基本约定&quot;&gt;&lt;a href=&quot;#基本约定&quot; class=&quot;headerlink&quot; title=&quot;基本约定&quot;/&gt;基本约定&lt;/h4&gt;&lt;p&gt;在选举新的Leader后，向外部提供服务之前，ZAB还需要保证数据正确性，即上一个Leader崩溃之时，正在处理的事务请求，可能会出现两个数据不一致的隐患。针对这样情况，ZAB保证一下特性：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;ZAB需要确保那些已经在Leader上&lt;strong&gt;提交&lt;/strong&gt;的事务最终被所有服务器都提交&lt;br/&gt;即：ProposalA在Leader上被提出后，收到过半的Follower的Ack响应，但是在将Commit请求广播给所有Follower机器之前，Leader宕机了。&lt;br/&gt;&lt;img src=&quot;/images/theory/distributed/zab_2.png&quot; alt=&quot;ZAB崩溃恢复&quot;/&gt;&lt;br/&gt;在该图中，Leader先后广播了P1, P2, C1, P3, C2。其中Leader在广播C2（P2的Commit请求）之前宕机，ZAB会在崩溃恢复模式中，让所有的服务器都提交C2。&lt;/li&gt;
+&lt;li&gt;ZAB需要确保丢弃那些仅仅只在Leader上被&lt;strong&gt;提出&lt;/strong&gt;的事务&lt;br/&gt;即：该约定是指，ZAB会抛弃那些只在Leader上被提出的事务，还没有任何Follower收到该请求。&lt;br/&gt;&lt;img src=&quot;/images/theory/distributed/zab_3.png&quot; alt=&quot;ZAB崩溃恢复&quot;/&gt;&lt;br/&gt;在该场景中，Leader提出P3后宕机，还没有任何Follower收到该请求，则崩溃恢复模式中，整个集群会丢弃P3的事务。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id=&quot;Leader选举（ELECTION）&quot;&gt;&lt;a href=&quot;#Leader选举（ELECTION）&quot; class=&quot;headerlink&quot; title=&quot;Leader选举（ELECTION）&quot;/&gt;Leader选举（ELECTION）&lt;/h4&gt;&lt;p&gt;Leader的选举，关乎着整个集群的故障容错和集群可用性，是ZAB非常核心的设计之一。而Leader选举说白了，就是对比集群中各节点的信息，选举出最合适的节点当做Leader。而最合适的节点标准是什么，则是理解Leader选举（FastLeaderElection方式）的关键。&lt;/p&gt;
+&lt;p&gt;ZAB采用的各节点广播自己所提议的Leader，收到其他节点提议的Leader后，与自己所提议的Leader进行PK，根据PK的规则重新选择提议的Leader，直到有过半的节点都提议某一节点，即结束Leader选举。&lt;/p&gt;
+&lt;p&gt;Leader选举PK的规则包含以下几个方面：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;任期编号（epoch），优先判断epoch，epoch大的节点当选Leader&lt;/li&gt;
+&lt;li&gt;事务标示符（zxid），epoch相同，则比较zxid，zxid大的当选Leader&lt;/li&gt;
+&lt;li&gt;节点ID，epoch、zxid都一致，则比较节点ID（在myid文件中指定的值）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;因为选举规则包含上述三个方面，则每个节点在广播自己所提议的Leader时，选票中都会包含上面三个值。后文使用&amp;lt;proposeLeader, epoch, zxid, node&amp;gt;，来表示一张选票，表明自己所有提议的Leader。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;proposeLeader，表示自己所提议的Leader的节点ID&lt;/li&gt;
+&lt;li&gt;epoch，表示所提议的Leader节点所处的任期编号&lt;/li&gt;
+&lt;li&gt;zxid，表示所提议的Leader节点拥有的Proposal最大的事务编号&lt;/li&gt;
+&lt;li&gt;node，表示本次提议的节点&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这里需要注意的是，这里的zxid是指ZAB在消息广播模式第一阶段的收到Proposal最大的zxid，即：&lt;strong&gt;节点收到被提出的Proposal最大的zxid，而不是已提交的Proposal最大的zxid&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;这里需要单独拎出来强调，有的伙计，在看zookeeper源码时，会看到Leader选举时，使用的是dataTree.lastProcessedZxid。而dataTree.lastProcessedZxid表示的是已提交的Proposal最大的zxid。这里没错，在正常运行时dataTree.lastProcessedZxid确实表示的是已提交的Proposal最大的zxid。但是当跟随者检测到异常，退出FOLLOWING状态时，在follower.shutdown()中，会使用lastProcessedZxid表示节点上收到已提出的Proposal的zxid。而后续的Leader选举使用的lastProcessedZxid，即为节点收到被提出的Proposal最大的zxid。&lt;/p&gt;
+&lt;h5 id=&quot;算法陈述&quot;&gt;&lt;a href=&quot;#算法陈述&quot; class=&quot;headerlink&quot; title=&quot;算法陈述&quot;/&gt;算法陈述&lt;/h5&gt;&lt;p&gt;集群中存在三个节点A, B, C，各自节点ID依次为1, 2, 3。其中A为Leader，已提交两个Proposal（&amp;lt;1, 101&amp;gt;，&amp;lt;1, 102&amp;gt;），B、C为Follower，B已提交两个Proposal（&amp;lt;1, 101&amp;gt;，&amp;lt;1, 102&amp;gt;），C只提交了&amp;lt;1, 101&amp;gt;&lt;br/&gt;&lt;img src=&quot;/images/theory/distributed/zab_7.png&quot; alt=&quot;Leader选举&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;当A节点宕机后，跟随者检测Leader异常，则退出FOLLOWING状态，变更为LOOKING，发起Leader选举。&lt;br/&gt;&lt;img src=&quot;/images/theory/distributed/zab_8.png&quot; alt=&quot;Leader选举&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;当Follower开始第一轮提议Leader时，都会推荐自己为Leader，并向所有节点广播自己的提议，即B的选票为&amp;lt;2, 1, 102, B&amp;gt;，C的选票为&amp;lt;3, 1, 101, C&amp;gt;。各自将选票发给其他节点，B的选票发送给B、C，C的选票也发送给B、C。&lt;br/&gt;&lt;img src=&quot;/images/theory/distributed/zab_9.png&quot; alt=&quot;Leader选举&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;B, C收到对方的选票后，根据上面描述的规则进行PK，依次比较epoch、zxid、节点ID。B、C首先会收到来自自己的提议的选票，因为收到选票与自己提议的选票相同，只需要接受和保存该选票。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;当B收到来自C的选票&amp;lt;3, 1, 101, C&amp;gt;，由于epoch相同，B的zxid大于C的zxid，则B的选票获胜，不需要变更选票信息，保存即可。&lt;/li&gt;
+&lt;li&gt;C收到来自B的选票&amp;lt;2, 1, 102, B&amp;gt;，由于epoch相同，C的zxid小于B的zxid，则C的选票落选。需要保存B的选票&amp;lt;2, 1, 102, B&amp;gt;，并变更自己的选票为&amp;lt;2, 1, 102, C&amp;gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;/images/theory/distributed/zab_10.png&quot; alt=&quot;Leader选举&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;C节点在变更自己的选票信息后，会重新广播选票&amp;lt;2, 1, 102, C&amp;gt;给其他节点。B, C节点都收到来自C的新选票信息&amp;lt;2, 1, 102, C&amp;gt;，根据规则继续PK，结果肯定是B, C都保存两个选票（&amp;lt;2, 1, 102, B&amp;gt;, &amp;lt;2, 1, 102, C&amp;gt;）&lt;br/&gt;&lt;img src=&quot;/images/theory/distributed/zab_11.png&quot; alt=&quot;Leader选举&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;最后，B, C所提议的领导者节点ID为2（即B节点），赢得了过半选票。则B竞选为准Leader，退出LOOKING状态，变更为LEADING，C节点变更状态为FOLLOWING，完成Leader选举。&lt;br/&gt;&lt;img src=&quot;/images/theory/distributed/zab_12.png&quot; alt=&quot;Leader选举&quot;/&gt;&lt;/p&gt;
+&lt;h5 id=&quot;逻辑时钟&quot;&gt;&lt;a href=&quot;#逻辑时钟&quot; class=&quot;headerlink&quot; title=&quot;逻辑时钟&quot;/&gt;逻辑时钟&lt;/h5&gt;&lt;p&gt;这里需要补充的是逻辑时钟，逻辑时钟也会影响Leader的选举，单独拎出来是为了描述选举算法时思路更清晰。&lt;/p&gt;
+&lt;p&gt;逻辑时钟（logicclock），即选举的轮次，避免接收到旧的选票信息。每进行一轮选举，逻辑时钟变会增加。在选举中，逻辑时钟大的节点不会接收来自逻辑时钟小的节点的选票。&lt;/p&gt;
+&lt;p&gt;比如，节点A, B的逻辑时钟分别为1, 2，那么B将拒绝接收来自A的选票信息。即使A的zxid大于B的zxid，B也会拒绝接收该选票。&lt;/p&gt;
+&lt;h4 id=&quot;发现（DISCOVERY）&quot;&gt;&lt;a href=&quot;#发现（DISCOVERY）&quot; class=&quot;headerlink&quot; title=&quot;发现（DISCOVERY）&quot;/&gt;发现（DISCOVERY）&lt;/h4&gt;&lt;p&gt;在上一阶段，也就是ELECTION完成后，每个节点都有自己所保存的选票池，当选池中有过半的选票都提议同一节点为Leader时，则进入发现（DISCOVERY）状态。&lt;/p&gt;
+&lt;p&gt;本节思路：会先按每一小步介绍过程，后面会画出整个过程的周期，所以每一小步会记作一个标记，方便后面描述整个过程。&lt;/p&gt;
+&lt;p&gt;继续上一小节的案例。A, B, C三个节点，A宕机了，B为新选举的准Leader。其中B已提交两个Proposal（&amp;lt;1, 101&amp;gt;，&amp;lt;1, 102&amp;gt;），C只提交了&amp;lt;1, 101&amp;gt;。&lt;/p&gt;
+&lt;p&gt;在该状态期间，由Follower会主动联系准Leader，并将自己最后接受的事务Proposal的epoch值发送给准Leader，这里记作FOLLOWERINFO。&lt;br/&gt;&lt;img src=&quot;/images/theory/distributed/zab_13.png&quot; alt=&quot;发现（DISCOVERY）&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;准Leader收到来自过半（包含B节点自己）的FOLLOWERINFO消息后，会从这个FOLLOWERINFO中选取最大的epoch值，对其进行加1，作为新的epoch值，并封装成LEADERINFO消息发给这些过半的Follower。&lt;br/&gt;&lt;img src=&quot;/images/theory/distributed/zab_14.png&quot; alt=&quot;发现（DISCOVERY）&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;当Follower收到LEADERINFO消息后，会先校验LEADERINFO消息正确性。校验自己的epoch是否小于LEADERINFO消息中的epoch，如果小于，就将LEADERINFO消息中的epoch赋值给自己的epoch。并向准Leader返回Ack响应（ACKEPOCH），并将自己的运行状态变更为SYNCHRONIZATION。&lt;br/&gt;&lt;img src=&quot;/images/theory/distributed/zab_15.png&quot; alt=&quot;发现（DISCOVERY）&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;最后Leader收到过半的ACKEPOCH消息后，也将自己的运行状态修改为SYNCHRONIZATION。至此完成发现阶段的工作，集群确立Leader的领导关系。&lt;/p&gt;
+&lt;h4 id=&quot;数据同步（SYNCHRONIZATION）&quot;&gt;&lt;a href=&quot;#数据同步（SYNCHRONIZATION）&quot; class=&quot;headerlink&quot; title=&quot;数据同步（SYNCHRONIZATION）&quot;/&gt;数据同步（SYNCHRONIZATION）&lt;/h4&gt;&lt;p&gt;进入到数据同步阶段，我们需要先了解三种同步方式（DIFF、TRUNC、SNAP）。Leader会根据每个Follower的最大zxid，采用不同方式处理不一致的数据。&lt;/p&gt;
+&lt;p&gt;在ZAB的设计中，Leader为了更高效的将Proposal复制给Follower，会在自己的内存队列中缓存一定数量（默认500）的已提交的Proposal。在内存中的Proposal就有zxid的最大值和最小值，即：maxCommittedZxid和minCommittedZxid。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;DIFF：当Follower最大的zxid小于maxCommittedZxid且大于minCommittedZxid&lt;/li&gt;
+&lt;li&gt;TRUNC：当Follower最大的zxid大于maxCommittedZxid时，该方式要求Follower丢弃超出的那部分Proposal&lt;/li&gt;
+&lt;li&gt;SNAP：当Follower最大的zxid小于minCommittedZxid时，该方式直接同步快照给Follower&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;了解了同步方式，接下来来看看具体怎么交互的吧。该阶段由Leader根据Follower的最大zxid来发送数据同步消息。由于B已提交两个Proposal（&amp;lt;1, 101&amp;gt;，&amp;lt;1, 102&amp;gt;），C只提交了&amp;lt;1, 101&amp;gt;。该情况下Leader会选择DIFF的方式将其封装为NEWLEADER消息发给Follower。&lt;/p&gt;
+&lt;p&gt;Follower在收到NEWLEADER消息后，进行修复不一致数据，并返回给Leader响应Ack消息。&lt;br/&gt;&lt;img src=&quot;/images/theory/distributed/zab_16.png&quot; alt=&quot;数据同步（SYNCHRONIZATION）&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;Leader在收到过半Ack消息后，则完成数据同步阶段，将自己运行状态修改为BROADCARST（广播状态），并发送UPTODATE消息给过半的Follower，通知他们完成数据同步，修改运行状态修改为BROADCARST。&lt;/p&gt;
+&lt;h4 id=&quot;整体回顾&quot;&gt;&lt;a href=&quot;#整体回顾&quot; class=&quot;headerlink&quot; title=&quot;整体回顾&quot;/&gt;整体回顾&lt;/h4&gt;&lt;p&gt;&lt;img src=&quot;/images/theory/distributed/zab_17.png&quot; alt=&quot;整体回顾&quot;/&gt;&lt;/p&gt;
+&lt;h3 id=&quot;与paxos区别&quot;&gt;&lt;a href=&quot;#与paxos区别&quot; class=&quot;headerlink&quot; title=&quot;与paxos区别&quot;/&gt;与paxos区别&lt;/h3&gt;&lt;ol&gt;
+&lt;li&gt;ZAB采用的是主备模式的系统架构，相比于paxos不同的是，paxos可以同时存在多个提议者进行提案，而ZAB同一时间只允许一个领导者进行提案，这样即解决客户端并发处理，又能规定提案的顺序性。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&quot;思考几个题目吧&quot;&gt;&lt;a href=&quot;#思考几个题目吧&quot; class=&quot;headerlink&quot; title=&quot;思考几个题目吧&quot;/&gt;思考几个题目吧&lt;/h3&gt;&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;zookeeper提供的最终一致性，任何节点都能处理读请求，但是读到的可能会是旧数据，如果必须要读到最新数据，怎么办？&lt;/p&gt;
+&lt;figure class=&quot;highlight dart&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;zookeeper提供解决方案就是：&lt;span class=&quot;keyword&quot;&gt;sync&lt;/span&gt;命令。&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;你可以在读操作之前，先执行&lt;span class=&quot;keyword&quot;&gt;sync&lt;/span&gt;命令，这样客户端就能读到最新数据了。&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;A, B, C三个节点，A为Leader，B有2个已提交的Proposal(&amp;lt;1, 101&amp;gt;, &amp;lt;1, 102&amp;gt;)，C有3个未提交Proposal(&amp;lt;1, 101&amp;gt;, &amp;lt;1, 102&amp;gt;, &amp;lt;1, 103&amp;gt;)。当A故障后，B和C谁会当选Leader呢？&lt;/p&gt;
+&lt;figure class=&quot;highlight angelscript&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;答案是C。&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;因为竞选Leader时，使用的是所有已提出的Proposal最大zxid。&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;C最大的zxid为&lt;span class=&quot;number&quot;&gt;103&lt;/span&gt;，而B最大的zxid为&lt;span class=&quot;number&quot;&gt;102&lt;/span&gt;。&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;那么C当选Leader。&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;在选举中，会出现选票被瓜分、选举失败的问题吗？&lt;/p&gt;
+&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;不会出现选票被瓜分导致选举失败的情况。&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;因为每个节点的节点ID都是不同的，而节点ID会参与选票的判断。&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;在epoch、zxid都一致情况下，还有节点ID可以兜底来保证选票给哪一个节点。&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;有一个Proposal，在广播之前Leader宕机，经过崩溃恢复模式后，该Proposal是否会被提交？&lt;/p&gt;
+&lt;figure class=&quot;highlight sqf&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;不一定，取决新当选的&lt;span class=&quot;built_in&quot;&gt;Leader&lt;/span&gt;是否包含该Proposal&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;如果上一任&lt;span class=&quot;built_in&quot;&gt;Leader&lt;/span&gt;，在广播第一阶段有个Follower收到了。而新当选的&lt;span class=&quot;built_in&quot;&gt;Leader&lt;/span&gt;又是该Follower&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;则该Proposal会被提交。&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;在崩溃恢复后，Leader首先将自己的状态设置为广播，然后再通知其他节点修改。那么这是有写请求进来，会执行成功吗？&lt;/p&gt;
+&lt;figure class=&quot;highlight sqf&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;会，这就是ZAB设计消息发送队列的原因，在&lt;span class=&quot;built_in&quot;&gt;Leader&lt;/span&gt;为广播状态时即可对外服务。&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;因为新封装的Proposal请求，一定会在通知其他节点数据同步完成的消息（UPTODATE）之后处理&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
 
-&lt;p&gt;在前面的例子中，为了便于理解，我一直用类作为依赖提供者。但实际上，依赖提供者可以有很多形态：常量、变量、函数或者类都是可以的。&lt;/p&gt;
-&lt;p&gt;我们对依赖提供者唯一的期望是：它能给我们提供一个与特定标记对应的实例。至于这个实例是 &lt;code&gt;new&lt;/code&gt; 出来的还是调用出来的，我们根本不需要关心。&lt;/p&gt;
-&lt;p&gt;通过这种面向目标而非面向实现的抽象化设计，我们为应对未来的变化留出了大量的灵活性，却不用付出多少代价。&lt;/p&gt;
-&lt;h2 id=&quot;依赖注入的实际应用&quot;&gt;依赖注入的实际应用&lt;a href=&quot;http://localhost:4000/articles/01fe3063_%E4%B8%80%E6%96%87%E8%AF%B4%E9%80%8F_%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5_#%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%E7%9A%84%E5%AE%9E%E9%99%85%E5%BA%94%E7%94%A8&quot; title=&quot;点击链接到此标题&quot; class=&quot;header-link&quot; aria-hidden=&quot;true&quot;&gt;&lt;i class=&quot;material-icons&quot;&gt;link&lt;/i&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;控制反转在整洁架构中非常重要，而大部分现代框架的设计思想都是暗合《架构整洁之道》的，因此，在大部分现代框架中，都内置了依赖注入机制，以支持控制反转。&lt;/p&gt;
-&lt;p&gt;最经典、最著名的当属 Spring Framework，可以说依赖注入无处不在。在 Java 后端开发中它几乎一统江湖就是其成功的见证。&lt;/p&gt;
-&lt;p&gt;在 Android Framework 等移动端框架中，依赖注入也是最常见的框架功能之一。&lt;/p&gt;
-&lt;p&gt;在前端领域，Angular 从 2009 年的 AngularJS 0.x 开始就支持了依赖注入。到了 Angular 2+ 的时代，借助 TypeScript 的语言特性，它甚至做得比 Spring Framework 还要全面、深入。&lt;/p&gt;
-&lt;h2 id=&quot;通过依赖注入改善设计&quot;&gt;通过依赖注入改善设计&lt;a href=&quot;http://localhost:4000/articles/01fe3063_%E4%B8%80%E6%96%87%E8%AF%B4%E9%80%8F_%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5_#%E9%80%9A%E8%BF%87%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%E6%94%B9%E5%96%84%E8%AE%BE%E8%AE%A1&quot; title=&quot;点击链接到此标题&quot; class=&quot;header-link&quot; aria-hidden=&quot;true&quot;&gt;&lt;i class=&quot;material-icons&quot;&gt;link&lt;/i&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;在面向对象编程的经典著作《设计模式》中，策略模式是使用最广泛的模式之一。但自行实现策略模式很繁琐，也容易出错。而依赖注入是策略模式的最佳实现方式之一。如果我们在设计中使用了策略模式，那么所有繁琐的工作都可以交给依赖注入框架来完成。我们抽象好策略接口，等将来需要换个策略时，只要修改下配置就可以了，而消费方的代码一点都不需要改。&lt;/p&gt;
-&lt;p&gt;深入理解了依赖注入技术，就可以将其灵活运用在你的各项实际工作中，设计出优美而灵活的应用架构。未来的你，以及接手你工作成果的人，会从你的高质量设计中受益匪浅。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
 &lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>03aadf6c7f6b4dcf1b8c1e4df6fcfcb0</guid>
-<title>Python 中 Redis 库分布式锁简单分析</title>
-<link>https://toutiao.io/k/yr4czdu</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;section&gt;&lt;span&gt;&lt;span&gt; △点击上方&lt;/span&gt;&lt;span&gt;“&lt;/span&gt;&lt;span&gt;Python猫&lt;/span&gt;&lt;span&gt;”关注 ，回复“&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;strong&gt;1&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;”领取电子书&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5828125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/LLRiaS9YfFTPA4XAJIRr44o0c1SDRoQLts807UUbiacFA8zWsN0MQ3sEoXJJlYCYwfzgAUSbAwBWajjahKXecCdQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;640&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;作者：ayuliao&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;来源：懒编程&lt;/span&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;简介&lt;/span&gt;&lt;br/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们常会遇到某段逻辑在相同时间段内只希望被单个实例执行，而在微服务架构中，一个程序可能会存在多个实例，此时就需要通过分布式锁来实现串行执行。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;最简单的分布式锁无非就是找到对于多个程序实例而言单一的存在，比如MySQL数据只有一个或Redis只有一个，此时都可以利用这单一的存在构建一个锁，多个程序实例要执行某段逻辑前必须先获得这个锁，然后才能执行。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因为某些原因，上班的时候我和同事一起研究了一下Python redis库中分布式锁的实现源码，这里简单分享一下。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;通过pip可以安装这个库。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;pip install redis==2.10.6&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这里以这个库的2.10.6版本为例，对它Redis分布式锁源码进行简单的分析。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;代码分析&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;实例化StrictRedis对象后，使用其中的lock方法便可获得一个分布式锁。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;首先看一下lock方法对应的源码。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;lock&lt;/span&gt;&lt;span&gt;(self, name, timeout=None, sleep=&lt;span&gt;0.1&lt;/span&gt;, blocking_timeout=None,&lt;br/&gt;             lock_class=None, thread_local=True)&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; lock_class &lt;span&gt;is&lt;/span&gt; &lt;span&gt;None&lt;/span&gt;:&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; self._use_lua_lock &lt;span&gt;is&lt;/span&gt; &lt;span&gt;None&lt;/span&gt;:&lt;br/&gt;                &lt;span&gt;# the first time .lock() is called, determine if we can use&lt;/span&gt;&lt;br/&gt;                &lt;span&gt;# Lua by attempting to register the necessary scripts&lt;/span&gt;&lt;br/&gt;                &lt;span&gt;try&lt;/span&gt;:&lt;br/&gt;                    LuaLock.register_scripts(self)&lt;br/&gt;                    self._use_lua_lock = &lt;span&gt;True&lt;/span&gt;&lt;br/&gt;                &lt;span&gt;except&lt;/span&gt; ResponseError:&lt;br/&gt;                    self._use_lua_lock = &lt;span&gt;False&lt;/span&gt;&lt;br/&gt;            lock_class = self._use_lua_lock &lt;span&gt;and&lt;/span&gt; LuaLock &lt;span&gt;or&lt;/span&gt; Lock&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; lock_class(self, name, timeout=timeout, sleep=sleep,&lt;br/&gt;                          blocking_timeout=blocking_timeout,&lt;br/&gt;                          thread_local=thread_local)&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;该方法提供了多个参数，其中：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;name用于指定锁名&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;timeout用于指定锁的超时时间&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;sleep用于指定线程睡眠时间，线程争夺锁的过程本质就是一个循环，每过sleep秒，就会尝试去获取锁对象&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;blocking_timeout用于指定阻塞超时时间，当多个实例争夺锁时，这个时间就是实例等待锁的最长时间&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;lock_class表示使用锁的类对象&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;thread_local表示是否线程安全&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;方法中最关键的一句代码为&lt;code&gt;lock_class = self._use_lua_lock and LuaLock or Lock&lt;/code&gt;，确定了lock_class后，便实例化该lock_class即可。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;lock_class可以为LuaLock也可为Lock，经过简单分析，Lock类才是关键，LuaLock类继承自Lock，通过Lua代码实现Redis的一些操作，这里着重看Lock类。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;首先看到该类的&lt;code&gt;__init__&lt;/code&gt;方法。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Lock&lt;/span&gt;&lt;span&gt;(object)&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;__init__&lt;/span&gt;&lt;span&gt;(self, redis, name, timeout=None, sleep=&lt;span&gt;0.1&lt;/span&gt;,&lt;br/&gt;                 blocking=True, blocking_timeout=None, thread_local=True)&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;        self.redis = redis&lt;br/&gt;        self.name = name&lt;br/&gt;        self.timeout = timeout&lt;br/&gt;        self.sleep = sleep&lt;br/&gt;        self.blocking = blocking&lt;br/&gt;        self.blocking_timeout = blocking_timeout&lt;br/&gt;        self.thread_local = bool(thread_local)&lt;br/&gt;        self.local = threading.local() &lt;span&gt;if&lt;/span&gt; self.thread_local &lt;span&gt;else&lt;/span&gt; dummy()&lt;br/&gt;        self.local.token = &lt;span&gt;None&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; self.timeout &lt;span&gt;and&lt;/span&gt; self.sleep &amp;gt; self.timeout:&lt;br/&gt;            &lt;span&gt;raise&lt;/span&gt; LockError(&lt;span&gt;&quot;&#x27;sleep&#x27; must be less than &#x27;timeout&#x27;&quot;&lt;/span&gt;)&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;__init__&lt;/code&gt;方法初始化不同的属性，其中self.local为线程的本地字段，用于存储该线程特有的数据，不与其他线程进行共享。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;此外，在&lt;code&gt;__init__&lt;/code&gt;方法中对timeout与sleep进行的判断，如果线程等待锁时的睡眠时间大于锁的超时时间，则直接返回错误。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;接着重点看Lock类中的acquire方法，该方法代码如下。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;import&lt;/span&gt; time &lt;span&gt;as&lt;/span&gt; mod_time&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Lock&lt;/span&gt;&lt;span&gt;(object)&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;acquire&lt;/span&gt;&lt;span&gt;(self, blocking=None, blocking_timeout=None)&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;        sleep = self.sleep&lt;br/&gt;        token = b(uuid.uuid1().hex)&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; blocking &lt;span&gt;is&lt;/span&gt; &lt;span&gt;None&lt;/span&gt;:&lt;br/&gt;            blocking = self.blocking&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; blocking_timeout &lt;span&gt;is&lt;/span&gt; &lt;span&gt;None&lt;/span&gt;:&lt;br/&gt;            blocking_timeout = self.blocking_timeout&lt;br/&gt;        stop_trying_at = &lt;span&gt;None&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; blocking_timeout &lt;span&gt;is&lt;/span&gt; &lt;span&gt;not&lt;/span&gt; &lt;span&gt;None&lt;/span&gt;:&lt;br/&gt;            stop_trying_at = mod_time.time() + blocking_timeout&lt;br/&gt;        &lt;span&gt;while&lt;/span&gt; &lt;span&gt;1&lt;/span&gt;:&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; self.do_acquire(token):&lt;br/&gt;                self.local.token = token&lt;br/&gt;                &lt;span&gt;return&lt;/span&gt; &lt;span&gt;True&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; &lt;span&gt;not&lt;/span&gt; blocking:&lt;br/&gt;                &lt;span&gt;return&lt;/span&gt; &lt;span&gt;False&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; stop_trying_at &lt;span&gt;is&lt;/span&gt; &lt;span&gt;not&lt;/span&gt; &lt;span&gt;None&lt;/span&gt; &lt;span&gt;and&lt;/span&gt; mod_time.time() &amp;gt; stop_trying_at:&lt;br/&gt;                &lt;span&gt;return&lt;/span&gt; &lt;span&gt;False&lt;/span&gt;&lt;br/&gt;            mod_time.sleep(sleep)&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;acquire方法的主逻辑就是一个死循环，在死循环中调用do_acquire方法获取Redis分布式锁，如果成功获得锁，则将token存储到当前线程的local对象中，如果没有获得，则判断blocking，如果blocking为Flase，则不再阻塞，直接返回结果，反之，则判断当前时间是否超过blocking_timeout，超过，同样返回False，反之，通过sleep方法让当前线程睡眠sleep秒。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;进一步分析do_acquire方法，代码如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;    &lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;do_acquire&lt;/span&gt;&lt;span&gt;(self, token)&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; self.redis.setnx(self.name, token):&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; self.timeout:&lt;br/&gt;                &lt;span&gt;# convert to milliseconds&lt;/span&gt;&lt;br/&gt;                timeout = int(self.timeout * &lt;span&gt;1000&lt;/span&gt;) &lt;span&gt;# 转成毫秒&lt;/span&gt;&lt;br/&gt;                self.redis.pexpire(self.name, timeout)&lt;br/&gt;            &lt;span&gt;return&lt;/span&gt; &lt;span&gt;True&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; &lt;span&gt;False&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;do_acquire方法中，一开始通过redis的setnx方法将name对着作为key，token作为value，setnx方法只有在key不存的情况下，才能正常的将value存入Redis中，若key依存，该方法不做任何操作，此时就相当于没有获取到锁。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;将token成功插入后，则判断有无超时时间，如果设置了timeout，则通过pexpire方法将redis中name这个key的超时设置一下，因为pexpire方法是以毫秒为单位的，所以需要先将timeout转换成毫秒单位。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果没有设置timeout，那么name这个key只能通过do_release方法中的逻辑清除。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;至此，我们清楚的知道了，Redis分布式锁的本质其实就是Redis中的一个key-value，非常简单...&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;理清锁的获取逻辑后，来看一下相应的释放逻辑，主要关注release方法，该方法代码如下。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;    &lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;release&lt;/span&gt;&lt;span&gt;(self)&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&quot;Releases the already acquired lock&quot;&lt;/span&gt;&lt;br/&gt;        expected_token = self.local.token&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; expected_token &lt;span&gt;is&lt;/span&gt; &lt;span&gt;None&lt;/span&gt;:&lt;br/&gt;            &lt;span&gt;raise&lt;/span&gt; LockError(&lt;span&gt;&quot;Cannot release an unlocked lock&quot;&lt;/span&gt;)&lt;br/&gt;        self.local.token = &lt;span&gt;None&lt;/span&gt;&lt;br/&gt;        self.do_release(expected_token)&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;release方法中先将线程中的token取出，并将其置为None，然后调用do_release方法实现锁的释放，do_release方法代码如下。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;    &lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;do_release&lt;/span&gt;&lt;span&gt;(self, expected_token)&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;        name = self.name&lt;br/&gt;&lt;br/&gt;        &lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;execute_release&lt;/span&gt;&lt;span&gt;(pipe)&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;            lock_value = pipe.get(name)&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; lock_value != expected_token:&lt;br/&gt;                &lt;span&gt;raise&lt;/span&gt; LockError(&lt;span&gt;&quot;Cannot release a lock that&#x27;s no longer owned&quot;&lt;/span&gt;)&lt;br/&gt;            pipe.delete(name)&lt;br/&gt;&lt;br/&gt;        self.redis.transaction(execute_release, name)&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;do_release方法的逻辑非常简单，其主要逻辑在execute_release方法，通过Redis的transaction方法开启一个事务来执行execute_release方法中逻辑。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在execute_release中，首先通过get方法获取name这个key对应的value，获得后，通过delete方法将其删除，实现Redis分布式锁的释放。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;blocking属性&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;观察到acquire方法的这段代码。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;        &lt;span&gt;while&lt;/span&gt; &lt;span&gt;1&lt;/span&gt;:&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; self.do_acquire(token):&lt;br/&gt;                self.local.token = token&lt;br/&gt;                &lt;span&gt;return&lt;/span&gt; &lt;span&gt;True&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; &lt;span&gt;not&lt;/span&gt; blocking:&lt;br/&gt;                &lt;span&gt;return&lt;/span&gt; &lt;span&gt;False&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; stop_trying_at &lt;span&gt;is&lt;/span&gt; &lt;span&gt;not&lt;/span&gt; &lt;span&gt;None&lt;/span&gt; &lt;span&gt;and&lt;/span&gt; mod_time.time() &amp;gt; stop_trying_at:&lt;br/&gt;                &lt;span&gt;return&lt;/span&gt; &lt;span&gt;False&lt;/span&gt;&lt;br/&gt;            mod_time.sleep(sleep)&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果blocking为True，获取不到锁，则执行后面的逻辑，让线程睡眠，阻塞等待其他线程将锁释放；如果blocking为False，获取不到锁，则直接返回获取锁失败。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这就会引出几种情况，假设现在有线程A与线程B都需要执行相同的逻辑，执行前需要获取锁。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果线程A在执行的过程中，线程B也要执行了，如果blocking为True，此时线程B会被阻塞，等待线程A是否Redis锁；如果blocking为False，线程B此时获取不到锁，不执行相同的逻辑。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果线程A执行完了，此时线程B到来，如果blocking为True或False，此时线程B都不会被阻塞并成功拿到锁，执行相同的逻辑。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;一个简单的结论是，blocking无法保证逻辑是否被单次执行，如果希望通过Redis分布式锁让逻辑只执行一次，依旧需要从业务层面做控制，比如MySQL中的业务数据是否被修改或Redis中是否记录这业务数据等。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;结尾&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;现在很多业务都离不开Redis，它已经成为互联网中的基础设施了，Redis有很多有趣的内容可以跟大家分享。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;前段时间看见Redis之父退居二线，说已经为Redis工作了10年了，每天都要revice、merge他人的代码，这种工作让他没有创造东西的快乐，所以决定退居二线，将Redis交由社区运营，这让我有些感慨，软件工程是创造性的工作，适当的放空、阅读与行业无关的书籍其实有助于激发创造力。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;最后感谢你的阅读，我们下篇文章见。&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>269a06f1eba68f0280b1e96c514087fd</guid>
+<title>现代 Web 开发语法基础与工程实践</title>
+<link>https://toutiao.io/k/uhz45j5</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;body class=&quot;logged-out env-production page-responsive&quot; id=&quot;readabilityBody&quot;&gt;
+    
+
+    
+
+  &lt;p id=&quot;start-of-content&quot; class=&quot;show-on-focus&quot;/&gt;
+
+
+
+
+
+    
+
+
+  
+
+  &lt;include-fragment class=&quot;js-notification-shelf-include-fragment&quot; data-base-src=&quot;https://github.com/notifications/beta/shelf&quot;/&gt;
+
+
+
+
+  &lt;div class=&quot;application-main &quot; data-commit-hovercards-enabled=&quot;&quot; data-discussion-hovercards-enabled=&quot;&quot; data-issue-and-pr-hovercards-enabled=&quot;&quot;&gt;
+        &lt;div itemscope=&quot;&quot; itemtype=&quot;http://schema.org/SoftwareSourceCode&quot; class=&quot;&quot;&gt;
+    &lt;main id=&quot;js-repo-pjax-container&quot; data-pjax-container=&quot;&quot;&gt;
+      
+
+    
+
+
+
+
+
+
+  
+
+
+  &lt;div class=&quot;bg-gray-light pt-3 hide-full-screen mb-5&quot;&gt;
+
+      
+          &lt;div class=&quot;d-block d-md-none mb-2 px-3 px-md-4 px-lg-5&quot;&gt;
+      &lt;p class=&quot;f4 mb-3&quot;&gt;
+        
+&lt;g-emoji class=&quot;g-emoji&quot; alias=&quot;books&quot; fallback-src=&quot;https://github.githubassets.com/images/icons/emoji/unicode/1f4da.png&quot;&gt;📚&lt;/g-emoji&gt; 现代 Web 开发语法基础与工程实践，涵盖 Web 开发基础、前端工程化、应用架构、性能与体验优化、混合开发、React 实践、Vue 实践、WebAssembly 等多方面。
+      &lt;/p&gt;
+      
+      
+    
+    
+  &lt;/div&gt;
+
+        
+&lt;nav aria-label=&quot;Repository&quot; data-pjax=&quot;#js-repo-pjax-container&quot; class=&quot;js-repo-nav js-sidenav-container-pjax js-responsive-underlinenav overflow-hidden UnderlineNav px-3 px-md-4 px-lg-5 bg-gray-light&quot;&gt;
+          
+
+&lt;/nav&gt;
+  &lt;/div&gt;
+
+
+&lt;div class=&quot;container-xl clearfix new-discussion-timeline px-3 px-md-4 px-lg-5&quot;&gt;
+  &lt;div class=&quot;repository-content &quot;&gt;
+
+    
+      
+
+  &lt;p class=&quot;d-none d-lg-block mt-6 mr-3 Popover top-0 right-0 box-shadow-medium col-3&quot;&gt;
+    
+  &lt;/p&gt;
+
+    &lt;signup-prompt class=&quot;signup-prompt-bg rounded-1&quot; data-prompt=&quot;signup&quot; hidden=&quot;&quot;&gt;
+    &lt;div class=&quot;signup-prompt p-4 text-center mb-4 rounded-1&quot;&gt;
+      &lt;div class=&quot;position-relative&quot;&gt;
+        &lt;button type=&quot;button&quot; class=&quot;position-absolute top-0 right-0 btn-link link-gray&quot; data-action=&quot;click:signup-prompt#dismiss&quot; data-ga-click=&quot;(Logged out) Sign up prompt, clicked Dismiss, text:dismiss&quot;&gt;
+          Dismiss
+        &lt;/button&gt;
+        &lt;h3 class=&quot;pt-2&quot;&gt;Join GitHub today&lt;/h3&gt;
+        &lt;p class=&quot;col-6 mx-auto&quot;&gt;GitHub is home to over 50 million developers working together to host and review code, manage projects, and build software together.&lt;/p&gt;
+        &lt;a class=&quot;btn btn-primary&quot; data-ga-click=&quot;(Logged out) Sign up prompt, clicked Sign up, text:sign-up&quot; data-hydro-click=&quot;{&amp;quot;event_type&amp;quot;:&amp;quot;authentication.click&amp;quot;,&amp;quot;payload&amp;quot;:{&amp;quot;location_in_page&amp;quot;:&amp;quot;files signup prompt&amp;quot;,&amp;quot;repository_id&amp;quot;:null,&amp;quot;auth_type&amp;quot;:&amp;quot;SIGN_UP&amp;quot;,&amp;quot;originating_url&amp;quot;:&amp;quot;https://github.com/wx-chevalier/Web-Series?hmsr=toutiao.io&amp;amp;utm_medium=toutiao.io&amp;amp;utm_source=toutiao.io&amp;quot;,&amp;quot;user_id&amp;quot;:null}}&quot; data-hydro-click-hmac=&quot;2aa01dc0717bbde03cc9119841a6e5dc804e93be105b4cd0fe97b284f0e72a5a&quot; href=&quot;/join?source=prompt-code&amp;amp;source_repo=wx-chevalier%2FWeb-Series&quot;&gt;Sign up&lt;/a&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/signup-prompt&gt;
+
+
+
+  &lt;div class=&quot;gutter-condensed gutter-lg flex-column flex-md-row d-flex&quot;&gt;
+
+  &lt;div class=&quot;flex-shrink-0 col-12 col-md-9 mb-4 mb-md-0&quot;&gt;
+          
+
+
+
+
+
+      &lt;div class=&quot;file-navigation mb-3 d-flex flex-items-start&quot;&gt;
+  
+
+
+
+  
+
+  &lt;p class=&quot;flex-auto&quot;/&gt;
+
+  &lt;a class=&quot;btn ml-2&quot; data-hydro-click=&quot;{&amp;quot;event_type&amp;quot;:&amp;quot;repository.click&amp;quot;,&amp;quot;payload&amp;quot;:{&amp;quot;target&amp;quot;:&amp;quot;FIND_FILE_BUTTON&amp;quot;,&amp;quot;repository_id&amp;quot;:229171266,&amp;quot;originating_url&amp;quot;:&amp;quot;https://github.com/wx-chevalier/Web-Series?hmsr=toutiao.io&amp;amp;utm_medium=toutiao.io&amp;amp;utm_source=toutiao.io&amp;quot;,&amp;quot;user_id&amp;quot;:null}}&quot; data-hydro-click-hmac=&quot;a8632c9383f375e28e50f1e7f816a9608ba4caf15df0a8e3703b432097c18203&quot; data-ga-click=&quot;Repository, find file, location:repo overview&quot; data-hotkey=&quot;t&quot; data-pjax=&quot;true&quot; href=&quot;/wx-chevalier/Web-Series/find/master&quot;&gt;
+    Go to file
+&lt;/a&gt;
+
+
+
+    &lt;span class=&quot;d-none d-md-flex ml-2&quot;&gt;
+        
+&lt;get-repo&gt;
+  &lt;details class=&quot;position-relative details-overlay details-reset&quot; data-action=&quot;toggle:get-repo#onDetailsToggle&quot;&gt;
+    &lt;summary class=&quot;btn btn-primary&quot; data-hydro-click=&quot;{&amp;quot;event_type&amp;quot;:&amp;quot;repository.click&amp;quot;,&amp;quot;payload&amp;quot;:{&amp;quot;repository_id&amp;quot;:229171266,&amp;quot;target&amp;quot;:&amp;quot;CLONE_OR_DOWNLOAD_BUTTON&amp;quot;,&amp;quot;originating_url&amp;quot;:&amp;quot;https://github.com/wx-chevalier/Web-Series?hmsr=toutiao.io&amp;amp;utm_medium=toutiao.io&amp;amp;utm_source=toutiao.io&amp;quot;,&amp;quot;user_id&amp;quot;:null}}&quot; data-hydro-click-hmac=&quot;e7a67ef4da68ab4cc7aec8498045381abce22dca79ba4b031a0164abd5834fa5&quot;&gt;
+      &lt;svg class=&quot;octicon octicon-download mr-1&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75zM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5z&quot;/&gt;&lt;/svg&gt;
+      Code
+      &lt;span class=&quot;dropdown-caret&quot;/&gt;
+&lt;/summary&gt;    &lt;div class=&quot;position-relative&quot;&gt;
+      &lt;div class=&quot;dropdown-menu dropdown-menu-sw p-0&quot;&gt;
+        &lt;div data-target=&quot;get-repo.modal&quot;&gt;
+          &lt;div class=&quot;border-bottom p-3&quot;&gt;
+            &lt;a class=&quot;muted-link float-right tooltipped tooltipped-s&quot; href=&quot;https://docs.github.com/articles/which-remote-url-should-i-use&quot; target=&quot;_blank&quot; aria-label=&quot;Which remote URL should I use?&quot;&gt;
+  &lt;svg class=&quot;octicon octicon-question&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm9 3a1 1 0 11-2 0 1 1 0 012 0zM6.92 6.085c.081-.16.19-.299.34-.398.145-.097.371-.187.74-.187.28 0 .553.087.738.225A.613.613 0 019 6.25c0 .177-.04.264-.077.318a.956.956 0 01-.277.245c-.076.051-.158.1-.258.161l-.007.004a7.728 7.728 0 00-.313.195 2.416 2.416 0 00-.692.661.75.75 0 001.248.832.956.956 0 01.276-.245 6.3 6.3 0 01.26-.16l.006-.004c.093-.057.204-.123.313-.195.222-.149.487-.355.692-.662.214-.32.329-.702.329-1.15 0-.76-.36-1.348-.863-1.725A2.76 2.76 0 008 4c-.631 0-1.155.16-1.572.438-.413.276-.68.638-.849.977a.75.75 0 101.342.67z&quot;/&gt;&lt;/svg&gt;
+&lt;/a&gt;
+
+
+
+&lt;tab-container&gt;
+
+  
+
+  &lt;div role=&quot;tabpanel&quot;&gt;
+    
+
+    &lt;p class=&quot;mt-2 mb-0 f6 text-gray&quot;&gt;
+        Use Git or checkout with SVN using the web URL.
+    &lt;/p&gt;
+  &lt;/div&gt;
+
+
+  
+&lt;/tab-container&gt;
+
+          &lt;/div&gt;
+          
+        &lt;/div&gt;
+
+        
+
+        
+
+        &lt;div class=&quot;p-3&quot; data-targets=&quot;get-repo.platforms&quot; data-platform=&quot;xcode&quot; hidden=&quot;&quot;&gt;
+          &lt;h4 class=&quot;lh-condensed mb-3&quot;&gt;Launching Xcode&lt;span class=&quot;AnimatedEllipsis&quot;/&gt;&lt;/h4&gt;
+          &lt;p class=&quot;text-gray&quot;&gt;If nothing happens, &lt;a href=&quot;https://developer.apple.com/xcode/&quot;&gt;download Xcode&lt;/a&gt; and try again.&lt;/p&gt;
+          &lt;button type=&quot;button&quot; class=&quot;btn-link&quot; data-action=&quot;click:get-repo#onDetailsToggle&quot;&gt;Go back&lt;/button&gt;
+        &lt;/div&gt;
+
+        
+
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/details&gt;
+&lt;/get-repo&gt;
+
+
+      
+    &lt;/span&gt;
+&lt;/div&gt;
+
+
+      
+
+&lt;div class=&quot;Box mb-3&quot;&gt;
+  
+  &lt;h2 id=&quot;files&quot; class=&quot;sr-only&quot;&gt;Files&lt;/h2&gt;
+  
+
+
+    &lt;a class=&quot;d-none js-permalink-shortcut&quot; data-hotkey=&quot;y&quot; href=&quot;/wx-chevalier/Web-Series/tree/10c6a899d423e33bc1964169f7b04081057c6323&quot;&gt;Permalink&lt;/a&gt;
+
+  &lt;div class=&quot;include-fragment-error flash flash-error flash-full py-2&quot;&gt;
+  &lt;svg class=&quot;octicon octicon-alert&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M8.22 1.754a.25.25 0 00-.44 0L1.698 13.132a.25.25 0 00.22.368h12.164a.25.25 0 00.22-.368L8.22 1.754zm-1.763-.707c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0114.082 15H1.918a1.75 1.75 0 01-1.543-2.575L6.457 1.047zM9 11a1 1 0 11-2 0 1 1 0 012 0zm-.25-5.25a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5z&quot;/&gt;&lt;/svg&gt;&lt;p&gt;
+  
+    Failed to load latest commit information.
+
+&lt;/p&gt;&lt;/div&gt;  &lt;div class=&quot;js-details-container Details&quot;&gt;
+    &lt;div role=&quot;grid&quot; aria-labelledby=&quot;files&quot; class=&quot;Details-content--hidden-not-important js-navigation-container js-active-navigation-container d-md-block&quot; data-pjax=&quot;&quot;&gt;
+      &lt;div class=&quot;sr-only&quot; role=&quot;row&quot;&gt;
+        &lt;p role=&quot;columnheader&quot;&gt;Type&lt;/p&gt;
+        &lt;p role=&quot;columnheader&quot;&gt;Name&lt;/p&gt;
+        &lt;p role=&quot;columnheader&quot; class=&quot;d-none d-md-block&quot;&gt;Latest commit message&lt;/p&gt;
+        &lt;p role=&quot;columnheader&quot;&gt;Commit time&lt;/p&gt;
+      &lt;/div&gt;
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    &lt;/div&gt;
+    &lt;p class=&quot;Details-content--shown Box-footer d-md-none p-0&quot;&gt;
+      &lt;button type=&quot;button&quot; class=&quot;d-block btn-link js-details-target width-full px-3 py-2&quot; aria-expanded=&quot;false&quot;&gt;
+        View code
+      &lt;/button&gt;
+    &lt;/p&gt;
+  &lt;/div&gt;
+
+
+
+
+&lt;/div&gt;
+
+  
+
+
+&lt;/div&gt;
+    &lt;div class=&quot;flex-shrink-0 col-12 col-md-3&quot;&gt;
+            
+
+      &lt;div class=&quot;BorderGrid BorderGrid--spacious&quot; data-pjax=&quot;&quot;&gt;
+        &lt;div class=&quot;BorderGrid-row hide-sm hide-md&quot;&gt;
+          &lt;div class=&quot;BorderGrid-cell&quot;&gt;
+            &lt;h2 class=&quot;mb-3 h4&quot;&gt;About&lt;/h2&gt;
+
+    &lt;p class=&quot;f4 mt-3&quot;&gt;
+      
+&lt;g-emoji class=&quot;g-emoji&quot; alias=&quot;books&quot; fallback-src=&quot;https://github.githubassets.com/images/icons/emoji/unicode/1f4da.png&quot;&gt;📚&lt;/g-emoji&gt; 现代 Web 开发语法基础与工程实践，涵盖 Web 开发基础、前端工程化、应用架构、性能与体验优化、混合开发、React 实践、Vue 实践、WebAssembly 等多方面。
+    &lt;/p&gt;
+    
+
+  &lt;h3 class=&quot;sr-only&quot;&gt;Topics&lt;/h3&gt;
+  
+
+  &lt;h3 class=&quot;sr-only&quot;&gt;Resources&lt;/h3&gt;
+  
+
+  &lt;h3 class=&quot;sr-only&quot;&gt;License&lt;/h3&gt;
+  
+
+          &lt;/div&gt;
+        &lt;/div&gt;
+          
+          
+          
+          
+          
+      &lt;/div&gt;
+
+&lt;/div&gt;&lt;/div&gt;
+
+  &lt;/div&gt;
+&lt;/div&gt;
+
+    &lt;/main&gt;
+  &lt;/div&gt;
+
+  &lt;/div&gt;
+
+          
+
+
+
+
+  &lt;div id=&quot;ajax-error-message&quot; class=&quot;ajax-error-message flash flash-error&quot;&gt;
+    &lt;svg class=&quot;octicon octicon-alert&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M8.22 1.754a.25.25 0 00-.44 0L1.698 13.132a.25.25 0 00.22.368h12.164a.25.25 0 00.22-.368L8.22 1.754zm-1.763-.707c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0114.082 15H1.918a1.75 1.75 0 01-1.543-2.575L6.457 1.047zM9 11a1 1 0 11-2 0 1 1 0 012 0zm-.25-5.25a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5z&quot;/&gt;&lt;/svg&gt;
+    &lt;button type=&quot;button&quot; class=&quot;flash-close js-ajax-error-dismiss&quot; aria-label=&quot;Dismiss error&quot;&gt;
+      &lt;svg class=&quot;octicon octicon-x&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z&quot;/&gt;&lt;/svg&gt;
+    &lt;/button&gt;&lt;p&gt;
+    You can’t perform that action at this time.
+  &lt;/p&gt;&lt;/div&gt;
+
+
+  &lt;div class=&quot;js-stale-session-flash flash flash-warn flash-banner&quot; hidden=&quot;&quot;&gt;
+    &lt;svg class=&quot;octicon octicon-alert&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M8.22 1.754a.25.25 0 00-.44 0L1.698 13.132a.25.25 0 00.22.368h12.164a.25.25 0 00.22-.368L8.22 1.754zm-1.763-.707c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0114.082 15H1.918a1.75 1.75 0 01-1.543-2.575L6.457 1.047zM9 11a1 1 0 11-2 0 1 1 0 012 0zm-.25-5.25a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5z&quot;/&gt;&lt;/svg&gt;
+    &lt;span class=&quot;js-stale-session-flash-signed-in&quot; hidden=&quot;&quot;&gt;You signed in with another tab or window. &lt;a href=&quot;&quot;&gt;Reload&lt;/a&gt; to refresh your session.&lt;/span&gt;
+    &lt;span class=&quot;js-stale-session-flash-signed-out&quot; hidden=&quot;&quot;&gt;You signed out in another tab or window. &lt;a href=&quot;&quot;&gt;Reload&lt;/a&gt; to refresh your session.&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;template id=&quot;site-details-dialog&quot;&gt;
+  &lt;details class=&quot;details-reset details-overlay details-overlay-dark lh-default text-gray-dark hx_rsm&quot; open=&quot;&quot;&gt;
+    &lt;summary role=&quot;button&quot; aria-label=&quot;Close dialog&quot;/&gt;
+    &lt;details-dialog class=&quot;Box Box--overlay d-flex flex-column anim-fade-in fast hx_rsm-dialog hx_rsm-modal&quot;&gt;
+      &lt;button class=&quot;Box-btn-octicon m-0 btn-octicon position-absolute right-0 top-0&quot; type=&quot;button&quot; aria-label=&quot;Close dialog&quot; data-close-dialog=&quot;&quot;&gt;
+        &lt;svg class=&quot;octicon octicon-x&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z&quot;/&gt;&lt;/svg&gt;
+      &lt;/button&gt;
+      &lt;p class=&quot;octocat-spinner my-6 js-details-dialog-spinner&quot;/&gt;
+    &lt;/details-dialog&gt;
+  &lt;/details&gt;
+&lt;/template&gt;
+
+  
+
+    &lt;div class=&quot;js-cookie-consent-banner&quot; hidden=&quot;&quot;&gt;
+  &lt;div class=&quot;hx_cookie-banner p-2 p-sm-3 p-md-4&quot;&gt;
+    &lt;div class=&quot;Box hx_cookie-banner-box box-shadow-medium mx-auto&quot;&gt;
+    &lt;div class=&quot;Box-body border-0 py-0 px-3 px-md-4&quot;&gt;
+      &lt;div class=&quot;js-main-cookie-banner hx_cookie-banner-main&quot;&gt;
+          &lt;div class=&quot;d-md-flex flex-items-center py-3&quot;&gt;
+            &lt;p class=&quot;f5 flex-1 mb-3 mb-md-0&quot;&gt;
+              
+  We use &lt;span class=&quot;text-bold&quot;&gt;optional&lt;/span&gt; third-party analytics cookies to understand how you use GitHub.com so we can build better products.
+
+              &lt;span class=&quot;btn-link js-cookie-consent-learn-more&quot;&gt;Learn more&lt;/span&gt;.
+            &lt;/p&gt;
+            &lt;p class=&quot;d-flex d-md-block flex-wrap flex-sm-nowrap&quot;&gt;
+              &lt;button class=&quot;btn btn-outline flex-1 mr-1 mx-sm-1 m-md-0 ml-md-2 js-cookie-consent-accept&quot;&gt;Accept&lt;/button&gt;
+              &lt;button class=&quot;btn btn-outline flex-1 ml-1 m-md-0 ml-md-2 js-cookie-consent-reject&quot;&gt;Reject&lt;/button&gt;
+            &lt;/p&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;div class=&quot;js-cookie-details hx_cookie-banner-details&quot; hidden=&quot;&quot;&gt;
+          &lt;div class=&quot;d-md-flex flex-items-center py-3&quot;&gt;
+            &lt;p class=&quot;f5 flex-1 mb-2 mb-md-0&quot;&gt;
+              
+  We use &lt;span class=&quot;text-bold&quot;&gt;optional&lt;/span&gt; third-party analytics cookies to understand how you use GitHub.com so we can build better products.
+
+              &lt;br/&gt;
+              You can always update your selection by clicking &lt;span class=&quot;text-bold&quot;&gt;Cookie Preferences&lt;/span&gt; at the bottom of the page.
+              For more information, see our &lt;a href=&quot;https://docs.github.com/en/free-pro-team@latest/github/site-policy/github-privacy-statement&quot;&gt;Privacy Statement&lt;/a&gt;.
+            &lt;/p&gt;
+          &lt;/div&gt;
+
+          &lt;div class=&quot;d-md-flex flex-items-center py-3 border-top&quot;&gt;
+            &lt;div class=&quot;f5 flex-1 mb-2 mb-md-0&quot;&gt;
+              &lt;h5 class=&quot;mb-1&quot;&gt;Essential cookies&lt;/h5&gt;
+              &lt;p class=&quot;f6 mb-md-0&quot;&gt;We use essential cookies to perform essential website functions, e.g. they&#x27;re used to log you in. 
+                &lt;a href=&quot;https://docs.github.com/en/github/site-policy/github-subprocessors-and-cookies&quot;&gt;Learn more&lt;/a&gt;
+              &lt;/p&gt;
+            &lt;/div&gt;
+            &lt;p class=&quot;text-right&quot;&gt;
+              &lt;h5 class=&quot;text-blue&quot;&gt;Always active&lt;/h5&gt;
+            &lt;/p&gt;
+          &lt;/div&gt;
+
+          &lt;div class=&quot;d-md-flex flex-items-center py-3 border-top&quot;&gt;
+            &lt;div class=&quot;f5 flex-1 mb-2 mb-md-0&quot;&gt;
+              &lt;h5 class=&quot;mb-1&quot;&gt;Analytics cookies&lt;/h5&gt;
+              &lt;p class=&quot;f6 mb-md-0&quot;&gt;We use analytics cookies to understand how you use our websites so we can make them better, e.g. they&#x27;re used to gather information about the pages you visit and how many clicks you need to accomplish a task. 
+                &lt;a href=&quot;https://docs.github.com/en/github/site-policy/github-subprocessors-and-cookies&quot;&gt;Learn more&lt;/a&gt;
+              &lt;/p&gt;
+            &lt;/div&gt;
+            
+          &lt;/div&gt;
+
+          &lt;p class=&quot;text-right py-3 border-top&quot;&gt;
+            &lt;button class=&quot;btn btn-primary js-save-cookie-preferences&quot; type=&quot;button&quot; disabled=&quot;disabled&quot;&gt;Save preferences&lt;/button&gt;
+          &lt;/p&gt;
+        &lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/div&gt;
+
+
+  &lt;/body&gt;
+&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>8d8153548213bb03070a711f74f91d0b</guid>
+<title>Flutter 中的 Tree Shaking 机制初探</title>
+<link>https://toutiao.io/k/5qr2uj1</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
+
+                    
+
+                    
+                    
+                    &lt;h2&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;背景&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;在闲鱼技术探究Flutter工程一体化的过程中，为了做到最好的开发体验，需要无缝衔接FaaS端代码与业务Flutter代码，一份代码既可以在FaaS部署，也可以直接引入在业务代码主工程中，使之真正做到工程一体。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;为了实现这一目标我们对两部分代码通过RPC调用的方式实现了代码解耦，而工程解耦依赖于Flutter/Dart在编译过程中的Tree-Shaking机制。为了避免踩坑，我们需要了解，整个Tree-Shaking是怎么起作用的。本篇文章结合Flutter Engine源码对这一过程进行了简单的探究。&lt;/span&gt;&lt;/p&gt;&lt;h2&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;前置知识&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;Tree Shaking是一种死代码消除（Dead Code Elimination）技术，这一想法起源于20世纪90年代的LISP。其思想是：一个程序所有可能的执行流程都可以用函数调用的树来表示，这样就可以消除那些从未被调用的函数。该算法最先被应用到Google Closure Tools中的JavaScript中，然后被应用到同样由Google编写的dart2js编译器中。在Flutter中，同样有这样的Tree Shaking机制来减小最终产出的包大小。Flutter提供了三种构建模式，针对每个不同的模式，Flutter编译器对产出的二进制文件有不同优化，Tree-Shaking机制并不会在debug模式中触发。在Profile/Release模式下编译的AOT产物中，有几个比较重要的产物可以让我们更直观地看到Tree-Shaking机制在发挥作用：&lt;/span&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;app.dill : 这就是dart代码通过build的产物，为二进制的字节码，可以通过 &lt;code&gt;&lt;span&gt;strings&lt;/span&gt;&lt;/code&gt;看到里面的内容，其实就是我们dart代码的源码。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;snapshot_blob.bin.d : 这个文件里面是所有参与编译的dart文件的集合，包括我们自己的业务代码、 &lt;code&gt;&lt;span&gt;pubspec.yaml&lt;/span&gt;&lt;/code&gt;中定义的三方库的代码、以及我们业务代码中import进来的所有flutter或者dart原生 &lt;code&gt;&lt;span&gt;package&lt;/span&gt;&lt;/code&gt;的代码。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Tree Shaking机制探究&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;最小化Demo初探&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;span&gt;我们写一个最简单的例子，代码如下：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;img data-ratio=&quot;0.6029411764705882&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1GgveSJlIib1MicndkpiaraxEhL34NHgXzn8T8FfN9xSqzCQPgouvo0Hw1eo3iaqBXoV9RKNNdTeGicLUQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;680&quot;/&gt;&lt;span&gt;代码非常简单，里面包含了一个没有被使用的 &lt;/span&gt;&lt;code&gt;&lt;span&gt;_unused&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 方法。下面我们在Profile模式下进行编译，通过DevTools来查看最终编译的产物，如下图所示&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;1.63125&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1GgveSJlIib1MicndkpiaraxEhYAxXYZCQCSbx66qIMCSpFItoBZPxfCCqVAPBP9FcqTEIb1mUR2IeHQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;960&quot;/&gt;&lt;span&gt;可以看到，在Funtions中，并没有 &lt;/span&gt;&lt;code&gt;&lt;span&gt;_unused&lt;/span&gt;&lt;/code&gt;&lt;span&gt;方法，说明在编译过程中，这段无用的代码被“摇”掉了。实际上除了Function之外，Flutter编译过程中对于引入的lib，import的dart文件都有相似的Tree-Shaking处理。下面深入代码来看看，这究竟是怎么做到。&lt;/span&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;&lt;span&gt;&lt;strong&gt;代码解析&lt;/strong&gt;&lt;/span&gt;&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;span&gt;这里借用Gityuan前辈的 &lt;/span&gt;&lt;code&gt;&lt;span&gt;flutter run&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 命令执行的时序图，整个编译流程会比较长，在 &lt;/span&gt;&lt;code&gt;&lt;span&gt;GenSnapshot.run()&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 方法会调用gen&lt;span&gt;snapshot这个二进制可执行文件（对应的源码在目录third&lt;/span&gt;party/dart/runtime/bin/gen&lt;span&gt;snapshot.cc），生成机器码。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;&lt;img data-ratio=&quot;0.38263665594855306&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1GgveSJlIib1MicndkpiaraxEhqpdDNHQeK79TOJiccjPVpPibNgxemCPT8lRW2Hzg8iaSwGN3paelOckjw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1244&quot;/&gt;用放大镜来看看gen&lt;/span&gt;snapshot内部的执行过程：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;img data-ratio=&quot;0.948892674616695&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1GgveSJlIib1MicndkpiaraxEhQuj5djmza2HESBSyS2td55XdUZiczvcMdhDsxJQwSoULKcnA0ufiaxJA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1174&quot;/&gt;&lt;span&gt;tree-shaking机制就发生在其中的编译阶段，即 &lt;/span&gt;&lt;code&gt;&lt;span&gt;CompileAll()&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 方法。下面我们深入到代码去一步一步探究，Flutter编译器是怎么对代码做裁剪的。&lt;/span&gt;&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;&lt;span&gt;源代码路径是third_party/dart/runtime/vm/compiler/aot/precompiler.cc，读者也可以自行对照查询。&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;h4&gt;&lt;span&gt;&lt;strong&gt;编译阶段&lt;/strong&gt;&lt;/span&gt;&lt;/h4&gt;&lt;p&gt;&lt;span&gt;首先是必备的准备工作，需要将对象池保留到AOT编译结束，因此这里必须使用能存活那么久的句柄，使用了StackZone。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;img data-ratio=&quot;0.2848360655737705&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1GgveSJlIib1MicndkpiaraxEhfq6fMmxh6yAf9rWIKiaMAjtfEHI9cF2nyJGRtl3epPw94R5IMstvb7A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;976&quot;/&gt;&lt;span&gt;为了使用类层次结构分析 (CHA)，在编译前需要确保类的层次结构稳定，同时确保查找入口点时不会因为函数的类还没有最终确定而漏掉函数。CHA是一种编译器优化，可根据对类层次结构的分析结果，将虚拟调用去虚拟化为直接调用。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;img data-ratio=&quot;0.5449101796407185&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1GgveSJlIib1MicndkpiaraxEhcPCGadRSv8Genya2W4e9aWzVhO4nr2XFhowD1h4rfXJviaD7TrZYu9A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1002&quot;/&gt;&lt;span&gt;预编译构造函数，计算优化指令数等信息，可以用于内联函数。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;img data-ratio=&quot;0.15517241379310345&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1GgveSJlIib1MicndkpiaraxEh8q1Mwuvc8gthN8wPyxNn5vB8kKAdrLia7eHA7JKEvDDFBvmvuf4B5oQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1508&quot;/&gt;&lt;span&gt;下一步生成桩代码，通过 &lt;/span&gt;&lt;code&gt;&lt;span&gt;StubCode::InterpretCall&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 得到的code来获取它的对象池，再利用 &lt;/span&gt;&lt;code&gt;&lt;span&gt;StubCode::Build&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 等一系列方法系列方法获取的结果保存在object_store。收集动态函数的方法名，之后通过 &lt;/span&gt;&lt;code&gt;&lt;span&gt;AddRoots()&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 方法，从C++发生的分配和调用的起点添加为根， 同时通过 &lt;/span&gt;&lt;code&gt;&lt;span&gt;AddAnnotatedRoots()&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 方法将所有以@pragma（’vm：entry-point’）为标注的也添加为根。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;img data-ratio=&quot;0.3527272727272727&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1GgveSJlIib1MicndkpiaraxEh1x5WR40LQwMicd9D0ro3D3Tacho3x4UmN4WuEJdCEVUXwPLyqIc5lvw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;550&quot;/&gt;&lt;span&gt;之后，代码开始编译， &lt;/span&gt;&lt;code&gt;&lt;span&gt;Iterate()&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 是编译最为核心的地方。在这里会以上面找到的根作为目标，遍历添加该目标的调用者。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;img data-ratio=&quot;0.7601809954751131&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1GgveSJlIib1MicndkpiaraxEhKc00NWBdfWd2QRt1MsTC06bicX92HhRKLbMCppgsogba2Fpp1xbzNPw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;884&quot;/&gt;&lt;span&gt;在该方法内部，主要的调用链如下：&lt;/span&gt;&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;&lt;span&gt;ProcessFunction
+==&amp;gt; CompileFunction
+==&amp;gt; PrecompileFunctionHelper
+==&amp;gt; PrecompileParsedFunctionHelper.Compile&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;&lt;span&gt;至此，编译完成之后开始进入Tree-Shaking阶段，对无用代码进行简化。&lt;/span&gt;&lt;/p&gt;&lt;h4&gt;&lt;span&gt;&lt;strong&gt;Tree shaking阶段&lt;/strong&gt;&lt;/span&gt;&lt;/h4&gt;&lt;p&gt;&lt;span&gt;在上面的编译过程中，函数/类等调用信息已经进行了输出，根据这些信息，让编译器可以知道，具体哪一些是不必要的代码。这里以对Function的处理为例进行讲解：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在这个方法中，取得Library、Class等句柄之后，以Library为单位，对每个包内的代码进行处理，会遍历所有类中的Functions进行处理。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;img data-ratio=&quot;0.4041916167664671&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1GgveSJlIib1MicndkpiaraxEhbhsiasvJicsJKur99hr5eGGFhOEBic43v4VulrE0t7EpytibEIHOcQb1kQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1336&quot;/&gt;&lt;span&gt;通过 &lt;/span&gt;&lt;code&gt;&lt;span&gt;AddTypesOf(constFunction&amp;amp;function)&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 方法，将调用到的函数添加到 &lt;/span&gt;&lt;code&gt;&lt;span&gt;functions_to_retain_&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 池中，同时对Function中的类型参数做了读取，通过 &lt;/span&gt;&lt;code&gt;&lt;span&gt;AddType&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 方法，将这些类型参数添加到对应的 &lt;/span&gt;&lt;code&gt;&lt;span&gt;typeargs_to_retain_&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 池和 &lt;/span&gt;&lt;code&gt;&lt;span&gt;types_to_retain_&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 池中，用于类型信息的TreeShaking（分别对应DropTypeArguments和DropTypeParameters）。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;img data-ratio=&quot;0.5249221183800623&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1GgveSJlIib1MicndkpiaraxEhhBzEulxn8ib425DD6InjSvQicMcPkRpp0qAJ7QqE0icTIysBa1vZramBQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1284&quot;/&gt;&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;&lt;span&gt;Class信息在同名方法 &lt;/span&gt;&lt;code&gt;&lt;span&gt;AddTypesOf(constClass&amp;amp;cls)&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 中进行处理，处理过程比较类似，这里不做赘述，感兴趣的读者可以自行查阅&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;&lt;span&gt;这个方法里面，会确保在执行Drop方法之前建立用于序列化调度表的条目，因为编译器后续可能会清除对Code对象的引用。同时删除调度表生成器，以确保在这之后不再尝试添加新条目。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在这个方法里通过声明的匿名内部类 &lt;/span&gt;&lt;code&gt;&lt;span&gt;StaticCallTableEntryFixer&lt;/span&gt;&lt;/code&gt;&lt;span&gt; ，对静态函数调用入口做了替换。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;接下来，会执行一系列的Drop方法。这些方法会去掉多余的方法、字段、类、库等，如下所示：&lt;/span&gt;&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;DropFunctions();&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;DropFields();&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;DropTypes();&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;DropTypeParameters();&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;DropTypeArguments();&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;DropMetadata();&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;DropLibraryEntries();&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;DropClasses();&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;DropLibraries();&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;span&gt;具体调用时序如下图所示：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;img data-ratio=&quot;0.6331428571428571&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1GgveSJlIib1MicndkpiaraxEhUIayr0icbgbeABsV1ssndpRgM9tUZ3ibaCTibGGehtmVb800VHejWGwsg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;875&quot;/&gt;&lt;span&gt;由于这些方法的内部实现思路有很多相似之处，这里针对Function的方法 &lt;/span&gt;&lt;code&gt;&lt;span&gt;DropFunctions&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 为例来说明。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在该方法中，核心是通过以上提到 &lt;/span&gt;&lt;code&gt;&lt;span&gt;functions_to_retain_&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 池，对Function是否有根调用者进行判断， 如果池中不包含Function对象，说明这是可以舍弃的Function。之后，将剩下的Function重新写回Class，并更新Class的调用表。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在方法内部声明了drop_function函数来“摇掉”Function。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;img data-ratio=&quot;0.6970802919708029&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1GgveSJlIib1MicndkpiaraxEh8d5nEULgw3RvQQzhc3AVKibHxrjufPcolHaE9vYRNs0mvFs0rhaNlOA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1096&quot;/&gt;&lt;span&gt;之后使用对所有的代码中的Function进行遍历， 使用上面声明的 &lt;/span&gt;&lt;code&gt;&lt;span&gt;drop_function&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 对无用的Function代码进行标记和删除。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;img data-ratio=&quot;0.5763779527559055&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1GgveSJlIib1MicndkpiaraxEhMIYPzss0GbRVBBDcZPJdPpUQ9TO0CU7zfzHPe3vEsvDfjDrfQe0RPw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1270&quot;/&gt;&lt;span&gt;将需要被保留的Funtion重新写进所属Class中：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;img data-ratio=&quot;0.2821011673151751&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1GgveSJlIib1MicndkpiaraxEhcqsE4p5ufNicSEBWlvPNEst7SpItXMkcIeXP9c7877lhicE0o0me6v3Q/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1028&quot;/&gt;&lt;span&gt;重新生成类的调用表，同时对调用表中的可能存在的无用Function进行兜底删除：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;img data-ratio=&quot;0.6324921135646687&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1GgveSJlIib1MicndkpiaraxEhDwkmqspnlXPeiasF37ky6BBbWFov2l1ZQonJMKic4uazOg6gzvbLX6uw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1268&quot;/&gt;&lt;span&gt;最后是一些内联函数等边界情况的处理，这里不再赘述。在完成Drop阶段之后，可以被丢掉的代码已经进入了删除池中，后面进入编译的收尾阶段，进一步减小二进制文件大小。&lt;/span&gt;&lt;/p&gt;&lt;h4&gt;&lt;span&gt;&lt;strong&gt;收尾阶段&lt;/strong&gt;&lt;/span&gt;&lt;/h4&gt;&lt;p&gt;&lt;span&gt;在Tree-Shaking结束之后，进入编译收尾工作，包括代码混淆，垃圾回收等。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;img data-ratio=&quot;0.755056179775281&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1GgveSJlIib1MicndkpiaraxEhrPmoOvQ9Bk4CJb2T1Jn6q4f9J80K3EsryCTRJHMHvfjAgCgXdWTaHg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;890&quot;/&gt;&lt;span&gt;值得注意的是Dedup这个方法，关键代码代码如下：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;img data-ratio=&quot;0.7250859106529209&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1GgveSJlIib1MicndkpiaraxEhyHf0emsgNlRicPfCvjUo67ALAv3WAkaIQK3FvSHW6k4AYMDqUbLN8icQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1164&quot;/&gt;&lt;span&gt;在该方法内进行很多重复数据删除工作；在AOT模式下，binder是在Tree Shaking之后运行的，在此期间，所有的目标都已经被编译，因此binder会用对目标的直接调用代替所有的静态调用，进一步减小了编译产物二进制文件。至此所有的编译工作完成，Tree-Shaking完成了他的使命。&lt;/span&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;拓展&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;span&gt;在Flutter 1.20版本，通过Tree-Shaking机制移除在工程中未使用到的icon fonts，进一步缩小了包大小（100KB左右），不过该方法的实现并不在以上说明的编译阶段，而是在build_system里，对assets进行了优化。相关的PR在&lt;/span&gt;&lt;span&gt;github.com/flutter/flutte/pull/49737&lt;/span&gt;&lt;span&gt;可以查看。&lt;/span&gt;&lt;/p&gt;&lt;h2&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;小结&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;本文主要结合Flutter Engine源代码，从编译阶段出发，探究了在过程中Tree-Shaking的运行机制。由于这样一个机制的存在，为工程解耦提供了理论基础，让工程一体化的实现更为简单，同时对我们进一步优化包大小有启发。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;1.5171875&quot; data-s=&quot;300,640&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1Eojqc694G4ReIf3N1VHTwLkBHVJESIFLiczQ4vDlNtfiaVYRMeOUwXUB9IaFricKteNTWg48zcxmpMA/640?wx_fmt=png&quot;/&gt;&lt;/p&gt;
+                &lt;/div&gt;
+
+                
+
+                
+
+
+
+                
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>ffbe86900a34af7751874448f42a794a</guid>
+<title>BigDecimal 的使用</title>
+<link>https://toutiao.io/k/qzfxl8x</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;post-body&quot; itemprop=&quot;articleBody&quot;&gt;
+
+      
+      
+
+      
+        &lt;p&gt;BigDecimal是&lt;code&gt;java.math&lt;/code&gt;包中的一个类，用来对超过16位有效位的数进行精确的运算。一般情况下，我们不需要太精确的数值运算可以直接使用Float和Double处理，但是正常工作中，肯定是需要对数值是精确点的，这时候可以使用BigDecimal。&lt;br/&gt;&lt;a id=&quot;more&quot;/&gt;&lt;/p&gt;
+&lt;h3 id=&quot;float和double的精度&quot;&gt;&lt;a href=&quot;#float和double的精度&quot; class=&quot;headerlink&quot; title=&quot;float和double的精度&quot;/&gt;float和double的精度&lt;/h3&gt;&lt;p&gt;在使用BigDecimal先了解float和double的精度问题，float占32位(bit),double占64位，即float占4个字节，double占8个字节。&lt;/p&gt;
+&lt;p&gt;float和double的范围是由指数的位数来决定的。float的存储时候1个bit是符号位，8个bit是指数位，剩下的23个bit是有效数字位，double存储的时候1个bit是符号位，11个bit是位指数位，剩下的52个bit是尾数位。精度由尾数决定，float的精度为7~8位有效数字，double的精度为16~17位。&lt;/p&gt;
+&lt;p&gt;我们在使用float或者double会出现精度问题&lt;br/&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;float a = 0.05f;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;float b = 0.01f;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;System.out.println(a + b);&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;这个代码出现的结果不是0.06，而是0.060000002，同样double也会出现这样的问题&lt;br/&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;double c = 0.05d;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;double d = 0.01d;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;System.out.println(c + d);&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;打印结果是0.060000000000000005。&lt;/p&gt;
+&lt;p&gt;基于上述会出现的精度丢失的问题，我们有必要使用BigDecimal进行精确的计算。&lt;/p&gt;
+&lt;h3 id=&quot;BigDecimal&quot;&gt;&lt;a href=&quot;#BigDecimal&quot; class=&quot;headerlink&quot; title=&quot;BigDecimal&quot;/&gt;BigDecimal&lt;/h3&gt;&lt;h4 id=&quot;构造函数&quot;&gt;&lt;a href=&quot;#构造函数&quot; class=&quot;headerlink&quot; title=&quot;构造函数&quot;/&gt;构造函数&lt;/h4&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;BigDecimal(int)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;创建一个具有参数所指定整数值的对象&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;BigDecimal(double)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;创建一个具有参数所指定双精度值的对象&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;BigDecimal(long)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;创建一个具有参数所指定长整数值的对象&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;BigDecimal(String)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;创建一个具有参数所指定以字符串表示的数值的对象&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;p&gt;虽然构造函数支持float、double，但是我们也千万要注意使用string，不然同样会出现精度问题&lt;br/&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;float a = 0.05f;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;float b = 0.01f;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;BigDecimal m = new BigDecimal(a);&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;BigDecimal n = new BigDecimal(b);&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;System.out.println(m.add(n));&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;结果是0.060000000000000005，因为你以为传入a的值是0.05，但是BigDecimal构造的时候不是0.005，而是其更精确的值。这样就还是会出现精度问题，所以要用string方式构造。&lt;br/&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;BigDecimal s = new BigDecimal(String.valueOf(a));&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;BigDecimal t = new BigDecimal(String.valueOf(b));&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;System.out.println(s.add(t));&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;结果就是0.06&lt;/p&gt;
+&lt;h4 id=&quot;常用方法&quot;&gt;&lt;a href=&quot;#常用方法&quot; class=&quot;headerlink&quot; title=&quot;常用方法&quot;/&gt;常用方法&lt;/h4&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;12&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;13&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;14&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;15&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;16&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;17&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;18&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;19&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;20&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;21&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;22&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;23&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;24&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;25&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;26&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;add(BigDecimal)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;BigDecimal对象中的值相加，返回BigDecimal对象&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;subtract(BigDecimal)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;BigDecimal对象中的值相减，返回BigDecimal对象&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;multiply(BigDecimal)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;BigDecimal对象中的值相乘，返回BigDecimal对象&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;divide(BigDecimal)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;BigDecimal对象中的值相除，返回BigDecimal对象&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;toString()&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;将BigDecimal对象中的值转换成字符串&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;doubleValue()&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;将BigDecimal对象中的值转换成双精度数&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;floatValue()&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;将BigDecimal对象中的值转换成单精度数&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;longValue()&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;将BigDecimal对象中的值转换成长整数&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;intValue()&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;将BigDecimal对象中的值转换成整数&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+
+      
+    &lt;/div&gt;
+    
+    
+    
+
+    
+
+    
+
+    
+
+    &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>6d3051b69a94b208a3f2420684a798f9</guid>
+<title>双十一，买它买它买它！</title>
+<link>https://toutiao.io/k/pr492jn</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
+
+                    
+
+                    
+                    
+                    &lt;p&gt;&lt;span&gt;大家好，我是周刊菌。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;一周过得好快啊！又快周五啦！&lt;span&gt;第 029 期「码农周刊 VIP 会员专属邮件周报」，将于本周五晚发送。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;数位上市公司 CTO 都在订阅的「码农周刊 VIP 会员专属邮件周报」，你还等什么？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-cropselx1=&quot;0&quot; data-cropselx2=&quot;255&quot; data-cropsely1=&quot;0&quot; data-cropsely2=&quot;255&quot; data-ratio=&quot;1&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/t8lpVibticjQ4LlicrXjOxMtaQDWoib2X24FnCibVaaZDqGa6VhDuw5a6cJtG8eg35xVuS75hozib0Z3Kib07lhzJsTSA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;274&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;「码农周刊 VIP 会员」是什么？&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;简介版&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;码农周刊 VIP 会员 = 全年 52 期「VIP 会员专属邮件周报」 + 只限 VIP 会员加入的交流圈子 + 大厂「内推机会」 + N 多福利&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;详细版&lt;/span&gt;&lt;br/&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;点击「阅读原文」即可查看详细介绍&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;加入「码农周刊 VIP 会员」，与上市公司 CTO 一起成长！&lt;br/&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;全年 52 期「VIP 会员专属邮件周报」 + 只限 VIP 会员加入的交流圈子 + 大厂「内推机会」 + N 多福利，你值得拥有！&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;&lt;strong&gt;原价 365 元/年&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;&lt;strong&gt;，现价仅需 108 元！&lt;/strong&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-cropselx1=&quot;0&quot; data-cropselx2=&quot;260&quot; data-cropsely1=&quot;0&quot; data-cropsely2=&quot;350&quot; data-ratio=&quot;1.3478260869565217&quot; data-s=&quot;300,640&quot; data-type=&quot;jpeg&quot; data-w=&quot;690&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/t8lpVibticjQ55lkiaIfFtAvQ7oklJLhfYEwMXeZORosBgxxRzEaXjYiapBSev2CQfYfl7kTiaFqsoiaicGyvcKIHzcSg/640?wx_fmt=jpeg&quot;/&gt;&lt;/p&gt;
+                &lt;/div&gt;
+
+                
+
+                
+
+
+
+                
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
