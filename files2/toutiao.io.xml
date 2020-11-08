@@ -73,9 +73,216 @@
 &lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>246afc0ae304dc4a26bd7f2345f4774f</guid>
-<title>提前试用将在 Go 1.16 中发布的内嵌静态资源功能</title>
-<link>https://toutiao.io/k/65vg2c1</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;大家好，我是站长 polarisxu。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;喜欢 Go 语言有很多理由，其中有一点“因为编译为一个二进制文件，直接运行，没有其他依赖，使得部署特别容易。”我想是很多人喜欢的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;然而一个项目，很可能会包含一些静态资源文件，这样一来，一个 Go 二进制文件就不能解决了，需要将静态资源文件一起带上。于是有了很多第三方解决方案，将静态资源文件“嵌入”最终的 Go 二进制文件中。最知名的应该是 go-bindata，此外还有很多其他的：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;github.com/alecthomas/gobundle&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;github.com/GeertJohan/go.rice&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;github.com/go-playground/statics&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;github.com/gobuffalo/packr&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;github.com/knadh/stuffbin&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;github.com/mjibson/esc&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;github.com/omeid/go-resources&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;github.com/phogolabs/parcello&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;github.com/pyros2097/go-embed&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;github.com/rakyll/statik&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;github.com/shurcooL/vfsgen&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;github.com/UnnoTed/fileb0x&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;github.com/wlbr/templify&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;perkeep.org/pkg/fileembed&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;从这个列表足以看出需求的广泛性。于是官方决定提供实现，在 go 命令中实现该功能。因为在 Go 命令中添加对嵌入基本功能的直接支持将消除对某些工具的需求，至少可以简化其他工具的实现。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;2020 年 10 月 30 日，Russ Cox 提交了最终的实现：[cmd/go: add //go:embed support](cmd/go: add //go:embed support)，意味着你在 tip 版本可以试用该功能了。Go1.16 版本会包含该功能。欢迎大家试用，反馈建议。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;01 试用 go embed&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;通过几个示例快速了解 go embed 的用法。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;例 1：内嵌文件 — Web 应用&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;基于 Echo 框架：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;package&lt;/span&gt; main&lt;br/&gt;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; (&lt;br/&gt; _ &lt;span&gt;&quot;embed&quot;&lt;/span&gt;&lt;br/&gt; &lt;span&gt;&quot;net/http&quot;&lt;/span&gt;&lt;br/&gt;&lt;br/&gt; &lt;span&gt;&quot;github.com/labstack/echo&quot;&lt;/span&gt;&lt;br/&gt;)&lt;br/&gt;&lt;br/&gt;&lt;span&gt;//go:embed static/logo.png&lt;/span&gt;&lt;br/&gt;&lt;span&gt;var&lt;/span&gt; content []&lt;span&gt;byte&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt; e := echo.New()&lt;br/&gt; e.GET(&lt;span&gt;&quot;/&quot;&lt;/span&gt;, &lt;span&gt;&lt;span&gt;func&lt;/span&gt;&lt;span&gt;(c echo.Context)&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;  &lt;span&gt;return&lt;/span&gt; c.Blob(http.StatusOK, &lt;span&gt;&quot;image/png&quot;&lt;/span&gt;, content)&lt;br/&gt; })&lt;br/&gt; e.Logger.Fatal(e.Start(&lt;span&gt;&quot;:8989&quot;&lt;/span&gt;))&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;目录结构如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;.&lt;br/&gt;├── main.go&lt;br/&gt;└── static&lt;br/&gt;    └── logo.png&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;编译运行后，可以将二进制文件移到任何地方运行，浏览器访问 http://localhhost:8989，能够正确显示 logo 图片表示成功了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;基于 Gin 框架，代码类似：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;package&lt;/span&gt; main&lt;br/&gt;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; (&lt;br/&gt;    _ &lt;span&gt;&quot;embed&quot;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&quot;net/http&quot;&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&quot;github.com/gin-gonic/gin&quot;&lt;/span&gt;&lt;br/&gt;)&lt;br/&gt;&lt;br/&gt;&lt;span&gt;//go:embed static/logo.png&lt;/span&gt;&lt;br/&gt;&lt;span&gt;var&lt;/span&gt; content []&lt;span&gt;byte&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;    router := gin.Default()&lt;br/&gt;    router.GET(&lt;span&gt;&quot;/&quot;&lt;/span&gt;, &lt;span&gt;&lt;span&gt;func&lt;/span&gt;&lt;span&gt;(ctx *gin.Context)&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;        ctx.Data(http.StatusOK, &lt;span&gt;&quot;image/png&quot;&lt;/span&gt;, content)&lt;br/&gt;    })&lt;br/&gt;&lt;br/&gt;    router.Run(&lt;span&gt;&quot;:8989&quot;&lt;/span&gt;)&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;直接使用 net/http 库，代码如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;package&lt;/span&gt; main&lt;br/&gt;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; (&lt;br/&gt;    _ &lt;span&gt;&quot;embed&quot;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&quot;log&quot;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&quot;net/http&quot;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&quot;fmt&quot;&lt;/span&gt;&lt;br/&gt;)&lt;br/&gt;&lt;br/&gt;&lt;span&gt;//go:embed static/logo.png&lt;/span&gt;&lt;br/&gt;&lt;span&gt;var&lt;/span&gt; content []&lt;span&gt;byte&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;    http.HandleFunc(&lt;span&gt;&quot;/&quot;&lt;/span&gt;, &lt;span&gt;&lt;span&gt;func&lt;/span&gt;&lt;span&gt;(w http.ResponseWriter, r *http.Request)&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;        w.Header().Add(&lt;span&gt;&quot;Content-Type&quot;&lt;/span&gt;, &lt;span&gt;&quot;image/png&quot;&lt;/span&gt;)&lt;br/&gt;        w.WriteHeader(http.StatusOK)&lt;br/&gt;        fmt.Fprintf(w, &lt;span&gt;&quot;%s&quot;&lt;/span&gt;, content)&lt;br/&gt;    })&lt;br/&gt;&lt;br/&gt;    log.Fatal(http.ListenAndServe(&lt;span&gt;&quot;:8989&quot;&lt;/span&gt;, &lt;span&gt;nil&lt;/span&gt;))&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;例 2：内嵌文件 — 命令行应用&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;简单的 Hello World：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;package&lt;/span&gt; main&lt;br/&gt;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; (&lt;br/&gt;    _ &lt;span&gt;&quot;embed&quot;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&quot;fmt&quot;&lt;/span&gt;&lt;br/&gt;)&lt;br/&gt;&lt;br/&gt;&lt;span&gt;//go:embed message.txt&lt;/span&gt;&lt;br/&gt;&lt;span&gt;var&lt;/span&gt; message &lt;span&gt;string&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;    fmt.Println(message)&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其中 messaeg.txt 中的内容是 Hello World。目录结构如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;.&lt;br/&gt;├── main.go&lt;br/&gt;└── message.txt&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;编译后，可以将二进制移到任何地方，运行输出 Hello World（即 messaeg.txt 中的内容）。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;例 3：内嵌目录 - 命令行应用&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;以下程序将 static 目录内嵌到二进制程序中，然后在当前目录创建 static 目录中的所有文件。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;package&lt;/span&gt; main&lt;br/&gt;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; (&lt;br/&gt; &lt;span&gt;&quot;embed&quot;&lt;/span&gt;&lt;br/&gt; &lt;span&gt;&quot;io&quot;&lt;/span&gt;&lt;br/&gt; &lt;span&gt;&quot;log&quot;&lt;/span&gt;&lt;br/&gt; &lt;span&gt;&quot;os&quot;&lt;/span&gt;&lt;br/&gt; &lt;span&gt;&quot;path&quot;&lt;/span&gt;&lt;br/&gt;)&lt;br/&gt;&lt;br/&gt;&lt;span&gt;//go:embed static&lt;/span&gt;&lt;br/&gt;&lt;span&gt;var&lt;/span&gt; local embed.FS&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt; fis, err := local.ReadDir(&lt;span&gt;&quot;static&quot;&lt;/span&gt;)&lt;br/&gt; &lt;span&gt;if&lt;/span&gt; err != &lt;span&gt;nil&lt;/span&gt; {&lt;br/&gt;  log.Fatal(err)&lt;br/&gt; }&lt;br/&gt; &lt;span&gt;for&lt;/span&gt; _, fi := &lt;span&gt;range&lt;/span&gt; fis {&lt;br/&gt;  in, err := local.Open(path.Join(&lt;span&gt;&quot;static&quot;&lt;/span&gt;, fi.Name()))&lt;br/&gt;  &lt;span&gt;if&lt;/span&gt; err != &lt;span&gt;nil&lt;/span&gt; {&lt;br/&gt;   log.Fatal(err)&lt;br/&gt;  }&lt;br/&gt;  out, err := os.Create(&lt;span&gt;&quot;embed-&quot;&lt;/span&gt; + path.Base(fi.Name()))&lt;br/&gt;  &lt;span&gt;if&lt;/span&gt; err != &lt;span&gt;nil&lt;/span&gt; {&lt;br/&gt;   log.Fatal(err)&lt;br/&gt;  }&lt;br/&gt;  io.Copy(out, in)&lt;br/&gt;  out.Close()&lt;br/&gt;  in.Close()&lt;br/&gt;  log.Println(&lt;span&gt;&quot;exported&quot;&lt;/span&gt;, &lt;span&gt;&quot;embed-&quot;&lt;/span&gt;+path.Base(fi.Name()))&lt;br/&gt; }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;该示例的目录结构和例 1 一样。编译后，可以将二进制文件移到任何地方，运行后，会在当前目录输出以 embed- 开头的文件。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;例 4：内嵌目录 — Web 应用&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;基于 Echo 框架：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;package&lt;/span&gt; main&lt;br/&gt;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; (&lt;br/&gt;    &lt;span&gt;&quot;embed&quot;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&quot;net/http&quot;&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&quot;github.com/labstack/echo/v4&quot;&lt;/span&gt;&lt;br/&gt;)&lt;br/&gt;&lt;br/&gt;&lt;span&gt;//go:embed static&lt;/span&gt;&lt;br/&gt;&lt;span&gt;var&lt;/span&gt; local embed.FS&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;    e := echo.New()&lt;br/&gt;    e.GET(&lt;span&gt;&quot;/*&quot;&lt;/span&gt;, echo.WrapHandler(http.FileServer(http.FS(local))))&lt;br/&gt;    e.Logger.Fatal(e.Start(&lt;span&gt;&quot;:8989&quot;&lt;/span&gt;))&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;同样，目录结构和 example1 一致。编译后运行，访问 http://localhost:8989，看到如下界面：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.39603960396039606&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UzjmETLXwBZwy8q3YDIhicTlDV4ich9SdcSzlF8zAZ115EZWr2Lp1ALeLroEJQ2EoiaR1siallLaXTEvIOpFkDevwg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;606&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;注意上面使用的是 &lt;code&gt;/*&lt;/code&gt;，如果直接使用 &lt;code&gt;/&lt;/code&gt;，点击链接会是 404。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;换成 Gin，代码如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;package&lt;/span&gt; main&lt;br/&gt;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; (&lt;br/&gt;    &lt;span&gt;&quot;embed&quot;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&quot;net/http&quot;&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&quot;github.com/gin-gonic/gin&quot;&lt;/span&gt;&lt;br/&gt;)&lt;br/&gt;&lt;br/&gt;&lt;span&gt;//go:embed static/*&lt;/span&gt;&lt;br/&gt;&lt;span&gt;var&lt;/span&gt; local embed.FS&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;    router := gin.Default()&lt;br/&gt;    router.GET(&lt;span&gt;&quot;/*filepath&quot;&lt;/span&gt;, gin.WrapH(http.FileServer(http.FS(local))))&lt;br/&gt;&lt;br/&gt;    router.Run(&lt;span&gt;&quot;:8989&quot;&lt;/span&gt;)&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;结果和 Echo 框架一样。同样要注意是 &lt;code&gt;/*filepath&lt;/code&gt;，不能是 &lt;code&gt;/&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;换成标准库 net/http 试试？&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;package&lt;/span&gt; main&lt;br/&gt;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; (&lt;br/&gt;    &lt;span&gt;&quot;embed&quot;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&quot;log&quot;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&quot;net/http&quot;&lt;/span&gt;&lt;br/&gt;)&lt;br/&gt;&lt;br/&gt;&lt;span&gt;//go:embed static&lt;/span&gt;&lt;br/&gt;&lt;span&gt;var&lt;/span&gt; local embed.FS&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;    http.Handle(&lt;span&gt;&quot;/&quot;&lt;/span&gt;, http.FileServer(http.FS(local)))&lt;br/&gt;    log.Fatal(http.ListenAndServe(&lt;span&gt;&quot;:8989&quot;&lt;/span&gt;, &lt;span&gt;nil&lt;/span&gt;))&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;标准库中 &lt;code&gt;/&lt;/code&gt; 会自动处理所有的请求。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;02 //go:embed 指令&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;之前第三方的现实，基本是基于 go generate，将静态资源文件生成 go 源文件，最后编译进二进制文件中。官方的实现，通过 &lt;code&gt;//go:embed&lt;/code&gt; 指令，在编译时将静态资源嵌入二进制文件中。然后，Go 通过标准库，让用户能够访问这些内嵌的资源。因此，先介绍下 &lt;code&gt;//go:embed&lt;/code&gt; 指令的用法。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;相关规则&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在变量声明上方，通过 &lt;code&gt;//go:embed&lt;/code&gt; 指令指定一个或多个符合 path.Match 模式的要嵌入的文件或目录。相关规则或使用注意如下：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;1）跟其他指令一样，// 和 go:embed 之间不能有空格。（不会报错，但该指令会被编译器忽略）&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;2）指令和变量声明之间可以有空行或普通注释，不能有其他语句；&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;//go:embed message.txt&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;var&lt;/span&gt; message &lt;span&gt;string&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;以上代码是允许的，不过建议紧挨着，而且建议变量声明和指令之间也别加注释，注释应该放在指令上方。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;3）变量的类型只能是 string、[]byte 或 embed.FS，即使是这三个类型的别名也不行；&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;type&lt;/span&gt; mystring = &lt;span&gt;string&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;//go:embed hello.txt&lt;/span&gt;&lt;br/&gt;&lt;span&gt;var&lt;/span&gt; message mystring &lt;span&gt;// 编译不通过：go:embed cannot apply to var of type mystring&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;4）允许有多个 &lt;code&gt;//go:embed&lt;/code&gt; 指令。多个文件或目录可以通过空格分隔，也可以写多个指令。比如：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;//go:embed image template&lt;/span&gt;&lt;br/&gt;&lt;span&gt;//go:embed html/index.html&lt;/span&gt;&lt;br/&gt;&lt;span&gt;var&lt;/span&gt; content embed.FS&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;5）文件或目录使用的是相对路径，相对于指令所在 Go 源文件所在的目录，路径分隔符永远使用 &lt;code&gt;/&lt;/code&gt;；当文件或目录名包含空格时，可以使用双引号或反引号括起来。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;6）对于目录，会以该目录为根，递归的方式嵌入所有文件和子目录；&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;7）变量的声明可以是导出或非导出的；可以是全局也可以在函数内部；但只能是声明，不能给初始化值；&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;//go:embed message.txt&lt;/span&gt;&lt;br/&gt;&lt;span&gt;var&lt;/span&gt; message &lt;span&gt;string&lt;/span&gt; = &lt;span&gt;&quot;&quot;&lt;/span&gt; &lt;span&gt;// 编译不通过：go:embed cannot apply to var with initializer&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;8）只能内嵌模块内的文件，比如 &lt;code&gt;.git/*&lt;/code&gt; 或软链接文件无法匹配；空目录会被忽略；&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;9）模式不能包含 &lt;code&gt;.&lt;/code&gt; 或 &lt;code&gt;..&lt;/code&gt;，也不能以 &lt;code&gt;/&lt;/code&gt; 开始，如果要匹配当前目录所有文件，应该使用 &lt;code&gt;*&lt;/code&gt; 而不是 &lt;code&gt;.&lt;/code&gt;；&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;03 标准库&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;和 embed 相关的标准库有 5 个，其中 2 个是新增的：embed 和 io/fs；net/http，text/template 和 html/template 包依赖 io/fs 包，而 embed.FS 类型实现了 io/fs 包的 FS 接口，因此这 3 个包可以使用 embed.FS。（Go1.16 发布时可能还会增加其他包或修改一些包的内容）&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;io/fs 包&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;该包定义了文件系统的基本接口。文件系统既可以由主机操作系统提供，也可以由其他包提供。本文我们主要介绍和 embed 密切相关的内容。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;先看 &lt;strong&gt;FS 接口&lt;/strong&gt;：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;type&lt;/span&gt; FS &lt;span&gt;interface&lt;/span&gt; {&lt;br/&gt;    &lt;span&gt;// Open opens the named file.&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;//&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// When Open returns an error, it should be of type *PathError&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// with the Op field set to &quot;open&quot;, the Path field set to name,&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// and the Err field describing the problem.&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;//&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// Open should reject attempts to open names that do not satisfy&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// ValidPath(name), returning a *PathError with Err set to&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// ErrInvalid or ErrNotExist.&lt;/span&gt;&lt;br/&gt;    Open(name &lt;span&gt;string&lt;/span&gt;) (File, error)&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;FS 提供对分层文件系统的访问。像操作系统使用的文件系统就是一种分层文件系统。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;FS 接口是文件系统所需的最小实现。文件系统可以实现其他接口，比如 fs.ReadFileFS，以提供其他或优化的功能。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;File 接口&lt;/strong&gt;：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;type&lt;/span&gt; File &lt;span&gt;interface&lt;/span&gt; {&lt;br/&gt;    Stat() (FileInfo, error)&lt;br/&gt;    Read([]&lt;span&gt;byte&lt;/span&gt;) (&lt;span&gt;int&lt;/span&gt;, error)&lt;br/&gt;    Close() error&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;该接口定义对单个文件的访问。这是文件的最小实现要求。文件可以实现其他接口，例如 fs.ReadDirFile，io.ReaderAt 或 io.Seeker，以提供其他或优化的功能。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因为有了 FS、File 等的接口抽象，之前在 os 包中的一些内容移到了 io/fs 包中，比如 fs.FileInfo 接口、fs.FileMode 类型，os 中原有的定义改成了它们的别名。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;DirEntry 接口&lt;/strong&gt;：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;type&lt;/span&gt; DirEntry &lt;span&gt;interface&lt;/span&gt; {&lt;br/&gt;    &lt;span&gt;// Name returns the name of the file (or subdirectory) described by the entry.&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// This name is only the final element of the path (the base name), not the entire path.&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// For example, Name would return &quot;hello.go&quot; not &quot;/home/gopher/hello.go&quot;.&lt;/span&gt;&lt;br/&gt;    Name() &lt;span&gt;string&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;// IsDir reports whether the entry describes a directory.&lt;/span&gt;&lt;br/&gt;    IsDir() &lt;span&gt;bool&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;// Type returns the type bits for the entry.&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// The type bits are a subset of the usual FileMode bits, those returned by the FileMode.Type method.&lt;/span&gt;&lt;br/&gt;    Type() FileMode&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;// Info returns the FileInfo for the file or subdirectory described by the entry.&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// The returned FileInfo may be from the time of the original directory read&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// or from the time of the call to Info. If the file has been removed or renamed&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// since the directory read, Info may return an error satisfying errors.Is(err, ErrNotExist).&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// If the entry denotes a symbolic link, Info reports the information about the link itself,&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// not the link&#x27;s target.&lt;/span&gt;&lt;br/&gt;    Info() (FileInfo, error)&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;DirEntry 是从目录读取的条目（使用 ReadDir 函数或 ReadDirFile 的 ReadDir方法）。比如下面 embed 包中的 embed.FS 有一个方法 ReadDir 就返回了 DirEntry 类型的切片。这样可以遍历 embed.FS 这个文件系统。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;embed 包&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;资源文件嵌入 Go 二进制程序后，我们通过 embed 包可以访问它们。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;string 和 []byte&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当指令用于 string 或 []byte 时，只能有一个模式，匹配一个文件，字符串或 []byte 的内容是该文件的内容。这时虽然不需要使用 embed 包，但必须导入，因此采用空导入：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;import&lt;/span&gt; _ &lt;span&gt;&quot;embed&quot;&lt;/span&gt; &lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;FS（File System）&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;一般内嵌单个文件，采用 string 或 []byte 是最好的选择；但内嵌很多文件或目录树，应该使用 embed.FS 类型，这也是该包目前唯一的类型。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;type&lt;/span&gt; FS &lt;span&gt;struct&lt;/span&gt; {&lt;br/&gt; &lt;span&gt;// The compiler knows the layout of this struct.&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// See cmd/compile/internal/gc&#x27;s initEmbed.&lt;/span&gt;&lt;br/&gt; &lt;span&gt;//&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// The files list is sorted by name but not by simple string comparison.&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// Instead, each file&#x27;s name takes the form &quot;dir/elem&quot; or &quot;dir/elem/&quot;.&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// The optional trailing slash indicates that the file is itself a directory.&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// The files list is sorted first by dir (if dir is missing, it is taken to be &quot;.&quot;)&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// and then by base, so this list of files:&lt;/span&gt;&lt;br/&gt; &lt;span&gt;//&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// p&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// q/&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// q/r&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// q/s/&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// q/s/t&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// q/s/u&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// q/v&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// w&lt;/span&gt;&lt;br/&gt; &lt;span&gt;//&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// is actually sorted as:&lt;/span&gt;&lt;br/&gt; &lt;span&gt;//&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// p       # dir=.    elem=p&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// q/      # dir=.    elem=q&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// w/      # dir=.    elem=w&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// q/r     # dir=q    elem=r&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// q/s/    # dir=q    elem=s&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// q/v     # dir=q    elem=v&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// q/s/t   # dir=q/s  elem=t&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// q/s/u   # dir=q/s  elem=u&lt;/span&gt;&lt;br/&gt; &lt;span&gt;//&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// This order brings directory contents together in contiguous sections&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// of the list, allowing a directory read to use binary search to find&lt;/span&gt;&lt;br/&gt; &lt;span&gt;// the relevant sequence of entries.&lt;/span&gt;&lt;br/&gt; files *[]file&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;FS 是文件的只读集合，通常使用 &lt;code&gt;//go:embed&lt;/code&gt; 指令进行初始化。如果不使用 &lt;code&gt;//go:embed&lt;/code&gt; 指令声明 FS，则它是一个空文件系统。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;FS 是只读值，因此可以安全地同时使用多个 goroutine，也可以将 FS 类型的值相互赋值。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;FS 实现了 fs.FS，因此它可以与任何使用文件系统接口（fs.FS）的包一起使用，包括 net/http，text/template 和 html/template。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;此外，FS 还是实现了 fs.ReadDirFS 和 fs.ReadFileFS 这两个接口。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;所以，FS 实现了 3 个接口，一共 3 个方法：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;(f FS)&lt;/span&gt; &lt;span&gt;Open&lt;/span&gt;&lt;span&gt;(name &lt;span&gt;string&lt;/span&gt;)&lt;/span&gt; &lt;span&gt;(fs.File, error)&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;(f FS)&lt;/span&gt; &lt;span&gt;ReadDir&lt;/span&gt;&lt;span&gt;(name &lt;span&gt;string&lt;/span&gt;)&lt;/span&gt; &lt;span&gt;([]fs.DirEntry, error)&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;(f FS)&lt;/span&gt; &lt;span&gt;ReadFile&lt;/span&gt;&lt;span&gt;(name &lt;span&gt;string&lt;/span&gt;)&lt;/span&gt; &lt;span&gt;([]&lt;span&gt;byte&lt;/span&gt;, error)&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;关于它们的用法，在上文例子中有所涉及。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;04 实际项目使用&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;本节模拟一个实际项目，看怎么使用 embed，主要两个方面：嵌入静态资源；嵌入模板文件。本节示例代码地址：https://github.com/polaris1119/embed-example，采用 Echo 框架。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因为是演示 embed 的实际用法，因此项目做了尽可能简化，目录结构如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;.&lt;br/&gt;├── LICENSE&lt;br/&gt;├── README.md&lt;br/&gt;├── cmd&lt;br/&gt;│   └── blog&lt;br/&gt;│       └── main.go&lt;br/&gt;├── embed.go&lt;br/&gt;├── go.mod&lt;br/&gt;├── go.sum&lt;br/&gt;├── static&lt;br/&gt;│   └── css&lt;br/&gt;│       └── style.min.css&lt;br/&gt;└── template&lt;br/&gt;    └── index.html&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;做个说明：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;因为 &lt;code&gt;go:embed&lt;/code&gt; 指令只能从相对源码所在目录的位置引用资源，这里特意采用了 main.go 放在 cmd/blog 中这种方式，看这样如何处理资源嵌入；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;static 和 template 目录是需要嵌入的目录；&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因为 main.go 和 static/template 不在同一个目录，因此 main.go 中没法直接使用 &lt;code&gt;go:embed&lt;/code&gt; 指令。我们在 static 的同级目录下创建一个文件：embed.go，专门用来写该指令。代码如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;package&lt;/span&gt; embedexample&lt;br/&gt;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; (&lt;br/&gt; &lt;span&gt;&quot;embed&quot;&lt;/span&gt;&lt;br/&gt;)&lt;br/&gt;&lt;br/&gt;&lt;span&gt;//go:embed static&lt;/span&gt;&lt;br/&gt;&lt;span&gt;var&lt;/span&gt; StaticAsset embed.FS&lt;br/&gt;&lt;br/&gt;&lt;span&gt;//go:embed template&lt;/span&gt;&lt;br/&gt;&lt;span&gt;var&lt;/span&gt; TemplateFS embed.FS&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这样，项目中所有其他的地方都可以通过引用该包来使用内嵌的资源。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;接着看 main.go 的代码如何使用它的。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;package&lt;/span&gt; main&lt;br/&gt;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; (&lt;br/&gt; &lt;span&gt;&quot;html/template&quot;&lt;/span&gt;&lt;br/&gt; &lt;span&gt;&quot;io&quot;&lt;/span&gt;&lt;br/&gt; &lt;span&gt;&quot;net/http&quot;&lt;/span&gt;&lt;br/&gt;&lt;br/&gt; &lt;span&gt;&quot;github.com/labstack/echo/v4&quot;&lt;/span&gt;&lt;br/&gt; &lt;span&gt;&quot;github.com/labstack/echo/v4/middleware&quot;&lt;/span&gt;&lt;br/&gt; &lt;span&gt;&quot;github.com/polaris1119/embedexample&quot;&lt;/span&gt;&lt;br/&gt;)&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt; e := echo.New()&lt;br/&gt; e.Use(middleware.Recover())&lt;br/&gt; e.Use(middleware.Logger())&lt;br/&gt;&lt;br/&gt; tpl := &amp;amp;Template{&lt;br/&gt;  templates: template.Must(template.New(&lt;span&gt;&quot;index&quot;&lt;/span&gt;).ParseFS(embedexample.TemplateFS, &lt;span&gt;&quot;template/*.html&quot;&lt;/span&gt;)),&lt;br/&gt; }&lt;br/&gt; e.Renderer = tpl&lt;br/&gt;&lt;br/&gt; e.GET(&lt;span&gt;&quot;/static/*&quot;&lt;/span&gt;, echo.WrapHandler(http.FileServer(http.FS(embedexample.StaticAsset))))&lt;br/&gt;&lt;br/&gt; e.GET(&lt;span&gt;&quot;/&quot;&lt;/span&gt;, &lt;span&gt;&lt;span&gt;func&lt;/span&gt;&lt;span&gt;(ctx echo.Context)&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;  &lt;span&gt;return&lt;/span&gt; ctx.Render(http.StatusOK, &lt;span&gt;&quot;index.html&quot;&lt;/span&gt;, &lt;span&gt;nil&lt;/span&gt;)&lt;br/&gt; })&lt;br/&gt;&lt;br/&gt; e.Logger.Fatal(e.Start(&lt;span&gt;&quot;:2020&quot;&lt;/span&gt;))&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;type&lt;/span&gt; Template &lt;span&gt;struct&lt;/span&gt; {&lt;br/&gt; templates *template.Template&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;(t *Template)&lt;/span&gt; &lt;span&gt;Render&lt;/span&gt;&lt;span&gt;(w io.Writer, name &lt;span&gt;string&lt;/span&gt;, data &lt;span&gt;interface&lt;/span&gt;{}, c echo.Context)&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt; &lt;span&gt;return&lt;/span&gt; t.templates.ExecuteTemplate(w, name, data)&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;模板的引用：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;tpl := &amp;amp;Template{&lt;br/&gt;  templates: template.Must(template.New(&lt;span&gt;&quot;index&quot;&lt;/span&gt;).ParseFS(embedexample.TemplateFS, &lt;span&gt;&quot;template/*.html&quot;&lt;/span&gt;)),&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;通过 ParseFS 方法来实现，支持 path.Match 格式。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;而静态资源这样引用：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;e.GET(&lt;span&gt;&quot;/static/*&quot;&lt;/span&gt;, echo.WrapHandler(http.FileServer(http.FS(embedexample.StaticAsset))))&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这样，在模板文件 index.html 中就可以访问到样式文件了：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;&amp;lt;&lt;span&gt;link&lt;/span&gt; &lt;span&gt;rel&lt;/span&gt;=&lt;span&gt;&quot;stylesheet&quot;&lt;/span&gt; &lt;span&gt;href&lt;/span&gt;=&lt;span&gt;&quot;/static/css/style.min.css&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;可以将编译后的二进制文件移到任何地方，然后运行，访问 http://localhost:2020 看到如下界面表示成功了。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;1.2637362637362637&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UzjmETLXwBZwy8q3YDIhicTlDV4ich9SdcvH5vTxbYOcS6cwsxibq5ojRFhoDukBAAKw8227wcc32YozxT2BA2RfQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;910&quot;/&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;05 总结&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;本文通过几个例子快速了解官方内嵌静态资源的用法，然后讲解一些关键的标准库，最后是一个实际项目中使用的例子。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;纵观官方的实现，使用起来很方便，通过一个 &lt;code&gt;go:embed&lt;/code&gt; 指令，让很多细节都不需要关注。当然，如果你对它的实现感兴趣，可以阅读设计提案和源码。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;06 参考资料&lt;/span&gt;&lt;/h2&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;Embed 设计提案：https://github.com/golang/proposal/blob/master/design/draft-embed.md&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;示例参考：https://github.com/mattn/go-embed-example&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;tip 相关文档：https://tip.golang.org&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>d2c468fe78599fbc142f87423dfe5dc6</guid>
+<title>Kotlin Contract</title>
+<link>https://toutiao.io/k/mx3isde</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;article class=&quot;_2rhmJa&quot;&gt;&lt;div class=&quot;image-package&quot;&gt;
+
+&lt;p class=&quot;image-caption&quot;&gt;pexels-lina-kivaka-3881172.jpg&lt;/p&gt;
+&lt;/div&gt;
+&lt;p&gt;Kotlin 的智能推断是其语言的一大特色。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;智能推断，能够根据类型检测自动转换类型。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;但是，智能推断并没有想象中的强大，例如下面的代码就无法进行推断，导致编译失败：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;kotlin&quot;&gt;fun String?.isNotNull():Boolean {
+    return this!=null &amp;amp;&amp;amp; this.isNotEmpty()
+}
+
+fun printLength(s:String?=null) {
+    if (!s.isNotNull()) {
+        println(s.length) // Only safe (?.) or non-null asserted (!!.) calls are allowed on a nullable receiver of type String?
+    }
+
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;因为编译器在处理&lt;code&gt;s.length&lt;/code&gt;时，会将 s 推断成&lt;code&gt;value-parameter s: String? = ...&lt;/code&gt;并不是 String 类型。智能推断失效了，代码也无法编译。&lt;/p&gt;
+&lt;p&gt;对上述代码做如下修改，即可编译成功：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;kotlin&quot;&gt;fun printLength(s:String?=null) {
+    if (!s.isNullOrEmpty()) {
+        println(s.length)
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;isNullOrEmpty() 是 Kotlin 标准库中 String 的扩展函数，其源码：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;kotlin&quot;&gt;@kotlin.internal.InlineOnly
+public inline fun CharSequence?.isNullOrEmpty(): Boolean {
+    contract {
+        returns(false) implies (this@isNullOrEmpty != null)
+    }
+
+    return this == null || this.length == 0
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;我们会发现 isNullOrEmpty() 的源码中包含了&lt;code&gt;contract&lt;/code&gt;函数，实际上它会告诉编译器当 isNullOrEmpty() 返回 false 时，则 isNullOrEmpty != null 成立，因此 printLength() 函数中的变量 s 不会为 null。&lt;/p&gt;
+&lt;p&gt;通过契约，开发者可以向编译器提供有关函数的行为，以帮助编译器对代码执行更完整的分析。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;契约就像是开发者和编译器沟通的桥梁，但是编译器必须无条件地遵守契约。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2&gt;一. Contract 的概念&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Contract 是一种向编译器通知函数行为的方法。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Contract 是 Kotlin1.3 的新特性，在当前 Kotlin 1.4 时仍处于试验阶段。&lt;/p&gt;
+&lt;h2&gt;二. Contract 的特性&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;只能在 top-level 函数体内使用 Contract，不能在成员和类函数上使用它们。&lt;/li&gt;
+&lt;li&gt;Contract 所调用的声明必须是函数体内第一条语句。&lt;/li&gt;
+&lt;li&gt;目前 Kotlin 编译器并不会验证 Contract，因此开发者有责任编写正确合理的 Contract。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;在 Kotlin 1.4 中，对于 Contract 有两项改进：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;支持使用内联特化的函数来实现契约&lt;/li&gt;
+&lt;li&gt;Kotlin 1.3 不能为成员函数添加 Contract，从 Kotlin 1.4 开始支持为 final 类型的成员函数添加 Contract（当然任意成员函数可能存在被覆写的问题，因而不能添加）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;当前 Contract 有两种类型：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Returns Contracts&lt;/li&gt;
+&lt;li&gt;CallInPlace Contracts&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;2.1 Returns Contracts&lt;/h3&gt;
+&lt;p&gt;Returns Contracts 表示当 return 的返回值是某个值（例如true、false、null）时，&lt;code&gt;implies&lt;/code&gt;后面的条件成立。&lt;/p&gt;
+&lt;p&gt;Returns Contracts 有以下几种形式：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;returns(true) implies&lt;/li&gt;
+&lt;li&gt;returns(false) implies&lt;/li&gt;
+&lt;li&gt;returns(null) implies&lt;/li&gt;
+&lt;li&gt;returns implies&lt;/li&gt;
+&lt;li&gt;returnsNotNull implies&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;其他几个类型按照字面意思很好理解，returns implies 怎么理解呢？&lt;/p&gt;
+&lt;p&gt;我们来看一下 Kotlin 的 requireNotNull() 函数的源码：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;kotlin&quot;&gt;@kotlin.internal.InlineOnly
+public inline fun &amp;lt;T : Any&amp;gt; requireNotNull(value: T?): T {
+    contract {
+        returns() implies (value != null)
+    }
+    return requireNotNull(value) { &quot;Required value was null.&quot; }
+}
+
+@kotlin.internal.InlineOnly
+public inline fun &amp;lt;T : Any&amp;gt; requireNotNull(value: T?, lazyMessage: () -&amp;gt; Any): T {
+    contract {
+        returns() implies (value != null)
+    }
+
+    if (value == null) {
+        val message = lazyMessage()
+        throw IllegalArgumentException(message.toString())
+    } else {
+        return value
+    }
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;contract() 告诉编译器，如果调用 requireNotNull 函数后能够正常返回，且没有抛出异常，则 value 不为空。&lt;/p&gt;
+&lt;p&gt;因此，returns implies  表示当该函数正常返回时，&lt;code&gt;implies&lt;/code&gt;后面的条件成立。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Contract 正是通过这种声明函数调用的结果与所传参数值之间的关系来改进 Kotlin 智能推断的效果。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3&gt;2.2 CallInPlace Contracts&lt;/h3&gt;
+&lt;p&gt;前面&lt;a href=&quot;https://www.jianshu.com/p/ddde2a1a8e2a&quot; target=&quot;_blank&quot;&gt;Kotlin 如何优雅地使用 Scope Functions&lt;/a&gt;曾介绍过 Scope Function，我们来回顾一下 let 函数的源码：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;kotlin&quot;&gt;@kotlin.internal.InlineOnly
+public inline fun &amp;lt;T, R&amp;gt; T.let(block: (T) -&amp;gt; R): R {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    return block(this)
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;contract() 中的 callsInPlace 会告知编译器，lambda 表达式 block 在 let 函数内只会执行一次。在 let 函数被调用结束后，block 将不再被执行。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;callsInPlace() 允许开发者提供对调用的 lambda 表达式进行时间/位置/频率上的约束。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;callsInPlace() 中的 InvocationKind 是一个枚举类，包含如下的枚举值：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;AT_MOST_ONCE：函数参数将被调用一次或根本不调用。&lt;/li&gt;
+&lt;li&gt;EXACTLY_ONCE：函数参数将只被调用一次。&lt;/li&gt;
+&lt;li&gt;AT_LEAST_ONCE：函数参数将被调用一次或多次。&lt;/li&gt;
+&lt;li&gt;UNKNOWN：一个函数参数它可以被调用的次数未知。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Kotlin 的 Scope Function 都使用了上述 Contracts。&lt;/p&gt;
+&lt;h2&gt;三. Contract 源码解析&lt;/h2&gt;
+&lt;p&gt;Contract 采用 DSL 方式进行声明，我们来看一下 contract() 函数的源码：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;kotlin&quot;&gt;@ContractsDsl
+@ExperimentalContracts
+@InlineOnly
+@SinceKotlin(&quot;1.3&quot;)
+@Suppress(&quot;UNUSED_PARAMETER&quot;)
+public inline fun contract(builder: ContractBuilder.() -&amp;gt; Unit) { }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;通过  ContractBuilder 构建了 Contract，其源码如下：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;kotlin&quot;&gt;@ContractsDsl
+@ExperimentalContracts
+@SinceKotlin(&quot;1.3&quot;)
+public interface ContractBuilder {
+    /**
+     * Describes a situation when a function returns normally, without any exceptions thrown.
+     *
+     * Use [SimpleEffect.implies] function to describe a conditional effect that happens in such case.
+     *
+     */
+    // @sample samples.contracts.returnsContract
+    @ContractsDsl public fun returns(): Returns
+
+    /**
+     * Describes a situation when a function returns normally with the specified return [value].
+     *
+     * The possible values of [value] are limited to `true`, `false` or `null`.
+     *
+     * Use [SimpleEffect.implies] function to describe a conditional effect that happens in such case.
+     *
+     */
+    // @sample samples.contracts.returnsTrueContract
+    // @sample samples.contracts.returnsFalseContract
+    // @sample samples.contracts.returnsNullContract
+    @ContractsDsl public fun returns(value: Any?): Returns
+
+    /**
+     * Describes a situation when a function returns normally with any value that is not `null`.
+     *
+     * Use [SimpleEffect.implies] function to describe a conditional effect that happens in such case.
+     *
+     */
+    // @sample samples.contracts.returnsNotNullContract
+    @ContractsDsl public fun returnsNotNull(): ReturnsNotNull
+
+    /**
+     * Specifies that the function parameter [lambda] is invoked in place.
+     *
+     * This contract specifies that:
+     * 1. the function [lambda] can only be invoked during the call of the owner function,
+     *  and it won&#x27;t be invoked after that owner function call is completed;
+     * 2. _(optionally)_ the function [lambda] is invoked the amount of times specified by the [kind] parameter,
+     *  see the [InvocationKind] enum for possible values.
+     *
+     * A function declaring the `callsInPlace` effect must be _inline_.
+     *
+     */
+    /* @sample samples.contracts.callsInPlaceAtMostOnceContract
+    * @sample samples.contracts.callsInPlaceAtLeastOnceContract
+    * @sample samples.contracts.callsInPlaceExactlyOnceContract
+    * @sample samples.contracts.callsInPlaceUnknownContract
+    */
+    @ContractsDsl public fun &amp;lt;R&amp;gt; callsInPlace(lambda: Function&amp;lt;R&amp;gt;, kind: InvocationKind = InvocationKind.UNKNOWN): CallsInPlace
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;returns()、returnsNotNull()、callsInPlace() 分别返回 Returns、ReturnsNotNull、CallsInPlace 对象。这些对象最终都实现了 Effect 接口：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;kotlin&quot;&gt;@ContractsDsl
+@ExperimentalContracts
+@SinceKotlin(&quot;1.3&quot;)
+public interface Effect
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Effect 表示函数调用的效果。每当调用一个函数时，它的所有效果都会被激发。编译器将收集所有激发的效果以便于其分析。&lt;/p&gt;
+&lt;p&gt;目前 Kotlin 只支持有 4 种 Effect：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Returns： 表示函数成功返回，不会不引发异常。&lt;/li&gt;
+&lt;li&gt;ReturnsNotNull：表示函数成功返回不为 null 的值。&lt;/li&gt;
+&lt;li&gt;ConditionalEffect：表示一个效果和一个布尔表达式的组合，如果触发了效果，则保证为true。&lt;/li&gt;
+&lt;li&gt;CallsInPlace：表示对传递的 lambda 参数的调用位置和调用次数的约束。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;四. 小结&lt;/h2&gt;
+&lt;p&gt;Contract 是帮助编译器分析的一个很好的工具，它们对于编写更干净、更好的代码非常有帮助。在使用 Contract 的时候，请不要忘记编译器不会去验证 Contract。&lt;/p&gt;
+&lt;/article&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
