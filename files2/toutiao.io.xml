@@ -5,9 +5,9 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>7451a5008d4f11572968adb94ba28482</guid>
-<title>[推荐] 结合电商支付业务一文搞懂 DDD</title>
-<link>https://toutiao.io/k/5stu129</link>
+<guid>48cf584d0a3197736e876d1d829609b6</guid>
+<title>你们公司分支策略是什么样的</title>
+<link>https://toutiao.io/k/irwn6dy</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
                     
 
@@ -15,7 +15,69 @@
 
                     
                     
-                    &lt;p&gt;&lt;span&gt;作者范钢，曾任航天信息首席架构师，《大话重构》一书的作者。本文结合电商支付场景详细描述了领域驱动模型的实际应用。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;2004 年，软件大师 Eric Evans 的不朽著作《领域驱动设计：软件核心复杂性应对之道》面世，从书名可以看出，这是一本应对软件系统越来越复杂的方法论的图书。然而，在当时，中国的软件业才刚刚起步，软件系统还没有那么复杂，即使维护了几年，软件退化了，不好维护了，推倒重新开发就好了。因此，在过去的那么多年里，真正运用领域驱动设计开发（DDD）的团队并不多。一套优秀的方法论，因为现实阶段的原因而一直不温不火。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;不过，这些年随着中国软件业的快速发展，软件规模越来越大，生命周期也越来越长，推倒重新开发的成本和风险越来越大。这时，软件团队急切需要在较低成本的状态下持续维护一个系统很多年。然而，事与愿违。随着时间的推移，程序越来越乱，维护成本越来越高，软件退化成了无数软件团队的噩梦。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;这时，微服务架构成了规模化软件的解决之道。不过，微服务对设计提出了很高的要求，强调“小而专、高内聚”，否则就不能发挥出微服务的优势，甚至可能令问题更糟糕。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;因此，微服务的设计，微服务的拆分都需要领域驱动设计的指导。那么，领域驱动为什么能解决软件规模化的问题呢？我们先从问题的根源谈起，即软件退化。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;软件退化的根源&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;br/&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;最近 10 年的互联网发展，从电子商务到移动互联，再到“互联网+”与传统行业的互联网转型，是一个非常痛苦的转型过程。而近几年的人工智能与 5G 技术的发展，又会带动整个产业向着大数据与物联网发展，另一轮的技术转型已经拉开帷幕。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;那么，在这个过程中，一方面会给我们带来诸多的挑战，另一方面又会给我们带来无尽的机会，它会带来更多的新兴市场、新兴产业与全新业务，给我们带来全新的发展机遇。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;然而，在面对全新业务、全新增长点的时候，我们能不能把握住这样的机遇呢？我们期望能把握住，但每次回到现实，回到正在维护的系统时，却令人沮丧。我们的软件总是经历着这样的轮回，软件设计质量最高的时候是第一次设计的那个版本，当第一个版本设计上线以后就开始各种需求变更，这常常又会打乱原有的设计。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;因此，需求变更一次，版本迭代一次，软件就修改一次，软件修改一次，质量就下降一次。不论第一次的设计质量有多高，软件经历不了几次变更，就进入一种低质量、难以维护的状态。进而，团队就不得不在这样的状态下，以高成本的方式不断地维护下去，维护很多年。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;这时候，维护好原有的业务都非常不易，又如何再去期望未来更多的全新业务呢？比如，这是一段电商网站支付功能的设计，最初的版本设计质量还是不错的：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.7625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/I2EApibvt9icy4NiadhglhianfJGpg4NpIHOD6iaQGOdaJ8xxnNUIM21BttRyONBZc5VvNBpLbCjo3Rzf9g0RVKX8Pw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;当第一个版本上线以后，很快就迎来了第一次变更，变更的需求是增加商品折扣功能，并且这个折扣功能还要分为限时折扣、限量折扣、某类商品的折扣、某个商品的折扣。当我们拿到这个需求时怎么做呢？很简单，增加一个 if 语句，if 限时折扣就怎么怎么样，if 限量折扣就怎么怎么样……代码开始膨胀了。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;接着，第二次变更需要增加 VIP 会员，除了增加各种金卡、银卡的折扣，还要为会员发放各种福利，让会员享受各种特权。为了实现这些需求，我们又要在 payoff() 方法中加入更多的代码。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;第三次变更增加的是支付方式，除了支付宝支付，还要增加微信支付、各种银行卡支付、各种支付平台支付，此时又要塞入一大堆代码。经过这三次变更，你可以想象现在的 payoff() 方法是什么样子了吧，变更是不是就可以结束了呢？其实不能，接着还要增加更多的秒杀、预订、闪购、众筹，以及各种返券。程序变得越来越乱而难以阅读和维护，每次变更也变得越来越困难。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.80625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/I2EApibvt9icy4NiadhglhianfJGpg4NpIHOricyejrzyXCrW1WyJANz92twbibljeUKmONeqOzHX4xKiculRxeaIbrfQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;问题来了：为什么软件会退化，会随着变更而设计质量下降呢？在这个问题上，我们必须寻找到问题的根源，才能对症下药、解决问题。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;要探寻软件退化的根源，先要从探寻软件的本质及其规律开始，软件的本质就是对真实世界的模拟，每个软件都能在真实世界中找到它的影子。因此，软件中业务逻辑正确与否的唯一标准就是是否与真实世界一致。如果一致，则软件是 OK 的；不一致，则用户会提 Bug、提新需求。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;在这里发现了一个非常重要的线索，那就是，软件要做成什么样，既不由我们来决定，也不由用户来决定，而是由客观世界决定。用户为什么总在改需求，是因为他们也不确定客观世界的规则，只有遇到问题了他们才能想得起来。因此，对于我们来说，与其唯唯诺诺地按照用户的要求去做软件，不如在充分理解业务的基础上去分析软件，这样会更有利于我们减少软件维护的成本。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;那么，真实世界是怎样的，我们就怎样开发软件，不就简单了吗？其实并非如此，因为真实世界是非常复杂的，要深刻理解真实世界中的这些业务逻辑是需要一个过程的。因此，我们最初只能认识真实世界中那些简单、清晰、易于理解的业务逻辑，把它们做到我们的软件里，即每个软件的第一个版本的需求总是那么清晰明了、易于设计。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;然而，当我们把第一个版本的软件交付用户使用的时候，用户却会发现，还有很多不简单、不明了、不易于理解的业务逻辑没做到软件里。这在使用软件的过程中很不方便，和真实业务不一致，因此用户就会提 Bug、提新需求。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;在我们不断地修复 Bug，实现新需求的过程中，软件的业务逻辑也会越来越接近真实世界，使得我们的软件越来越专业，让用户感觉越来越好用。但是，在软件越来越接近真实世界的过程中，业务逻辑就会变得越来越复杂，软件规模也越来越庞大。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;你一定有这样一个认识：简单软件有简单软件的设计，复杂软件有复杂软件的设计。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;比如，现在的需求就是将用户订单按照“单价 × 数量”公式来计算应付金额，那么在一个 PaymentBus 类中增加一个 payoff() 方法即可，这样的设计没有问题。不过，如果现在的需要在付款的过程中计算各种折扣、各种优惠、各种返券，那么我们必然会做成一个复杂的程序结构。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.52734375&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/I2EApibvt9icy4NiadhglhianfJGpg4NpIHO4YUzJ1o33XzAG2IRyYp98ulLlPyEkRS5Rfo7AiciclmZWBZjiaV5ia2Ziaw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;但是，真实情况却不是这样的。真实情况是，起初我们拿到的需求是那个简单需求，然后在简单需求的基础上进行了设计开发。但随着软件的不断变更，软件业务逻辑变得越来越复杂，软件规模不断扩大，逐渐由一个简单软件转变成一个复杂软件。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;这时，如果要保持软件设计质量不退化，就应当逐步调整软件的程序结构，逐渐由简单的程序结构转变为复杂的程序结构。如果我们总是这样做，就能始终保持软件的设计质量，不过非常遗憾的是，我们以往在维护软件的过程中却不是这样做的，而是不断地在原有简单软件的程序结构下，往 payoff() 方法中塞代码，这样做必然会造成软件的退化。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;也就是说，软件退化的根源不是版本迭代和需求变更，版本迭代和需求变更只是一个诱因。如果每次软件变更时，适时地进行解耦，进行功能扩展，再实现新的功能，就能保持高质量的软件设计。但如果在每次软件变更时没有调整程序结构，而是在原有的程序结构上不断地塞代码，软件就会退化。这就是软件发展的规律，软件退化的根源。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;杜绝软件退化：两顶帽子&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;br/&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;前面谈到，要保持软件设计质量不退化，必须在每次需求变更的时候，对原有的程序结构适当地进行调整。那么应当怎样进行调整呢？还是回到前面电商网站付款功能的那个案例，看看每次需求变更应当怎样设计。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;在交付第一个版本的基础上，很快第一次需求变更就到来了。第一次需求变更的内容如下。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;增加商品折扣功能，该功能分为以下几种类型：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;以往我们拿到这个需求，就很不冷静地开始改代码，修改成了如下一段代码：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.9625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/I2EApibvt9icy4NiadhglhianfJGpg4NpIHOYgO4eGGXkZGwCeteGz5A6m8jQcAH4BQqcnKMZRPH3kLQspzHzJZ0aQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;这里增加了的 if else 语句，并不是一种好的变更方式。如果每次都这样变更，那么软件必然就会退化，进入难以维护的状态。这种变更为什么不好呢？因为它违反了“开放-封闭原则”。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;开闭原则（OCP） &lt;/strong&gt;分为开放原则与封闭原则两部分。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;前面的设计，在实现新功能的同时，新代码与老代码在同一个类、同一个方法中了，违反了“开闭原则”。怎样才能既满足“开闭原则”，又能够实现新功能呢？在原有的代码上你发现什么都做不了！难道“开闭原则”错了吗？&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;问题的关键就在于，当我们在实现新需求时，应当采用“两顶帽子”的方式进行设计，这种方式就要求在每次变更时，将变更分为两个步骤。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;两顶帽子：&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;按以上案例为例，为了实现新的功能，我们在原有代码的基础上，在不添加新功能的前提下调整原有程序结构，我们抽取出了 Strategy 这样一个接口和“不折扣”这个实现类。这时，原有程序变了吗？没有。但是程序结构却变了，增加了这样一个接口，称之为“可扩展点”。在这个可扩展点的基础上再实现各种折扣，既能满足“开放-封闭原则”来保证程序质量，又能够满足新的需求。当日后发生新的变更时，什么类型的折扣有变化就修改哪个实现类，添加新的折扣类型就增加新的实现类，维护成本得到降低。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.73203125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/I2EApibvt9icy4NiadhglhianfJGpg4NpIHOcqHQibsGpibbqOhwqAar1DZMicIffxAzSbOSiaJxKyXib9KWXEykPMZDSlA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;“两顶帽子”的设计方式意义重大。过去，我们每次在设计软件时总是担心日后的变更，就很不冷静地设计了很多所谓的“灵活设计”。然而，每一种“灵活设计”只能应对一种需求变更，而我们又不是先知，不知道日后会发生什么样的变更。最后的结果就是，我们期望的变更并没有发生，所做的设计都变成了摆设，它既不起什么作用，还增加了程序复杂度；我们没有期望的变更发生了，原有的程序依然不能解决新的需求，程序又被打回了原形。因此，这样的设计不能真正解决未来变更的问题，被称为“过度设计”。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;有了“两顶帽子”，我们不再需要焦虑，不再需要过度设计，正确的思路应当是“活在今天的格子里做今天的事儿”，也就是为当前的需求进行设计，使其刚刚满足当前的需求。所谓的“高质量的软件设计”就是要掌握一个平衡，一方面要满足当前的需求，另一方面要让设计刚刚满足需求，从而使设计最简化、代码最少。这样做，不仅软件设计质量提高了，设计难点也得到了大幅度降低。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;简而言之，保持软件设计不退化的关键在于每次需求变更的设计，只有保证每次需求变更时做出正确的设计，才能保证软件以一种良性循环的方式不断维护下去。这种正确的设计方式就是“两顶帽子”。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;但是，在实践“两顶帽子”的过程中，比较困难的是第一步。在不添加新功能的前提下，如何重构代码，如何调整原有程序结构，以适应新功能，这是有难度的。很多时候，第一次变更、第二次变更、第三次变更，这些事情还能想清楚；但经历了第十次变更、第二十次变更、第三十次变更，这些事情就想不清楚了，设计开始迷失方向。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;那么，有没有一种方法，让我们在第十次变更、第二十次变更、第三十次变更时，依然能够找到正确的设计呢？有，那就是“领域驱动设计”。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;保持软件质量：领域驱动&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;br/&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;前面谈到，软件的本质就是对真实世界的模拟。因此，我们会有一种想法，能不能将软件设计与真实世界对应起来，真实世界是什么样子，那么软件世界就怎么设计。如果是这样的话，那么在每次需求变更时，将变更还原到真实世界中，看看真实世界是什么样子的，根据真实世界进行变更。这样，日后不论怎么变更，经过多少轮变更，都按照这样的方法进行设计，就不会迷失方向，设计质量就可以得到保证，这就是“领域驱动设计”的思想。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;那么，如何将真实世界与软件世界对应起来呢？这样的对应就包括以下三个方面的内容：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.6578125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/I2EApibvt9icy4NiadhglhianfJGpg4NpIHOdkTKM96RbduqVFGGO0KGySqHmxdnvfYaT1MTgUL4STZz0UuM3en8ibw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;真实世界与软件世界的对应图&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;在领域驱动设计中，就将以上三个对应，先做成一个领域模型，然后通过这个领域模型指导程序设计；在每次需求变更时，先将需求还原到领域模型中分析，根据领域模型背后的真实世界进行变更，然后根据领域模型的变更指导软件的变更，设计质量就可以得到提高。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;结合电商支付实际演练DDD&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;hr/&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;现在，我们以电商网站的支付功能为例，来演练一下基于 DDD 的软件设计及其变更的过程。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;运用 DDD 进行软件设计&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;开发人员在最开始收到的关于用户付款功能的需求描述是这样的：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;以往当拿到这个需求时，开发人员往往草草设计以后就开始编码，设计质量也就不高。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;而采用领域驱动的方式，在拿到新需求以后，应当先进行需求分析，设计领域模型。按照以上业务场景，可以分析出：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;最后，我们对订单可以进行“下单”“付款”“查看订单状态”等操作。因此形成了以下领域模型图：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.7159904534606205&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/I2EApibvt9icy4NiadhglhianfJGpg4NpIHOU3wf2VZXhwciaP0FnVDrLB7pUDLMTpU5YCoHk5GgTUiamdAXSk6lMaIw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1676&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;有了这样的领域模型，就可以通过该模型进行以下程序设计：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.7515625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/I2EApibvt9icy4NiadhglhianfJGpg4NpIHO3S22N6iblxV1zhe1fReiaSDibQo4GJCSPYHFPa89aojFgbnlSQAK9AibjA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;通过领域模型的指导，将“订单”分为订单 Service 与值对象，将“用户”分为用户 Service 与值对象，将“商品”分为商品 Service 与值对象……然后，在此基础上实现各自的方法。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;商品折扣的需求变更&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;当电商网站的付款功能按照领域模型完成了第一个版本的设计后，很快就迎来了第一次需求变更，即增加折扣功能，并且该折扣功能分为限时折扣、限量折扣、某类商品的折扣、某个商品的折扣与不折扣。当我们拿到这个需求时应当怎样设计呢？很显然，在 payoff() 方法中去插入 if else 语句是不 OK 的。这时，按照领域驱动设计的思想，应当将需求变更还原到领域模型中进行分析，进而根据领域模型背后的真实世界进行变更。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.50625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/I2EApibvt9icy4NiadhglhianfJGpg4NpIHOibzklibyf2eHmPXAHqY0bMia25VL9eM0tt6DmTj1UYpeMfvze0atrYGww/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;这是上一个版本的领域模型，现在我们要在这个模型的基础上增加折扣功能，并且还要分为限时折扣、限量折扣、某类商品的折扣等不同类型。这时，我们应当怎么分析设计呢？&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;首先要分析付款与折扣的关系。&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;付款与折扣是什么关系呢？你可能会认为折扣是在付款的过程中进行的折扣，因此就应当将折扣写到付款中。这样思考对吗？我们应当基于什么样的思想与原则来设计呢？这时，另外一个重量级的设计原则应该出场了，那就是“单一职责原则”。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;单一职责原则：&lt;/strong&gt;软件系统中的每个元素只完成自己职责范围内的事，而将其他的事交给别人去做，我只是去调用。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;单一职责原则是软件设计中一个非常重要的原则，但如何正确地理解它成为一个非常关键的问题。在这句话中，准确理解的关键就在于“职责”二字，即自己职责的范围到底在哪里。以往，我们错误地理解这个“职责”就是做某一个事，与这个事情相关的所有事情都是它的职责，正因为这个错误的理解，带来了许多错误的设计，而将折扣写到付款功能中。那么，怎样才是对“职责”正确的理解呢？&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;“一个职责就是软件变化的一个原因”是著名的软件大师 Bob 大叔在他的《敏捷软件开发：原则、模式与实践》中的表述。但这个表述过于精简，很难深刻地理解其中的内涵。这里我好好解读一下这句话。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;先思考一下什么是高质量的代码？你可能立即会想到“低耦合、高内聚”，以及各种设计原则，但这些评价标准都太“虚”。最直接、最落地的评价标准就是，当用户提出一个需求变更时，为了实现这个变更而修改软件的成本越低，那么软件的设计质量就越高。当来了一个需求变更时，怎样才能让修改软件的成本降低呢？如果为了实现这个需求，需要修改 3 个模块的代码，完后这 3 个模块都需要测试，其维护成本必然是“高”。那么怎样才能降到最低呢？如果只需要修改 1 个模块就可以实现这个需求，维护成本就要低很多了。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;那么，怎样才能在每次变更的时候都只修改一个模块就能实现新需求呢？那就需要我们在平时就不断地整理代码，将那些因同一个原因而变更的代码都放在一起，而将因不同原因而变更的代码分开放，放在不同的模块、不同的类中。这样，当因为这个原因而需要修改代码时，需要修改的代码都在这个模块、这个类中，修改范围就缩小了，维护成本降低了，修改代码带来的风险自然也降低了，设计质量也就提高了。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;总之，单一职责原则要求我们在维护软件的过程中需要不断地进行整理，将软件变化同一个原因的代码放在一起，将软件变化不同原因的代码分开放。按照这样的设计原则，回到前面那个案例中，那么应当怎样去分析“付款”与“折扣”之间的关系呢？只需要回答两个问题：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;当这两个问题的答案是否定时，就说明“付款”与“折扣”是软件变化的两个不同的原因，那么把它们放在一起，放在同一个类、同一个方法中，合适吗？不合适，就应当将“折扣”从“付款”中提取出来，单独放在一个类中。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;同样的道理：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;最后发现，不同类型的折扣也是软件变化不同的原因。将它们放在同一个类、同一个方法中，合适吗？通过以上分析，我们做出了如下设计：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.60703125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/I2EApibvt9icy4NiadhglhianfJGpg4NpIHOsw9lzdx55IF8thQL0EamzyGaWaGqQhdmuxOciaIKFibWnLahysHmy9Kw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;在该设计中，将折扣功能从付款功能中独立出去，做出了一个接口，然后以此为基础设计了各种类型的折扣实现类。这样的设计，当付款功能发生变更时不会影响折扣，而折扣发生变更的时候不会影响付款。同样，当“限时折扣”发生变更时只与“限时折扣”有关，“限量折扣”发生变更时也只与“限量折扣”有关，与其他折扣类型无关。变更的范围缩小了，维护成本就降低了，设计质量提高了。这样的设计就是“单一职责原则”的真谛。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;接着，在这个版本的领域模型的基础上进行程序设计，在设计时还可以加入一些设计模式的内容，因此我们进行了如下的设计：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.68203125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/I2EApibvt9icy4NiadhglhianfJGpg4NpIHOicaqYQlU4EiboWZWy8HuUd3zyooRyOp5Gpkg3hgqY6rH7BrGCe36U2vQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;显然，在该设计中加入了“策略模式”的内容，将折扣功能做成了一个折扣策略接口与各种折扣策略的实现类。当哪个折扣类型发生变更时就修改哪个折扣策略实现类；当要增加新的类型的折扣时就再写一个折扣策略实现类，设计质量得到了提高。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;VIP 会员的需求变更&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;在第一次变更的基础上，很快迎来了第二次变更，这次是要增加 VIP 会员，业务需求如下。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;增加 VIP 会员功能：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;我们拿到这样的需求又应当怎样设计呢？同样，先回到领域模型，分析“用户”与“VIP 会员”的关系，“付款”与“VIP 会员”的关系。在分析的时候，还是回答那两个问题：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;通过分析发现，“用户”与“VIP 会员”是两个完全不同的事物。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;通过以上的分析，我们做出了以下版本的领域模型：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.7328125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/I2EApibvt9icy4NiadhglhianfJGpg4NpIHObjrNKiaukTCuM0zVoFlNLp7oQz5rjUtCSCuFlaL7g2BKp9hb9cNCWwg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;有了这些领域模型的变更，然后就可以以此作为基础，指导后面程序代码的变更了。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;支付方式的需求变更&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;同样，第三次变更是增加更多的支付方式，我们在领域模型中分析“付款”与“支付方式”之间的关系，发现它们也是软件变化不同的原因。因此，我们果断做出了这样的设计：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.590625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/I2EApibvt9icy4NiadhglhianfJGpg4NpIHOiaAFgQQQoQnwXw02nesJt1D0EE0ZPibXaBibzUz5iaZTLq7XA88ZJuT2aQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;而在设计实现时，因为要与各个第三方的支付系统对接，也就是要与外部系统对接。为了使第三方的外部系统的变更对我们的影响最小化，在它们中间果断加入了“适配器模式”，设计如下：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.7203125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/I2EApibvt9icy4NiadhglhianfJGpg4NpIHOTHGPFQQp4o2DUdHZhkYBbSIiayjQUu1m0p9icWDpJibjC35VGvNkd28nw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;通过加入适配器模式，订单 Service 在进行支付时调用的不再是外部的支付接口，而是“支付方式”接口，与外部系统解耦。只要保证“支付方式”接口是稳定的，那么订单 Service 就是稳定的。比如：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;日后不论哪种变更，要修改的代码范围缩小了，维护成本自然降低了，代码质量就提高了。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;写在最后&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;hr/&gt;&lt;p&gt;&lt;strong&gt;&lt;span/&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;软件发展的规律就是逐步由简单软件向复杂软件转变。简单软件有简单软件的设计，复杂软件有复杂软件的设计。因此，当软件由简单软件向复杂软件转变时，就需要通过两顶帽子适时地对程序结构进行调整，再实现新需求，只有这样才能保证软件不退化。然而，在变更的时候，如何调整代码以适应新的需求呢？&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;DDD 给了我们思路：在每次变更的时候，先回到领域模型，基于业务进行领域模型的变更。然后，再基于领域模型的变更，指导程序的变更。这样，不论经历多少次需求变更，始终能够保持设计质量不退化。这样的设计，才能保障系统始终在低成本的状态下，可持续地不断维护下去。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;本文我们演练了如何运用 DDD 进行软件的设计与变更，以及在设计与变更的过程中如何分析思考、如何评估代码、如何实现高质量。后续文章，我们将结合具体案例分析如何将领域模型的设计进一步落实到软件系统的微服务设计与数据库设计。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;号主简介：冯涛，&lt;/span&gt;&lt;span&gt;曾任职于阿里巴巴，每日优鲜等互联网公司，任技术总监，15年电商互联网经历&lt;/span&gt;&lt;span&gt;。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;最后，将自己15年的微服务，高并发，JVM调优，线上故障排查等经历整理成电子书送给大家，共130页。绝对干货！&lt;span&gt;没领过的朋友，抓紧啦！&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;获取方式：扫描或识别下方二维码关注公众号二马读书，&lt;span&gt;回复&lt;/span&gt;&lt;span&gt; &lt;strong&gt;“&lt;/strong&gt;&lt;span&gt;&lt;strong&gt;电子书&lt;/strong&gt;&lt;/span&gt;”&lt;/span&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;1&quot; data-s=&quot;300,640&quot; data-type=&quot;jpeg&quot; data-w=&quot;258&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/I2EApibvt9icyUP1DKTuiaQ6pLS5A16fY19TjGbnIlicIYTZcRTzpxIfWErvRjaGbicXAOCN9eIt6Hv4vnN8FtiazmBQ/640?wx_fmt=jpeg&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;获取方式：扫描或识别上方二维码关注公众号二马读书，回复&lt;span&gt; &lt;strong&gt;“&lt;/strong&gt;&lt;span&gt;&lt;strong&gt;电子书&lt;/strong&gt;&lt;/span&gt;”&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;来来来加俺微信，一起交流，共同成长: ftcool2008&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;原创不易，&lt;/span&gt;如果感觉本文对您有帮助，有劳转发分享或点一下“在看”！&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;
+                    &lt;div data-md-url=&quot;https://mp.weixin.qq.com/cgi-bin/appmsg?t=media/appmsg_edit_v2&amp;amp;action=edit&amp;amp;isNew=1&amp;amp;type=10&amp;amp;createType=0&amp;amp;token=233077590&amp;amp;lang=zh_CN&quot; markdown-here-wrapper-content-modified=&quot;true&quot;&gt;&lt;p&gt;在基于git的工作流中，master一般是做持续集成的，开发人员在特性分支开发，经过测试后，就会merge到master做集成测试，测试通过就表示master可部署了。&lt;/p&gt;&lt;p&gt;可现实情况下，特性分支自测没问题，不代表就真的没问题，测试人员还没测试呢，所以此时的master分支其实是没准备好的（从master特定commit id到生成分支其实是有一定难度的）&lt;/p&gt;&lt;p&gt;我们目前的做法，在master分支之前还有一个SIT系统集成分支，也就是说这个分支是专门给QA人员测试的，测试没问题后，将特性分支的代码合并到pre分支，仿真环境如果没问题，再将特性分支合并到master分支，然后进行发布。&lt;/p&gt;&lt;p&gt;SIT分支相当于做集成测试了，保证了master的代码是相对可靠的。&lt;/p&gt;&lt;p&gt;那什么代码合并到SIT分支呢？不管几个项目，也不管这些项目具体的上线时间，特性分支都可以合并到SIT分支，然后统一给QA人员测试（相当于提前测试多个项目了），正因为这样，上线的时候无法从SIT分支merge到master分支。&lt;/p&gt;&lt;p&gt;这种工作流多了一个步骤，必然会有副作用，首先merge到SIT分支的时候，如果有冲突，SIT分支不应该解决冲突，因为SIT分支只是为了测试，不会上线的，所以不应该解决冲突；其次很多人说为了避免有冲突，那么我就经常性的将SIT分支上的代码merge（也就是pull）到特性分支，这也非常不好，因为这个特性分支就不隔离了。所以正确的做法，如果merge到SIT分支产生冲突，应该自己去解决冲突，可如何找到和那个分支冲突呢？&lt;/p&gt;&lt;p&gt;还有SIT分支和master分支因为时间点和作用不一样，没有必要保持代码是同步，可pre分支和master分支理论上应该保持同步，上线的时候没有选择merge SIT分支到master分支的原因是cherry-pick还是有一定复杂度的，merge特定commit id也是有复杂度的，所以我们选择从特性分支合并到master，那必然要思考一个问题，pre分支测试通过代表master分支测试通过吗？如果pre到master是一个fast forward，理论上不用再重复测试。&lt;/p&gt;&lt;p&gt;还有一种做法和我们的做法类似，就是有一个隐形的SIT分支，特性分支一旦提交到远端，就自动merge到SIT分支，查看是否有冲突，如果有冲突，就提醒开发者去解决，从而保障能够持续集成。&lt;/p&gt;&lt;p&gt;最后说说特性分支，我们还喜欢根据迭代周期去弄一个大分支，实际上这个大分支包含了很多子功能，也就是说可以拆分为多个子分支，那这两种方式有什么优缺点呢？&lt;/p&gt;&lt;p&gt;如果在一个大分支，能够减少一些冲突，但做不到隔离了，如果频繁的pull，是选择merge还是rebase呢？应该选择merge，推送到远端的分支不建议做rebase，会产生很多问题。其实既然选择了一个大分支，那git历史记录必然会很难看的，基本没有追朔性。如果实在要使用一个大分支，建议不要太频繁的提交到远端，尽量做好自测再提交。SIT部署的环境（QA）是为了测试人员测试的，应该保障一定的稳定性，它们不是给开发人员调试用的。&lt;/p&gt;&lt;p&gt;建议还是子分支，一方面说不定有一天就上线部分功能，子分支就合适了；另外子分支也能做到隔离；当然可能会遇到很多merge冲突的问题，这时候就需要自己甄别与那个分支发生冲突了（目前没有想到办法）。&lt;/p&gt;&lt;p&gt;git工作流有多种选择，主要看整个团队对git的理解程度，并行项目数量，CI/CD方式等等，没有绝对的好坏，只要能说得通，没有明显的缺点，那就是好的工作流。&lt;/p&gt;&lt;p title=&quot;MDH:PHA+5Zyo5Z+65LqOZ2l055qE5bel5L2c5rWB5Lit77yMbWFzdGVy5LiA6Iis5piv5YGa5oyB57ut&amp;#10;6ZuG5oiQ55qE77yM5byA5Y+R5Lq65ZGY5Zyo54m55oCn5YiG5pSv5byA5Y+R77yM57uP6L+H5rWL&amp;#10;6K+V5ZCO77yM5bCx5LyabWVyZ2XliLBtYXN0ZXLlgZrpm4bmiJDmtYvor5XvvIzmtYvor5XpgJro&amp;#10;v4flsLHooajnpLptYXN0ZXLlj6/pg6jnvbLkuobjgII8bXBjaGVja3RleHQgY29udGVudGVkaXRh&amp;#10;YmxlPSJmYWxzZSIgaWQ9IjE2MDY5MTczMjc4NTBfMC44OTI1ODMyNjE4OTkwOTUiPjwvbXBjaGVj&amp;#10;a3RleHQ+PC9wPjxwPjxicj48L3A+PHA+5Y+v546w5a6e5oOF5Ya15LiL77yM54m55oCn5YiG5pSv&amp;#10;6Ieq5rWL5rKh6Zeu6aKY77yM5LiN5Luj6KGo5bCx55yf55qE5rKh6Zeu6aKY77yM5rWL6K+V5Lq6&amp;#10;5ZGY6L+Y5rKh5rWL6K+V5ZGi77yM5omA5Lul5q2k5pe255qEbWFzdGVy5YiG5pSv5YW25a6e5piv&amp;#10;5rKh5YeG5aSH5aW955qE77yI5LuObWFzdGVy54m55a6a5o+Q5Lqk5Yiw55Sf5oiQ5YiG5pSv5YW2&amp;#10;5a6e5piv5pyJ5LiA5a6a6Zq+5bqm55qE77yJPG1wY2hlY2t0ZXh0IGNvbnRlbnRlZGl0YWJsZT0i&amp;#10;ZmFsc2UiIGlkPSIxNjA2OTE3MzI3ODUxXzAuMDYyNjY1NTc2MzM1ODU4NzkiPjwvbXBjaGVja3Rl&amp;#10;eHQ+PC9wPjxwPjxicj48L3A+PHA+5oiR5Lus55uu5YmN55qE5YGa5rOV77yM5ZyobWFzdGVy5YiG&amp;#10;5pSv5LmL5YmN6L+Y5pyJ5LiA5LiqU0lU57O757uf6ZuG5oiQ5YiG5pSv77yM5Lmf5bCx5piv6K+0&amp;#10;6L+Z5Liq5YiG5pSv5piv5LiT6Zeo57uZUUHkurrlkZjmtYvor5XnmoTvvIzmtYvor5XmsqHpl67p&amp;#10;opjlkI7vvIzlho3lsIbnibnmgKfliIbmlK/nmoTku6PnoIHlkIjlubbliLBwcmXliIbmlK/vvIzk&amp;#10;u7/nnJ/njq/looPlpoLmnpzmsqHpl67popjvvIzlho3lsIbnibnmgKfliIbmlK/lkIjlubbliLBt&amp;#10;YXN0ZXLliIbmlK/vvIznhLblkI7ov5vooYzlj5HluIPjgII8bXBjaGVja3RleHQgY29udGVudGVk&amp;#10;aXRhYmxlPSJmYWxzZSIgaWQ9IjE2MDY5MTczMjc4NTJfMC45MDIzMDQ0MTk1MzM5MDI3Ij48L21w&amp;#10;Y2hlY2t0ZXh0PjwvcD48cD48YnI+PC9wPjxwPlNJVOWIhuaUr+ebuOW9k+S6juWBmumbhuaIkOa1&amp;#10;i+ivleS6hu+8jOS/neivgeS6hm1hc3RlcueahOS7o+eggeaYr+ebuOWvueWPr+mdoOeahOOAgjxt&amp;#10;cGNoZWNrdGV4dCBjb250ZW50ZWRpdGFibGU9ImZhbHNlIiBpZD0iMTYwNjkxNzMyNzg1M18wLjUy&amp;#10;MDU5NzM5MjU1MTM5NzQiPjwvbXBjaGVja3RleHQ+PC9wPjxwPjxicj48L3A+PHA+6YKj5LuA5LmI&amp;#10;5Luj56CB5ZCI5bm25YiwU0lU5YiG5pSv5ZGi77yfPG1wY2hlY2t0ZXh0IGNvbnRlbnRlZGl0YWJs&amp;#10;ZT0iZmFsc2UiIGlkPSIxNjA2OTE3MzI3ODU0XzAuMTQzNDA5NjQyODgzODM2NSI+PC9tcGNoZWNr&amp;#10;dGV4dD7kuI3nrqHlh6DkuKrpobnnm67vvIzkuZ/kuI3nrqHov5nkupvpobnnm67lhbfkvZPnmoTk&amp;#10;uIrnur/ml7bpl7TvvIznibnmgKfliIbmlK/pg73lj6/ku6XlkIjlubbliLBTSVTliIbmlK/vvIzn&amp;#10;hLblkI7nu5/kuIDnu5lRQeS6uuWRmOa1i+ivle+8iOebuOW9k+S6juaPkOWJjea1i+ivleWkmuS4&amp;#10;qumhueebruS6hu+8ie+8jOato+WboOS4uui/meagt++8jOS4iue6v+eahOaXtuWAmeaXoOazleS7&amp;#10;jlNJVOWIhuaUr21lcmdl5YiwbWFzdGVy5YiG5pSv44CCPG1wY2hlY2t0ZXh0IGNvbnRlbnRlZGl0&amp;#10;YWJsZT0iZmFsc2UiIGlkPSIxNjA2OTE3MzI3ODU1XzAuODYxNjc4NDIwMjg0MTEwMSI+PC9tcGNo&amp;#10;ZWNrdGV4dD48L3A+PHA+PGJyPjwvcD48cD7ov5nnp43lt6XkvZzmtYHlpJrkuobkuIDkuKrmraXp&amp;#10;qqTvvIzlv4XnhLbkvJrmnInlia/kvZznlKjvvIzpppblhYhtZXJnZeWIsFNJVOWIhuaUr+eahOaX&amp;#10;tuWAme+8jOWmguaenOacieWGsueqge+8jFNJVOWIhuaUr+S4jeW6lOivpeino+WGs+WGsueqge+8&amp;#10;jOWboOS4ulNJVOWIhuaUr+WPquaYr+S4uuS6hua1i+ivle+8jOS4jeS8muS4iue6v+eahO+8jOaJ&amp;#10;gOS7peS4jeW6lOivpeino+WGs+WGsueqge+8mzxtcGNoZWNrdGV4dCBjb250ZW50ZWRpdGFibGU9&amp;#10;ImZhbHNlIiBpZD0iMTYwNjkxNzMyNzg1OF8wLjQ1ODY0ODc5ODIwMzEyMiI+PC9tcGNoZWNrdGV4&amp;#10;dD7lhbbmrKHlvojlpJrkurror7TkuLrkuobpgb/lhY3mnInlhrLnqoHvvIzpgqPkuYjmiJHlsLHn&amp;#10;u4/luLjmgKfnmoTlsIZTSVTliIbmlK/kuIrnmoTku6PnoIFtZXJnZe+8iOS5n+WwseaYr3B1bGzv&amp;#10;vInliLDnibnmgKfliIbmlK/vvIzov5nkuZ/pnZ7luLjkuI3lpb3vvIzlm6DkuLrov5nkuKrnibnm&amp;#10;gKfliIbmlK/lsLHkuI3pmpTnprvkuobjgII8bXBjaGVja3RleHQgY29udGVudGVkaXRhYmxlPSJm&amp;#10;YWxzZSIgaWQ9IjE2MDY5MTczMjc4NTdfMC41Mzc4MjE0NTEwNDk2MjgiPjwvbXBjaGVja3RleHQ+&amp;#10;5omA5Lul5q2j56Gu55qE5YGa5rOV77yM5aaC5p6cbWVyZ2XliLBTSVTliIbmlK/kuqfnlJ/lhrLn&amp;#10;qoHvvIzlupTor6Xoh6rlt7Hljrvop6PlhrPlhrLnqoHvvIzlj6/lpoLkvZXmib7liLDlkozpgqPk&amp;#10;uKrliIbmlK/lhrLnqoHlkaLvvJ88bXBjaGVja3RleHQgY29udGVudGVkaXRhYmxlPSJmYWxzZSIg&amp;#10;aWQ9IjE2MDY5MTczMjc4NTZfMC4wMjU2OTYxNTc4MDY5NDU0NTIiPjwvbXBjaGVja3RleHQ+PC9w&amp;#10;PjxwPjxicj48L3A+PHA+6L+Y5pyJU0lU5YiG5pSv5ZKMbWFzdGVy5YiG5pSv5Zug5Li65pe26Ze0&amp;#10;54K55ZKM5L2c55So5LiN5LiA5qC377yM5rKh5pyJ5b+F6KaB5L+d5oyB5Luj56CB5piv5ZCM5q2l&amp;#10;77yM5Y+vcHJl5YiG5pSv5ZKMbWFzdGVy5YiG5pSv55CG6K665LiK5bqU6K+l5L+d5oyB5ZCM5q2l&amp;#10;77yM5LiK57q/55qE5pe25YCZ5rKh5pyJ6YCJ5oupbWVyZ2UgU0lU5YiG5pSv5YiwbWFzdGVy5YiG&amp;#10;5pSv55qE5Y6f5Zug5pivY2hlcnJ5LXBpY2vov5jmmK/mnInkuIDlrprlpI3mnYLluqbnmoTvvIxt&amp;#10;ZXJnZeeJueWummNvbW1pdCBpZOS5n+aYr+acieWkjeadguW6pueahO+8jOaJgOS7peaIkeS7rOmA&amp;#10;ieaLqeS7jueJueaAp+WIhuaUr+WQiOW5tuWIsG1hc3Rlcu+8jOmCo+W/heeEtuimgeaAneiAg+S4&amp;#10;gOS4qumXrumimO+8jHByZeWIhuaUr+a1i+ivlemAmui/h+S7o+ihqG1hc3RlcuWIhuaUr+a1i+iv&amp;#10;lemAmui/h+WQl++8nzxtcGNoZWNrdGV4dCBjb250ZW50ZWRpdGFibGU9ImZhbHNlIiBpZD0iMTYw&amp;#10;NjkxNzMyNzg1OV8wLjIwMzM3Njg2MzUzODAxNjQzIj48L21wY2hlY2t0ZXh0PuWmguaenHByZeWI&amp;#10;sG1hc3RlcuaYr+S4gOS4qmZhc3QgZm9yd2FyZO+8jOeQhuiuuuS4iuS4jeeUqOWGjemHjeWkjea1&amp;#10;i+ivleOAgjxtcGNoZWNrdGV4dCBjb250ZW50ZWRpdGFibGU9ImZhbHNlIiBpZD0iMTYwNjkxNzMy&amp;#10;Nzg2MF8wLjMwOTA4MTU2MTExNjQ0ODYiPjwvbXBjaGVja3RleHQ+PC9wPjxwPjxicj48L3A+PHA+&amp;#10;6L+Y5pyJ5LiA56eN5YGa5rOV5ZKM5oiR5Lus55qE5YGa5rOV57G75Ly877yM5bCx5piv5pyJ5LiA&amp;#10;5Liq6ZqQ5b2i55qEU0lU5YiG5pSv77yM54m55oCn5YiG5pSv5LiA5pem5o+Q5Lqk5Yiw6L+c56uv&amp;#10;77yM5bCx6Ieq5YqobWVyZ2XliLBTSVTliIbmlK/vvIzmn6XnnIvmmK/lkKbmnInlhrLnqoHvvIzl&amp;#10;poLmnpzmnInlhrLnqoHvvIzlsLHmj5DphpLlvIDlj5HogIXljrvop6PlhrPvvIzku47ogIzkv53p&amp;#10;mpzog73lpJ/mjIHnu63pm4bmiJDjgII8bXBjaGVja3RleHQgY29udGVudGVkaXRhYmxlPSJmYWxz&amp;#10;ZSIgaWQ9IjE2MDY5MTczMjc4NjFfMC45MjQ4OTkxNzE5Mzg2MjgxIj48L21wY2hlY2t0ZXh0Pjwv&amp;#10;cD48cD48YnI+PC9wPjxwPuacgOWQjuivtOivtOeJueaAp+WIhuaUr++8jOaIkeS7rOi/mOWWnOas&amp;#10;ouagueaNrui/reS7o+WRqOacn+WOu+W8hOS4gOS4quWkp+WIhuaUr++8jOWunumZheS4iui/meS4&amp;#10;quWkp+WIhuaUr+WMheWQq+S6huW+iOWkmuWtkOWKn+iDve+8jOS5n+WwseaYr+ivtOWPr+S7peaL&amp;#10;huWIhuS4uuWkmuS4quWtkOWIhuaUr++8jOmCo+i/meS4pOenjeaWueW8j+acieS7gOS5iOS8mOe8&amp;#10;uueCueWRou+8nzxtcGNoZWNrdGV4dCBjb250ZW50ZWRpdGFibGU9ImZhbHNlIiBpZD0iMTYwNjkx&amp;#10;NzMyNzg2Ml8wLjY1NzM0MTYwNDg3NDIyNTUiPjwvbXBjaGVja3RleHQ+PC9wPjxwPjxicj48L3A+&amp;#10;PHA+5aaC5p6c5Zyo5LiA5Liq5aSn5YiG5pSv77yM6IO95aSf5YeP5bCR5LiA5Lqb5Yay56qB77yM&amp;#10;5L2G5YGa5LiN5Yiw6ZqU56a75LqG77yM5aaC5p6c6aKR57mB55qEcHVsbO+8jOaYr+mAieaLqW1l&amp;#10;cmdl6L+Y5pivcmViYXNl5ZGi77yfPG1wY2hlY2t0ZXh0IGNvbnRlbnRlZGl0YWJsZT0iZmFsc2Ui&amp;#10;IGlkPSIxNjA2OTE3MzI3ODYzXzAuODc1OTM2MjI3MjYyNjQyNSI+PC9tcGNoZWNrdGV4dD7lupTo&amp;#10;r6XpgInmi6ltZXJnZe+8jOaOqOmAgeWIsOi/nOerr+eahOWIhuaUr+S4jeW7uuiuruWBmnJlYmFz&amp;#10;Ze+8jOS8muS6p+eUn+W+iOWkmumXrumimOOAgjxtcGNoZWNrdGV4dCBjb250ZW50ZWRpdGFibGU9&amp;#10;ImZhbHNlIiBpZD0iMTYwNjkxNzMyNzg2NF8wLjI2MjU3MDg2MzI2NDM2NzA3Ij48L21wY2hlY2t0&amp;#10;ZXh0PuWFtuWunuaXoueEtumAieaLqeS6huS4gOS4quWkp+WIhuaUr++8jOmCo2dpdOWOhuWPsuiu&amp;#10;sOW9leW/heeEtuS8muW+iOmavueci+eahO+8jOWfuuacrOayoeaciei/veaclOaAp+OAgjxtcGNo&amp;#10;ZWNrdGV4dCBjb250ZW50ZWRpdGFibGU9ImZhbHNlIiBpZD0iMTYwNjkxNzMyNzg2NV8wLjY0NDQz&amp;#10;MTM1NjMxODE4NDciPjwvbXBjaGVja3RleHQ+5aaC5p6c5a6e5Zyo6KaB5L2/55So5LiA5Liq5aSn&amp;#10;5YiG5pSv77yM5bu66K6u5LiN6KaB5aSq6aKR57mB55qE5o+Q5Lqk5Yiw6L+c56uv77yM5bC96YeP&amp;#10;5YGa5aW96Ieq5rWL5YaN5o+Q5Lqk44CCPG1wY2hlY2t0ZXh0IGNvbnRlbnRlZGl0YWJsZT0iZmFs&amp;#10;c2UiIGlkPSIxNjA2OTE3MzI3ODY2XzAuNDI2NjMyODI2NjY5NTY2MjYiPjwvbXBjaGVja3RleHQ+&amp;#10;U0lU6YOo572y55qE546v5aKD77yIUUHvvInmmK/kuLrkuobmtYvor5XkurrlkZjmtYvor5XnmoTv&amp;#10;vIzlupTor6Xkv53pmpzkuIDlrprnmoTnqLPlrprmgKfvvIzlroPku6zkuI3mmK/nu5nlvIDlj5Hk&amp;#10;urrlkZjosIPor5XnlKjnmoTjgII8bXBjaGVja3RleHQgY29udGVudGVkaXRhYmxlPSJmYWxzZSIg&amp;#10;aWQ9IjE2MDY5MTczMjc4NjdfMC4wNTc5OTM1MDQ3MjUyNzc1MzQiPjwvbXBjaGVja3RleHQ+PC9w&amp;#10;PjxwPjxicj48L3A+PHA+5bu66K6u6L+Y5piv5a2Q5YiG5pSv77yM5LiA5pa56Z2i6K+05LiN5a6a&amp;#10;5pyJ5LiA5aSp5bCx5LiK57q/6YOo5YiG5Yqf6IO977yM5a2Q5YiG5pSv5bCx5ZCI6YCC5LqG77yb&amp;#10;PG1wY2hlY2t0ZXh0IGNvbnRlbnRlZGl0YWJsZT0iZmFsc2UiIGlkPSIxNjA2OTE3MzI3ODY5XzAu&amp;#10;MDI3MTUxMzM1ODczMDA3MzMyIj48L21wY2hlY2t0ZXh0PuWPpuWkluWtkOWIhuaUr+S5n+iDveWB&amp;#10;muWIsOmalOemu++8mzxtcGNoZWNrdGV4dCBjb250ZW50ZWRpdGFibGU9ImZhbHNlIiBpZD0iMTYw&amp;#10;NjkxNzMyNzg3MF8wLjUxMDEyNDEzNDU5OTc4ODkiPjwvbXBjaGVja3RleHQ+5b2T54S25Y+v6IO9&amp;#10;5Lya6YGH5Yiw5b6I5aSabWVyZ2XlhrLnqoHnmoTpl67popjvvIzov5nml7blgJnlsLHpnIDopoHo&amp;#10;h6rlt7HnlITliKvkuI7pgqPkuKrliIbmlK/lj5HnlJ/lhrLnqoHkuobvvIjnm67liY3msqHmnInm&amp;#10;g7PliLDlip7ms5XvvInjgII8bXBjaGVja3RleHQgY29udGVudGVkaXRhYmxlPSJmYWxzZSIgaWQ9&amp;#10;IjE2MDY5MTczMjc4NjhfMC44ODIzOTY2MzkzNDYzODQ5Ij48L21wY2hlY2t0ZXh0PjwvcD48cD48&amp;#10;YnI+PC9wPjxwPmdpdOW3peS9nOa1geacieWkmuenjemAieaLqe+8jOS4u+imgeeci+aVtOS4quWb&amp;#10;oumYn+WvuWdpdOeahOeQhuino+eoi+W6pu+8jOW5tuihjOmhueebruaVsOmHj++8jENJL0NE5pa5&amp;#10;5byP562J562J77yM5rKh5pyJ57ud5a+555qE5aW95Z2P77yM5Y+q6KaB6IO96K+05b6X6YCa77yM&amp;#10;5rKh5pyJ5piO5pi+55qE57y654K577yM6YKj5bCx5piv5aW955qE5bel5L2c5rWB44CCPG1wY2hl&amp;#10;Y2t0ZXh0IGNvbnRlbnRlZGl0YWJsZT0iZmFsc2UiIGlkPSIxNjA2OTE3MzI3ODcxXzAuMTA4OTkx&amp;#10;Njk3MjAyNzY5MzYiPjwvbXBjaGVja3RleHQ+PC9wPjxwPuKAizxicj48L3A+&quot;/&gt;&lt;/div&gt;
+                &lt;/div&gt;
+
+                
+
+                
+
+
+
+                
+                &lt;div class=&quot;reward_qrcode_area reward_area tc&quot; id=&quot;js_reward_qrcode&quot;&gt;
+                                &lt;p class=&quot;tips_global&quot;&gt;Long-press QR code to transfer me a reward&lt;/p&gt;
+                                                                &lt;p class=&quot;reward_tips&quot;&gt;觉得写得还不错？就鼓励一下吧！&lt;/p&gt;
+                                &lt;span class=&quot;reward_qrcode_img_wrp&quot;&gt;&lt;img class=&quot;reward_qrcode_img&quot; id=&quot;js_reward_qrcode_img&quot;/&gt;&lt;/span&gt;
+                                &lt;p class=&quot;tips_global&quot;&gt;As required by Apple&#x27;s new policy, the Reward feature has been disabled on Weixin for iOS. You can still reward an Official Account by transferring money via QR code.&lt;/p&gt;
+                            &lt;/div&gt;
+                                                                            
+                              
+            &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>73c34f761867da0a134724c41cbd52ca</guid>
+<title>Golang 程序性能分析（三）：用 pprof 分析 gRPC 服务的性能</title>
+<link>https://toutiao.io/k/kbj19fj</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
+
+                    
+
+                    
+                    
+                    &lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这是Golang程序性能分析系列文章的最后一篇，这次我们的主要内容是&lt;strong&gt;如何使用&lt;code&gt;pprof&lt;/code&gt;工具对&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzUzNTY5MzU2MA==&amp;amp;mid=2247483894&amp;amp;idx=1&amp;amp;sn=9bad832154f63015096debcb7fcdca63&amp;amp;chksm=fa80d061cdf75977db9171ee6bbf4fac3919743c8700ebd49671a170a8ceb5f314e74f15b2fb&amp;amp;scene=21&amp;amp;cur_album_id=1576438069854027776#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;gRPC服务&lt;/a&gt;的程序性能进行分析&lt;/strong&gt;。关于&lt;code&gt;&lt;span&gt;gRPC&lt;/span&gt;&lt;/code&gt;这个框架的文章之前已经写过不少文章了，如果你对它还不太熟悉，不知道它是用来干什么的，可以通过&lt;a target=&quot;_blank&quot; href=&quot;https://mp.weixin.qq.com/s?__biz=MzUzNTY5MzU2MA==&amp;amp;mid=2247483889&amp;amp;idx=1&amp;amp;sn=141ab10eb58a3df89dba390fd5df0b1f&amp;amp;chksm=fa80d066cdf759705afbaf5b3a83df9783611665c3cb03d2a6605359e9ccdb70b836143f9fb7&amp;amp;scene=21&amp;amp;cur_album_id=1576438069854027776#wechat_redirect&quot; textvalue=&quot;gRPC入门系列&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;span&gt;&lt;strong&gt;gRPC入门系列&lt;/strong&gt;&lt;/span&gt;&lt;strong/&gt;&lt;/a&gt;的文章对它先做个了解。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;怎么用pprof分析gRPC的性能&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;gRPC&lt;/code&gt;底层基于&lt;code&gt;HTTP&lt;/code&gt;协议的，一个典型的gRPC服务的启动程序可能像下面这样&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;main&lt;/span&gt; &lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;  lis, err := net.Listen(&lt;span&gt;&quot;tcp&quot;&lt;/span&gt;, &lt;span&gt;10000&lt;/span&gt;)&lt;br/&gt;  grpcServer := grpc.NewServer()&lt;br/&gt;  pb.RegisterRouteGuideServer(grpcServer, &amp;amp;routeGuideServer{})&lt;br/&gt;  grpcServer.Serve(lis)&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;它是一个&lt;code&gt;RPC&lt;/code&gt;框架不是&lt;code&gt;Web&lt;/code&gt;框架，不支持浏览器用&lt;code&gt;URL&lt;/code&gt;访问，所以也就没法向上一节给&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzUzNTY5MzU2MA==&amp;amp;mid=2247486654&amp;amp;idx=1&amp;amp;sn=ea7171f58254dfecebc61cfbec7b64e5&amp;amp;chksm=fa80dd29cdf7543f97f90723e0470fbcb437f9a614a44c51ccf64e98f56e54711d713e204ab0&amp;amp;token=1150263485&amp;amp;lang=zh_CN&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;&lt;code&gt;Echo&lt;/code&gt;和&lt;code&gt;Gin&lt;/code&gt;框架单独注册&lt;code&gt;pprof&lt;/code&gt;采集数据用的那些路由&lt;/a&gt;。但是我们可以换个角度来看这个问题，&lt;code&gt;pprof&lt;/code&gt;做CPU分析原理是按照一定的频率采集程序CPU（包括寄存器）的使用情况，确定应用程序在主动消耗 CPU 周期时花费时间的位置。所以我们可以在&lt;code&gt;gRPC&lt;/code&gt;服务启动时，异步启动一个监听其他端口的&lt;code&gt;HTTP&lt;/code&gt;服务，通过这个&lt;code&gt;HTTP&lt;/code&gt;服务间接获取&lt;code&gt;gRPC&lt;/code&gt;服务的分析数据。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;go &lt;span&gt;&lt;span&gt;func&lt;/span&gt;&lt;/span&gt;() {&lt;br/&gt;   http.ListenAndServe(&lt;span&gt;&quot;:10001&quot;&lt;/span&gt;, nil)&lt;br/&gt;}()&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;由于使用默认的&lt;code&gt;ServerMux&lt;/code&gt;（服务复用器），所以只要匿名导入&lt;code&gt;net/http/pprof&lt;/code&gt;包，这个&lt;code&gt;HTTP&lt;/code&gt;的复用器默认就会注册&lt;code&gt;pprof&lt;/code&gt;相关的路由。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;此外建议在启动程序的最开端，调用&lt;code&gt;runtime.SetBlockProfileRate(1)&lt;/code&gt;指示对阻塞超过1纳秒的&lt;code&gt;goroutine&lt;/code&gt;进行数据采集。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;main&lt;/span&gt; &lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;&lt;br/&gt;  runtime.SetBlockProfileRate(&lt;span&gt;1&lt;/span&gt;)&lt;br/&gt;  &lt;span&gt;go&lt;/span&gt; &lt;span&gt;&lt;span&gt;func&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;    http.ListenAndServe(&lt;span&gt;&quot;:10001&quot;&lt;/span&gt;, &lt;span&gt;nil&lt;/span&gt;)&lt;br/&gt;  }()&lt;br/&gt;  &lt;br/&gt;  lis, err := net.Listen(&lt;span&gt;&quot;tcp&quot;&lt;/span&gt;, &lt;span&gt;10000&lt;/span&gt;)&lt;br/&gt;  grpcServer := grpc.NewServer()&lt;br/&gt;  pb.RegisterRouteGuideServer(grpcServer, &amp;amp;routeGuideServer{})&lt;br/&gt;  grpcServer.Serve(lis)&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;服务启动后就能通过&lt;code&gt;{server_ip}:10001/debug/pprof/profile&lt;/code&gt;采集CPU的使用情况了，具体&lt;code&gt;pprof&lt;/code&gt;工具的使用方法的详细说明参考系列的&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzUzNTY5MzU2MA==&amp;amp;mid=2247486618&amp;amp;idx=1&amp;amp;sn=bb5e76e011ba99ebc2ffb8f9d3c00b89&amp;amp;chksm=fa80dd0dcdf7541b641be90bdf39001a8ac417c418bb19b9ee7d9e493a0627cfe7d144bb2163&amp;amp;token=1150263485&amp;amp;lang=zh_CN&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;第一篇文章&lt;/a&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;下图是我用分析数据生成的函数调用图的一部分，可以看到虽然是用另外一个端口的&lt;code&gt;HTTP&lt;/code&gt;服务拿到的分析数据，但依然能采集到监听另一个端口的&lt;code&gt;gRPC&lt;/code&gt;服务程序的CPU使用情况。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.6433007985803016&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/z4pQ0O5h0f4iaaTkrDicicucniapfr1IYvibPrmY9IQibkOqNdbDqRibpciaRjPNUwsSBzGG2kRNL1Z9oEhgTLSdXantVQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1127&quot;/&gt;&lt;figcaption&gt;gRPC服务的函数调用图&lt;/figcaption&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;pprof的局限&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;pprof这些功能虽然很有用，但是想分析出程序的性能问题还是挺费事儿的，从我使用下来的感觉主要有两点。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;首先，因为调用图里把所有函数调用都显示出来了，有些耗时长的还是Go底层的&lt;code&gt;runtime&lt;/code&gt;包内函数的直接，想要在这一堆里找到慢的业务函数还是得花不少力气。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;再一个现在很多服务都是分布式的，如果服务A调用了服务B，服务B里的方法执行的比较耗时的话，在A的分析数据里只能知道&lt;code&gt;grpc.invoke&lt;/code&gt;（客户端调用&lt;code&gt;gRPC&lt;/code&gt;方法的请求都是由&lt;code&gt;invoke&lt;/code&gt;发出的）耗时长，这时又得去服务B上采集数据，做不到全链路服务性能的采集，这块如果谁知道好的解决方案可以在留言里说一下。&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;这期的文章就到这里，欢迎在留言里多交流。下期会推送一篇关于用Kubernetes StatefulSet控制器编排有状态应用的超长文章，同时会对Headless Service做一个详细的分析，想入门K8s的铁汁儿们，微信还没关注公众号「网管叨bi叨」的，赶紧关注一波呀！！！&lt;/p&gt;&lt;/blockquote&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;相关阅读&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzUzNTY5MzU2MA==&amp;amp;mid=2247486618&amp;amp;idx=1&amp;amp;sn=bb5e76e011ba99ebc2ffb8f9d3c00b89&amp;amp;chksm=fa80dd0dcdf7541b641be90bdf39001a8ac417c418bb19b9ee7d9e493a0627cfe7d144bb2163&amp;amp;token=1150263485&amp;amp;lang=zh_CN&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;Golang程序性能分析（一）pprof和go-torch&lt;/a&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzUzNTY5MzU2MA==&amp;amp;mid=2247486654&amp;amp;idx=1&amp;amp;sn=ea7171f58254dfecebc61cfbec7b64e5&amp;amp;chksm=fa80dd29cdf7543f97f90723e0470fbcb437f9a614a44c51ccf64e98f56e54711d713e204ab0&amp;amp;token=1150263485&amp;amp;lang=zh_CN&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;Golang程序性能分析（二）在Echo和Gin框架中使用pprof&lt;/a&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;span&gt;- END -&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;关注公众号，每周教会你一个进阶知识&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;1.0188679245283019&quot; data-s=&quot;300,640&quot; data-type=&quot;png&quot; data-w=&quot;318&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/z4pQ0O5h0f4icJbGAQ8RjXUUVdUZsGADuMBVWePgn7tfrWjjHyc6b8kXTQ7Sdkp0QQFFK4mel5tniczqooMna1CA/640?wx_fmt=png&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;
+                &lt;/div&gt;
+
+                
+
+                
+
+
+
+                
+                &lt;div class=&quot;reward_qrcode_area reward_area tc&quot; id=&quot;js_reward_qrcode&quot;&gt;
+                                &lt;p class=&quot;tips_global&quot;&gt;Long-press QR code to transfer me a reward&lt;/p&gt;
+                                                                &lt;p class=&quot;reward_tips&quot;&gt;点在看支持我的创作&lt;/p&gt;
+                                &lt;span class=&quot;reward_qrcode_img_wrp&quot;&gt;&lt;img class=&quot;reward_qrcode_img&quot; id=&quot;js_reward_qrcode_img&quot;/&gt;&lt;/span&gt;
+                                &lt;p class=&quot;tips_global&quot;&gt;As required by Apple&#x27;s new policy, the Reward feature has been disabled on Weixin for iOS. You can still reward an Official Account by transferring money via QR code.&lt;/p&gt;
+                            &lt;/div&gt;
+                                                                            
+                              
+            &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>49ab22a7a55737c32d1b1497c281ffa7</guid>
+<title>详解数据仓库的实施步骤</title>
+<link>https://toutiao.io/k/gzqpdu5</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
+
+                    
+
+                    
+                    
+                    &lt;p data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.29928172386272944&quot; data-s=&quot;300,640&quot; data-type=&quot;jpeg&quot; data-w=&quot;1253&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/p2v54xNeNEbYaiapGBKxVhppoo6Bc30ztty9pImrkiaAibn87SCbtbMgPIdF0XhGmxYBZBAyXXU1vrjtHTMtZ7RcQ/640?wx_fmt=jpeg&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;em&gt;&lt;span&gt;接下来本公众号将陆续分享一些数仓、商业智能领域的干货。本期数仓系列将从项目和开发角度，详解BI数仓，包括一些概念和方法论，以及几个行业和企业实践过的实施经验。大家有其他想看的，欢迎留言！&lt;/span&gt;&lt;/em&gt;&lt;/p&gt;&lt;p&gt;&lt;em&gt;&lt;span&gt;本文共4000字，读完需要10分钟！&lt;/span&gt;&lt;/em&gt;&lt;em&gt;&lt;span/&gt;&lt;/em&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;建立数据仓库是一个解决企业数据问题应用的过程，是企业信息化发展到一定阶段必不可少的一步，也是发展数据化管理的重要基础。数仓的知识市面上的书籍和文章不少，但是实际实施依据行业不同，企业核心诉求不同，从技术到方法论各有不同。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;如何实施数仓项目，本文先以传统行业的数仓切入，从整体上讲下数据仓库的实施方法论！&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.7172503242542153&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/p2v54xNeNEbgVnvbIqTRuaqMuM0iaibI6P20zcrSgzoHiastL4HRpZr9QjyFDbrbPSuGGiahUkcKs0I4C8xo9tdLIA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;771&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;数据仓库的通用实施步骤&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;一、需求分析&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;需求分析是数据仓库项目最重要的一个环节，数仓说到底还是服务于业务，支撑于业务，如果需求分析不准确，做了没人用，上了不好用，会直接影响业务/客户的使用，最终导致项目的失败。为了避免最坏的情况，磨刀不误砍柴工，前期一定要重视需求的调研、挖掘和分析，并采用一些严谨科学的措施和方法去做需求分析。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在实际调研过程中分享几个经验：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;1、尽可能与业务方/客户方一起分析需求，引导对方将项目所要实现的整体框架和业务细节部分述清楚，最好的方式就是需求人员和设计人员基于原型来讨论，从而正确理解实际的业务需求。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2、必须实事求是地将数据仓库所能实现的目标和不容易解决的问题与协商清楚。这一个环节趟过不少坑，IT方急着上线，业务方对于项目还处于一知半解，甚至在推动的时候可能避重就轻，比如一期不满足的需求强行上，长远来看项目会产生不少推诿和扯皮，消磨的是对方的信任。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;所以在需求讨论的基础上，需要理解业务工作流程，当然如果你已经具备了这个行业丰富的业务知识，那可以在需求调研的时候尽可能地让对方按照自己的思路去完成数据仓库系统的功能设计。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;3、需求方群体的分类，BI项目最终的使用对象可以分为以下几类：数据查询者、报表查询者、企业决策者&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.4965277777777778&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/p2v54xNeNEbgVnvbIqTRuaqMuM0iaibI6Pke3LoV2GHAdvmiaLJgRFFVOy7LficUYictqhVbUMGn5yb7aGZH6iaur49g/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1152&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这三类人群的需求特点完全不一样，沟通的时候需要注意区分并深刻理解&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;4、需求调研的再完美，也避免不了需求变更。现实是很多情况下需求是不确定的，业务方是提不出有价值的需求的，需求今天是A明天又变成B无法一步做到位的，这都很正常，作为项目实施者要做好心理预期。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;一般情况下，业务方能够提供的都是需求的整体框架部分或者是实际需求的一部分内容，不能预见未来需要增加的需求，这也注定了数仓项目是一个不断循环、反馈，使系统不断完善增长的过程。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;不能规避风险但是可以减少风险，所以科学的调研尤为重要。以下是调研模板，当需求调研完成时，需要对采集结果进行分析、归纳、整理，最终形成完整的需求分析报告。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.8409742120343839&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/p2v54xNeNEbgVnvbIqTRuaqMuM0iaibI6P7LGhrC4RmZoufQJh6klJjHUiahOspnXSQMLeoXrGSgYbQv899v9P3pQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;698&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;摘于《数据化建设知识图谱》&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;业务需求的实施目的就是真正理解企业决策者的战略性目标。在理解建立商业智能系统目标的基础上，建立有效的企业管理模式，制定出详细的企业数据仓库业务管理规范，设计出常用的ETL数据采集规范和工作流程，从而明确商业智能系统的实施范围和目标。为了提高企业的分析决策能力，可以利用当下的局域网技术和互联网技术实现企业对各种信息的查询和分析，通过建立企业业务数据模型，分析商业智能系统的系统架构、数据源之间的差异、对数据质量的评估和各种信息的处理方法，有效地提高企业商业智能系统的分析和决策能力。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;二、数据仓库的逻辑分析&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;数据仓库在逻辑上可以分成操作型数据库、数据仓库层、数据集市层、数据分析应用层和报表展示层，其架构如下图所示：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.9742990654205608&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/p2v54xNeNEbgVnvbIqTRuaqMuM0iaibI6PgFLILRflBibJn07Ovt8TGSuodFqF9ZvjWfrdfr81icRhbgCbaMnYPUXQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;856&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;三、设计ODS系统&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;ODS 可以有两种形式：ODS 数据缓冲区和ODS统一信息视图区。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;① ODS数据缓冲区&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;ODS数据缓冲区是业务数据流动过程的第一个存储区，实现了数据仓库从各个业务系统的数据源中将数据抽取出来，并且装载到ODS数据缓冲区的这一过程，从而实现统一的全局的企业数据平台，为以后的数据抽取、清洗、转换过程打下坚实的基础。对于数据的数据源可以采用增量的方式进行抽取，对于经常变化更新的数据一般采用全量的方式进抽取。ODS数据缓冲区具有实时性的特征，ODS系统将各个孤立的业务系统的生产运营数据集成起来，组成统一的、全局的企业数据交换平台。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;② ODS统一信息视图区&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;ODS统一信息视图区是指有选择地集成各类业务源数据，对数据进行抽取、清洗、转换操作，以数据主题域为数据集成的基础，对数据进行分类和组织，使用户能够通过统一信心视图区获得跟某个主题域相关的实时性数据。各业务系统和ODS统一信息视图区可以互相访问，可以生成具有实时性的操作性报表和查询某一主题的近期全部信息。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;③ ODS数据缓冲区和ODS统一信息视图区的区别和共同点&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;ODS 数据缓冲区主要为业务源数据抽取到数据仓库中提供中间数据缓冲的功能，与&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;ODS 统一信息视图区最大的区别就是数据抽取、清洗、转换、加载的转换规则和数据存储的方式不同。ODS统一信息视图区是完全按照主题的方式进行数据存储，向用户提供快速的报表展示和数据实时查询的功能。而ODS数据缓冲区的ETL规则一般只进行简单的汇总、计算，或者从操作型数据库中直接抽取而中间不进行任何转化。ODS 统一信息视图区的数据一般都是从ODS数据缓冲区中抽取过来的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;四、数据仓库建模&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;数据仓库建模在前面已经有了详细的介绍，数据仓库模型是IT技术开发人员、业务人员、决策管理者相互沟通的一套语言和平台。对于数据建模工程师来说，对业务的深刻理解是首要任务，因为数据仓库建模分为概念模型设计、逻辑模型设计和物理模型设计3个阶段，一般按照自顶向下的顺序依次对模型进行设计。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;概念模型主要是模型设计人员对业务规则的理解，是最高层次的数据模型，几乎涵盖了业务所有的核心概念和重要的主题，为以后逻辑模型的建设打下了基础。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;逻辑模型是对概念模型的分解、细化，将数据主题划分成一个个的实体和实体关系，一般将第三范式作为设计的模板。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;物理模型在逻辑模型的基础上对模型实体进行细节性的描述，包括字段类型、长度、索引等因素，最后转化成数据库存储的物理表。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;1.1642276422764228&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/p2v54xNeNEbgVnvbIqTRuaqMuM0iaibI6PeVxibzv0lUYI7hXlwAJ44Qz9S6T54EknHbdwDOs1Q3VooR0StpjXBcQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;615&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.37373737373737376&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/p2v54xNeNEbgVnvbIqTRuaqMuM0iaibI6Po08cozGBUQLLHGnHPMcr0SQMPGhDfRNlCTbeVzte7GGH0Jj2pbzb8w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;693&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;摘于《数据化建设知识图谱》&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;五、数据集市建模&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;一般数据集市模型的建设是基于需求分析得到的结果，数据集巾的建模主要针对事实表和维表的设计。例如，部门员工关系表，如果事实表包含部门编码，则数据可以分析到部门。如果事实表又包含员工编码，则数据既可以分析到部门，又可以分析到员工。一张事实表除了包含所要分析的维度编码外，还包括需要分析的度量值。例如，用户用电分析事实表，它的主题描述就是按地区、时间、电压等级统计用户的耗电量、应收电费，并进行同期对比；它的维度就是地区、时间、电压等级，度量值包括耗电量、应收电费等；指标来源就是数据仓库中的计费结果表、用户基本信息表。维表一般采用增量的方式进行抽取。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.26776519052523173&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/p2v54xNeNEbgVnvbIqTRuaqMuM0iaibI6P4u66EaA5cDiccOZCpdUSC1sD8ULeMum7cdgbpucGVhfT9YXumm880Hw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;971&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;六、数据源分析&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;所谓数据源分析，就是对源数据进行分析和总结，得出源数据的范围、格式、更新方式、更新频率和质量好坏的过程。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;数据源分析是指通过需求调研得知业务数据源的基本情况，并且加以详细说明，具体内容包括数据源中存在哪些物理表，表之间的关系和表中每个字段的数据类型和含义等。一般来说，业务数据源通常会有数据不完整、口径不一致，或者各个数据源存在业务规则不统一的情况。&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;另外，在分析的过程中，需要确定业务源数据中哪些数据需要被抽取。为了确定合适的抽取方&lt;/span&gt;&lt;span&gt;式，需要在抽取之前对数据源进行分析，分析的范围一般包括数据的格式、数据的范围、更新的方式、数据质量的好坏。在分析的过程中，应该尽可能获取分析的结果，形成数据源分析报告，在仔细研究分析报告后，再选择合适的抽取、加载方式。&lt;span&gt;了解这些数据源的特点，有利于ETL 抽取时对数据的整合和统一，从而保证数据的质量和可信度。&lt;/span&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;七、数据的获取与整合&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;数据的获取与整合存在于数据仓库项目中的各个阶段。数据仓库很重要的一个作用就是将散落在各业务系统的数据整合起来，不规范的数据规范起来，以一种便于分析和应用的方式放到数据仓库里，供前端应用分析。ETL 过程实际上就是数据流动的过程，即从不同的数据源流向统一的目标数据库。数据的获取与整合是完成数据仓库建设取复杂的过程，它关系到数据的质量，是数据仓库项目建设的根基。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;八、数据应用和报表展现&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;报表绝对是让人痛苦的东西。格式复杂、需求多变，业务没事就改需求或者增加几个。虽然说起报表感觉很老土，但确实是整个数仓项目价值落地呈现的东西。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;做报表多的人，基本上都会做一个自己的工具，至少也会做一个引擎，按照自己的理解用一种结构化加动态的方式去定义所需要的报表，可以灵活的选择所需要的数据，设计展现样式生成报表。现在一般都是采用专业的低代码的报表工具来做报表，比如FineReport去做报表，提升开发效率，侧重应用分析，毕竟没有谁想一天到晚被报表缠身。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;结合前面谈到的数据分层的机制，会发现，不管基于哪一层，都有做报表的需求。个人认为报表的重点不在与报表的制作，而在于如何利用报表为业务为项目谋价值。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.4965277777777778&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/p2v54xNeNEbgVnvbIqTRuaqMuM0iaibI6Pke3LoV2GHAdvmiaLJgRFFVOy7LficUYictqhVbUMGn5yb7aGZH6iaur49g/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1152&quot;/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span/&gt;&lt;span&gt;大公司都会有负责报表分析这块的项目人员，那针对报表延伸出来的工作，报表需求分析、指标体系规划、以及各位为经营为管理为基层人员的报表分类，还有围绕业务的分层设计。&lt;/span&gt;&lt;span/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;对于基层员工，报表使用的最多的就是录数据，查询数据。比如商场售货员浏览数据来查看商品的售卖情况，以此来及时补货，还有每天的日销售数据录入&lt;span&gt;。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;对于部分业务人员，报表的不再是简单的展示和录入，会衍生出一些分析的需求，比如采购经理，他需要决定采购哪些品牌的商品，从哪一家供应商来采购，如何规划商店的商品。那方法就是看报表看哪些商品买的好，以此来考虑是否需要加购哪些品牌商品，放弃那些品牌商品或者搞促销。高大上一点的说辞就是利用数据&lt;span&gt;优化商品结构，选择供应商。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;对于企业管理层，更多的说是做dashboard进行指标的监控，做的业绩分析&lt;em&gt;(时间、地区纬度等)&lt;/em&gt;。&lt;/span&gt;&lt;span&gt;而这一过程，也是通过数据使管理层可以更容易的按照标准的管理方法进行决策(如果说员工是判断，领导就是决策了...)&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;【END】&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;span&gt;最后，感兴趣的公众号后台回复&lt;span&gt;&lt;strong&gt;“资料”&lt;/strong&gt;&lt;/span&gt;&lt;/span&gt;&lt;span&gt;，我们整理了&lt;/span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;6个G数据平台、数据仓库、数据仓库、数据治理、企业数据化管&lt;/span&gt;&lt;span&gt;理案例&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;strong&gt;&lt;span&gt;，供大家免费领取！&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;&lt;strong&gt;&lt;span/&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.8118081180811808&quot; data-s=&quot;300,640&quot; data-type=&quot;jpeg&quot; data-w=&quot;813&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/p2v54xNeNEbYaiapGBKxVhppoo6Bc30ztk0x00qAKk4hYcKo0sGooK3iaVDJZe4ibAoX3Cr2tiaukpvO6ykJXw8ydg/640?wx_fmt=jpeg&quot;/&gt;&lt;/p&gt;
                 &lt;/div&gt;
 
                 
@@ -28,146 +90,99 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>40c10cb783e32e542da21d41ba222c90</guid>
-<title>[推荐] 面试过 200 人的经验，都在这里了 | 码农周刊第 325 期</title>
-<link>https://toutiao.io/k/xvysg5s</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;body class=&quot;issue&quot; id=&quot;readabilityBody&quot;&gt;
-        &lt;h1&gt;面试过 200 人的经验，都在这里了 | 码农周刊第 325 期&lt;/h1&gt;
-        &lt;h2&gt;码农周刊第325期（2020-11-25）&lt;/h2&gt;
-        &lt;p&gt;☞ &lt;a href=&quot;https://weekly.manong.io/bounce?nid=325&amp;amp;aid=19568&amp;amp;url=https%3A%2F%2Fvip.manong.io%2F%3F3250&quot; target=&quot;_blank&quot;&gt;薪资翻番如何实现？程序员的涨薪秘诀&lt;/a&gt;&lt;br/&gt;&amp;#13;
-&lt;a href=&quot;https://weekly.manong.io/bounce?nid=325&amp;amp;aid=19568&amp;amp;url=https%3A%2F%2Fvip.manong.io%2F%3F3250&quot; target=&quot;_blank&quot;&gt;&lt;img src=&quot;https://img.toutiao.io/ads/vip_321.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;br/&gt;&amp;#13;
-&lt;small&gt;&lt;a href=&quot;https://weekly.manong.io/bounce?nid=325&amp;amp;aid=19185&amp;amp;url=https%3A%2F%2Fjinshuju.net%2Ff%2FV7DxN9&quot; target=&quot;_blank&quot;&gt;商务合作&lt;/a&gt;&lt;/small&gt;&lt;/p&gt;
-        
-        &lt;h3 id=&quot;程序设计&quot;&gt;程序设计&lt;/h3&gt;
-        &lt;p/&gt;
-        
-        &lt;p&gt;「码农周刊 VIP 会员专属邮件周报」每周五发送，自订购之日算起，全年 52 期。&lt;/p&gt;
-        
-        &lt;p&gt;详细介绍&lt;/p&gt;
-        
-        &lt;p&gt;业界实战&lt;/p&gt;
-        
-        &lt;p&gt;经验分享&lt;/p&gt;&lt;p&gt;&lt;img src=&quot;https://img.toutiao.io/ads/vip_3041.jpeg&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-        &lt;h3 id=&quot;VIP会员专区&quot;&gt;VIP会员专区&lt;/h3&gt;
-        &lt;p/&gt;
-        
-        &lt;p&gt;工作地点：成都 | 薪资：15-30K | 简历投递邮箱：xiexiaofang@huobi.com&amp;#13;
-&lt;/p&gt;
-        
-        &lt;p&gt;相比 cocos2d 引擎有着更低的入门门槛和维护成本，为复杂动画的实现提供了一种全新的方式，新的复杂动画开发将会变得更加简单高效。&amp;#13;
-&lt;/p&gt;
-        
-        &lt;p&gt;让您享受极简编程体验，快速访问支付宝开放平台开放的各项核心能力。&amp;#13;
-&lt;/p&gt;
-        
-        &lt;p&gt;一个不错的 Python 学习教程，30 天循序渐进地教你学会 Python。&amp;#13;
-&lt;/p&gt;
-        
-        &lt;p&gt;白皮书从技术、市场、趋势、挑战等多维度，对我国开源产业生态进行了全面、深度的剖析，指出了我国开源产业发展的几大重要趋势。&lt;/p&gt;
-        &lt;h3 id=&quot;工具资料&quot;&gt;工具资料&lt;/h3&gt;
-        &lt;p/&gt;
-        
-        &lt;p&gt;「码农周刊 VIP 会员专属邮件周报」每周五发送，自订购之日算起，全年 52 期。&lt;/p&gt;
-        
-        &lt;p&gt;试试吧&lt;/p&gt;
-        
-        &lt;p&gt;经验总结&amp;#13;
-&lt;/p&gt;
-        
-        &lt;p&gt;简明介绍&lt;/p&gt;
-        
-        &lt;p&gt;详解&lt;/p&gt;
-        
-        &lt;p&gt;供参考&lt;/p&gt;
-        
-        &lt;p&gt;一步步教你&lt;/p&gt;
-        
-        &lt;p&gt;结合代码&lt;/p&gt;
-        
-        &lt;p&gt;供参考&amp;#13;
-&lt;/p&gt;
-        
-        &lt;p&gt;详解&lt;/p&gt;
-        
-        &lt;p&gt;图文并茂&lt;/p&gt;
-        
-        &lt;p&gt;收藏吧&lt;/p&gt;
-        
-        &lt;p&gt;供参考&lt;/p&gt;
-        
-        &lt;p&gt;实用&lt;/p&gt;
-        
-        &lt;p&gt;供参考&lt;/p&gt;
-        
-        &lt;p&gt;经验分享&lt;/p&gt;
-        
-        &lt;p&gt;使用方便&lt;/p&gt;&lt;p&gt;&lt;img src=&quot;https://img.toutiao.io/ads/vip_3041.jpeg&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-        &lt;h3 id=&quot;编程语言&quot;&gt;编程语言&lt;/h3&gt;
-        &lt;p/&gt;
-        
-        &lt;p&gt;「码农周刊 VIP 会员专属邮件周报」每周五发送，自订购之日算起，全年 52 期。&lt;/p&gt;
-        
-        &lt;p&gt;一步步教你&lt;/p&gt;
-        
-        &lt;p&gt;代码示例&lt;/p&gt;
-        
-        &lt;p&gt;详解&lt;/p&gt;
-        
-        &lt;p&gt;良心教程&lt;/p&gt;
-        
-        &lt;p&gt;结合代码&lt;/p&gt;
-        
-        &lt;p&gt;详解&lt;/p&gt;
-        
-        &lt;p&gt;你怎么看？&lt;/p&gt;
-        
-        &lt;p&gt;深入研究&lt;/p&gt;
-        
-        &lt;p&gt;详解&lt;/p&gt;
-        
-        &lt;p&gt;详细介绍&lt;/p&gt;
-        
-        &lt;p&gt;供参考&lt;/p&gt;
-        &lt;h3 id=&quot;每周独家号推荐&quot;&gt;每周独家号推荐&lt;/h3&gt;
-        &lt;p/&gt;
-        
-        &lt;p&gt;技术总结，经验分享&lt;br/&gt;订阅方法：使用&lt;a href=&quot;http://toutiao.io/download?ref=v4.1.0&quot; target=&quot;_blank&quot;&gt;开发者头条客户端&lt;/a&gt;，发现 &amp;gt; 搜索 451179 即可&lt;/p&gt;
-        
-        &lt;p&gt;订阅方法：使用&lt;a href=&quot;http://toutiao.io/download?ref=v4.1.0&quot; target=&quot;_blank&quot;&gt;开发者头条客户端&lt;/a&gt;，发现 &amp;gt; 搜索 429587 即可&lt;/p&gt;
-        
-        &lt;p&gt;分享计算机视觉与机器学习技术的最前沿&lt;br/&gt;订阅方法：使用&lt;a href=&quot;http://toutiao.io/download?ref=v4.1.0&quot; target=&quot;_blank&quot;&gt;开发者头条客户端&lt;/a&gt;，发现 &amp;gt; 搜索 359575 即可&lt;/p&gt;
-        
-        &lt;p&gt;聚焦基础架构和Linux。十年架构，日百亿流量，与你探讨高并发世界，给你不一样的味道。&lt;br/&gt;订阅方法：使用&lt;a href=&quot;http://toutiao.io/download?ref=v4.1.0&quot; target=&quot;_blank&quot;&gt;开发者头条客户端&lt;/a&gt;，发现 &amp;gt; 搜索 351247 即可&lt;/p&gt;
-        
-        &lt;p&gt;学习就是不停的积累&lt;br/&gt;订阅方法：使用&lt;a href=&quot;http://toutiao.io/download?ref=v4.1.0&quot; target=&quot;_blank&quot;&gt;开发者头条客户端&lt;/a&gt;，发现 &amp;gt; 搜索 24912 即可&lt;/p&gt;
-        &lt;h3 id=&quot;每周一书&quot;&gt;每周一书&lt;/h3&gt;
-        &lt;p/&gt;
-        
-        &lt;p&gt;本手册以开发工程师为中心视角，划分为单元测试、安全规约、MySQL 数据库、工程结构等七个维度，相应的扩展解释和说明、正例和反例，全面、立体、形象地帮助开发工程师成长。欢迎到&lt;a href=&quot;http://toutiao.io/download?ref=v4.1.0&quot; target=&quot;_blank&quot;&gt;开发者头条客户端&lt;/a&gt;兑换阅读。&lt;/p&gt;
-        &lt;h3 id=&quot;编程之外&quot;&gt;编程之外&lt;/h3&gt;
-        &lt;p/&gt;
-        
-        &lt;p&gt;经验分享&lt;/p&gt;
-        
-        &lt;p&gt;个人经历&lt;/p&gt;
-        
-        &lt;p&gt;一直被追赶，从未被超越&lt;/p&gt;&lt;p&gt;&lt;img src=&quot;https://img.toutiao.io/ads/vip_3041.jpeg&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-        &lt;p&gt;
-        &lt;/p&gt;
-        
-        
-        
-        
-        &lt;div class=&quot;qrcode&quot;&gt;
-  &lt;img src=&quot;https://img.toutiao.io/ads/vip_qrcode.png&quot; alt=&quot;Qrcode 258&quot;/&gt;&lt;span&gt;加入码农周刊VIP会员&lt;/span&gt;
-&lt;/div&gt;
-    &lt;/body&gt;
-&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>f2c1f3c42c0732185a747eb0baf2325a</guid>
+<title>列举一些 Go 1.16 中可能对大家有影响的变化</title>
+<link>https://toutiao.io/k/gep4k6z</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;content&quot;&gt;
+&lt;p&gt;大家好，我是站长 polarisxu。&lt;/p&gt;
+&lt;p&gt;先说一下我一般怎么了解 Go 最新的一些动态。&lt;/p&gt;
+&lt;h2 id=&quot;01-从哪获取信息&quot;&gt;01 从哪获取信息&lt;a href=&quot;#01-从哪获取信息&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewbox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3&quot;/&gt;&lt;line x1=&quot;8&quot; y1=&quot;12&quot; x2=&quot;16&quot; y2=&quot;12&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;主要通过以下方式：&lt;/p&gt;
+
+&lt;p&gt;此外，Reddit 的 r/golang 频道也会有很多信息。&lt;/p&gt;
+&lt;h2 id=&quot;02-go-116-的一些改动&quot;&gt;02 Go 1.16 的一些改动&lt;a href=&quot;#02-go-116-的一些改动&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewbox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3&quot;/&gt;&lt;line x1=&quot;8&quot; y1=&quot;12&quot; x2=&quot;16&quot; y2=&quot;12&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;按计划，Go1.16 会在 2021 年 2 月份发布。目前 Release Notes 中已经有部分内容了。&lt;/p&gt;
+&lt;h3 id=&quot;module-模式会默认开启&quot;&gt;Module 模式会默认开启&lt;a href=&quot;#module-模式会默认开启&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewbox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3&quot;/&gt;&lt;line x1=&quot;8&quot; y1=&quot;12&quot; x2=&quot;16&quot; y2=&quot;12&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;经过了这么多版本，终于默认开启了。默认开启是什么意思？即 GO111MODULE 环境变量的默认值将从 auto 改变为 on。这将解决一些目前使用 go 命令时的尴尬 。比如有些人可能说，明明我设置了 GOPROXY，但是 go get 依然没有经过它，下载依然失败。这是因为在非 modules 感知目录下运行 go get 时，自动选择了 GOPATH 模式而忽略了 GOPROXY 环境变量。如果你现在遇到这种情况，请手动将 GO111MODULE 环境变量更改为 on。&lt;/p&gt;
+&lt;h3 id=&quot;内嵌静态资源&quot;&gt;内嵌静态资源&lt;a href=&quot;#内嵌静态资源&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewbox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3&quot;/&gt;&lt;line x1=&quot;8&quot; y1=&quot;12&quot; x2=&quot;16&quot; y2=&quot;12&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;支持内嵌静态资源（文件或者文件夹）至生成的二进制文件中。这部分之前写文章介绍过，&lt;a href=&quot;https://mp.weixin.qq.com/s/SiCTV7R2wA_I2nCQkC3GGQ&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;见这里&lt;/a&gt;
+。&lt;/p&gt;
+&lt;h3 id=&quot;支持最新版本-mac&quot;&gt;支持最新版本 Mac&lt;a href=&quot;#支持最新版本-mac&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewbox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3&quot;/&gt;&lt;line x1=&quot;8&quot; y1=&quot;12&quot; x2=&quot;16&quot; y2=&quot;12&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;最新版 Mac 使用了 ARM 架构，因此 Go 1.16 增加 &lt;code&gt;GOOS=darwin, GOARCH=arm64&lt;/code&gt; 支持，而这之前是用于 iOS 的，以后 iOS port 改为 &lt;code&gt;GOOS=ios, GOARCH=arm64&lt;/code&gt;。&lt;/p&gt;
+&lt;h3 id=&quot;linux-系统下-rss-会更准确&quot;&gt;Linux 系统下 RSS 会更准确&lt;a href=&quot;#linux-系统下-rss-会更准确&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewbox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3&quot;/&gt;&lt;line x1=&quot;8&quot; y1=&quot;12&quot; x2=&quot;16&quot; y2=&quot;12&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;在 Linux 上，runtime 现在默认会迅速地（使用 MADV_DONTNEED）向操作系统释放内存，而不是在操作系统面临内存压力时（使用 MADV_FREE）惰性地释放内存。&lt;/p&gt;
+&lt;p&gt;这意味着像 RSS 这样的进程级内存统计信息将更准确地反映 Go 进程所使用的物理内存数量。因此 Go1.16 中，不再需要配置 GODEBUG=madvdontneed=1 来改善内存监控行为。&lt;/p&gt;
+&lt;h3 id=&quot;切片扩容策略改变&quot;&gt;切片扩容策略改变&lt;a href=&quot;#切片扩容策略改变&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewbox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3&quot;/&gt;&lt;line x1=&quot;8&quot; y1=&quot;12&quot; x2=&quot;16&quot; y2=&quot;12&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;如果一个 &lt;code&gt;append(x, values…)&lt;/code&gt; 调用需要扩容，则基础切片 x 的容量将决定结果切片的容量（而不是原来的基础切片 x 的长度决定结果切片的容量）。&lt;/p&gt;
+&lt;p&gt;借用&lt;a href=&quot;https://mp.weixin.qq.com/s/JAWKZeDSNYJlVc6GPNKqlg&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;公众号 Go101&lt;/a&gt;
+ 中的例子：&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;chroma&quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span class=&quot;kn&quot;&gt;package&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;main&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;N&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1024&lt;/span&gt;
+  &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;N&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[:&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;N&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;N&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;9&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[:&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;N&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;N&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;9&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;nb&quot;&gt;println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cap&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;cap&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Go 1.15 将输出 2048 1280，但是使用 Go 1.16 将输出 1280 1280。&lt;/p&gt;
+&lt;p&gt;具体提交见：&lt;a href=&quot;https://github.com/golang/go/commit/2333c6299f340a5f76a73a4fec6db23ffa388e97?branch=2333c6299f340a5f76a73a4fec6db23ffa388e97&amp;amp;diff=unified&quot;&gt;https://github.com/golang/go/commit/2333c6299f340a5f76a73a4fec6db23ffa388e97?branch=2333c6299f340a5f76a73a4fec6db23ffa388e97&amp;amp;diff=unified&lt;/a&gt;。&lt;/p&gt;
+&lt;h3 id=&quot;标准库&quot;&gt;标准库&lt;a href=&quot;#标准库&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewbox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3&quot;/&gt;&lt;line x1=&quot;8&quot; y1=&quot;12&quot; x2=&quot;16&quot; y2=&quot;12&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;1）增加了 io/fs、embed 等库。&lt;/p&gt;
+&lt;p&gt;2）template 允许跨行。例如：&lt;/p&gt;
+&lt;p&gt;3）strconv.ParseFloat 性能提升 2 倍。原因是它改为使用 &lt;a href=&quot;https://nigeltao.github.io/blog/2020/eisel-lemire.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Eisel-Lemire 算法&lt;/a&gt;
+。这也会加速解码诸如 encoding/json 这样的文本格式。&lt;/p&gt;
+&lt;h3 id=&quot;简化的结构体字段标签写法&quot;&gt;简化的结构体字段标签写法&lt;a href=&quot;#简化的结构体字段标签写法&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewbox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3&quot;/&gt;&lt;line x1=&quot;8&quot; y1=&quot;12&quot; x2=&quot;16&quot; y2=&quot;12&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;在进行 Web 开发时，Model 类可能会有好几种标签，写起来很繁琐，因此还出现了不少这样辅助写标签的工具。Go 1.16 开始，结构体字段的标签中的值相同的键值对可以合并写成一个，方便很多，比如：&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;chroma&quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span class=&quot;kd&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;User&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;UserName&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;`json bson gorm:&quot;user_name,omitempty&quot;`&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&quot;知晓-init-函数的执行时间和内存消耗&quot;&gt;知晓 init 函数的执行时间和内存消耗&lt;a href=&quot;#知晓-init-函数的执行时间和内存消耗&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewbox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3&quot;/&gt;&lt;line x1=&quot;8&quot; y1=&quot;12&quot; x2=&quot;16&quot; y2=&quot;12&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;关于该函数，大家都建议尽量别用，至少不能依赖它。同时不应该在其中处理耗时的事情。但之前没有很好地方法检测。Go 1.16 为 GODEBUG 环境变量增加了 inittrace=1 选项，可以输出 init 函数的执行时间和内存消耗。&lt;/p&gt;
+&lt;p&gt;再次借用 &lt;a href=&quot;https://mp.weixin.qq.com/s/Lz1PwW0mzWMNxiuJBvdcXA&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Go101 的例子&lt;/a&gt;
+。&lt;/p&gt;
+&lt;p&gt;对于下面的程序：&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;chroma&quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span class=&quot;kn&quot;&gt;package&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;main&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;hello&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nb&quot;&gt;println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;bye&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;使用下面的命令运行（Linux 系统，Go tip rev:7f688d18c0）:&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;chroma&quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;$ &lt;span class=&quot;nv&quot;&gt;GODEBUG&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;inittrace&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1&lt;/span&gt; go run main.go 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;的输出为：&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;chroma&quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;init internal/bytealg @0.018 ms, &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; ms clock, &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; bytes, &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; allocs
+init runtime @0.15 ms, 0.56 ms clock, &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; bytes, &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; allocs
+init errors @1.7 ms, 0.010 ms clock, &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; bytes, &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; allocs
+init sync @1.8 ms, 0.001 ms clock, &lt;span class=&quot;m&quot;&gt;16&lt;/span&gt; bytes, &lt;span class=&quot;m&quot;&gt;1&lt;/span&gt; allocs
+init internal/oserror @1.8 ms, 0.001 ms clock, &lt;span class=&quot;m&quot;&gt;80&lt;/span&gt; bytes, &lt;span class=&quot;m&quot;&gt;5&lt;/span&gt; allocs
+init syscall @1.9 ms, 0.010 ms clock, &lt;span class=&quot;m&quot;&gt;944&lt;/span&gt; bytes, &lt;span class=&quot;m&quot;&gt;2&lt;/span&gt; allocs
+init &lt;span class=&quot;nb&quot;&gt;time&lt;/span&gt; @1.9 ms, 0.014 ms clock, &lt;span class=&quot;m&quot;&gt;400&lt;/span&gt; bytes, &lt;span class=&quot;m&quot;&gt;8&lt;/span&gt; allocs
+init context @2.0 ms, 0.002 ms clock, &lt;span class=&quot;m&quot;&gt;128&lt;/span&gt; bytes, &lt;span class=&quot;m&quot;&gt;4&lt;/span&gt; allocs
+init math @2.0 ms, &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; ms clock, &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; bytes, &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; allocs
+init strconv @2.1 ms, 0.006 ms clock, &lt;span class=&quot;m&quot;&gt;32&lt;/span&gt; bytes, &lt;span class=&quot;m&quot;&gt;2&lt;/span&gt; allocs
+init unicode @2.1 ms, 0.086 ms clock, &lt;span class=&quot;m&quot;&gt;23944&lt;/span&gt; bytes, &lt;span class=&quot;m&quot;&gt;27&lt;/span&gt; allocs
+...
+init internal/bytealg @0 ms, &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; ms clock, &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; bytes, &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; allocs
+init runtime @0.048 ms, 0.042 ms clock, &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; bytes, &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; allocs
+hello
+init main @0.21 ms, 0.004 ms clock, &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; bytes, &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; allocs
+bye
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;可见此 GODEBUG 环境变量选项对于查找 init 函数中的瓶颈很有帮助。&lt;/p&gt;
+&lt;p&gt;相关 issue: &lt;a href=&quot;https://github.com/golang/go/issues/41378&quot;&gt;https://github.com/golang/go/issues/41378&lt;/a&gt;。&lt;/p&gt;
+&lt;h2 id=&quot;03-总结&quot;&gt;03 总结&lt;a href=&quot;#03-总结&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewbox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3&quot;/&gt;&lt;line x1=&quot;8&quot; y1=&quot;12&quot; x2=&quot;16&quot; y2=&quot;12&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Go 1.16 相比 Go 1.15 改动多不少，更多内容等待明年 2 月份发布。&lt;/p&gt;
+&lt;p&gt;另外推荐 Go101 这本开源书，作者对 Go 的细节掌握的很深，而且他写了双语版，这里是中文版：&lt;a href=&quot;https://github.com/golang101/golang101&quot;&gt;https://github.com/golang101/golang101&lt;/a&gt;。&lt;/p&gt;
+
+&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>175bad14da1c94c68cc1af40f28bc3e5</guid>
-<title>[推荐] 如何理解 Kafka 的消息可靠性策略？</title>
-<link>https://toutiao.io/k/55mybdz</link>
+<guid>ac5f9604ec4eec93adb52eadcbfcf928</guid>
+<title>AI 视觉在教育中的应用</title>
+<link>https://toutiao.io/k/tao0t3a</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
                     
 
@@ -175,7 +190,7 @@
 
                     
                     
-                    &lt;p data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.1&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/VY8SELNGe977Xa5zfy5iaV3agpS11Cqm4psjPOibic6BZSicnBFh6uWzCFp3uqN5R114Fq85DmuCzdL3eESlQ37bFA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;h1&gt;&lt;span&gt;导语 | &lt;/span&gt;&lt;span&gt;Kafka作为一款性能优秀的消息队列，主要用于异步、削峰、解耦处理，在分布式事务中有着广泛的应用，但仍有很多开发者在运用过程中存在疑惑。文本将为大家由浅入深剖析Kafka基础原理以及它的消息可靠性策略，帮助大家理解这一技术知识。文章作者：张璇，腾讯应用开发工程师。&lt;/span&gt;&lt;/h1&gt;&lt;h2&gt;&lt;span&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;&lt;/span&gt;&lt;/h2&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section powered-by=&quot;xiumi.us&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section powered-by=&quot;xiumi.us&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;p&gt;&lt;span&gt;&lt;strong mpa-from-tpl=&quot;t&quot; mpa-is-content=&quot;t&quot;&gt;一、背景&lt;/strong&gt;&lt;strong mpa-from-tpl=&quot;t&quot; mpa-is-content=&quot;t&quot;/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;h2&gt;&lt;span/&gt;&lt;/h2&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;部门的开发同学最近在开发一个活动的过程中，需要关注大量的应用后台逻辑，捕捉各种事件的触发。在设计时打算采用Kafka消息队列进行业务逻辑的解耦，这样活动开发和后台开发同学的工作就分离开了。但是使用的同学不是很熟悉其原理，担心以下几个问题：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;       &lt;/span&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;这些问题都很正常，在开始接触和使用时总会有这样或那样的问题。&lt;/span&gt;&lt;span&gt;一般情况下，不做了解，使用各种默认的推荐值，也是可以work的。&lt;/span&gt;&lt;span&gt;但是我们要优雅的提升自己的姿(知)势(识)。&lt;/span&gt;&lt;span&gt;学习其背后的原理，至少在遇到一般的问题时，能够分析和处理问题，做到心中有数。&lt;/span&gt;&lt;/section&gt;&lt;h2&gt;&lt;span&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;&lt;/span&gt;&lt;/h2&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section powered-by=&quot;xiumi.us&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section powered-by=&quot;xiumi.us&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;p&gt;&lt;span&gt;&lt;strong mpa-from-tpl=&quot;t&quot; mpa-is-content=&quot;t&quot;&gt;二、什么时候使用消息队列&lt;/strong&gt;&lt;strong mpa-from-tpl=&quot;t&quot; mpa-is-content=&quot;t&quot;/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;简单来说，有3个关键词， &lt;strong&gt;异步、削峰、解耦&lt;/strong&gt;。&lt;/span&gt;&lt;span/&gt;&lt;span&gt;可以理解为：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span/&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;我做完了，后面的我不管了；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;工作太多了，先放一放我慢慢处理；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;怎么产生的我不管/怎么处理我不管。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;span&gt; &lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;以下图为例：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.4305750350631136&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/VY8SELNGe97RPvEEqykOeTAqRp6cW2w8w6ArTBfznWhHDtK3XbFMxqicsPX2rvR1bWNI4JPvPf6BCabKNj2AO3g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;713&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;用户提交评论中， 写入数据库后，存在需要捕捉评论事件的多个逻辑步骤。&lt;/span&gt;&lt;span&gt;如果在接口处理过程中，顺序的处理不同的步骤，非常繁琐。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span/&gt;&lt;span&gt;我们可以批量的通知各个步骤(异步)，无需返回直接处理当次的支付其他逻辑(解耦)。&lt;/span&gt;&lt;span&gt;看起来就清爽多了。另外，消息队列也可以作为缓存暂存发出的消息，不再需要考虑调用各个步骤时时延逻辑的异常场景。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt; &lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;附注：本文以讲解Kafka中的可靠性设计为例，其它消息队列的选型暂不涉及。&lt;/span&gt;&lt;/section&gt;&lt;h2&gt;&lt;span&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;&lt;/span&gt;&lt;/h2&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section powered-by=&quot;xiumi.us&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section powered-by=&quot;xiumi.us&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;p&gt;&lt;span&gt;&lt;strong mpa-from-tpl=&quot;t&quot; mpa-is-content=&quot;t&quot;&gt;三、Kafka基本概念&lt;/strong&gt;&lt;strong mpa-from-tpl=&quot;t&quot; mpa-is-content=&quot;t&quot;/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;h2&gt;&lt;span/&gt;     &lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;section&gt;&lt;span&gt;在回答文章前面的问题之前，需要简单介绍一下各种概念。&lt;/span&gt;&lt;span&gt; Kafka从拓扑上分有如下角色：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;Consumer&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;: 消费者，一般以API形式存在于各个业务svr中；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;Producer&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;: 生产者，一般以API形式存在于各个业务svr中；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;Kafka broker&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;: Kafka集群中的服务器，topic里的消息数据存在上面。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.2906574394463668&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/VY8SELNGe97RPvEEqykOeTAqRp6cW2w8fVNoJ0QsXicicWPgV6EOj7cpvvQR2zPqibxh6ZG1kK0EgzCfUpISyczRg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;Producer采用发送push的方式将消息发到broker上，broker存储后。由consumer采用pull模式订阅并消费消息。&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.6344827586206897&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/VY8SELNGe97RPvEEqykOeTAqRp6cW2w8mX3bNIRmcuFkiagj7hoiafNbR7oUQ6CzfRB4DZ7czvTicWG9zicgy4IFvQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;580&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;如图所示，Kafka从存储结构上，有如下角色：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Topic：Kafka处理的消息的逻辑大类集合，可以理解为表。写入不同的topic即写入不同的表。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Partition: Topic下的物理分组，1个topic可以分为多个partition, 每个partition是一个有序的队列(大文件)。Partition中每一条消息都有一个有序的offset。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Msg: 消息，通信的基本单位。每个msg在topic下的不同partiton仅有一份，在partition中有一个唯一的offset用于定位。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Replica: 副本，partition的数据冗余备份，用于实现分布式的数据可靠性，但引入了不同副本间的数据一致性问题，带来了一定的复杂度。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Leader/follower: replica的角色，leader replica 用来提供该partition的读写服务。Follower 不停的从leader侧同步写入的消息。它们之间的消息状态采用一致性策略来解决。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2&gt;&lt;span&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;&lt;/span&gt;&lt;/h2&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section powered-by=&quot;xiumi.us&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section powered-by=&quot;xiumi.us&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;p&gt;&lt;span&gt;&lt;strong mpa-from-tpl=&quot;t&quot; mpa-is-content=&quot;t&quot;&gt;四、Kakfa 的存储格式&lt;/strong&gt;&lt;strong mpa-from-tpl=&quot;t&quot; mpa-is-content=&quot;t&quot;/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;      &lt;/span&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;为了方便后文更好的理解broker上的消息状态一致性策略，需要再简单介绍一下消息的存储格式。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;当Producer 发送一条消息到broker中, 会根据分配 partition 规则选择被存储到哪一个 partition, 如果 partition 规则设置的合理，消息会均匀的分布到不同的 partition 里，这样就实现了水平扩展。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;Pruducer可以认为partition是一个大的串行文件，msg存储时被分配一个唯一的offset。Offset是一个逻辑意义上的偏移，用于区分每一条消息。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.6091205211726385&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/VY8SELNGe97RPvEEqykOeTAqRp6cW2w8e2fiaW0GEa7Ls72t2zbVicZngsIQIgRvREoXODianlJGqHrchFpCOdLrQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;614&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;而partition本身作为文件，可以有多个多个副本replica(leader/follower)。多个replica分布在在不同的broker上。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;如果要回答如何在broker之间保证存储的消息和状态不会丢失，就要回答broker之间的各个replica的消息状态一致性如何解决，包括producer已经提交了哪些消息，哪些消息已经落地，哪些消息在节点故障后不会丢失。&lt;/span&gt;&lt;/section&gt;&lt;h2&gt;&lt;span&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;&lt;/span&gt;&lt;/h2&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section powered-by=&quot;xiumi.us&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section powered-by=&quot;xiumi.us&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;p&gt;&lt;span&gt;&lt;strong mpa-from-tpl=&quot;t&quot; mpa-is-content=&quot;t&quot;&gt;五、异步发送时的消息可靠性保证&lt;/strong&gt;&lt;strong mpa-from-tpl=&quot;t&quot; mpa-is-content=&quot;t&quot;/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;h2&gt;       &lt;br/&gt;&lt;span/&gt;&lt;/h2&gt;&lt;section&gt;&lt;span&gt;回到文章开头提到的几个问题，在使用Kafka消息队列做异步发送时，如何保证消息的可靠性？&lt;/span&gt;&lt;span&gt;这&lt;/span&gt;&lt;span&gt;里可以分为3个部分讲解。&lt;/span&gt;&lt;/section&gt;&lt;h2&gt;&lt;br/&gt;&lt;/h2&gt;&lt;h2&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;1. 生产者的可靠性保证&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;section&gt;&lt;span&gt;       &lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;回答生产者的可靠性保证，即回答：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;发消息之后有没有ack？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;发消息收到ack后，是不是消息就不会丢失了？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;而Kafka通过配置来指定producer生产者在发送消息时的ack策略：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;  &lt;/span&gt;&lt;span&gt;    &lt;/span&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;如果想实现Kafka配置为 CP(Consistency &amp;amp; Partition tolerance) 系统, 配置需要如下:&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;bash&quot;&gt;&lt;section&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;request.required.acks=-1&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;min.insync.replicas = &lt;span class=&quot;code-snippet__variable&quot;&gt;${N/2 + 1}&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;unclean.leader.election.enable = &lt;span class=&quot;code-snippet__literal&quot;&gt;false&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/section&gt;&lt;/pre&gt;&lt;/section&gt;&lt;section&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.41836734693877553&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/VY8SELNGe97RPvEEqykOeTAqRp6cW2w8RqosqLThCB5rlYXiaEbYuTaKxYU17rmicwI34dDDzB9JUVxL15tIQo9g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;588&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;如图所示，在acks=-1 的情况下，新消息只有被ISR中的所有 follower(f1和f2, f3) 都从leader复制过去才会回ack, ack后，无论那种机器故障情况(全部或部分), 写入的msg4，都不会丢失， 消息状态满足一致性C 要求。&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;正常情况下，所有follower复制完成后，leader回producer ack。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;异常情况下，如果当数据发送到 leader后部分副本(f1和f2同步)， leader挂了？此时任何 follower 都有可能变成新的 leader， producer 端会得到返回异常，producer 端会重新发送数据，但这样数据可能会重复(但不会丢失)， 暂不考虑数据重复的情况。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;       &lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;min.insync.replicas 参数用于保证当前集群中处于正常同步状态的副本follower数量，当实际值小于配置值时，集群停止服务。如果配置为 N/2+1, 即多一半的数量，则在满足此条件下，通过算法保证强一致性。当不满足配置数时，牺牲可用性即停服。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;       &lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;异常情况下，leader挂掉，此时需要重新从follower选举leader。可以为f2或者f3。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.44502617801047123&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/VY8SELNGe97RPvEEqykOeTAqRp6cW2w8wehtUZTejQuJvZMArhWWbLbqjebpbnxxzv69I1yn2XPnnzKYYGWo9w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;573&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;       &lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;如果选举f3为新leader, 则可能会发生消息截断，因为f3还未同步msg4的数据。Kafka通过unclean.leader.election.enable来控制在这种情况下，是否可以选举f3为leader。旧版本中默认为true,在某个版本下已默认为false，避免这种情况下消息截断的出现。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;      &lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;通过ack和min.insync.replicas和unclean.leader.election.enable的配合，保证在Kafka配置为CP系统时，要么不工作，要么得到ack后，消息不会丢失且消息状态一致。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;min.insync.replicas 参数默认值为1，即满足高可用性，只要有1台能工作即可。但此时可工作的broker状态不一定正确。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;如果想实现Kafka配置为AP(Availability &amp;amp; Partition tolerance)系统：&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span/&gt;&lt;/section&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;swift&quot;&gt;&lt;section&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;request.&lt;span class=&quot;code-snippet__keyword&quot;&gt;required&lt;/span&gt;.acks=&lt;span class=&quot;code-snippet__number&quot;&gt;1&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__built_in&quot;&gt;min&lt;/span&gt;.insync.replicas = &lt;span class=&quot;code-snippet__number&quot;&gt;1&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;unclean.leader.election.enable = &lt;span class=&quot;code-snippet__literal&quot;&gt;false&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/section&gt;&lt;/pre&gt;&lt;/section&gt;&lt;section&gt;&lt;span/&gt;&lt;span&gt;     &lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;当配置为acks=1 时，即leader接收消息后回ack，这时会出现消息丢失的问题：如果 leader接受到了 第4 条消息，此时还没有同步到 follower中，leader机器挂了，其中一个follower被选为 leader, 则 第 4 条消息丢失了。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;当然这个也需要unclean.leader.election.enable参数配置为false来配合。但是leader回ack的情况下，follower未同步的概率会大大提升。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;通过producer策略的配置和Kafka集群通用参数的配置，可以针对自己的业务系统特点来进行合理的参数配置，在通讯性能和消息可靠性下寻得某种平衡。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt; &lt;/span&gt;&lt;/section&gt;&lt;h2&gt;&lt;strong&gt;&lt;span&gt;2. Broker的可靠性保证&lt;/span&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;section&gt;&lt;span&gt;      &lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;消息通过producer发送到broker之后，还会遇到很多问题：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Partition leader 写入成功，follower什么时候同步？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Leader写入成功，消费者什么时候能读到这条消息？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Leader写入成功后，leader重启，重启后消息状态还正常嘛？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Leader重启，如何选举新的leader？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;这些问题集中在：消息落到broker后，集群通过何种机制来保证不同副本间的消息状态一致性。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt; &lt;/span&gt;&lt;/section&gt;&lt;h2&gt;&lt;strong&gt;&lt;span&gt;3. Kafka消息备份和同步&lt;/span&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;section&gt;&lt;span&gt;       &lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;Kafka通过分区的多副本策略来解决消息的备份问题。通过HW和LEO的标识，来对应ISR和OSR的概念，用于类比共识性算法解决数据同步一致性的问题。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;       &lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;分区多副本即前文提到的Partition 的replica(副本) 分布在跟 partition 不相同的机器上， 通过数据冗余保证故障自动转移。而不同副本的状态形成了ISR和OSR的概念。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt; &lt;/span&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;ISR : leader 副本保持一定同步的 follower 副本, 包括 leader 副本自己，叫 In Sync Replica；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;AR: 所有副本 (replicas) 统称为 assigned replicas, 即 AR；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;OSR: follower 同 leader 同步数据有一些延迟的节点。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;ISR是Kafka的同步策略中独有的概念，区别于raft等共识性算法。Raft要求集群中要求N/2+1台正常，其在这种条件下通过复杂的算法保证选举出的新leader符合一致性状态。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;而kafka的ISR同步策略，通过ISR列表的可伸缩性和HW&amp;amp;LEO更新，一定程度上解决了消息一致性和吞吐性能之间的平衡。&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;      &lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;ISR通过HW和LEO的概念表示消息的同步状态：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;HW&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;: Highwatermark, 俗称高水位，它表示了一个特定的消息偏移量(offset), 在一个parttion中consumer只能拉取这个 offset 之前的消息(此 offset 跟 consumer offset 不是一个概念) ;&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;LEO: LogEndOffset&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;, 日志末端偏移量, 用来表示当前日志文件中下一条写入消息的offset；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;leader HW&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;: 该Partititon所有副本的LEO最小值；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;follower HW&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;: min(follower自身LEO 和 leader HW)；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;Leader HW &lt;/span&gt;&lt;/strong&gt;&lt;span&gt;= 所有副本LEO最小值；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;Follower HW&lt;/strong&gt; = min(follower 自身 LEO 和 leader HW)；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;span/&gt;&lt;span&gt;Leader不仅保存了自己的HW &lt;/span&gt;&lt;span&gt;&amp;amp; &lt;/span&gt;&lt;span&gt;LEO，&lt;/span&gt;&lt;span&gt;还保存了远端副本的HW &amp;amp; &lt;/span&gt;&lt;span&gt;LEO。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;简单来说，每个副本都有HW和LEO的存储，而leader不但保存自己的HW和LEO, 还保存了每个远端副本的LEO，用于在自身的HW更新时计算值。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;可以看出由于LEO远端存储的特性，其实会导致副本真实的LEO和leader存储的LEO有短暂的数值差异，这会带来一些问题，下文也会展开讲述。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;HW和LEO的更新策略如下：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;&lt;section&gt;&lt;span&gt;follower自己的LEO&lt;/span&gt;&lt;/section&gt;&lt;/td&gt;&lt;td&gt;&lt;section&gt;&lt;span&gt;Follower从leader副本拉取消息，写入磁盘后，更新LEO值&lt;/span&gt;&lt;/section&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;section&gt;&lt;span&gt;Leader自己的LEO&lt;/span&gt;&lt;/section&gt;&lt;/td&gt;&lt;td&gt;&lt;section&gt;&lt;span&gt;Leader收到producer消息，写入磁盘后，更新LEO值&lt;/span&gt;&lt;/section&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;section&gt;&lt;span&gt;Leader的远程LEO&lt;/span&gt;&lt;/section&gt;&lt;/td&gt;&lt;td&gt;&lt;section&gt;&lt;span&gt;Follower fech时带上自己的LEO, leader使用这个值更新远程LEO&lt;/span&gt;&lt;/section&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;section&gt;&lt;span&gt;Follower的自己HW&lt;/span&gt;&lt;/section&gt;&lt;/td&gt;&lt;td&gt;&lt;section&gt;&lt;span&gt;followerfetch成功更新LEO后，比较leader发来的hw和自己的hw,取较小值&lt;/span&gt;&lt;/section&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;section&gt;&lt;span&gt;Leader自己的hw&lt;/span&gt;&lt;/section&gt;&lt;/td&gt;&lt;td&gt;&lt;section&gt;&lt;span&gt;Leader更新LEO之后，更新完远程LEO之后，取所有副本的最小LEO&lt;/span&gt;&lt;/section&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;一次完整的写请求的HW / LEO更新流程如下图所示：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;1.530035335689046&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/VY8SELNGe97RPvEEqykOeTAqRp6cW2w8ABzLpW2KHuAek3nON2QywOQM7ic0QX2DaIJxvxOPzicJRnuLHVc6K3sA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;566&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;（1）初始状态&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;      &lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;Leader 所有的 HW&amp;amp;LEO都为0， follower 与 leader 建立连接，follower fetch leader, follower 所有 HW &amp;amp; LEO 都为0&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;（2）Follower 第一次 fetch&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;Producer 发来一条消息到 leader, 此时 leader 的 LEO=1, follower 带着自己的 HW&amp;amp;LEO(都为0) 开始 fetch, leader的 HW=min(all follower LEO)=0, leader 记录follower的LEO=0；follower 拉取到一条消息，带着消息和leader的 HW(0)&amp;amp;LEO(1)返回自身更新自己的LEO=1,  更新自己的HW=min(follower 自身 LEO(1) 和 leader HW(0))=0&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;（3）Follower 第二次fetch&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;Follower带着自己的 HW(0)&amp;amp;LEO(1) 去请求leader .此时leader 的HW更新为1，leader 保存的follower的 LEO更新为1，带着leader 的 HW(1)&amp;amp;LEO(1)返回自身，更新自己的 HW&amp;amp;LEO&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;此时回到刚才提到的问题，这种HW和LEO更新策略有个很明显的问题，即follower的HW更新需要follower的2轮fetch中的leader返回才能更新，而Leader的HW已更新。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;在这之间，如果follower和leader的节点发生故障，则follower的HW和leader的HW会处于不一致状态，带来比较多的一致性问题。比如如下场景：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Leader更新完分区HW后，follower HW还未更新，此时follower重启；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Follower重启后，LEO设置为之前的follower HW值(0), 此时发生消息截断(临时状态)；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Follower重新同步leader, 此时leader宕机，则不选举则不可用；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Follower被选举为leader, 则msg 1 永久丢失了。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;1.0884476534296028&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/VY8SELNGe97RPvEEqykOeTAqRp6cW2w8vuMwMwYnxnvia3YrUb52wLsIWBQ0MgpcM5OshibAaglGjIMeezmEicjKQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;554&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;在Kafka配置为AP系统的情况下，由于min.insync.replicas为1，这种重启后follower发生截断发生的概率会大大提升， 而在多个副本存在的情况下，情况可能还会更加糟糕。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;而kafka新版本为了解决这个HW&amp;amp;LEO的同步机制更新缺陷，引入了Epoch的概念。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;Leader epoch 分两部分组成:&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;       &lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;Leader epoch(1, 120) 说明这个leader 的版本号为1，版本的起始位置是 第120条消息开始的&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;      &lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;Kafka Broker 会在内存中为每个分区都缓存 Leader Epoch 数据，同时它还会定期地将这些信息持久化到一个 checkpoint 文件中。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;当 Leader 副本写入消息到磁盘时，Broker 会尝试更新这部分缓存。如果该 Leader 是首次写入消息，那么 Broker 会向缓存中增加一个 Leader Epoch 条目，否则就不做更新。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;这样，每次有 Leader 变更时，新的 Leader 副本会查询这部分缓存，取出对应的 Leader Epoch 的起始位移，以避免数据丢失和不一致的情况。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;示意图如下:&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.6862745098039216&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/VY8SELNGe97RPvEEqykOeTAqRp6cW2w8u2ibAWhYgJHk4PLIbmK3AVpsJf53ef0EX6STzByiaEBm63kdjy9pxDOQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;561&quot;/&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt; Kafka通过ISR的同步机制及优化策略，用 HW &amp;amp; LEO的方式很好的确保了数据不丢失以及吞吐率。而ISR的管理最终都会反馈到Zookeeper上，其实现和leader的选举策略不再赘述。&lt;/span&gt;&lt;/section&gt;&lt;h2&gt;&lt;span&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;&lt;/span&gt;&lt;/h2&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section powered-by=&quot;xiumi.us&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section powered-by=&quot;xiumi.us&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;p&gt;&lt;span&gt;&lt;strong mpa-from-tpl=&quot;t&quot; mpa-is-content=&quot;t&quot;&gt;六、Consumer 的可靠性策略&lt;/strong&gt;&lt;strong mpa-from-tpl=&quot;t&quot; mpa-is-content=&quot;t&quot;/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;h2&gt;    &lt;br/&gt;&lt;span/&gt;&lt;/h2&gt;&lt;section&gt;&lt;span&gt;Consumer的可靠性策略集中在consumer的投递语义上，即：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;何时消费，消费到什么？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;消费是否会丢？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;消费是否会重复？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;span&gt;      &lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;这些语义场景，可以通过Kafka消费者的部分参数进行配置，简单来说有以下3种场景：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;1. AutoCommit（at most once, commit后挂，实际会丢）&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span/&gt;&lt;/section&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;cpp&quot;&gt;&lt;section&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;enable.&lt;span class=&quot;code-snippet__keyword&quot;&gt;auto&lt;/span&gt;.commit = &lt;span class=&quot;code-snippet__literal&quot;&gt;true&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;auto&lt;/span&gt;.commit.interval.ms&lt;/span&gt;&lt;/code&gt;&lt;/section&gt;&lt;/pre&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;      &lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;br/&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;配置如上的consumer收到消息就返回正确给 brocker, 但是如果业务逻辑没有走完中断了，实际上这个消息没有消费成功。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;这种场景适用于可靠性要求不高的业务。其中auto.commit.interval.ms代表了自动提交的间隔。比如设置为1s提交1次，那么在1s内的故障重启，会从当前消费offset进行重新消费时，1s内未提交但是已经消费的msg, 会被重新消费到。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;2. 手动Commit（at least once, commit前挂，就会重复, 重启还会丢）&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;cpp&quot;&gt;&lt;section&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;enable.&lt;span class=&quot;code-snippet__keyword&quot;&gt;auto&lt;/span&gt;.commit = &lt;span class=&quot;code-snippet__literal&quot;&gt;false&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/section&gt;&lt;/pre&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;       &lt;/span&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;配置为手动提交的场景下，业务开发者需要在消费消息到消息业务逻辑处理整个流程完成后进行手动提交。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;如果在流程未处理结束时发生重启，则之前消费到未提交的消息会重新消费到，即消息显然会投递多次。此处应用与业务逻辑明显实现了幂等的场景下使用。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;特别应关注到在golang中sarama库的几个参数的配置：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span/&gt;&lt;/section&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;css&quot;&gt;&lt;section&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__selector-tag&quot;&gt;sarama&lt;/span&gt;&lt;span class=&quot;code-snippet__selector-class&quot;&gt;.offset&lt;/span&gt;&lt;span class=&quot;code-snippet__selector-class&quot;&gt;.initial&lt;/span&gt;  （&lt;span class=&quot;code-snippet__selector-tag&quot;&gt;oldest&lt;/span&gt;, &lt;span class=&quot;code-snippet__selector-tag&quot;&gt;newest&lt;/span&gt;）&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__selector-tag&quot;&gt;offsets&lt;/span&gt;&lt;span class=&quot;code-snippet__selector-class&quot;&gt;.retention&lt;/span&gt;&lt;span class=&quot;code-snippet__selector-class&quot;&gt;.minutes&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/section&gt;&lt;/pre&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;       &lt;/span&gt;&lt;br/&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;intitial = oldest代表消费可以访问到的topic里的最早的消息，大于commit的位置，但是小于HW。同时也受到broker上消息保留时间的影响和位移保留时间的影响。不能保证一定能消费到topic起始位置的消息。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;如果设置为newest则代表访问commit位置的下一条消息。如果发生consumer重启且autocommit没有设置为false, 则之前的消息会发生丢失，再也消费不到了。在业务环境特别不稳定或非持久化consumer实例的场景下，应特别注意。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;一般情况下， offsets.retention.minutes为1440s。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;3. Exactly once（很难，需要msg持久化和commit是原子的）&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;        &lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;消息投递且仅投递一次的语义是很难实现的。&lt;/span&gt;&lt;span/&gt;&lt;span&gt;首先要消费消息并且提交保证不会重复投递，其次提交前要完成整体的业务逻辑关于消息的处理。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;在Kafka本身没有提供此场景语义接口的情况下，这几乎是不可能有效实现的。一般的解决方案，也是进行原子性的消息存储，业务逻辑异步慢慢的从存储中取出消息进行处理。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;/  文末福利  /&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;腾讯云十周年筑梦，感恩有你！扫描下方二维码，即可领取腾讯云定制红包封面一份，名额有限，先到先得哦&lt;img data-ratio=&quot;1&quot; data-type=&quot;png&quot; data-w=&quot;20&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/VY8SELNGe96nE2y85ib3xplniakcWaee0GUphKea6pk3IlK9L4ibKCibPJtmoEg4BzNCPXdtnY6g5DhH5UibODOgeJg/640?wx_fmt=png&quot;/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;1.8&quot; data-s=&quot;300,640&quot; data-type=&quot;jpeg&quot; data-w=&quot;880&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/VY8SELNGe96nE2y85ib3xplniakcWaee0G2NyNShbndulfUJoLqEdA5OVxgjRbMabdYJ6F8dhEau8Nk3cc58P7oQ/640?wx_fmt=jpeg&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;span/&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages __bg_gif&quot; data-ratio=&quot;0.59375&quot; data-type=&quot;gif&quot; data-w=&quot;640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/VY8SELNGe977Xa5zfy5iaV3agpS11Cqm4xV7ckfbmtFLyUjFID2k7yO4q8hvB4OqYoNkARZ2xuvzKvMtnmVN2BQ/640?wx_fmt=gif&quot;/&gt;&lt;/section&gt;
+                    &lt;p&gt;&lt;span&gt;11月24日，由即构科技主办的2020GET大会教育科技分论坛在北京成功召开，来自&lt;/span&gt;&lt;span&gt;叮咚课堂、小冰、360OS、蕃茄田艺术、即构科技&lt;/span&gt;&lt;span&gt;的6位资深教育/科技大咖，在论坛上进行深度分享。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;以下为360OSAI影像事业部总经理张焰带来的主题为&lt;/span&gt;&lt;span&gt;《AI视觉在教育中的应用》&lt;/span&gt;&lt;span&gt;的演讲，我们整理了分享的核心内容，错过活动的小伙伴可以继续回看学习。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;扫描下方二维码，可下载演讲PPT资料&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;1&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/FbG2EGL5U0UFp3IRFucSBjOHNicxZkA3PsicwicKzDK3Ho7mLVGNLma6ny4oRhv4z9a0eBHzbkbJAEDPrcO2gpFTg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;512&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;张焰认为：&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; x=&quot;0px&quot; y=&quot;0px&quot; viewbox=&quot;0 0 99.11 70&quot;&gt;&lt;g&gt;&lt;path d=&quot;M63.93,70h23.07c6.68,0,12.1-5.42,12.1-12.1V42.43v0c0-5-4.05-9.06-9.06-9.06H75.41c-6.68,0-12.1-5.42-12.1-12.1v0   c0-6.2,5.03-11.23,11.23-11.23h3.2c2.77,0,5.02-2.25,5.02-5.02v0c0-2.77-2.25-5.02-5.02-5.02h-1.98   C62.89,0,52.44,10.45,52.44,23.33v0v17.28v17.89C52.44,64.85,57.59,70,63.93,70z&quot; fill=&quot;#ffca00&quot;/&gt;&lt;path d=&quot;M11.49,70h23.07c6.68,0,12.1-5.42,12.1-12.1V42.43v0c0-5-4.05-9.06-9.06-9.06H22.97c-6.68,0-12.1-5.42-12.1-12.1v0   c0-6.2,5.03-11.23,11.23-11.23h3.2c2.77,0,5.02-2.25,5.02-5.02v0c0-2.77-2.25-5.02-5.02-5.02h-1.98C10.45,0,0,10.45,0,23.33v0   v17.28v17.89C0,64.85,5.15,70,11.49,70z&quot; fill=&quot;#ffca00&quot;/&gt;&lt;/g&gt;&lt;/svg&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;360AI视觉针对在线教育痛点开发了4大场景解决方案，包括代替督学、量化检测、智能互动以及智能工具。他相信科技改变未来，AI可以为教育行业起到降本增效的作用。&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;以下为张焰演讲实录：&lt;/span&gt;&lt;/p&gt;&lt;hr/&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;首先介绍一下我们团队，我们是360集团旗下孵化的创新业务线，专注做AI视觉算法的研发和应用。围绕“人、物、场景”三个维度，为智能手机、泛文娱、在线教育、IOT等行业提供专业的算法支持和解决方案。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;svg viewbox=&quot;0 0 1 1&quot;/&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;svg viewbox=&quot;0 0 1 1&quot;/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;为什么做在线教育？&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;从国家层面上来讲，教育是科技兴邦的根本；对家庭而言，教育也是家庭的希望；从情怀而言，教育可能是最大的公益，这也是我们做在线教育的初衷。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;受疫情影响，很多线下传统教培机构，现在可能被迫或加速转到了线上。这其实就是数字化的进程，但是进程来得太快，很多公司还没适应过来，所以这个过程也暴露了很多问题，以下四个痛点尤为明显：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;1、学生自觉性差。&lt;/span&gt;&lt;span&gt;尤其是K12教育，这是典型的督导式教学。以前线下督导的压力都在老师身上，搬到线上之后，督导的压力都转移到家长身上了。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2、效果难以评估。&lt;/span&gt;&lt;span&gt;到目前为止，还没有一套成熟的量化指标来评估课堂上的好与坏，家长对线上教学的效果仍然存疑。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;3、课堂互动性差。&lt;/span&gt;&lt;span&gt;你面对的互动对象是一个冰冷的屏幕，而不是一个和蔼可亲的老师，所以在互动方面会存在很多问题。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;4、教学效率较低。&lt;/span&gt;&lt;span&gt;传统线上课难以还原线下场景，包括场地设备的限制，给老师和机构增加了不少成本。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;svg viewbox=&quot;0 0 1 1&quot;/&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;svg viewbox=&quot;0 0 1 1&quot;/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;AI视觉能为在线教育做什么？&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;其实我不算是教育工作者，只是科技从业者，我坚信科技是可以改变未来的，我们想做未来的教育。那么科技与教育的结合能够碰撞出什么样的火花？我们提出了几个解决方案：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.51328125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FbG2EGL5U0UFp3IRFucSBjOHNicxZkA3P2cayQCOGd7iaibXLNwu28HA0xGNTdsqqWrexBcJibUYJszFQBvfUMNHCw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;代替督学方案&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;线上督学的责任由老师转变给家长，我们希望用机器来替代老师跟家长进行督学,这里涉及到两个层面：&lt;/span&gt;&lt;span&gt;疲劳提醒和姿态纠正。&lt;/span&gt;&lt;br/&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;疲劳提醒&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;很多教育台灯、教育平板类的产品也有疲劳提醒功能，主要监测“打哈欠、瞌睡”这两个行为，我们增加了趴着的场景。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;趴着的场景难度更大&lt;/span&gt;&lt;span&gt;，原因是虽然全身的骨骼关节点比较好检测，但针对半身，可能只看到头发或上半身的一小部分，这种人体关节点几乎是检测不到或者是不准的。为此我们做了很多的尝试和研究，解决了这个问题。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;姿态纠正&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;姿态纠正也分为两类：&lt;/span&gt;&lt;span&gt;坐姿不良和距离太近&lt;/span&gt;&lt;span&gt;。坐姿不良有很多维度，比如趴着、卧倒、倾斜，这些情况都可以检测出来。距离太近，有两套方案。第一套是基于2D人脸检测技术来做的，这个技术的精度可能比较有限，大概是到厘米级别。我们跟其他的硬件厂商做的升级方案，可以精确到毫米级别的距离探测。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们的学生姿态实时检测系统的实现方案，总体分为两个维度：&lt;/span&gt;&lt;span&gt;人脸姿态检测和人体姿态&lt;/span&gt;&lt;span&gt;。人脸姿态包括打哈欠、瞌睡等，人体姿态检测加入了3D深度信息，这样能获取到深度信息，用深度信息来辅助做人体的立体姿态识别，可以大幅的提高精度。&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;量化监测方案&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;课堂专注度与课堂接受度是家长比较看重的两个维度，尤其是线下转线上之后。&lt;/span&gt;&lt;span&gt;学生有没有走神，有没有认真听讲，上课的效果好不好，这些是家长非常关心的指标。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;课堂专注度&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;普通专注度检测有几个维度，像举手、低头、瞌睡、玩手机，缺陷是仅有2D图像信息，检测准确率欠佳。另外是检测指标单一，没法精准回溯学情。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;而我们做的课堂专注度，包括了&lt;/span&gt;&lt;span&gt;3D深度检测和学情回溯系统&lt;/span&gt;&lt;span&gt;。可以看到我们加入了人体Depth信息，基于这个信息可以比较精准的估计到人体的每个姿态，然后再加入事件的触发机制，最后得到监测结果。包括事件状态的上报，时间戳，以及当前时间戳发生的事件截图等，便于课后对教学情况进行回溯分析。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;课堂接受度&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;关于课堂接受度，到目前为止，还没有哪家公司真正把它做到产品里。&lt;/span&gt;&lt;span&gt;我们首创的课堂接受度，包含了正向和负向维度。&lt;/span&gt;&lt;span&gt;正向的维度有举手、微笑、点头，代表课堂接受度是比较好的。负向的维度有疑惑、皱眉、摇头，这些代表课堂接受度较差。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.51171875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FbG2EGL5U0UFp3IRFucSBjOHNicxZkA3PU297iaymuOicFA921lAq3LUJmqH1de0cbfxAR4mwQI1uVOIqib7wZbZlA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;针对疑惑这个表情的处理，我们也下了很多功夫。从学术界来看，人类常见的表情只有7种，并不包括疑惑这个表情，也没有相关的数据。但这个表情对教学场景很有意义，所以我们在这方面做了大量的数据补充，增加了疑惑的数据和标注，最后通过迁移学习的方式，再结合人体关键点进行辅助识别，得到了最终的8类表情识别。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们的课质监测方案采用了典型的“&lt;/span&gt;&lt;span&gt;边缘计算+云计算&lt;/span&gt;&lt;span&gt;”结合的架构，现在边缘端算力已经越来越强了，很多算法可以直接拷在边缘设备端以及APP上。采用这种架构还出于隐私的考虑，大家担心把学生端的摄像头打开之后，检测学生的行为可能会触犯个人隐私或者出现非法上传数据。因此我们尽量把端的能力发挥出来，上传的只是用AI算法检测之后的状态，而不是客户隐私的数据。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;网课助手对老师而言，可以得到整个班级的课堂表现报告，是非常有价值的。对家长而言，可以生成本地的报告，得到学生在每个维度的表现情况，并针对每一个维度的时间戳进行回溯分析。&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;智能互动方案&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;AI沉浸式课件&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;传统的录播课为了获得较好的效果，可能需要用专业的录播间，后面搭建绿幕，还有补光灯等一系列的设备。这里有一个明显的缺点是对场地的要求过高，后期的制作成本也比较高。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;而传统的直播课，可以看到课件跟老师的头像画面是分屏展示的，老师跟学生之间的互动很有限，这对幼儿教育的体验是非常不友好的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5046875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FbG2EGL5U0UFp3IRFucSBjOHNicxZkA3Po50CpqvicuI1K5OeJZTRFce2rjDvxl6f9xSkM1cuk2fdoMfxlTZyiaSA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们的AI沉浸式课件，做了非常&lt;/span&gt;&lt;span&gt;精准的人像分割&lt;/span&gt;&lt;span&gt;，可以把课件放在人像后面展示，同时人跟课件之间可以进行互动，比如课件播放、暂停、上一页、下一页这些简单的操控，以及老师跟课件内容的互动。这个技术也可以用来做课件的生产工具，不需要录播间的场地和设备，自动完成课件制作。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;网课互动&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;说到网课互动，我们知道传统的线上互动都是老师单向输出为主，老师很难兼顾到每个学生的状态。因为学生在屏幕当中只是非常小的头像，学生发生什么状况，老师是不知道的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们研发了一系列智能互动工具，可以通过AI手段实现多向多元的互动。比如手&lt;/span&gt;&lt;span&gt;势识别&lt;/span&gt;&lt;span&gt;，如果这个学生回答问题之后，老师觉得很棒，可以点一个赞触发点赞的特效。&lt;/span&gt;&lt;span&gt;表情识别&lt;/span&gt;&lt;span&gt;，如果系统检测到学生疑惑了，可以把他的头像Highlight出来提醒老师。还有像&lt;/span&gt;&lt;span&gt;人脸特效&lt;/span&gt;&lt;span&gt;是比较常见的，现在有很多幼儿教育都会用它来增加互动的趣味性。&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;智能工具方案&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们在这部分做了很多的投入跟创新，因为这些跟硬件结合比较紧密，也是我们的强项。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;拍照搜题&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;很多的学习APP里可能都有拍照搜题的功能，拍照之后用OCR技术识别。很多学生可能用教育平板拍照，但学生手比较小，教育平板又很大，按快门键的时候经常会手抖，而现在的教育平板和手机都没有光学防抖的加持，导致拍出来的效果不清晰。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们出了&lt;/span&gt;&lt;span&gt;HD Shot解决方案&lt;/span&gt;&lt;span&gt;，可以解决各种场景下失焦、抖动、噪点、暗光等一系列拍照模糊的问题。这个功能在科大讯飞的录音笔上已经上线了，现在的录音笔很智能，除了有录音功能，还可以拍会议的文档和PPT。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.528125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FbG2EGL5U0UFp3IRFucSBjOHNicxZkA3PicIbbnNHzlGr1icgicZqZuMuIJAFAZSmFJhab1LYgQhFDAwyI01hyAjUg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;如上图所示，左边是处理前的效果，右边是处理之后的。这个功能可以提升动态范围，对高光进行抑制，对暗部进行提亮。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;画质能力升级&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;视频画质提升的技术，对老师端或者主播端非常有价值。专业的主播，设备非常齐全，可以把手机架到补光灯上，让自己的脸更精致透亮。但是长期使用补光灯对眼睛的伤害还是比较大的，所以我们做了&lt;/span&gt;&lt;span&gt;纯AI软件补光灯方案&lt;/span&gt;&lt;span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;一套是全局的补光方案，还有一套是专门针对人脸的补光方案。针对人脸的补光方案，会对人脸的肤色进行精准的识别，利用3D打光技术把人脸变得更加透亮。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;人脸考勤&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;Face ID技术，在智慧校园也已经开始应用了，这个技术的核心难点在于误识率、拒识率指标以及活体检测。它可以用在线上跟线下的大班课程，比如考勤点名，防止别人代答到这种情况。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5578125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FbG2EGL5U0UFp3IRFucSBjOHNicxZkA3PkrTK9MibZvGYCxibELyicfdVY0H5iaGClBpOJ1RH2gvlpmYDAr6wpMARHQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;最后用金字塔结构总结一下我们的业务架构，最底层是核心的基础技术，第二层是基于场景化的解决方案，需要深入了解行业的特点以及场景化的需求，顶层则是我们基于各个平台适配的SDK产品，我们可以基于基础技术做很多业务层的封装和开发。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我一直相信科技改变未来，AI可以为在线教育行业起到降本增效的作用。&lt;/span&gt;&lt;span&gt;AI教育，未来可期。&lt;/span&gt;&lt;span&gt;谢谢大家！&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;☟☟☟&lt;/span&gt;&lt;span&gt;戳“阅读原文”，查看活动视频回顾&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;
                 &lt;/div&gt;
 
                 
@@ -186,657 +201,5 @@
 
                 
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>d827e236b6a0f8512fcd66587d7cded6</guid>
-<title>[推荐] 超全面分布式缓存高可用方案：哨兵机制</title>
-<link>https://toutiao.io/k/1k0udg9</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
-
-                    
-
-                    
-                    
-                    &lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;1&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;2&quot;&gt;开发工作中对于分布式缓存高可用方案（搭建Redis缓存高可用方案），Redis主从架构下是如何保证高可用的呢？&lt;/span&gt;&lt;/p&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;3&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;4&quot;&gt;我们知道是应用了哨兵机制来实现。那Redis 服务部署的哨兵模式主要是什么，又解决了什么问题呢，于是利用周末时间整理了下，相信看完这篇文章，你也可以去给别人做技术分享了。O(∩_∩)O哈哈~&lt;/span&gt;&lt;/p&gt;&lt;h2 data-id-heading0=&quot;&quot; data-slate-type=&quot;pm_heading&quot; data-slate-object=&quot;block&quot; data-key=&quot;5&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;6&quot;&gt;问题铺垫&lt;/span&gt;&lt;/h2&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;7&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;8&quot;&gt;在讨论哨兵模式之前，我们先来看一个应用问题：&lt;span data-slate-leaf=&quot;true&quot; data-offset-key=&quot;9:0&quot; data-first-offset=&quot;true&quot;&gt;&lt;strong data-slate-type=&quot;pm_bold&quot; data-slate-object=&quot;mark&quot;&gt;Redis服务主机宕机&lt;/strong&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;10&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;11&quot;&gt;实际使用过程中，会出现master宕机的情况（这样会导致没有写服务，只有读服务）。那我们要保证服务的可用，就需要从其他salve节点中选取一个来作为master节点，来继续提供服务能力。&lt;/span&gt;&lt;/p&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;12&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;13&quot;&gt;&lt;strong data-slate-type=&quot;pm_bold&quot; data-slate-object=&quot;mark&quot;&gt;那主要的动作抽象下：&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;12&quot;&gt;&lt;span&gt;将宕机的master下线&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;12&quot;&gt;&lt;span&gt;找一个slave作为master&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;12&quot;&gt;&lt;span&gt;通知所有的slave连接新的master&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;12&quot;&gt;&lt;span&gt;全量数据或者部分数据同步&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;27&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;28&quot;&gt;&lt;strong data-slate-type=&quot;pm_bold&quot; data-slate-object=&quot;mark&quot;&gt;其中存在几个问题：&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;39&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;40&quot;&gt;其实引入&lt;span data-slate-leaf=&quot;true&quot; data-offset-key=&quot;41:0&quot; data-first-offset=&quot;true&quot;&gt;&lt;strong data-slate-type=&quot;pm_bold&quot; data-slate-object=&quot;mark&quot;&gt;哨兵机制&lt;/strong&gt;&lt;/span&gt;，就可以很好的解决上述问题。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.4745011086474501&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z2bVaFK6CgRzuof9uYrBaBicdVQUFNKQGeE7b36CFd05okdB5QbQjNicl4DjZaHu0HTtZluCRXb33ycxDnMHTTHg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;902&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;哨兵-Redis集群&lt;/span&gt;&lt;/p&gt;&lt;h2 data-id-heading1=&quot;&quot; data-slate-type=&quot;pm_heading&quot; data-slate-object=&quot;block&quot; data-key=&quot;46&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;47&quot;&gt;什么是哨兵？&lt;/span&gt;&lt;/h2&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;48&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;49&quot;&gt;Sentinel（哨兵）是Redis 的高可用性解决方案：由一个或多个Sentinel 实例组成的Sentinel 系统可以监视任意多个主服务，以及这些主服务器属下的所有从服务，并在被监视的主服务进入下线（不可服务）状态时，自动将下线主服务器属下的某个从服务器升级为新的主服务器。&lt;/span&gt;&lt;/p&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;50&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;51&quot;&gt;﻿&lt;/span&gt;&lt;/p&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;52&quot;&gt;&lt;span&gt;&lt;strong data-slate-type=&quot;pm_bold&quot; data-slate-object=&quot;mark&quot;&gt;总结一下哨兵的作用：&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;58&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;59&quot;&gt;    不断的检查master和slave是否正常运行（master存活检测、master与slave运行情况检测）&lt;/span&gt;&lt;/p&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;64&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;65&quot;&gt;    当被监控的服务器出现问题时，向其他哨兵、客户端发送通知&lt;/span&gt;&lt;/p&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;70&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;71&quot;&gt;    断开故障master与slave的连接，选取一个slave作为新master，将其他slave连接到新的master并告知客户端新的服务器地址。&lt;/span&gt;&lt;/p&gt;&lt;blockquote data-slate-type=&quot;pm_blockquote&quot; data-slate-object=&quot;block&quot; data-key=&quot;74&quot;&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;75&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;76&quot;&gt;注意：哨兵也是一台Redis服务器，只是不提供数据服务；通常哨兵配置的数量为单数。&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;h2 data-id-heading2=&quot;&quot; data-slate-type=&quot;pm_heading&quot; data-slate-object=&quot;block&quot; data-key=&quot;77&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;78&quot;&gt;哨兵的工作原理&lt;/span&gt;&lt;/h2&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;79&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;80&quot;&gt;下面主要针对哨兵在进行故障转移过程中经历的三个阶段分别进行阐述。&lt;/span&gt;&lt;/p&gt;&lt;h3 data-id-heading3=&quot;&quot; data-slate-type=&quot;pm_heading&quot; data-slate-object=&quot;block&quot; data-key=&quot;81&quot;&gt;&lt;span&gt;1、集群监控&lt;/span&gt;&lt;/h3&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;83&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;84&quot;&gt;&lt;strong data-slate-type=&quot;pm_bold&quot; data-slate-object=&quot;mark&quot;&gt;step1：哨兵1连接到Redis集群&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;83&quot;&gt;&lt;span&gt;发送info命令到master，并建立cmd连接；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;83&quot;&gt;&lt;span&gt;哨兵端保存哨兵状态（SentinelStatus），保存所有哨兵状态，主节点和从节&lt;/span&gt;&lt;span&gt;点的信息；master端会记录 redis 实例的信息（SentinelRedisInstance）；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;83&quot;&gt;&lt;span&gt;哨兵根据master中获取的每个slave信息，去连接每个slave，发送同样也是info命令。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5700197238658777&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z2bVaFK6CgRzuof9uYrBaBicdVQUFNKQGxxPLNq0TXY3mJAGKUGGVJywOJazQmAvGFTUicJdozhhPuc2PADdSQtg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1014&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;集群监控&lt;/span&gt;&lt;/p&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;96&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;97&quot;&gt;&lt;strong data-slate-type=&quot;pm_bold&quot; data-slate-object=&quot;mark&quot;&gt;step2：哨兵2加入进来后&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;96&quot;&gt;&lt;span&gt;同样会发送info命令到master节点，并建立cmd连接；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;96&quot;&gt;&lt;span&gt;发现master中存在其他哨兵节点的信息，哨兵2中保存哨兵信息（区别与哨兵1的是它保存了哨兵1和哨兵2的2个哨兵节点信息）；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;96&quot;&gt;&lt;span&gt;为了每个哨兵的信息都一致它们之间建立了一个发布订阅。为了哨兵之间的信息长期对称它们之间也会互发 ping 命令。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.46991869918699186&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z2bVaFK6CgRzuof9uYrBaBicdVQUFNKQGlojD0ib1yRRRG9n5Kp2y12BleUZjsmC7t0aY3IB1XCic99ZbKR0tczPg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1230&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;集群监控&lt;/span&gt;&lt;/p&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;111&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;112&quot;&gt;&lt;strong data-slate-type=&quot;pm_bold&quot; data-slate-object=&quot;mark&quot;&gt;step3：哨兵3加入后&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.6419354838709678&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z2bVaFK6CgRzuof9uYrBaBicdVQUFNKQGZt1atOq0us0xswSM2DQ1ahy13bgE5Y75lXS46oo2jZo9vTqUvwFibpA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1240&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;集群监控&lt;/span&gt;&lt;/p&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;123&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;124&quot;&gt;&lt;strong data-slate-type=&quot;pm_bold&quot; data-slate-object=&quot;mark&quot;&gt;小结一下：&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;h3 data-id-heading4=&quot;&quot; data-slate-type=&quot;pm_heading&quot; data-slate-object=&quot;block&quot; data-key=&quot;132&quot;&gt;&lt;span&gt;2、消息通知&lt;/span&gt;&lt;/h3&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;134&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;135&quot;&gt;1）Sentinel节点会通过master/slave 节点建立的cmd连接获取其工作状态&lt;/span&gt;&lt;/p&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;136&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;137&quot;&gt;2）Sentinel收到反馈结果之后，会在哨兵内部进行信息的互通&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.4048059149722736&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z2bVaFK6CgRzuof9uYrBaBicdVQUFNKQG8bwmsMVNqs7DysCvA5Nps2UHSop6fbYAzyDJiby1oGZDcmyniabPeh7Q/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1082&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;消息通知&lt;/span&gt;&lt;/p&gt;&lt;h3 data-id-heading5=&quot;&quot; data-slate-type=&quot;pm_heading&quot; data-slate-object=&quot;block&quot; data-key=&quot;141&quot;&gt;&lt;span&gt;3、故障转移&lt;/span&gt;&lt;/h3&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;143&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;144&quot;&gt;关于故障转移，严格来讲可划分两个步骤：&lt;span data-slate-leaf=&quot;true&quot; data-offset-key=&quot;145:0&quot; data-first-offset=&quot;true&quot;&gt;&lt;strong data-slate-type=&quot;pm_bold&quot; data-slate-object=&quot;mark&quot;&gt;故障判定&lt;/strong&gt;&lt;/span&gt;、&lt;span data-slate-leaf=&quot;true&quot; data-offset-key=&quot;147:0&quot; data-first-offset=&quot;true&quot;&gt;&lt;strong data-slate-type=&quot;pm_bold&quot; data-slate-object=&quot;mark&quot;&gt;故障转移&lt;/strong&gt;&lt;/span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;h4 data-id-heading6=&quot;&quot; data-slate-type=&quot;pm_heading&quot; data-slate-object=&quot;block&quot; data-key=&quot;149&quot;&gt;&lt;span&gt;Q1：如何判断一个节点出现故障？&lt;/span&gt;&lt;/h4&gt;&lt;blockquote data-slate-type=&quot;pm_blockquote&quot; data-slate-object=&quot;block&quot; data-key=&quot;155&quot;&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;156&quot;&gt;&lt;span&gt;直到主节点故障，哨兵报出 sdown，同时此哨兵还会向其他哨兵发布消息说这个主节点挂了。发送的指令是 sentinel is-master-down-by-address-port。&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;blockquote data-slate-type=&quot;pm_blockquote&quot; data-slate-object=&quot;block&quot; data-key=&quot;164&quot;&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;165&quot;&gt;&lt;span&gt;其余的哨兵也会发送他们收到的信息并且发送指令 sentinel is-master-down-by-address-port 到自己的内网，确认一下第一个发送 sentinel is-master-down-by-address-port 的哨兵说你说的对，这个家伙确实挂了。&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;blockquote data-slate-type=&quot;pm_blockquote&quot; data-slate-object=&quot;block&quot; data-key=&quot;173&quot;&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;174&quot;&gt;&lt;span&gt;当一个哨兵认为主节点挂了标记的是 sdown，当半数哨兵都认为挂了其标记的状态是 odown。&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;176&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;177&quot;&gt;﻿&lt;/span&gt;&lt;/p&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;178&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;179&quot;&gt;一个哨兵认为master节点挂了称为主观下线（sdown），超半数哨兵认为master节点挂了则称为客观下线（odown）。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.46855345911949686&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z2bVaFK6CgRzuof9uYrBaBicdVQUFNKQGpV8htDDEVhmloCiahrbBbCDTGp7dulSXEe8HOicP9aEPzZXVz1tJ7Tag/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1272&quot;/&gt;&lt;/p&gt;&lt;h4 data-id-heading7=&quot;&quot; data-slate-type=&quot;pm_heading&quot; data-slate-object=&quot;block&quot; data-key=&quot;183&quot;&gt;&lt;span&gt;Q2：如何进行故障转移？&lt;/span&gt;&lt;/h4&gt;&lt;section&gt;&lt;span&gt;&lt;strong data-slate-type=&quot;pm_bold&quot; data-slate-object=&quot;mark&quot;&gt;1）首先，哨兵选举出哨兵Leader去处理故障转移&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt; 此时选举方式应用的是Raft协议，这个之前有过介绍，感兴趣的同学可以移步了解：&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzA3MDg5MDkzOA==&amp;amp;mid=2448762601&amp;amp;idx=1&amp;amp;sn=8bfef19e832b46b423d7e48bdf836ed4&amp;amp;chksm=8b34623cbc43eb2a5abcf0a6e40c1c01d36929e4052cb9f77f82cc0c19fa9870e433c7cc8224&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;一致性算法Raft 简易入门&lt;/a&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong data-slate-type=&quot;pm_bold&quot; data-slate-object=&quot;mark&quot;&gt;2）其次，哨兵Leader从所有的slave节点找出一个作为master节点&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;193&quot;&gt;&lt;span&gt;主要的规则：&lt;/span&gt;&lt;/p&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;207&quot;&gt;&lt;span&gt;假如以上优先级均一致，会考虑其他优先原则：&lt;/span&gt;&lt;/p&gt;&lt;blockquote data-slate-type=&quot;pm_blockquote&quot; data-slate-object=&quot;block&quot; data-key=&quot;213&quot;&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;214&quot;&gt;&lt;span&gt;假如说 slave1 的 offset 为 50，slave2 偏移量为 55，则哨兵就会选择 slave2 为新的主节点。&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;blockquote data-slate-type=&quot;pm_blockquote&quot; data-slate-object=&quot;block&quot; data-key=&quot;222&quot;&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;223&quot;&gt;&lt;span&gt;这点类似于职场中的论资排辈，也就说根据 runid 的创建时间来判断，时间早的先上位。&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;225&quot;&gt;&lt;span&gt;﻿&lt;/span&gt;&lt;/p&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;227&quot;&gt;&lt;span&gt;&lt;strong data-slate-type=&quot;pm_bold&quot; data-slate-object=&quot;mark&quot;&gt;3）数据转移&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;h2 data-id-heading8=&quot;&quot; data-slate-type=&quot;pm_heading&quot; data-slate-object=&quot;block&quot; data-key=&quot;236&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;237&quot;&gt;总结&lt;/span&gt;&lt;/h2&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;238&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;239&quot;&gt;Redis 主从复制的作用中有这么一句话“主从复制是高可用的基石”，那实现高可用必不可少的就是哨兵和集群。&lt;/span&gt;&lt;/p&gt;&lt;h3 data-id-heading9=&quot;&quot; data-slate-type=&quot;pm_heading&quot; data-slate-object=&quot;block&quot; data-key=&quot;240&quot;&gt;&lt;span&gt;1、Sentinel的作用&lt;/span&gt;&lt;/h3&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;246&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;247&quot;&gt;不断的检查master和slave是否正常运行（master存活检测、master与slave运行情况检测）&lt;/span&gt;&lt;/p&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;252&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;253&quot;&gt;当被监控的服务器出现问题时，向其他哨兵、客户端发送通知&lt;/span&gt;&lt;/p&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;258&quot;&gt;&lt;span data-slate-object=&quot;text&quot; data-key=&quot;259&quot;&gt;断开故障master与slave的连接，选取一个slave作为新master，将其他slave连接到新的master并告知客户端新的服务器地址。&lt;/span&gt;&lt;/p&gt;&lt;h3 data-id-heading10=&quot;&quot; data-slate-type=&quot;pm_heading&quot; data-slate-object=&quot;block&quot; data-key=&quot;260&quot;&gt;&lt;span&gt;2、Sentinel的工作方式&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;blockquote data-slate-type=&quot;pm_blockquote&quot; data-slate-object=&quot;block&quot; data-key=&quot;269&quot;&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;270&quot;&gt;&lt;span&gt; 若 Master 重新向 Sentinel 的 PING 命令返回有效回复， Master 的主观下线状态就会被移除。&lt;/span&gt;&lt;span/&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;blockquote data-slate-type=&quot;pm_blockquote&quot; data-slate-object=&quot;block&quot; data-key=&quot;279&quot;&gt;&lt;p data-slate-type=&quot;pm_paragraph&quot; data-slate-object=&quot;block&quot; data-key=&quot;280&quot;&gt;&lt;span&gt;若没有足够数量的 Sentinel 同意 Master 已经下线， Master 的客观下线状态就会被移除。&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;hr/&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;p&gt;&lt;span&gt;往期热文推荐：&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;hr/&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;98311&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;img data-cropselx1=&quot;0&quot; data-cropselx2=&quot;395&quot; data-cropsely1=&quot;0&quot; data-cropsely2=&quot;395&quot; data-ratio=&quot;0.36484375&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z2bVaFK6CgSxEpr7AzM5lGCicdEjfuE6jaiae9Rmj1CVCg85GJKaFKuico89ZlnhGicQiciciccOiaqVibE5cmKXwO1AOuA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot; data-width=&quot;100%&quot;/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;87502&quot;&gt;&lt;p&gt;&lt;span&gt;「技术架构精进」专注架构研究，技术分享&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;Thanks for reading!&lt;/span&gt;&lt;/p&gt;
-                &lt;/div&gt;
-
-                
-
-                
-
-
-
-                
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>56ce23d41dd795d050b9877710a762b4</guid>
-<title>[推荐] 用 WebRTC 和 Node.js 开发实时视频聊天应用</title>
-<link>https://toutiao.io/k/5shq47n</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;elementor-widget-container&quot;&gt;
-
-&lt;p&gt;话不多说，我们直奔主题。这篇文章教大家如何编写一个视频聊天应用，使已连接的两用户端能共享视频和音频。操作很简单，非常适合JavaScript语言训练——更准确地说是WebRTC技术和&lt;a href=&quot;https://tsh.io/services/web-development/node/&quot; target=&quot;_blank&quot; rel=&quot;noreferrer noopener&quot; title=&quot;https://tsh.io/services/web-development/node/&quot;&gt;Node.js&lt;/a&gt;。&lt;/p&gt;
-
-
-
-&lt;p&gt;&lt;strong&gt;什么是WebRTC&lt;/strong&gt;&lt;strong&gt;？&lt;/strong&gt;&lt;/p&gt;
-
-
-
-&lt;p&gt;Web Real-Time Communications 网页实时通信，简称WebRTC。WebRTC是一个HTML5规范，它允许用户在浏览器之间直接进行实时通信，不需要任何第三方插件。WebRTC可用于多种情境（比如文件共享），但端对端实时音频和视频通信是其主要功能。本文将着重为大家介绍这两项。&lt;/p&gt;
-
-
-
-&lt;p&gt;WebRTC所做的就是允许接入设备。你可以借WebRTC来实时使用麦克风、摄像头和分享你的屏幕。&lt;/p&gt;
-
-
-
-&lt;p&gt;所以，WebRTC可以用最简单的方式在网页中实现音频和视频通信。&lt;/p&gt;
-
-
-
-&lt;p&gt;&lt;strong&gt;WebRTC JavaScript API&lt;/strong&gt;&lt;/p&gt;
-
-
-
-&lt;p&gt;WebRTC说起来很复杂，它涉及到很多技术。但建立连接、通信和传输数据的操作是通过一套JS API来实现的，还比较简单。其中主要的API包括：&lt;/p&gt;
-
-
-
-&lt;p&gt;RTCPeerConnection：创建和导航端对端连接。&lt;/p&gt;
-
-
-
-&lt;p&gt;RTCSessionDescription：描述连接（或潜在连接）的一端，以及它的配置方式。&lt;/p&gt;
-
-
-
-&lt;p&gt;navigator.getUserMedia：捕捉音频和视频。&lt;/p&gt;
-
-
-
-&lt;p&gt;&lt;strong&gt;为什么选择Node.js&lt;/strong&gt;&lt;strong&gt;？&lt;/strong&gt;&lt;/p&gt;
-
-
-
-&lt;p&gt;若要在两个或多个设备之间进行远程连接，你就需要一个服务器。在这种情况下，你也需要一个处理实时通信的服务器。Node.js是为实时可扩展的应用而构建的。要开发自由数据交换的双向连接应用程序，你可能会用到WebSockets，它允许在客户端和服务器之间建立一个会话窗口。来自客户端的请求会以循环的方式，更准确的说是事件循环进行处理，这时Node.js是我们很好的一个选择，因为它采取 “非阻塞（non-blocking） “的方式来解决请求。这样我们在这该过程中就能实现低延迟和高吞吐量。&lt;/p&gt;
-
-
-
-&lt;p&gt;如果你对开发微服务感兴趣的话，一定要看看查看我们内含650多位微服务专家意见的&lt;a href=&quot;https://tsh.io/state-of-microservices/?utm_source=tsh.www&amp;amp;utm_medium=referral&amp;amp;utm_campaign=soms_report&amp;amp;utm_content=tshblogc2a&quot; target=&quot;_blank&quot; rel=&quot;noreferrer noopener&quot; title=&quot;https://tsh.io/state-of-microservices/?utm_source=tsh.www&amp;amp;utm_medium=referral&amp;amp;utm_campaign=soms_report&amp;amp;utm_content=tshblogc2a&quot;&gt;2020年微服务状态报告&lt;/a&gt;！&lt;/p&gt;
-
-
-
-&lt;p&gt;&lt;strong&gt;思路拓展：我们要创建的是什么？&lt;/strong&gt;&lt;/p&gt;
-
-
-
-&lt;p&gt;我们会创建一个非常简单的应用程序，它能让我们将音频和视频流传输到连接的设备——一个基础款视频聊天应用程序。我们会用到的技术有:&lt;/p&gt;
-
-
-
-&lt;p&gt;Express库，提供静态文件，比如代表用户界面（UI）的HTML文件；&lt;/p&gt;
-
-
-
-&lt;p&gt;socket.io库，在两个设备之间用WebSockets建立连接；&lt;/p&gt;
-
-
-
-&lt;p&gt;WebRTC，允许媒体设备（摄像头和麦克风）在连接的设备之间传输音频和视频流。&lt;/p&gt;
-
-
-
-&lt;p&gt;&lt;strong&gt;实现视频会话&lt;/strong&gt;&lt;/p&gt;
-
-
-
-&lt;p&gt;我们要做的第一件事是给我们的应用程序提供一个作为UI的HTML文件。让我们通过运行：npm init.js来初始化新的node.js项目。然后，我们需要通过运行：npm i -D typescript ts-node nodemon @types/express @types/socket.io安装一些开发依赖项，运行：npm i express socket.io安装生产依赖项。&lt;/p&gt;
-
-
-
-&lt;p&gt;之后我们就可以在package.json文件中定义脚本，来运行我们的项目了。&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot; data-enlighter-theme=&quot;&quot; data-enlighter-highlight=&quot;&quot; data-enlighter-linenumbers=&quot;&quot; data-enlighter-lineoffset=&quot;&quot; data-enlighter-title=&quot;&quot; data-enlighter-group=&quot;&quot;&gt;{
- &quot;scripts&quot;: {
-   &quot;start&quot;: &quot;ts-node src/index.ts&quot;,
-   &quot;dev&quot;: &quot;nodemon --watch &#x27;src/**/*.ts&#x27; --exec &#x27;ts-node&#x27; src/index.ts&quot;
- },
- &quot;devDependencies&quot;: {
-   &quot;@types/express&quot;: &quot;^4.17.2&quot;,
-   &quot;@types/socket.io&quot;: &quot;^2.1.4&quot;,
-   &quot;nodemon&quot;: &quot;^1.19.4&quot;,
-   &quot;ts-node&quot;: &quot;^8.4.1&quot;,
-   &quot;typescript&quot;: &quot;^3.7.2&quot;
- },
- &quot;dependencies&quot;: {
-   &quot;express&quot;: &quot;^4.17.1&quot;,
-   &quot;socket.io&quot;: &quot;^2.3.0&quot;
- }
-}&lt;/pre&gt;
-
-
-
-&lt;p&gt;当我们运行npm run dev命令时，nodemon会监控src文件夹中每个以.ts结尾的文件有无任何变化。现在，我们要创建一个src文件夹。在这个文件夹中，我们会创建两个typescript文件：index.ts和server.ts。&lt;/p&gt;
-
-
-
-&lt;p&gt;在server.ts中，我们会创建server类，并使其与express和socket.io一起工作。&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot; data-enlighter-theme=&quot;&quot; data-enlighter-highlight=&quot;&quot; data-enlighter-linenumbers=&quot;&quot; data-enlighter-lineoffset=&quot;&quot; data-enlighter-title=&quot;&quot; data-enlighter-group=&quot;&quot;&gt;import express, { Application } from &quot;express&quot;;
-import socketIO, { Server as SocketIOServer } from &quot;socket.io&quot;;
-import { createServer, Server as HTTPServer } from &quot;http&quot;;
- 
-export class Server {
- private httpServer: HTTPServer;
- private app: Application;
- private io: SocketIOServer;
- 
- private readonly DEFAULT_PORT = 5000;
- 
- constructor() {
-   this.initialize();
- 
-   this.handleRoutes();
-   this.handleSocketConnection();
- }
- 
- private initialize(): void {
-   this.app = express();
-   this.httpServer = createServer(this.app);
-   this.io = socketIO(this.httpServer);
- }
- 
- private handleRoutes(): void {
-   this.app.get(&quot;/&quot;, (req, res) =&amp;gt; {
-     res.send(`&amp;lt;h1&amp;gt;Hello World&amp;lt;/h1&amp;gt;`); 
-   });
- }
- 
- private handleSocketConnection(): void {
-   this.io.on(&quot;connection&quot;, socket =&amp;gt; {
-     console.log(&quot;Socket connected.&quot;);
-   });
- }
- 
- public listen(callback: (port: number) =&amp;gt; void): void {
-   this.httpServer.listen(this.DEFAULT_PORT, () =&amp;gt;
-     callback(this.DEFAULT_PORT)
-   );
- }
-}&lt;/pre&gt;
-
-
-
-&lt;p&gt;为正常运行服务器，我们需要在index.ts文件中创建一个新的Server类实例并调用listen方法。&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot; data-enlighter-theme=&quot;&quot; data-enlighter-highlight=&quot;&quot; data-enlighter-linenumbers=&quot;&quot; data-enlighter-lineoffset=&quot;&quot; data-enlighter-title=&quot;&quot; data-enlighter-group=&quot;&quot;&gt;import { Server } from &quot;./server&quot;;
- 
-const server = new Server();
- 
-server.listen(port =&amp;gt; {
- console.log(`Server is listening on http://localhost:${port}`);
-});&lt;/pre&gt;
-
-
-
-&lt;p&gt;现在，如果我们运行：npm run dev会看到下面这样的情景：&lt;/p&gt;
-
-
-
-&lt;figure class=&quot;wp-block-image size-large&quot;&gt;&lt;img src=&quot;https://tsh.io/wp-content/uploads/2019/11/how-to-write-a-real-time-video-chat-app-1_.png&quot; alt=&quot;&quot;/&gt;&lt;/figure&gt;
-
-
-
-&lt;p&gt;当打开浏览器，输入&lt;a href=&quot;http://localhost:5000/&quot;&gt;http://localhost:5000&lt;/a&gt;，我们应该注意到左上的 “Hello World “信息。&lt;/p&gt;
-
-
-
-&lt;figure class=&quot;wp-block-image size-large&quot;&gt;&lt;img src=&quot;https://tsh.io/wp-content/uploads/2019/11/how-to-write-a-real-time-video-chat-app-2_.png&quot; alt=&quot;&quot;/&gt;&lt;/figure&gt;
-
-
-
-&lt;p&gt;然后我们就可以在public/index.html中创建一个新的HTML文件了。&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot; data-enlighter-theme=&quot;&quot; data-enlighter-highlight=&quot;&quot; data-enlighter-linenumbers=&quot;&quot; data-enlighter-lineoffset=&quot;&quot; data-enlighter-title=&quot;&quot; data-enlighter-group=&quot;&quot;&gt;&amp;lt;!DOCTYPE html&amp;gt;
-&amp;lt;html lang=&quot;en&quot;&amp;gt;
- &amp;lt;head&amp;gt;
-   &amp;lt;meta charset=&quot;UTF-8&quot; /&amp;gt;
-   &amp;lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&amp;gt;
-   &amp;lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;ie=edge&quot; /&amp;gt;
-   &amp;lt;title&amp;gt;Dogeller&amp;lt;/title&amp;gt;
-   &amp;lt;link
-     href=&quot;https://fonts.googleapis.com/css?family=Montserrat:300,400,500,700&amp;amp;display=swap&quot;
-     rel=&quot;stylesheet&quot;
-   /&amp;gt;
-   &amp;lt;link rel=&quot;stylesheet&quot; href=&quot;./styles.css&quot; /&amp;gt;
-   &amp;lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
- &amp;lt;/head&amp;gt;
- &amp;lt;body&amp;gt;
-   &amp;lt;div class=&quot;container&quot;&amp;gt;
-     &amp;lt;header class=&quot;header&quot;&amp;gt;
-       &amp;lt;div class=&quot;logo-container&quot;&amp;gt;
-         &amp;lt;img src=&quot;./img/doge.png&quot; alt=&quot;doge logo&quot; class=&quot;logo-img&quot; /&amp;gt;
-         &amp;lt;h1 class=&quot;logo-text&quot;&amp;gt;
-           Doge&amp;lt;span class=&quot;logo-highlight&quot;&amp;gt;ller&amp;lt;/span&amp;gt;
-         &amp;lt;/h1&amp;gt;
-       &amp;lt;/div&amp;gt;
-     &amp;lt;/header&amp;gt;
-     &amp;lt;div class=&quot;content-container&quot;&amp;gt;
-       &amp;lt;div class=&quot;active-users-panel&quot; id=&quot;active-user-container&quot;&amp;gt;
-         &amp;lt;h3 class=&quot;panel-title&quot;&amp;gt;Active Users:&amp;lt;/h3&amp;gt;
-      &amp;lt;/div&amp;gt;
-       &amp;lt;div class=&quot;video-chat-container&quot;&amp;gt;
-         &amp;lt;h2 class=&quot;talk-info&quot; id=&quot;talking-with-info&quot;&amp;gt; 
-           Select active user on the left menu.
-         &amp;lt;/h2&amp;gt;
-         &amp;lt;div class=&quot;video-container&quot;&amp;gt;
-           &amp;lt;video autoplay class=&quot;remote-video&quot; id=&quot;remote-video&quot;&amp;gt;&amp;lt;/video&amp;gt;
-           &amp;lt;video autoplay muted class=&quot;local-video&quot; id=&quot;local-video&quot;&amp;gt;&amp;lt;/video&amp;gt;
-         &amp;lt;/div&amp;gt;
-       &amp;lt;/div&amp;gt;
-     &amp;lt;/div&amp;gt;
-   &amp;lt;/div&amp;gt;
-   &amp;lt;script src=&quot;./scripts/index.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
- &amp;lt;/body&amp;gt;
-&amp;lt;/html&amp;gt;&lt;/pre&gt;
-
-
-
-&lt;p&gt;在这个新文件中，我们创建了两个视频元素：一个用于远程视频连接，另一个用于本地视频。你可能已经注意到我们也在导入本地脚本了。现在我们就来创建一个新的文件夹“脚本”，并在这个目录下创建index.js文件。至于样式，你可以从&lt;a href=&quot;https://github.com/Miczeq22/simple-chat-app&quot; target=&quot;_blank&quot; rel=&quot;noreferrer noopener&quot;&gt;GitHub库&lt;/a&gt;中下载它们。&lt;/p&gt;
-
-
-
-&lt;p&gt;接下来你需要给浏览器提供index.html。首先，你需要告诉express你想提供哪些静态文件。为了实现这一点，我们决定在Server类中实现一个新方法。&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot; data-enlighter-theme=&quot;&quot; data-enlighter-highlight=&quot;&quot; data-enlighter-linenumbers=&quot;&quot; data-enlighter-lineoffset=&quot;&quot; data-enlighter-title=&quot;&quot; data-enlighter-group=&quot;&quot;&gt;private configureApp(): void {
-   this.app.use(express.static(path.join(__dirname, &quot;../public&quot;)));
- }&lt;/pre&gt;
-
-
-
-&lt;p&gt;不要忘记在initialize中调用configureApp。&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot; data-enlighter-theme=&quot;&quot; data-enlighter-highlight=&quot;&quot; data-enlighter-linenumbers=&quot;&quot; data-enlighter-lineoffset=&quot;&quot; data-enlighter-title=&quot;&quot; data-enlighter-group=&quot;&quot;&gt;private initialize(): void {
-   this.app = express();
-   this.httpServer = createServer(this.app);
-   this.io = socketIO(this.httpServer);
- 
-   this.configureApp();
-   this.handleSocketConnection();
- }&lt;/pre&gt;
-
-
-
-&lt;p&gt;当你输入&lt;a href=&quot;http://localhost:5000&quot; target=&quot;_blank&quot; rel=&quot;noreferrer noopener&quot;&gt;http://localhost:5000&lt;/a&gt;后，你应该能看到你的index.html文件在运行。&lt;/p&gt;
-
-
-
-&lt;figure class=&quot;wp-block-image size-large&quot;&gt;&lt;img src=&quot;https://tsh.io/wp-content/uploads/2019/11/how-to-write-a-real-time-video-chat-app-3_.png&quot; alt=&quot;&quot;/&gt;&lt;/figure&gt;
-
-
-
-&lt;p&gt;下一步要实现的是允许摄像头和视频访问并将其流式传输到local-video元素。要做到这一点，你需要打开public/scripts/index.js文件，并用以下方法实现它。&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot; data-enlighter-theme=&quot;&quot; data-enlighter-highlight=&quot;&quot; data-enlighter-linenumbers=&quot;&quot; data-enlighter-lineoffset=&quot;&quot; data-enlighter-title=&quot;&quot; data-enlighter-group=&quot;&quot;&gt;navigator.getUserMedia(
- { video: true, audio: true },
- stream =&amp;gt; {
-   const localVideo = document.getElementById(&quot;local-video&quot;);
-   if (localVideo) {
-     localVideo.srcObject = stream;
-   }
- },
- error =&amp;gt; {
-   console.warn(error.message);
- }
-);&lt;/pre&gt;
-
-
-
-&lt;p&gt;当回到浏览器时，界面会出现一个提示请求访问你的媒体设备，在接受请求后，你电脑的摄像头就开始工作了。&lt;/p&gt;
-
-
-
-&lt;figure class=&quot;wp-block-image size-large&quot;&gt;&lt;img src=&quot;https://tsh.io/wp-content/uploads/2019/11/how-to-write-a-real-time-video-chat-app-4_.png&quot; alt=&quot;&quot;/&gt;&lt;/figure&gt;
-
-
-
-&lt;p&gt;更多细节详见&lt;a href=&quot;https://tsh.io/blog/simple-guide-concurrency-node-js/&quot; target=&quot;_blank&quot; rel=&quot;noreferrer noopener&quot;&gt;A simple guide to concurrency in Node.js and a few traps that come with it&lt;/a&gt;。&lt;/p&gt;
-
-
-
-&lt;p&gt;&lt;strong&gt;如何处理socket&lt;/strong&gt;&lt;strong&gt;连接？&lt;/strong&gt;&lt;/p&gt;
-
-
-
-&lt;p&gt;接下来我们讲讲如何处理socket连接。我们需要将客户端与服务器连接起来。为此，我们将使用socket.io。在public/scripts/index.js中，添加以下代码：&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot; data-enlighter-theme=&quot;&quot; data-enlighter-highlight=&quot;&quot; data-enlighter-linenumbers=&quot;&quot; data-enlighter-lineoffset=&quot;&quot; data-enlighter-title=&quot;&quot; data-enlighter-group=&quot;&quot;&gt;this.io.on(&quot;connection&quot;, socket =&amp;gt; {
-     const existingSocket = this.activeSockets.find(
-       existingSocket =&amp;gt; existingSocket === socket.id
-     );
- 
-     if (!existingSocket) {
-       this.activeSockets.push(socket.id);
- 
-       socket.emit(&quot;update-user-list&quot;, {
-         users: this.activeSockets.filter(
-           existingSocket =&amp;gt; existingSocket !== socket.id
-         )
-       });
- 
-       socket.broadcast.emit(&quot;update-user-list&quot;, {
-         users: [socket.id]
-       });
-     }
-   }&lt;/pre&gt;
-
-
-
-&lt;p&gt;页面刷新后，电脑会弹出一条消息，显示 “Socket已连接”&lt;/p&gt;
-
-
-
-&lt;figure class=&quot;wp-block-image size-large&quot;&gt;&lt;img src=&quot;https://tsh.io/wp-content/uploads/2019/11/how-to-write-a-real-time-video-chat-app-5_.png&quot; alt=&quot;&quot;/&gt;&lt;/figure&gt;
-
-
-
-&lt;p&gt;然后我们回到server.ts中，把已连接的socket存储在内存中，这只是为了保留唯一连接。所以，我们需要在Server类中添加一个新的私有字段，如下：&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot; data-enlighter-theme=&quot;&quot; data-enlighter-highlight=&quot;&quot; data-enlighter-linenumbers=&quot;&quot; data-enlighter-lineoffset=&quot;&quot; data-enlighter-title=&quot;&quot; data-enlighter-group=&quot;&quot;&gt;private activeSockets: string[] = [];&lt;/pre&gt;
-
-
-
-&lt;p&gt;然后我们需要在socket连接中检查socket是否已经存在。如果不存在，把新的socket推送到内存中，并向已连接的用户发送数据。&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot; data-enlighter-theme=&quot;&quot; data-enlighter-highlight=&quot;&quot; data-enlighter-linenumbers=&quot;&quot; data-enlighter-lineoffset=&quot;&quot; data-enlighter-title=&quot;&quot; data-enlighter-group=&quot;&quot;&gt;this.io.on(&quot;connection&quot;, socket =&amp;gt; {
-     const existingSocket = this.activeSockets.find(
-       existingSocket =&amp;gt; existingSocket === socket.id
-     );
- 
-     if (!existingSocket) {
-       this.activeSockets.push(socket.id);
- 
-       socket.emit(&quot;update-user-list&quot;, {
-         users: this.activeSockets.filter(
-           existingSocket =&amp;gt; existingSocket !== socket.id
-         )
-       });
- 
-       socket.broadcast.emit(&quot;update-user-list&quot;, {
-         users: [socket.id]
-       });
-     }
-   }&lt;/pre&gt;
-
-
-
-&lt;p&gt;你还需要在socket断开连接时及时响应，所以在socket连接中，你需要添加：&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot; data-enlighter-theme=&quot;&quot; data-enlighter-highlight=&quot;&quot; data-enlighter-linenumbers=&quot;&quot; data-enlighter-lineoffset=&quot;&quot; data-enlighter-title=&quot;&quot; data-enlighter-group=&quot;&quot;&gt;socket.on(&quot;disconnect&quot;, () =&amp;gt; {
-   this.activeSockets = this.activeSockets.filter(
-     existingSocket =&amp;gt; existingSocket !== socket.id
-   );
-   socket.broadcast.emit(&quot;remove-user&quot;, {
-     socketId: socket.id
-   });
- });&lt;/pre&gt;
-
-
-
-&lt;p&gt;客户端(即public/scripts/index.js)这边，你需要妥善处理那些信息：&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot; data-enlighter-theme=&quot;&quot; data-enlighter-highlight=&quot;&quot; data-enlighter-linenumbers=&quot;&quot; data-enlighter-lineoffset=&quot;&quot; data-enlighter-title=&quot;&quot; data-enlighter-group=&quot;&quot;&gt;socket.on(&quot;update-user-list&quot;, ({ users }) =&amp;gt; {
- updateUserList(users);
-});
- 
-socket.on(&quot;remove-user&quot;, ({ socketId }) =&amp;gt; {
- const elToRemove = document.getElementById(socketId);
- 
- if (elToRemove) {
-   elToRemove.remove();
- }
-});&lt;/pre&gt;
-
-
-
-&lt;p&gt;以下是 updateUserList 函数：&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot; data-enlighter-theme=&quot;&quot; data-enlighter-highlight=&quot;&quot; data-enlighter-linenumbers=&quot;&quot; data-enlighter-lineoffset=&quot;&quot; data-enlighter-title=&quot;&quot; data-enlighter-group=&quot;&quot;&gt;function updateUserList(socketIds) {
- const activeUserContainer = document.getElementById(&quot;active-user-container&quot;);
- 
- socketIds.forEach(socketId =&amp;gt; {
-   const alreadyExistingUser = document.getElementById(socketId);
-   if (!alreadyExistingUser) {
-     const userContainerEl = createUserItemContainer(socketId);
-     activeUserContainer.appendChild(userContainerEl);
-   }
- });
-}&lt;/pre&gt;
-
-
-
-&lt;p&gt;以及createUserItemContainer函数:&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot; data-enlighter-theme=&quot;&quot; data-enlighter-highlight=&quot;&quot; data-enlighter-linenumbers=&quot;&quot; data-enlighter-lineoffset=&quot;&quot; data-enlighter-title=&quot;&quot; data-enlighter-group=&quot;&quot;&gt;function createUserItemContainer(socketId) {
- const userContainerEl = document.createElement(&quot;div&quot;);
- 
- const usernameEl = document.createElement(&quot;p&quot;);
- 
- userContainerEl.setAttribute(&quot;class&quot;, &quot;active-user&quot;);
- userContainerEl.setAttribute(&quot;id&quot;, socketId);
- usernameEl.setAttribute(&quot;class&quot;, &quot;username&quot;);
- usernameEl.innerHTML = `Socket: ${socketId}`;
- 
- userContainerEl.appendChild(usernameEl);
- 
- userContainerEl.addEventListener(&quot;click&quot;, () =&amp;gt; {
-   unselectUsersFromList();
-   userContainerEl.setAttribute(&quot;class&quot;, &quot;active-user active-user--selected&quot;);
-   const talkingWithInfo = document.getElementById(&quot;talking-with-info&quot;);
-   talkingWithInfo.innerHTML = `Talking with: &quot;Socket: ${socketId}&quot;`;
-   callUser(socketId);
- }); 
- return userContainerEl;
-}&lt;/pre&gt;
-
-
-
-&lt;p&gt;需要注意的是，我们给用户容器元素添加了一个可以调用callUser函数的点击监听器——但现在，它可以是一个空的函数。接下来，当运行两个浏览器窗口（其中一个作为私人窗口）时，你应该注意到你的Web应用程序中有两个已经连接的socket。&lt;/p&gt;
-
-
-
-&lt;figure class=&quot;wp-block-image size-large&quot;&gt;&lt;img src=&quot;https://tsh.io/wp-content/uploads/2019/11/how-to-write-a-real-time-video-chat-app-6_.png&quot; alt=&quot;&quot;/&gt;&lt;/figure&gt;
-
-
-
-&lt;p&gt;点击列表中的活跃用户，这时我们需要调用callUser函数。但是在实现之前，你还需要在window对象中声明两个类。&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot; data-enlighter-theme=&quot;&quot; data-enlighter-highlight=&quot;&quot; data-enlighter-linenumbers=&quot;&quot; data-enlighter-lineoffset=&quot;&quot; data-enlighter-title=&quot;&quot; data-enlighter-group=&quot;&quot;&gt;const { RTCPeerConnection, RTCSessionDescription } = window;&lt;/pre&gt;
-
-
-
-&lt;p&gt;我们会在callUser函数用到这两个类：&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot; data-enlighter-theme=&quot;&quot; data-enlighter-highlight=&quot;&quot; data-enlighter-linenumbers=&quot;&quot; data-enlighter-lineoffset=&quot;&quot; data-enlighter-title=&quot;&quot; data-enlighter-group=&quot;&quot;&gt;async function callUser(socketId) {
- const offer = await peerConnection.createOffer();
- await peerConnection.setLocalDescription(new RTCSessionDescription(offer));
- 
- socket.emit(&quot;call-user&quot;, {
-   offer,
-   to: socketId
- });
-}&lt;/pre&gt;
-
-
-
-&lt;p&gt;现在我们要创建一个本地请求并发送给选定的用户。服务器会监听一个叫做call-user的事件、拦截请求并将其转发给选定的用户。让我们用server.ts来实现该操作：&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot; data-enlighter-theme=&quot;&quot; data-enlighter-highlight=&quot;&quot; data-enlighter-linenumbers=&quot;&quot; data-enlighter-lineoffset=&quot;&quot; data-enlighter-title=&quot;&quot; data-enlighter-group=&quot;&quot;&gt;socket.on(&quot;call-user&quot;, data =&amp;gt; {
-   socket.to(data.to).emit(&quot;call-made&quot;, {
-     offer: data.offer,
-     socket: socket.id
-   });
- });&lt;/pre&gt;
-
-
-
-&lt;p&gt;对于客户端，你需要就call-made事件作出调整：&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot; data-enlighter-theme=&quot;&quot; data-enlighter-highlight=&quot;&quot; data-enlighter-linenumbers=&quot;&quot; data-enlighter-lineoffset=&quot;&quot; data-enlighter-title=&quot;&quot; data-enlighter-group=&quot;&quot;&gt;socket.on(&quot;call-made&quot;, async data =&amp;gt; {
- await peerConnection.setRemoteDescription(
-   new RTCSessionDescription(data.offer)
- );
- const answer = await peerConnection.createAnswer();
- await peerConnection.setLocalDescription(new RTCSessionDescription(answer));
- 
- socket.emit(&quot;make-answer&quot;, {
-   answer,
-   to: data.socket
- });
-});&lt;/pre&gt;
-
-
-
-&lt;p&gt;之后，在你从服务器得到的请求上设置一个远程描述，并为这个请求创建一个答复。对于服务器端，你只需要将适当的数据传递给选定的用户即可。然后我们再在server.ts里面添加一个监听器。&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot; data-enlighter-theme=&quot;&quot; data-enlighter-highlight=&quot;&quot; data-enlighter-linenumbers=&quot;&quot; data-enlighter-lineoffset=&quot;&quot; data-enlighter-title=&quot;&quot; data-enlighter-group=&quot;&quot;&gt;socket.on(&quot;make-answer&quot;, data =&amp;gt; {
-   socket.to(data.to).emit(&quot;answer-made&quot;, {
-     socket: socket.id,
-     answer: data.answer
-   });
- });&lt;/pre&gt;
-
-
-
-&lt;p&gt;对于客户端，我们需要处理 answer-made 事件。&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot; data-enlighter-theme=&quot;&quot; data-enlighter-highlight=&quot;&quot; data-enlighter-linenumbers=&quot;&quot; data-enlighter-lineoffset=&quot;&quot; data-enlighter-title=&quot;&quot; data-enlighter-group=&quot;&quot;&gt;socket.on(&quot;answer-made&quot;, async data =&amp;gt; {
- await peerConnection.setRemoteDescription(
-   new RTCSessionDescription(data.answer)
- );
- 
- if (!isAlreadyCalling) {
-   callUser(data.socket);
-   isAlreadyCalling = true;
- }
-});&lt;/pre&gt;
-
-
-
-&lt;p&gt;我们可以使用标志isAlreadyCalling，它能帮助确保我们只需调用一次用户。&lt;/p&gt;
-
-
-
-&lt;p&gt;最后你需要做的是添加本地轨道，包括音频和视频到你的连接端。只有做到这一点，我们才能够与连接的用户共享视频和音频。要做到这一点，我们需要在navigator.getMediaDevice回调中调用peerConnection对象的addTrack函数。&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot; data-enlighter-theme=&quot;&quot; data-enlighter-highlight=&quot;&quot; data-enlighter-linenumbers=&quot;&quot; data-enlighter-lineoffset=&quot;&quot; data-enlighter-title=&quot;&quot; data-enlighter-group=&quot;&quot;&gt;navigator.getUserMedia(
- { video: true, audio: true },
- stream =&amp;gt; {
-   const localVideo = document.getElementById(&quot;local-video&quot;);
-   if (localVideo) {
-     localVideo.srcObject = stream;
-   }
- 
-   stream.getTracks().forEach(track =&amp;gt; peerConnection.addTrack(track, stream));
- },
- error =&amp;gt; {
-   console.warn(error.message);
- }
-);&lt;/pre&gt;
-
-
-
-&lt;p&gt;另外，我们还需要为ontrack事件添加一个适当的处理程序。&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot; data-enlighter-theme=&quot;&quot; data-enlighter-highlight=&quot;&quot; data-enlighter-linenumbers=&quot;&quot; data-enlighter-lineoffset=&quot;&quot; data-enlighter-title=&quot;&quot; data-enlighter-group=&quot;&quot;&gt;peerConnection.ontrack = function({ streams: [stream] }) {
- const remoteVideo = document.getElementById(&quot;remote-video&quot;);
- if (remoteVideo) {
-   remoteVideo.srcObject = stream;
- }
-};&lt;/pre&gt;
-
-
-
-&lt;p&gt;如图示，我们已经从传递的对象中获取了流，并改变了远程视频中的srcObject来使用接收到的流。所以现在当你点击活跃用户后，你应该建立一个视频和音频连接，像下图这样：&lt;/p&gt;
-
-
-
-&lt;figure class=&quot;wp-block-image size-large&quot;&gt;&lt;img src=&quot;https://tsh.io/wp-content/uploads/2019/11/how-to-write-a-real-time-video-chat-app-7_.png&quot; alt=&quot;&quot;/&gt;&lt;/figure&gt;
-
-
-
-&lt;p&gt;欲了解细节，请参阅：&lt;a href=&quot;https://tsh.io/blog/dependency-injection-in-node-js/&quot; target=&quot;_blank&quot; rel=&quot;noreferrer noopener&quot;&gt;Node.js and dependency injection – friends or foes?&lt;/a&gt;&lt;/p&gt;
-
-
-
-&lt;p&gt;&lt;strong&gt;现在你知道如何编写一个视频聊天应用了吧！&lt;/strong&gt;&lt;/p&gt;
-
-
-
-&lt;p&gt;WebRTC是一个很大的话题，内容非常庞杂。如果你想了解它的运作原理，就需要花很大功夫。幸运的是，我们可以访问易于使用的JavaScript API，它可以帮助我们创建很简洁的应用程序，例如视频共享、聊天应用程序等等。&lt;/p&gt;
-
-
-
-&lt;p&gt;如果你想深入了解WebRTC，点击此&lt;a href=&quot;http://Node.js%20and%20dependency%20injection%20–%20friends%20or%20foes%3F&quot; target=&quot;_blank&quot; rel=&quot;noreferrer noopener&quot;&gt;WebRTC官方文档的链接&lt;/a&gt;。另外，我也推荐你阅读&lt;a href=&quot;https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API&quot; target=&quot;_blank&quot; rel=&quot;noreferrer noopener&quot;&gt;MDN的文档说明&lt;/a&gt;，它能帮助你更加了解此技术。&lt;/p&gt;
-
-
-
-&lt;blockquote class=&quot;wp-block-quote&quot;&gt;&lt;p&gt;文章地址：&lt;a href=&quot;https://tsh.io/blog/how-to-write-video-chat-app-using-webrtc-and-nodejs/&quot; target=&quot;_blank&quot; rel=&quot;noreferrer noopener&quot;&gt;https://tsh.io/blog/how-to-write-video-chat-app-using-webrtc-and-nodejs/&lt;/a&gt;&lt;/p&gt;&lt;/blockquote&gt;
-
-
-
-&lt;blockquote class=&quot;wp-block-quote&quot;&gt;&lt;p&gt;原文作者：Mikołaj Wargowski&lt;/p&gt;&lt;/blockquote&gt;
-
-
-
-&lt;p/&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
