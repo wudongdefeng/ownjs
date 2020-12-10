@@ -89,6 +89,390 @@
 &lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
+<guid>732cf1e2f7af58d068a7c1be6c943799</guid>
+<title>Go 错误处理最佳实践</title>
+<link>https://toutiao.io/k/lodfgxd</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;markdown-body&quot; id=&quot;post-body&quot;&gt;&lt;blockquote&gt;&lt;p&gt;本系列为极客时间 Go 进阶训练营笔记，同步直播更新，预计一周更新 1 ~ 2 篇文章，到 202103 月更新完成&lt;/p&gt;&lt;/blockquote&gt;&lt;h2 id=&quot;最佳实践&quot;&gt;&lt;a href=&quot;#最佳实践&quot; class=&quot;headerlink&quot; title=&quot;最佳实践&quot;/&gt;最佳实践&lt;/h2&gt;&lt;p&gt;太长不看系列，我们总结一下在 go 中 如何处理 error，具体的原因我们会在下面的内容中进行详细的解释&lt;/p&gt;&lt;h3 id=&quot;panic&quot;&gt;&lt;a href=&quot;#panic&quot; class=&quot;headerlink&quot; title=&quot;panic&quot;/&gt;panic&lt;/h3&gt;&lt;ol&gt;&lt;li&gt;在程序启动的时候，如果有强依赖的服务出现故障时 &lt;code&gt;panic&lt;/code&gt; 退出&lt;/li&gt;&lt;li&gt;在程序启动的时候，如果发现有配置明显不符合要求， 可以 &lt;code&gt;panic&lt;/code&gt; 退出（防御编程）&lt;/li&gt;&lt;li&gt;其他情况下只要不是不可恢复的程序错误，都不应该直接 &lt;code&gt;panic&lt;/code&gt; 应该返回 &lt;code&gt;error&lt;/code&gt;&lt;/li&gt;&lt;li&gt;在程序入口处，例如 &lt;code&gt;gin&lt;/code&gt; 中间件需要使用 &lt;code&gt;recovery&lt;/code&gt; 预防 &lt;code&gt;panic&lt;/code&gt; 程序退出&lt;/li&gt;&lt;li&gt;在程序中我们应该避免使用野生的 &lt;code&gt;goroutine&lt;/code&gt;&lt;ol&gt;&lt;li&gt;如果是在请求中需要执行异步任务，应该使用异步 &lt;code&gt;worker&lt;/code&gt; ，消息通知的方式进行处理，避免请求量大时大量 &lt;code&gt;goroutine&lt;/code&gt; 创建&lt;/li&gt;&lt;li&gt;如果需要使用 &lt;code&gt;goroutine&lt;/code&gt; 时，应该使用同一的 &lt;code&gt;Go&lt;/code&gt; 函数进行创建，这个函数中会进行 &lt;code&gt;recovery&lt;/code&gt; ，避免因为野生 &lt;code&gt;goroutine&lt;/code&gt; panic 导致主进程退出&lt;/li&gt;&lt;/ol&gt;&lt;/li&gt;&lt;/ol&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;Go&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(f &lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt;()&lt;/span&gt;)&lt;/span&gt;{
+    &lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt;{
+        &lt;span class=&quot;hljs-keyword&quot;&gt;defer&lt;/span&gt; &lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt;{
+            &lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; err := recovery(); err != &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt; {
+                log.Printf(&lt;span class=&quot;hljs-string&quot;&gt;&quot;panic: %+v&quot;&lt;/span&gt;, err)
+            }
+        }()
+
+        f()
+    }()
+}&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;error&quot;&gt;&lt;a href=&quot;#error&quot; class=&quot;headerlink&quot; title=&quot;error&quot;/&gt;error&lt;/h3&gt;&lt;ol&gt;&lt;li&gt;我们在应用程序中使用 &lt;code&gt;github.com/pkg/errors&lt;/code&gt; 处理应用错误，&lt;strong&gt;注意在公共库当中，我们一般不使用这个&lt;/strong&gt;&lt;/li&gt;&lt;li&gt;&lt;code&gt;error&lt;/code&gt; 应该是函数的最后一个返回值，当 &lt;code&gt;error&lt;/code&gt; 不为 &lt;code&gt;nil&lt;/code&gt; 时，函数的其他返回值是不可用的状态，不应该对其他返回值做任何期待&lt;ol&gt;&lt;li&gt;&lt;code&gt;func f() (io.Reader, *S1, error)&lt;/code&gt; 在这里，我们不知道 &lt;code&gt;io.Reader&lt;/code&gt; 中是否有数据，可能有，也有可能有一部分&lt;/li&gt;&lt;/ol&gt;&lt;/li&gt;&lt;li&gt;错误处理的时候应该先判断错误， &lt;code&gt;if err != nil&lt;/code&gt; 出现错误及时返回，使代码是一条流畅的直线，避免过多的嵌套&lt;/li&gt;&lt;/ol&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-comment&quot;&gt;// good case&lt;/span&gt;
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;error&lt;/span&gt;&lt;/span&gt; {
+    a, err := A()
+    &lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; err != &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt; {
+        &lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; err
+    }
+
+    &lt;span class=&quot;hljs-comment&quot;&gt;// ... 其他逻辑&lt;/span&gt;
+    &lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt;
+}
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// bad case&lt;/span&gt;
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;error&lt;/span&gt;&lt;/span&gt; {
+    a, err := A()
+    &lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; err == &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt; {
+    &lt;span class=&quot;hljs-comment&quot;&gt;// 其他逻辑&lt;/span&gt;
+    }
+
+    &lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; err
+}&lt;/code&gt;&lt;/pre&gt;&lt;ol start=&quot;4&quot;&gt;&lt;li&gt;在&lt;strong&gt;应用程序&lt;/strong&gt;中出现错误时，使用 &lt;code&gt;errors.New&lt;/code&gt; 或者 &lt;code&gt;errors.Errorf&lt;/code&gt; 返回错误&lt;/li&gt;&lt;/ol&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-params&quot;&gt;(u *usecese)&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;usecase1&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;error&lt;/span&gt;&lt;/span&gt; {
+    money := u.repo.getMoney(uid)
+    &lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; money &amp;lt; &lt;span class=&quot;hljs-number&quot;&gt;10&lt;/span&gt; {
+        errors.Errorf(&lt;span class=&quot;hljs-string&quot;&gt;&quot;用户余额不足, uid: %d, money: %d&quot;&lt;/span&gt;, uid, money)
+    }
+    &lt;span class=&quot;hljs-comment&quot;&gt;// 其他逻辑&lt;/span&gt;
+    &lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt;
+}&lt;/code&gt;&lt;/pre&gt;&lt;ol start=&quot;5&quot;&gt;&lt;li&gt;如果是调用&lt;strong&gt;应用程序的&lt;/strong&gt;其他函数出现错误，请直接返回，如果需要携带信息，请使用 &lt;code&gt;errors.WithMessage&lt;/code&gt;&lt;/li&gt;&lt;/ol&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-params&quot;&gt;(u *usecese)&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;usecase2&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;error&lt;/span&gt;&lt;/span&gt; {
+    name, err := u.repo.getUserName(uid)
+    &lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; err != &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt; {
+        &lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; errors.WithMessage(err, &lt;span class=&quot;hljs-string&quot;&gt;&quot;其他附加信息&quot;&lt;/span&gt;)
+    }
+
+    &lt;span class=&quot;hljs-comment&quot;&gt;// 其他逻辑&lt;/span&gt;
+    &lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt;
+}&lt;/code&gt;&lt;/pre&gt;&lt;ol start=&quot;6&quot;&gt;&lt;li&gt;如果是调用其他库（标准库、企业公共库、开源第三方库等）获取到错误时，请使用 &lt;code&gt;errors.Wrap&lt;/code&gt; 添加堆栈信息&lt;ol&gt;&lt;li&gt;切记，不要每个地方都是用 &lt;code&gt;errors.Wrap&lt;/code&gt; 只需要在错误第一次出现时进行 &lt;code&gt;errors.Wrap&lt;/code&gt; 即可&lt;/li&gt;&lt;li&gt;根据场景进行判断是否需要将其他库的原始错误吞掉，例如可以把 &lt;code&gt;repository&lt;/code&gt; 层的数据库相关错误吞掉，返回业务错误码，避免后续我们分割微服务或者更换 &lt;code&gt;ORM&lt;/code&gt; 库时需要去修改上层代码&lt;/li&gt;&lt;li&gt;注意我们在基础库，被大量引入的第三方库编写时一般不使用 &lt;code&gt;errors.Wrap&lt;/code&gt; 避免堆栈信息重复&lt;/li&gt;&lt;/ol&gt;&lt;/li&gt;&lt;/ol&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;error&lt;/span&gt;&lt;/span&gt; {
+    err := json.Unmashal(&amp;amp;a, data)
+    &lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; err != &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt; {
+        &lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; errors.Wrap(err, &lt;span class=&quot;hljs-string&quot;&gt;&quot;其他附加信息&quot;&lt;/span&gt;)
+    }
+
+    &lt;span class=&quot;hljs-comment&quot;&gt;// 其他逻辑&lt;/span&gt;
+    &lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt;
+}&lt;/code&gt;&lt;/pre&gt;&lt;ol start=&quot;7&quot;&gt;&lt;li&gt;&lt;strong&gt;禁止&lt;/strong&gt;每个出错的地方都打日志，&lt;strong&gt;只需要&lt;/strong&gt;在进程的最开始的地方使用 &lt;code&gt;%+v&lt;/code&gt; 进行统一打印，例如 http/rpc 服务的中间件&lt;/li&gt;&lt;li&gt;错误判断使用 &lt;code&gt;errors.Is&lt;/code&gt; 进行比较&lt;/li&gt;&lt;/ol&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;error&lt;/span&gt;&lt;/span&gt; {
+    err := A()
+    &lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; errors.Is(err, io.EOF){
+    &lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt;
+    }
+
+    &lt;span class=&quot;hljs-comment&quot;&gt;// 其他逻辑&lt;/span&gt;
+    &lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt;
+}&lt;/code&gt;&lt;/pre&gt;&lt;ol start=&quot;9&quot;&gt;&lt;li&gt;错误类型判断，使用 &lt;code&gt;errors.As&lt;/code&gt; 进行赋值&lt;/li&gt;&lt;/ol&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;error&lt;/span&gt;&lt;/span&gt; {
+    err := A()
+
+    &lt;span class=&quot;hljs-keyword&quot;&gt;var&lt;/span&gt; errA errorA
+    &lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; errors.As(err, &amp;amp;errA){
+    &lt;span class=&quot;hljs-comment&quot;&gt;// ...&lt;/span&gt;
+    }
+
+    &lt;span class=&quot;hljs-comment&quot;&gt;// 其他逻辑&lt;/span&gt;
+    &lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt;
+}&lt;/code&gt;&lt;/pre&gt;&lt;ol start=&quot;10&quot;&gt;&lt;li&gt;如何判定错误的信息是否足够，想一想当你的代码出现问题需要排查的时候你的错误信息是否可以帮助你快速的定位问题，例如我们在请求中一般会输出参数信息，用于辅助判断错误&lt;/li&gt;&lt;li&gt;对于业务错误，推荐在一个统一的地方创建一个错误字典，错误字典里面应该包含错误的 code，并且在日志中作为独立字段打印，方便做业务告警的判断，错误必须有清晰的错误文档&lt;/li&gt;&lt;li&gt;不需要返回，被忽略的错误&lt;strong&gt;必须&lt;/strong&gt;输出日志信息&lt;/li&gt;&lt;li&gt;同一个地方不停的报错，最好不要不停输出错误日志，这样可能会导致被大量的错误日志信息淹没，无法排查问题，比较好的做法是打印一次错误详情，然后打印出错误出现的次数&lt;/li&gt;&lt;li&gt;对同一个类型的错误，采用相同的模式，例如参数错误，不要有的返回 404 有的返回 200&lt;/li&gt;&lt;li&gt;处理错误的时候，需要处理已分配的资源，使用 &lt;code&gt;defer&lt;/code&gt; 进行清理，例如文件句柄&lt;/li&gt;&lt;/ol&gt;&lt;h2 id=&quot;panic-or-error&quot;&gt;&lt;a href=&quot;#panic-or-error&quot; class=&quot;headerlink&quot; title=&quot;panic or error?&quot;/&gt;panic or error?&lt;/h2&gt;&lt;ol&gt;&lt;li&gt;在 Go 中 panic 会导致程序直接退出，是一个致命的错误，如果使用 &lt;code&gt;panic&lt;/code&gt; &lt;code&gt;recovery&lt;/code&gt; 进行处理的话，会存在很多问题&lt;ol&gt;&lt;li&gt;性能问题，频繁 panic recovery 性能不好&lt;/li&gt;&lt;li&gt;容易导致程序异常退出，只要有一个地方没有处理到就会导致程序进程整个退出&lt;/li&gt;&lt;li&gt;不可控，一旦 panic 就将处理逻辑移交给了外部，我们并不能预设外部包一定会进行处理&lt;/li&gt;&lt;/ol&gt;&lt;/li&gt;&lt;li&gt;什么时候使用 panic 呢？&lt;ol&gt;&lt;li&gt;对于真正意外的情况，那些表示不可恢复的程序错误，例如索引越界、不可恢复的环境问题、栈溢出，我们才使用 panic&lt;/li&gt;&lt;/ol&gt;&lt;/li&gt;&lt;li&gt;使用 error 处理有哪些好处？&lt;ol&gt;&lt;li&gt;简单。&lt;/li&gt;&lt;li&gt;考虑失败，而不是成功(Plan for failure, not success)。&lt;/li&gt;&lt;li&gt;没有隐藏的控制流。&lt;/li&gt;&lt;li&gt;完全交给你来控制 error。&lt;/li&gt;&lt;li&gt;Error are values。&lt;/li&gt;&lt;/ol&gt;&lt;/li&gt;&lt;/ol&gt;&lt;h2 id=&quot;为什么标准库中-errors-New-会返回一个指针&quot;&gt;&lt;a href=&quot;#为什么标准库中-errors-New-会返回一个指针&quot; class=&quot;headerlink&quot; title=&quot;为什么标准库中 errors.New 会返回一个指针&quot;/&gt;为什么标准库中 errors.New 会返回一个指针&lt;/h2&gt;&lt;p&gt;翻看标准库的源代码我们可以发现， &lt;code&gt;errors&lt;/code&gt; 库中的 &lt;code&gt;errorString&lt;/code&gt; 结构体实现了 &lt;code&gt;error&lt;/code&gt; 接口，为什么在 &lt;code&gt;New&lt;/code&gt; 一个 error 的时候会返回一个结构体的指针呢？&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-comment&quot;&gt;// New returns an error that formats as the given text.&lt;/span&gt;
+&lt;span class=&quot;hljs-comment&quot;&gt;// Each call to New returns a distinct error value even if the text is identical.&lt;/span&gt;
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;New&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(text &lt;span class=&quot;hljs-keyword&quot;&gt;string&lt;/span&gt;)&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;error&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; &amp;amp;errorString{text}
+}
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// errorString is a trivial implementation of error.&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;type&lt;/span&gt; errorString &lt;span class=&quot;hljs-keyword&quot;&gt;struct&lt;/span&gt; {
+s &lt;span class=&quot;hljs-keyword&quot;&gt;string&lt;/span&gt;
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-params&quot;&gt;(e *errorString)&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;Error&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;string&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; e.s
+}&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;我们先来看一个例子，我们同样创建了 errorString 的结构体，我们自定义的和标准库中的唯一不同就是，自建的这个返回的是值，而不是指针。&lt;br/&gt;在 &lt;code&gt;main&lt;/code&gt; 函数的对比中我们就可以发现，我们自定义的 &lt;code&gt;errorString&lt;/code&gt; 在对比的时候只要对应的字符串相同就会返回 true，但是标准库的包不会。&lt;br/&gt;这是因为，在对比两个 struct 是否相同的时候，会去对比，这两个 struct 里面的各个字段是否是相同的，如果相同就返回 true，但是对比指针的时候会去判断两个指针的地址是否一致。&lt;br/&gt;&lt;strong&gt;如果字符串相等就返回 true 会导致什么问题呢？&lt;/strong&gt;&lt;br/&gt;如果我有两个包定义了字符串相同的想个错误，在其他库调用对比的时候，可能会由于不同的书写顺序走进不同的分支导致一些不可预期的奇奇怪怪的错误&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;type&lt;/span&gt; errorString &lt;span class=&quot;hljs-keyword&quot;&gt;struct&lt;/span&gt; {
+text &lt;span class=&quot;hljs-keyword&quot;&gt;string&lt;/span&gt;
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-params&quot;&gt;(e errorString)&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;Error&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;string&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; e.text
+}
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// New 创建一个自定义错误&lt;/span&gt;
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;New&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(s &lt;span class=&quot;hljs-keyword&quot;&gt;string&lt;/span&gt;)&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;error&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; errorString{text: s}
+}
+
+&lt;span class=&quot;hljs-keyword&quot;&gt;var&lt;/span&gt; errorString1 = New(&lt;span class=&quot;hljs-string&quot;&gt;&quot;test a&quot;&lt;/span&gt;)
+&lt;span class=&quot;hljs-keyword&quot;&gt;var&lt;/span&gt; err1 = errors.New(&lt;span class=&quot;hljs-string&quot;&gt;&quot;test b&quot;&lt;/span&gt;)
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; errorString1 == New(&lt;span class=&quot;hljs-string&quot;&gt;&quot;test a&quot;&lt;/span&gt;) {
+fmt.Println(&lt;span class=&quot;hljs-string&quot;&gt;&quot;err string a&quot;&lt;/span&gt;) &lt;span class=&quot;hljs-comment&quot;&gt;// 会输出&lt;/span&gt;
+}
+
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; err1 == errors.New(&lt;span class=&quot;hljs-string&quot;&gt;&quot;test b&quot;&lt;/span&gt;) {
+fmt.Println(&lt;span class=&quot;hljs-string&quot;&gt;&quot;err b&quot;&lt;/span&gt;) &lt;span class=&quot;hljs-comment&quot;&gt;// 不会输出&lt;/span&gt;
+}
+}&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;error-type-错误定义与判断&quot;&gt;&lt;a href=&quot;#error-type-错误定义与判断&quot; class=&quot;headerlink&quot; title=&quot;error type: 错误定义与判断&quot;/&gt;error type: 错误定义与判断&lt;/h2&gt;&lt;h3 id=&quot;Sentinel-Error&quot;&gt;&lt;a href=&quot;#Sentinel-Error&quot; class=&quot;headerlink&quot; title=&quot;Sentinel Error&quot;/&gt;Sentinel Error&lt;/h3&gt;&lt;p&gt;哨兵错误，就是定义一些包级别的错误变量，然后在调用的时候外部包可以直接对比变量进行判定，在标准库当中大量的使用了这种方式&lt;br/&gt;例如下方 &lt;code&gt;io&lt;/code&gt; 库中定义的错误&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-comment&quot;&gt;// EOF is the error returned by Read when no more input is available.&lt;/span&gt;
+&lt;span class=&quot;hljs-comment&quot;&gt;// Functions should return EOF only to signal a graceful end of input.&lt;/span&gt;
+&lt;span class=&quot;hljs-comment&quot;&gt;// If the EOF occurs unexpectedly in a structured data stream,&lt;/span&gt;
+&lt;span class=&quot;hljs-comment&quot;&gt;// the appropriate error is either ErrUnexpectedEOF or some other error&lt;/span&gt;
+&lt;span class=&quot;hljs-comment&quot;&gt;// giving more detail.&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;var&lt;/span&gt; EOF = errors.New(&lt;span class=&quot;hljs-string&quot;&gt;&quot;EOF&quot;&lt;/span&gt;)
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// ErrUnexpectedEOF means that EOF was encountered in the&lt;/span&gt;
+&lt;span class=&quot;hljs-comment&quot;&gt;// middle of reading a fixed-size block or data structure.&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;var&lt;/span&gt; ErrUnexpectedEOF = errors.New(&lt;span class=&quot;hljs-string&quot;&gt;&quot;unexpected EOF&quot;&lt;/span&gt;)
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// ErrNoProgress is returned by some clients of an io.Reader when&lt;/span&gt;
+&lt;span class=&quot;hljs-comment&quot;&gt;// many calls to Read have failed to return any data or error,&lt;/span&gt;
+&lt;span class=&quot;hljs-comment&quot;&gt;// usually the sign of a broken io.Reader implementation.&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;var&lt;/span&gt; ErrNoProgress = errors.New(&lt;span class=&quot;hljs-string&quot;&gt;&quot;multiple Read calls return no data or error&quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;我们在外部判定的时候一般使用等值判定或者使用 &lt;code&gt;errors.Is&lt;/code&gt; 进行判断&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; err == io.EOF {
+&lt;span class=&quot;hljs-comment&quot;&gt;//...&lt;/span&gt;
+}
+
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; errors.Is(err, io.EOF){
+&lt;span class=&quot;hljs-comment&quot;&gt;//...&lt;/span&gt;
+}&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这种错误处理方式有一个问题是，将 error 当做包的 API 暴露给了第三方，这样会导致在做重构或者升级的时候很麻烦，并且这种方式包含的错误信息会十分的有限&lt;/p&gt;&lt;h3 id=&quot;error-types&quot;&gt;&lt;a href=&quot;#error-types&quot; class=&quot;headerlink&quot; title=&quot;error types&quot;/&gt;error types&lt;/h3&gt;&lt;p&gt;这个就类似我们前面定义的 &lt;code&gt;errorString&lt;/code&gt; 一样实现了 &lt;code&gt;error&lt;/code&gt; 的接口，然后在外部是否类型断言来判断是否是这种错误类型&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;type&lt;/span&gt; MyStruct &lt;span class=&quot;hljs-keyword&quot;&gt;struct&lt;/span&gt; {
+s &lt;span class=&quot;hljs-keyword&quot;&gt;string&lt;/span&gt;
+    name &lt;span class=&quot;hljs-keyword&quot;&gt;string&lt;/span&gt;
+    path &lt;span class=&quot;hljs-keyword&quot;&gt;string&lt;/span&gt;
+}
+
+
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// 使用的时候&lt;/span&gt;
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+    &lt;span class=&quot;hljs-keyword&quot;&gt;switch&lt;/span&gt; err.(&lt;span class=&quot;hljs-keyword&quot;&gt;type&lt;/span&gt;) {
+        &lt;span class=&quot;hljs-keyword&quot;&gt;case&lt;/span&gt; *MyStruct:
+        &lt;span class=&quot;hljs-comment&quot;&gt;// ...&lt;/span&gt;
+        &lt;span class=&quot;hljs-keyword&quot;&gt;case&lt;/span&gt; others:
+        &lt;span class=&quot;hljs-comment&quot;&gt;// ...&lt;/span&gt;
+    }
+}&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这种方式相对于哨兵来说，可以包含更加丰富的信息，但是同样也将错误的类型暴露给了外部，例如标准库中的 &lt;code&gt;os.PathError&lt;/code&gt;&lt;/p&gt;&lt;h3 id=&quot;Opaque-errors&quot;&gt;&lt;a href=&quot;#Opaque-errors&quot; class=&quot;headerlink&quot; title=&quot;Opaque errors&quot;/&gt;Opaque errors&lt;/h3&gt;&lt;p&gt;不透明的错误处理，这种方式最大的特点就是只返回错误，暴露错误判定接口，不返回类型，这样可以减少 API 的暴露，后续的处理会比较灵活，这个一般用在公共库会比较好&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;type&lt;/span&gt; temporary &lt;span class=&quot;hljs-keyword&quot;&gt;interface&lt;/span&gt; {
+Temporary() &lt;span class=&quot;hljs-keyword&quot;&gt;bool&lt;/span&gt;
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;IsTemporary&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(err error)&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;bool&lt;/span&gt;&lt;/span&gt; {
+te, ok := err.(temporary)
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; ok &amp;amp;&amp;amp; te.Temporary()
+}&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这种方式我们可以断言错误实现了特定的行为，而不是断言错误是特定的类型或值&lt;/p&gt;&lt;h2 id=&quot;error-handle-错误处理优化&quot;&gt;&lt;a href=&quot;#error-handle-错误处理优化&quot; class=&quot;headerlink&quot; title=&quot;error handle: 错误处理优化&quot;/&gt;error handle: 错误处理优化&lt;/h2&gt;&lt;p&gt;在 go 中常常会存在大量的 &lt;code&gt;if err&lt;/code&gt; 代码，下面介绍两种常见的减少这种代码的方式&lt;/p&gt;&lt;h3 id=&quot;bufio-scan&quot;&gt;&lt;a href=&quot;#bufio-scan&quot; class=&quot;headerlink&quot; title=&quot;bufio.scan&quot;/&gt;bufio.scan&lt;/h3&gt;&lt;p&gt;对比下面两个函数的处理我们可以发现， &lt;code&gt;count2&lt;/code&gt; 使用 &lt;code&gt;sc.Scan&lt;/code&gt; 之后一个 &lt;code&gt;if err&lt;/code&gt; 的判断都没有，极大的简化了代码，这是因为在 &lt;code&gt;sc.Scan&lt;/code&gt; 做了很多处理，像很多类似的，需要循环读取的都可以考虑像这样包装之后进行处理，这样外部包调用的时候就会非常简洁&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-comment&quot;&gt;// 统计文件行数&lt;/span&gt;
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;count&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(r io.Reader)&lt;/span&gt; &lt;span class=&quot;hljs-params&quot;&gt;(&lt;span class=&quot;hljs-keyword&quot;&gt;int&lt;/span&gt;, error)&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;var&lt;/span&gt; (
+br    = bufio.NewReader(r)
+lines &lt;span class=&quot;hljs-keyword&quot;&gt;int&lt;/span&gt;
+err   error
+)
+
+&lt;span class=&quot;hljs-keyword&quot;&gt;for&lt;/span&gt; {
+&lt;span class=&quot;hljs-comment&quot;&gt;// 读取到换行符就说明是一行&lt;/span&gt;
+_, err = br.ReadString(&lt;span class=&quot;hljs-string&quot;&gt;&#x27;\n&#x27;&lt;/span&gt;)
+lines++
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; err != &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;break&lt;/span&gt;
+}
+}
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// 当错误是 EOF 的时候说明文件读取完毕了&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; err != io.EOF {
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;hljs-number&quot;&gt;0&lt;/span&gt;, err
+}
+
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; lines, err
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;count2&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(r io.Reader)&lt;/span&gt; &lt;span class=&quot;hljs-params&quot;&gt;(&lt;span class=&quot;hljs-keyword&quot;&gt;int&lt;/span&gt;, error)&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;var&lt;/span&gt; (
+sc    = bufio.NewScanner(r)
+lines &lt;span class=&quot;hljs-keyword&quot;&gt;int&lt;/span&gt;
+)
+
+&lt;span class=&quot;hljs-keyword&quot;&gt;for&lt;/span&gt; sc.Scan() {
+lines++
+}
+
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; lines, sc.Err()
+}&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;error-writer&quot;&gt;&lt;a href=&quot;#error-writer&quot; class=&quot;headerlink&quot; title=&quot;error writer&quot;/&gt;error writer&lt;/h3&gt;&lt;p&gt;看一个来自 go blog 的例子：&lt;a href=&quot;https://blog.golang.org/errors-are-values&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://blog.golang.org/errors-are-values&lt;/a&gt;&lt;br/&gt;一般代码&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;_, err = fd.Write(p0[a:b])
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; err != &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt; {
+    &lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; err
+}
+_, err = fd.Write(p1[c:d])
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; err != &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt; {
+    &lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; err
+}
+_, err = fd.Write(p2[e:f])
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; err != &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt; {
+    &lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; err
+}
+&lt;span class=&quot;hljs-comment&quot;&gt;// and so on&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;errWriter&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;type&lt;/span&gt; errWriter &lt;span class=&quot;hljs-keyword&quot;&gt;struct&lt;/span&gt; {
+    w   io.Writer
+    err error
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-params&quot;&gt;(ew *errWriter)&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;write&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(buf []&lt;span class=&quot;hljs-keyword&quot;&gt;byte&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt; {
+    &lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; ew.err != &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt; {
+        &lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt;
+    }
+    _, ew.err = ew.w.Write(buf)
+}
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// 使用时&lt;/span&gt;
+ew := &amp;amp;errWriter{w: fd}
+ew.write(p0[a:b])
+ew.write(p1[c:d])
+ew.write(p2[e:f])
+&lt;span class=&quot;hljs-comment&quot;&gt;// and so on&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; ew.err != &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt; {
+    &lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; ew.err
+}&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;如果去翻 标准库中 bufio.Writer 的源代码，你会发现也有这种用法，这种就是将重复的逻辑进行了封装，然后把 error 暂存，然后我们就只需要在最后判断一下 error 就行了&lt;/p&gt;&lt;h2 id=&quot;wrap-error-错误包装&quot;&gt;&lt;a href=&quot;#wrap-error-错误包装&quot; class=&quot;headerlink&quot; title=&quot;wrap error: 错误包装&quot;/&gt;wrap error: 错误包装&lt;/h2&gt;&lt;h3 id=&quot;errors-wrap-有何作用，为什么不用标准库的-fmt-Errorf-quot-w-quot&quot;&gt;&lt;a href=&quot;#errors-wrap-有何作用，为什么不用标准库的-fmt-Errorf-quot-w-quot&quot; class=&quot;headerlink&quot; title=&quot;errors.wrap 有何作用，为什么不用标准库的 fmt.Errorf(&amp;quot;%w&amp;quot;)&quot;/&gt;errors.wrap 有何作用，为什么不用标准库的 &lt;code&gt;fmt.Errorf(&quot;%w&quot;)&lt;/code&gt;&lt;/h3&gt;&lt;p&gt;我们先看一下标准库的源码，我们可以发现当 &lt;code&gt;p.wrappedErr != nil&lt;/code&gt; 的时候（也就是有 %w）的时候，会使用一个 &lt;code&gt;wrapError&lt;/code&gt; 将错误包装，看 &lt;code&gt;wrapError&lt;/code&gt; 的源码可以发现，这个方法只是包装了一下原始错误，并且可以做到附加一些文本信息，但是没有堆栈信息。&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;Errorf&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(format &lt;span class=&quot;hljs-keyword&quot;&gt;string&lt;/span&gt;, a ...&lt;span class=&quot;hljs-keyword&quot;&gt;interface&lt;/span&gt;{})&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;error&lt;/span&gt;&lt;/span&gt; {
+p := newPrinter()
+p.wrapErrs = &lt;span class=&quot;hljs-literal&quot;&gt;true&lt;/span&gt;
+p.doPrintf(format, a)
+s := &lt;span class=&quot;hljs-keyword&quot;&gt;string&lt;/span&gt;(p.buf)
+&lt;span class=&quot;hljs-keyword&quot;&gt;var&lt;/span&gt; err error
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; p.wrappedErr == &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt; {
+err = errors.New(s)
+} &lt;span class=&quot;hljs-keyword&quot;&gt;else&lt;/span&gt; {
+err = &amp;amp;wrapError{s, p.wrappedErr}
+}
+p.free()
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; err
+}
+
+&lt;span class=&quot;hljs-keyword&quot;&gt;type&lt;/span&gt; wrapError &lt;span class=&quot;hljs-keyword&quot;&gt;struct&lt;/span&gt; {
+msg &lt;span class=&quot;hljs-keyword&quot;&gt;string&lt;/span&gt;
+err error
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-params&quot;&gt;(e *wrapError)&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;Error&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;string&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; e.msg
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-params&quot;&gt;(e *wrapError)&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;Unwrap&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;error&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; e.err
+}&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;在看一下 pkg/errors 的源码，我肯可以发现除了使用 &lt;code&gt;withMessage&lt;/code&gt; 附加了错误信息之外还使用 &lt;code&gt;withStack&lt;/code&gt; 附加了堆栈信息，这样我们在程序入口处打印日志信息的时候就可以将堆栈信息一并打出了&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-comment&quot;&gt;// Wrap returns an error annotating err with a stack trace&lt;/span&gt;
+&lt;span class=&quot;hljs-comment&quot;&gt;// at the point Wrap is called, and the supplied message.&lt;/span&gt;
+&lt;span class=&quot;hljs-comment&quot;&gt;// If err is nil, Wrap returns nil.&lt;/span&gt;
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;Wrap&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(err error, message &lt;span class=&quot;hljs-keyword&quot;&gt;string&lt;/span&gt;)&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;error&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; err == &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt;
+}
+err = &amp;amp;withMessage{
+cause: err,
+msg:   message,
+}
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; &amp;amp;withStack{
+err,
+callers(),
+}
+}&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;为什么不允许处处使用-errors-Wrap&quot;&gt;&lt;a href=&quot;#为什么不允许处处使用-errors-Wrap&quot; class=&quot;headerlink&quot; title=&quot;为什么不允许处处使用 errors.Wrap&quot;/&gt;为什么不允许处处使用 errors.Wrap&lt;/h3&gt;&lt;p&gt;因为每一次 &lt;code&gt;errors.Wrap&lt;/code&gt; 的调用都会为错误添加堆栈信息，如果处处调用那会有大量的无用堆栈&lt;br/&gt;我们先看一下只有一处 wrap&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+fmt.Printf(&lt;span class=&quot;hljs-string&quot;&gt;&quot;err: %+v&quot;&lt;/span&gt;, c())
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;error&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; errors.Wrap(fmt.Errorf(&lt;span class=&quot;hljs-string&quot;&gt;&quot;xxx&quot;&lt;/span&gt;), &lt;span class=&quot;hljs-string&quot;&gt;&quot;test&quot;&lt;/span&gt;)
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;error&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; a()
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;error&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; b()
+}&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;看结果我们可以发现已经可以打印出全部的堆栈信息了&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;err: xxx
+test
+main.a
+        /home/ll/project/Go&lt;span class=&quot;hljs-number&quot;&gt;-000&lt;/span&gt;/Week02/blog/wrap.&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;14&lt;/span&gt;
+main.b
+        /home/ll/project/Go&lt;span class=&quot;hljs-number&quot;&gt;-000&lt;/span&gt;/Week02/blog/wrap.&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;18&lt;/span&gt;
+main.c
+        /home/ll/project/Go&lt;span class=&quot;hljs-number&quot;&gt;-000&lt;/span&gt;/Week02/blog/wrap.&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;22&lt;/span&gt;
+main.main
+        /home/ll/project/Go&lt;span class=&quot;hljs-number&quot;&gt;-000&lt;/span&gt;/Week02/blog/wrap.&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;10&lt;/span&gt;
+runtime.main
+        /usr/local/&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;/src/runtime/proc.&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;204&lt;/span&gt;
+runtime.goexit
+        /usr/local/&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;/src/runtime/asm_amd64.s:&lt;span class=&quot;hljs-number&quot;&gt;1374&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;再看多处 wrap 的现象&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+fmt.Printf(&lt;span class=&quot;hljs-string&quot;&gt;&quot;err: %+v&quot;&lt;/span&gt;, c())
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;error&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; errors.Wrap(fmt.Errorf(&lt;span class=&quot;hljs-string&quot;&gt;&quot;xxx&quot;&lt;/span&gt;), &lt;span class=&quot;hljs-string&quot;&gt;&quot;a&quot;&lt;/span&gt;)
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;error&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; errors.Wrap(a(), &lt;span class=&quot;hljs-string&quot;&gt;&quot;b&quot;&lt;/span&gt;)
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;error&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; errors.Wrap(b(), &lt;span class=&quot;hljs-string&quot;&gt;&quot;c&quot;&lt;/span&gt;)
+}&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;可以看到每一处 wrap 都添加了一次堆栈信息&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;err: xxx
+a
+main.a
+        /home/ll/project/Go&lt;span class=&quot;hljs-number&quot;&gt;-000&lt;/span&gt;/Week02/blog/wrap.&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;14&lt;/span&gt;
+main.b
+        /home/ll/project/Go&lt;span class=&quot;hljs-number&quot;&gt;-000&lt;/span&gt;/Week02/blog/wrap.&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;18&lt;/span&gt;
+main.c
+        /home/ll/project/Go&lt;span class=&quot;hljs-number&quot;&gt;-000&lt;/span&gt;/Week02/blog/wrap.&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;22&lt;/span&gt;
+main.main
+        /home/ll/project/Go&lt;span class=&quot;hljs-number&quot;&gt;-000&lt;/span&gt;/Week02/blog/wrap.&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;10&lt;/span&gt;
+runtime.main
+        /usr/local/&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;/src/runtime/proc.&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;204&lt;/span&gt;
+runtime.goexit
+        /usr/local/&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;/src/runtime/asm_amd64.s:&lt;span class=&quot;hljs-number&quot;&gt;1374&lt;/span&gt;
+b
+main.b
+        /home/ll/project/Go&lt;span class=&quot;hljs-number&quot;&gt;-000&lt;/span&gt;/Week02/blog/wrap.&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;18&lt;/span&gt;
+main.c
+        /home/ll/project/Go&lt;span class=&quot;hljs-number&quot;&gt;-000&lt;/span&gt;/Week02/blog/wrap.&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;22&lt;/span&gt;
+main.main
+        /home/ll/project/Go&lt;span class=&quot;hljs-number&quot;&gt;-000&lt;/span&gt;/Week02/blog/wrap.&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;10&lt;/span&gt;
+runtime.main
+        /usr/local/&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;/src/runtime/proc.&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;204&lt;/span&gt;
+runtime.goexit
+        /usr/local/&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;/src/runtime/asm_amd64.s:&lt;span class=&quot;hljs-number&quot;&gt;1374&lt;/span&gt;
+c
+main.c
+        /home/ll/project/Go&lt;span class=&quot;hljs-number&quot;&gt;-000&lt;/span&gt;/Week02/blog/wrap.&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;22&lt;/span&gt;
+main.main
+        /home/ll/project/Go&lt;span class=&quot;hljs-number&quot;&gt;-000&lt;/span&gt;/Week02/blog/wrap.&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;10&lt;/span&gt;
+runtime.main
+        /usr/local/&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;/src/runtime/proc.&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;204&lt;/span&gt;
+runtime.goexit
+        /usr/local/&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;/src/runtime/asm_amd64.s:&lt;span class=&quot;hljs-number&quot;&gt;1374&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;标准库-errors-Is-As-怎么判断错误&quot;&gt;&lt;a href=&quot;#标准库-errors-Is-As-怎么判断错误&quot; class=&quot;headerlink&quot; title=&quot;标准库 errors.Is / As 怎么判断错误&quot;/&gt;标准库 errors.Is / As 怎么判断错误&lt;/h2&gt;&lt;h3 id=&quot;errors-Is&quot;&gt;&lt;a href=&quot;#errors-Is&quot; class=&quot;headerlink&quot; title=&quot;errors.Is&quot;/&gt;errors.Is&lt;/h3&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;Is&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(err, target error)&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;bool&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; target == &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; err == target
+}
+&lt;span class=&quot;hljs-comment&quot;&gt;// 通过反射判读 target 是否可以被比较&lt;/span&gt;
+isComparable := reflectlite.TypeOf(target).Comparable()
+&lt;span class=&quot;hljs-keyword&quot;&gt;for&lt;/span&gt; {
+        &lt;span class=&quot;hljs-comment&quot;&gt;// 循环判断是否相等&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; isComparable &amp;amp;&amp;amp; err == target {
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;hljs-literal&quot;&gt;true&lt;/span&gt;
+}
+        &lt;span class=&quot;hljs-comment&quot;&gt;// 判断是否实现了 is 接口，如果有实现就直接判断&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; x, ok := err.(&lt;span class=&quot;hljs-keyword&quot;&gt;interface&lt;/span&gt;{ Is(error) &lt;span class=&quot;hljs-keyword&quot;&gt;bool&lt;/span&gt; }); ok &amp;amp;&amp;amp; x.Is(target) {
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;hljs-literal&quot;&gt;true&lt;/span&gt;
+}
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// 去判断是否实现了 unwrap 的接口，如果实现了就进行 unwrap&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; err = Unwrap(err); err == &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;hljs-literal&quot;&gt;false&lt;/span&gt;
+}
+}
+}&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;errors-As&quot;&gt;&lt;a href=&quot;#errors-As&quot; class=&quot;headerlink&quot; title=&quot;errors.As&quot;/&gt;errors.As&lt;/h3&gt;&lt;p&gt;和 is 的逻辑类似，就是不断的进行 unwrap 进行比较，只要有一个相同就返回，如果一直到底都不行就返回 false&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;As&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(err error, target &lt;span class=&quot;hljs-keyword&quot;&gt;interface&lt;/span&gt;{})&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;bool&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; target == &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt; {
+&lt;span class=&quot;hljs-built_in&quot;&gt;panic&lt;/span&gt;(&lt;span class=&quot;hljs-string&quot;&gt;&quot;errors: target cannot be nil&quot;&lt;/span&gt;)
+}
+val := reflectlite.ValueOf(target)
+typ := val.Type()
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; typ.Kind() != reflectlite.Ptr || val.IsNil() {
+&lt;span class=&quot;hljs-built_in&quot;&gt;panic&lt;/span&gt;(&lt;span class=&quot;hljs-string&quot;&gt;&quot;errors: target must be a non-nil pointer&quot;&lt;/span&gt;)
+}
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; e := typ.Elem(); e.Kind() != reflectlite.Interface &amp;amp;&amp;amp; !e.Implements(errorType) {
+&lt;span class=&quot;hljs-built_in&quot;&gt;panic&lt;/span&gt;(&lt;span class=&quot;hljs-string&quot;&gt;&quot;errors: *target must be interface or implement error&quot;&lt;/span&gt;)
+}
+targetType := typ.Elem()
+&lt;span class=&quot;hljs-keyword&quot;&gt;for&lt;/span&gt; err != &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; reflectlite.TypeOf(err).AssignableTo(targetType) {
+val.Elem().Set(reflectlite.ValueOf(err))
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;hljs-literal&quot;&gt;true&lt;/span&gt;
+}
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; x, ok := err.(&lt;span class=&quot;hljs-keyword&quot;&gt;interface&lt;/span&gt;{ As(&lt;span class=&quot;hljs-keyword&quot;&gt;interface&lt;/span&gt;{}) &lt;span class=&quot;hljs-keyword&quot;&gt;bool&lt;/span&gt; }); ok &amp;amp;&amp;amp; x.As(target) {
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;hljs-literal&quot;&gt;true&lt;/span&gt;
+}
+err = Unwrap(err)
+}
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;hljs-literal&quot;&gt;false&lt;/span&gt;
+}&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;关注我获取更新&quot;&gt;&lt;a href=&quot;#关注我获取更新&quot; class=&quot;headerlink&quot; title=&quot;关注我获取更新&quot;/&gt;关注我获取更新&lt;/h2&gt;&lt;p&gt;看到这里了还不点个关注走一波&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
 <guid>6ab82a662f2cb596f7412260281c5ee4</guid>
 <title>浅析构建 SQL-to-SQL 的翻译器</title>
 <link>https://toutiao.io/k/vipitc2</link>
@@ -109,13 +493,6 @@
 
 
                 
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>bbcd57c58c301d89ce3b4195d32f6d39</guid>
-<title>Spring 早期类型转换，基于 PropertyEditor 实现</title>
-<link>https://toutiao.io/k/cu2qab9</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.4255555555555556&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/crPesQVeyKIfkw5sPANc1t7iaBFqSrFtNRsV7cWIFqicseupFlGTEe4J72pba1djskK5we4GAC7gGqGg96oiaRXcA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;900&quot;/&gt;&lt;/figure&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;br/&gt;&lt;/figure&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;span&gt;点击上方“&lt;/span&gt;&lt;span&gt;BAT的乌托邦&lt;/span&gt;&lt;span&gt;”，选择“&lt;/span&gt;&lt;span&gt;设为星标&lt;/span&gt;&lt;span&gt;”&lt;br mpa-from-tpl=&quot;t&quot;/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;span&gt;后台回复“&lt;/span&gt;&lt;span&gt;专栏&lt;/span&gt;&lt;span&gt;”，开启&lt;strong mpa-from-tpl=&quot;t&quot;&gt;专栏模式&lt;/strong&gt;学习&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;&lt;/p&gt;&lt;h1 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;✍前言&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;你好，我是YourBatman。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Spring早在1.0（2004年发布，2003年孵化中）的时候，就有了类型转换功能模块。此模块存在的必要性不必多说，相信每个同学都可理解。最初，Spring做类型转换器是基于Java标准的&lt;code&gt;java.beans.PropertyEditor&lt;/code&gt;这个API去扩展实现的，直到Spring 3.0后才得以出现更好替代方案（Spring 3.0发布于2009 年12月）。&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;❝&lt;/span&gt;&lt;p&gt;提示：文章末尾附有Spring主要版本的发布时间和以及主要特性，感兴趣者可文末查看&lt;/p&gt;&lt;span&gt;❞&lt;/span&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;虽说Spring自3.0就提出了更为灵活、优秀的类型转换接口/服务，但是早期基于&lt;code&gt;PropertyEditor&lt;/code&gt;实现的转换器并未废弃且还在发挥余热中，因此本文就针对其早期类型转换实现做出专文讲解。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;版本约定&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;Spring Framework：5.3.1&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Spring Boot：2.4.0&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;❝&lt;/span&gt;&lt;p&gt;说明：版本均于2020-11发布，且版本号均不带有&lt;code&gt;.RELEASE&lt;/code&gt;后缀，这和之前是不一样的。具体原因请参考：&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzI0MTUwOTgyOQ==&amp;amp;mid=2247490521&amp;amp;idx=1&amp;amp;sn=7eaa0ace090023715926cd02e0bfc188&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;Spring改变版本号命名规则：此举对非英语国家很友好&lt;/a&gt;&lt;/p&gt;&lt;span&gt;❞&lt;/span&gt;&lt;/blockquote&gt;&lt;h1 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;✍正文&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;若你用当下的眼光去看Spring基于&lt;code&gt;PropertyEditor&lt;/code&gt;的类型转换实现，会发现这么搞是存在一些设计缺陷的。当然并不能这么去看，毕竟现在都2020年了，那会才哪跟哪呢。既然Spring里的&lt;code&gt;PropertyEditor&lt;/code&gt;现如今依然健在，那咱就会会它呗。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;PropertyEditor是什么？&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;PropertyEditor&lt;/code&gt;位于java.beans包中，要知道这个包里面的类都是设计为Java GUI程序（AWT）服务的，所以你看官方javadoc对&lt;code&gt;PropertyEditor&lt;/code&gt;的介绍也无出其右：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;A PropertyEditor &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;provides&lt;/span&gt; &lt;span&gt;support&lt;/span&gt; &lt;span&gt;for&lt;/span&gt; &lt;span&gt;GUIs&lt;/span&gt; &lt;span&gt;that&lt;/span&gt; &lt;span&gt;want&lt;/span&gt; &lt;span&gt;to&lt;/span&gt; &lt;span&gt;allow&lt;/span&gt; &lt;span&gt;users&lt;/span&gt; &lt;span&gt;to&lt;/span&gt; &lt;span&gt;edit&lt;/span&gt; &lt;span&gt;a&lt;/span&gt; &lt;span&gt;property&lt;/span&gt; &lt;span&gt;value&lt;/span&gt; &lt;span&gt;of&lt;/span&gt; &lt;span&gt;a&lt;/span&gt; &lt;span&gt;given&lt;/span&gt; &lt;span&gt;type&lt;/span&gt;.&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;为GUI程序提供支持，允许你对给定的value进行编辑，作用类似于一个转换器：GUI上你可以输入、编辑某个属性然后经过它转换成合适的类型。&lt;img data-ratio=&quot;0.5895833333333333&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/crPesQVeyKIfkw5sPANc1t7iaBFqSrFtNrlNItG9ytlqRl8EvLpgo3JWWL6OYIA7mOQMuZDdCS6iaYNAxD6PTfQg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;480&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;此接口提供的方法挺多的，和本文类型转换有关的最多只有4个：&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;void setValue(Object value)&lt;/code&gt;：设置属性值&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;Object getValue()&lt;/code&gt;：获取属性值&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;String getAsText()&lt;/code&gt;：输出。把属性值转换成String输出&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;void setAsText(String text)&lt;/code&gt;：输入。将String转换为属性值类型输入&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;JDK对PropertyEditor接口提供了一个默认实现&lt;code&gt;java.beans.PropertyEditorSupport&lt;/code&gt;，因此我们若需扩展此接口，仅需继承此类，根据需要复写&lt;code&gt;getAsText/setAsText&lt;/code&gt;这两个方法即可，Spring无一例外都是这么做的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;PropertyEditor作为一个JDK原生接口，内置了一些基本实现来服务于GUI程序，如：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;BooleanEditor&lt;/code&gt;：将true/false字符串转换为Boolean类型&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;IntegerEditor&lt;/code&gt;：将字符串转换为Integer类型&lt;/section&gt;&lt;/li&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;同类别的还有LongEditor、FloatEditor...&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;JDK内置的实现比较少（如上），功能简陋，但对于服务GUI程序来说已经够用，毕竟界面输入的只可能是字符串，并且还均是基础类型。但这对于复杂的Spring环境、以及富文本的web环境来说就不够用了，所以Spring在此基础上有所扩展，因此才有了本文来讨论。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;注意：PropertyEditorSupport线程不安全&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;PropertyEditor&lt;/code&gt;实现的是双向类型转换：String和Object互转。调用&lt;code&gt;setValue()&lt;/code&gt;方法后，需要先“缓存”起来后续才能够使用（输出）。&lt;code&gt;PropertyEditorSupport&lt;/code&gt;为此提供了一个成员属性来做：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;PropertyEditorSupport：&lt;br/&gt;&lt;br/&gt; &lt;span&gt;// 调用setValue()方法对此属性赋值   getValue()方法取值&lt;/span&gt;&lt;br/&gt; &lt;span&gt;private&lt;/span&gt; Object value;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这么一来&lt;code&gt;PropertyEditorSupport&lt;/code&gt;就是有状态的了，因此是线程不安全的。在使用过程中需要特别注意，避免出现并发风险。&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;❝&lt;/span&gt;&lt;p&gt;说明：Support类里还看到属性监听器&lt;code&gt;PropertyChangeListener&lt;/code&gt;，因它属于GUI程序使用的组件，与我们无关，所以后续丝毫不会提及哦&lt;/p&gt;&lt;span&gt;❞&lt;/span&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Spring内置的&lt;strong&gt;「所有扩展」&lt;/strong&gt;均是基于PropertyEditorSupport来实现的，因此也&lt;strong&gt;「都是」&lt;/strong&gt;线程不安全的哦~&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;Spring为何基于它扩展？&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;官方的javadoc都说得很清楚：PropertyEditor设计是为GUI程序服务的，那么Spring为何看上它了呢？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;试想一下：那会的Spring只能支持xml方式配置，而XML属于文本类型配置，因此在给某个属性设定值的时候，书写上去的**100%**是个字符串，但是此属性对应的类型却不一定是字符串，可能是任意类型。你思考下，这种场景是不是跟GUI程序（AWT）一毛一样：输入字符串，对应任意类型。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;为了实现这种需求，在&lt;code&gt;PropertyEditorSupport&lt;/code&gt;的基础上只需要复写&lt;code&gt;setAsText&lt;/code&gt;和&lt;code&gt;getAsText&lt;/code&gt;这两个方法就行，然后Spring就这么干了。我&lt;code&gt;个人yy&lt;/code&gt;一下，当初Spring选择这么干而没自己另起炉灶的原因可能有这么几个：&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;本着不重复发明轮子的原则，有得用就直接用呗，况且是100%满足要求的&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;示好Java EE技术。毕竟那会Spring地位还并不稳，有大腿就先榜上&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;2003年左右，Java GUI程序还并未退出历史舞台，Spring为了通用性就选择基于它扩展喽&lt;/section&gt;&lt;/li&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;说明：那会的通用性可能和现在通用性含义上是不一样的，需要稍作区别&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;/ol&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;Spring内建扩展实现有哪些？&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Spring为了扩展自身功能，提高配置灵活性，扩展出了非常非常多的&lt;code&gt;PropertyEditor&lt;/code&gt;实现，共计40余个，部分截图如下：&lt;img data-ratio=&quot;0.7818181818181819&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/crPesQVeyKIfkw5sPANc1t7iaBFqSrFtNtqsvsECk6JcEH6WpE1loMaGcUuicbC53mzosJslBJGvric0ricjYhICiaw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;770&quot;/&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;PropertyEditor&lt;/th&gt;&lt;th&gt;功能&lt;/th&gt;&lt;th&gt;举例&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;ZoneIdEditor&lt;/td&gt;&lt;td&gt;转为java.time.ZoneId&lt;/td&gt;&lt;td&gt;Asia/Shanghai&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;URLEditor&lt;/td&gt;&lt;td&gt;转为URL，支持传统方式&lt;code&gt;file:,http:&lt;/code&gt;，也支持Spring风格：&lt;code&gt;classpath:,context上下文相对路径&lt;/code&gt;等等&lt;/td&gt;&lt;td&gt;http://www.baidu.com&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;StringTrimmerEditor&lt;/td&gt;&lt;td&gt;trim()字符串，也可删除指定字符char&lt;/td&gt;&lt;td&gt;任意字符串&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;StringArrayPropertyEditor&lt;/td&gt;&lt;td&gt;转为字符串数组&lt;/td&gt;&lt;td&gt;A,B,C&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;PropertiesEditor&lt;/td&gt;&lt;td&gt;转为Properties&lt;/td&gt;&lt;td&gt;name = YourBatman&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;PatternEditor&lt;/td&gt;&lt;td&gt;转为Pattern&lt;/td&gt;&lt;td&gt;(\D*)(\d+)(.*)&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;PathEditor&lt;/td&gt;&lt;td&gt;转为java.nio.file.Path。支持传统URL和Spring风格的url&lt;/td&gt;&lt;td&gt;classpath:xxx&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;ClassEditor&lt;/td&gt;&lt;td&gt;转为Class&lt;/td&gt;&lt;td&gt;全类名&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;CustomBooleanEditor&lt;/td&gt;&lt;td&gt;转为Boolean&lt;/td&gt;&lt;td&gt;见示例&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;CharsetEditor&lt;/td&gt;&lt;td&gt;转为Charset&lt;/td&gt;&lt;td&gt;见示例&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;CustomDateEditor&lt;/td&gt;&lt;td&gt;转为java.util.Date&lt;/td&gt;&lt;td&gt;见示例&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Spring把实现基本(大多数)都放在&lt;code&gt;org.springframework.beans.propertyeditors&lt;/code&gt;包下，接下来我挑选几个代表性API举例说明。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;标准实现示例&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@Test&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;test1&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    PropertyEditor editor = &lt;span&gt;new&lt;/span&gt; CustomBooleanEditor(&lt;span&gt;true&lt;/span&gt;);&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;// 这些都是true，不区分大小写&lt;/span&gt;&lt;br/&gt;    editor.setAsText(&lt;span&gt;&quot;trUe&quot;&lt;/span&gt;);&lt;br/&gt;    System.out.println(editor.getAsText());&lt;br/&gt;    editor.setAsText(&lt;span&gt;&quot;on&quot;&lt;/span&gt;);&lt;br/&gt;    System.out.println(editor.getAsText());&lt;br/&gt;    editor.setAsText(&lt;span&gt;&quot;yes&quot;&lt;/span&gt;);&lt;br/&gt;    System.out.println(editor.getAsText());&lt;br/&gt;    editor.setAsText(&lt;span&gt;&quot;1&quot;&lt;/span&gt;);&lt;br/&gt;    System.out.println(editor.getAsText());&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;// 这些都是false（注意：null并不会输出为false，而是输出空串）&lt;/span&gt;&lt;br/&gt;    editor.setAsText(&lt;span&gt;null&lt;/span&gt;);&lt;br/&gt;    System.out.println(editor.getAsText());&lt;br/&gt;    editor.setAsText(&lt;span&gt;&quot;fAlse&quot;&lt;/span&gt;);&lt;br/&gt;    System.out.println(editor.getAsText());&lt;br/&gt;    editor.setAsText(&lt;span&gt;&quot;off&quot;&lt;/span&gt;);&lt;br/&gt;    System.out.println(editor.getAsText());&lt;br/&gt;    editor.setAsText(&lt;span&gt;&quot;no&quot;&lt;/span&gt;);&lt;br/&gt;    System.out.println(editor.getAsText());&lt;br/&gt;    editor.setAsText(&lt;span&gt;&quot;0&quot;&lt;/span&gt;);&lt;br/&gt;    System.out.println(editor.getAsText());&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;// 报错&lt;/span&gt;&lt;br/&gt;    editor.setAsText(&lt;span&gt;&quot;2&quot;&lt;/span&gt;);&lt;br/&gt;    System.out.println(editor.getAsText());&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;关注点：对于Spring来说，传入的&lt;strong&gt;「true、on、yes、1」&lt;/strong&gt;等都会被“翻译”成true（字母不区分大小写），大大提高兼容性。&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;❝&lt;/span&gt;&lt;p&gt;现在知道为啥你用Postman传个1，用Bool值也能正常封装进去了吧，就是它的功劳。此效果等同于转换器&lt;code&gt;StringToBooleanConverter&lt;/code&gt;，将在后面进行讲述对比&lt;/p&gt;&lt;span&gt;❞&lt;/span&gt;&lt;/blockquote&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@Test&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;test2&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;// 虽然都行，但建议你规范书写：UTF-8&lt;/span&gt;&lt;br/&gt;    PropertyEditor editor = &lt;span&gt;new&lt;/span&gt; CharsetEditor();&lt;br/&gt;    editor.setAsText(&lt;span&gt;&quot;UtF-8&quot;&lt;/span&gt;);&lt;br/&gt;    System.out.println(editor.getAsText()); &lt;span&gt;// UTF-8&lt;/span&gt;&lt;br/&gt;    editor.setAsText(&lt;span&gt;&quot;utF8&quot;&lt;/span&gt;);&lt;br/&gt;    System.out.println(editor.getAsText()); &lt;span&gt;// UTF-8&lt;/span&gt;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;关注点：utf-8中间的横杠可要可不要，但建议加上使用标准写法，另外字母也是不区分大小写的。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@Test&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;test3&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    PropertyEditor editor = &lt;span&gt;new&lt;/span&gt; CustomDateEditor(&lt;span&gt;new&lt;/span&gt; SimpleDateFormat(&lt;span&gt;&quot;yyyy-MM-dd HH:mm:ss&quot;&lt;/span&gt;),&lt;span&gt;true&lt;/span&gt;);&lt;br/&gt;    editor.setAsText(&lt;span&gt;&quot;2020-11-30 09:10:10&quot;&lt;/span&gt;);&lt;br/&gt;    System.out.println(editor.getAsText()); &lt;span&gt;// 2020-11-30 09:10:10&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;// null输出空串&lt;/span&gt;&lt;br/&gt;    editor.setAsText(&lt;span&gt;null&lt;/span&gt;);&lt;br/&gt;    System.out.println(editor.getAsText());&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;// 报错&lt;/span&gt;&lt;br/&gt;    editor.setAsText(&lt;span&gt;&quot;2020-11-30&quot;&lt;/span&gt;);&lt;br/&gt;    System.out.println(editor.getAsText());&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;关注点：这个时间/日期转换器很不好用，构造时就必须指定一个&lt;code&gt;SimpleDateFormat&lt;/code&gt;格式化器。在实际应用中，Spring并没有使用到它，而是用后面会说到的替代方案。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;特殊实现&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;把没有放在&lt;code&gt;org.springframework.beans.propertyeditors&lt;/code&gt;包下的实现称作特殊实现（前者称为标准实现）。&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;「MediaTypeEditor」&lt;/strong&gt;：位于org.springframework.http。依赖的核心API是&lt;code&gt;MediaType.parseMediaType(text)&lt;/code&gt;，可以把诸如text/html、application/json转为MediaType对象&lt;/section&gt;&lt;/li&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;显然它属于spring-web包，使用在web环境下&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;「FormatterPropertyEditorAdapter」&lt;/strong&gt;：位于org.springframework.format.support。将3.0新增的Formatter接口适配为一个PropertyEditor：setAsText这种转换操作委托给&lt;code&gt;formatter.parse()&lt;/code&gt;去完成，反向委托给&lt;code&gt;formatter.print()&lt;/code&gt;去完成。&lt;/section&gt;&lt;/li&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;此适配器在&lt;code&gt;DataBinder#addCustomFormatter()&lt;/code&gt;得到应用&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;「PropertyValuesEditor」&lt;/strong&gt;：位于org.springframework.beans。将k-v字符串（Properties格式）转换为一个PropertyValues，从而方便放进Environment里&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;「ResourceEditor」&lt;/strong&gt;：位于org.springframework.core.io。此转换器将String转换为&lt;code&gt;Resource&lt;/code&gt;资源，特别实用。作为基础设施，广泛被用到Spring的很多地方&lt;/section&gt;&lt;/li&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;像什么标准的&lt;code&gt;FileEditor、InputSourceEditor、InputStreamEditor、URLEditor&lt;/code&gt;等等与资源相关的转换器，均依赖它而实现&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/ul&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@Test&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;test4&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;// 支持标准URL如file:C:/myfile.txt，也支持classpath:myfile.txt&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// 同时还支持占位符形式&lt;/span&gt;&lt;br/&gt;    PropertyEditor editor = &lt;span&gt;new&lt;/span&gt; ResourceEditor(&lt;span&gt;new&lt;/span&gt; DefaultResourceLoader(), &lt;span&gt;new&lt;/span&gt; StandardEnvironment(), &lt;span&gt;true&lt;/span&gt;);&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;// file:形式本处略&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// editor.setAsText(&quot;file:...&quot;);&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// System.out.println(editor.getAsText());&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;// classpath形式（注意：若文件不存在不会报错，而是输出null）&lt;/span&gt;&lt;br/&gt;    editor.setAsText(&lt;span&gt;&quot;classpath:app.properties&quot;&lt;/span&gt;);&lt;br/&gt;    System.out.println(editor.getAsText()); &lt;span&gt;// 输出带盘符的全路径&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;    System.setProperty(&lt;span&gt;&quot;myFile.name&quot;&lt;/span&gt;, &lt;span&gt;&quot;app.properties&quot;&lt;/span&gt;);&lt;br/&gt;    editor.setAsText(&lt;span&gt;&quot;classpath:${myFile.name}&quot;&lt;/span&gt;);&lt;br/&gt;    System.out.println(editor.getAsText()); &lt;span&gt;// 结果同上&lt;/span&gt;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;关注点：Spring扩展出来的Resource不仅自持常规&lt;code&gt;file:&lt;/code&gt;资源协议，还支持平时使用最多的&lt;code&gt;classpath:&lt;/code&gt;协议，可谓非常好用。&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;「ConvertingPropertyEditorAdapter」&lt;/strong&gt;：位于org.springframework.core.convert.support。将3.0新增的&lt;code&gt;ConversionService&lt;/code&gt;转换服务适配为一个&lt;code&gt;PropertyEditor&lt;/code&gt;，内部转换动作都委托给前者去完成。&lt;/section&gt;&lt;/li&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;AbstractPropertyBindingResult#findEditor()&lt;/code&gt;为属性寻找合适PropertyEditor的时候，若ConversionService能支持就包装为ConvertingPropertyEditorAdapter供以使用，这是适配器模式的典型应用场景。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;“谁”在使用ProertyEditor&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;PropertyEditor自动发现机制&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;PropertyEditor存在的缺陷&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;考虑到阅读的舒适性，单篇文章不宜太长，因此涉及到&lt;code&gt;PropertyEditor&lt;/code&gt;的这几个问题，放在下篇文章单独列出。这几个问题明显比本文更深入，欢迎保持持续关注，peace！&lt;/p&gt;&lt;h1 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;✍总结&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;本文主要介绍了三点内容：&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;PropertyEditor是什么？&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Spring为何选择基于PropertyEditor？&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Spring内建的那些PropertyEditor都有哪些，各自什么作用？&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;PropertyEditor虽然已经很古老，不适合当下复杂环境。但不可否认它依旧有存在的价值，Spring内部也大量的仍在使用，因此&lt;strong&gt;「不容忽视」&lt;/strong&gt;。下篇文章将深度探讨Spring内部是如何使用PropertyEditor的，赋予了它哪些机制，以及最终为何还是决定自己另起炉灶搞一套呢？欢迎对本系列保持持续关注~&lt;/p&gt;&lt;hr data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;附：Spring主要版本发布时间和特性&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;「2002-02」&lt;/strong&gt;，开始开发孵化此项目，项目名叫：&lt;code&gt;interface21&lt;/code&gt;，它便就是Spring的前身&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;「2004-03」&lt;/strong&gt;，1.0版发布。进入迅速发展期&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;「2006-10」&lt;/strong&gt;，2.0版发布。支持可扩展的xml配置功能、支持Java5、支持动态语言、支持更多扩展点&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;「2007-11」&lt;/strong&gt;，2.5版发布。项目名从此改为Spring Source，支持Java 6，支持注解配置（部分）&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;「2009-12」&lt;/strong&gt;，3.0版发布。这是非常非常重要的一个版本，支持了模块驱动、支持SpEL、支持Java Bean配置、支持嵌入式数据库......&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;「2011和2012」&lt;/strong&gt;，这两年发布了非常多的3.x系列小版本，带来了很多惊喜，同时也让Spring更加扎实&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;「2013-12」&lt;/strong&gt;，4.0版发布。这是有一次进步，提供了对Java 8的全面支持，支持Java EE 7、支持websocket、泛型依赖注入......&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;「2017-09」&lt;/strong&gt;，5.0版发布。最低JDK版本要求是Java 8，同时支持Servlet 3.1。当然最为重要的是引入了全新模块：WebFlux&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;截止到当前，Spring Framework的最新版本是&lt;code&gt;5.3.x&lt;/code&gt;版本，此版本是5.x的最后一个主要功能分支，下个版本将是6.x喽，咱们拭目以待。&lt;/p&gt;&lt;hr data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;h5 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;✔推荐阅读：&lt;/span&gt;&lt;span/&gt;&lt;/h5&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;img data-ratio=&quot;0.2703125&quot; data-type=&quot;gif&quot; data-w=&quot;640&quot; data-width=&quot;100%&quot; class=&quot;__bg_gif&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/Dlhic9h0DHMOr30sOVWhxhAMKXRPGZmIicY6BBS5uM1S75OdWp1WPw5Rkvht8Q0bibKpFbgu3CicBOWF9rSkx469Hw/640?wx_fmt=gif&quot;/&gt;&lt;/section&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot; data-width=&quot;100%&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;p&gt;&lt;span&gt;&lt;strong mpa-from-tpl=&quot;t&quot;&gt;&lt;span&gt; 关注A哥，开启专栏式学习&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-width=&quot;100%&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;&lt;/section&gt;&lt;section data-width=&quot;100%&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-cropselx1=&quot;0&quot; data-cropselx2=&quot;185&quot; data-cropsely1=&quot;0&quot; data-cropsely2=&quot;185&quot; data-ratio=&quot;1&quot; data-s=&quot;300,640&quot; data-type=&quot;jpeg&quot; data-w=&quot;301&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/crPesQVeyKKzF7W9LLXyXXibBoEp14SdzRicx2f4R35VL5kHQiam1pSKtBm4Tibb2icAfl1fOStzHfZhwgtxiak8sKiaQ/640?wx_fmt=jpeg&quot;/&gt; &lt;img class=&quot;rich_pages&quot; data-cropselx1=&quot;0&quot; data-cropselx2=&quot;156&quot; data-cropsely1=&quot;0&quot; data-cropsely2=&quot;156&quot; data-ratio=&quot;1&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/crPesQVeyKKXtKvE4xWZMBts71H1XtIib6pgq4Qdbs5ZVy7NoTds6SzDCpWRib7yy9qlYwn1v1T2OeSXwLYS7xibA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;378&quot;/&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-width=&quot;100%&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;p&gt;&lt;span&gt;&lt;strong mpa-from-tpl=&quot;t&quot;&gt;&lt;span&gt;扫码关注后，回复“专栏”进入更多Spring专栏学习&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong mpa-from-tpl=&quot;t&quot;&gt;&lt;span&gt;右侧为私人微信(加好友备注:Java入群)&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong mpa-from-tpl=&quot;t&quot;&gt;&lt;span&gt;个人站点&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;&lt;strong mpa-from-tpl=&quot;t&quot;&gt;&lt;span&gt;(本文已收录)&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;&lt;strong mpa-from-tpl=&quot;t&quot;&gt;&lt;span&gt;：https://www.yourbatman.cn&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzI0MTUwOTgyOQ==&amp;amp;mid=2247483765&amp;amp;idx=1&amp;amp;sn=591d5e6503aed1af1eb5ed8a053aea7c&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;/&gt;&lt;/section&gt;&lt;/section&gt;
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
