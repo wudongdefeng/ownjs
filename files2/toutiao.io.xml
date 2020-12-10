@@ -28,67 +28,6 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>fa820b31fcae6d2b121d38fdad76e437</guid>
-<title>性能优化：线程资源回收</title>
-<link>https://toutiao.io/k/wllqesw</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;src-views-article-detail-main-module__content--2qOBd markdown-body&quot;&gt;&lt;h2&gt;一、问题&lt;/h2&gt;
-&lt;p&gt;模型服务平台的排序请求出现较多超时情况，且不定时伴随空指针异常。&lt;/p&gt;
-&lt;h2&gt;二、问题发生前后的改动&lt;/h2&gt;
-&lt;p&gt;召回引擎扩大了召回量，导致排序请求的item数量增加了。&lt;/p&gt;
-&lt;h2&gt;三、出问题的模型&lt;/h2&gt;
-&lt;p&gt;基于XGBoost预测的全排序模型。&lt;/p&gt;
-&lt;h2&gt;四、项目介绍&lt;/h2&gt;
-&lt;p&gt;web-rec-model：模型服务平台。用于管理排序模型：XGBoost、TensorFlow、pmml…召回模型：item2item，key2item，vec2item…等模型的上下线、测试模型一致性、模型服务等。&lt;/p&gt;
-&lt;h2&gt;五、一次排序请求流程&lt;/h2&gt;
-&lt;p&gt;1、如下图所示，一次排序请求流程包含：特征获取、向量获取、数据处理及预测。以上提到的三个步骤均采用多线程并行处理，均以子任务形式执行。每个阶段中间夹杂这数据处理的流程，由主线程进行处理，且每个阶段的执行任务均为超时返回，主线程等待子线程任务时，也采用超时等待的策略。（同事实现的一个树形任务执行，超时等待的线程框架）&lt;/p&gt;
-&lt;p&gt;2、特征数据闭环：该步骤为异步执行，将排序计算使用到的特征及分数，模型版本等信息记录。后续作为模型的训练样本，达到特征闭环。&lt;br/&gt;
-&lt;img src=&quot;https://a.perfma.net/img/2019036&quot; alt=&quot;模型请求流程.png&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;3、一次排序请求中，&lt;em&gt;&lt;strong&gt;特征获取及向量获取&lt;/strong&gt;&lt;/em&gt;为网络IO（IO密集型任务），超时可直接响应中断，线程可快速返回。&lt;em&gt;&lt;strong&gt;数据处理及模型&lt;/strong&gt;&lt;/em&gt;为计算步骤（CPU密集型任务）。&lt;/p&gt;
-&lt;p&gt;4、当前请求耗时情况：特征与向量的获取阶段耗时均为5-8ms，数据处理及模型预测阶段耗时平均在10ms左右。&lt;/p&gt;
-&lt;h2&gt;六、问题发生现象&lt;/h2&gt;
-&lt;p&gt;1、首先是调用方：推荐策略平台，监控报警排序请求的超时数量变多（调用方超时时间为300ms），且从监控上看发现排序服务的耗时明显变长：50ms+。正常高峰期的期望值为50ms以下。&lt;/p&gt;
-&lt;p&gt;2、其次排序服务告警出现大量超时错误。&lt;br/&gt;
-&lt;img src=&quot;https://a.perfma.net/img/2019007&quot; alt=&quot;超时错误.png&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;3、第三根据错误信息定位到该错误信息来自于&lt;strong&gt;数据处理及模型预测&lt;/strong&gt;阶段。&lt;/p&gt;
-&lt;p&gt;4、除了超时变多以外，服务中会出现偶发性的空指针异常。&lt;/p&gt;
-&lt;h2&gt;七、问题排查&lt;/h2&gt;
-&lt;p&gt;1、首先解决空指针这类低级错误。&lt;br/&gt;
-&lt;img src=&quot;https://a.perfma.net/img/2019061&quot; alt=&quot;空指针错误.png&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;2、根据错误提示找到对应的代码，此处就不粘贴代码了，做一个简单的代码解释。代码逻辑为：从Map&amp;lt;String,Object&amp;gt;中根据特征key获取特征值进行计算。&lt;/p&gt;
-&lt;p&gt;3、疑惑点出现，首先该Map&amp;lt;String,Object&amp;gt;用于存放特征及向量键值对，且key均做了空值计算兼容。特征或者向量在查询到空值时，会在Map&amp;lt;String,Object&amp;gt;中放入一个对应的默认值。经过反复的代码确认，报错信息对应的代码不可能出现漏放默认值的情况。&lt;/p&gt;
-&lt;p&gt;4、借助Arthas的watch命令，监控空指针异常的入参。方便后面做模拟请求还原现场。&lt;/p&gt;
-&lt;p&gt;5、根据报错时的信息进行模拟请求。尝试N次，且使用不同的报错数据进行尝试，均未重现事故。&lt;/p&gt;
-&lt;p&gt;6、此时怀疑是多线程并发进行&lt;strong&gt;数据处理及预测&lt;/strong&gt;时，发生对Map&amp;lt;String,Object&amp;gt;进行修改的动作，导致部分键值对丢失。&lt;/p&gt;
-&lt;p&gt;7、反复检查代码，确定&lt;strong&gt;数据处理及预测&lt;/strong&gt;均为只读动作，不会对Map&amp;lt;String,Object&amp;gt;进行任何键值对的删改。&lt;/p&gt;
-&lt;p&gt;8、线索中断，排查一度搁置。&lt;/p&gt;
-&lt;h2&gt;八、豁然开朗&lt;/h2&gt;
-&lt;p&gt;1、借用Arthas进行报错观察：使用watch命令，依靠-e参数（指定报错触发打印）以及-x n 参数（打印方法入参及返回值数据层数）&lt;/p&gt;
-&lt;p&gt;2、根据观察，发现Map&amp;lt;String,Object&amp;gt;中丢失的均为&lt;strong&gt;向量&lt;/strong&gt;键值对。&lt;/p&gt;
-&lt;p&gt;3、找到问题：在排序请求流程图中，在主线程进行&lt;strong&gt;分数归一化&lt;/strong&gt;时，会fork子线程异步做特征数据进行压缩写入kafka。由于Map&amp;lt;String,Object&amp;gt;中存在大量的向量数据，导致保存数据过冗余的情况。此处的做法是先去除所有的&lt;strong&gt;向量&lt;/strong&gt;数据，再进行保存。&lt;/p&gt;
-&lt;p&gt;4、但是该动作是发生在&lt;strong&gt;数据处理及模型预测&lt;/strong&gt;后的，为何还会因为Map&amp;lt;String,Object&amp;gt;中删除键值对导致空指针异常呢。&lt;/p&gt;
-&lt;p&gt;5、此时怀疑是&lt;strong&gt;数据处理及模型预测&lt;/strong&gt;阶段，多线程任务还没完成时，主线程已经等候超时返回了。&lt;/p&gt;
-&lt;h2&gt;九、验证想法&lt;/h2&gt;
-&lt;p&gt;1、还是观察超时日志。&lt;br/&gt;
-&lt;img src=&quot;https://a.perfma.net/img/2019068&quot; alt=&quot;超时请求.png&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://a.perfma.net/img/2019094&quot; alt=&quot;空指针数据.png&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;2、发现请求已经返回后，才出现空指针异常。那基本就可以验证以上的想法了。&lt;/p&gt;
-&lt;h2&gt;十、问题解决&lt;/h2&gt;
-&lt;p&gt;1、翻看使用的多线程框架（同事实现），主线程超时等待子线程任务。主线程超时返回后，没有通知子线程任务取消。所以才发生请求已返回，特征数据异步落地后，偶发性出现晚到的空指针异常的情况。如下图，主线程超时返回后，只取消主线程任务。&lt;br/&gt;
-&lt;img src=&quot;https://a.perfma.net/img/2019819&quot; alt=&quot;主线程超时等待.png&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;2、解决思路：主线程超时返回后，中断子任务（取消子任务）。由于java的中断机制为软中断，一般是通过中断标志位进行线程中断协作的。当然IO或者sleep的中断由系统帮我们做了中断可以快速返回。对于CPU密集型的任务，是需要使用者在&lt;strong&gt;合适&lt;/strong&gt;的计算点上做标志位判断，确定是否已中断结束任务。以这种协作的方式达到中断。（此处可能有部分理解不当）&lt;/p&gt;
-&lt;p&gt;3、修改多线程框架，在主线程超时返回后，修改子线程中断标志位。&lt;br/&gt;
-&lt;img src=&quot;https://a.perfma.net/img/2019106&quot; alt=&quot;取消子线程.png&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;4、在计算流程中加入线程中断检查，如果被中断则提前结束计算。&lt;br/&gt;
-&lt;img src=&quot;https://a.perfma.net/img/2019131&quot; alt=&quot;响应中断.png&quot;/&gt;&lt;/p&gt;
-&lt;h2&gt;十一、效果检查&lt;/h2&gt;
-&lt;p&gt;1、修改发版后，空指针没再出现。（其实该空指针是不影响排序结果，因为结果已经是错的，该异常只是附带的虫子而已）&lt;br/&gt;
-2、超时请求减少，高峰期的超时数据减少三分之一，50ms+的排序请求有明显减少。&lt;/p&gt;
-&lt;h2&gt;十二、复盘&lt;/h2&gt;
-&lt;p&gt;1、主线程等待子任务的场景下，如果主线程超时返回了。需通知子线程结束执行的任务。首先，主线程返回了，表示子任务已被丢弃。继续执行都是在做无用的计算，占用计算机资源。也不是说占着茅坑不拉屎，而是拉了没人要。应该尽量减少服务器资源用在没必要的消耗上。&lt;/p&gt;
-&lt;p&gt;2、该服务在&lt;strong&gt;数据处理及预测&lt;/strong&gt;阶段使用的线程池队列为SynchronousQueue，如果不了解SynchronousQueue的话可以简单理解为一个0长度的队列。任务进池子时必须要有线程进行对接。与常规的BlockingQueue不同的是，任务在池子中不会堆积，对于任务的快速响应比较友好。但是也因为如果没有空闲的线程，则会不停创建线程直到&lt;strong&gt;最高线程数&lt;/strong&gt;限制而触发丢弃策略。在该项目问题中，由于部分子任务在主线程返回后仍然在执行。新的请求进来后，会出现没有空闲线程的情况，导致池子创建新线程接任务。对于CPU密集型任务来说，过多的线程数对服务来说是另一种负担，毕竟线程切换的代价还是比较大的。这就套入死循环了。（个人理解，如表述有误，还望指正）&lt;/p&gt;
-&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
 <guid>732cf1e2f7af58d068a7c1be6c943799</guid>
 <title>Go 错误处理最佳实践</title>
 <link>https://toutiao.io/k/lodfgxd</link>
@@ -473,6 +412,90 @@ err = Unwrap(err)
 }&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;关注我获取更新&quot;&gt;&lt;a href=&quot;#关注我获取更新&quot; class=&quot;headerlink&quot; title=&quot;关注我获取更新&quot;/&gt;关注我获取更新&lt;/h2&gt;&lt;p&gt;看到这里了还不点个关注走一波&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
+<guid>fa820b31fcae6d2b121d38fdad76e437</guid>
+<title>性能优化：线程资源回收</title>
+<link>https://toutiao.io/k/wllqesw</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;src-views-article-detail-main-module__content--2qOBd markdown-body&quot;&gt;&lt;h2&gt;一、问题&lt;/h2&gt;
+&lt;p&gt;模型服务平台的排序请求出现较多超时情况，且不定时伴随空指针异常。&lt;/p&gt;
+&lt;h2&gt;二、问题发生前后的改动&lt;/h2&gt;
+&lt;p&gt;召回引擎扩大了召回量，导致排序请求的item数量增加了。&lt;/p&gt;
+&lt;h2&gt;三、出问题的模型&lt;/h2&gt;
+&lt;p&gt;基于XGBoost预测的全排序模型。&lt;/p&gt;
+&lt;h2&gt;四、项目介绍&lt;/h2&gt;
+&lt;p&gt;web-rec-model：模型服务平台。用于管理排序模型：XGBoost、TensorFlow、pmml…召回模型：item2item，key2item，vec2item…等模型的上下线、测试模型一致性、模型服务等。&lt;/p&gt;
+&lt;h2&gt;五、一次排序请求流程&lt;/h2&gt;
+&lt;p&gt;1、如下图所示，一次排序请求流程包含：特征获取、向量获取、数据处理及预测。以上提到的三个步骤均采用多线程并行处理，均以子任务形式执行。每个阶段中间夹杂这数据处理的流程，由主线程进行处理，且每个阶段的执行任务均为超时返回，主线程等待子线程任务时，也采用超时等待的策略。（同事实现的一个树形任务执行，超时等待的线程框架）&lt;/p&gt;
+&lt;p&gt;2、特征数据闭环：该步骤为异步执行，将排序计算使用到的特征及分数，模型版本等信息记录。后续作为模型的训练样本，达到特征闭环。&lt;br/&gt;
+&lt;img src=&quot;https://a.perfma.net/img/2019036&quot; alt=&quot;模型请求流程.png&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;3、一次排序请求中，&lt;em&gt;&lt;strong&gt;特征获取及向量获取&lt;/strong&gt;&lt;/em&gt;为网络IO（IO密集型任务），超时可直接响应中断，线程可快速返回。&lt;em&gt;&lt;strong&gt;数据处理及模型&lt;/strong&gt;&lt;/em&gt;为计算步骤（CPU密集型任务）。&lt;/p&gt;
+&lt;p&gt;4、当前请求耗时情况：特征与向量的获取阶段耗时均为5-8ms，数据处理及模型预测阶段耗时平均在10ms左右。&lt;/p&gt;
+&lt;h2&gt;六、问题发生现象&lt;/h2&gt;
+&lt;p&gt;1、首先是调用方：推荐策略平台，监控报警排序请求的超时数量变多（调用方超时时间为300ms），且从监控上看发现排序服务的耗时明显变长：50ms+。正常高峰期的期望值为50ms以下。&lt;/p&gt;
+&lt;p&gt;2、其次排序服务告警出现大量超时错误。&lt;br/&gt;
+&lt;img src=&quot;https://a.perfma.net/img/2019007&quot; alt=&quot;超时错误.png&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;3、第三根据错误信息定位到该错误信息来自于&lt;strong&gt;数据处理及模型预测&lt;/strong&gt;阶段。&lt;/p&gt;
+&lt;p&gt;4、除了超时变多以外，服务中会出现偶发性的空指针异常。&lt;/p&gt;
+&lt;h2&gt;七、问题排查&lt;/h2&gt;
+&lt;p&gt;1、首先解决空指针这类低级错误。&lt;br/&gt;
+&lt;img src=&quot;https://a.perfma.net/img/2019061&quot; alt=&quot;空指针错误.png&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;2、根据错误提示找到对应的代码，此处就不粘贴代码了，做一个简单的代码解释。代码逻辑为：从Map&amp;lt;String,Object&amp;gt;中根据特征key获取特征值进行计算。&lt;/p&gt;
+&lt;p&gt;3、疑惑点出现，首先该Map&amp;lt;String,Object&amp;gt;用于存放特征及向量键值对，且key均做了空值计算兼容。特征或者向量在查询到空值时，会在Map&amp;lt;String,Object&amp;gt;中放入一个对应的默认值。经过反复的代码确认，报错信息对应的代码不可能出现漏放默认值的情况。&lt;/p&gt;
+&lt;p&gt;4、借助Arthas的watch命令，监控空指针异常的入参。方便后面做模拟请求还原现场。&lt;/p&gt;
+&lt;p&gt;5、根据报错时的信息进行模拟请求。尝试N次，且使用不同的报错数据进行尝试，均未重现事故。&lt;/p&gt;
+&lt;p&gt;6、此时怀疑是多线程并发进行&lt;strong&gt;数据处理及预测&lt;/strong&gt;时，发生对Map&amp;lt;String,Object&amp;gt;进行修改的动作，导致部分键值对丢失。&lt;/p&gt;
+&lt;p&gt;7、反复检查代码，确定&lt;strong&gt;数据处理及预测&lt;/strong&gt;均为只读动作，不会对Map&amp;lt;String,Object&amp;gt;进行任何键值对的删改。&lt;/p&gt;
+&lt;p&gt;8、线索中断，排查一度搁置。&lt;/p&gt;
+&lt;h2&gt;八、豁然开朗&lt;/h2&gt;
+&lt;p&gt;1、借用Arthas进行报错观察：使用watch命令，依靠-e参数（指定报错触发打印）以及-x n 参数（打印方法入参及返回值数据层数）&lt;/p&gt;
+&lt;p&gt;2、根据观察，发现Map&amp;lt;String,Object&amp;gt;中丢失的均为&lt;strong&gt;向量&lt;/strong&gt;键值对。&lt;/p&gt;
+&lt;p&gt;3、找到问题：在排序请求流程图中，在主线程进行&lt;strong&gt;分数归一化&lt;/strong&gt;时，会fork子线程异步做特征数据进行压缩写入kafka。由于Map&amp;lt;String,Object&amp;gt;中存在大量的向量数据，导致保存数据过冗余的情况。此处的做法是先去除所有的&lt;strong&gt;向量&lt;/strong&gt;数据，再进行保存。&lt;/p&gt;
+&lt;p&gt;4、但是该动作是发生在&lt;strong&gt;数据处理及模型预测&lt;/strong&gt;后的，为何还会因为Map&amp;lt;String,Object&amp;gt;中删除键值对导致空指针异常呢。&lt;/p&gt;
+&lt;p&gt;5、此时怀疑是&lt;strong&gt;数据处理及模型预测&lt;/strong&gt;阶段，多线程任务还没完成时，主线程已经等候超时返回了。&lt;/p&gt;
+&lt;h2&gt;九、验证想法&lt;/h2&gt;
+&lt;p&gt;1、还是观察超时日志。&lt;br/&gt;
+&lt;img src=&quot;https://a.perfma.net/img/2019068&quot; alt=&quot;超时请求.png&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://a.perfma.net/img/2019094&quot; alt=&quot;空指针数据.png&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;2、发现请求已经返回后，才出现空指针异常。那基本就可以验证以上的想法了。&lt;/p&gt;
+&lt;h2&gt;十、问题解决&lt;/h2&gt;
+&lt;p&gt;1、翻看使用的多线程框架（同事实现），主线程超时等待子线程任务。主线程超时返回后，没有通知子线程任务取消。所以才发生请求已返回，特征数据异步落地后，偶发性出现晚到的空指针异常的情况。如下图，主线程超时返回后，只取消主线程任务。&lt;br/&gt;
+&lt;img src=&quot;https://a.perfma.net/img/2019819&quot; alt=&quot;主线程超时等待.png&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;2、解决思路：主线程超时返回后，中断子任务（取消子任务）。由于java的中断机制为软中断，一般是通过中断标志位进行线程中断协作的。当然IO或者sleep的中断由系统帮我们做了中断可以快速返回。对于CPU密集型的任务，是需要使用者在&lt;strong&gt;合适&lt;/strong&gt;的计算点上做标志位判断，确定是否已中断结束任务。以这种协作的方式达到中断。（此处可能有部分理解不当）&lt;/p&gt;
+&lt;p&gt;3、修改多线程框架，在主线程超时返回后，修改子线程中断标志位。&lt;br/&gt;
+&lt;img src=&quot;https://a.perfma.net/img/2019106&quot; alt=&quot;取消子线程.png&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;4、在计算流程中加入线程中断检查，如果被中断则提前结束计算。&lt;br/&gt;
+&lt;img src=&quot;https://a.perfma.net/img/2019131&quot; alt=&quot;响应中断.png&quot;/&gt;&lt;/p&gt;
+&lt;h2&gt;十一、效果检查&lt;/h2&gt;
+&lt;p&gt;1、修改发版后，空指针没再出现。（其实该空指针是不影响排序结果，因为结果已经是错的，该异常只是附带的虫子而已）&lt;br/&gt;
+2、超时请求减少，高峰期的超时数据减少三分之一，50ms+的排序请求有明显减少。&lt;/p&gt;
+&lt;h2&gt;十二、复盘&lt;/h2&gt;
+&lt;p&gt;1、主线程等待子任务的场景下，如果主线程超时返回了。需通知子线程结束执行的任务。首先，主线程返回了，表示子任务已被丢弃。继续执行都是在做无用的计算，占用计算机资源。也不是说占着茅坑不拉屎，而是拉了没人要。应该尽量减少服务器资源用在没必要的消耗上。&lt;/p&gt;
+&lt;p&gt;2、该服务在&lt;strong&gt;数据处理及预测&lt;/strong&gt;阶段使用的线程池队列为SynchronousQueue，如果不了解SynchronousQueue的话可以简单理解为一个0长度的队列。任务进池子时必须要有线程进行对接。与常规的BlockingQueue不同的是，任务在池子中不会堆积，对于任务的快速响应比较友好。但是也因为如果没有空闲的线程，则会不停创建线程直到&lt;strong&gt;最高线程数&lt;/strong&gt;限制而触发丢弃策略。在该项目问题中，由于部分子任务在主线程返回后仍然在执行。新的请求进来后，会出现没有空闲线程的情况，导致池子创建新线程接任务。对于CPU密集型任务来说，过多的线程数对服务来说是另一种负担，毕竟线程切换的代价还是比较大的。这就套入死循环了。（个人理解，如表述有误，还望指正）&lt;/p&gt;
+&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>8d96769c20421c2a8cf109dff08a19b6</guid>
+<title>Redis：基础数据类型应用场景</title>
+<link>https://toutiao.io/k/kfxarsg</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
+
+                    
+
+                    
+                    
+                    &lt;p&gt;&lt;span&gt;        Redis 因为其丰富的数据类型备受欢迎，因为其数据类型的丰富，也让 Redis 除了当作缓存之外还有许多的场景可以使用。我将常见的数据类型的使用场景进行了整理。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;String 类型的应用场景&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        String 类型是 Redis 中最简单的数据类型，可能刚开始使用 Redis 的同学最常使用的类型就是 String 类型了，而使用的时候也基本就是使用 set 和 get 两个命令了。其实，在 Redis 中可能使用最为频繁的数据类型并不是 String 类型，而 String 类型也不是简单的只有 set 和 get 两个操作去使用。我这里就把 String 类型常用的场景列出，供大家参考。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        String 类型常见的应用场景如下图所示。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.5057142857142857&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Bfv9smoHwtjogtpDOiaxOCaItiaJBbfz4ayrMxAorvutNMksNK4HaEv9OY2D9dGoDvt07oR48MOicPfCwE4K3LicWA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;350&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        因为 Redis 在执行命令是单线程的，且很多命令是原子性的，比如 incr 命令，因此，用来做计数是非常适合的。比如，分布式ID、粉丝数都是可以使用的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        对于分布式锁而言，Redis 也基本可以实现，虽然 Redis 在实现分布式锁时并不那么完美，不太复杂的场景使用 Redis 做分布式锁还是比较方便的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;List 类型的应用场景&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        List 数据类型可以当作队列和栈这两种数据结构来进行使用，它没有太多的操作功能，基本就是队列和栈的相关操作，因此也比较简单。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        List 类型常见的应用场景如下图所示。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.46813186813186813&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Bfv9smoHwtjogtpDOiaxOCaItiaJBbfz4aMPia8EkJSu6VnHJu88uuDicx5B6gybt0GiaXFMa0gBpQ8sSaSayQmibK8Q/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;455&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;Hash 类型的应用场景&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        Hash 类型使用的就比较频繁了，它可以把一组关联的数据放入同一个 Key 下，这样批量存取时使用一个命令就可以取出，也可以对一个 Key  下的单个 Field 进行存取，操作灵活且方便。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        Hash 类型常见的应用场景如下图所示。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.334916864608076&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Bfv9smoHwtjogtpDOiaxOCaItiaJBbfz4aPoDkPctNIa3c6JAuCcwRc52RiaSqNtoAD8ibXehjejdgjTj3q9vv24lw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;421&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        可以把一张表的部分数据，或者一些组合的数据放入 Hash 类型中，方便使用时读取。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;Set 类型的应用场景&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        Set 类型有一些非常好的数学运算的命令，比如，交集、并集、差集 和 随机，&lt;/span&gt;&lt;span&gt;这些命令可以&lt;/span&gt;&lt;span&gt;方便我们做很多有趣的功能，而不需要写太多的代码。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        Set 类型常见的应用场景如下图所示。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.7317073170731707&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Bfv9smoHwtjogtpDOiaxOCaItiaJBbfz4apdvmJOHF7L0m8JqdxuqxP2BE7cBPx1IRpkRHUPAy2H2jTqGl2z8DqQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;287&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        Set 类型提供的应用场景是否看起来就比较高大上了，但是实现却非常的简单。很多系统使用的推荐功能看起来很厉害，其实用 Redis 可以简单的现实，当然了，Redis 实现的推荐功能也只是最初级的推荐功能了。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;ZSet 类型的应用场景&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        ZSet 数据类型比 Set 数据类型多了一个分值，有了这个分值可以做很多和排序相关的功能。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        ZSet 类型常见的应用场景如下图所示。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.685785536159601&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Bfv9smoHwtjogtpDOiaxOCaItiaJBbfz4ahiawmiciczQaMnfYnQmU1YoJ91wy5nblx23cEnVBZBN30FpTA9hsdic57g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;401&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        ZSet 的特点就是排序的功能，而且现实中有很多需要进行排序的场景。对于食品的含量、东西的大小，基本定了就不会再改变了，因此这个排序可以使用 MySQL、MongoDB&lt;/span&gt;&lt;span&gt;，感觉 Redis 不是唯一可选的，因为我觉得体现不出它的优势。而&lt;/span&gt;&lt;span&gt;对于热搜、点赞、热度这样排序是实时变化的，ZSet 处理这类的排序更加的适合了，也能体现出它的优势了，在内存中排序，速度快，对于程序员使用省事方便。&lt;/span&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;总结&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        对于 Redis 常用的使用场景基本都罗列了，但是没有具体说明各场景的实现方式，感兴趣的或者刚好要使用的，可以自行查找实现。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.36484375&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Bfv9smoHwth5nBzNr9kZshQ25yhLz08JHWsQdz8yVn3MVh22hia7NFoPyNJz4ZI7XUnMa9xM50TJRqPkWf7BRibQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;
+                &lt;/div&gt;
+
+                
+
+                
+
+
+
+                
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
 <guid>7d79f91c9f612a95ad15aff37d1f18ff</guid>
 <title>ssh 偶发性登录卡死之谜</title>
 <link>https://toutiao.io/k/0iuneb6</link>
@@ -488,28 +511,5 @@ err = Unwrap(err)
 &lt;/ol&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>6ab82a662f2cb596f7412260281c5ee4</guid>
-<title>浅析构建 SQL-to-SQL 的翻译器</title>
-<link>https://toutiao.io/k/vipitc2</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
-
-                    
-
-                    
-                    
-                    &lt;p&gt;&lt;em&gt;如果你爱一个人，就让他写SQL，因为那是天堂。&lt;/em&gt;&lt;/p&gt;&lt;p&gt;&lt;em&gt;如果你恨一个人，就让他写SQL，因为那是地狱。&lt;/em&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;天堂，是因为他如此简单，又功能强大，可以极大简化你的程序。&lt;/p&gt;&lt;p&gt;地狱，是因为他如此纷繁，复杂，还有各种方言标准，而且不通用，当你试图切换数据库产品的时候，什么叫生不如死 ......&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;那我们就不能构建一个统一的数据库语言么？这个真不能，不是技术上不能，而是利益趋势，大家坚守自己的方言堡垒，而且越建越高。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;ORM或许是解决这个问题的一个途径，正如其名，既然是对象关系映射，未免就会是一套机械、呆板的程序，我们只能将关系和实体映射出来，所以，这并非是解决问题的根本途径，但不能否认它确实是最受欢迎，使用最广泛，代价最小的方案，没有之一。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;那我们是不是能从SQL语言翻译的角度来解决这个问题呢？即在将SQL抛给数据库执行之前，进行一次翻译工作？&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;我们可以对SQL进行语法分析，形成一颗AST（抽象语法树），然后遍历解析&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.6798917944093779&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/8uJ0ic6nAag8WFes5ptLubrlibNBgHnACbsatGAQibib0kelGGZJR1qMDrdibaPoQrGPSOiaxUfdKeKZs6zXVIiagLeyw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1109&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;我们在遍历语法树的时候，就进行一次翻译转换，形成其他方言的SQL。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.6798917944093779&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/8uJ0ic6nAag8WFes5ptLubrlibNBgHnACbkR13ic13ibXMpZft9icXkuViczZwsib0QDfhHoUQUprjSWwPmSiaxLjhXT7g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1109&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;这个方案也许不尽善尽美，但是至少解决了一个类似“同声传译”的问题。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;对上述模型进一步演化，在AST层面进行双向转化，那这个实现是不是就看起来非常优雅了？&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.6798917944093779&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/8uJ0ic6nAag8WFes5ptLubrlibNBgHnACbeYVCia2lzjOKxA8YXygVrtibTebuegPcolYLapkRmTl8JgIIibtibgibmaQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1109&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;我们已经定制了一条看似合理的Roadmap，那么如何将其实现落地呢？&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;下表，是我对可完成上述任务的框架进行的一些总结&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.46796875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/8uJ0ic6nAag8WFes5ptLubrlibNBgHnACb80WUNrpoR2sFgPucjDG5Ww7z71aQMQyDiaUmgNfRVbjAticJdZqRMXdg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;个人是十分推崇Calcite的，因为其本身更像是一个没有物理引擎的数据库引擎，这可能听起来有点滑稽，但是确实，他可以很好的解析SQL，并生成执行计划，如果你想，也可以针对其进行你希望的优化，这就让我们的控制力大大加强了，至少在数据库之上，就可以“为所欲为”了。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;Durid提供的方言包，比较多，上手比较容易（文末附录里，贴出了一个查询的AST，结构还是挺清晰的），不过如果想达到AST层面的转换，对整套API需要进行一定的手术才行。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;Antlr 可以说是非常强大的，他是单纯的语法解析工具，但是其语法文件比起javacc来，何止是平易近人，简直就是平易近人... 而且，shardingsphere，presto都是基于其开发的。在代码仓库里，也有很多线程的语法文件，可以使用，不过要达到上述目的，也需要走很长的路。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;好了，今天就先扯到这，感谢大家的阅读，如果对你有些帮助，那将是我莫大的荣幸，也期待你能关注我，和我交流。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;附录：以durid为例，下图展示了一条查询语句的AST&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;1.44453125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/8uJ0ic6nAag8WFes5ptLubrlibNBgHnACbPm6uzoIGMqVFXia9ib5nwg7viaWI1RTT1lPPg0kPT4T5GOXjCWZv7ehqw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;关注 【&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;span&gt;麒思妙想&lt;/span&gt;&lt;span&gt;】解锁更多硬核。&lt;/span&gt;&lt;strong/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;历史文章导读&lt;/strong&gt;：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;如果文章对您有那么一点点帮助，我将倍感荣幸&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;欢迎  &lt;span&gt;&lt;strong&gt;关注、在看、点赞、转发 &lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;1&quot; data-s=&quot;300,640&quot; data-type=&quot;jpeg&quot; data-w=&quot;258&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/8uJ0ic6nAag8EItgzqIEhe3GbK3ibibrSC3kGNLaCYoEXEEEV8vatdHqibkazrs7oLJERAG1cldW9pbVmcTKvXL3fA/640?wx_fmt=jpeg&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;
-                &lt;/div&gt;
-
-                
-
-                
-
-
-
-                
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
