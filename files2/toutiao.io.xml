@@ -496,20 +496,26 @@ err = Unwrap(err)
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>7d79f91c9f612a95ad15aff37d1f18ff</guid>
-<title>ssh 偶发性登录卡死之谜</title>
-<link>https://toutiao.io/k/0iuneb6</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;outline-text-2&quot; id=&quot;text-orgda455a4&quot;&gt;
-&lt;p&gt;
-今天遇到一个非常诡异的 ssh 登陆失败的情况，：
-&lt;/p&gt;
+<guid>6ab82a662f2cb596f7412260281c5ee4</guid>
+<title>浅析构建 SQL-to-SQL 的翻译器</title>
+<link>https://toutiao.io/k/vipitc2</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
 
-&lt;ol class=&quot;org-ol&quot;&gt;
-&lt;li&gt;通过 ssh 登陆某主机（假设为user@Server）经常卡死，但经过多次尝试偶尔会出现登陆成功的情况。&lt;/li&gt;
-&lt;li&gt;尝试用 ssh 登陆该主机的其他用户（tmpusr@Server），经常能成功，但是多次尝试会出现偶尔登陆卡死的情况。&lt;/li&gt;
-&lt;li&gt;使用 ssh -vvv user@Server 尝试调试，发现能够正常登陆，而且每次都能登陆成功。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;/div&gt;</content:encoded>
+                    
+
+                    
+                    
+                    &lt;p&gt;&lt;em&gt;如果你爱一个人，就让他写SQL，因为那是天堂。&lt;/em&gt;&lt;/p&gt;&lt;p&gt;&lt;em&gt;如果你恨一个人，就让他写SQL，因为那是地狱。&lt;/em&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;天堂，是因为他如此简单，又功能强大，可以极大简化你的程序。&lt;/p&gt;&lt;p&gt;地狱，是因为他如此纷繁，复杂，还有各种方言标准，而且不通用，当你试图切换数据库产品的时候，什么叫生不如死 ......&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;那我们就不能构建一个统一的数据库语言么？这个真不能，不是技术上不能，而是利益趋势，大家坚守自己的方言堡垒，而且越建越高。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;ORM或许是解决这个问题的一个途径，正如其名，既然是对象关系映射，未免就会是一套机械、呆板的程序，我们只能将关系和实体映射出来，所以，这并非是解决问题的根本途径，但不能否认它确实是最受欢迎，使用最广泛，代价最小的方案，没有之一。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;那我们是不是能从SQL语言翻译的角度来解决这个问题呢？即在将SQL抛给数据库执行之前，进行一次翻译工作？&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;我们可以对SQL进行语法分析，形成一颗AST（抽象语法树），然后遍历解析&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.6798917944093779&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/8uJ0ic6nAag8WFes5ptLubrlibNBgHnACbsatGAQibib0kelGGZJR1qMDrdibaPoQrGPSOiaxUfdKeKZs6zXVIiagLeyw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1109&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;我们在遍历语法树的时候，就进行一次翻译转换，形成其他方言的SQL。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.6798917944093779&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/8uJ0ic6nAag8WFes5ptLubrlibNBgHnACbkR13ic13ibXMpZft9icXkuViczZwsib0QDfhHoUQUprjSWwPmSiaxLjhXT7g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1109&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;这个方案也许不尽善尽美，但是至少解决了一个类似“同声传译”的问题。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;对上述模型进一步演化，在AST层面进行双向转化，那这个实现是不是就看起来非常优雅了？&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.6798917944093779&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/8uJ0ic6nAag8WFes5ptLubrlibNBgHnACbeYVCia2lzjOKxA8YXygVrtibTebuegPcolYLapkRmTl8JgIIibtibgibmaQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1109&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;我们已经定制了一条看似合理的Roadmap，那么如何将其实现落地呢？&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;下表，是我对可完成上述任务的框架进行的一些总结&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.46796875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/8uJ0ic6nAag8WFes5ptLubrlibNBgHnACb80WUNrpoR2sFgPucjDG5Ww7z71aQMQyDiaUmgNfRVbjAticJdZqRMXdg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;个人是十分推崇Calcite的，因为其本身更像是一个没有物理引擎的数据库引擎，这可能听起来有点滑稽，但是确实，他可以很好的解析SQL，并生成执行计划，如果你想，也可以针对其进行你希望的优化，这就让我们的控制力大大加强了，至少在数据库之上，就可以“为所欲为”了。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;Durid提供的方言包，比较多，上手比较容易（文末附录里，贴出了一个查询的AST，结构还是挺清晰的），不过如果想达到AST层面的转换，对整套API需要进行一定的手术才行。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;Antlr 可以说是非常强大的，他是单纯的语法解析工具，但是其语法文件比起javacc来，何止是平易近人，简直就是平易近人... 而且，shardingsphere，presto都是基于其开发的。在代码仓库里，也有很多线程的语法文件，可以使用，不过要达到上述目的，也需要走很长的路。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;好了，今天就先扯到这，感谢大家的阅读，如果对你有些帮助，那将是我莫大的荣幸，也期待你能关注我，和我交流。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;附录：以durid为例，下图展示了一条查询语句的AST&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;1.44453125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/8uJ0ic6nAag8WFes5ptLubrlibNBgHnACbPm6uzoIGMqVFXia9ib5nwg7viaWI1RTT1lPPg0kPT4T5GOXjCWZv7ehqw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;关注 【&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;span&gt;麒思妙想&lt;/span&gt;&lt;span&gt;】解锁更多硬核。&lt;/span&gt;&lt;strong/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;历史文章导读&lt;/strong&gt;：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;如果文章对您有那么一点点帮助，我将倍感荣幸&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;欢迎  &lt;span&gt;&lt;strong&gt;关注、在看、点赞、转发 &lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;1&quot; data-s=&quot;300,640&quot; data-type=&quot;jpeg&quot; data-w=&quot;258&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/8uJ0ic6nAag8EItgzqIEhe3GbK3ibibrSC3kGNLaCYoEXEEEV8vatdHqibkazrs7oLJERAG1cldW9pbVmcTKvXL3fA/640?wx_fmt=jpeg&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;
+                &lt;/div&gt;
+
+                
+
+                
+
+
+
+                
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
