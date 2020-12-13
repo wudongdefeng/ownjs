@@ -280,26 +280,295 @@ ok  github.com/cornelk/go-benchmark375.283s&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>c0225b172a671e0775cdcca85abbe2bd</guid>
-<title>对闲鱼分享组件升级后，才知道什么叫灵活可扩展</title>
-<link>https://toutiao.io/k/eikp4f8</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
+<guid>9944d0bfa57fb553ea6a64918ebd8c04</guid>
+<title>Go 并发编程（一）：goroutine</title>
+<link>https://toutiao.io/k/5l5bvv8</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;markdown-body&quot; id=&quot;post-body&quot;&gt;&lt;blockquote&gt;&lt;p&gt;本系列为极客时间 Go 进阶训练营笔记，同步直播更新，预计一周更新 1 ~ 2 篇文章，到 202103 月更新完成&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;接下来会一共会有 4 - 6 篇文章讲解 Go 并发编程，并发编程本身是一个挺大的话题，在第四周的两节课，毛老师花了将近 7 个小时讲解这些内容，我也结合自己的一些微不足道的经验，再加上一些大神们的文章，整理出了这一部分的笔记。&lt;br/&gt;当然这里更多的是抛砖引玉的作用，更多的还是我们自己要有相关的意识避免踩坑，在各个坑的边缘反复横跳，可能我们有缘会在同一个坑中发现，咦，原来你也在这里 😄&lt;/p&gt;&lt;h2 id=&quot;请对你创建的-goroutine-负责&quot;&gt;&lt;a href=&quot;#请对你创建的-goroutine-负责&quot; class=&quot;headerlink&quot; title=&quot;请对你创建的 goroutine 负责&quot;/&gt;请对你创建的 goroutine 负责&lt;/h2&gt;&lt;h3 id=&quot;不要创建一个你不知道何时退出的-goroutine&quot;&gt;&lt;a href=&quot;#不要创建一个你不知道何时退出的-goroutine&quot; class=&quot;headerlink&quot; title=&quot;不要创建一个你不知道何时退出的 goroutine&quot;/&gt;不要创建一个你不知道何时退出的 goroutine&lt;/h3&gt;&lt;p&gt;请阅读下面这段代码，看看有什么问题？&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;为什么先从下面这段代码出发，是因为在之前的经验里面我们写了大量类似的代码，之前没有意识到这个问题，并且还因为这种代码出现过短暂的事故&lt;/p&gt;&lt;/blockquote&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-comment&quot;&gt;// Week03/blog/01/01.go&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;package&lt;/span&gt; main
 
-                    
+&lt;span class=&quot;hljs-keyword&quot;&gt;import&lt;/span&gt; (
+&lt;span class=&quot;hljs-string&quot;&gt;&quot;log&quot;&lt;/span&gt;
+&lt;span class=&quot;hljs-string&quot;&gt;&quot;net/http&quot;&lt;/span&gt;
+_ &lt;span class=&quot;hljs-string&quot;&gt;&quot;net/http/pprof&quot;&lt;/span&gt;
+)
 
-                    
-                    
-                    &lt;h2&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;背景&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;今年九月时，闲鱼将原有的社区产品 “鱼塘” 升级为 “会玩” 社区。&lt;/span&gt;&lt;span&gt;对于一个社区型的产品，分享功能可以借助用户的社交圈子进行传播，提升产品的曝光量，吸引新用户关注，拉拢老用户留存。&lt;/span&gt;&lt;span&gt;但闲鱼原有的分享功能更多的是从&lt;/span&gt;&lt;strong&gt;商品&lt;/strong&gt;&lt;span&gt;分享的角度来设计的，不适合会玩社区中用户创建的&lt;strong&gt;画报&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;分享，为此我们开发新版的分享组件。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;下文将介绍新版分享组件的实现。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;具体实现&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;分享组件时序图&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img data-backh=&quot;196&quot; data-backw=&quot;315&quot; data-ratio=&quot;0.6224489795918368&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1FDew9sJUHUKynj4Iia3IDyslo3qZiaPSWcBussjNLR9p7uN7RxPkRBic0ukYreibDepyD9lUVsiaQ6oPA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;882&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;如上面图中所示，我们将新版的分享组件分为了分享页面、分享底层 &lt;/span&gt;&lt;code&gt;&lt;span&gt;API&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 和回流页三个部分：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;•分享页面：前端通过 Weex 实现分享页面，在保证两端的体验一致的情况下，还拥有不错的可扩展性；&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;•分享底层 API：客户端提供分享所需的底层能力，通过 JSBridge 的方式让前端调用；&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;•回流页：提供统一的拉端能力；&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;画报生成&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;传统认知中认为分享的内容是最重要的，但实际上分享的形式同样重要。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;分享形式对比&lt;/span&gt;&lt;span&gt;&lt;strong/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img data-backh=&quot;386&quot; data-backw=&quot;315&quot; data-ratio=&quot;1.2265060240963856&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1FDew9sJUHUKynj4Iia3IDysJO6zKBfeaIaXnwD1NMY6EgGkw5kuk18TLL6ubASaRbXq7Ph8qRPQFA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;415&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;相比于以前图文链接的分享形式，画报分享能够将更多的内容展示给被分享者，提高分享的吸引力。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;对于画报的生成，其要解决的就是将&lt;strong&gt;给定的若干张图片拼接成一张定宽的长图&lt;/strong&gt;，我们可以通过归纳法来解决这个问题：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;1.通过图片的宽高大小关系来将图片分成横图（宽 ≥ 长）和长图（长 &amp;gt; 宽）；&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2.&lt;/span&gt;&lt;span&gt;处理只有 1 张图的情况，我们只需要将这个图片缩放到所需的定宽即可；&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;3.&lt;/span&gt;&lt;span&gt;处理只有 2 张图的情况，这个时候我们排列方式如下：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img data-backh=&quot;131&quot; data-backw=&quot;295&quot; data-ratio=&quot;0.4444444444444444&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1FDew9sJUHUKynj4Iia3IDys91sYVZhtPtHHLWZlibybDpB9rwm7IBEAnib9WR9DY31VGKgbC6350IoQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;900&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;以第一张图为标准确定排列方式，将第二张图进行缩放；&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;4.对于张数为 n 的图片，我们都可以分解成 n = 2 * x + 1 * y 的形式，其中 x 、 y 指代张数为 2 和 1 的图片分组排列；&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;5.但如果仅仅将图片分成张数为 1 和 2 的组进行排列拼接，整体的拼图会略下单调，所以我们又添加了张数为 3 的图片分组，它们的排列如下：&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img data-backh=&quot;131&quot; data-backw=&quot;295&quot; data-ratio=&quot;0.4444444444444444&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1FDew9sJUHUKynj4Iia3IDysl4YItUib8SRcb3DLpmG0sWbw0rJeiaMSvArS4HcpXriafSNLfPkcRUEMw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2700&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;6.对于张数为 n 的图片，我们都可以分解成 n = 3 * x + 2 * y + 1 * z 的形式，其中 x 、 y 、z 指代张数为 3 、2 和 1 的图片分组排列；&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;7.同时为了排版的美观，我们还增加了额外的规则：&lt;/span&gt;&lt;span&gt;尽可能的按照 3 张为一组进行划分；&lt;/span&gt;&lt;span&gt;最后一组尽可能为 2 张；&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;8.最后我们将分组好的图片进行对应的拼接，最后将所有的分组拼成一张长图即可；&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;分享能力抽象&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;由于分享页面是前端完成的，为了能够完成分享的操作，需要客户端封装对应的 &lt;/span&gt;&lt;code&gt;&lt;span&gt;API&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 给前端调用 下面是我们抽象的分享基础能力。&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img data-backh=&quot;106&quot; data-backw=&quot;315&quot; data-ratio=&quot;0.33825701624815363&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1FDew9sJUHUKynj4Iia3IDys7rdzjfZZdjayvlDETrgLVpV6pZZ5L9X4xBOAz6c1AGT3qyJia0iaA4UA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;677&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;有了这些基础的能力，前端就通过组合调用对应能力完成页面中的分享功能。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;腾讯系分享流程&lt;/span&gt;&lt;span&gt;&lt;strong/&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img data-backh=&quot;132&quot; data-backw=&quot;315&quot; data-ratio=&quot;0.4185639229422067&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1FDew9sJUHUKynj4Iia3IDyszU5YfFlBtWiatWmRESxjTvAibD1penNwBKqcGmDLndUgptFzgBUcN1Ag/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;571&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;拉端与回流&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;span&gt;在完成分享之后另外一个重要的环节就是回流，此次的分享也改进了回流流程：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;回流流程对比&lt;/span&gt;&lt;span&gt;&lt;strong/&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img data-ratio=&quot;2.1636363636363636&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/DUwiayJ0Mj1FDew9sJUHUKynj4Iia3IDysJaSgguUtjEWeDfCiacOcZ7lWOlBeME0IQTsIibaNKY2xwyPrPicE8vWCQ/640?wx_fmt=gif&quot; data-type=&quot;gif&quot; data-w=&quot;275&quot; title=&quot;null&quot;/&gt;&lt;img data-ratio=&quot;2.1636363636363636&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/DUwiayJ0Mj1FDew9sJUHUKynj4Iia3IDysBgFLKkwQaKu7r9g9poEa8ibFghxg9OTxt28AwOCnVrXBl9d21KUeImA/640?wx_fmt=gif&quot; data-type=&quot;gif&quot; data-w=&quot;275&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;旧版的回流采用 &lt;/span&gt;&lt;code&gt;&lt;span&gt;URL Scheme&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 的方式唤起客户端，而新版的我们采用了 &lt;/span&gt;&lt;code&gt;&lt;span&gt;Universal Link&lt;/span&gt;&lt;/code&gt;&lt;span&gt;。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;code&gt;URL Scheme&lt;/code&gt; 与 &lt;code&gt;Universal Link&lt;/code&gt; 对比&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.14948453608247422&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1FDew9sJUHUKynj4Iia3IDysGqOpmJmZnITLZsIB3oTCHwfCeKnZ6ng6fQgZlGTTfVLWfrOsxzFH8A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1552&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;简单来说，可以将 &lt;/span&gt;&lt;code&gt;&lt;span&gt;Universal Link&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 理解成被 App 注册的 &lt;/span&gt;&lt;code&gt;&lt;span&gt;https&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 链接。当 App 安装时，系统会去注册的域名下检查是否存在相关的验证的文件，如果存在，那么以后浏览器在处理该域名的下的链接时就会调用对应的 App 的做处理。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;Universal Link 工作流程&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img data-backh=&quot;284&quot; data-backw=&quot;315&quot; data-ratio=&quot;0.9010416666666666&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1FDew9sJUHUKynj4Iia3IDysu5mOBZj2ibR7IJs0P4iatxzQ1XLAbu1ooAGCBOIytWiageotNkDSokdvg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;576&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;由于 &lt;/strong&gt;&lt;strong&gt;&lt;code&gt;Universal Link&lt;/code&gt; 必须在页面发生跨域时才生效（未跨域的情况下，会被浏览器当作正常的浏览行为处理），所以在调用时需要特地的切换一个域名&lt;/strong&gt;。如闲鱼分享的域名为 &lt;/span&gt;&lt;code&gt;&lt;span&gt;pages.goofish.com&lt;/span&gt;&lt;/code&gt;&lt;span&gt;，配置了 &lt;/span&gt;&lt;code&gt;&lt;span&gt;Universal Link&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 的域名为 &lt;/span&gt;&lt;code&gt;&lt;span&gt;pages.2.taobao.com&lt;/span&gt;&lt;/code&gt;&lt;span&gt;。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;使用 &lt;/span&gt;&lt;code&gt;&lt;span&gt;Universal Link&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 可以让我们更好的把控回流过程中的异常处理（如未安装 App）,同时减少了二次确认的环节，降低此处的跳失率。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;分享能力的接入&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;不同场景的分享&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img data-backh=&quot;216&quot; data-backw=&quot;315&quot; data-ratio=&quot;0.6855555555555556&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1FDew9sJUHUKynj4Iia3IDysrKeZQ1WeaeXuJ3kWE4gplJXDTuEDRjRalV2E1H1hdHyXmpGvgCWj4w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;900&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;为了更好的分享效果，针对不同的分享场景我们的分享页面会有所调整，以更好的展示分享内容。但我们不可能为每个场景的分享都做开发，理想的方式分享组件提供页面展示的基础能力，业务方根据自己的需要来发自行拼装页面。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;在分析不同场景的分享页面时，我们发现它们之间存在相似的区域，在结合对闲鱼内现有的分享场景，抽象出细粒度的 &lt;/span&gt;&lt;code&gt;&lt;span&gt;UI&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 组件，然后以约定的数据结构来拼装页面，以满足不同分享场景的接入。&lt;/span&gt;&lt;code&gt;&lt;span&gt;UI&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 组件的拆解如下：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;分享顶部区域&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img data-backh=&quot;175&quot; data-backw=&quot;315&quot; data-ratio=&quot;0.5555555555555556&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1FDew9sJUHUKynj4Iia3IDysEichOrYWHsV6ahj8kMcWIsZ3tlt4dKRiaeuSY1AicJes5yvdsibmjg25lQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;900&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;主体内容区域&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img data-backh=&quot;175&quot; data-backw=&quot;315&quot; data-ratio=&quot;0.5555555555555556&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DUwiayJ0Mj1FDew9sJUHUKynj4Iia3IDysXrCdh42fP4TGHHia9MRtCwia1WzadzaVH8ODYQkLr7tx6hzc4h1KEX7g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;900&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;拆解完成后，调用方只需要根据业务的需求自行组合数据，即可完成新版分享的接入，极大的提升开发效率。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;总结&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;在新版的分享组件中，我们新增了画报的分享形式，方便用户分享图文信息；同时以 &lt;/span&gt;&lt;code&gt;&lt;span&gt;hybrid&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 的方式开发分享页面，既满足了双端一致的体验，又拥有动态化的能力，方便后续接入更多的分享场景；最后还减少了回流的环节，提升用户的回流率。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;最后感谢 &lt;span&gt;躺平&lt;sup&gt;[1]&lt;/sup&gt;&lt;/span&gt; 的同学在“生成画报实现”中提供的技术支持。&lt;/span&gt;&lt;/section&gt;&lt;h3&gt;&lt;span&gt;References&lt;/span&gt;&lt;/h3&gt;&lt;section&gt;&lt;code&gt;&lt;span&gt;[1]&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 躺平: &lt;em&gt;https://www.tangping.com/?tbpm=1&lt;/em&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;
-                &lt;/div&gt;
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;setup&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-comment&quot;&gt;// 这里面有一些初始化的操作&lt;/span&gt;
+}
 
-                
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+setup()
 
-                
+&lt;span class=&quot;hljs-comment&quot;&gt;// 主服务&lt;/span&gt;
+server()
 
+&lt;span class=&quot;hljs-comment&quot;&gt;// for debug&lt;/span&gt;
+pprof()
 
+&lt;span class=&quot;hljs-keyword&quot;&gt;select&lt;/span&gt; {}
+}
 
-                
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;server&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+mux := http.NewServeMux()
+mux.HandleFunc(&lt;span class=&quot;hljs-string&quot;&gt;&quot;/ping&quot;&lt;/span&gt;, &lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(w http.ResponseWriter, r *http.Request)&lt;/span&gt;&lt;/span&gt; {
+w.Write([]&lt;span class=&quot;hljs-keyword&quot;&gt;byte&lt;/span&gt;(&lt;span class=&quot;hljs-string&quot;&gt;&quot;pong&quot;&lt;/span&gt;))
+})
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// 主服务&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; err := http.ListenAndServe(&lt;span class=&quot;hljs-string&quot;&gt;&quot;:8080&quot;&lt;/span&gt;, mux); err != &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt; {
+log.Panicf(&lt;span class=&quot;hljs-string&quot;&gt;&quot;http server err: %+v&quot;&lt;/span&gt;, err)
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt;
+}
+}()
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;pprof&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-comment&quot;&gt;// 辅助服务，监听了其他端口，这里是 pprof 服务，用于 debug&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt; http.ListenAndServe(&lt;span class=&quot;hljs-string&quot;&gt;&quot;:8081&quot;&lt;/span&gt;, &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt;)
+}&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;灵魂拷问来了，请问：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;如果 &lt;code&gt;server&lt;/code&gt; 是在其他包里面，如果没有特殊说明，你知道这是一个异步调用么？&lt;/li&gt;&lt;li&gt;&lt;code&gt;main&lt;/code&gt; 函数当中最后在哪里空转干什么？会不会存在浪费？&lt;/li&gt;&lt;li&gt;如果线上出现事故，debug 服务已经退出，你想要 debug 这时你是否很茫然？&lt;/li&gt;&lt;li&gt;如果某一天服务突然重启，你却找不到事故日志，你是否能想起这个 &lt;code&gt;8081&lt;/code&gt; 端口的服务？&lt;/li&gt;&lt;/ul&gt;&lt;h4 id=&quot;请将选择权留给对方，不要帮别人做选择&quot;&gt;&lt;a href=&quot;#请将选择权留给对方，不要帮别人做选择&quot; class=&quot;headerlink&quot; title=&quot;请将选择权留给对方，不要帮别人做选择&quot;/&gt;请将选择权留给对方，不要帮别人做选择&lt;/h4&gt;&lt;p&gt;请把是否并发的选择权交给你的调用者，而不是自己就直接悄悄的用上了 goroutine&lt;br/&gt;下面这次改动将两个函数是否并发操作的选择权留给了 main 函数&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;package&lt;/span&gt; main
+
+&lt;span class=&quot;hljs-keyword&quot;&gt;import&lt;/span&gt; (
+&lt;span class=&quot;hljs-string&quot;&gt;&quot;log&quot;&lt;/span&gt;
+&lt;span class=&quot;hljs-string&quot;&gt;&quot;net/http&quot;&lt;/span&gt;
+_ &lt;span class=&quot;hljs-string&quot;&gt;&quot;net/http/pprof&quot;&lt;/span&gt;
+)
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;setup&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-comment&quot;&gt;// 这里面有一些初始化的操作&lt;/span&gt;
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+setup()
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// for debug&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt; pprof()
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// 主服务&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt; server()
+
+&lt;span class=&quot;hljs-keyword&quot;&gt;select&lt;/span&gt; {}
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;server&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+mux := http.NewServeMux()
+mux.HandleFunc(&lt;span class=&quot;hljs-string&quot;&gt;&quot;/ping&quot;&lt;/span&gt;, &lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(w http.ResponseWriter, r *http.Request)&lt;/span&gt;&lt;/span&gt; {
+w.Write([]&lt;span class=&quot;hljs-keyword&quot;&gt;byte&lt;/span&gt;(&lt;span class=&quot;hljs-string&quot;&gt;&quot;pong&quot;&lt;/span&gt;))
+})
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// 主服务&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; err := http.ListenAndServe(&lt;span class=&quot;hljs-string&quot;&gt;&quot;:8080&quot;&lt;/span&gt;, mux); err != &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt; {
+log.Panicf(&lt;span class=&quot;hljs-string&quot;&gt;&quot;http server err: %+v&quot;&lt;/span&gt;, err)
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt;
+}
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;pprof&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-comment&quot;&gt;// 辅助服务，监听了其他端口，这里是 pprof 服务，用于 debug&lt;/span&gt;
+http.ListenAndServe(&lt;span class=&quot;hljs-string&quot;&gt;&quot;:8081&quot;&lt;/span&gt;, &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt;)
+}&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&quot;请不要作为一个旁观者&quot;&gt;&lt;a href=&quot;#请不要作为一个旁观者&quot; class=&quot;headerlink&quot; title=&quot;请不要作为一个旁观者&quot;/&gt;请不要作为一个旁观者&lt;/h4&gt;&lt;p&gt;一般情况下，不要让主进程成为一个旁观者，明明可以干活，但是最后使用了一个 &lt;code&gt;select&lt;/code&gt; 在那儿空跑&lt;br/&gt;感谢上一步将是否异步的选择权交给了我( &lt;code&gt;main&lt;/code&gt; )，在旁边看着也怪尴尬的&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;package&lt;/span&gt; main
+
+&lt;span class=&quot;hljs-keyword&quot;&gt;import&lt;/span&gt; (
+&lt;span class=&quot;hljs-string&quot;&gt;&quot;log&quot;&lt;/span&gt;
+&lt;span class=&quot;hljs-string&quot;&gt;&quot;net/http&quot;&lt;/span&gt;
+_ &lt;span class=&quot;hljs-string&quot;&gt;&quot;net/http/pprof&quot;&lt;/span&gt;
+)
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;setup&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-comment&quot;&gt;// 这里面有一些初始化的操作&lt;/span&gt;
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+setup()
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// for debug&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt; pprof()
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// 主服务&lt;/span&gt;
+server()
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;server&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+mux := http.NewServeMux()
+mux.HandleFunc(&lt;span class=&quot;hljs-string&quot;&gt;&quot;/ping&quot;&lt;/span&gt;, &lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(w http.ResponseWriter, r *http.Request)&lt;/span&gt;&lt;/span&gt; {
+w.Write([]&lt;span class=&quot;hljs-keyword&quot;&gt;byte&lt;/span&gt;(&lt;span class=&quot;hljs-string&quot;&gt;&quot;pong&quot;&lt;/span&gt;))
+})
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// 主服务&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; err := http.ListenAndServe(&lt;span class=&quot;hljs-string&quot;&gt;&quot;:8080&quot;&lt;/span&gt;, mux); err != &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt; {
+log.Panicf(&lt;span class=&quot;hljs-string&quot;&gt;&quot;http server err: %+v&quot;&lt;/span&gt;, err)
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt;
+}
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;pprof&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-comment&quot;&gt;// 辅助服务，监听了其他端口，这里是 pprof 服务，用于 debug&lt;/span&gt;
+http.ListenAndServe(&lt;span class=&quot;hljs-string&quot;&gt;&quot;:8081&quot;&lt;/span&gt;, &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt;)
+}&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&quot;不要创建一个你永远不知道什么时候会退出的-goroutine&quot;&gt;&lt;a href=&quot;#不要创建一个你永远不知道什么时候会退出的-goroutine&quot; class=&quot;headerlink&quot; title=&quot;不要创建一个你永远不知道什么时候会退出的 goroutine&quot;/&gt;不要创建一个你永远不知道什么时候会退出的 goroutine&lt;/h4&gt;&lt;p&gt;我们再做一些改造，使用 &lt;code&gt;channel&lt;/code&gt; 来控制，解释都写在代码注释里面了&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;package&lt;/span&gt; main
+
+&lt;span class=&quot;hljs-keyword&quot;&gt;import&lt;/span&gt; (
+&lt;span class=&quot;hljs-string&quot;&gt;&quot;context&quot;&lt;/span&gt;
+&lt;span class=&quot;hljs-string&quot;&gt;&quot;fmt&quot;&lt;/span&gt;
+&lt;span class=&quot;hljs-string&quot;&gt;&quot;log&quot;&lt;/span&gt;
+&lt;span class=&quot;hljs-string&quot;&gt;&quot;net/http&quot;&lt;/span&gt;
+_ &lt;span class=&quot;hljs-string&quot;&gt;&quot;net/http/pprof&quot;&lt;/span&gt;
+&lt;span class=&quot;hljs-string&quot;&gt;&quot;time&quot;&lt;/span&gt;
+)
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;setup&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-comment&quot;&gt;// 这里面有一些初始化的操作&lt;/span&gt;
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+setup()
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// 用于监听服务退出&lt;/span&gt;
+done := &lt;span class=&quot;hljs-built_in&quot;&gt;make&lt;/span&gt;(&lt;span class=&quot;hljs-keyword&quot;&gt;chan&lt;/span&gt; error, &lt;span class=&quot;hljs-number&quot;&gt;2&lt;/span&gt;)
+&lt;span class=&quot;hljs-comment&quot;&gt;// 用于控制服务退出，传入同一个 stop，做到只要有一个服务退出了那么另外一个服务也会随之退出&lt;/span&gt;
+stop := &lt;span class=&quot;hljs-built_in&quot;&gt;make&lt;/span&gt;(&lt;span class=&quot;hljs-keyword&quot;&gt;chan&lt;/span&gt; &lt;span class=&quot;hljs-keyword&quot;&gt;struct&lt;/span&gt;{}, &lt;span class=&quot;hljs-number&quot;&gt;0&lt;/span&gt;)
+&lt;span class=&quot;hljs-comment&quot;&gt;// for debug&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+done &amp;lt;- pprof(stop)
+}()
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// 主服务&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+done &amp;lt;- app(stop)
+}()
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// stoped 用于判断当前 stop 的状态&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;var&lt;/span&gt; stoped &lt;span class=&quot;hljs-keyword&quot;&gt;bool&lt;/span&gt;
+&lt;span class=&quot;hljs-comment&quot;&gt;// 这里循环读取 done 这个 channel&lt;/span&gt;
+&lt;span class=&quot;hljs-comment&quot;&gt;// 只要有一个退出了，我们就关闭 stop channel&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;for&lt;/span&gt; i := &lt;span class=&quot;hljs-number&quot;&gt;0&lt;/span&gt;; i &amp;lt; &lt;span class=&quot;hljs-built_in&quot;&gt;cap&lt;/span&gt;(done); i++ {
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; err := &amp;lt;-done; err != &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt; {
+log.Printf(&lt;span class=&quot;hljs-string&quot;&gt;&quot;server exit err: %+v&quot;&lt;/span&gt;, err)
+}
+
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; !stoped {
+stoped = &lt;span class=&quot;hljs-literal&quot;&gt;true&lt;/span&gt;
+&lt;span class=&quot;hljs-built_in&quot;&gt;close&lt;/span&gt;(stop)
+}
+}
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(stop &amp;lt;-&lt;span class=&quot;hljs-keyword&quot;&gt;chan&lt;/span&gt; &lt;span class=&quot;hljs-keyword&quot;&gt;struct&lt;/span&gt;{})&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;error&lt;/span&gt;&lt;/span&gt; {
+mux := http.NewServeMux()
+mux.HandleFunc(&lt;span class=&quot;hljs-string&quot;&gt;&quot;/ping&quot;&lt;/span&gt;, &lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(w http.ResponseWriter, r *http.Request)&lt;/span&gt;&lt;/span&gt; {
+w.Write([]&lt;span class=&quot;hljs-keyword&quot;&gt;byte&lt;/span&gt;(&lt;span class=&quot;hljs-string&quot;&gt;&quot;pong&quot;&lt;/span&gt;))
+})
+
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; server(mux, &lt;span class=&quot;hljs-string&quot;&gt;&quot;:8080&quot;&lt;/span&gt;, stop)
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;pprof&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(stop &amp;lt;-&lt;span class=&quot;hljs-keyword&quot;&gt;chan&lt;/span&gt; &lt;span class=&quot;hljs-keyword&quot;&gt;struct&lt;/span&gt;{})&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;error&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-comment&quot;&gt;// 注意这里主要是为了模拟服务意外退出，用于验证一个服务退出，其他服务同时退出的场景&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+server(http.DefaultServeMux, &lt;span class=&quot;hljs-string&quot;&gt;&quot;:8081&quot;&lt;/span&gt;, stop)
+}()
+
+time.Sleep(&lt;span class=&quot;hljs-number&quot;&gt;5&lt;/span&gt; * time.Second)
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; fmt.Errorf(&lt;span class=&quot;hljs-string&quot;&gt;&quot;mock pprof exit&quot;&lt;/span&gt;)
+}
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// 启动一个服务&lt;/span&gt;
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;server&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(handler http.Handler, addr &lt;span class=&quot;hljs-keyword&quot;&gt;string&lt;/span&gt;, stop &amp;lt;-&lt;span class=&quot;hljs-keyword&quot;&gt;chan&lt;/span&gt; &lt;span class=&quot;hljs-keyword&quot;&gt;struct&lt;/span&gt;{})&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;error&lt;/span&gt;&lt;/span&gt; {
+s := http.Server{
+Handler: handler,
+Addr:    addr,
+}
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// 这个 goroutine 我们可以控制退出，因为只要 stop 这个 channel close 或者是写入数据，这里就会退出&lt;/span&gt;
+&lt;span class=&quot;hljs-comment&quot;&gt;// 同时因为调用了 s.Shutdown 调用之后，http 这个函数启动的 http server 也会优雅退出&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+&amp;lt;-stop
+log.Printf(&lt;span class=&quot;hljs-string&quot;&gt;&quot;server will exiting, addr: %s&quot;&lt;/span&gt;, addr)
+s.Shutdown(context.Background())
+}()
+
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; s.ListenAndServe()
+}&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;我们看一下返回结果，这个代码启动 5s 之后就会退出程序&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;❯ &lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt; run ./&lt;span class=&quot;hljs-number&quot;&gt;01&lt;/span&gt;_goroutine/&lt;span class=&quot;hljs-number&quot;&gt;04&lt;/span&gt;
+&lt;span class=&quot;hljs-number&quot;&gt;2020&lt;/span&gt;/&lt;span class=&quot;hljs-number&quot;&gt;12&lt;/span&gt;/&lt;span class=&quot;hljs-number&quot;&gt;08&lt;/span&gt; &lt;span class=&quot;hljs-number&quot;&gt;21&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;49&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;43&lt;/span&gt; server exit err: mock pprof exit
+&lt;span class=&quot;hljs-number&quot;&gt;2020&lt;/span&gt;/&lt;span class=&quot;hljs-number&quot;&gt;12&lt;/span&gt;/&lt;span class=&quot;hljs-number&quot;&gt;08&lt;/span&gt; &lt;span class=&quot;hljs-number&quot;&gt;21&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;49&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;43&lt;/span&gt; server will exiting, addr: :&lt;span class=&quot;hljs-number&quot;&gt;8081&lt;/span&gt;
+&lt;span class=&quot;hljs-number&quot;&gt;2020&lt;/span&gt;/&lt;span class=&quot;hljs-number&quot;&gt;12&lt;/span&gt;/&lt;span class=&quot;hljs-number&quot;&gt;08&lt;/span&gt; &lt;span class=&quot;hljs-number&quot;&gt;21&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;49&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;43&lt;/span&gt; server will exiting, addr: :&lt;span class=&quot;hljs-number&quot;&gt;8080&lt;/span&gt;
+&lt;span class=&quot;hljs-number&quot;&gt;2020&lt;/span&gt;/&lt;span class=&quot;hljs-number&quot;&gt;12&lt;/span&gt;/&lt;span class=&quot;hljs-number&quot;&gt;08&lt;/span&gt; &lt;span class=&quot;hljs-number&quot;&gt;21&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;49&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;43&lt;/span&gt; server exit err: http: Server closed&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&quot;思考题&quot;&gt;&lt;a href=&quot;#思考题&quot; class=&quot;headerlink&quot; title=&quot;思考题&quot;/&gt;思考题&lt;/h4&gt;&lt;p&gt;虽然我们已经经过了三轮优化，但是这里还是有一些需要注意的地方，可以思考一下怎么做&lt;/p&gt;&lt;ul&gt;&lt;li&gt;虽然我们调用了 &lt;code&gt;Shutdown&lt;/code&gt; 方法，但是我们其实并没有实现优雅退出，相信聪明的你可以完成这项工作。可以参考上一篇笔记：&lt;a href=&quot;https://lailin.xyz/post/go-training-03.html&quot;&gt;Go 错误处理最佳实践&lt;/a&gt;&lt;/li&gt;&lt;li&gt;在 &lt;code&gt;server&lt;/code&gt; 方法中我们并没有处理 &lt;code&gt;panic&lt;/code&gt; 的逻辑，这里需要处理么？如果需要那该如何处理呢？&lt;/li&gt;&lt;/ul&gt;&lt;h3 id=&quot;不要创建一个永远都无法退出的-goroutine-goroutine-泄漏&quot;&gt;&lt;a href=&quot;#不要创建一个永远都无法退出的-goroutine-goroutine-泄漏&quot; class=&quot;headerlink&quot; title=&quot;不要创建一个永远都无法退出的 goroutine [goroutine 泄漏]&quot;/&gt;不要创建一个永远都无法退出的 goroutine [goroutine 泄漏]&lt;/h3&gt;&lt;p&gt;再来看下面一个例子，这也是常常会用到的操作&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;leak&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(w http.ResponseWriter, r *http.Request)&lt;/span&gt;&lt;/span&gt; {
+ch := &lt;span class=&quot;hljs-built_in&quot;&gt;make&lt;/span&gt;(&lt;span class=&quot;hljs-keyword&quot;&gt;chan&lt;/span&gt; &lt;span class=&quot;hljs-keyword&quot;&gt;bool&lt;/span&gt;, &lt;span class=&quot;hljs-number&quot;&gt;0&lt;/span&gt;)
+&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+fmt.Println(&lt;span class=&quot;hljs-string&quot;&gt;&quot;异步任务做一些操作&quot;&lt;/span&gt;)
+&amp;lt;-ch
+}()
+
+w.Write([]&lt;span class=&quot;hljs-keyword&quot;&gt;byte&lt;/span&gt;(&lt;span class=&quot;hljs-string&quot;&gt;&quot;will leak&quot;&lt;/span&gt;))
+}&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;复用一下上面的 server 代码，我们经常会写出这种类似的代码&lt;/p&gt;&lt;ul&gt;&lt;li&gt;http 请求来了，我们启动一个 goroutine 去做一些耗时一点的工作&lt;/li&gt;&lt;li&gt;然后返回了&lt;/li&gt;&lt;li&gt;然后之前创建的那个 &lt;strong&gt;goroutine 阻塞&lt;/strong&gt;了&lt;/li&gt;&lt;li&gt;然后就泄漏了&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;绝大部分的 goroutine 泄漏都是因为 goroutine 当中因为各种原因阻塞了，我们在外面也没有控制它退出的方式，所以就泄漏了，具体导致阻塞的常见原因会在接下来的 sync 包、channel 中讲到，这里就不过多赘述了&lt;br/&gt;接下来我们验证一下是不是真的泄漏了&lt;br/&gt;启动之后我们访问一下: &lt;a href=&quot;http://localhost:8081/debug/pprof/goroutine?debug=1&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://localhost:8081/debug/pprof/goroutine?debug=1&lt;/a&gt; 查看当前的 goroutine 个数为 7&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;goroutine profile: total &lt;span class=&quot;hljs-number&quot;&gt;7&lt;/span&gt;
+&lt;span class=&quot;hljs-number&quot;&gt;2&lt;/span&gt; @ &lt;span class=&quot;hljs-number&quot;&gt;0x43b945&lt;/span&gt; &lt;span class=&quot;hljs-number&quot;&gt;0x40814f&lt;/span&gt; &lt;span class=&quot;hljs-number&quot;&gt;0x407d8b&lt;/span&gt; &lt;span class=&quot;hljs-number&quot;&gt;0x770998&lt;/span&gt; &lt;span class=&quot;hljs-number&quot;&gt;0x470381&lt;/span&gt;
+#&lt;span class=&quot;hljs-number&quot;&gt;0x770997&lt;/span&gt;main.server.func1+&lt;span class=&quot;hljs-number&quot;&gt;0x37&lt;/span&gt;/home/ll/project/Go&lt;span class=&quot;hljs-number&quot;&gt;-000&lt;/span&gt;/Week03/blog/&lt;span class=&quot;hljs-number&quot;&gt;01&lt;/span&gt;_goroutine/&lt;span class=&quot;hljs-number&quot;&gt;05&lt;/span&gt;/&lt;span class=&quot;hljs-number&quot;&gt;05.&lt;/span&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;71&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;然后我们再访问几次 &lt;a href=&quot;http://localhost:8080/leak&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://localhost:8080/leak&lt;/a&gt; 可以发现 goroutine 增加到了 15 个，而且一直不会下降&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;goroutine profile: total &lt;span class=&quot;hljs-number&quot;&gt;15&lt;/span&gt;
+&lt;span class=&quot;hljs-number&quot;&gt;7&lt;/span&gt; @ &lt;span class=&quot;hljs-number&quot;&gt;0x43b945&lt;/span&gt; &lt;span class=&quot;hljs-number&quot;&gt;0x40814f&lt;/span&gt; &lt;span class=&quot;hljs-number&quot;&gt;0x407d8b&lt;/span&gt; &lt;span class=&quot;hljs-number&quot;&gt;0x770ad0&lt;/span&gt; &lt;span class=&quot;hljs-number&quot;&gt;0x470381&lt;/span&gt;
+#&lt;span class=&quot;hljs-number&quot;&gt;0x770acf&lt;/span&gt;main.leak.func1+&lt;span class=&quot;hljs-number&quot;&gt;0x8f&lt;/span&gt;/home/ll/project/Go&lt;span class=&quot;hljs-number&quot;&gt;-000&lt;/span&gt;/Week03/blog/&lt;span class=&quot;hljs-number&quot;&gt;01&lt;/span&gt;_goroutine/&lt;span class=&quot;hljs-number&quot;&gt;05&lt;/span&gt;/&lt;span class=&quot;hljs-number&quot;&gt;05.&lt;/span&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt;:&lt;span class=&quot;hljs-number&quot;&gt;83&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;确保创建出的-goroutine-的工作已经完成&quot;&gt;&lt;a href=&quot;#确保创建出的-goroutine-的工作已经完成&quot; class=&quot;headerlink&quot; title=&quot;确保创建出的 goroutine 的工作已经完成&quot;/&gt;确保创建出的 goroutine 的工作已经完成&lt;/h3&gt;&lt;p&gt;这个其实就是优雅退出的问题，我们可能启动了很多的 goroutine 去处理一些问题，但是服务退出的时候我们并没有考虑到就直接退出了。例如退出前日志没有 flush 到磁盘，我们的请求还没完全关闭，异步 worker 中还有 job 在执行等等。&lt;br/&gt;我们也来看一个例子，假设现在有一个埋点服务，每次请求我们都会上报一些信息到埋点服务上&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-comment&quot;&gt;// Reporter 埋点服务上报&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;type&lt;/span&gt; Reporter &lt;span class=&quot;hljs-keyword&quot;&gt;struct&lt;/span&gt; {
+}
+
+&lt;span class=&quot;hljs-keyword&quot;&gt;var&lt;/span&gt; reporter Reporter
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// 模拟耗时&lt;/span&gt;
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-params&quot;&gt;(r Reporter)&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;report&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(data &lt;span class=&quot;hljs-keyword&quot;&gt;string&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt; {
+time.Sleep(time.Second)
+fmt.Printf(&lt;span class=&quot;hljs-string&quot;&gt;&quot;report: %s\n&quot;&lt;/span&gt;, data)
+}
+
+mux.HandleFunc(&lt;span class=&quot;hljs-string&quot;&gt;&quot;/ping&quot;&lt;/span&gt;, &lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(w http.ResponseWriter, r *http.Request)&lt;/span&gt;&lt;/span&gt; {
+    &lt;span class=&quot;hljs-comment&quot;&gt;// 在请求中异步调用&lt;/span&gt;
+    &lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt; reporter.report(&lt;span class=&quot;hljs-string&quot;&gt;&quot;ping pong&quot;&lt;/span&gt;)
+    fmt.Println(&lt;span class=&quot;hljs-string&quot;&gt;&quot;ping&quot;&lt;/span&gt;)
+    w.Write([]&lt;span class=&quot;hljs-keyword&quot;&gt;byte&lt;/span&gt;(&lt;span class=&quot;hljs-string&quot;&gt;&quot;pong&quot;&lt;/span&gt;))
+})&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;我在发送了一次请求之后直接退出了，异步上报的逻辑根本没执行上&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;❯ &lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt; run ./&lt;span class=&quot;hljs-number&quot;&gt;01&lt;/span&gt;_goroutine/&lt;span class=&quot;hljs-number&quot;&gt;06&lt;/span&gt;
+ping
+^Csignal: interrupt&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这个有两种改法，一种是给 reporter 加上 shutdown 方法，类似 http 的 shutdown，等待所有的异步上报完成之后，我们再退出，另外一种是我们直接使用 一些 worker 来执行，在当然这个 worker 也要实现类似 shutdown 的方法。一般推荐后一种，因为这样可以避免请求量比较大时，创建大量 goroutine，当然如果请求量比较小，不会很大，用第一种也是可以的。&lt;br/&gt;我们给一个第二种的简单实现，第一种可以参考 &lt;a href=&quot;https://www.ardanlabs.com/blog/2019/04/concurrency-trap-2-incomplete-work.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://www.ardanlabs.com/blog/2019/04/concurrency-trap-2-incomplete-work.html&lt;/a&gt;&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-comment&quot;&gt;// Reporter 埋点服务上报&lt;/span&gt;
+&lt;span class=&quot;hljs-keyword&quot;&gt;type&lt;/span&gt; Reporter &lt;span class=&quot;hljs-keyword&quot;&gt;struct&lt;/span&gt; {
+worker   &lt;span class=&quot;hljs-keyword&quot;&gt;int&lt;/span&gt;
+messages &lt;span class=&quot;hljs-keyword&quot;&gt;chan&lt;/span&gt; &lt;span class=&quot;hljs-keyword&quot;&gt;string&lt;/span&gt;
+wg       sync.WaitGroup
+closed   &lt;span class=&quot;hljs-keyword&quot;&gt;bool&lt;/span&gt;
+}
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// NewReporter NewReporter&lt;/span&gt;
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;NewReporter&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(worker, buffer &lt;span class=&quot;hljs-keyword&quot;&gt;int&lt;/span&gt;)&lt;/span&gt; *&lt;span class=&quot;hljs-title&quot;&gt;Reporter&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; &amp;amp;Reporter{worker: worker, messages: &lt;span class=&quot;hljs-built_in&quot;&gt;make&lt;/span&gt;(&lt;span class=&quot;hljs-keyword&quot;&gt;chan&lt;/span&gt; &lt;span class=&quot;hljs-keyword&quot;&gt;string&lt;/span&gt;, buffer)}
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-params&quot;&gt;(r *Reporter)&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(stop &amp;lt;-&lt;span class=&quot;hljs-keyword&quot;&gt;chan&lt;/span&gt; &lt;span class=&quot;hljs-keyword&quot;&gt;struct&lt;/span&gt;{})&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+&amp;lt;-stop
+r.shutdown()
+}()
+
+&lt;span class=&quot;hljs-keyword&quot;&gt;for&lt;/span&gt; i := &lt;span class=&quot;hljs-number&quot;&gt;0&lt;/span&gt;; i &amp;lt; r.worker; i++ {
+r.wg.Add(&lt;span class=&quot;hljs-number&quot;&gt;1&lt;/span&gt;)
+&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;for&lt;/span&gt; msg := &lt;span class=&quot;hljs-keyword&quot;&gt;range&lt;/span&gt; r.messages {
+time.Sleep(&lt;span class=&quot;hljs-number&quot;&gt;5&lt;/span&gt; * time.Second)
+fmt.Printf(&lt;span class=&quot;hljs-string&quot;&gt;&quot;report: %s\n&quot;&lt;/span&gt;, msg)
+}
+r.wg.Done()
+}()
+}
+r.wg.Wait()
+}
+
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-params&quot;&gt;(r *Reporter)&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;shutdown&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+r.closed = &lt;span class=&quot;hljs-literal&quot;&gt;true&lt;/span&gt;
+&lt;span class=&quot;hljs-comment&quot;&gt;// 注意，这个一定要在主服务结束之后再执行，避免关闭 channel 还有其他地方在啊写入&lt;/span&gt;
+&lt;span class=&quot;hljs-built_in&quot;&gt;close&lt;/span&gt;(r.messages)
+}
+
+&lt;span class=&quot;hljs-comment&quot;&gt;// 模拟耗时&lt;/span&gt;
+&lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;hljs-params&quot;&gt;(r *Reporter)&lt;/span&gt; &lt;span class=&quot;hljs-title&quot;&gt;report&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;(data &lt;span class=&quot;hljs-keyword&quot;&gt;string&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt; {
+&lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; r.closed {
+&lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt;
+}
+r.messages &amp;lt;- data
+}&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;然后在 main 函数中我们加上&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;hljs go&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;hljs-function&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;hljs-params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {
+    reporter.run(stop)
+    done &amp;lt;- &lt;span class=&quot;hljs-literal&quot;&gt;nil&lt;/span&gt;
+}()&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;总结&quot;&gt;&lt;a href=&quot;#总结&quot; class=&quot;headerlink&quot; title=&quot;总结&quot;/&gt;总结&lt;/h2&gt;&lt;p&gt;总结一下这一部分讲到的几个要点，这也是我们&lt;/p&gt;&lt;ol&gt;&lt;li&gt;&lt;strong&gt;请将是否异步调用的选择权交给调用者&lt;/strong&gt;，不然很有可能大家并不知道你在这个函数里面使用了 goroutine&lt;/li&gt;&lt;li&gt;如果你要启动一个 goroutine 请对它负责&lt;ol&gt;&lt;li&gt;&lt;strong&gt;永远不要启动一个你无法控制它退出，或者你无法知道它何时推出的 goroutine&lt;/strong&gt;&lt;/li&gt;&lt;li&gt;还有上一篇提到的，启动 goroutine 时请加上 panic recovery 机制，避免服务直接不可用&lt;/li&gt;&lt;li&gt;造成 goroutine 泄漏的主要原因就是 goroutine 中造成了阻塞，并且没有外部手段控制它退出&lt;/li&gt;&lt;/ol&gt;&lt;/li&gt;&lt;li&gt;&lt;strong&gt;尽量避免在请求中直接启动 goroutine 来处理问题&lt;/strong&gt;，而应该通过启动 worker 来进行消费，这样可以避免由于请求量过大，而导致大量创建 goroutine 从而导致 oom，当然如果请求量本身非常小，那当我没说&lt;/li&gt;&lt;/ol&gt;&lt;h2 id=&quot;参考文献&quot;&gt;&lt;a href=&quot;#参考文献&quot; class=&quot;headerlink&quot; title=&quot;参考文献&quot;/&gt;参考文献&lt;/h2&gt;&lt;h2 id=&quot;关注我获取更新&quot;&gt;&lt;a href=&quot;#关注我获取更新&quot; class=&quot;headerlink&quot; title=&quot;关注我获取更新&quot;/&gt;关注我获取更新&lt;/h2&gt;&lt;p&gt;看到这里了还不关注点赞走一波&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
