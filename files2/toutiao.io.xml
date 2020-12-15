@@ -5,29 +5,6 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>b8e96d3171001842c154e1f265b6c1b9</guid>
-<title>架构设计：服务自动化部署和管理流程</title>
-<link>https://toutiao.io/k/vggjh71</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
-
-                    
-
-                    
-                    
-                    &lt;h1&gt;&lt;span&gt;一、分布式服务&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;从常规分布式架构系统来说，划分出十来个独立的微服务模块是很常见的，然后不同的开发人员分工几个服务块，负责日常开发和维护，微服务之间会出现版本差异也是自然的。例如用户服务需要开发版本为7.0，其他服务可能高于这个版本或者低于这个版本，所以对服务发布这块做持续集成就很有必要。&lt;/p&gt;&lt;p&gt;现在比较通用的服务自动发布和管理的技术栈：Jenkins持续集成工具、Docker容器、K8S容器管理。&lt;/p&gt;&lt;h1&gt;&lt;span&gt;二、Jenkins集成&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Jenkins可以很方便的整合常用的代码仓库，例如：GitHub、SVN等，提供持续集成能力，可以把整个代码构建打包，部署做成自动管理流程，代码一经提交就会自动发布到指定环境下，极大减少非必要的工作量。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5674676524953789&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvDYVrLL1CpSefDF5HpkA6nNGuZ5lpggjR6U6XIca5KUrhvibicPMWUne5sxCGDMhAOXAroibZPwOialEA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1082&quot;/&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;开发人员提交本地代码；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;代码仓库通过Hook机制通知Jenkins；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Jenkins获取最新代码编译打包；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;生成Docker镜像文件上传到中心仓库；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;最终触发滚动或者灰度等发布机制；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;在整个代码发布过程如果出现问题，可以快速的回滚到上个版本，需要手动处理的流程极少，作为程序员这个职业，越是工作时间长，越要善用自动化的流程。系统架构越复杂，则服务部署、数据和环境隔离、容灾、灰度、动态扩容就更是需要自动管理，上述技术体系可以很轻松的解决这些问题。&lt;/p&gt;&lt;h1&gt;&lt;span&gt;三、Docker容器&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Docker是作为开源的应用容器引擎，有三个核心概念，Image-镜像，Container-容器、Repository-仓库；开发人员可以通过打包应用和依赖包到一个可移植的容器中，容器是完全使用沙箱机制，相互之间不会有任何接口，然后发布到任何流行的服务器上，也可以实现虚拟化。&lt;/p&gt;&lt;p&gt;上述微服务模块变多，需要持续集成工具管理；同理当Docker容器变多和复杂，管理和调度也是一个问题。&lt;/p&gt;&lt;h1&gt;&lt;span&gt;四、K8S容器管理&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Kubernetes简称K8S，用做灵活和便捷管理和调度Docker容器，提供应用部署、规划、更新、维护的一种机制，让部署容器化的应用简单并且高效，支持自动化部署、大规模可伸缩、应用容器化管理。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.4820415879017013&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvDYVrLL1CpSefDF5HpkA6nNUFeMkI7txaGgqJSVLeRMzl4uRq7AUSUJ9NIc109seuYp5kHiacBdVWw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1058&quot;/&gt;&lt;/p&gt;&lt;p&gt;在上面的部署环境架构下，Docker可以理解为Kubernetes上的一个组件，通过K8S去统一管理。&lt;/p&gt;&lt;p&gt;这样一套服务发布和环境管理的技术体系现在非常常用，从开发的角度看，熟悉基本使用流程最好，原理逻辑不负责，但是实际操作复杂，通常由专业的运维管理，能说清楚环境的搭建思路也是面试中常见的问题。&lt;/p&gt;&lt;h1&gt;&lt;span&gt;五、源代码地址&lt;/span&gt;&lt;/h1&gt;&lt;pre&gt;&lt;code&gt;GitHub地址：知了一笑&lt;br/&gt;https:&lt;span&gt;//github.com/cicadasmile/spring-cloud-base&lt;/span&gt;&lt;br/&gt;GitEE地址：知了一笑&lt;br/&gt;https:&lt;span&gt;//gitee.com/cicadasmile/spring-cloud-base&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.3783359497645212&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvCjMheLZtcM2iaVMBOpIUKR4CDRCG9FLT5K6NmGXvG7exrW0TSuDjnTKJQ5PDq8j8Y7PHDd17Z3gicA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1274&quot;/&gt;&lt;/p&gt;
-                &lt;/div&gt;
-
-                
-
-                
-
-
-
-                
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
 <guid>04464901717dcce2c4ac51c773630c90</guid>
 <title>性能提高 15 倍！只是把 MySQL 换成了 ClickHouse</title>
 <link>https://toutiao.io/k/221a7sh</link>
@@ -57,6 +34,29 @@
                                                                             
                               
             &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>b8e96d3171001842c154e1f265b6c1b9</guid>
+<title>架构设计：服务自动化部署和管理流程</title>
+<link>https://toutiao.io/k/vggjh71</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
+
+                    
+
+                    
+                    
+                    &lt;h1&gt;&lt;span&gt;一、分布式服务&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;从常规分布式架构系统来说，划分出十来个独立的微服务模块是很常见的，然后不同的开发人员分工几个服务块，负责日常开发和维护，微服务之间会出现版本差异也是自然的。例如用户服务需要开发版本为7.0，其他服务可能高于这个版本或者低于这个版本，所以对服务发布这块做持续集成就很有必要。&lt;/p&gt;&lt;p&gt;现在比较通用的服务自动发布和管理的技术栈：Jenkins持续集成工具、Docker容器、K8S容器管理。&lt;/p&gt;&lt;h1&gt;&lt;span&gt;二、Jenkins集成&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Jenkins可以很方便的整合常用的代码仓库，例如：GitHub、SVN等，提供持续集成能力，可以把整个代码构建打包，部署做成自动管理流程，代码一经提交就会自动发布到指定环境下，极大减少非必要的工作量。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5674676524953789&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvDYVrLL1CpSefDF5HpkA6nNGuZ5lpggjR6U6XIca5KUrhvibicPMWUne5sxCGDMhAOXAroibZPwOialEA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1082&quot;/&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;开发人员提交本地代码；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;代码仓库通过Hook机制通知Jenkins；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Jenkins获取最新代码编译打包；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;生成Docker镜像文件上传到中心仓库；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;最终触发滚动或者灰度等发布机制；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;在整个代码发布过程如果出现问题，可以快速的回滚到上个版本，需要手动处理的流程极少，作为程序员这个职业，越是工作时间长，越要善用自动化的流程。系统架构越复杂，则服务部署、数据和环境隔离、容灾、灰度、动态扩容就更是需要自动管理，上述技术体系可以很轻松的解决这些问题。&lt;/p&gt;&lt;h1&gt;&lt;span&gt;三、Docker容器&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Docker是作为开源的应用容器引擎，有三个核心概念，Image-镜像，Container-容器、Repository-仓库；开发人员可以通过打包应用和依赖包到一个可移植的容器中，容器是完全使用沙箱机制，相互之间不会有任何接口，然后发布到任何流行的服务器上，也可以实现虚拟化。&lt;/p&gt;&lt;p&gt;上述微服务模块变多，需要持续集成工具管理；同理当Docker容器变多和复杂，管理和调度也是一个问题。&lt;/p&gt;&lt;h1&gt;&lt;span&gt;四、K8S容器管理&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Kubernetes简称K8S，用做灵活和便捷管理和调度Docker容器，提供应用部署、规划、更新、维护的一种机制，让部署容器化的应用简单并且高效，支持自动化部署、大规模可伸缩、应用容器化管理。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.4820415879017013&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvDYVrLL1CpSefDF5HpkA6nNUFeMkI7txaGgqJSVLeRMzl4uRq7AUSUJ9NIc109seuYp5kHiacBdVWw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1058&quot;/&gt;&lt;/p&gt;&lt;p&gt;在上面的部署环境架构下，Docker可以理解为Kubernetes上的一个组件，通过K8S去统一管理。&lt;/p&gt;&lt;p&gt;这样一套服务发布和环境管理的技术体系现在非常常用，从开发的角度看，熟悉基本使用流程最好，原理逻辑不负责，但是实际操作复杂，通常由专业的运维管理，能说清楚环境的搭建思路也是面试中常见的问题。&lt;/p&gt;&lt;h1&gt;&lt;span&gt;五、源代码地址&lt;/span&gt;&lt;/h1&gt;&lt;pre&gt;&lt;code&gt;GitHub地址：知了一笑&lt;br/&gt;https:&lt;span&gt;//github.com/cicadasmile/spring-cloud-base&lt;/span&gt;&lt;br/&gt;GitEE地址：知了一笑&lt;br/&gt;https:&lt;span&gt;//gitee.com/cicadasmile/spring-cloud-base&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.3783359497645212&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvCjMheLZtcM2iaVMBOpIUKR4CDRCG9FLT5K6NmGXvG7exrW0TSuDjnTKJQ5PDq8j8Y7PHDd17Z3gicA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1274&quot;/&gt;&lt;/p&gt;
+                &lt;/div&gt;
+
+                
+
+                
+
+
+
+                
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
 <guid>432fb394efe494eda9d42136e04c4e42</guid>
