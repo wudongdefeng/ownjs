@@ -5,124 +5,6 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>07b89f82038722cb27b77bc26e73c867</guid>
-<title>信任的传递：为什么我们需要第三方授权？</title>
-<link>https://toutiao.io/k/qbrsb6o</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entry-content&quot; itemprop=&quot;articleBody&quot;&gt;&amp;#13;
-&lt;blockquote&gt;
-&lt;p&gt;在证书验证、基于JWT(Json Web Token)的身份认证、IDP(身份提供商)、SP(服务提供商)等技术中，都有一个可信的第三方，可明明是用户对资源或者服务的访问，为啥还要个第三方？   &lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;这篇文章整理了一些相关技术的案例，并尝试分析其这样设计的原因。&lt;/p&gt;
-&lt;h3&gt;经典案例&lt;/h3&gt;
-&lt;h4&gt;01 证书 —— 整个互联网中的信任传递&lt;/h4&gt;
-&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/1-why-we-need-third-party-authorization-.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/1-why-we-need-third-party-authorization-.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;目的&lt;/strong&gt;： 解决两个节点之间的安全通信，常用的是用户访问某个具体的网站&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;背景&lt;/strong&gt;：基于现有的网络协议（如http），在其基础上对信道进行加密，保证安全。这就需要两个节点之间至少持有一个对方的公钥( 用这个秘钥加密的数据只有对方的私钥能解开)，然后才能建立加密的信道。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;面临问题&lt;/strong&gt;：作为用户，我不知道我以后会访问哪些网站，直接去网站获取它的秘钥需要通过网络传输，肯定不安全。操作系统也没办法提前就把信任的网站信息在出厂时就保存，因为有的网站可能还没开发出来。个人与商业网站都没办法相互取得信任。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;具体说明&lt;/strong&gt;：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;证书颁发机构：有第三方公信的权威机构担任，作为一个信任传递的中介，终端电脑只需要建立起与证书颁发机构的信任就可以了。&lt;/li&gt;
-&lt;li&gt;根证书：证书颁发机构的证明，包含机构的信息，公钥，加密签名算法等。根证书会通过预装在操作系统或者浏览器的方式来与终端电脑建立信任。（所以安装不明来历的根证书是不安全的）&lt;/li&gt;
-&lt;li&gt;商业网站的证书（也就是我们平常说的证书）：商业公司通过提供自己的运营资质与相关资料，付费后通过审查被颁发的证明。颁发机构在这个过程中通过审核商业公司的资料，建立信任，并颁发证书作为获得其信任的凭证。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;&lt;strong&gt;信任的凭证：&lt;/strong&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;终端与证书颁发机构之间：根证书&lt;/li&gt;
-&lt;li&gt;根证书终端与商业网站之间：根证书 + 证书&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/2-why-we-need-third-party-authorization-.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/2-why-we-need-third-party-authorization--768x397.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/3-why-we-need-third-party-authorization-.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/3-why-we-need-third-party-authorization--768x371.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;信任的传递：&lt;/strong&gt;&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;终端如何信任证书颁发机构：系统或者浏览器会预装通用的颁发机构的根证书，或者系统管理员自己手动安装用户自己信任的根证书，这些根证书即代表了终端对相应证书颁发机构的信任（所以不要轻易安装未知的根证书）。&lt;/li&gt;
-&lt;li&gt;证书颁发机构如何信任商业网站：商业网站在颁发机构提供资料并申请证书，证书颁发机构会在过程中对公司资质进行审核，包括公司的工商注册信息等。如果审核通过，则会颁发一个对应域名的有实效的（比如2年）证书，这即是颁发机构对商业网站的信任凭证。&lt;/li&gt;
-&lt;li&gt;终端如何最终信任商业网站：终端在访问商业网站的时候，如果是https协议，则会下载商业网站的证书，然后进行一系列的验证：时间是否过期域名是否与当前访问一致签名颁发机构是否在自己的信任列表中（也就是系统中是否安装了该颁发机构的根证书）证书本身的签名是否有效。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;&lt;strong&gt;相关场景&lt;/strong&gt;：自签名证书——不通过第三方颁发机构，自己生成证书与根证书。一般用于系统的非生产环境。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;优点：自己生成，方便快捷，且不需要付费。&lt;/li&gt;
-&lt;li&gt;缺点：根证书不是通用的颁发机构的，需要手动将其安装到所有发起访问的终端中，有额外的维护成本。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4&gt;02 IDP/SP 身份提供商与服务提供商 —— 企业级的信任传递&lt;/h4&gt;
-&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/4-why-we-need-third-party-authorization-.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/4-why-we-need-third-party-authorization-.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;目的&lt;/strong&gt;：用户通过合法的身份访问资源和服务。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;背景&lt;/strong&gt;：统一管理身份，资源提供商不需要各自实现一套身份管理。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;面临问题&lt;/strong&gt;：企业或者平台中包含有很多不同的资源和服务，每个资源和服务都实现一套身份管理，这样操作不仅难以管理，用户体验很差，同时外部服务也无法公用已有的身份系统。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;具体说明&lt;/strong&gt;：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;认证服务器：如果不想保存session，认证服务器会将用户的基本信息、token的开始与过期时间、一些元数据等进行签名，生成自验证的token。&lt;/li&gt;
-&lt;li&gt;终端用户：用户在第一次登录认证的时候会提供自己的用户名与密码，并将返回的token保存（一般是cookie），在token有效期内的后续访问只需要发送token就可以证明自己的身份。&lt;/li&gt;
-&lt;li&gt;资源/服务提供商：没有token的访问时，重定向到认证服务器，有token的访问则进行有效性验证。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;&lt;strong&gt;信任的凭证：&lt;/strong&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;IDP到终端：用户在IDP中的验证信息，如用户名和密码&lt;/li&gt;
-&lt;li&gt;IDP到SP：OAuth 2.0中第三方IDP颁发给服务提供商的client id与secret、token等可以证明身份的信息；Saml中IDP生成的xml文件。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/5-why-we-need-third-party-authorization-.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/5-why-we-need-third-party-authorization--768x242.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;br/&gt;
-&lt;strong&gt;信任的传递：&lt;/strong&gt;&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;认证中心到终端：用户使用的用户名和密码等认证信息，并生成返回xml文件（也可以直接跳转到SP）。&lt;/li&gt;
-&lt;li&gt;终端到资源服务器：发送这个xml文件，证明自己的身份。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;&lt;strong&gt;相关场景&lt;/strong&gt;：认证与具体服务耦合场景——在业务的服务中，同时包含了用户信息与相应权限的管理。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;优点：适合简单场景，单体服务。&lt;/li&gt;
-&lt;li&gt;缺点：当服务变多时，容易演变为每个服务各自为战，自己都有一套身份系统，后期难以维护，用户体验也比较差。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4&gt;03. 基于JWT的认证 —— 单次会话中的信任传递&lt;/h4&gt;
-&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/6-why-we-need-third-party-authorization-.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/6-why-we-need-third-party-authorization-.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;目的&lt;/strong&gt;：用户通过合法的身份访问资源和服务&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;背景&lt;/strong&gt;：用户访问资源，不想每次请求都登录&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;面临问题&lt;/strong&gt;：每次请求都填写用户名和密码的用户体验不可想象http协议每次请求都是相互独立的，需要进行验证&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;具体说明&lt;/strong&gt;：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;认证服务器：认证服务器会将用户的基本信息、token的开始与过期时间、一些元数据等进行签名，生成自验证的token。&lt;/li&gt;
-&lt;li&gt;浏览器：用户在第一次登录认证的时候会提供自己是用户名与密码，并将返回的token保存（一般是cookie），在token有效期内的后续访问只需要发送token就可以证明自己的身份。&lt;/li&gt;
-&lt;li&gt;资源/服务提供商：没有token的访问时重定向到认证服务器，有token的访问则进行有效性验证，验证不需要与认证服务器再进行通信，如果是公钥token，只需要在资源服务器或者网关处保存对应的公钥即可对token进行验证。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;&lt;strong&gt;信任的凭证：&lt;/strong&gt; 自验证的token&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/7-why-we-need-third-party-authorization-.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/7-why-we-need-third-party-authorization--768x403.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;信任的传递：&lt;/strong&gt;&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;认证中心信任浏览器：验证用户名密码后生成token，保存cookie到浏览器。          &lt;/li&gt;
-&lt;li&gt;浏览器cookie浏览器到资源服务器：发送请求的同时发送cookie中的token，token会在资源服务器或者网关进行验证，验证通过则为合法用户。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/8-why-we-need-third-party-authorization-.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/8-why-we-need-third-party-authorization--768x196.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;相关场景&lt;/strong&gt;：基于session的认证——浏览器的cookie中只保存session id，没有完整的信息，服务端需要缓存session的具体信息。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;优点：session id比较短，适用于用户信息太过庞大使得token过长的场景。&lt;/li&gt;
-&lt;li&gt;缺点：服务端需要额外维护所有登录的session信息，同时验证的时候需要再与认证中心进行交付。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3&gt;总结：为什么需要第三方授权？&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;终端与资源服务器相互未知——终端不知道会访问那些网站，网站不知道会被哪些终端访问，于是需要一个长久运行的可信第三方建立信任。&lt;/li&gt;
-&lt;li&gt;资源服务器没有自己的身份管理系统——资源服务器关注与提供更好的资源访问，将身份认证服务交给更专业的服务。&lt;/li&gt;
-&lt;li&gt;资源服务器想提供更好的体验，更便捷的登录服务，比如使用Google，WeChate账户登录——资源服务器为提供更便捷的登录，让用户以其它已有的身份登录。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3&gt;Reference：密码学基础&lt;/h3&gt;
-&lt;p&gt;密码学的经典应用是对数据机密性的保护，不过在这篇文章中，我们涉及的是它的另外一个特性——&lt;strong&gt;不可伪造性&lt;/strong&gt;。能够实现不可伪造性的技术不止一种：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;非对称（公私钥）加密——在这种技术中，使用公钥加密数据，私钥解密数据是它的加密应用；同时可以使用私钥签名数据，公钥进行验证，因为私钥只有自己持有，公钥可以公开，就可以达到身份认证的目的。就好比一个人在支票上的签名，自己的笔迹是私钥，别人无法模仿；在不同银行开户时存底的签名模板是公钥，可以在不同银行存底；验签的过程就是银行将支票上的签名与存底模板进行比对的过程。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;对称加密或者带盐Hash——在能够分享同一个秘钥，并且接受秘钥分享带来的风险的内部网络中，使用加密或者带盐Hash同样也可以实现身份验证的目的，将一份随机文本加密或者Hash后生成一个摘要，这段文本和摘要一起就组成了一个签名。&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;hr/&gt;
-&lt;p&gt;&lt;strong&gt;更多精彩洞见，请关注微信公众号：ThoughtWorks洞见&lt;/strong&gt;&lt;/p&gt;
-&amp;#13;
-&lt;/div&gt;&amp;#13;
-&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>d6daf3df4558beaceaf8b623f36e111e</guid>
-<title>并发编程：信号量的使用方法和其实现原理</title>
-<link>https://toutiao.io/k/59jykba</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;什么是信号量&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;信号量是并发编程中常见的一种同步机制，在需要控制访问资源的线程数量时就会用到信号量，关于什么是信号量这个问题，我引用一下维基百科对信号量的解释，大家就明白了。&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;信号量的概念是计算机科学家 &lt;strong&gt;Dijkstra&lt;/strong&gt; （Dijkstra算法的发明者）提出来的，广泛应用在不同的操作系统中。系统中，会给每一个进程一个信号量，代表每个进程当前的状态，未得到控制权的进程，会在特定的地方被迫停下来，等待可以继续进行的信号到来。&lt;/p&gt;&lt;/blockquote&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;如果信号量是一个任意的整数，通常被称为计数信号量（Counting semaphore），或一般信号量（general semaphore）；如果信号量只有二进制的0或1，称为二进制信号量（binary semaphore）。在linux系统中，二进制信号量（binary semaphore）又称互斥锁（Mutex）&lt;/p&gt;&lt;p&gt;&lt;span&gt;计数信号量具备两种操作动作，称为V（&lt;/span&gt;&lt;code&gt;signal()&lt;/code&gt;&lt;span&gt;）与P（&lt;/span&gt;&lt;code&gt;wait()&lt;/code&gt;&lt;span&gt;）（即部分参考书常称的“PV操作”）。&lt;/span&gt;&lt;span&gt;V操作会增加信号&lt;/span&gt;量&lt;span&gt;S的数值，P操作会减少它。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;运行方式：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;初始化信号量，给与它一个非负数的整数值。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;运行P（&lt;/span&gt;&lt;code&gt;wait()&lt;/code&gt;&lt;span&gt;），信号&lt;/span&gt;量&lt;span&gt;S的值将被减少。&lt;/span&gt;&lt;span&gt;企图进入&lt;/span&gt;临界区&lt;span&gt;的进程，需要先运行P（&lt;/span&gt;&lt;code&gt;wait()&lt;/code&gt;&lt;span&gt;）。&lt;/span&gt;&lt;span&gt;当信号&lt;/span&gt;量&lt;span&gt;S减为负值时，进程会被阻塞住，不能继续；&lt;/span&gt;&lt;span&gt;当信号&lt;/span&gt;量&lt;span&gt;S不为负值时，进程可以获准进入临界区。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;运行V（&lt;/span&gt;&lt;code&gt;signal()&lt;/code&gt;&lt;span&gt;），信号量S的值会被增加。&lt;/span&gt;&lt;span&gt;结束离开&lt;/span&gt;临界区&lt;span&gt;的进程，将会运行V（&lt;/span&gt;&lt;code&gt;signal()&lt;/code&gt;&lt;span&gt;）。&lt;/span&gt;&lt;span&gt;当信号&lt;/span&gt;量&lt;span&gt;S不为负值时，先前被阻塞住的其他进程，将可获准进入&lt;/span&gt;临界区&lt;span&gt;。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们一般用信号量保护一组资源，比如数据库连接池、一组客户端的连接等等。&lt;strong&gt;每次获取资源时都会将信号量中的计数器减去对应的数值，在释放资源时重新加回来。当遇到信号量资源不够时尝试获取的线程就会进入休眠，等待其他线程释放归还信号量&lt;/strong&gt;。如果信号量是只有0和1的二进位信号量，那么，它的 P/V 就和互斥锁的 Lock/Unlock 一样了。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;Go语言中的信号量表示&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Go&lt;/code&gt; 内部使用信号量来控制&lt;code&gt;goroutine&lt;/code&gt;的阻塞和唤醒，比如互斥锁&lt;code&gt;sync.Mutex&lt;/code&gt;结构体定义的第二个字段就是一个信号量。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;type&lt;/span&gt; Mutex &lt;span&gt;struct&lt;/span&gt; {&lt;br/&gt;    state &lt;span&gt;int32&lt;/span&gt;&lt;br/&gt;    sema  &lt;span&gt;uint32&lt;/span&gt;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;信号量的PV操作在&lt;code&gt;Go&lt;/code&gt;内部是通过下面这几个底层函数实现的&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;runtime_Semacquire&lt;/span&gt;&lt;span&gt;(s *&lt;span&gt;uint32&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;runtime_SemacquireMutex&lt;/span&gt;&lt;span&gt;(s *&lt;span&gt;uint32&lt;/span&gt;, lifo &lt;span&gt;bool&lt;/span&gt;, skipframes &lt;span&gt;int&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;runtime_Semrelease&lt;/span&gt;&lt;span&gt;(s *&lt;span&gt;uint32&lt;/span&gt;, handoff &lt;span&gt;bool&lt;/span&gt;, skipframes &lt;span&gt;int&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上面几个函数都是&lt;code&gt;Go&lt;/code&gt;语言内部使用的，我们不能在编程时直接使用。不过&lt;code&gt;Go&lt;/code&gt; 语言的扩展并发原语包中提供了带权重的信号量 &lt;code&gt;semaphore.Weighted&lt;/code&gt;&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;使用信号量前，需先在项目里安装&lt;code&gt;golang.org/x/sync/&lt;/code&gt;包&lt;/p&gt;&lt;p&gt;安装方法：&lt;strong&gt;go get -u golang.org/x/sync&lt;/strong&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们可以按照不同的权重对资源的访问进行管理，这个结构体对外提供了四个方法：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;strong&gt;semaphore.NewWeighted&lt;/strong&gt; 用于创建新的信号量，通过参数(n int64) 指定信号量的初始值。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;strong&gt;semaphore.Weighted.Acquire&lt;/strong&gt; 阻塞地获取指定权重的资源，如果当前没有空闲资源，就会陷入休眠等待；相当于 P 操作，你可以一次获取多个资源，如果没有足够多的资源，调用者就会被阻塞。它的第一个参数是 Context，这就意味着，你可以通过 Context 增加超时或者 cancel 的机制。如果是正常获取了资源，就返回 &lt;code&gt;nil&lt;/code&gt;；否则，就返回&lt;code&gt;ctx.Err()&lt;/code&gt;，信号量不改变。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;strong&gt;semaphore.Weighted.Release&lt;/strong&gt; 用于释放指定权重的资源；相当于 V 操作，可以将 n 个资源释放，返还给信号量。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;strong&gt;semaphore.Weighted.TryAcquire&lt;/strong&gt; 非阻塞地获取指定权重的资源，如果当前没有空闲资源，就会直接返回 &lt;code&gt;false&lt;/code&gt;；&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;在Go编程里使用信号量&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在实际应用&lt;code&gt;Go&lt;/code&gt;语言开发程序时，有哪些场景适合使用信号量呢？&lt;strong&gt;在需要控制访问资源的线程数量时就会需要信号量&lt;/strong&gt;，我来举个例子帮助你理解。假设我们有一组要抓取的页面，资源有限最多允许我们同时执行三个抓取任务，当同时有三个抓取任务在执行时，在执行完一个抓取任务后才能执行下一个排队等待的任务。当然这个问题用Channel也能解决，不过这次我们使用Go提供的信号量原语来解决这个问题，代码如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;package&lt;/span&gt; main&lt;br/&gt;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; (&lt;br/&gt;    &lt;span&gt;&quot;context&quot;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&quot;fmt&quot;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&quot;sync&quot;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&quot;time&quot;&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&quot;golang.org/x/sync/semaphore&quot;&lt;/span&gt;&lt;br/&gt;)&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;doSomething&lt;/span&gt;&lt;span&gt;(u &lt;span&gt;string&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt; {&lt;span&gt;// 模拟抓取任务的执行&lt;/span&gt;&lt;br/&gt;    fmt.Println(u)&lt;br/&gt;    time.Sleep(&lt;span&gt;2&lt;/span&gt; * time.Second)&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;const&lt;/span&gt; (&lt;br/&gt;    Limit  = &lt;span&gt;3&lt;/span&gt; &lt;span&gt;// 同時并行运行的goroutine上限&lt;/span&gt;&lt;br/&gt;    Weight = &lt;span&gt;1&lt;/span&gt; &lt;span&gt;// 每个goroutine获取信号量资源的权重&lt;/span&gt;&lt;br/&gt;)&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;    urls := []&lt;span&gt;string&lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;&quot;http://www.example.com&quot;&lt;/span&gt;,&lt;br/&gt;        &lt;span&gt;&quot;http://www.example.net&quot;&lt;/span&gt;,&lt;br/&gt;        &lt;span&gt;&quot;http://www.example.net/foo&quot;&lt;/span&gt;,&lt;br/&gt;        &lt;span&gt;&quot;http://www.example.net/bar&quot;&lt;/span&gt;,&lt;br/&gt;        &lt;span&gt;&quot;http://www.example.net/baz&quot;&lt;/span&gt;,&lt;br/&gt;    }&lt;br/&gt;    s := semaphore.NewWeighted(Limit)&lt;br/&gt;    &lt;span&gt;var&lt;/span&gt; w sync.WaitGroup&lt;br/&gt;    &lt;span&gt;for&lt;/span&gt; _, u := &lt;span&gt;range&lt;/span&gt; urls {&lt;br/&gt;        w.Add(&lt;span&gt;1&lt;/span&gt;)&lt;br/&gt;        &lt;span&gt;go&lt;/span&gt; &lt;span&gt;&lt;span&gt;func&lt;/span&gt;&lt;span&gt;(u &lt;span&gt;string&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;            s.Acquire(context.Background(), Weight)&lt;br/&gt;            doSomething(u)&lt;br/&gt;            s.Release(Weight)&lt;br/&gt;            w.Done()&lt;br/&gt;        }(u)&lt;br/&gt;    }&lt;br/&gt;    w.Wait()&lt;br/&gt;    &lt;br/&gt;    fmt.Println(&lt;span&gt;&quot;All Done&quot;&lt;/span&gt;)&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;Go语言信号量的实现原理&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Go&lt;/code&gt;语言扩展库中的信号量是使用互斥锁和List 实现的。互斥锁实现其它字段的保护，而 List 实现了一个等待队列，等待者的通知是通过 &lt;code&gt;Channel&lt;/code&gt; 的通知机制实现的。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;信号量的数据结构&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们来看一下信号量&lt;code&gt;semaphore.Weighted&lt;/code&gt;的数据结构：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;type&lt;/span&gt; Weighted &lt;span&gt;struct&lt;/span&gt; {&lt;br/&gt;    size    &lt;span&gt;int64&lt;/span&gt;         &lt;span&gt;// 最大资源数&lt;/span&gt;&lt;br/&gt;    cur     &lt;span&gt;int64&lt;/span&gt;         &lt;span&gt;// 当前已被使用的资源&lt;/span&gt;&lt;br/&gt;    mu      sync.Mutex    &lt;span&gt;// 互斥锁，对字段的保护&lt;/span&gt;&lt;br/&gt;    waiters list.List     &lt;span&gt;// 等待队列&lt;/span&gt;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;size&lt;/code&gt;字段用来记录信号量拥有的最大资源数。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;cur&lt;/code&gt;标识当前已被使用的资源数。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;mu&lt;/code&gt;是一个互斥锁用来提供对其他字段的临界区保护。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;waiters&lt;/code&gt;表示申请资源时由于可使用资源不够而陷入阻塞等待的调用者列表。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;Acquire请求信号量资源&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Acquire&lt;/code&gt;方法会监控资源是否可用，而且还要检测传递进来的&lt;code&gt;context.Context&lt;/code&gt;对象是否发送了超时过期或者取消的信号，我们来看一下它的代码实现：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;(s *Weighted)&lt;/span&gt; &lt;span&gt;Acquire&lt;/span&gt;&lt;span&gt;(ctx context.Context, n &lt;span&gt;int64&lt;/span&gt;)&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;    s.mu.Lock()&lt;br/&gt;    &lt;span&gt;// 如果恰好有足够的资源，也没有排队等待获取资源的goroutine，&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// 将cur加上n后直接返回&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; s.size-s.cur &amp;gt;= n &amp;amp;&amp;amp; s.waiters.Len() == &lt;span&gt;0&lt;/span&gt; {&lt;br/&gt;      s.cur += n&lt;br/&gt;      s.mu.Unlock()&lt;br/&gt;      &lt;span&gt;return&lt;/span&gt; &lt;span&gt;nil&lt;/span&gt;&lt;br/&gt;    }&lt;br/&gt;  &lt;br/&gt;    &lt;span&gt;// 请求的资源数大于能提供的最大的资源数&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// 这个任务处理不了，走错误处理逻辑&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; n &amp;gt; s.size {&lt;br/&gt;      s.mu.Unlock()&lt;br/&gt;      &lt;span&gt;// 依赖ctx的状态返回，否则一直等待&lt;/span&gt;&lt;br/&gt;      &amp;lt;-ctx.Done()&lt;br/&gt;      &lt;span&gt;return&lt;/span&gt; ctx.Err()&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;// 现存资源不够, 需要把调用者加入到等待队列中&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// 创建了一个ready chan,以便被通知唤醒&lt;/span&gt;&lt;br/&gt;    ready := &lt;span&gt;make&lt;/span&gt;(&lt;span&gt;chan&lt;/span&gt; &lt;span&gt;struct&lt;/span&gt;{})&lt;br/&gt;    w := waiter{n: n, ready: ready}&lt;br/&gt;    elem := s.waiters.PushBack(w)&lt;br/&gt;    s.mu.Unlock()&lt;br/&gt;  &lt;br/&gt;&lt;br/&gt;    &lt;span&gt;// 等待&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;select&lt;/span&gt; {&lt;br/&gt;    &lt;span&gt;case&lt;/span&gt; &amp;lt;-ctx.Done(): &lt;span&gt;// context的Done被关闭&lt;/span&gt;&lt;br/&gt;      err := ctx.Err()&lt;br/&gt;      s.mu.Lock()&lt;br/&gt;      &lt;span&gt;select&lt;/span&gt; {&lt;br/&gt;      &lt;span&gt;case&lt;/span&gt; &amp;lt;-ready: &lt;span&gt;// 如果被唤醒了，忽略ctx的状态&lt;/span&gt;&lt;br/&gt;        err = &lt;span&gt;nil&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;default&lt;/span&gt;: &lt;span&gt;// 通知waiter&lt;/span&gt;&lt;br/&gt;        isFront := s.waiters.Front() == elem&lt;br/&gt;        s.waiters.Remove(elem)&lt;br/&gt;        &lt;span&gt;// 通知其它的waiters,检查是否有足够的资源&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; isFront &amp;amp;&amp;amp; s.size &amp;gt; s.cur {&lt;br/&gt;          s.notifyWaiters()&lt;br/&gt;        }&lt;br/&gt;      }&lt;br/&gt;      s.mu.Unlock()&lt;br/&gt;      &lt;span&gt;return&lt;/span&gt; err&lt;br/&gt;    &lt;span&gt;case&lt;/span&gt; &amp;lt;-ready: &lt;span&gt;// 等待者被唤醒了&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;return&lt;/span&gt; &lt;span&gt;nil&lt;/span&gt;&lt;br/&gt;    }&lt;br/&gt;  }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果调用者请求不到信号量的资源就会被加入等待者列表里，这里等待者列表的结构体定义是：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;type&lt;/span&gt; waiter struct {&lt;br/&gt; n     int64&lt;br/&gt; ready chan&amp;lt;- struct{} // 当调用者可以获取到信号量资源时, close调这个chan&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;包含了两个字段，调用者请求的资源数，以及一个ready 通道。ready通道会在调用者可以被重新唤醒的时候被&lt;code&gt;close&lt;/code&gt;调，从而起到通知正在阻塞读取ready通道的等待者的作用。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;NotifyWaiters 通知等待者&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;notifyWaiters&lt;/code&gt;方法会逐个检查队列里等待的调用者，如果现存资源够等待者请求的数量n，或者是没有等待者了，就返回：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;(s *Weighted)&lt;/span&gt; &lt;span&gt;notifyWaiters&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;    &lt;span&gt;for&lt;/span&gt; {&lt;br/&gt;      next := s.waiters.Front()&lt;br/&gt;      &lt;span&gt;if&lt;/span&gt; next == &lt;span&gt;nil&lt;/span&gt; {&lt;br/&gt;        &lt;span&gt;break&lt;/span&gt; &lt;span&gt;// 没有等待者了，直接返回&lt;/span&gt;&lt;br/&gt;      }&lt;br/&gt;  &lt;br/&gt;&lt;br/&gt;      w := next.Value.(waiter)&lt;br/&gt;      &lt;span&gt;if&lt;/span&gt; s.size-s.cur &amp;lt; w.n {&lt;br/&gt;        &lt;span&gt;// 如果现有资源不够队列头调用者请求的资源数，就退出所有等待者会继续等待&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;// 这里还是按照先入先出的方式处理是为了避免饥饿&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;break&lt;/span&gt;&lt;br/&gt;      }&lt;br/&gt;&lt;br/&gt;      s.cur += w.n&lt;br/&gt;      s.waiters.Remove(next)&lt;br/&gt;      &lt;span&gt;close&lt;/span&gt;(w.ready)&lt;br/&gt;    }&lt;br/&gt;  }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;notifyWaiters&lt;/code&gt;方法是按照先入先出的方式唤醒调用者。当释放 100 个资源的时候，如果第一个等待者需要 101 个资源，那么，队列中的所有等待者都会继续等待，即使队列后面有的等待者只需要 1 个资源。这样做的目的是避免饥饿，否则的话，资源可能总是被那些请求资源数小的调用者获取，这样一来，请求资源数巨大的调用者，就没有机会获得资源了。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;Release归还信号量资源&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Release&lt;/code&gt;方法就很简单了，它将当前计数值减去释放的资源数 n，并调用&lt;code&gt;notifyWaiters&lt;/code&gt;方法，尝试唤醒等待队列中的调用者，看是否有足够的资源被获取。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;(s *Weighted)&lt;/span&gt; &lt;span&gt;Release&lt;/span&gt;&lt;span&gt;(n &lt;span&gt;int64&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;    s.mu.Lock()&lt;br/&gt;    s.cur -= n&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; s.cur &amp;lt; &lt;span&gt;0&lt;/span&gt; {&lt;br/&gt;      s.mu.Unlock()&lt;br/&gt;      &lt;span&gt;panic&lt;/span&gt;(&lt;span&gt;&quot;semaphore: released more than held&quot;&lt;/span&gt;)&lt;br/&gt;    }&lt;br/&gt;    s.notifyWaiters()&lt;br/&gt;    s.mu.Unlock()&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;总结&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在&lt;code&gt;Go&lt;/code&gt;语言中信号量有时候也会被&lt;code&gt;Channel&lt;/code&gt;类型所取代，因为一个 buffered chan 也可以代表 n 个资源。不过既然&lt;code&gt;Go&lt;/code&gt;语言通过&lt;code&gt;golang.orgx/sync&lt;/code&gt;扩展库对外提供了&lt;code&gt;semaphore.Weight&lt;/code&gt;这一种信号量实现，遇到使用信号量的场景时还是尽量使用官方提供的实现。在使用的过程中我们需要注意以下的几个问题：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;Acquire&lt;/code&gt;和 &lt;code&gt;TryAcquire&lt;/code&gt;方法都可以用于获取资源，前者会阻塞地获取信号量。后者会非阻塞地获取信号量，如果获取不到就返回&lt;code&gt;false&lt;/code&gt;。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;Release&lt;/code&gt;归还信号量后，会以先进先出的顺序唤醒等待队列中的调用者。如果现有资源不够处于等待队列前面的调用者请求的资源数，所有等待者会继续等待。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如果一个&lt;code&gt;goroutine&lt;/code&gt;申请较多的资源，由于上面说的归还后唤醒等待者的策略，它可能会等待比较长的时间。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
 <guid>fd4c6cb195815ccd897df8ddadd88377</guid>
 <title>美团 Commit Log 规范</title>
 <link>https://toutiao.io/k/r6tsfdv</link>
@@ -280,330 +162,241 @@ chmod +x .git/hooks/commit-msg
 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>64212ffaf6e8eb25a8bc1919f442dcd3</guid>
-<title>[推荐] 彻底搞懂 IO 底层原理</title>
-<link>https://toutiao.io/k/493onla</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;武侠小说里有很多的“心法”和“招式”。计算机技术里的“心法”和“招式”呢，我们可以简称为“道”和“术”；&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;strong&gt;“道” &lt;/strong&gt; 最基础的计算机理论，隐藏于表象之下，非常抽象、晦涩难懂，需要用具象化的事物加以理解；&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;“术” &lt;/strong&gt;具体的技艺，它有可能是一门语言，比如：python 出手见效快；&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;我们今天要给大家讲的底层的IO就属于“道”的范畴，看上去简单，实则抽象。并且在它之上衍生出了语言层面用于实战的技术，比如我们熟悉的java语言中的NIO或者像Netty这样的框架。&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;p&gt;一、混乱的 IO 概念&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;IO是Input和Output的缩写，即输入和输出。广义上的围绕计算机的输入输出有很多：鼠标、键盘、扫描仪等等。而我们今天要探讨的是在计算机里面，主要是作用在内存、网卡、硬盘等硬件设备上的输入输出操作。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;谈起IO的模型，大多数人脑子里肯定是一坨混乱的概念，“阻塞”、“非阻塞”，“同步”、“异步”有什么区别？很多同学傻傻分不清，有尝试去搜索相关资料去探究真相，结果又被淹没在茫茫的概念之中。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;这里尝试简单地去解释下为啥会出现这种现象，其中一个很重要的原因就是大家看到的资料对概念的解释都站在了不同的角度，有的站在了底层内核的视角，有的直接在java层面或者Netty框架层面给大家介绍API，所以给大家造成了一定程度的困扰。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;所以在开篇之前，还是要说下本文所站的视角，我们将会从底层内核的层面给大家讲解下IO。因为万变不离其宗，只有了解了底层原理，不管语言层面如何花里胡哨，我们都能以不变应万变。&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;p&gt;二、用户空间和内核空间&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;为了便于大家理解复杂的IO以及零拷贝相关的技术，我们还是得花点时间在回顾下操作系统相关的知识。这一节我们重点看下用户空间和内核空间，基于此后面我们才能更好地聊聊多路复用和零拷贝。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5732394366197183&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/4g5IMGibSxt51WkduUiaiaz4tCEG2xEjV5oz9SETBCW1g1TP5iaQgcWboXo39npAOsvfKDdLutUhLZG4ibJZnZVz0ww/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;710&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;strong&gt;硬 件 层（Hardware） &lt;/strong&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;包括和我们熟知的和IO相关的CPU、内存、磁盘和网卡几个硬件；&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;内核空间（Kernel Space） &lt;/strong&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;计算机开机后首先会运行内核程序，内核程序占用的一块私有的空间就是内核空间，并且可支持访问CPU所有的指令集（ring0 - ring3）以及所有的内存空间、IO及硬件设备；&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;用户空间（User Space）&lt;/strong&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;每个普通的用户进程都有一个单独的用户空间，用户空间只能访问受限的资源（CPU的“保护模式”）也就是说用户空间是无法直接操作像内存、网卡和磁盘等硬件的；&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;如上所述，那我们可能会有疑问，用户空间的进程想要去访问或操作磁盘和网卡该怎么办呢？&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;为此，操作系统在内核中开辟了一块唯一且合法的调用入口“System Call Interface”，也就是我们常说的系统调用，系统调用为上层用户提供了一组能够操作底层硬件的API。这样一来，用户进程就可以通过系统调用访问到操作系统内核，进而就能够间接地完成对底层硬件的操作。这个访问的过程也即用户态到内核态的切换。常见的系统调用有很多，比如：内存映射mmap()、文件操作类的open()、IO读写read()、write()等等。&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;p&gt;三、IO模型&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;strong&gt;1、 BIO（Blocking IO）&lt;/strong&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;我们先看一下大家都熟悉的BIO模型的 Java 伪代码：&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;go&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;ServerSocket serverSocket = &lt;span class=&quot;code-snippet__built_in&quot;&gt;new&lt;/span&gt; ServerSocket(&lt;span class=&quot;code-snippet__number&quot;&gt;8080&lt;/span&gt;);        &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;while(&lt;span class=&quot;code-snippet__literal&quot;&gt;true&lt;/span&gt;) {                                              &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    Socket socket = serverSocket.accept();                 &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;     &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    BufferedReader reader = &lt;span class=&quot;code-snippet__built_in&quot;&gt;new&lt;/span&gt; BufferedReader(nwe InputStreamReader(socket.getInputStream()));&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    System.out.&lt;span class=&quot;code-snippet__built_in&quot;&gt;println&lt;/span&gt;(&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;read data: &quot;&lt;/span&gt; + reader.readLine()); &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    PrintWriter &lt;span class=&quot;code-snippet__built_in&quot;&gt;print&lt;/span&gt; = &lt;span class=&quot;code-snippet__built_in&quot;&gt;new&lt;/span&gt; PrintWriter(socket.getOutputStream(), &lt;span class=&quot;code-snippet__literal&quot;&gt;true&lt;/span&gt;);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__built_in&quot;&gt;print&lt;/span&gt;.&lt;span class=&quot;code-snippet__built_in&quot;&gt;println&lt;/span&gt;(&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;write data&quot;&lt;/span&gt;);                           &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;这段代码可以简单理解成一下几个步骤：&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;问题&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;以上三个步骤：accept(...)、read(...)、write(...)都会造成线程阻塞。上述这个代码使用了单线程，会导致主线程会直接夯死在阻塞的地方。&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;优化&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;我们要知道一点“&lt;strong&gt;进程的阻塞是不会消耗CPU资源的&lt;/strong&gt;”，所以在多核的环境下，我们可以创建多线程，把接收到的请求抛给多线程去处理，这样就有效地利用了计算机的多核资源。甚至为了避免创建大量的线程处理请求，我们还可以进一步做优化，创建一个线程池，利用池化技术，对暂时处理不了的请求做一个缓冲。&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;strong&gt;2、“C10K”问题&lt;/strong&gt;&lt;strong/&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;“C10K”即“client 10k”用来指代数量庞大的客户端；&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;BIO看上去非常的简单，事实上采用“BIO+线程池”来处理少量的并发请求还是比较合适的，也是最优的。但是面临数量庞大的客户端和请求，这时候使用多线程的弊端就逐渐凸显出来了：&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;严重依赖线程，线程还是比较耗系统资源的（一个线程大约占用1M的空间）；&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;频繁地创建和销毁代价很大，因为涉及到复杂的系统调用；&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;线程间上下文切换的成本很高，因为发生线程切换前，需要保留上一个任务的状态，以便切回来的时候，可以再次加载这个任务的状态。如果线程数量庞大，会造成线程做上下文切换的时间甚至大于线程执行的时间，CPU负载变高；&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;strong&gt;3、NIO非阻塞模型&lt;/strong&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;下面开始真正走向Java NIO或者Netty框架所描述的“&lt;strong&gt;非阻塞&lt;/strong&gt;”，NIO叫Non-Blocking IO或者New IO，由于BIO可能会引入的大量线程，所以可以简单地理解NIO处理问题的方式是通过单线程或者少量线程达到处理大量客户端请求的目的。为了达成这个目的，首先要做的就是把阻塞的过程非阻塞化。要想做到非阻塞，那必须得要有内核的支持，同时需要对用户空间的进程暴露系统调用函数。所以，这里的“非阻塞”可以理解成系统调用API级别的，而真正底层的IO操作都是阻塞的，我们后面会慢慢介绍。&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;事实上，内核已经对“非阻塞”做好了支持，举个我们刚刚说的的accept()方法阻塞的例子（Tips：java中的accept方法对应的系统调用函数也叫accept），看下官方文档对其非阻塞部分的描述。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5706214689265536&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/4g5IMGibSxt51WkduUiaiaz4tCEG2xEjV5ohCvlq2rr83moXPNbWmhu4GXop6IrXTYMjqZLU2ia1XLMxiaxDKrgrcsA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1062&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;官方文档对accetp()系统调用的描述是通过把&quot;&lt;strong&gt;flags&lt;/strong&gt;&quot;参数设成&quot;&lt;strong&gt;SOCK_NONBLOCK&lt;/strong&gt;&quot;就可以达到非阻塞的目的，非阻塞之后线程会一直处理轮询调用，这时候可以通过每次返回特殊的异常码“&lt;strong&gt;EAGAIN&lt;/strong&gt;”或&quot;&lt;strong&gt;EWOULDBLOCK&lt;/strong&gt;&quot;告诉主程序还没有连接到达可以继续轮询。&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;我们可以很容易想象程序非阻塞之后的一个大致过程。所以，非阻塞模式有个最大的特点就是：&lt;strong&gt;用户进程需要不断去主动询问内核数据准备好了没有！&lt;/strong&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;下面我们通过一段伪代码，看下这个调用过程：&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;cs&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;while&lt;/span&gt;(&lt;span class=&quot;code-snippet__number&quot;&gt;1&lt;/span&gt;) {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__keyword&quot;&gt;for&lt;/span&gt; (&lt;span class=&quot;code-snippet__function&quot;&gt;fdx &lt;span class=&quot;code-snippet__keyword&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;range&lt;/span&gt;(&lt;span class=&quot;code-snippet__params&quot;&gt;fd1, fdn&lt;/span&gt;))&lt;/span&gt; {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        &lt;span class=&quot;code-snippet__keyword&quot;&gt;if&lt;/span&gt; (&lt;span class=&quot;code-snippet__literal&quot;&gt;null&lt;/span&gt; != fdx.data) {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;            &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;            read(fdx)&amp;amp;handle(fdx);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        }&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    }&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;这种调用方式也暴露出非阻塞模式的最大的弊端，就是需要让用户进程不断切换到内核态，对连接状态或读写数据做轮询。有没有一种方式来简化用户空间for循环轮询的过程呢？那就是我们下面要重点介绍的&lt;strong&gt;IO多路复用模型&lt;/strong&gt;。&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;strong&gt;4、IO多路复用模型&lt;/strong&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;非阻塞模型会让用户进程一直轮询调用系统函数，频繁地做内核态切换。想要做优化其实也比较简单，我们假想个业务场景，A业务系统会调用B的基础服务查询单个用户的信息。随着业务的发展，A的逻辑变复杂了，需要查100个用户的信息。很明显，A希望B提供一个批量查询的接口，用集合作为入参，一次性把数据传递过去就省去了频繁的系统间调用。&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;多路复用实际也差不多就是这个实现思路，只不过入参这个“集合”需要你注册/填写感兴趣的事件，读fd、写fd或者连接状态的fd等，然后交给内核帮你进行处理。&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;那我们就具体来看看多路复用里面大家都可能听过的几个系统调用&lt;strong&gt; - select()、poll()、epoll()。&lt;/strong&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;strong&gt;4.1 &lt;/strong&gt;&lt;span&gt;&lt;strong&gt;select()&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;strong&gt;select() &lt;/strong&gt;构造函数信息如下所示：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;sql&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;int &lt;span class=&quot;code-snippet__keyword&quot;&gt;select&lt;/span&gt;（&lt;span class=&quot;code-snippet__built_in&quot;&gt;int&lt;/span&gt; nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, &lt;span class=&quot;code-snippet__keyword&quot;&gt;struct&lt;/span&gt; timeval *&lt;span class=&quot;code-snippet__keyword&quot;&gt;timeout&lt;/span&gt;）;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;官方文档对&lt;strong&gt;select()&lt;/strong&gt;的描述：&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;strong&gt;DESCRIPTION&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;select() and pselect() allow a program to monitor multiple file descriptors, waiting until one or more of the file descriptors become &quot;ready&quot; for some class of I/O operation (e.g.,input possible). A file descriptor is considered ready if it is possible to perform the corresponding I/O operation (e.g., read(2)) without blocking.&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;select()允许程序监控多个fd，阻塞等待直到一个或多个fd到达&quot;就绪&quot;状态。&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;内核使用&lt;strong&gt;select()&lt;/strong&gt;为用户进程提供了类似批量的接口，函数本身也会一直阻塞直到有fd为就绪状态返回。下面我们来具体看下&lt;strong&gt;select()&lt;/strong&gt;函数实现，以便我们更好地分析它有哪些优缺点。在&lt;strong&gt;select()&lt;/strong&gt;函数的构造器里，我们很容易看到&quot;&lt;strong&gt;fd_set&lt;/strong&gt;&quot;这个入参类型。它是用位图算法bitmap实现的，使用了一个大小固定的数组（fd_set设置了FD_SETSIZE固定长度为&lt;strong&gt;1024&lt;/strong&gt;），数组中的每个元素都是0和1这样的二进制byte，0,1映射fd对应位置上是否有读写事件，举例：如果fd == 5，那么fd_set = 000001000。&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;同时 &lt;strong&gt;fd_set &lt;/strong&gt;定义了四个宏来处理bitmap：&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;FD_ZERO(&amp;amp;set); &lt;/strong&gt; //  初始化，清空的作用，使集合中不含任何fd&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;FD_SET(fd, &amp;amp;set);&lt;/strong&gt; // 将fd加入set集合，给某个位置赋值的操作&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;FD_CLR(fd, &amp;amp;set); &lt;/strong&gt; //  将fd从set集合中清除，去掉某个位置的值&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;FD_ISSET(fd, &amp;amp;set); &lt;/strong&gt; // 校验某位置的fd是否在集合中&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;使用bitmap算法的好处非常明显，运算效率高，占用内存少（使用了一个byte，8bit）。我们用伪代码和图片来描述下用户进程调用select()的过程：&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.504524886877828&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/4g5IMGibSxt51WkduUiaiaz4tCEG2xEjV5ov9c597aQ42ZJ2C3ZkvBA6oG3YXdd9rbpZWloJ8FKJCKSQJcAeS352g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;884&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;假设fds为{1, 2, 3, 5, 7}对应的bitmap为&quot;01110101&quot;，抛给内核空间轮询，当有读写事件时重新标记同时停止阻塞，然后整体返回用户空间。由此我们可以看到select()系统调用的弊端也是比较明显的：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;复杂度O(n)，轮询的任务交给了内核来做，复杂度并没有变化，数据取出后也需要轮询哪个fd上发生了变动；&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;用户态还是需要不断切换到内核态，直到所有的fds数据读取结束，整体开销依然很大；&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;fd_set有大小的限制，目前被硬编码成了&lt;strong&gt;1024&lt;/strong&gt;；&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;fd_set不可重用，每次操作完都必须重置；&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;strong&gt;4.2 &lt;/strong&gt;&lt;span&gt;&lt;strong&gt;poll()&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;strong&gt;poll() &lt;/strong&gt;构造函数信息如下所示：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;cs&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; poll（&lt;span class=&quot;code-snippet__keyword&quot;&gt;struct&lt;/span&gt; pollfd *fds, nfds_t nfds, &lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; *timeout）;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__meta&quot;&gt;### pollfd的结构体&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;struct&lt;/span&gt; pollfd{&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;　&lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; fd；&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;　&lt;span class=&quot;code-snippet__keyword&quot;&gt;short&lt;/span&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;event&lt;/span&gt;；&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;　&lt;span class=&quot;code-snippet__keyword&quot;&gt;short&lt;/span&gt; revent；&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;官方文档对&lt;strong&gt;poll()&lt;/strong&gt;的描述：&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;strong&gt;DESCRIPTION&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;poll() performs a similar task to select(2): it waits for one of a set of file descriptors to become ready to perform I/O.&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;poll() 非常像select()，它也是阻塞等待直到一个或多个fd到达&quot;就绪&quot;状态。&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;看官方文档描述可以知道，&lt;strong&gt;poll()&lt;/strong&gt;和&lt;strong&gt;select()&lt;/strong&gt;是非常相似的，唯一的区别在于&lt;strong&gt;poll()&lt;/strong&gt;摒弃掉了位图算法，使用自定义的结构体&lt;strong&gt;pollfd&lt;/strong&gt;，在&lt;strong&gt;pollfd&lt;/strong&gt;内部封装了fd，并通过event变量注册感兴趣的可读可写事件（&lt;strong&gt;POLLIN、POLLOUT&lt;/strong&gt;），最后把 &lt;strong&gt;pollfd&lt;/strong&gt; 交给内核。当有读写事件触发的时候，我们可以通过轮询 &lt;strong&gt;pollfd&lt;/strong&gt;，判断revent确定该fd是否发生了可读可写事件。&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;老样子我们用伪代码来描述下用户进程调用 &lt;strong&gt;poll()&lt;/strong&gt; 的过程：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;1.2325581395348837&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/4g5IMGibSxt51WkduUiaiaz4tCEG2xEjV5oWR3Gyp3kJGW5N4QT9gfYmG2XyBHMlIvsBRjI481icuwqkEomX0QYhow/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;387&quot;/&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;strong&gt;poll()&lt;/strong&gt; 相对于&lt;strong&gt;select()&lt;/strong&gt;，主要的优势是使用了pollfd的结构体：&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;没有了bitmap大小1024的限制；&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;通过结构体中的revents置位；&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;但是用户态到内核态切换及O(n)复杂度的问题依旧存在。&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;strong&gt;4.3 &lt;/strong&gt;&lt;span&gt;&lt;strong&gt;epoll()&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;epoll()应该是目前最主流，使用范围最广的一组多路复用的函数调用，像我们熟知的Nginx、Redis都广泛地使用了此种模式。接下来我们重点分析下，epoll()的实现采用了“三步走”策略，它们分别是&lt;strong&gt;epoll_create()、epoll_ctl()、epoll_wait()。&lt;/strong&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;span&gt;4.3.1 epoll_create()&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;cs&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; epoll_create（&lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; size）;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;用户进程通过 &lt;strong&gt;epoll_create() &lt;/strong&gt;函数在内核空间里面创建了一块空间（为了便于理解，可以想象成创建了一块白板），并返回了描述此空间的fd。&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;span&gt;4.3.2 epoll_ctl()&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;cs&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; epoll_ctl（&lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; epfd, &lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; op, &lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; fd , struce epoll_event *&lt;span class=&quot;code-snippet__keyword&quot;&gt;event&lt;/span&gt; ）;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;刚刚我们说通过&lt;strong&gt;epoll_create()&lt;/strong&gt;可以创建一块具体的空间“白板”，那么通过&lt;strong&gt;epoll_ctl() &lt;/strong&gt;我们可以通过自定义的epoll_event结构体在这块&quot;白板上&quot;注册感兴趣的事件了。&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;注册 - EPOLL_CTL_ADD&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;修改 - EPOLL_CTL_MOD&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;删除 - EPOLL_CTL_DEL&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;span&gt;4.3.3 epoll_wait()&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;cs&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; epoll_wait（&lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; epfd, struce epoll_event *&lt;span class=&quot;code-snippet__keyword&quot;&gt;event&lt;/span&gt; , &lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; maxevents, &lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; timeout）;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;strong&gt;epoll_wait()&lt;/strong&gt; 会一直阻塞等待，直到硬盘、网卡等硬件设备数据准备完成后发起&lt;strong&gt;硬中断&lt;/strong&gt;，中断CPU，CPU会立即执行数据拷贝工作，数据从磁盘缓冲传输到内核缓冲，同时将准备完成的fd放到就绪队列中供用户态进行读取。用户态阻塞停止，接收到&lt;strong&gt;具体数量&lt;/strong&gt;的可读写的fds，返回用户态进行数据处理。&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;整体过程可以通过下面的伪代码和图示进一步了解：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5403225806451613&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/4g5IMGibSxt51WkduUiaiaz4tCEG2xEjV5osBT8xsOoXtGSgFAtJ1eSuCN8uQb4rgiazVL2XF8ick98MFuEDObdIhKA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;868&quot;/&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;strong&gt;epoll()&lt;/strong&gt; 基本上完美地解决了 &lt;strong&gt;poll() &lt;/strong&gt;函数遗留的两个问题：&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;/&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;p&gt;四、同步、异步&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;细心的朋友可能会发现，本篇文章一直在解释“&lt;strong&gt;阻塞&lt;/strong&gt;”和“&lt;strong&gt;非阻塞&lt;/strong&gt;”，“&lt;strong&gt;同步&lt;/strong&gt;”、“&lt;strong&gt;异步&lt;/strong&gt;”的概念没有涉及，其实在很多场景下同步&amp;amp;异步和阻塞&amp;amp;非阻塞基本上是一个同义词。阻塞和非阻塞适合从系统调用API层面来看，就像我们本文介绍的select()、poll()这样的系统调用，同步和异步更适合站在应用程序的角度来看。应用程序在同步执行代码片段的时候结果不会立即返回，这时候底层IO操作不一定是阻塞的，也完全有可能是非阻塞。所以说：&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;这边顺便提两种大家可能会经常听到的模式：&lt;strong&gt;Reactor和Preactor。&lt;/strong&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;p&gt;五、总结&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;本篇文章从底层讲解了下从BIO到NIO的一个过程，着重介绍了IO多路复用的几个系统调用select()、poll()、epoll()，分析了下各自的优劣，技术都是持续发展演进的，目前也有很多的痛点。后续会继续给大家介绍下与此相关的“&lt;strong&gt;零拷贝&lt;/strong&gt;”技术，以及Java NIO和Netty框架。&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>8327158ded316f9964c828a5a16354b0</guid>
+<title>HTTP/2 做错了什么？刚刚辉煌 2 年就要被弃用了！？</title>
+<link>https://toutiao.io/k/v5mm32h</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;article class=&quot;article-content&quot;&gt;
+&lt;p&gt;最近一段时间以来，关于HTTP/3的新闻有很多，越来越多的国际大公司已经开始使用HTTP/3了。&lt;/p&gt;
+&lt;p&gt;&lt;img loading=&quot;lazy&quot; src=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16036129562310-4.jpg&quot; alt=&quot;&quot; class=&quot;aligncenter size-full wp-image-5936&quot; srcset=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16036129562310-4.jpg 1298w, https://www.hollischuang.com/wp-content/uploads/2020/12/16036129562310-4-300x150.jpg 300w, https://www.hollischuang.com/wp-content/uploads/2020/12/16036129562310-4-1024x513.jpg 1024w, https://www.hollischuang.com/wp-content/uploads/2020/12/16036129562310-4-768x385.jpg 768w&quot; sizes=&quot;(max-width: 1298px) 100vw, 1298px&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img loading=&quot;lazy&quot; src=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16036129871026-4.jpg&quot; alt=&quot;&quot; class=&quot;aligncenter size-full wp-image-5935&quot; srcset=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16036129871026-4.jpg 1318w, https://www.hollischuang.com/wp-content/uploads/2020/12/16036129871026-4-300x87.jpg 300w, https://www.hollischuang.com/wp-content/uploads/2020/12/16036129871026-4-1024x298.jpg 1024w, https://www.hollischuang.com/wp-content/uploads/2020/12/16036129871026-4-768x224.jpg 768w&quot; sizes=&quot;(max-width: 1318px) 100vw, 1318px&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;所以，HTTP/3已经是箭在弦上了，全面使用只是个时间问题，那么，作为一线开发者，我们也是时候了解下到底什么是HTTP/3，为什么需要HTTP/3了。&lt;/p&gt;
+&lt;p&gt;于是，我准备开始写这篇文章，但是要想把HTTP/3的事情说清楚，一定绕不过的问题就是HTTP/2，所以写着写着，篇幅越来越多，于是我就把他们分成了上下两篇。&lt;/p&gt;
+&lt;p&gt;这一篇我们主要来回顾下HTTP/2，然后再来重点看一下HTTP/2存在哪些问题，为什么要被弃用。&lt;/p&gt;
+&lt;h3&gt;HTTP/2 辉煌不在？&lt;/h3&gt;
+&lt;p&gt;虽然HTTP/2标准在2015年5月就以RFC 7540正式发表了，并且多数浏览器在2015年底就支持了。&lt;/p&gt;
+&lt;p&gt;但是，真正被广泛使用起来要到2018年左右，但是也是在2018年，11月IETF给出了官方批准，认可HTTP-over-QUIC成为HTTP/3。&lt;/p&gt;
+&lt;p&gt;2018年的时候，我写过一篇文章介绍《&lt;a href=&quot;https://www.hollischuang.com/archives/2066&quot;&gt;HTTP/2到底是什么？&lt;/a&gt;》，那时候HTTP/2还是个新技术，刚刚开始有软件支持，短短两年过去了，现在HTTP/3已经悄然而至了。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;根据W3Techs的数据，截至2019年6月，全球也仅有36.5%的网站支持了HTTP/2。&lt;/strong&gt;所以，可能很多网站还没开始支持HTTP/2，HTTP/3就已经来了。&lt;/p&gt;
+&lt;p&gt;所以，对于很多网站来说，或许直接升级HTTP/3是一个更加正确的选择。&lt;/p&gt;
+&lt;h3&gt;回顾 HTTP/2&lt;/h3&gt;
+&lt;p&gt;在阅读本文之前，强烈建议大家先阅读下《&lt;a href=&quot;https://www.hollischuang.com/archives/2066&quot;&gt;HTTP/2到底是什么？&lt;/a&gt;》这篇文章，这里面介绍了HTTP的历史，介绍了各个版本的HTTP协议的诞生的背景。&lt;/p&gt;
+&lt;p&gt;当你读到这里的时候，我默认大家对HTTP/2有了一定的基本了解。&lt;/p&gt;
+&lt;p&gt;我们知道，HTTP/2的诞生，主要是为了解决HTTP/1.1中的效率问题，HTTP/2中最核心的技术就是多路复用技术，即允许同时通过单一的HTTP/2.0连接发起多重的请求-响应消息。&lt;/p&gt;
+&lt;p&gt;&lt;img loading=&quot;lazy&quot; src=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078443845209-4.jpg&quot; alt=&quot;&quot; class=&quot;aligncenter size-full wp-image-5943&quot; srcset=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078443845209-4.jpg 1982w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078443845209-4-300x142.jpg 300w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078443845209-4-1024x485.jpg 1024w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078443845209-4-768x363.jpg 768w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078443845209-4-1536x727.jpg 1536w&quot; sizes=&quot;(max-width: 1982px) 100vw, 1982px&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;同时还实现了二进制分帧、header压缩、服务端推送等技术。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;从HTTP/1.0诞生，一直到HTTP/2，在这24年里，HTTP协议已经做过了三次升级，但是有一个关键的技术点是不变的，那就是这所有的HTTP协议，都是基于TCP协议实现的。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;流水的HTTP，铁打的TCP。这是因为相对于UDP协议，TCP协议更加可靠。&lt;/p&gt;
+&lt;p&gt;虽然在HTTP/1.1的基础上推出HTTP/2大大的提升了效率，但是还是有很多人认为这只是个”临时方案”，这也是为什么刚刚推出没多久，业内就开始大力投入HTTP/3的研发与推广了。&lt;/p&gt;
+&lt;p&gt;而这背后的深层次原因也正是因为他还是基于TCP协议实现的。&lt;strong&gt;TCP协议虽然更加可靠，但是还是存在着一定的问题&lt;/strong&gt;，接下来具体分析下。&lt;/p&gt;
+&lt;h3&gt;HTTP/2 问题&lt;/h3&gt;
+&lt;h4&gt;队头阻塞&lt;/h4&gt;
+&lt;p&gt;队头阻塞翻译自英文head-of-line blocking，这个词并不新鲜，因为早在HTTP/1.1时代，就一直存在着队头阻塞的问题。&lt;/p&gt;
+&lt;p&gt;但是很多人在一些资料中会看到有论点说HTTP/2解决了队头阻塞的问题。但是这句话只对了一半。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;只能说HTTP/2解决了HTTP的队头阻塞问题，但是并没有解决TCP队头阻塞问题！&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;如果大家对于HTTP的历史有一定的了解的话，就会知道。HTTP/1.1相比较于HTTP/1.0来说，最主要的改进就是引入了持久连接（keep-alive）。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;所谓的持久连接就是：在一个TCP连接上可以传送多个HTTP请求和响应，减少了建立和关闭连接的消耗和延迟。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img loading=&quot;lazy&quot; src=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078448717551-4.jpg&quot; alt=&quot;&quot; class=&quot;aligncenter size-full wp-image-5940&quot; srcset=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078448717551-4.jpg 1810w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078448717551-4-300x202.jpg 300w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078448717551-4-1024x688.jpg 1024w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078448717551-4-768x516.jpg 768w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078448717551-4-1536x1032.jpg 1536w&quot; sizes=&quot;(max-width: 1810px) 100vw, 1810px&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;引入了持久连接之后，在性能方面，HTTP协议有了明显的提升。&lt;/p&gt;
+&lt;p&gt;另外，HTTP/1.1允许在持久连接上使用请求管道，是相对于持久连接的又一性能优化。&lt;/p&gt;
+&lt;p&gt;所谓请求管道，就是在HTTP响应到达之前，可以将多条请求放入队列，当第一条HTTP请求通过网络流向服务器时，第二条和第三条请求也可以开始发送了。在高时延网络条件下，这样做可以降低网络的环回时间，提高性能。&lt;/p&gt;
+&lt;p&gt;&lt;img loading=&quot;lazy&quot; src=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078448616542-4.jpg&quot; alt=&quot;&quot; class=&quot;aligncenter size-full wp-image-5941&quot; srcset=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078448616542-4.jpg 1032w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078448616542-4-300x192.jpg 300w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078448616542-4-1024x655.jpg 1024w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078448616542-4-768x491.jpg 768w&quot; sizes=&quot;(max-width: 1032px) 100vw, 1032px&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;但是，对于管道连接还是有一定的限制和要求的，其中一个比较关键的就是服务端必须按照与请求相同的顺序回送HTTP响应。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这也就意味着，如果一个响应返回发生了延迟，那么其后续的响应都会被延迟，直到队头的响应送达。这就是所谓的&lt;strong&gt;HTTP队头阻塞&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;但是HTTP队头阻塞的问题在HTTP/2中得到了有效的解决。&lt;strong&gt;HTTP/2废弃了管道化的方式&lt;/strong&gt;，而是创新性的引入了帧、消息和数据流等概念。&lt;strong&gt;客户端和服务器可以把 HTTP 消息分解为互不依赖的帧，然后乱序发送，最后再在另一端把它们重新组合起来。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img loading=&quot;lazy&quot; src=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078452101126-4.jpg&quot; alt=&quot;&quot; class=&quot;aligncenter size-full wp-image-5939&quot; srcset=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078452101126-4.jpg 1982w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078452101126-4-300x95.jpg 300w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078452101126-4-1024x325.jpg 1024w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078452101126-4-768x244.jpg 768w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078452101126-4-1536x488.jpg 1536w&quot; sizes=&quot;(max-width: 1982px) 100vw, 1982px&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;因为没有顺序了，所以就不需要阻塞了，就有效的解决了HTTP对队头阻塞的问题。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;但是，HTTP/2仍然会存在TCP队头阻塞的问题，那是因为HTTP/2其实还是依赖TCP协议实现的。&lt;/p&gt;
+&lt;p&gt;TCP传输过程中会把数据拆分为一个个&lt;strong&gt;按照顺序&lt;/strong&gt;排列的数据包，这些数据包通过网络传输到了接收端，接收端再&lt;strong&gt;按照顺序&lt;/strong&gt;将这些数据包组合成原始数据，这样就完成了数据传输。&lt;/p&gt;
+&lt;p&gt;但是如果其中的某一个数据包没有按照顺序到达，接收端会一直保持连接等待数据包返回，这时候就会阻塞后续请求。这就发生了&lt;strong&gt;TCP队头阻塞&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;HTTP/1.1的管道化持久连接也是使得同一个TCP链接可以被多个HTTP使用，但是HTTP/1.1中规定一个域名可以有6个TCP连接。而HTTP/2中，同一个域名只是用一个TCP连接。&lt;/p&gt;
+&lt;p&gt;所以，&lt;strong&gt;在HTTP/2中，TCP队头阻塞造成的影响会更大&lt;/strong&gt;，因为HTTP/2的多路复用技术使得多个请求其实是基于同一个TCP连接的，那如果某一个请求造成了TCP队头阻塞，那么多个请求都会受到影响。&lt;/p&gt;
+&lt;h4&gt;TCP握手时长&lt;/h4&gt;
+&lt;p&gt;一提到TCP协议，大家最先想到的一定是他的三次握手与四次关闭的特性。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;因为TCP是一种可靠通信协议，而这种可靠就是靠三次握手实现的，通过三次握手，TCP在传输过程中可以保证接收方收到的数据是完整，有序，无差错的。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;但是，问题是三次握手是需要消耗时间的，这里插播一个关于网络延迟的概念。&lt;/p&gt;
+&lt;p&gt;网络延迟又称为 RTT（Round Trip Time）。他是指一个请求从客户端浏览器发送一个请求数据包到服务器，再从服务器得到响应数据包的这段时间。RTT 是反映网络性能的一个重要指标。&lt;/p&gt;
+&lt;p&gt;&lt;img loading=&quot;lazy&quot; src=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078465903616-4.jpg&quot; alt=&quot;&quot; class=&quot;aligncenter size-full wp-image-5938&quot; srcset=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078465903616-4.jpg 822w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078465903616-4-300x224.jpg 300w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078465903616-4-768x574.jpg 768w&quot; sizes=&quot;(max-width: 822px) 100vw, 822px&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;我们知道，TCP三次握手的过程客户端和服务器之间需要交互三次，那么也就是说需要消耗1.5 RTT。&lt;/p&gt;
+&lt;p&gt;另外，如果使用的是安全的HTTPS协议，就还需要使用TLS协议进行安全数据传输，这个过程又要消耗一个RTT（TLS不同版本的握手机制不同，这里按照最小的消耗来算）&lt;/p&gt;
+&lt;p&gt;那么也就是说，一个纯HTTP/2的连接，需要消耗1.5个RTT，如果是一个HTTPS连接，就需要消耗3-4个RTT。&lt;/p&gt;
+&lt;p&gt;而具体消耗的时长根据服务器和客户端之间的距离则不尽相同，如果比较近的话，消耗在100ms以内，对于用来说可能没什么感知，但是如果一个RTT的耗时达到300-400ms，那么，一次连接建立过程总耗时可能要达到一秒钟左右，这时候，用户就会明显的感知到网页加载很慢。&lt;/p&gt;
+&lt;h3&gt;升级TCP是否可行？&lt;/h3&gt;
+&lt;p&gt;基于上面我们提到的这些问题，很多人提出来说：既然TCP存在这些问题，并且我们也知道这些问题的存在，甚至解决方案也不难想到，为什么不能对协议本身做一次升级，解决这些问题呢？&lt;/p&gt;
+&lt;p&gt;其实，这就涉及到一个”&lt;strong&gt;协议僵化&lt;/strong&gt;“的问题。&lt;/p&gt;
+&lt;p&gt;这样讲，我们在互联网上浏览数据的时候，数据的传输过程其实是极其复杂的。&lt;/p&gt;
+&lt;p&gt;我们知道的，想要在家里使用网络有几个前提，首先我们要通过运行商开通网络，并且需要使用路由器，而路由器就是网络传输过程中的一个中间设备。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;中间设备是指插入在数据终端和信号转换设备之间，完成调制前或解调后某些附加功能的辅助设备。例如集线器、交换机和无线接入点、路由器、安全解调器、通信服务器等都是中间设备。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;在我们看不到的地方，这种中间设备还有很多很多，&lt;strong&gt;一个网络需要经过无数个中间设备的转发才能到达终端用户。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;如果TCP协议需要升级，那么意味着需要这些中间设备都能支持新的特性，我们知道路由器我们可以重新换一个，但是其他的那些中间设备呢？尤其是那些比较大型的设备呢？更换起来的成本是巨大的。&lt;/p&gt;
+&lt;p&gt;而且，除了中间设备之外，操作系统也是一个重要的因素，&lt;strong&gt;因为TCP协议需要通过操作系统内核来实现，而操作系统的更新也是非常滞后的。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;所以，这种问题就被称之为”中间设备僵化”，也是导致”协议僵化”的重要原因。这也是限制着TCP协议更新的一个重要原因。&lt;/p&gt;
+&lt;p&gt;所以，近些年来，由IETF标准化的许多TCP新特性都因缺乏广泛支持而没有得到广泛的部署或使用！&lt;/p&gt;
+&lt;h3&gt;放弃TCP？&lt;/h3&gt;
+&lt;p&gt;上面提到的这些问题的根本原因都是因为HTTP/2是基于TPC实现导致的，而TCP协议自身的升级又是很难实现的。&lt;/p&gt;
+&lt;p&gt;那么，剩下的解决办法就只有一条路，那就是放弃TCP协议。&lt;/p&gt;
+&lt;p&gt;放弃TCP的话，就又有两个新的选择，是使用其他已有的协议，还是重新创造一个协议呢？&lt;/p&gt;
+&lt;p&gt;看到这里，聪明的读者一定也想到了，&lt;strong&gt;创造新的协议一样会受到中间设备僵化的影响&lt;/strong&gt;。近些年来，因为在互联网上部署遭遇很大的困难，创造新型传输层协议的努力基本上都失败了！&lt;/p&gt;
+&lt;p&gt;所以，想要升级新的HTTP协议，那么就只剩一条路可以走了，那就是基于已有的协议做一些改造和支持，UDP就是一个绝佳的选择了。&lt;/p&gt;
+&lt;h3&gt;总结&lt;/h3&gt;
+&lt;p&gt;因为HTTP/2底层是采用TCP协议实现的，虽然解决了HTTP队头阻塞的问题，但是对于TCP队头阻塞的问题却无能为力。&lt;/p&gt;
+&lt;p&gt;TCP传输过程中会把数据拆分为一个个&lt;strong&gt;按照顺序&lt;/strong&gt;排列的数据包，这些数据包通过网络传输到了接收端，接收端再&lt;strong&gt;按照顺序&lt;/strong&gt;将这些数据包组合成原始数据，这样就完成了数据传输。&lt;/p&gt;
+&lt;p&gt;但是如果其中的某一个数据包没有按照顺序到达，接收端会一直保持连接等待数据包返回，这时候就会阻塞后续请求。这就发生了&lt;strong&gt;TCP队头阻塞&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;另外，TCP这种可靠传输是靠三次握手实现的，TCP三次握手的过程客户端和服务器之间需要交互三次，那么也就是说需要消耗1.5 RTT。如果是HTTPS那么消耗的RTT就更多。&lt;/p&gt;
+&lt;p&gt;而因为很多中间设备比较陈旧，更新换代成本巨大，这就导致TCP协议升级或者采用新的协议基本无法实现。&lt;/p&gt;
+&lt;p&gt;所以，HTTP/3选择了一种新的技术方案，那就是基于UDP做改造，这种技术叫做QUIC。&lt;/p&gt;
+&lt;p&gt;那么问题来了，HTTP/3是如何使用的UDP呢？做了哪些改造？如何保证连接的可靠性？UDP协议就没有僵化的问题了吗？&lt;/p&gt;
+&lt;p&gt;这些问题我们在下一篇中深入分析。敬请期待！&lt;/p&gt;
+&lt;p&gt;参考资料：&lt;/p&gt;
+&lt;p&gt;https://http3-explained.haxx.se/&lt;/p&gt;
+&lt;p&gt;https://baike.baidu.com/item/中间设备/3688874&lt;/p&gt;
+&lt;p&gt;https://time.geekbang.org/column/article/150159&lt;/p&gt;
+&lt;p&gt;https://juejin.cn/post/6844903853985366023&lt;/p&gt;
+&lt;p&gt;https://time.geekbang.org/column/article/279164&lt;/p&gt;
+&lt;center&gt;&lt;b&gt;(全文完)&lt;/b&gt;&lt;/center&gt;&lt;hr/&gt;&lt;center&gt;&lt;b&gt;扫描二维码，关注作者微信公众号&lt;/b&gt;&lt;/center&gt;&lt;img src=&quot;http://www.hollischuang.com/wp-content/uploads/2019/04/二维码.png&quot;/&gt;
+&lt;/article&gt;
+            &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>e2cd764d61469cf80f93bd13bc9b79ac</guid>
-<title>[推荐] AutoExcel 实现百万数据秒级导入导出</title>
-<link>https://toutiao.io/k/ui65fqe</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;body class=&quot;logged-out env-production page-responsive page-blob&quot; id=&quot;readabilityBody&quot;&gt;
-    
-
-    
-
-  &lt;p id=&quot;start-of-content&quot; class=&quot;show-on-focus&quot;/&gt;
-
-
-
-
-
-    
-
-
-    
-
-  &lt;include-fragment class=&quot;js-notification-shelf-include-fragment&quot; data-base-src=&quot;https://github.com/notifications/beta/shelf&quot;/&gt;
-
-
-
-
-  &lt;div class=&quot;application-main &quot; data-commit-hovercards-enabled=&quot;&quot; data-discussion-hovercards-enabled=&quot;&quot; data-issue-and-pr-hovercards-enabled=&quot;&quot;&gt;
-        &lt;div itemscope=&quot;&quot; itemtype=&quot;http://schema.org/SoftwareSourceCode&quot; class=&quot;&quot;&gt;
-    &lt;main&gt;
-      
-
-    
-
-
-
-
-
-
-  
-
-
-  
-
-
-&lt;div class=&quot;container-xl clearfix new-discussion-timeline px-3 px-md-4 px-lg-5&quot;&gt;
-  &lt;div class=&quot;repository-content &quot;&gt;
-
-    
-      
-  
-
-
-    &lt;a class=&quot;d-none js-permalink-shortcut&quot; data-hotkey=&quot;y&quot; href=&quot;/feng-haitao/auto-excel/blob/1878ddc0afbadd45b23e702baa29a23b296a8320/README.zh.md&quot;&gt;Permalink&lt;/a&gt;
-
-    
-      &lt;signup-prompt class=&quot;signup-prompt-bg rounded-1&quot; data-prompt=&quot;signup&quot; data-optimizely-experiment=&quot;signup_prompt_launchpad&quot; hidden=&quot;&quot;&gt;
-    &lt;div class=&quot;signup-prompt p-4 text-center mb-4 rounded-1&quot; data-optimizely-variation=&quot;control&quot;&gt;
-      &lt;div class=&quot;position-relative&quot;&gt;
-        &lt;button type=&quot;button&quot; class=&quot;position-absolute top-0 right-0 btn-link link-gray&quot; data-action=&quot;click:signup-prompt#dismiss&quot; data-ga-click=&quot;(Logged out) Sign up prompt, clicked Dismiss, text:dismiss&quot; data-optimizely-event=&quot;click.dismiss_signup_prompt, 1922723437.1606955254&quot;&gt;
-          Dismiss
-        &lt;/button&gt;
-        &lt;h3 class=&quot;pt-2&quot;&gt;Join GitHub today&lt;/h3&gt;
-        &lt;p class=&quot;col-6 mx-auto&quot;&gt;GitHub is home to over 50 million developers working together to host and review code, manage projects, and build software together.&lt;/p&gt;
-        &lt;a class=&quot;btn btn-primary&quot; data-ga-click=&quot;(Logged out) Sign up prompt, clicked Sign up, text:sign-up&quot; data-optimizely-event=&quot;click.signup, 1922723437.1606955254&quot; data-hydro-click=&quot;{&amp;quot;event_type&amp;quot;:&amp;quot;authentication.click&amp;quot;,&amp;quot;payload&amp;quot;:{&amp;quot;location_in_page&amp;quot;:&amp;quot;files signup prompt&amp;quot;,&amp;quot;repository_id&amp;quot;:null,&amp;quot;auth_type&amp;quot;:&amp;quot;SIGN_UP&amp;quot;,&amp;quot;originating_url&amp;quot;:&amp;quot;https://github.com/feng-haitao/auto-excel/blob/master/README.zh.md?hmsr=toutiao.io&amp;amp;utm_medium=toutiao.io&amp;amp;utm_source=toutiao.io&amp;quot;,&amp;quot;user_id&amp;quot;:null}}&quot; data-hydro-click-hmac=&quot;75a67d253d908c00e3e2bd8972fe8979e31a2270acea9038607ce0e985749f36&quot; href=&quot;/join?source=prompt-blob-show&amp;amp;source_repo=feng-haitao%2Fauto-excel&quot;&gt;Sign up&lt;/a&gt;
-      &lt;/div&gt;
-    &lt;/div&gt;
-
-    &lt;div class=&quot;position-relative p-4 p-lg-5 mb-4&quot; data-optimizely-variation=&quot;launchpad&quot; hidden=&quot;&quot;&gt;
-      &lt;div class=&quot;d-sm-flex&quot;&gt;
-        &lt;div class=&quot;col-sm-8 col-md-9 col-lg-8&quot;&gt;
-          &lt;h3 class=&quot;h2 lh-condensed mt-sm-1 mt-lg-0&quot;&gt;GitHub is where the world builds software&lt;/h3&gt;
-          &lt;p class=&quot;f4 text-gray mt-2 mb-3&quot;&gt;Millions of developers and companies build, ship, and maintain their software on GitHub — the largest and most advanced development platform in the world.&lt;/p&gt;
-          
-        &lt;/div&gt;
-        &lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; fill=&quot;none&quot; preserveaspectratio=&quot;none&quot; viewbox=&quot;0 0 1680 40&quot; class=&quot;d-none d-sm-block position-absolute width-full&quot;&gt;&lt;path d=&quot;M0 40h1680V30S1340 0 840 0 0 30 0 30z&quot; fill=&quot;#fff&quot;/&gt;&lt;/svg&gt;
-
-        
-      &lt;/div&gt;
-    &lt;/div&gt;
-  &lt;/signup-prompt&gt;
-
-
-    
-
-
-
-    &lt;div class=&quot;Box d-flex flex-column flex-shrink-0 mb-3&quot;&gt;
-      
-  
-
-  &lt;div class=&quot;Box-body d-flex flex-items-center flex-auto border-bottom-0 flex-wrap&quot;&gt;
-    &lt;details class=&quot;details-reset details-overlay details-overlay-dark lh-default text-gray-dark float-left mr-3&quot; id=&quot;blob_contributors_box&quot;&gt;
-      &lt;summary class=&quot;link-gray-dark&quot;&gt;
-        &lt;svg class=&quot;octicon octicon-people text-gray&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M5.5 3.5a2 2 0 100 4 2 2 0 000-4zM2 5.5a3.5 3.5 0 115.898 2.549 5.507 5.507 0 013.034 4.084.75.75 0 11-1.482.235 4.001 4.001 0 00-7.9 0 .75.75 0 01-1.482-.236A5.507 5.507 0 013.102 8.05 3.49 3.49 0 012 5.5zM11 4a.75.75 0 100 1.5 1.5 1.5 0 01.666 2.844.75.75 0 00-.416.672v.352a.75.75 0 00.574.73c1.2.289 2.162 1.2 2.522 2.372a.75.75 0 101.434-.44 5.01 5.01 0 00-2.56-3.012A3 3 0 0011 4z&quot;/&gt;&lt;/svg&gt;
-        &lt;strong&gt;1&lt;/strong&gt;
-        
-        contributor
-      &lt;/summary&gt;
-      &lt;details-dialog class=&quot;Box Box--overlay d-flex flex-column anim-fade-in fast&quot; aria-label=&quot;Users who have contributed to this file&quot; src=&quot;/feng-haitao/auto-excel/contributors-list/master/README.zh.md&quot; preload=&quot;&quot;&gt;
-        &lt;div class=&quot;Box-header&quot;&gt;
-          &lt;button class=&quot;Box-btn-octicon btn-octicon float-right&quot; type=&quot;button&quot; aria-label=&quot;Close dialog&quot; data-close-dialog=&quot;&quot;&gt;
-            &lt;svg class=&quot;octicon octicon-x&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z&quot;/&gt;&lt;/svg&gt;
-          &lt;/button&gt;
-          &lt;h3 class=&quot;Box-title&quot;&gt;
-            Users who have contributed to this file
-          &lt;/h3&gt;
-        &lt;/div&gt;
-        &lt;include-fragment&gt;
-          &lt;svg viewbox=&quot;0 0 16 16&quot; fill=&quot;none&quot; class=&quot;my-3 mx-auto d-block&quot;&gt;
-  &lt;circle cx=&quot;8&quot; cy=&quot;8&quot; r=&quot;7&quot; stroke=&quot;currentColor&quot; stroke-opacity=&quot;0.25&quot; stroke-width=&quot;2&quot; vector-effect=&quot;non-scaling-stroke&quot;/&gt;
-  &lt;path d=&quot;M15 8a7.002 7.002 0 00-7-7&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; vector-effect=&quot;non-scaling-stroke&quot;&gt;
-    &lt;animatetransform attributename=&quot;transform&quot; type=&quot;rotate&quot; from=&quot;0 8 8&quot; to=&quot;360 8 8&quot; dur=&quot;1s&quot; repeatcount=&quot;indefinite&quot;/&gt;
-  &lt;/path&gt;
-&lt;/svg&gt;
-        &lt;/include-fragment&gt;
-      &lt;/details-dialog&gt;
-    &lt;/details&gt;
-  &lt;/div&gt;
-    &lt;/div&gt;
-
-
-
-
-
-
-    &lt;div class=&quot;Box mt-3 position-relative&amp;#10;      &quot;&gt;
-      
-&lt;div class=&quot;Box-header py-2 d-flex flex-column flex-shrink-0 flex-md-row flex-md-items-center&quot;&gt;
-  &lt;p class=&quot;text-mono f6 flex-auto pr-3 flex-order-2 flex-md-order-1 mt-2 mt-md-0&quot;&gt;
-
-      69 lines (53 sloc)
-      &lt;span class=&quot;file-info-divider&quot;/&gt;
-    3.89 KB
-  &lt;/p&gt;
-
-  
-&lt;/div&gt;
-
-      
-  &lt;div id=&quot;readme&quot; class=&quot;Box-body readme blob js-code-block-container p-5 p-xl-6 gist-border-0&quot;&gt;
-    &lt;article class=&quot;markdown-body entry-content container-lg&quot; itemprop=&quot;text&quot;&gt;&lt;p&gt;中文 | &lt;a href=&quot;https://github.com/feng-haitao/auto-excel/blob/master/README.md&quot;&gt;English&lt;/a&gt; | &lt;a href=&quot;http://www.fenghaitao.net/autoexcel-user-manual&quot; rel=&quot;nofollow&quot;&gt;文档&lt;/a&gt;&lt;/p&gt;
-&lt;h2&gt;&lt;a id=&quot;user-content-为什么使用autoexcel&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#为什么使用autoexcel&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;为什么使用AutoExcel？&lt;/h2&gt;
-&lt;p&gt;Excel导入导出在软件开发中非常常见，只要你接触过开发，就一定会遇到。相信很多人会跟我一样选择用Apache POI来完成这项工作，在感受到POI功能强大的同时，我的团队也遇到了以下问题：&lt;/p&gt;
+<guid>07b89f82038722cb27b77bc26e73c867</guid>
+<title>信任的传递：为什么我们需要第三方授权？</title>
+<link>https://toutiao.io/k/qbrsb6o</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entry-content&quot; itemprop=&quot;articleBody&quot;&gt;&amp;#13;
+&lt;blockquote&gt;
+&lt;p&gt;在证书验证、基于JWT(Json Web Token)的身份认证、IDP(身份提供商)、SP(服务提供商)等技术中，都有一个可信的第三方，可明明是用户对资源或者服务的访问，为啥还要个第三方？   &lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这篇文章整理了一些相关技术的案例，并尝试分析其这样设计的原因。&lt;/p&gt;
+&lt;h3&gt;经典案例&lt;/h3&gt;
+&lt;h4&gt;01 证书 —— 整个互联网中的信任传递&lt;/h4&gt;
+&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/1-why-we-need-third-party-authorization-.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/1-why-we-need-third-party-authorization-.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;目的&lt;/strong&gt;： 解决两个节点之间的安全通信，常用的是用户访问某个具体的网站&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;背景&lt;/strong&gt;：基于现有的网络协议（如http），在其基础上对信道进行加密，保证安全。这就需要两个节点之间至少持有一个对方的公钥( 用这个秘钥加密的数据只有对方的私钥能解开)，然后才能建立加密的信道。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;面临问题&lt;/strong&gt;：作为用户，我不知道我以后会访问哪些网站，直接去网站获取它的秘钥需要通过网络传输，肯定不安全。操作系统也没办法提前就把信任的网站信息在出厂时就保存，因为有的网站可能还没开发出来。个人与商业网站都没办法相互取得信任。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;具体说明&lt;/strong&gt;：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;直接使用POI操作Excel将产生大量硬编码，你会在编码中写死行索引和列索引&lt;/li&gt;
-&lt;li&gt;大量不可复用的格式控制编码，如背景色、对齐方式、单元格样式等&lt;/li&gt;
-&lt;li&gt;实施顾问明明提供了现成的模板，却还要开发用代码实现一遍，开发效率低下&lt;/li&gt;
-&lt;li&gt;模板调整时不得不动用开发资源&lt;/li&gt;
-&lt;li&gt;简单的导出也需要写特定的代码&lt;/li&gt;
+&lt;li&gt;证书颁发机构：有第三方公信的权威机构担任，作为一个信任传递的中介，终端电脑只需要建立起与证书颁发机构的信任就可以了。&lt;/li&gt;
+&lt;li&gt;根证书：证书颁发机构的证明，包含机构的信息，公钥，加密签名算法等。根证书会通过预装在操作系统或者浏览器的方式来与终端电脑建立信任。（所以安装不明来历的根证书是不安全的）&lt;/li&gt;
+&lt;li&gt;商业网站的证书（也就是我们平常说的证书）：商业公司通过提供自己的运营资质与相关资料，付费后通过审查被颁发的证明。颁发机构在这个过程中通过审核商业公司的资料，建立信任，并颁发证书作为获得其信任的凭证。&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;strong&gt;AutoExcel&lt;/strong&gt;解决了上述问题，它非常简单，只需要少量的代码即可完成复杂的导入导出；使用它时，程序员对导入导出无感，即不需要直接操作POI；与此同时，实施顾问提供的Excel即是导入导出模板，除非新增数据源或字段，否则模板更新不需要动用开发资源。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;AutoExcel&lt;/strong&gt;并没有对POI进行过重的封装，而是充分利用了Excel本身具有的特性——名称管理器，通过一些小技巧，将单元格与数据源产生映射，从而解耦程序员与POI，避免产生硬编码，让导入导出工作变得愉快而不再是枯燥乏味。&lt;/p&gt;
-&lt;h2&gt;&lt;a id=&quot;user-content-特点&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#特点&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;特点&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;信任的凭证：&lt;/strong&gt;&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;模板导出
+&lt;li&gt;终端与证书颁发机构之间：根证书&lt;/li&gt;
+&lt;li&gt;根证书终端与商业网站之间：根证书 + 证书&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/2-why-we-need-third-party-authorization-.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/2-why-we-need-third-party-authorization--768x397.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/3-why-we-need-third-party-authorization-.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/3-why-we-need-third-party-authorization--768x371.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;信任的传递：&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;终端如何信任证书颁发机构：系统或者浏览器会预装通用的颁发机构的根证书，或者系统管理员自己手动安装用户自己信任的根证书，这些根证书即代表了终端对相应证书颁发机构的信任（所以不要轻易安装未知的根证书）。&lt;/li&gt;
+&lt;li&gt;证书颁发机构如何信任商业网站：商业网站在颁发机构提供资料并申请证书，证书颁发机构会在过程中对公司资质进行审核，包括公司的工商注册信息等。如果审核通过，则会颁发一个对应域名的有实效的（比如2年）证书，这即是颁发机构对商业网站的信任凭证。&lt;/li&gt;
+&lt;li&gt;终端如何最终信任商业网站：终端在访问商业网站的时候，如果是https协议，则会下载商业网站的证书，然后进行一系列的验证：时间是否过期域名是否与当前访问一致签名颁发机构是否在自己的信任列表中（也就是系统中是否安装了该颁发机构的根证书）证书本身的签名是否有效。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;相关场景&lt;/strong&gt;：自签名证书——不通过第三方颁发机构，自己生成证书与根证书。一般用于系统的非生产环境。&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;支持基础对象和表格数据&lt;/li&gt;
-&lt;li&gt;单个sheet支持多个不定长数据源&lt;/li&gt;
-&lt;li&gt;支持横向填充数据&lt;/li&gt;
-&lt;li&gt;自动应用单元格样式&lt;/li&gt;
-&lt;li&gt;自动填充行号&lt;/li&gt;
-&lt;li&gt;自动填充公式&lt;/li&gt;
-&lt;li&gt;自动汇总&lt;/li&gt;
+&lt;li&gt;优点：自己生成，方便快捷，且不需要付费。&lt;/li&gt;
+&lt;li&gt;缺点：根证书不是通用的颁发机构的，需要手动将其安装到所有发起访问的终端中，有额外的维护成本。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;直接导出
-
-&lt;/li&gt;
-&lt;li&gt;导入
-
-&lt;/li&gt;
-&lt;li&gt;支持百万数据秒级导入导出&lt;/li&gt;
+&lt;h4&gt;02 IDP/SP 身份提供商与服务提供商 —— 企业级的信任传递&lt;/h4&gt;
+&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/4-why-we-need-third-party-authorization-.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/4-why-we-need-third-party-authorization-.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;目的&lt;/strong&gt;：用户通过合法的身份访问资源和服务。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;背景&lt;/strong&gt;：统一管理身份，资源提供商不需要各自实现一套身份管理。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;面临问题&lt;/strong&gt;：企业或者平台中包含有很多不同的资源和服务，每个资源和服务都实现一套身份管理，这样操作不仅难以管理，用户体验很差，同时外部服务也无法公用已有的身份系统。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;具体说明&lt;/strong&gt;：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;认证服务器：如果不想保存session，认证服务器会将用户的基本信息、token的开始与过期时间、一些元数据等进行签名，生成自验证的token。&lt;/li&gt;
+&lt;li&gt;终端用户：用户在第一次登录认证的时候会提供自己的用户名与密码，并将返回的token保存（一般是cookie），在token有效期内的后续访问只需要发送token就可以证明自己的身份。&lt;/li&gt;
+&lt;li&gt;资源/服务提供商：没有token的访问时，重定向到认证服务器，有token的访问则进行有效性验证。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;信任的凭证：&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;IDP到终端：用户在IDP中的验证信息，如用户名和密码&lt;/li&gt;
+&lt;li&gt;IDP到SP：OAuth 2.0中第三方IDP颁发给服务提供商的client id与secret、token等可以证明身份的信息；Saml中IDP生成的xml文件。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2&gt;&lt;a id=&quot;user-content-功能预览&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#功能预览&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;功能预览&lt;/h2&gt;
-
-&lt;p&gt;实现以上导出只需要编写以下少量代码（你需要额外的代码来准备数据源，例如从数据库中获取）&lt;/p&gt;
-&lt;div class=&quot;highlight highlight-source-java&quot;&gt;&lt;pre&gt;&lt;span class=&quot;pl-k&quot;&gt;List&amp;lt;&lt;span class=&quot;pl-smi&quot;&gt;TemplateExportPara&lt;/span&gt;&amp;gt;&lt;/span&gt; paras &lt;span class=&quot;pl-k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;pl-k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;pl-k&quot;&gt;ArrayList&amp;lt;&amp;gt;&lt;/span&gt;();
-paras&lt;span class=&quot;pl-k&quot;&gt;.&lt;/span&gt;add(&lt;span class=&quot;pl-k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;pl-smi&quot;&gt;TemplateExportPara&lt;/span&gt;(&lt;span class=&quot;pl-s&quot;&gt;&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;BusinessUnit&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;, &lt;span class=&quot;pl-smi&quot;&gt;DataGenerator&lt;/span&gt;&lt;span class=&quot;pl-k&quot;&gt;.&lt;/span&gt;genBusinessUnit()));
-paras&lt;span class=&quot;pl-k&quot;&gt;.&lt;/span&gt;add(&lt;span class=&quot;pl-k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;pl-smi&quot;&gt;TemplateExportPara&lt;/span&gt;(&lt;span class=&quot;pl-s&quot;&gt;&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;Contract&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;, &lt;span class=&quot;pl-smi&quot;&gt;DataGenerator&lt;/span&gt;&lt;span class=&quot;pl-k&quot;&gt;.&lt;/span&gt;genContracts()));
-paras&lt;span class=&quot;pl-k&quot;&gt;.&lt;/span&gt;add(&lt;span class=&quot;pl-k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;pl-smi&quot;&gt;TemplateExportPara&lt;/span&gt;(&lt;span class=&quot;pl-s&quot;&gt;&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;Project&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;, &lt;span class=&quot;pl-smi&quot;&gt;DataGenerator&lt;/span&gt;&lt;span class=&quot;pl-k&quot;&gt;.&lt;/span&gt;genProjects()));
-
-&lt;span class=&quot;pl-k&quot;&gt;List&amp;lt;&lt;span class=&quot;pl-smi&quot;&gt;Product&lt;/span&gt;&amp;gt;&lt;/span&gt; products &lt;span class=&quot;pl-k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;pl-smi&quot;&gt;DataGenerator&lt;/span&gt;&lt;span class=&quot;pl-k&quot;&gt;.&lt;/span&gt;genProducts();
-&lt;span class=&quot;pl-smi&quot;&gt;TemplateExportPara&lt;/span&gt; para3 &lt;span class=&quot;pl-k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;pl-k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;pl-smi&quot;&gt;TemplateExportPara&lt;/span&gt;(&lt;span class=&quot;pl-s&quot;&gt;&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;Product&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;, products);
-para3&lt;span class=&quot;pl-k&quot;&gt;.&lt;/span&gt;setInserted(&lt;span class=&quot;pl-c1&quot;&gt;true&lt;/span&gt;);
-paras&lt;span class=&quot;pl-k&quot;&gt;.&lt;/span&gt;add(para3);
-
-&lt;span class=&quot;pl-smi&quot;&gt;TemplateExportPara&lt;/span&gt; para5 &lt;span class=&quot;pl-k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;pl-k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;pl-smi&quot;&gt;TemplateExportPara&lt;/span&gt;(&lt;span class=&quot;pl-s&quot;&gt;&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;Product2&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;, products);
-para5&lt;span class=&quot;pl-k&quot;&gt;.&lt;/span&gt;setDataDirection(&lt;span class=&quot;pl-smi&quot;&gt;DataDirection&lt;/span&gt;&lt;span class=&quot;pl-k&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;pl-smi&quot;&gt;Right&lt;/span&gt;);
-paras&lt;span class=&quot;pl-k&quot;&gt;.&lt;/span&gt;add(para5);
-
-&lt;span class=&quot;pl-smi&quot;&gt;ExcelSetting&lt;/span&gt; excelSetting &lt;span class=&quot;pl-k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;pl-k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;pl-smi&quot;&gt;ExcelSetting&lt;/span&gt;();
-excelSetting&lt;span class=&quot;pl-k&quot;&gt;.&lt;/span&gt;setRemovedSheets(&lt;span class=&quot;pl-smi&quot;&gt;Arrays&lt;/span&gt;&lt;span class=&quot;pl-k&quot;&gt;.&lt;/span&gt;asList(&lt;span class=&quot;pl-s&quot;&gt;&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;will be removed&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;));
-
-&lt;span class=&quot;pl-smi&quot;&gt;AutoExcel&lt;/span&gt;&lt;span class=&quot;pl-k&quot;&gt;.&lt;/span&gt;save(&lt;span class=&quot;pl-c1&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;pl-k&quot;&gt;.&lt;/span&gt;getClass()&lt;span class=&quot;pl-k&quot;&gt;.&lt;/span&gt;getResource(&lt;span class=&quot;pl-s&quot;&gt;&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;/template/Common.xlsx&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;)&lt;span class=&quot;pl-k&quot;&gt;.&lt;/span&gt;getPath(),
-               &lt;span class=&quot;pl-c1&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;pl-k&quot;&gt;.&lt;/span&gt;getClass()&lt;span class=&quot;pl-k&quot;&gt;.&lt;/span&gt;getResource(&lt;span class=&quot;pl-s&quot;&gt;&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;/&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;)&lt;span class=&quot;pl-k&quot;&gt;.&lt;/span&gt;getPath() &lt;span class=&quot;pl-k&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;pl-s&quot;&gt;&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;ExportWithTemplate.xlsx&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;,
-               paras,
-               excelSetting);&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;更多功能请前往&lt;a href=&quot;http://www.fenghaitao.net/autoexcel-user-manual&quot; rel=&quot;nofollow&quot;&gt;文档&lt;/a&gt;&lt;/p&gt;
-&lt;/article&gt;
-  &lt;/div&gt;
-
-    &lt;/div&gt;
-
-  
-
-
-  &lt;details class=&quot;details-reset details-overlay details-overlay-dark&quot; id=&quot;jumpto-line-details-dialog&quot;&gt;
-    &lt;summary data-hotkey=&quot;l&quot; aria-label=&quot;Jump to line&quot;/&gt;
-    &lt;details-dialog class=&quot;Box Box--overlay d-flex flex-column anim-fade-in fast linejump&quot; aria-label=&quot;Jump to line&quot;&gt;
-          &lt;/details-dialog&gt;
-  &lt;/details&gt;
-
-    
-
-
-
-
-  &lt;/div&gt;
-&lt;/div&gt;
-
-    &lt;/main&gt;
-  &lt;/div&gt;
-
-  &lt;/div&gt;
-
-          
-
-
-
-
-  &lt;div id=&quot;ajax-error-message&quot; class=&quot;ajax-error-message flash flash-error&quot;&gt;
-    &lt;svg class=&quot;octicon octicon-alert&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M8.22 1.754a.25.25 0 00-.44 0L1.698 13.132a.25.25 0 00.22.368h12.164a.25.25 0 00.22-.368L8.22 1.754zm-1.763-.707c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0114.082 15H1.918a1.75 1.75 0 01-1.543-2.575L6.457 1.047zM9 11a1 1 0 11-2 0 1 1 0 012 0zm-.25-5.25a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5z&quot;/&gt;&lt;/svg&gt;
-    &lt;button type=&quot;button&quot; class=&quot;flash-close js-ajax-error-dismiss&quot; aria-label=&quot;Dismiss error&quot;&gt;
-      &lt;svg class=&quot;octicon octicon-x&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z&quot;/&gt;&lt;/svg&gt;
-    &lt;/button&gt;&lt;p&gt;
-    You can’t perform that action at this time.
-  &lt;/p&gt;&lt;/div&gt;
-
-
-  &lt;div class=&quot;js-stale-session-flash flash flash-warn flash-banner&quot; hidden=&quot;&quot;&gt;
-    &lt;svg class=&quot;octicon octicon-alert&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M8.22 1.754a.25.25 0 00-.44 0L1.698 13.132a.25.25 0 00.22.368h12.164a.25.25 0 00.22-.368L8.22 1.754zm-1.763-.707c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0114.082 15H1.918a1.75 1.75 0 01-1.543-2.575L6.457 1.047zM9 11a1 1 0 11-2 0 1 1 0 012 0zm-.25-5.25a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5z&quot;/&gt;&lt;/svg&gt;
-    &lt;span class=&quot;js-stale-session-flash-signed-in&quot; hidden=&quot;&quot;&gt;You signed in with another tab or window. &lt;a href=&quot;&quot;&gt;Reload&lt;/a&gt; to refresh your session.&lt;/span&gt;
-    &lt;span class=&quot;js-stale-session-flash-signed-out&quot; hidden=&quot;&quot;&gt;You signed out in another tab or window. &lt;a href=&quot;&quot;&gt;Reload&lt;/a&gt; to refresh your session.&lt;/span&gt;
-  &lt;/div&gt;
-    &lt;template id=&quot;site-details-dialog&quot;&gt;
-  &lt;details class=&quot;details-reset details-overlay details-overlay-dark lh-default text-gray-dark hx_rsm&quot; open=&quot;&quot;&gt;
-    &lt;summary role=&quot;button&quot; aria-label=&quot;Close dialog&quot;/&gt;
-    &lt;details-dialog class=&quot;Box Box--overlay d-flex flex-column anim-fade-in fast hx_rsm-dialog hx_rsm-modal&quot;&gt;
-      &lt;button class=&quot;Box-btn-octicon m-0 btn-octicon position-absolute right-0 top-0&quot; type=&quot;button&quot; aria-label=&quot;Close dialog&quot; data-close-dialog=&quot;&quot;&gt;
-        &lt;svg class=&quot;octicon octicon-x&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z&quot;/&gt;&lt;/svg&gt;
-      &lt;/button&gt;
-      &lt;p class=&quot;octocat-spinner my-6 js-details-dialog-spinner&quot;/&gt;
-    &lt;/details-dialog&gt;
-  &lt;/details&gt;
-&lt;/template&gt;
-
-    
-
-      &lt;div class=&quot;js-cookie-consent-banner&quot; hidden=&quot;&quot;&gt;
-  &lt;div class=&quot;hx_cookie-banner p-2 p-sm-3 p-md-4&quot;&gt;
-    &lt;div class=&quot;Box hx_cookie-banner-box box-shadow-medium mx-auto&quot;&gt;
-    &lt;div class=&quot;Box-body border-0 py-0 px-3 px-md-4&quot;&gt;
-      &lt;div class=&quot;js-main-cookie-banner hx_cookie-banner-main&quot;&gt;
-          &lt;div class=&quot;d-md-flex flex-items-center py-3&quot;&gt;
-            &lt;p class=&quot;f5 flex-1 mb-3 mb-md-0&quot;&gt;
-              
-  We use &lt;span class=&quot;text-bold&quot;&gt;optional&lt;/span&gt; third-party analytics cookies to understand how you use GitHub.com so we can build better products.
-
-              &lt;span class=&quot;btn-link js-cookie-consent-learn-more&quot;&gt;Learn more&lt;/span&gt;.
-            &lt;/p&gt;
-            &lt;p class=&quot;d-flex d-md-block flex-wrap flex-sm-nowrap&quot;&gt;
-              &lt;button class=&quot;btn btn-outline flex-1 mr-1 mx-sm-1 m-md-0 ml-md-2 js-cookie-consent-accept&quot;&gt;Accept&lt;/button&gt;
-              &lt;button class=&quot;btn btn-outline flex-1 ml-1 m-md-0 ml-md-2 js-cookie-consent-reject&quot;&gt;Reject&lt;/button&gt;
-            &lt;/p&gt;
-          &lt;/div&gt;
-        &lt;/div&gt;
-
-        &lt;div class=&quot;js-cookie-details hx_cookie-banner-details&quot; hidden=&quot;&quot;&gt;
-          &lt;div class=&quot;d-md-flex flex-items-center py-3&quot;&gt;
-            &lt;p class=&quot;f5 flex-1 mb-2 mb-md-0&quot;&gt;
-              
-  We use &lt;span class=&quot;text-bold&quot;&gt;optional&lt;/span&gt; third-party analytics cookies to understand how you use GitHub.com so we can build better products.
-
-              &lt;br/&gt;
-              You can always update your selection by clicking &lt;span class=&quot;text-bold&quot;&gt;Cookie Preferences&lt;/span&gt; at the bottom of the page.
-              For more information, see our &lt;a href=&quot;https://docs.github.com/en/free-pro-team@latest/github/site-policy/github-privacy-statement&quot;&gt;Privacy Statement&lt;/a&gt;.
-            &lt;/p&gt;
-          &lt;/div&gt;
-
-          &lt;div class=&quot;d-md-flex flex-items-center py-3 border-top&quot;&gt;
-            &lt;div class=&quot;f5 flex-1 mb-2 mb-md-0&quot;&gt;
-              &lt;h5 class=&quot;mb-1&quot;&gt;Essential cookies&lt;/h5&gt;
-              &lt;p class=&quot;f6 mb-md-0&quot;&gt;We use essential cookies to perform essential website functions, e.g. they&#x27;re used to log you in. 
-                &lt;a href=&quot;https://docs.github.com/en/github/site-policy/github-subprocessors-and-cookies&quot;&gt;Learn more&lt;/a&gt;
-              &lt;/p&gt;
-            &lt;/div&gt;
-            &lt;p class=&quot;text-right&quot;&gt;
-              &lt;h5 class=&quot;text-blue&quot;&gt;Always active&lt;/h5&gt;
-            &lt;/p&gt;
-          &lt;/div&gt;
-
-          &lt;div class=&quot;d-md-flex flex-items-center py-3 border-top&quot;&gt;
-            &lt;div class=&quot;f5 flex-1 mb-2 mb-md-0&quot;&gt;
-              &lt;h5 class=&quot;mb-1&quot;&gt;Analytics cookies&lt;/h5&gt;
-              &lt;p class=&quot;f6 mb-md-0&quot;&gt;We use analytics cookies to understand how you use our websites so we can make them better, e.g. they&#x27;re used to gather information about the pages you visit and how many clicks you need to accomplish a task. 
-                &lt;a href=&quot;https://docs.github.com/en/github/site-policy/github-subprocessors-and-cookies&quot;&gt;Learn more&lt;/a&gt;
-              &lt;/p&gt;
-            &lt;/div&gt;
-            
-          &lt;/div&gt;
-
-          &lt;p class=&quot;text-right py-3 border-top&quot;&gt;
-            &lt;button class=&quot;btn btn-primary js-save-cookie-preferences&quot; type=&quot;button&quot; disabled=&quot;disabled&quot;&gt;Save preferences&lt;/button&gt;
-          &lt;/p&gt;
-        &lt;/div&gt;
-&lt;/div&gt;&lt;/div&gt;  &lt;/div&gt;
-&lt;/div&gt;
-
-
-  &lt;/body&gt;
+&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/5-why-we-need-third-party-authorization-.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/5-why-we-need-third-party-authorization--768x242.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;strong&gt;信任的传递：&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;认证中心到终端：用户使用的用户名和密码等认证信息，并生成返回xml文件（也可以直接跳转到SP）。&lt;/li&gt;
+&lt;li&gt;终端到资源服务器：发送这个xml文件，证明自己的身份。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;相关场景&lt;/strong&gt;：认证与具体服务耦合场景——在业务的服务中，同时包含了用户信息与相应权限的管理。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;优点：适合简单场景，单体服务。&lt;/li&gt;
+&lt;li&gt;缺点：当服务变多时，容易演变为每个服务各自为战，自己都有一套身份系统，后期难以维护，用户体验也比较差。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;03. 基于JWT的认证 —— 单次会话中的信任传递&lt;/h4&gt;
+&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/6-why-we-need-third-party-authorization-.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/6-why-we-need-third-party-authorization-.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;目的&lt;/strong&gt;：用户通过合法的身份访问资源和服务&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;背景&lt;/strong&gt;：用户访问资源，不想每次请求都登录&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;面临问题&lt;/strong&gt;：每次请求都填写用户名和密码的用户体验不可想象http协议每次请求都是相互独立的，需要进行验证&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;具体说明&lt;/strong&gt;：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;认证服务器：认证服务器会将用户的基本信息、token的开始与过期时间、一些元数据等进行签名，生成自验证的token。&lt;/li&gt;
+&lt;li&gt;浏览器：用户在第一次登录认证的时候会提供自己是用户名与密码，并将返回的token保存（一般是cookie），在token有效期内的后续访问只需要发送token就可以证明自己的身份。&lt;/li&gt;
+&lt;li&gt;资源/服务提供商：没有token的访问时重定向到认证服务器，有token的访问则进行有效性验证，验证不需要与认证服务器再进行通信，如果是公钥token，只需要在资源服务器或者网关处保存对应的公钥即可对token进行验证。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;信任的凭证：&lt;/strong&gt; 自验证的token&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/7-why-we-need-third-party-authorization-.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/7-why-we-need-third-party-authorization--768x403.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;信任的传递：&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;认证中心信任浏览器：验证用户名密码后生成token，保存cookie到浏览器。          &lt;/li&gt;
+&lt;li&gt;浏览器cookie浏览器到资源服务器：发送请求的同时发送cookie中的token，token会在资源服务器或者网关进行验证，验证通过则为合法用户。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/8-why-we-need-third-party-authorization-.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2020/12/8-why-we-need-third-party-authorization--768x196.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;相关场景&lt;/strong&gt;：基于session的认证——浏览器的cookie中只保存session id，没有完整的信息，服务端需要缓存session的具体信息。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;优点：session id比较短，适用于用户信息太过庞大使得token过长的场景。&lt;/li&gt;
+&lt;li&gt;缺点：服务端需要额外维护所有登录的session信息，同时验证的时候需要再与认证中心进行交付。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;总结：为什么需要第三方授权？&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;终端与资源服务器相互未知——终端不知道会访问那些网站，网站不知道会被哪些终端访问，于是需要一个长久运行的可信第三方建立信任。&lt;/li&gt;
+&lt;li&gt;资源服务器没有自己的身份管理系统——资源服务器关注与提供更好的资源访问，将身份认证服务交给更专业的服务。&lt;/li&gt;
+&lt;li&gt;资源服务器想提供更好的体验，更便捷的登录服务，比如使用Google，WeChate账户登录——资源服务器为提供更便捷的登录，让用户以其它已有的身份登录。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;Reference：密码学基础&lt;/h3&gt;
+&lt;p&gt;密码学的经典应用是对数据机密性的保护，不过在这篇文章中，我们涉及的是它的另外一个特性——&lt;strong&gt;不可伪造性&lt;/strong&gt;。能够实现不可伪造性的技术不止一种：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;非对称（公私钥）加密——在这种技术中，使用公钥加密数据，私钥解密数据是它的加密应用；同时可以使用私钥签名数据，公钥进行验证，因为私钥只有自己持有，公钥可以公开，就可以达到身份认证的目的。就好比一个人在支票上的签名，自己的笔迹是私钥，别人无法模仿；在不同银行开户时存底的签名模板是公钥，可以在不同银行存底；验签的过程就是银行将支票上的签名与存底模板进行比对的过程。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;对称加密或者带盐Hash——在能够分享同一个秘钥，并且接受秘钥分享带来的风险的内部网络中，使用加密或者带盐Hash同样也可以实现身份验证的目的，将一份随机文本加密或者Hash后生成一个摘要，这段文本和摘要一起就组成了一个签名。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;hr/&gt;
+&lt;p&gt;&lt;strong&gt;更多精彩洞见，请关注微信公众号：ThoughtWorks洞见&lt;/strong&gt;&lt;/p&gt;
+&amp;#13;
+&lt;/div&gt;&amp;#13;
 &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>d6daf3df4558beaceaf8b623f36e111e</guid>
+<title>并发编程：信号量的使用方法和其实现原理</title>
+<link>https://toutiao.io/k/59jykba</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;什么是信号量&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;信号量是并发编程中常见的一种同步机制，在需要控制访问资源的线程数量时就会用到信号量，关于什么是信号量这个问题，我引用一下维基百科对信号量的解释，大家就明白了。&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;信号量的概念是计算机科学家 &lt;strong&gt;Dijkstra&lt;/strong&gt; （Dijkstra算法的发明者）提出来的，广泛应用在不同的操作系统中。系统中，会给每一个进程一个信号量，代表每个进程当前的状态，未得到控制权的进程，会在特定的地方被迫停下来，等待可以继续进行的信号到来。&lt;/p&gt;&lt;/blockquote&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;如果信号量是一个任意的整数，通常被称为计数信号量（Counting semaphore），或一般信号量（general semaphore）；如果信号量只有二进制的0或1，称为二进制信号量（binary semaphore）。在linux系统中，二进制信号量（binary semaphore）又称互斥锁（Mutex）&lt;/p&gt;&lt;p&gt;&lt;span&gt;计数信号量具备两种操作动作，称为V（&lt;/span&gt;&lt;code&gt;signal()&lt;/code&gt;&lt;span&gt;）与P（&lt;/span&gt;&lt;code&gt;wait()&lt;/code&gt;&lt;span&gt;）（即部分参考书常称的“PV操作”）。&lt;/span&gt;&lt;span&gt;V操作会增加信号&lt;/span&gt;量&lt;span&gt;S的数值，P操作会减少它。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;运行方式：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;初始化信号量，给与它一个非负数的整数值。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;运行P（&lt;/span&gt;&lt;code&gt;wait()&lt;/code&gt;&lt;span&gt;），信号&lt;/span&gt;量&lt;span&gt;S的值将被减少。&lt;/span&gt;&lt;span&gt;企图进入&lt;/span&gt;临界区&lt;span&gt;的进程，需要先运行P（&lt;/span&gt;&lt;code&gt;wait()&lt;/code&gt;&lt;span&gt;）。&lt;/span&gt;&lt;span&gt;当信号&lt;/span&gt;量&lt;span&gt;S减为负值时，进程会被阻塞住，不能继续；&lt;/span&gt;&lt;span&gt;当信号&lt;/span&gt;量&lt;span&gt;S不为负值时，进程可以获准进入临界区。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;运行V（&lt;/span&gt;&lt;code&gt;signal()&lt;/code&gt;&lt;span&gt;），信号量S的值会被增加。&lt;/span&gt;&lt;span&gt;结束离开&lt;/span&gt;临界区&lt;span&gt;的进程，将会运行V（&lt;/span&gt;&lt;code&gt;signal()&lt;/code&gt;&lt;span&gt;）。&lt;/span&gt;&lt;span&gt;当信号&lt;/span&gt;量&lt;span&gt;S不为负值时，先前被阻塞住的其他进程，将可获准进入&lt;/span&gt;临界区&lt;span&gt;。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们一般用信号量保护一组资源，比如数据库连接池、一组客户端的连接等等。&lt;strong&gt;每次获取资源时都会将信号量中的计数器减去对应的数值，在释放资源时重新加回来。当遇到信号量资源不够时尝试获取的线程就会进入休眠，等待其他线程释放归还信号量&lt;/strong&gt;。如果信号量是只有0和1的二进位信号量，那么，它的 P/V 就和互斥锁的 Lock/Unlock 一样了。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;Go语言中的信号量表示&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Go&lt;/code&gt; 内部使用信号量来控制&lt;code&gt;goroutine&lt;/code&gt;的阻塞和唤醒，比如互斥锁&lt;code&gt;sync.Mutex&lt;/code&gt;结构体定义的第二个字段就是一个信号量。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;type&lt;/span&gt; Mutex &lt;span&gt;struct&lt;/span&gt; {&lt;br/&gt;    state &lt;span&gt;int32&lt;/span&gt;&lt;br/&gt;    sema  &lt;span&gt;uint32&lt;/span&gt;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;信号量的PV操作在&lt;code&gt;Go&lt;/code&gt;内部是通过下面这几个底层函数实现的&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;runtime_Semacquire&lt;/span&gt;&lt;span&gt;(s *&lt;span&gt;uint32&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;runtime_SemacquireMutex&lt;/span&gt;&lt;span&gt;(s *&lt;span&gt;uint32&lt;/span&gt;, lifo &lt;span&gt;bool&lt;/span&gt;, skipframes &lt;span&gt;int&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;runtime_Semrelease&lt;/span&gt;&lt;span&gt;(s *&lt;span&gt;uint32&lt;/span&gt;, handoff &lt;span&gt;bool&lt;/span&gt;, skipframes &lt;span&gt;int&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上面几个函数都是&lt;code&gt;Go&lt;/code&gt;语言内部使用的，我们不能在编程时直接使用。不过&lt;code&gt;Go&lt;/code&gt; 语言的扩展并发原语包中提供了带权重的信号量 &lt;code&gt;semaphore.Weighted&lt;/code&gt;&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;使用信号量前，需先在项目里安装&lt;code&gt;golang.org/x/sync/&lt;/code&gt;包&lt;/p&gt;&lt;p&gt;安装方法：&lt;strong&gt;go get -u golang.org/x/sync&lt;/strong&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们可以按照不同的权重对资源的访问进行管理，这个结构体对外提供了四个方法：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;strong&gt;semaphore.NewWeighted&lt;/strong&gt; 用于创建新的信号量，通过参数(n int64) 指定信号量的初始值。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;strong&gt;semaphore.Weighted.Acquire&lt;/strong&gt; 阻塞地获取指定权重的资源，如果当前没有空闲资源，就会陷入休眠等待；相当于 P 操作，你可以一次获取多个资源，如果没有足够多的资源，调用者就会被阻塞。它的第一个参数是 Context，这就意味着，你可以通过 Context 增加超时或者 cancel 的机制。如果是正常获取了资源，就返回 &lt;code&gt;nil&lt;/code&gt;；否则，就返回&lt;code&gt;ctx.Err()&lt;/code&gt;，信号量不改变。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;strong&gt;semaphore.Weighted.Release&lt;/strong&gt; 用于释放指定权重的资源；相当于 V 操作，可以将 n 个资源释放，返还给信号量。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;strong&gt;semaphore.Weighted.TryAcquire&lt;/strong&gt; 非阻塞地获取指定权重的资源，如果当前没有空闲资源，就会直接返回 &lt;code&gt;false&lt;/code&gt;；&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;在Go编程里使用信号量&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在实际应用&lt;code&gt;Go&lt;/code&gt;语言开发程序时，有哪些场景适合使用信号量呢？&lt;strong&gt;在需要控制访问资源的线程数量时就会需要信号量&lt;/strong&gt;，我来举个例子帮助你理解。假设我们有一组要抓取的页面，资源有限最多允许我们同时执行三个抓取任务，当同时有三个抓取任务在执行时，在执行完一个抓取任务后才能执行下一个排队等待的任务。当然这个问题用Channel也能解决，不过这次我们使用Go提供的信号量原语来解决这个问题，代码如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;package&lt;/span&gt; main&lt;br/&gt;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; (&lt;br/&gt;    &lt;span&gt;&quot;context&quot;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&quot;fmt&quot;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&quot;sync&quot;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&quot;time&quot;&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&quot;golang.org/x/sync/semaphore&quot;&lt;/span&gt;&lt;br/&gt;)&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;doSomething&lt;/span&gt;&lt;span&gt;(u &lt;span&gt;string&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt; {&lt;span&gt;// 模拟抓取任务的执行&lt;/span&gt;&lt;br/&gt;    fmt.Println(u)&lt;br/&gt;    time.Sleep(&lt;span&gt;2&lt;/span&gt; * time.Second)&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;const&lt;/span&gt; (&lt;br/&gt;    Limit  = &lt;span&gt;3&lt;/span&gt; &lt;span&gt;// 同時并行运行的goroutine上限&lt;/span&gt;&lt;br/&gt;    Weight = &lt;span&gt;1&lt;/span&gt; &lt;span&gt;// 每个goroutine获取信号量资源的权重&lt;/span&gt;&lt;br/&gt;)&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;    urls := []&lt;span&gt;string&lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;&quot;http://www.example.com&quot;&lt;/span&gt;,&lt;br/&gt;        &lt;span&gt;&quot;http://www.example.net&quot;&lt;/span&gt;,&lt;br/&gt;        &lt;span&gt;&quot;http://www.example.net/foo&quot;&lt;/span&gt;,&lt;br/&gt;        &lt;span&gt;&quot;http://www.example.net/bar&quot;&lt;/span&gt;,&lt;br/&gt;        &lt;span&gt;&quot;http://www.example.net/baz&quot;&lt;/span&gt;,&lt;br/&gt;    }&lt;br/&gt;    s := semaphore.NewWeighted(Limit)&lt;br/&gt;    &lt;span&gt;var&lt;/span&gt; w sync.WaitGroup&lt;br/&gt;    &lt;span&gt;for&lt;/span&gt; _, u := &lt;span&gt;range&lt;/span&gt; urls {&lt;br/&gt;        w.Add(&lt;span&gt;1&lt;/span&gt;)&lt;br/&gt;        &lt;span&gt;go&lt;/span&gt; &lt;span&gt;&lt;span&gt;func&lt;/span&gt;&lt;span&gt;(u &lt;span&gt;string&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;            s.Acquire(context.Background(), Weight)&lt;br/&gt;            doSomething(u)&lt;br/&gt;            s.Release(Weight)&lt;br/&gt;            w.Done()&lt;br/&gt;        }(u)&lt;br/&gt;    }&lt;br/&gt;    w.Wait()&lt;br/&gt;    &lt;br/&gt;    fmt.Println(&lt;span&gt;&quot;All Done&quot;&lt;/span&gt;)&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;Go语言信号量的实现原理&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Go&lt;/code&gt;语言扩展库中的信号量是使用互斥锁和List 实现的。互斥锁实现其它字段的保护，而 List 实现了一个等待队列，等待者的通知是通过 &lt;code&gt;Channel&lt;/code&gt; 的通知机制实现的。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;信号量的数据结构&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们来看一下信号量&lt;code&gt;semaphore.Weighted&lt;/code&gt;的数据结构：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;type&lt;/span&gt; Weighted &lt;span&gt;struct&lt;/span&gt; {&lt;br/&gt;    size    &lt;span&gt;int64&lt;/span&gt;         &lt;span&gt;// 最大资源数&lt;/span&gt;&lt;br/&gt;    cur     &lt;span&gt;int64&lt;/span&gt;         &lt;span&gt;// 当前已被使用的资源&lt;/span&gt;&lt;br/&gt;    mu      sync.Mutex    &lt;span&gt;// 互斥锁，对字段的保护&lt;/span&gt;&lt;br/&gt;    waiters list.List     &lt;span&gt;// 等待队列&lt;/span&gt;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;size&lt;/code&gt;字段用来记录信号量拥有的最大资源数。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;cur&lt;/code&gt;标识当前已被使用的资源数。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;mu&lt;/code&gt;是一个互斥锁用来提供对其他字段的临界区保护。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;waiters&lt;/code&gt;表示申请资源时由于可使用资源不够而陷入阻塞等待的调用者列表。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;Acquire请求信号量资源&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Acquire&lt;/code&gt;方法会监控资源是否可用，而且还要检测传递进来的&lt;code&gt;context.Context&lt;/code&gt;对象是否发送了超时过期或者取消的信号，我们来看一下它的代码实现：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;(s *Weighted)&lt;/span&gt; &lt;span&gt;Acquire&lt;/span&gt;&lt;span&gt;(ctx context.Context, n &lt;span&gt;int64&lt;/span&gt;)&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;    s.mu.Lock()&lt;br/&gt;    &lt;span&gt;// 如果恰好有足够的资源，也没有排队等待获取资源的goroutine，&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// 将cur加上n后直接返回&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; s.size-s.cur &amp;gt;= n &amp;amp;&amp;amp; s.waiters.Len() == &lt;span&gt;0&lt;/span&gt; {&lt;br/&gt;      s.cur += n&lt;br/&gt;      s.mu.Unlock()&lt;br/&gt;      &lt;span&gt;return&lt;/span&gt; &lt;span&gt;nil&lt;/span&gt;&lt;br/&gt;    }&lt;br/&gt;  &lt;br/&gt;    &lt;span&gt;// 请求的资源数大于能提供的最大的资源数&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// 这个任务处理不了，走错误处理逻辑&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; n &amp;gt; s.size {&lt;br/&gt;      s.mu.Unlock()&lt;br/&gt;      &lt;span&gt;// 依赖ctx的状态返回，否则一直等待&lt;/span&gt;&lt;br/&gt;      &amp;lt;-ctx.Done()&lt;br/&gt;      &lt;span&gt;return&lt;/span&gt; ctx.Err()&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;// 现存资源不够, 需要把调用者加入到等待队列中&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// 创建了一个ready chan,以便被通知唤醒&lt;/span&gt;&lt;br/&gt;    ready := &lt;span&gt;make&lt;/span&gt;(&lt;span&gt;chan&lt;/span&gt; &lt;span&gt;struct&lt;/span&gt;{})&lt;br/&gt;    w := waiter{n: n, ready: ready}&lt;br/&gt;    elem := s.waiters.PushBack(w)&lt;br/&gt;    s.mu.Unlock()&lt;br/&gt;  &lt;br/&gt;&lt;br/&gt;    &lt;span&gt;// 等待&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;select&lt;/span&gt; {&lt;br/&gt;    &lt;span&gt;case&lt;/span&gt; &amp;lt;-ctx.Done(): &lt;span&gt;// context的Done被关闭&lt;/span&gt;&lt;br/&gt;      err := ctx.Err()&lt;br/&gt;      s.mu.Lock()&lt;br/&gt;      &lt;span&gt;select&lt;/span&gt; {&lt;br/&gt;      &lt;span&gt;case&lt;/span&gt; &amp;lt;-ready: &lt;span&gt;// 如果被唤醒了，忽略ctx的状态&lt;/span&gt;&lt;br/&gt;        err = &lt;span&gt;nil&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;default&lt;/span&gt;: &lt;span&gt;// 通知waiter&lt;/span&gt;&lt;br/&gt;        isFront := s.waiters.Front() == elem&lt;br/&gt;        s.waiters.Remove(elem)&lt;br/&gt;        &lt;span&gt;// 通知其它的waiters,检查是否有足够的资源&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; isFront &amp;amp;&amp;amp; s.size &amp;gt; s.cur {&lt;br/&gt;          s.notifyWaiters()&lt;br/&gt;        }&lt;br/&gt;      }&lt;br/&gt;      s.mu.Unlock()&lt;br/&gt;      &lt;span&gt;return&lt;/span&gt; err&lt;br/&gt;    &lt;span&gt;case&lt;/span&gt; &amp;lt;-ready: &lt;span&gt;// 等待者被唤醒了&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;return&lt;/span&gt; &lt;span&gt;nil&lt;/span&gt;&lt;br/&gt;    }&lt;br/&gt;  }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果调用者请求不到信号量的资源就会被加入等待者列表里，这里等待者列表的结构体定义是：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;type&lt;/span&gt; waiter struct {&lt;br/&gt; n     int64&lt;br/&gt; ready chan&amp;lt;- struct{} // 当调用者可以获取到信号量资源时, close调这个chan&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;包含了两个字段，调用者请求的资源数，以及一个ready 通道。ready通道会在调用者可以被重新唤醒的时候被&lt;code&gt;close&lt;/code&gt;调，从而起到通知正在阻塞读取ready通道的等待者的作用。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;NotifyWaiters 通知等待者&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;notifyWaiters&lt;/code&gt;方法会逐个检查队列里等待的调用者，如果现存资源够等待者请求的数量n，或者是没有等待者了，就返回：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;(s *Weighted)&lt;/span&gt; &lt;span&gt;notifyWaiters&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;    &lt;span&gt;for&lt;/span&gt; {&lt;br/&gt;      next := s.waiters.Front()&lt;br/&gt;      &lt;span&gt;if&lt;/span&gt; next == &lt;span&gt;nil&lt;/span&gt; {&lt;br/&gt;        &lt;span&gt;break&lt;/span&gt; &lt;span&gt;// 没有等待者了，直接返回&lt;/span&gt;&lt;br/&gt;      }&lt;br/&gt;  &lt;br/&gt;&lt;br/&gt;      w := next.Value.(waiter)&lt;br/&gt;      &lt;span&gt;if&lt;/span&gt; s.size-s.cur &amp;lt; w.n {&lt;br/&gt;        &lt;span&gt;// 如果现有资源不够队列头调用者请求的资源数，就退出所有等待者会继续等待&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;// 这里还是按照先入先出的方式处理是为了避免饥饿&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;break&lt;/span&gt;&lt;br/&gt;      }&lt;br/&gt;&lt;br/&gt;      s.cur += w.n&lt;br/&gt;      s.waiters.Remove(next)&lt;br/&gt;      &lt;span&gt;close&lt;/span&gt;(w.ready)&lt;br/&gt;    }&lt;br/&gt;  }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;notifyWaiters&lt;/code&gt;方法是按照先入先出的方式唤醒调用者。当释放 100 个资源的时候，如果第一个等待者需要 101 个资源，那么，队列中的所有等待者都会继续等待，即使队列后面有的等待者只需要 1 个资源。这样做的目的是避免饥饿，否则的话，资源可能总是被那些请求资源数小的调用者获取，这样一来，请求资源数巨大的调用者，就没有机会获得资源了。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;Release归还信号量资源&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Release&lt;/code&gt;方法就很简单了，它将当前计数值减去释放的资源数 n，并调用&lt;code&gt;notifyWaiters&lt;/code&gt;方法，尝试唤醒等待队列中的调用者，看是否有足够的资源被获取。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;(s *Weighted)&lt;/span&gt; &lt;span&gt;Release&lt;/span&gt;&lt;span&gt;(n &lt;span&gt;int64&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;    s.mu.Lock()&lt;br/&gt;    s.cur -= n&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; s.cur &amp;lt; &lt;span&gt;0&lt;/span&gt; {&lt;br/&gt;      s.mu.Unlock()&lt;br/&gt;      &lt;span&gt;panic&lt;/span&gt;(&lt;span&gt;&quot;semaphore: released more than held&quot;&lt;/span&gt;)&lt;br/&gt;    }&lt;br/&gt;    s.notifyWaiters()&lt;br/&gt;    s.mu.Unlock()&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;总结&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在&lt;code&gt;Go&lt;/code&gt;语言中信号量有时候也会被&lt;code&gt;Channel&lt;/code&gt;类型所取代，因为一个 buffered chan 也可以代表 n 个资源。不过既然&lt;code&gt;Go&lt;/code&gt;语言通过&lt;code&gt;golang.orgx/sync&lt;/code&gt;扩展库对外提供了&lt;code&gt;semaphore.Weight&lt;/code&gt;这一种信号量实现，遇到使用信号量的场景时还是尽量使用官方提供的实现。在使用的过程中我们需要注意以下的几个问题：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;Acquire&lt;/code&gt;和 &lt;code&gt;TryAcquire&lt;/code&gt;方法都可以用于获取资源，前者会阻塞地获取信号量。后者会非阻塞地获取信号量，如果获取不到就返回&lt;code&gt;false&lt;/code&gt;。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;Release&lt;/code&gt;归还信号量后，会以先进先出的顺序唤醒等待队列中的调用者。如果现有资源不够处于等待队列前面的调用者请求的资源数，所有等待者会继续等待。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如果一个&lt;code&gt;goroutine&lt;/code&gt;申请较多的资源，由于上面说的归还后唤醒等待者的策略，它可能会等待比较长的时间。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>b739c028657d51d2f627c49bd413ee64</guid>
+<title>数据分析：复杂业务场景下，量化评估流程</title>
+<link>https://toutiao.io/k/9fplpyf</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
+
+                    
+
+                    
+                    
+                    &lt;h1&gt;&lt;span&gt;一、量化思维&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;在编程体系中有很多复杂的业务是很难理解的，但是又需要做一个量化分析，给业务人员或者运营，或者用户一个参考标准，例如常见指数，芝麻分数，店铺等级，这类业务评定标准非常复杂，因为影响结果的因素很多。&lt;/p&gt;&lt;p&gt;在多个维度的业务考量模型中，有一个核心概念叫做权重，指某一因素或指标相对于某一事物的重要程度，其不同于一般的比重，体现的不仅仅是某一因素或指标所占的百分比，强调的是因素或指标的相对重要程度，倾向于贡献度或重要性。通常情况下每个维度的权重在0-1之间，所有维度的权重之和为1。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.4588045234248788&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvD9zzPoQbeGo54SZMBwiaCmWOva1zRF2ysyFHwcJWth2ErJ0ZgvsTKqsNqKTHnGEVqsbPrgE7ZBxfw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1238&quot;/&gt;&lt;/p&gt;&lt;p&gt;可以从一个实际案例来分析权重的概念，比如判断一个客户是否是重点运营的对象，通常会从每周登录次数，在线时长，交易量等维度考虑，如果客户A经常登录，但是没有核心业务交易，客户B很少登录，但是业务交易高，所以这里登录次数的权重就应该低于交易量这个维度。&lt;/p&gt;&lt;p&gt;如何确定权重占比，通常有两个思路，一借鉴专业业务人员的提供的经验，放到业务中不断尝试调优；二根据产品的分析数据，计算各个维度权重，也是需要在业务中不断尝试优化。&lt;/p&gt;&lt;p&gt;实际上复杂业务场景的量化过程是复杂且漫长的，需要对多个维度的数据做收集，有时候不但需要做周期性量化，例如几家大厂的信用分，也可能存在实时分析的场景，金融业务中的欺诈风控等，也有两种场景综合的实时推荐体系，都会用到量化流程。&lt;/p&gt;&lt;h1&gt;&lt;span&gt;二、场景案例&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5156794425087108&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvD9zzPoQbeGo54SZMBwiaCmWZE7jbhu0899wX6kWxKzDk58JEWBfpicFTC6QHpMIu9dicbnuMicAY4DYg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1148&quot;/&gt;&lt;/p&gt;&lt;h2&gt;&lt;span&gt;1、综合评估&lt;/span&gt;&lt;br/&gt;&lt;/h2&gt;&lt;p&gt;对用户、店铺、产品等多种场景做综合评估，把一个复杂的事物通过多个维度抽象分析，生成简单容易理解的评估结果，例如店铺等级、产品评分、用户综合指数等，进而对各个使用场景产生参考的依据。从结果来看可能是很容易理解，但是获取结果的分析过程是相对复杂的，有的场景可能需要周期性执行评估模型，有的场景可能需要实时计算，还有可能是两种情况结合即依赖周期评估，也需要参考实时计算。&lt;/p&gt;&lt;h2&gt;&lt;span&gt;2、场景推荐&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;这个场景相对复杂度较高，例如用户进行搜索，但是又勾选一系列排除或者必要条件，这在搜索类的功能中很常见，在处理时不但要对用户的搜索条件做最高的匹配度分析，还要基于搜索结果做最优排序，这种就存在两个阶段评估，第一个阶段匹配最优搜索条件，第二阶段对匹配结果做最优选排序，最大可能的给出用户想要的搜索结果。&lt;/p&gt;&lt;h2&gt;&lt;span&gt;3、风控评分&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;在金融领域内，这是很常见的一种风控模型，即对用户多个维度统计，做维度评分然后累加到一起，风控分越高，说明该用户风险越大，进而阻止高风险交易。&lt;/p&gt;&lt;h2&gt;&lt;span&gt;4、理财指数&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;这个场景很常见，在金融理财类的APP中，使用之前必须经过一个测评体系，来判断用户的风险承受能力：例如保守型、积极型等，当用户购买的产品属于高风险时，会提示和用户的风险承受能力不匹配，提示用户重新测评。&lt;/p&gt;&lt;h1&gt;&lt;span&gt;三、实现思路&lt;/span&gt;&lt;/h1&gt;&lt;h2&gt;&lt;span&gt;1、维度规则表&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;维护一份维度的评估规则表，classify_sign理解为同一业务场景下的划分标识，weight则标识该维度在评估中的比重。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;CREATE TABLE `evaluate_rule` (&lt;br/&gt;  `id` &lt;span&gt;int&lt;/span&gt;(&lt;span&gt;11&lt;/span&gt;) NOT NULL AUTO_INCREMENT COMMENT &lt;span&gt;&#x27;主键ID&#x27;&lt;/span&gt;,&lt;br/&gt;  `classify_sign` varchar(&lt;span&gt;50&lt;/span&gt;) COLLATE utf8mb4_unicode_ci DEFAULT &lt;span&gt;&#x27;&#x27;&lt;/span&gt; COMMENT &lt;span&gt;&#x27;归类标识&#x27;&lt;/span&gt;,&lt;br/&gt;  `rule_value` varchar(&lt;span&gt;300&lt;/span&gt;) COLLATE utf8mb4_unicode_ci DEFAULT &lt;span&gt;&#x27;&#x27;&lt;/span&gt; COMMENT &lt;span&gt;&#x27;规则描述&#x27;&lt;/span&gt;,&lt;br/&gt;  `rule_type` &lt;span&gt;int&lt;/span&gt;(&lt;span&gt;1&lt;/span&gt;) DEFAULT NULL COMMENT &lt;span&gt;&#x27;规则类型：1精准匹配，2范围，3模糊&#x27;&lt;/span&gt;,&lt;br/&gt;  `weight` decimal(&lt;span&gt;10&lt;/span&gt;,&lt;span&gt;2&lt;/span&gt;) DEFAULT &lt;span&gt;&#x27;0.00&#x27;&lt;/span&gt; COMMENT &lt;span&gt;&#x27;权重分布&#x27;&lt;/span&gt;,&lt;br/&gt;  &lt;span&gt;PRIMARY &lt;span&gt;KEY&lt;/span&gt; &lt;span&gt;(`id`)&lt;/span&gt;&lt;br/&gt;) ENGINE&lt;/span&gt;=InnoDB AUTO_INCREMENT=&lt;span&gt;3&lt;/span&gt; DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT=&lt;span&gt;&#x27;评估项规则&#x27;&lt;/span&gt;;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2&gt;&lt;span&gt;2、描述规则&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;对于规则的具体描述，核心就是两个字段，规则值以及匹配到该规则获取的结果。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;RuleValue&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;/**&lt;br/&gt;     * 规则值描述&lt;br/&gt;     */&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; Object ruleValue ;&lt;br/&gt;    &lt;span&gt;/**&lt;br/&gt;     * 规则匹配结果&lt;br/&gt;     */&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; Object ruleResult ;&lt;br/&gt;    &lt;span&gt;// 基础构造&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;RuleValue&lt;/span&gt;&lt;span&gt;(Object ruleValue, Object ruleResult)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;this&lt;/span&gt;.ruleValue = ruleValue;&lt;br/&gt;        &lt;span&gt;this&lt;/span&gt;.ruleResult = ruleResult;&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;// 省略 Get 和 Set&lt;/span&gt;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2&gt;&lt;span&gt;3、封装匹配值&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;为了简化参数在模型中传递的复杂度，统一封装匹配因素的数据在一个数据模型中，这里以城市和标签两个因素做流程测试。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;MatchItem&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;// 城市&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; String city ;&lt;br/&gt;    &lt;span&gt;// 标签&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; String tag ;&lt;br/&gt;    &lt;span&gt;// 基础构造&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;MatchItem&lt;/span&gt;&lt;span&gt;(String city, String tag)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;this&lt;/span&gt;.city = city;&lt;br/&gt;        &lt;span&gt;this&lt;/span&gt;.tag = tag;&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;// 省略 Get 和 Set&lt;/span&gt;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2&gt;&lt;span&gt;4、评估逻辑实现&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;这里只是对两种情况做简单的实现描述，在实际的开发场景中，数据和匹配规格都是十分复杂的，在整个评估模型实现&lt;/span&gt;流程&lt;span&gt;需要不断优化。&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;@Service&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;AssessBizService&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; Logger LOG = LoggerFactory.getLogger(AssessBizService.class);&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Resource&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; EvaluateRuleDao evaluateRuleDao ;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;/**&lt;br/&gt;     * 业务评估流程&lt;br/&gt;     */&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;assessBiz&lt;/span&gt; &lt;span&gt;(MatchItem matchItem)&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;// 精准匹配城市&lt;/span&gt;&lt;br/&gt;        EvaluateRuleEntity evaluateRule01 = evaluateRuleDao.getBySign(&lt;span&gt;&quot;assess-biz&quot;&lt;/span&gt;,&lt;span&gt;1&lt;/span&gt;);&lt;br/&gt;        List&amp;lt;RuleValue&amp;gt; cityRuleList = JSONArray.parseArray(evaluateRule01.getRuleValue(), RuleValue.class);&lt;br/&gt;        &lt;span&gt;for&lt;/span&gt; (RuleValue cityRule:cityRuleList){&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; (cityRule.getRuleValue().equals(matchItem.getCity())){&lt;br/&gt;                &lt;span&gt;int&lt;/span&gt; result = Integer.parseInt(String.valueOf(cityRule.getRuleResult()));&lt;br/&gt;                LOG.info(&lt;span&gt;&quot;匹配项:{},匹配结果:{}&quot;&lt;/span&gt;,matchItem.getCity(),result*evaluateRule01.getWeight());&lt;br/&gt;                &lt;span&gt;break&lt;/span&gt; ;&lt;br/&gt;            }&lt;br/&gt;        }&lt;br/&gt;        &lt;span&gt;// 模糊匹配标签&lt;/span&gt;&lt;br/&gt;        EvaluateRuleEntity evaluateRule02 = evaluateRuleDao.getBySign(&lt;span&gt;&quot;assess-biz&quot;&lt;/span&gt;,&lt;span&gt;3&lt;/span&gt;);&lt;br/&gt;        List&amp;lt;RuleValue&amp;gt; tagRuleList = JSONArray.parseArray(evaluateRule02.getRuleValue(), RuleValue.class);&lt;br/&gt;        &lt;span&gt;for&lt;/span&gt; (RuleValue tagRule:tagRuleList){&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; (String.valueOf(tagRule.getRuleValue()).contains(matchItem.getTag())){&lt;br/&gt;                &lt;span&gt;int&lt;/span&gt; result = Integer.parseInt(String.valueOf(tagRule.getRuleResult()));&lt;br/&gt;                LOG.info(&lt;span&gt;&quot;匹配项:{},匹配结果:{}&quot;&lt;/span&gt;,matchItem.getTag(),result*evaluateRule02.getWeight());&lt;br/&gt;                &lt;span&gt;break&lt;/span&gt; ;&lt;br/&gt;            }&lt;br/&gt;        }&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h1&gt;&lt;span&gt;四、源代码地址&lt;/span&gt;&lt;/h1&gt;&lt;pre&gt;&lt;code&gt;GitHub·地址&lt;br/&gt;https:&lt;span&gt;//github.com/cicadasmile/data-manage-parent&lt;/span&gt;&lt;br/&gt;GitEE·地址&lt;br/&gt;https:&lt;span&gt;//gitee.com/cicadasmile/data-manage-parent&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.3783359497645212&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvCjMheLZtcM2iaVMBOpIUKR4CDRCG9FLT5K6NmGXvG7exrW0TSuDjnTKJQ5PDq8j8Y7PHDd17Z3gicA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1274&quot;/&gt;&lt;span/&gt;&lt;/p&gt;
+                &lt;/div&gt;
+
+                
+
+                
+
+
+
+                
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
