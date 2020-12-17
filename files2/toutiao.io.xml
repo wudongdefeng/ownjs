@@ -5,103 +5,6 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>8327158ded316f9964c828a5a16354b0</guid>
-<title>HTTP/2 做错了什么？刚刚辉煌 2 年就要被弃用了！？</title>
-<link>https://toutiao.io/k/v5mm32h</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;article class=&quot;article-content&quot;&gt;
-&lt;p&gt;最近一段时间以来，关于HTTP/3的新闻有很多，越来越多的国际大公司已经开始使用HTTP/3了。&lt;/p&gt;
-&lt;p&gt;&lt;img loading=&quot;lazy&quot; src=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16036129562310-4.jpg&quot; alt=&quot;&quot; class=&quot;aligncenter size-full wp-image-5936&quot; srcset=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16036129562310-4.jpg 1298w, https://www.hollischuang.com/wp-content/uploads/2020/12/16036129562310-4-300x150.jpg 300w, https://www.hollischuang.com/wp-content/uploads/2020/12/16036129562310-4-1024x513.jpg 1024w, https://www.hollischuang.com/wp-content/uploads/2020/12/16036129562310-4-768x385.jpg 768w&quot; sizes=&quot;(max-width: 1298px) 100vw, 1298px&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img loading=&quot;lazy&quot; src=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16036129871026-4.jpg&quot; alt=&quot;&quot; class=&quot;aligncenter size-full wp-image-5935&quot; srcset=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16036129871026-4.jpg 1318w, https://www.hollischuang.com/wp-content/uploads/2020/12/16036129871026-4-300x87.jpg 300w, https://www.hollischuang.com/wp-content/uploads/2020/12/16036129871026-4-1024x298.jpg 1024w, https://www.hollischuang.com/wp-content/uploads/2020/12/16036129871026-4-768x224.jpg 768w&quot; sizes=&quot;(max-width: 1318px) 100vw, 1318px&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;所以，HTTP/3已经是箭在弦上了，全面使用只是个时间问题，那么，作为一线开发者，我们也是时候了解下到底什么是HTTP/3，为什么需要HTTP/3了。&lt;/p&gt;
-&lt;p&gt;于是，我准备开始写这篇文章，但是要想把HTTP/3的事情说清楚，一定绕不过的问题就是HTTP/2，所以写着写着，篇幅越来越多，于是我就把他们分成了上下两篇。&lt;/p&gt;
-&lt;p&gt;这一篇我们主要来回顾下HTTP/2，然后再来重点看一下HTTP/2存在哪些问题，为什么要被弃用。&lt;/p&gt;
-&lt;h3&gt;HTTP/2 辉煌不在？&lt;/h3&gt;
-&lt;p&gt;虽然HTTP/2标准在2015年5月就以RFC 7540正式发表了，并且多数浏览器在2015年底就支持了。&lt;/p&gt;
-&lt;p&gt;但是，真正被广泛使用起来要到2018年左右，但是也是在2018年，11月IETF给出了官方批准，认可HTTP-over-QUIC成为HTTP/3。&lt;/p&gt;
-&lt;p&gt;2018年的时候，我写过一篇文章介绍《&lt;a href=&quot;https://www.hollischuang.com/archives/2066&quot;&gt;HTTP/2到底是什么？&lt;/a&gt;》，那时候HTTP/2还是个新技术，刚刚开始有软件支持，短短两年过去了，现在HTTP/3已经悄然而至了。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;根据W3Techs的数据，截至2019年6月，全球也仅有36.5%的网站支持了HTTP/2。&lt;/strong&gt;所以，可能很多网站还没开始支持HTTP/2，HTTP/3就已经来了。&lt;/p&gt;
-&lt;p&gt;所以，对于很多网站来说，或许直接升级HTTP/3是一个更加正确的选择。&lt;/p&gt;
-&lt;h3&gt;回顾 HTTP/2&lt;/h3&gt;
-&lt;p&gt;在阅读本文之前，强烈建议大家先阅读下《&lt;a href=&quot;https://www.hollischuang.com/archives/2066&quot;&gt;HTTP/2到底是什么？&lt;/a&gt;》这篇文章，这里面介绍了HTTP的历史，介绍了各个版本的HTTP协议的诞生的背景。&lt;/p&gt;
-&lt;p&gt;当你读到这里的时候，我默认大家对HTTP/2有了一定的基本了解。&lt;/p&gt;
-&lt;p&gt;我们知道，HTTP/2的诞生，主要是为了解决HTTP/1.1中的效率问题，HTTP/2中最核心的技术就是多路复用技术，即允许同时通过单一的HTTP/2.0连接发起多重的请求-响应消息。&lt;/p&gt;
-&lt;p&gt;&lt;img loading=&quot;lazy&quot; src=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078443845209-4.jpg&quot; alt=&quot;&quot; class=&quot;aligncenter size-full wp-image-5943&quot; srcset=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078443845209-4.jpg 1982w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078443845209-4-300x142.jpg 300w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078443845209-4-1024x485.jpg 1024w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078443845209-4-768x363.jpg 768w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078443845209-4-1536x727.jpg 1536w&quot; sizes=&quot;(max-width: 1982px) 100vw, 1982px&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;同时还实现了二进制分帧、header压缩、服务端推送等技术。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;从HTTP/1.0诞生，一直到HTTP/2，在这24年里，HTTP协议已经做过了三次升级，但是有一个关键的技术点是不变的，那就是这所有的HTTP协议，都是基于TCP协议实现的。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;流水的HTTP，铁打的TCP。这是因为相对于UDP协议，TCP协议更加可靠。&lt;/p&gt;
-&lt;p&gt;虽然在HTTP/1.1的基础上推出HTTP/2大大的提升了效率，但是还是有很多人认为这只是个”临时方案”，这也是为什么刚刚推出没多久，业内就开始大力投入HTTP/3的研发与推广了。&lt;/p&gt;
-&lt;p&gt;而这背后的深层次原因也正是因为他还是基于TCP协议实现的。&lt;strong&gt;TCP协议虽然更加可靠，但是还是存在着一定的问题&lt;/strong&gt;，接下来具体分析下。&lt;/p&gt;
-&lt;h3&gt;HTTP/2 问题&lt;/h3&gt;
-&lt;h4&gt;队头阻塞&lt;/h4&gt;
-&lt;p&gt;队头阻塞翻译自英文head-of-line blocking，这个词并不新鲜，因为早在HTTP/1.1时代，就一直存在着队头阻塞的问题。&lt;/p&gt;
-&lt;p&gt;但是很多人在一些资料中会看到有论点说HTTP/2解决了队头阻塞的问题。但是这句话只对了一半。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;只能说HTTP/2解决了HTTP的队头阻塞问题，但是并没有解决TCP队头阻塞问题！&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;如果大家对于HTTP的历史有一定的了解的话，就会知道。HTTP/1.1相比较于HTTP/1.0来说，最主要的改进就是引入了持久连接（keep-alive）。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;所谓的持久连接就是：在一个TCP连接上可以传送多个HTTP请求和响应，减少了建立和关闭连接的消耗和延迟。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img loading=&quot;lazy&quot; src=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078448717551-4.jpg&quot; alt=&quot;&quot; class=&quot;aligncenter size-full wp-image-5940&quot; srcset=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078448717551-4.jpg 1810w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078448717551-4-300x202.jpg 300w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078448717551-4-1024x688.jpg 1024w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078448717551-4-768x516.jpg 768w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078448717551-4-1536x1032.jpg 1536w&quot; sizes=&quot;(max-width: 1810px) 100vw, 1810px&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;引入了持久连接之后，在性能方面，HTTP协议有了明显的提升。&lt;/p&gt;
-&lt;p&gt;另外，HTTP/1.1允许在持久连接上使用请求管道，是相对于持久连接的又一性能优化。&lt;/p&gt;
-&lt;p&gt;所谓请求管道，就是在HTTP响应到达之前，可以将多条请求放入队列，当第一条HTTP请求通过网络流向服务器时，第二条和第三条请求也可以开始发送了。在高时延网络条件下，这样做可以降低网络的环回时间，提高性能。&lt;/p&gt;
-&lt;p&gt;&lt;img loading=&quot;lazy&quot; src=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078448616542-4.jpg&quot; alt=&quot;&quot; class=&quot;aligncenter size-full wp-image-5941&quot; srcset=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078448616542-4.jpg 1032w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078448616542-4-300x192.jpg 300w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078448616542-4-1024x655.jpg 1024w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078448616542-4-768x491.jpg 768w&quot; sizes=&quot;(max-width: 1032px) 100vw, 1032px&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;但是，对于管道连接还是有一定的限制和要求的，其中一个比较关键的就是服务端必须按照与请求相同的顺序回送HTTP响应。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;这也就意味着，如果一个响应返回发生了延迟，那么其后续的响应都会被延迟，直到队头的响应送达。这就是所谓的&lt;strong&gt;HTTP队头阻塞&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;但是HTTP队头阻塞的问题在HTTP/2中得到了有效的解决。&lt;strong&gt;HTTP/2废弃了管道化的方式&lt;/strong&gt;，而是创新性的引入了帧、消息和数据流等概念。&lt;strong&gt;客户端和服务器可以把 HTTP 消息分解为互不依赖的帧，然后乱序发送，最后再在另一端把它们重新组合起来。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img loading=&quot;lazy&quot; src=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078452101126-4.jpg&quot; alt=&quot;&quot; class=&quot;aligncenter size-full wp-image-5939&quot; srcset=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078452101126-4.jpg 1982w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078452101126-4-300x95.jpg 300w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078452101126-4-1024x325.jpg 1024w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078452101126-4-768x244.jpg 768w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078452101126-4-1536x488.jpg 1536w&quot; sizes=&quot;(max-width: 1982px) 100vw, 1982px&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;因为没有顺序了，所以就不需要阻塞了，就有效的解决了HTTP对队头阻塞的问题。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;但是，HTTP/2仍然会存在TCP队头阻塞的问题，那是因为HTTP/2其实还是依赖TCP协议实现的。&lt;/p&gt;
-&lt;p&gt;TCP传输过程中会把数据拆分为一个个&lt;strong&gt;按照顺序&lt;/strong&gt;排列的数据包，这些数据包通过网络传输到了接收端，接收端再&lt;strong&gt;按照顺序&lt;/strong&gt;将这些数据包组合成原始数据，这样就完成了数据传输。&lt;/p&gt;
-&lt;p&gt;但是如果其中的某一个数据包没有按照顺序到达，接收端会一直保持连接等待数据包返回，这时候就会阻塞后续请求。这就发生了&lt;strong&gt;TCP队头阻塞&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;HTTP/1.1的管道化持久连接也是使得同一个TCP链接可以被多个HTTP使用，但是HTTP/1.1中规定一个域名可以有6个TCP连接。而HTTP/2中，同一个域名只是用一个TCP连接。&lt;/p&gt;
-&lt;p&gt;所以，&lt;strong&gt;在HTTP/2中，TCP队头阻塞造成的影响会更大&lt;/strong&gt;，因为HTTP/2的多路复用技术使得多个请求其实是基于同一个TCP连接的，那如果某一个请求造成了TCP队头阻塞，那么多个请求都会受到影响。&lt;/p&gt;
-&lt;h4&gt;TCP握手时长&lt;/h4&gt;
-&lt;p&gt;一提到TCP协议，大家最先想到的一定是他的三次握手与四次关闭的特性。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;因为TCP是一种可靠通信协议，而这种可靠就是靠三次握手实现的，通过三次握手，TCP在传输过程中可以保证接收方收到的数据是完整，有序，无差错的。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;但是，问题是三次握手是需要消耗时间的，这里插播一个关于网络延迟的概念。&lt;/p&gt;
-&lt;p&gt;网络延迟又称为 RTT（Round Trip Time）。他是指一个请求从客户端浏览器发送一个请求数据包到服务器，再从服务器得到响应数据包的这段时间。RTT 是反映网络性能的一个重要指标。&lt;/p&gt;
-&lt;p&gt;&lt;img loading=&quot;lazy&quot; src=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078465903616-4.jpg&quot; alt=&quot;&quot; class=&quot;aligncenter size-full wp-image-5938&quot; srcset=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078465903616-4.jpg 822w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078465903616-4-300x224.jpg 300w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078465903616-4-768x574.jpg 768w&quot; sizes=&quot;(max-width: 822px) 100vw, 822px&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;我们知道，TCP三次握手的过程客户端和服务器之间需要交互三次，那么也就是说需要消耗1.5 RTT。&lt;/p&gt;
-&lt;p&gt;另外，如果使用的是安全的HTTPS协议，就还需要使用TLS协议进行安全数据传输，这个过程又要消耗一个RTT（TLS不同版本的握手机制不同，这里按照最小的消耗来算）&lt;/p&gt;
-&lt;p&gt;那么也就是说，一个纯HTTP/2的连接，需要消耗1.5个RTT，如果是一个HTTPS连接，就需要消耗3-4个RTT。&lt;/p&gt;
-&lt;p&gt;而具体消耗的时长根据服务器和客户端之间的距离则不尽相同，如果比较近的话，消耗在100ms以内，对于用来说可能没什么感知，但是如果一个RTT的耗时达到300-400ms，那么，一次连接建立过程总耗时可能要达到一秒钟左右，这时候，用户就会明显的感知到网页加载很慢。&lt;/p&gt;
-&lt;h3&gt;升级TCP是否可行？&lt;/h3&gt;
-&lt;p&gt;基于上面我们提到的这些问题，很多人提出来说：既然TCP存在这些问题，并且我们也知道这些问题的存在，甚至解决方案也不难想到，为什么不能对协议本身做一次升级，解决这些问题呢？&lt;/p&gt;
-&lt;p&gt;其实，这就涉及到一个”&lt;strong&gt;协议僵化&lt;/strong&gt;“的问题。&lt;/p&gt;
-&lt;p&gt;这样讲，我们在互联网上浏览数据的时候，数据的传输过程其实是极其复杂的。&lt;/p&gt;
-&lt;p&gt;我们知道的，想要在家里使用网络有几个前提，首先我们要通过运行商开通网络，并且需要使用路由器，而路由器就是网络传输过程中的一个中间设备。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;中间设备是指插入在数据终端和信号转换设备之间，完成调制前或解调后某些附加功能的辅助设备。例如集线器、交换机和无线接入点、路由器、安全解调器、通信服务器等都是中间设备。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;在我们看不到的地方，这种中间设备还有很多很多，&lt;strong&gt;一个网络需要经过无数个中间设备的转发才能到达终端用户。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;如果TCP协议需要升级，那么意味着需要这些中间设备都能支持新的特性，我们知道路由器我们可以重新换一个，但是其他的那些中间设备呢？尤其是那些比较大型的设备呢？更换起来的成本是巨大的。&lt;/p&gt;
-&lt;p&gt;而且，除了中间设备之外，操作系统也是一个重要的因素，&lt;strong&gt;因为TCP协议需要通过操作系统内核来实现，而操作系统的更新也是非常滞后的。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;所以，这种问题就被称之为”中间设备僵化”，也是导致”协议僵化”的重要原因。这也是限制着TCP协议更新的一个重要原因。&lt;/p&gt;
-&lt;p&gt;所以，近些年来，由IETF标准化的许多TCP新特性都因缺乏广泛支持而没有得到广泛的部署或使用！&lt;/p&gt;
-&lt;h3&gt;放弃TCP？&lt;/h3&gt;
-&lt;p&gt;上面提到的这些问题的根本原因都是因为HTTP/2是基于TPC实现导致的，而TCP协议自身的升级又是很难实现的。&lt;/p&gt;
-&lt;p&gt;那么，剩下的解决办法就只有一条路，那就是放弃TCP协议。&lt;/p&gt;
-&lt;p&gt;放弃TCP的话，就又有两个新的选择，是使用其他已有的协议，还是重新创造一个协议呢？&lt;/p&gt;
-&lt;p&gt;看到这里，聪明的读者一定也想到了，&lt;strong&gt;创造新的协议一样会受到中间设备僵化的影响&lt;/strong&gt;。近些年来，因为在互联网上部署遭遇很大的困难，创造新型传输层协议的努力基本上都失败了！&lt;/p&gt;
-&lt;p&gt;所以，想要升级新的HTTP协议，那么就只剩一条路可以走了，那就是基于已有的协议做一些改造和支持，UDP就是一个绝佳的选择了。&lt;/p&gt;
-&lt;h3&gt;总结&lt;/h3&gt;
-&lt;p&gt;因为HTTP/2底层是采用TCP协议实现的，虽然解决了HTTP队头阻塞的问题，但是对于TCP队头阻塞的问题却无能为力。&lt;/p&gt;
-&lt;p&gt;TCP传输过程中会把数据拆分为一个个&lt;strong&gt;按照顺序&lt;/strong&gt;排列的数据包，这些数据包通过网络传输到了接收端，接收端再&lt;strong&gt;按照顺序&lt;/strong&gt;将这些数据包组合成原始数据，这样就完成了数据传输。&lt;/p&gt;
-&lt;p&gt;但是如果其中的某一个数据包没有按照顺序到达，接收端会一直保持连接等待数据包返回，这时候就会阻塞后续请求。这就发生了&lt;strong&gt;TCP队头阻塞&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;另外，TCP这种可靠传输是靠三次握手实现的，TCP三次握手的过程客户端和服务器之间需要交互三次，那么也就是说需要消耗1.5 RTT。如果是HTTPS那么消耗的RTT就更多。&lt;/p&gt;
-&lt;p&gt;而因为很多中间设备比较陈旧，更新换代成本巨大，这就导致TCP协议升级或者采用新的协议基本无法实现。&lt;/p&gt;
-&lt;p&gt;所以，HTTP/3选择了一种新的技术方案，那就是基于UDP做改造，这种技术叫做QUIC。&lt;/p&gt;
-&lt;p&gt;那么问题来了，HTTP/3是如何使用的UDP呢？做了哪些改造？如何保证连接的可靠性？UDP协议就没有僵化的问题了吗？&lt;/p&gt;
-&lt;p&gt;这些问题我们在下一篇中深入分析。敬请期待！&lt;/p&gt;
-&lt;p&gt;参考资料：&lt;/p&gt;
-&lt;p&gt;https://http3-explained.haxx.se/&lt;/p&gt;
-&lt;p&gt;https://baike.baidu.com/item/中间设备/3688874&lt;/p&gt;
-&lt;p&gt;https://time.geekbang.org/column/article/150159&lt;/p&gt;
-&lt;p&gt;https://juejin.cn/post/6844903853985366023&lt;/p&gt;
-&lt;p&gt;https://time.geekbang.org/column/article/279164&lt;/p&gt;
-&lt;center&gt;&lt;b&gt;(全文完)&lt;/b&gt;&lt;/center&gt;&lt;hr/&gt;&lt;center&gt;&lt;b&gt;扫描二维码，关注作者微信公众号&lt;/b&gt;&lt;/center&gt;&lt;img src=&quot;http://www.hollischuang.com/wp-content/uploads/2019/04/二维码.png&quot;/&gt;
-&lt;/article&gt;
-            &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
 <guid>fd4c6cb195815ccd897df8ddadd88377</guid>
 <title>美团 Commit Log 规范</title>
 <link>https://toutiao.io/k/r6tsfdv</link>
@@ -257,6 +160,103 @@ chmod +x .git/hooks/commit-msg
 
     &lt;/article&gt;
 &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>8327158ded316f9964c828a5a16354b0</guid>
+<title>HTTP/2 做错了什么？刚刚辉煌 2 年就要被弃用了！？</title>
+<link>https://toutiao.io/k/v5mm32h</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;article class=&quot;article-content&quot;&gt;
+&lt;p&gt;最近一段时间以来，关于HTTP/3的新闻有很多，越来越多的国际大公司已经开始使用HTTP/3了。&lt;/p&gt;
+&lt;p&gt;&lt;img loading=&quot;lazy&quot; src=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16036129562310-4.jpg&quot; alt=&quot;&quot; class=&quot;aligncenter size-full wp-image-5936&quot; srcset=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16036129562310-4.jpg 1298w, https://www.hollischuang.com/wp-content/uploads/2020/12/16036129562310-4-300x150.jpg 300w, https://www.hollischuang.com/wp-content/uploads/2020/12/16036129562310-4-1024x513.jpg 1024w, https://www.hollischuang.com/wp-content/uploads/2020/12/16036129562310-4-768x385.jpg 768w&quot; sizes=&quot;(max-width: 1298px) 100vw, 1298px&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img loading=&quot;lazy&quot; src=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16036129871026-4.jpg&quot; alt=&quot;&quot; class=&quot;aligncenter size-full wp-image-5935&quot; srcset=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16036129871026-4.jpg 1318w, https://www.hollischuang.com/wp-content/uploads/2020/12/16036129871026-4-300x87.jpg 300w, https://www.hollischuang.com/wp-content/uploads/2020/12/16036129871026-4-1024x298.jpg 1024w, https://www.hollischuang.com/wp-content/uploads/2020/12/16036129871026-4-768x224.jpg 768w&quot; sizes=&quot;(max-width: 1318px) 100vw, 1318px&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;所以，HTTP/3已经是箭在弦上了，全面使用只是个时间问题，那么，作为一线开发者，我们也是时候了解下到底什么是HTTP/3，为什么需要HTTP/3了。&lt;/p&gt;
+&lt;p&gt;于是，我准备开始写这篇文章，但是要想把HTTP/3的事情说清楚，一定绕不过的问题就是HTTP/2，所以写着写着，篇幅越来越多，于是我就把他们分成了上下两篇。&lt;/p&gt;
+&lt;p&gt;这一篇我们主要来回顾下HTTP/2，然后再来重点看一下HTTP/2存在哪些问题，为什么要被弃用。&lt;/p&gt;
+&lt;h3&gt;HTTP/2 辉煌不在？&lt;/h3&gt;
+&lt;p&gt;虽然HTTP/2标准在2015年5月就以RFC 7540正式发表了，并且多数浏览器在2015年底就支持了。&lt;/p&gt;
+&lt;p&gt;但是，真正被广泛使用起来要到2018年左右，但是也是在2018年，11月IETF给出了官方批准，认可HTTP-over-QUIC成为HTTP/3。&lt;/p&gt;
+&lt;p&gt;2018年的时候，我写过一篇文章介绍《&lt;a href=&quot;https://www.hollischuang.com/archives/2066&quot;&gt;HTTP/2到底是什么？&lt;/a&gt;》，那时候HTTP/2还是个新技术，刚刚开始有软件支持，短短两年过去了，现在HTTP/3已经悄然而至了。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;根据W3Techs的数据，截至2019年6月，全球也仅有36.5%的网站支持了HTTP/2。&lt;/strong&gt;所以，可能很多网站还没开始支持HTTP/2，HTTP/3就已经来了。&lt;/p&gt;
+&lt;p&gt;所以，对于很多网站来说，或许直接升级HTTP/3是一个更加正确的选择。&lt;/p&gt;
+&lt;h3&gt;回顾 HTTP/2&lt;/h3&gt;
+&lt;p&gt;在阅读本文之前，强烈建议大家先阅读下《&lt;a href=&quot;https://www.hollischuang.com/archives/2066&quot;&gt;HTTP/2到底是什么？&lt;/a&gt;》这篇文章，这里面介绍了HTTP的历史，介绍了各个版本的HTTP协议的诞生的背景。&lt;/p&gt;
+&lt;p&gt;当你读到这里的时候，我默认大家对HTTP/2有了一定的基本了解。&lt;/p&gt;
+&lt;p&gt;我们知道，HTTP/2的诞生，主要是为了解决HTTP/1.1中的效率问题，HTTP/2中最核心的技术就是多路复用技术，即允许同时通过单一的HTTP/2.0连接发起多重的请求-响应消息。&lt;/p&gt;
+&lt;p&gt;&lt;img loading=&quot;lazy&quot; src=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078443845209-4.jpg&quot; alt=&quot;&quot; class=&quot;aligncenter size-full wp-image-5943&quot; srcset=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078443845209-4.jpg 1982w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078443845209-4-300x142.jpg 300w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078443845209-4-1024x485.jpg 1024w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078443845209-4-768x363.jpg 768w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078443845209-4-1536x727.jpg 1536w&quot; sizes=&quot;(max-width: 1982px) 100vw, 1982px&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;同时还实现了二进制分帧、header压缩、服务端推送等技术。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;从HTTP/1.0诞生，一直到HTTP/2，在这24年里，HTTP协议已经做过了三次升级，但是有一个关键的技术点是不变的，那就是这所有的HTTP协议，都是基于TCP协议实现的。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;流水的HTTP，铁打的TCP。这是因为相对于UDP协议，TCP协议更加可靠。&lt;/p&gt;
+&lt;p&gt;虽然在HTTP/1.1的基础上推出HTTP/2大大的提升了效率，但是还是有很多人认为这只是个”临时方案”，这也是为什么刚刚推出没多久，业内就开始大力投入HTTP/3的研发与推广了。&lt;/p&gt;
+&lt;p&gt;而这背后的深层次原因也正是因为他还是基于TCP协议实现的。&lt;strong&gt;TCP协议虽然更加可靠，但是还是存在着一定的问题&lt;/strong&gt;，接下来具体分析下。&lt;/p&gt;
+&lt;h3&gt;HTTP/2 问题&lt;/h3&gt;
+&lt;h4&gt;队头阻塞&lt;/h4&gt;
+&lt;p&gt;队头阻塞翻译自英文head-of-line blocking，这个词并不新鲜，因为早在HTTP/1.1时代，就一直存在着队头阻塞的问题。&lt;/p&gt;
+&lt;p&gt;但是很多人在一些资料中会看到有论点说HTTP/2解决了队头阻塞的问题。但是这句话只对了一半。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;只能说HTTP/2解决了HTTP的队头阻塞问题，但是并没有解决TCP队头阻塞问题！&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;如果大家对于HTTP的历史有一定的了解的话，就会知道。HTTP/1.1相比较于HTTP/1.0来说，最主要的改进就是引入了持久连接（keep-alive）。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;所谓的持久连接就是：在一个TCP连接上可以传送多个HTTP请求和响应，减少了建立和关闭连接的消耗和延迟。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img loading=&quot;lazy&quot; src=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078448717551-4.jpg&quot; alt=&quot;&quot; class=&quot;aligncenter size-full wp-image-5940&quot; srcset=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078448717551-4.jpg 1810w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078448717551-4-300x202.jpg 300w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078448717551-4-1024x688.jpg 1024w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078448717551-4-768x516.jpg 768w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078448717551-4-1536x1032.jpg 1536w&quot; sizes=&quot;(max-width: 1810px) 100vw, 1810px&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;引入了持久连接之后，在性能方面，HTTP协议有了明显的提升。&lt;/p&gt;
+&lt;p&gt;另外，HTTP/1.1允许在持久连接上使用请求管道，是相对于持久连接的又一性能优化。&lt;/p&gt;
+&lt;p&gt;所谓请求管道，就是在HTTP响应到达之前，可以将多条请求放入队列，当第一条HTTP请求通过网络流向服务器时，第二条和第三条请求也可以开始发送了。在高时延网络条件下，这样做可以降低网络的环回时间，提高性能。&lt;/p&gt;
+&lt;p&gt;&lt;img loading=&quot;lazy&quot; src=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078448616542-4.jpg&quot; alt=&quot;&quot; class=&quot;aligncenter size-full wp-image-5941&quot; srcset=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078448616542-4.jpg 1032w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078448616542-4-300x192.jpg 300w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078448616542-4-1024x655.jpg 1024w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078448616542-4-768x491.jpg 768w&quot; sizes=&quot;(max-width: 1032px) 100vw, 1032px&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;但是，对于管道连接还是有一定的限制和要求的，其中一个比较关键的就是服务端必须按照与请求相同的顺序回送HTTP响应。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这也就意味着，如果一个响应返回发生了延迟，那么其后续的响应都会被延迟，直到队头的响应送达。这就是所谓的&lt;strong&gt;HTTP队头阻塞&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;但是HTTP队头阻塞的问题在HTTP/2中得到了有效的解决。&lt;strong&gt;HTTP/2废弃了管道化的方式&lt;/strong&gt;，而是创新性的引入了帧、消息和数据流等概念。&lt;strong&gt;客户端和服务器可以把 HTTP 消息分解为互不依赖的帧，然后乱序发送，最后再在另一端把它们重新组合起来。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img loading=&quot;lazy&quot; src=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078452101126-4.jpg&quot; alt=&quot;&quot; class=&quot;aligncenter size-full wp-image-5939&quot; srcset=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078452101126-4.jpg 1982w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078452101126-4-300x95.jpg 300w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078452101126-4-1024x325.jpg 1024w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078452101126-4-768x244.jpg 768w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078452101126-4-1536x488.jpg 1536w&quot; sizes=&quot;(max-width: 1982px) 100vw, 1982px&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;因为没有顺序了，所以就不需要阻塞了，就有效的解决了HTTP对队头阻塞的问题。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;但是，HTTP/2仍然会存在TCP队头阻塞的问题，那是因为HTTP/2其实还是依赖TCP协议实现的。&lt;/p&gt;
+&lt;p&gt;TCP传输过程中会把数据拆分为一个个&lt;strong&gt;按照顺序&lt;/strong&gt;排列的数据包，这些数据包通过网络传输到了接收端，接收端再&lt;strong&gt;按照顺序&lt;/strong&gt;将这些数据包组合成原始数据，这样就完成了数据传输。&lt;/p&gt;
+&lt;p&gt;但是如果其中的某一个数据包没有按照顺序到达，接收端会一直保持连接等待数据包返回，这时候就会阻塞后续请求。这就发生了&lt;strong&gt;TCP队头阻塞&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;HTTP/1.1的管道化持久连接也是使得同一个TCP链接可以被多个HTTP使用，但是HTTP/1.1中规定一个域名可以有6个TCP连接。而HTTP/2中，同一个域名只是用一个TCP连接。&lt;/p&gt;
+&lt;p&gt;所以，&lt;strong&gt;在HTTP/2中，TCP队头阻塞造成的影响会更大&lt;/strong&gt;，因为HTTP/2的多路复用技术使得多个请求其实是基于同一个TCP连接的，那如果某一个请求造成了TCP队头阻塞，那么多个请求都会受到影响。&lt;/p&gt;
+&lt;h4&gt;TCP握手时长&lt;/h4&gt;
+&lt;p&gt;一提到TCP协议，大家最先想到的一定是他的三次握手与四次关闭的特性。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;因为TCP是一种可靠通信协议，而这种可靠就是靠三次握手实现的，通过三次握手，TCP在传输过程中可以保证接收方收到的数据是完整，有序，无差错的。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;但是，问题是三次握手是需要消耗时间的，这里插播一个关于网络延迟的概念。&lt;/p&gt;
+&lt;p&gt;网络延迟又称为 RTT（Round Trip Time）。他是指一个请求从客户端浏览器发送一个请求数据包到服务器，再从服务器得到响应数据包的这段时间。RTT 是反映网络性能的一个重要指标。&lt;/p&gt;
+&lt;p&gt;&lt;img loading=&quot;lazy&quot; src=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078465903616-4.jpg&quot; alt=&quot;&quot; class=&quot;aligncenter size-full wp-image-5938&quot; srcset=&quot;https://www.hollischuang.com/wp-content/uploads/2020/12/16078465903616-4.jpg 822w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078465903616-4-300x224.jpg 300w, https://www.hollischuang.com/wp-content/uploads/2020/12/16078465903616-4-768x574.jpg 768w&quot; sizes=&quot;(max-width: 822px) 100vw, 822px&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;我们知道，TCP三次握手的过程客户端和服务器之间需要交互三次，那么也就是说需要消耗1.5 RTT。&lt;/p&gt;
+&lt;p&gt;另外，如果使用的是安全的HTTPS协议，就还需要使用TLS协议进行安全数据传输，这个过程又要消耗一个RTT（TLS不同版本的握手机制不同，这里按照最小的消耗来算）&lt;/p&gt;
+&lt;p&gt;那么也就是说，一个纯HTTP/2的连接，需要消耗1.5个RTT，如果是一个HTTPS连接，就需要消耗3-4个RTT。&lt;/p&gt;
+&lt;p&gt;而具体消耗的时长根据服务器和客户端之间的距离则不尽相同，如果比较近的话，消耗在100ms以内，对于用来说可能没什么感知，但是如果一个RTT的耗时达到300-400ms，那么，一次连接建立过程总耗时可能要达到一秒钟左右，这时候，用户就会明显的感知到网页加载很慢。&lt;/p&gt;
+&lt;h3&gt;升级TCP是否可行？&lt;/h3&gt;
+&lt;p&gt;基于上面我们提到的这些问题，很多人提出来说：既然TCP存在这些问题，并且我们也知道这些问题的存在，甚至解决方案也不难想到，为什么不能对协议本身做一次升级，解决这些问题呢？&lt;/p&gt;
+&lt;p&gt;其实，这就涉及到一个”&lt;strong&gt;协议僵化&lt;/strong&gt;“的问题。&lt;/p&gt;
+&lt;p&gt;这样讲，我们在互联网上浏览数据的时候，数据的传输过程其实是极其复杂的。&lt;/p&gt;
+&lt;p&gt;我们知道的，想要在家里使用网络有几个前提，首先我们要通过运行商开通网络，并且需要使用路由器，而路由器就是网络传输过程中的一个中间设备。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;中间设备是指插入在数据终端和信号转换设备之间，完成调制前或解调后某些附加功能的辅助设备。例如集线器、交换机和无线接入点、路由器、安全解调器、通信服务器等都是中间设备。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;在我们看不到的地方，这种中间设备还有很多很多，&lt;strong&gt;一个网络需要经过无数个中间设备的转发才能到达终端用户。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;如果TCP协议需要升级，那么意味着需要这些中间设备都能支持新的特性，我们知道路由器我们可以重新换一个，但是其他的那些中间设备呢？尤其是那些比较大型的设备呢？更换起来的成本是巨大的。&lt;/p&gt;
+&lt;p&gt;而且，除了中间设备之外，操作系统也是一个重要的因素，&lt;strong&gt;因为TCP协议需要通过操作系统内核来实现，而操作系统的更新也是非常滞后的。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;所以，这种问题就被称之为”中间设备僵化”，也是导致”协议僵化”的重要原因。这也是限制着TCP协议更新的一个重要原因。&lt;/p&gt;
+&lt;p&gt;所以，近些年来，由IETF标准化的许多TCP新特性都因缺乏广泛支持而没有得到广泛的部署或使用！&lt;/p&gt;
+&lt;h3&gt;放弃TCP？&lt;/h3&gt;
+&lt;p&gt;上面提到的这些问题的根本原因都是因为HTTP/2是基于TPC实现导致的，而TCP协议自身的升级又是很难实现的。&lt;/p&gt;
+&lt;p&gt;那么，剩下的解决办法就只有一条路，那就是放弃TCP协议。&lt;/p&gt;
+&lt;p&gt;放弃TCP的话，就又有两个新的选择，是使用其他已有的协议，还是重新创造一个协议呢？&lt;/p&gt;
+&lt;p&gt;看到这里，聪明的读者一定也想到了，&lt;strong&gt;创造新的协议一样会受到中间设备僵化的影响&lt;/strong&gt;。近些年来，因为在互联网上部署遭遇很大的困难，创造新型传输层协议的努力基本上都失败了！&lt;/p&gt;
+&lt;p&gt;所以，想要升级新的HTTP协议，那么就只剩一条路可以走了，那就是基于已有的协议做一些改造和支持，UDP就是一个绝佳的选择了。&lt;/p&gt;
+&lt;h3&gt;总结&lt;/h3&gt;
+&lt;p&gt;因为HTTP/2底层是采用TCP协议实现的，虽然解决了HTTP队头阻塞的问题，但是对于TCP队头阻塞的问题却无能为力。&lt;/p&gt;
+&lt;p&gt;TCP传输过程中会把数据拆分为一个个&lt;strong&gt;按照顺序&lt;/strong&gt;排列的数据包，这些数据包通过网络传输到了接收端，接收端再&lt;strong&gt;按照顺序&lt;/strong&gt;将这些数据包组合成原始数据，这样就完成了数据传输。&lt;/p&gt;
+&lt;p&gt;但是如果其中的某一个数据包没有按照顺序到达，接收端会一直保持连接等待数据包返回，这时候就会阻塞后续请求。这就发生了&lt;strong&gt;TCP队头阻塞&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;另外，TCP这种可靠传输是靠三次握手实现的，TCP三次握手的过程客户端和服务器之间需要交互三次，那么也就是说需要消耗1.5 RTT。如果是HTTPS那么消耗的RTT就更多。&lt;/p&gt;
+&lt;p&gt;而因为很多中间设备比较陈旧，更新换代成本巨大，这就导致TCP协议升级或者采用新的协议基本无法实现。&lt;/p&gt;
+&lt;p&gt;所以，HTTP/3选择了一种新的技术方案，那就是基于UDP做改造，这种技术叫做QUIC。&lt;/p&gt;
+&lt;p&gt;那么问题来了，HTTP/3是如何使用的UDP呢？做了哪些改造？如何保证连接的可靠性？UDP协议就没有僵化的问题了吗？&lt;/p&gt;
+&lt;p&gt;这些问题我们在下一篇中深入分析。敬请期待！&lt;/p&gt;
+&lt;p&gt;参考资料：&lt;/p&gt;
+&lt;p&gt;https://http3-explained.haxx.se/&lt;/p&gt;
+&lt;p&gt;https://baike.baidu.com/item/中间设备/3688874&lt;/p&gt;
+&lt;p&gt;https://time.geekbang.org/column/article/150159&lt;/p&gt;
+&lt;p&gt;https://juejin.cn/post/6844903853985366023&lt;/p&gt;
+&lt;p&gt;https://time.geekbang.org/column/article/279164&lt;/p&gt;
+&lt;center&gt;&lt;b&gt;(全文完)&lt;/b&gt;&lt;/center&gt;&lt;hr/&gt;&lt;center&gt;&lt;b&gt;扫描二维码，关注作者微信公众号&lt;/b&gt;&lt;/center&gt;&lt;img src=&quot;http://www.hollischuang.com/wp-content/uploads/2019/04/二维码.png&quot;/&gt;
+&lt;/article&gt;
+            &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
 <guid>b739c028657d51d2f627c49bd413ee64</guid>
