@@ -1,0 +1,51 @@
+function erji() {
+    res = {};
+    d = [];
+    var orisource = getResCode();
+    var con = parseDom(orisource, 'body&&Html').match(/<div class=\"movurl[\s\S]*?<\/div>/g);
+
+    var mlist = con[0];
+    var listper = mlist.match(/<li[\s\S]*?<\/li>/g);
+    var surl = parseDom(listper[0], 'li&&a&&href');
+    var surlres = fetch(surl, { headers: { 'content-type': 'charst=GBK' }, method: 'GET' });
+    var jsurl = parseDom(surlres, '.player&& script,0&&src');
+    var jsurlres = fetch(jsurl, { headers: { 'content-type': 'charst=GBK' }, method: 'GET' }).match(/var[\s\S]*\]/g)[0];
+    eval(jsurlres);
+
+    for (var i = 0; i < VideoListJson.length; i++) {
+        d.push({
+            title: VideoListJson[i][0],
+            col_type: 'text_1'
+        });
+
+        for (var j = 0; j < VideoListJson[i][1].length; j++) {
+            let lists = VideoListJson[i][1][j].split('$');
+            let playarg = lists[1];
+            let playurl;
+            if (lists[2] == 'flv' || lists[2] == 'm3u8') {
+                playurl = playarg;
+            }
+            else if (lists[2] == 'qiyi') {
+                let lazy = `let qiyirescode_1=fetch(input,{});let qiyiurl_1=parseDom(qiyirescode_1,'body&&script,2&&src');let qiyirescode_2=fetch(qiyiurl_1,{});eval(qiyirescode_2);var code=tvInfoJs["code"];var cip=tvInfoJs["data"]["vidl"];for(var i=0,l=cip.length;i<l;i++){for(var key in cip[i]){if(cip[i].vd==14||cip[i].vd==17||cip[i].vd==21||cip[i].vd==1||cip[i].vd==96){}else{if(cip[i].vd==4){var m3u=cip[i].m3u}else{var m3=cip[i].m3u}}}}var video=m3u;if(video=="undefined"||video==null||video==""){video=m3}video`;
+                playurl = 'http://v.jialingmm.net/qy.php?id=' + playarg + '@lazyRule=.js:' + lazy;
+            }
+            else if (lists[2] == 'qqy') {
+                let oriurl = 'http://www.iqiyi.com/v_' + playarg+'.html';
+                let lazy=`eval(fetch('https://gitee.com/quiet_boy/hiker/raw/master/fuckvip.js',{}));let anares=vip_52wyb(getUrl());let res={};let d=[];for(let idx=0;idx<anares.length;idx++){d.push({title:'part_'+idx.toString(),desc:'',pic_url:'',url:anares[idx],col_type:'text_2'})}res.data=d;setHomeResult(res);`;
+                playurl = oriurl + '@rule=js:' + lazy;
+            }
+            else {
+                playurl = getUrl();
+            }
+            d.push({
+                title: lists[0],
+                desc: '',
+                pic_url: '',
+                url: playurl,
+                col_type: 'text_2'
+            });
+        }
+    }
+    res.data = d;
+    setHomeResult(res);
+}
