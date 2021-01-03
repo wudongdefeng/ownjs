@@ -70,7 +70,7 @@ jobs:
           git add .
           git commit -m "Add changes"
       - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.USER_TOKEN }}
-          # `secrets.GITHUB_TOKEN` 是由GITHUB自动生成的
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.USER_TOKEN }}
+        branch: ${{ github.ref }}
