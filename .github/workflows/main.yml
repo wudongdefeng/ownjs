@@ -70,7 +70,7 @@ jobs:
           git add .
           git commit -m "Add changes"
       - name: Push changes
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ secrets.USER_TOKEN }}
-        branch: ${{ github.ref }}
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.USER_TOKEN }}
+          branch: ${{ github.ref }}
