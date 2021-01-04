@@ -60,61 +60,26 @@
   &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>64e6834eb5bcfd53273390ab4e56fe68</guid>
-<title>MySQL 并发控制和事务（复习笔记）</title>
-<link>https://toutiao.io/k/6aqccls</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;post-body&quot; itemprop=&quot;articleBody&quot;&gt;
+<guid>2c81d268482e28f3edbf2a62b7d1fb94</guid>
+<title>作为项目经理应该串联起哪些流程</title>
+<link>https://toutiao.io/k/sbx6x49</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
 
-      
-      
+                    
 
-      
-        &lt;h2 id=&quot;引言&quot;&gt;&lt;a href=&quot;#引言&quot; class=&quot;headerlink&quot; title=&quot;引言&quot;/&gt;引言&lt;/h2&gt;&lt;p&gt;原文链接：&lt;a href=&quot;https://yunsonbai.top/2020/09/07/mysql-bfsw/&quot;&gt;https://yunsonbai.top/2020/09/07/mysql-bfsw/&lt;/a&gt;&lt;br/&gt;整理了一下之前学习MySQL的知识点–并发控制和事务，和大家分享。&lt;/p&gt;
-&lt;a id=&quot;more&quot;/&gt;
-&lt;h2 id=&quot;并发控制&quot;&gt;&lt;a href=&quot;#并发控制&quot; class=&quot;headerlink&quot; title=&quot;并发控制&quot;/&gt;并发控制&lt;/h2&gt;&lt;p&gt;无论什么时候，只要有多个线程(或进程)同一数据修改数据，就会产生并发控制问题&lt;/p&gt;
-&lt;h3 id=&quot;读写锁&quot;&gt;&lt;a href=&quot;#读写锁&quot; class=&quot;headerlink&quot; title=&quot;读写锁&quot;/&gt;读写锁&lt;/h3&gt;&lt;p&gt;共享锁和排他锁(或者是读锁和写锁)&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;读锁: 共享的，多用户可以同时读取同一个资源，相互不干扰&lt;/li&gt;
-&lt;li&gt;写锁: 排他，会阻塞其他的读锁或者写锁，只能一个用户写入&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;锁粒度&quot;&gt;&lt;a href=&quot;#锁粒度&quot; class=&quot;headerlink&quot; title=&quot;锁粒度&quot;/&gt;锁粒度&lt;/h3&gt;&lt;p&gt;尽量只锁住需要修改的内容，而不是所有资源。任何时候，在给定的资源上，锁的数量越少，冲突越少，那么系统的并发程度就越高。&lt;/p&gt;
-&lt;p&gt;锁也耗资源，锁的操作包括，检查所是否已经解除，获得锁，释放锁，这些都会增加系统开销，进而影响系统性能。锁策略，就是在锁的开销和安全性之间寻求平衡。一般会采用行级锁，MySQL提供了多个选择，每种存储引擎都能实现自己的锁&lt;/p&gt;
-&lt;h4 id=&quot;表锁&quot;&gt;&lt;a href=&quot;#表锁&quot; class=&quot;headerlink&quot; title=&quot;表锁&quot;/&gt;表锁&lt;/h4&gt;&lt;p&gt;MySQL中最基本的锁策略，开销最小，粗暴简单。锁住整张表，需要拿到该锁才能进行增改删，而且该锁还会阻塞其他用户的读。只有没有写锁时，多用户才能同时读取。&lt;/p&gt;
-&lt;p&gt;另外MySQL会在使用alert table之类的语句中使用表锁，忽略存储引擎自己的锁&lt;/p&gt;
-&lt;h4 id=&quot;行级锁&quot;&gt;&lt;a href=&quot;#行级锁&quot; class=&quot;headerlink&quot; title=&quot;行级锁&quot;/&gt;行级锁&lt;/h4&gt;&lt;p&gt;行级锁能最大程度的支持并发处理，但是也带来了最大的锁开销。在InnoDB中实现了行级锁。&lt;/p&gt;
-&lt;h2 id=&quot;事务&quot;&gt;&lt;a href=&quot;#事务&quot; class=&quot;headerlink&quot; title=&quot;事务&quot;/&gt;事务&lt;/h2&gt;&lt;p&gt;在MySQL中，MySQL服务器不管理事务，由下层的存储引擎实现。因此混合使用存储引擎是不可靠的。&lt;br/&gt;MySQL默认采用自动提交，如果不是显式的开始一个事务的话，&lt;u&gt;&lt;strong&gt;则每个查询都被当做一个事务执行提交操作。&lt;/strong&gt;&lt;/u&gt;&lt;/p&gt;
-&lt;p&gt;事务就是一组原子行的sql查询，独立的工作单元。&lt;br/&gt;一个事务中，要么所有的语句都成功，如果有n条失败，那全部失败，都不执行。&lt;/p&gt;
-&lt;p&gt;事务特性包括&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;原子性：单元操作，都成或所有都不成(有一个失败就全失败)&lt;/li&gt;
-&lt;li&gt;隔离性：事务之间相互隔离。&lt;/li&gt;
-&lt;li&gt;持久性：改完得保存起来，不能丢。&lt;/li&gt;
-&lt;li&gt;一致性：得保证最终状态一致。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;隔离级别&quot;&gt;&lt;a href=&quot;#隔离级别&quot; class=&quot;headerlink&quot; title=&quot;隔离级别&quot;/&gt;隔离级别&lt;/h3&gt;&lt;h4 id=&quot;未提交读&quot;&gt;&lt;a href=&quot;#未提交读&quot; class=&quot;headerlink&quot; title=&quot;未提交读&quot;/&gt;未提交读&lt;/h4&gt;&lt;p&gt;事务中的修改，即使没有提交，对其他事务可见。其他事务就产生了脏读，这样就会产生很多问题。&lt;/p&gt;
-&lt;h4 id=&quot;提交读&quot;&gt;&lt;a href=&quot;#提交读&quot; class=&quot;headerlink&quot; title=&quot;提交读&quot;/&gt;提交读&lt;/h4&gt;&lt;p&gt;大多数数据库默认的隔离级别。一个事务开始时，只能看见已提交的事务所做的修改。也就是说一个事务从开始到未提交之前，其他事务都是 不可见的。也可以叫不可重复读，因为两次同样的查询可能得到不一样的结果。&lt;/p&gt;
-&lt;h4 id=&quot;可重复读&quot;&gt;&lt;a href=&quot;#可重复读&quot; class=&quot;headerlink&quot; title=&quot;可重复读&quot;/&gt;可重复读&lt;/h4&gt;&lt;p&gt;保证了在同事务中多次读取同样的记录结果是一样的。但理论上还是会有幻读的情况，当某个事务读取某个范围内的记录时，另一个事务又在该范围内插入了新的记录，当前的事务再次读取该范围的数据时，会产生幻行。&lt;br/&gt;可重复读是MySQL的默认事务隔离级别，后边的过版本控制协助MySQL完成可重复读。&lt;/p&gt;
-&lt;h4 id=&quot;可串行化&quot;&gt;&lt;a href=&quot;#可串行化&quot; class=&quot;headerlink&quot; title=&quot;可串行化&quot;/&gt;可串行化&lt;/h4&gt;&lt;p&gt;强制保证事务串行执行，避免了前面说的幻读问题。但会导致大量的超时和锁竞争，这种隔离级别在实际中很少用到。&lt;/p&gt;
-&lt;h3 id=&quot;死锁&quot;&gt;&lt;a href=&quot;#死锁&quot; class=&quot;headerlink&quot; title=&quot;死锁&quot;/&gt;死锁&lt;/h3&gt;&lt;p&gt;两个及以上事务相互占用对方的资源，导致死锁。解开的方式是只能一个事务成功，其他事务全部回滚。&lt;/p&gt;
-&lt;p&gt;事务A: 1、更新a    2、更新b&lt;br/&gt;事务B: 1、更新b    2、更新a&lt;br/&gt;恰好两个事务都执行了1，都要到了执行2，那相互之间就产生了死锁。&lt;/p&gt;
-&lt;h3 id=&quot;多版本并发控制&quot;&gt;&lt;a href=&quot;#多版本并发控制&quot; class=&quot;headerlink&quot; title=&quot;多版本并发控制&quot;/&gt;多版本并发控制&lt;/h3&gt;&lt;p&gt;采用多版本来控制并发，进而实现可重复读。&lt;br/&gt;通过保存数据在某个时间点的快照来实现，每开始一个新的事物，系统版本号都会自动递增。&lt;/p&gt;
-&lt;p&gt;在InnoDB中：&lt;/p&gt;
+                    
+                    
+                    &lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;背景&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;自己或者周围的同事有没有做过这种事情：一个自己认为只是内部改造的功能上线了，几天之后合作团队找过来问最近是不是有变更呀？接口行为发生变化了怎么不通知到我们呢？&lt;br/&gt;&lt;/section&gt;&lt;section&gt;自己认为纯内部的事情其实不是，影响没评估好。&lt;br/&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;section&gt;或者有没有遇到过这样的事情：做出了一个自认为没有什么问题的方案开发完了，上线前给领导汇报变更影响。结果领导不同意这个开发方案，需要从长计议。&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;上面两件示例中的问题有个通用的解法：定制一套合理的项目流程。要说明的是做这件事的项目不一定是一个大佬。有可能是刚毕业没多久的同学，上级或者导师交给了自己一个需要做2周的任务，就算自己独立完成也都算一个项目。只有一个技术人员做，那这个技术人员就是这个项目的项目经理。&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;以下是自己的一个常用流程总结，可根据项目大小等情况合理选取部分环节，仅做参考。&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;需求评审&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;    建议形式：会议形式&lt;/p&gt;&lt;p&gt;    目标：定需求大方向&lt;/p&gt;&lt;p&gt;    参加人员：技术经理、需求方&lt;/p&gt;&lt;p&gt;    主要角色：主持人一名、会议记录者一名(建议主持人和会议记录者为不同的人)、能提出需求中的问题和疏漏的高阶人员若干&lt;/p&gt;&lt;p&gt;    评审结论通知到：领导、参加人员&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;方案评审&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;    建议形式：会议形式&lt;br/&gt;    目标：定需求细节、排期&lt;/p&gt;&lt;p&gt;    参加人员：各方开发人员、技术经理、QA、需求方、潜在用户(比如一个通用组件可能其他团队也有需求)、相关合作方&lt;/p&gt;&lt;p&gt;    主要角色：主持人一名、会议记录者一名(建议主持人和会议记录者为不同的人)、能提出方案中的问题和疏漏的高阶人员若干&lt;/p&gt;&lt;p&gt;    评审结论及最终方案文档发送给：领导、参加人员&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;方案汇报&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;    建议形式：会议形式&lt;/p&gt;&lt;p&gt;    目标：达成共识、争取支持和资源&lt;/p&gt;&lt;p&gt;    参加人员：领导、技术经理&lt;/p&gt;&lt;p&gt;    如果方案有改动则需要重新发送给：领导和方案评审阶段的所有参加人员&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;动员会&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;    如果是一个并非外部需求驱动的项目，比如在业务部门的长期实践中孵化出来的一个公司级的基础组件。做成一款自己的产品。这时候，最重要的事是要做的人都要有信心和信念把东西做好。自己没有注入灵魂的产品是不可能成功的。&lt;/p&gt;&lt;p&gt;    这时候，作为项目经理+产品经理，需要把自己对项目的理解、思考、未来规划和所有实施人员对齐。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;开发&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;    建议形式：拉微信群、企业内部交流群沟通&lt;/p&gt;&lt;p&gt;    目标：问题及时反馈沟通、进度同步&lt;/p&gt;&lt;p&gt;    参加人员：各方开发人员、技术经理&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;联调&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;     建议形式：拉微信群、企业内部交流群沟通。必要时可在工位或封闭会议室&lt;/p&gt;&lt;p&gt;    目标：问题及时反馈沟通&lt;/p&gt;&lt;p&gt;    参加人员：各方开发人员、技术经理&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;代码提测前评审&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;    建议形式：会议形式&lt;/p&gt;&lt;p&gt;    目标：对平时已经由个人review过的代码再次梳理，通过review代码发现潜在问题&lt;/p&gt;&lt;p&gt;    参加人员：各方开发人员、技术经理、QA&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;验收&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;    建议形式：会议形式&lt;/p&gt;&lt;p&gt;    目标：确认完成的产品和需求的一致性，对之前没有完善的细节需求做补充&lt;/p&gt;&lt;p&gt;    参加人员：各方开发人员、技术经理、QA、需求方&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;    验收分为全新功能验收和旧功能改造升级。全新功能验收，主要依赖大家对产品的理解、领悟和感知。旧功能改造升级最好有新老结果对比。举例如下：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.2222222222222222&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRlibIyNDeXfFmiaa0Kowqqoba6106nib0EKY8sWMtBUU6MspWicKMtkCQaiauR3EfhjYTXNFt7UOerg2RWQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;900&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;QA测试&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;    建议形式：拉微信群、企业内部交流群沟通。必要时可在工位或封闭会议室&lt;/p&gt;&lt;p&gt;    目标：找出并修复问题&lt;/p&gt;&lt;p&gt;    参加人员：开发和QA&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;投产&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;    建议形式：正规发布流程    &lt;/p&gt;&lt;p&gt;    参加人员：技术经理、开发人员&lt;/p&gt;&lt;p&gt;    注意：需要通知到之前参与过的各方&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;总结&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;互联网下半场需要模式的转型：从野路子到正规军。&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;相关阅读&lt;/span&gt;&lt;/strong&gt;&lt;br/&gt;&lt;/section&gt;
+                &lt;/div&gt;
+
+                
+
+                
 
 
-      
-    &lt;/div&gt;
 
-    
-      
-
-
-    
-
-    
-    
-    
-
-    
-      &lt;/div&gt;&lt;/div&gt;</content:encoded>
+                
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
