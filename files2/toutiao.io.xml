@@ -78,27 +78,416 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>7205428158614e761bf80c64789e51d1</guid>
-<title>抓包神器 Wireshark，帮你快速定位线上网络故障（一）</title>
-<link>https://toutiao.io/k/5b2dh6z</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
+<guid>12434e16f3f15989119c87b39297099c</guid>
+<title>追查闪退的六个日与夜</title>
+<link>https://toutiao.io/k/htham98</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section&gt;
 
-                    
 
-                    
-                    
-                    &lt;section&gt;&lt;section data-mpa-template-id=&quot;1544239&quot; data-mpa-category=&quot;收藏&quot;&gt;&lt;section data-mpa-template-id=&quot;1495&quot; data-mpa-category=&quot;title&quot;&gt;&lt;section label=&quot;Copyright © 2017 playhudong All Rights Reserved.&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;strong mpa-from-tpl=&quot;t&quot;&gt;1&lt;/strong&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt; 开篇：吊足胃口 &lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/span&gt;&lt;strong&gt;&lt;em&gt;&lt;em&gt;&lt;span mpa-is-content=&quot;t&quot;/&gt;&lt;/em&gt;&lt;/em&gt;&lt;/strong&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;「&lt;/span&gt;&lt;span&gt;初入职场的菜菜同学&lt;/span&gt;&lt;span&gt;」&lt;/span&gt;&lt;span&gt;一心想靠 Java 技术来改变世界，未成想被网络环境问题缠身，于是&lt;/span&gt;&lt;span&gt;抱着电脑，满怀希望的去找运维同事&lt;/span&gt;&lt;span&gt;寻求帮助。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;菜菜问：&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;运维大佬&lt;/span&gt;&lt;span&gt;，&lt;/span&gt;&lt;span&gt;帮忙看看这是什么问题？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;153&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.26434426229508196&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/waH0DGXhQWMJkpjtX0ZDKcHFOB3KkdaQSSWnsFwgqYhKYVjK8qqpvQvasLs3G2uqSwAoLticDkez1qka1KiaQNCQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;976&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;运维答：&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;很明显是网络上出了问题，那你就抓个包看看呗，难道不会抓包？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;菜菜同学被多次鄙视后，心中怒火越积越重，于是暗下决心，好好深入研究一番 W&lt;/span&gt;&lt;span&gt;ireshark，待我羽翼丰满（学会）之日，便是我翱翔天际（离职）之时。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;「&lt;/span&gt;&lt;span&gt;久居职场的菜菜同学&lt;/span&gt;&lt;span&gt;」经过数年的打击与修炼，菜菜同学成了经验颇丰的系统研发高级专家（老油条）。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;总监问：&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;假如你的项目在开发、测试环境上与三方联调都没有问题，一旦部署到生产环境，就表现出Connection reset、Connection timeout等各种水土不服，关键是三方还坚定他们的环境很正常，该咋办？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;菜菜答：&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;莫慌，我会点 Wireshark，专治各种扯皮、不服。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;CTO问：&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;假如你的项目出现性能瓶颈了，你觉得可能会是哪些方面，怎么解决问题？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;菜菜答：&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;个人觉得项目性能瓶颈，不外乎网络环境、操作系统、程序代码三个大因素。若真想要解决瓶颈，应该先定位瓶颈的位置究竟是在哪里？而三大因素中最简单的莫过于网络环境，我常用 Wireshark来辅助分析，bulabula。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;不知道胃口吊足了没有？&lt;span&gt;上面谈及的那&lt;span&gt;些&lt;/span&gt;&lt;span&gt;场景，估计很多猿媛们都遇到过。&lt;span&gt;对于像菜菜这样的 Java 程序员而言，&lt;/span&gt;&lt;/span&gt;Wireshark &lt;/span&gt;&lt;span&gt;主要用&lt;/span&gt;&lt;span&gt;来帮助快速分析网络环境问题，进而拿到实锤，&lt;/span&gt;&lt;span&gt;把三方的&lt;/span&gt;&lt;span&gt;锅扔回去&lt;/span&gt;&lt;span&gt;。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span/&gt;希望&lt;/span&gt;&lt;span&gt;通过接下来几篇文章的分享，能&lt;/span&gt;&lt;span&gt;让你轻松掌握Wireshark。&lt;/span&gt;&lt;/p&gt;&lt;section data-mpa-template-id=&quot;1544239&quot; data-mpa-category=&quot;收藏&quot;&gt;&lt;section data-mpa-template-id=&quot;1495&quot; data-mpa-category=&quot;title&quot;&gt;&lt;section label=&quot;Copyright © 2017 playhudong All Rights Reserved.&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;strong mpa-from-tpl=&quot;t&quot;&gt;2&lt;/strong&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt; Wireshark：前世今生 &lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span/&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;160&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.276268115942029&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/waH0DGXhQWMQ3MAuzChDQhIv7G2kFY0u3K7H7TkW0ugsTyeicttqYb0ibk20BMibpNsMRSHsRVawk7YwlcwPlbfuA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2208&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这是一个无关技术的小故事。但是作为 Wireshark 爱好者,了解一下这个软件的前世今生也是极好的，谁不想在中午和同（ling）事（dao）一起吃饭的时候讲个业内小故事，显得自己业务精湛又品味不俗呢?&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;故事要从 20 世纪 90 年代开始说起。那时的 IT 业欣欣向荣：摩托罗拉正野心勃勃地实施铱星计划；Google 的两位创始人还在房东的车库里研究搜索引擎。我们故事的主人公 Gerald Combs 还是默默无闻的青年。和那个时代的很多工程师一样，Gerald 技术精湛，热情上进，动手能力极强。他就职于一家网络提供商，时常需要分析软件来辅助工作。可是这样的软件太少了，而且一个 license 就要80,000 美金。即便在今天的美国，这也不是一笔小数目。 &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;和我们中的很多人不一样，Gerald 没有下载盗版软件，而是决定自己写一个。他单枪匹马忙碌了几个月。我们今天仍能想见其中的艰辛—即便是从业多年的工程师，对很多网络协议还一知半解，更不要说开发一个能分析协议的软件了。而一位工程师既精通多种协议，又能写好代码，更是常人难以企及的境界。但谦虚的 Gerald 一直对此轻描淡写，「I spent several months doing research and making notes.」到了 1998 年 7 月，这个软件终于面世了。它带来了这样的功能：当你透过它看到网络时，不再是没有意义的 0 和 1，而是可以理解的简洁文字。有了它的专业解说，我们几乎能直接看懂网络上发生的一切。以前难以排查的问题，在它介入后便显露无遗。它还提供了权威的分析报告，比如重传率统计、响应时间和对话列表等，这解放了原本负担繁重的网络管理员，使他们有更多时间专注其他事务。 &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;Gerald 把这个软件命名为 Ethereal，正对应了它的功能—还原以太网的真相。Ethereal 的代码版权自然属于 Gerald，而他所在的公司 NIS(Network Integration Services) 则拥有 Ethereal 商标。当时谁也没有想到，这个归属权会在多年后引起一场风波。由于 Ethereal 写得太好了，而且是以 GNU GPL 开源许可证发布的，世界各地的开发者纷纷参与到这个项目中。没过多久，它就涵盖了世界上大多数通信协议，成为广受欢迎的网络分析软件。它可以用于教学，如果网络教师用它辅助上课，可以大大提高学生的兴趣。也可以辅助开发和测试，是调试网络程序的好工具。当然它最大的用途还是诊断问题；从数据链路层到应用层的种种协议，几乎涉及网络的地方就有它的用武之地。更难得的是，Gerald 并没有打算从中获利，它至今还是完全免费的，每位愿意学习的工程师都可以受益。 &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;世界的变化总是超乎我们的想象，尤其是在IT业。没几年时间，铱星计划彻底破产；Google却成了最大的网络公司。只有Gerald没有变化，一直在兢兢业业地维护 Ethereal。每个月都有新的协议出现，已有的协议也在推出新版本，他永远有忙不完的活。中间仅仅发生过一次改名风波：2006 年他离开 NIS，加入了 CACE。由于和老东家在 Ethereal 的商标问题上无法达成一致，Gerald 把项目改名为 Wireshark。从此 Ethereal 这个风靡多年的项目停止了，只留下 www.ethereal.com 域名。我们至今还能访问它，但是会被重定向到一家叫 AOS 的公司。为什么不是重定向到 NIS 呢？因为 NIS 在 2011 年被 AOS 合并了。 &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;Wireshark 延续了 Ethereal 的成功，现在有成千上万的开发者在追随 Gerald。每年还会召开一次为期 4 天的 Sharkfest 大会。2011 年 Wireshark 在 SecTools 排行第一，2012 年被 Insecure.org 评为「No. 1 Packet Sniffers」。美国的技术作家们开始为它著书立说，中国的出版社也在引进(比如人民邮电出版社引进出版的《Wireshark数据包分析实战(第2版)》)。值得一提的是，CACE 后来被 Riverbed 收购了，Riverbed 成了 Wireshark 项目的赞助商。很多中国工程师可能觉得 Riverbed 名不见经传，但说到 Linux 里常用的 tcpdump 命令就不会陌生。tcpdump 的开发者之一 Steve McCanne 就是 Riverbed 的 CTO。而 WinPcap 的开发者 Loris Degioanni 也在 Riverbed 工作。似乎冥冥之中自有天意，Riverbed 把网络探测界的先锋们聚到了一起。我们要向 Riverbed 致敬，多亏了这些伟大的工具，我们才得以窥探网络的秘密。 &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;Gerald 不久前在 Twitter 上宣布「Wireshark is, and will always be open source。」其实 Wireshark 即便不再开源也不会抹杀他的成就。改变世界的 IT 英雄，可以像 Jobs 一样领导一个成功的公司,更可以像 Gerald 一样创造一件传世的作品。他们的成就一样会被镌刻在 IT 历史的丰碑上。&lt;/span&gt;&lt;/p&gt;&lt;blockquote class=&quot;js_blockquote_wrap&quot; data-type=&quot;2&quot; data-url=&quot;&quot; data-author-name=&quot;&quot; data-content-utf8-length=&quot;24&quot; data-source-title=&quot;&quot;&gt;&lt;section class=&quot;js_blockquote_digest&quot;&gt;&lt;p&gt;故事引自《Wireshark网络分析就这么简单》&lt;/p&gt;&lt;/section&gt;&lt;/blockquote&gt;&lt;section data-mpa-template-id=&quot;1544239&quot; data-mpa-category=&quot;收藏&quot;&gt;&lt;section data-mpa-template-id=&quot;1495&quot; data-mpa-category=&quot;title&quot;&gt;&lt;section label=&quot;Copyright © 2017 playhudong All Rights Reserved.&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;strong mpa-from-tpl=&quot;t&quot;&gt;3&lt;/strong&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;strong&gt;&lt;strong&gt; Wireshark：安装 &lt;/strong&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;工欲善其事必先利其器，打开官方网站进行下载，&lt;/span&gt;&lt;span&gt;下载适合自己操作系统的版本。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;345&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.5963060686015831&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/waH0DGXhQWMJkpjtX0ZDKcHFOB3KkdaQwzVfnr96ejiaFQUh2vbicfa1ZA5cGz0uYiaL05rAu20nNx7dUmS4l0U9g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1516&quot;/&gt;&lt;/p&gt;&lt;blockquote class=&quot;js_blockquote_wrap&quot; data-type=&quot;2&quot; data-url=&quot;&quot; data-author-name=&quot;&quot; data-content-utf8-length=&quot;44&quot; data-source-title=&quot;&quot;&gt;&lt;section class=&quot;js_blockquote_digest&quot;&gt;&lt;p&gt;下载链接：https://www.wireshark.org/download.html&lt;/p&gt;&lt;/section&gt;&lt;/blockquote&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;本次 Wireshark 开篇分享就写到这里，没上干货，主要是初步认识一下 Wireshark，接下来几篇会重点讲讲 Wireshark 的实战，敬请期待。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;br/&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;一起聊技术、谈业务、喷架构，少走弯路，不踩大坑。&lt;/strong&gt;&lt;span&gt;会持续输出原创精彩分享，敬请期待！&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;211&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.3649122807017544&quot; data-s=&quot;300,640&quot; data-type=&quot;jpeg&quot; data-w=&quot;1710&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/waH0DGXhQWOwkpyEoA1IiakYviaHIX4GnoUHGE4kNCqHqAM54WmxryEd76E7Uf1xibO18pftGiafQqI8ibxqMHG34xA/640?wx_fmt=jpeg&quot;/&gt;&lt;/p&gt;
-                &lt;/div&gt;
-
-                
-
-                
+&lt;h1 class=&quot;post-title&quot;&gt;追查闪退的六个日与夜&lt;/h1&gt;
+&lt;p class=&quot;post-meta&quot;&gt;
+07 Jan 2021 •
+7 min. read •
+&lt;a href=&quot;#disqus_thread&quot; data-disqus-identifier=&quot;2021-01-07-6days-with-plcrashreporter.md&quot;&gt;Comments&lt;/a&gt;
+&lt;/p&gt;
 
 
 
-                
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+
+
+&lt;p&gt;老Y是一名iOS开发，近日在工作遇到一个闪退，临近提交App Store时才发现，虽然紧急修复后顺利提交审核，但由于问题暴露的时间过晚，因此引起了众多额外的关注。问题本身理应很容易发现，但为什么临近审核才反馈，老Y为了分析该问题，花了六天的时间才找到原因。在一个具有数百个模块的大型App中，如何根据各种蛛丝马迹找出问题根因？本文记录了老Y追查该问题的六个日与夜。&lt;/p&gt;
+
+&lt;p&gt;闪退不可怕，开发与测试的过程都应该能够发现，这个问题本身没有特别值得记录的地方。可怕的是为什么经过这么多轮测试却没能发现闪退，开发联调阶段也没能发现闪退，正是为了解释这些才有了本文。&lt;/p&gt;
+
+&lt;p&gt;如果你的App中也使用了&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;PLCrashReporter&lt;/code&gt;，或者你对老Y追寻六天的过程感兴趣，不妨看完这个故事。如果想直接看结论，可跳至&lt;a href=&quot;#后记&quot;&gt;后记&lt;/a&gt;。&lt;/p&gt;
+
+&lt;h3 class=&quot;no_toc&quot; id=&quot;目录&quot;&gt;目录&lt;/h3&gt;
+
+
+
+&lt;hr/&gt;
+
+&lt;h2 id=&quot;第0天-阻审&quot;&gt;第0天 阻审&lt;/h2&gt;
+
+&lt;p&gt;晚上11点，老Y刚洗完澡准备睡觉之际，看了一眼手机，发现被拉进一个群，群名称：”xxx crash”，心想：“我去，今晚就要提交App Store审核，该不会这个点出现问题了吧。”老Y点进去一看消息，不幸言中。业务发现一个必现的闪退，其它同学已经可以在本地复现，正在分析问题产生的原因，PM在等着结论，决定何时提交审核。&lt;/p&gt;
+
+&lt;p&gt;这样的情形对于老Y来说已经不会再大惊小怪，多年的互联网从业经历让老Y养成了电脑随时带在身边的习惯。12月的深圳此时终于有了点冬天的样子，夜里气温很低。于是老Y披上外套，拿着电脑来到客厅。&lt;/p&gt;
+
+&lt;p&gt;打开电脑后，老Y首先看了看群里的上下文，目前了解到的情况是：业务每天都有进行测试，但之前一直未发现问题。而今晚却在另外一个安装包中发现该问题是必现的。“之前的安装包与今晚测试的安装包有什么不同？”，老Y开始与反馈该问题的同学一起分析。刚开始推断可能前几天有几个模块进过一次集成，但很快这个猜想就被推翻。测试发现集成前后的安装包都会出现该闪退。&lt;/p&gt;
+
+&lt;p&gt;测试在开发的询问下，不断的提供越来越多的信息，完整的问题逐渐显现出来。终于，在午夜钟声敲响之际，定位到是debug包与release包的问题。之前测试使用的都是debug包在测试，而今晚切换到了release包。“又是release与debug的问题，一定是有什么变量没有初始化导致的，release下未初始变量可能是个随机值”，凭借之前踩过的很多坑，老Y信心满满的猜想。&lt;/p&gt;
+
+&lt;p&gt;而此时，负责该模块的同学老J本地调试也发现了该问题，准确的定位到闪退处。从Xcode的debug窗口中可以明显的看到一个空的数组指针，访问该数组时出现&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;EXC_BAD_ACCESS&lt;/code&gt;闪退。那么问题看起来很容易解释，只需要查出为什么该数组是空指针就能够解决问题，笑容在老Y与老J脸上浮现出来。&lt;/p&gt;
+
+&lt;p&gt;可是，他们高兴的太早。这个数组指针在一个函数中赋值，但该函数没有异常路径，数组一定不会为空。“这就奇怪了，这个函数出了什么问题？”，老Y与屏幕另一端的老J都感到不解。为了弄函数执行时发生了什么事，老J在该函数中设置了一个断点，打算单步调试该函数，这是最直接的方式。&lt;/p&gt;
+
+&lt;p&gt;没想到奇怪的一幕再次发生，老J刚刚设置的断点竟然不生效。老J不敢相信自己的眼睛，于是又在函数调用前与调用后又加了断点，再次运行。函数前的断点正常停下，“不错，证明代码走到了这里”，老J开始紧张起来，小心的点了单步执行，没想到程序直接到了函数调用之后的断点，函数中设置的断点依然没有停下来。&lt;/p&gt;
+
+&lt;p&gt;“这不可能啊，同一个代码库中的代码，函数前后的断点都能够停下，为什么这个函数就是进不去？”他们大为不解。此时，老Y说，用lldb命令试试吧。于是老J再次调试，在调试控制台中输入了&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;breakpoint set -name xxx&lt;/code&gt;，再次运行，他们紧张的期待着运行的结果。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;老Y说：有时候在Xcode的源代码中直接添加断点无法进入时，可以通过lldb或者添加符号断点的方式来设置断点&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;终于，如他们所愿，程序在函数入口的断点处停了下来，然而展现在断点处的竟然是汇编。“源文件明明就在工程里面，为什么会进到汇编？”，老J说。“clean下试试。”于是老J将整个工程清理了一遍，为以防万一，又手动删除了&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Derived Data&lt;/code&gt;，然后再次尝试。可结果依然如此。&lt;/p&gt;
+
+&lt;p&gt;“直接用代码编译的，又是同一个工程下，函数前后可以断在代码处，所以排除了静态库的影响。”老Y分析道，“难道？。。。”老Y此时心里冒出了一个大胆的想法，于是他和老J说，“VNC地址发我下，我VNC过去看看”。随后老Y连上了老J的电脑，打开了命令行，在工程目录中敲了一个命令，开始对所有的静态库查找断点函数的符号。当命令运行结束时，大家看到结果后心里似乎明白了老Y这么做的原因。原来，这个函数在另外一个静态库F中也存在一份。听到这个消息后，写下这个函数的另外一名同学老C想到了什么，突然说，“这个函数是是我从一个静态库中拷贝过来的，并且更新了代码。”&lt;/p&gt;
+
+&lt;p&gt;这时，老Y与老J都明白了问题所在，他们讨论道：“静态库X与F中有两个同样的符号，但是似乎真正链接到二进制中只保留了一个”，老J补充道，“是的，所以业务在运行时，本应该执行静态库X的代码，实际上却执行了静态库F，后者没有对数组指针赋值，便导致了闪退的出现”。&lt;/p&gt;
+
+&lt;p&gt;“我们要快速解决这个问题，PM还等着提交App Store呢”，老J说，“把函数名都改一下吧。”&lt;/p&gt;
+
+&lt;p&gt;“可是相似的代码还有挺多，一个个去修改风险比较高，直接加上namespace作隔离吧。”老Y提议，于是他们快速给相似的符号加上了新的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;namespace&lt;/code&gt;，再次本地打包验证，问题解决，此时时间刚过午夜1点。&lt;/p&gt;
+
+&lt;p&gt;本地验证通过之后，他们立刻在服务端打包，发给测试及业务同学验证。从问题出现到解决只花了一个多小时，如果不是因为debug无法进入断点，根本不可能这么快。在等待测试同学反馈给果时，老J问老Y，“怎么会想到去运行那个命令去查找所有静态库中的符号？”“其实也是比较偶然，已经是同一份代码进行编译，符号一定是同时被加载的，一些函数可以进入断点，另外一些无法进入，这有点说不通。我在前一家公司遇到过类似的问题”，老Y回忆起了往事，“但那时是动态库，两个库中也有相同的符号，当时现象并不是必现的闪退，而是概率性的出现。后来分析了很久才找到原因，结果是一个叫做 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Global Symbol Interpose&lt;/code&gt;的问题，最终也是通过不同的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;namespace&lt;/code&gt;才解决了问题。”&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;老Y说：全局符号介入(Global Symbol Interpose)是在动态链接加载的过程中出现的，Linux采用广度优先搜索的方式来加载每个库中的符号，它会将每个符号都放到一个全局的符号表中，如果表中已经有了这个符号，那么它会忽略后面需要加载的符号&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;“但是为什么测试验证时，debug包不会出现闪退呢，按理说这是必现的问题”，老J问，“我推测是debug与release在链接两个库时的顺序不一致导致的，debug与release分别链接了不同的符号，导致debug是期望的符号，release是另外一个静态库的符号。但为什么这样我也还不清楚，现在也只是猜测”，老Y解释道。&lt;/p&gt;
+
+&lt;p&gt;正当他们讨论之际，测试同学反馈新包问题已解决。此时已经是夜里2点，PM还在等待着他们的结论，看到老Y他们在群里的结论之后，PM给老Y打了电话，老Y说明了结论和问题之后，PM问道，“为什么这个时候才发现？现在阻塞了提审，今晚肯定无法提交了，明天再提交吧。这个问题需要做一个复盘。”老Y想解释，想说这一定不是我们的问题，但无奈现在也只是推测，而且确实阻塞了提审，也没有作更多的辩解。挂了电话之后，老Y有些气愤，虽然他理解PM面临的压力，可是还没搞清楚状况就劈头盖脸一顿责问，这让老Y有些难以接受。&lt;/p&gt;
+
+&lt;p&gt;“我们先申请模块集成吧，为什么debug包无法出现闪退的问题明天继续分析”，集成申请之后，他们便合上了电脑，兴奋中夹杂着疲惫，沉沉的睡去。&lt;/p&gt;
+
+&lt;p&gt;老J和老Y快速解决了阻塞提审的问题，但似乎这个问题本身并不是很严重，更加严重的是为什么一个本该必现的问题这么晚才验证出来。老Y隐隐感到这里面有一个巨坑，也因为PM的一通电话，他下定决心要查明该问题，还团队一个清白。但没想到的是，这一查就是足足六天，接下来的六天时间里，老Y一步步找出了问题，原来那是一个隐藏了多年的bug。&lt;/p&gt;
+
+&lt;h2 id=&quot;第1天-嫌疑&quot;&gt;第1天 嫌疑&lt;/h2&gt;
+
+&lt;p&gt;第二天老Y早早醒来，虽然前一天折腾到很晚才睡，但精神还不错。在去公司的路上，他就向负责构建的同学L描述了这个问题。L是打包这块的专家，他对打包过程极其了解。&lt;/p&gt;
+
+&lt;p&gt;互联网公司的上班时间相比传统公司较晚，9点公司楼下人依然很少。老Y在公司吃完早餐后，泡了一杯龙井茶振作精神，到了这个年纪，大家的标配似乎已经是枸杞菊花保温杯，但老Y还是喜欢喝点茶。一口热茶暖到胃里，老Y心想，“开始吧”。于是他打开了电脑，准备投入工作。&lt;/p&gt;
+
+&lt;p&gt;电脑是一台几年前的Macbook Pro，已经服役三年，很快就要退休。近段时间电脑越来越无法跟上老Y的使用强度，当然，也可能是跟不上软件的更新速度，隔三叉五的就会罢工一次。&lt;/p&gt;
+
+&lt;p&gt;对于前一天的问题，老Y已经有一个初步的推断，“debug与release包链接了不同的符号”，但为什么会这样，还需要等待构建专家L的分析。L收到了早上的消息后，与老Y通了电话，对问题进行了详细的询问，了解到问题之后，L心里也犯起了嘀咕，“这个问题还是得详细的查下，万一是打包平台的锅，影响可就大了。”于是他们先兵分两路，老Y准备下午的复盘文档，测试同学定了下午2点的复盘会议。而L去分析打包的问题。&lt;/p&gt;
+
+&lt;p&gt;老Y这么多年一直有个工作习惯，在遇到复杂问题时，会创建一个笔记，用于记录对问题的分析及进展。一方面有助于理清思路，防止被其它问题中断后无法迅速找到之前的状态。另一方面通过详细的记录，又可以后续对问题进行总结，遇到相似问题时能够通过这些记录找到当时详细的分析过程。于是他新建了一个笔记，取名：“XXX阻审问题分析”，笔记创建完成后，他首先记录了当前的问题与进展，接着开始准备复盘的文档，很快就将问题、解决方案、后续如何避免等写完，但其中有一个点还没有结论，也就是为什么提审前才发现问题，这个点老Y觉得可能问题没那么简单。&lt;/p&gt;
+
+&lt;p&gt;果然，在复盘文档刚刚写完时，L来了消息，印证了老Y的担忧。L发现不管是debug包还是release包，都是一样的符号，符号来自静态库F而不是静态库X。“如此说来，前面的推断都错了，并不是链接了不同的符号导致现象不同”，老Y说，然后接着问，“两个包在链接静态库的时候，依赖的顺序是一样的对吗？”L回答，“是的，顺序是固定的，和debug、release无关。”&lt;/p&gt;
+
+&lt;p&gt;“明白了，这样就不存在一个静态库的链接顺序导致不同符号被链接的问题”，老Y分析说，“但这样解释不通，如果是同样的符号，应该debug包也有同样的问题，而不仅是release包才出现闪退。”&lt;/p&gt;
+
+&lt;p&gt;“debug和release包除了宏及优化level不同以外，还有其它的区别吗？”老Y问L。&lt;/p&gt;
+
+&lt;p&gt;“有的，debug包里面多了一些测试模块，一会我做一些实验验证下是否是这些测试模块的问题”，L回答。接下来他便与测试同学一起验证有关测试模块的猜想。&lt;/p&gt;
+
+&lt;p&gt;老Y在等待L分析具体依赖差别的时候，又想了想，“昨天业务测试的反馈信息有些多，需要重新梳理一遍，究竟什么样的包出现，什么样的包不出现，先整理一个详细的列表出来。然后看看问题可能出现在哪个包中”，于是他将昨天修复问题前后各个场景都打了一个安装包并测试，结果发现只有在release包中才会闪退，其它所有安装包都正常。&lt;/p&gt;
+
+&lt;p&gt;“空指针访问时闪退是必然的，这样就可以集中精力定位为什么debug包不闪退，现在关键的问题在于找出空指针访问后，本该闪退的线程现在在做什么。先在本地尝试保持与debug包一样的版本依赖，看本地是否可以复现该问题。”于是老Y找到对应debug包依赖的各模块版本，然后搭建本地环境，开始调试。但让他没想到的是，本地不管是debug还是release，都是必现的闪退，程序停留在空指针访问的那一行，&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;EXC_BAD_ACCESS&lt;/code&gt;异常。&lt;/p&gt;
+
+&lt;p&gt;“奇怪，本地打包与后台打包怎么会表现不一样，难道后台还有很多其它的设置？”老Y很困惑。“既然本地无法复现这个问题，那只有增加一些日志，查看这个线程在空指针访问的前后在做什么”，老Y便在前前后后增加了大量的日志，期望这些日志可以告诉他发生了什么事。由于本地无法复现，所以他只好将代码提交，并依赖后台打出来的包才能够获得日志。提交代码之后，便安心等待后台的安装包构建。因为安装包依赖了数百个模块，所以每次的等待都需要接近十分钟的时间。在这期间，老Y又问了L那边的进展，L发现debug与release总共有6个测试模块不同，而去除了这些测试模块的debug包让测试同学去验证时，如期望的那样闪退了。“也就是说。。。”老Y激动的说，“没错，也就是这六个测试模块导致了本该出现的闪退被吞掉”，L回答，但L有一点忘了说，有一次测试时发现没有测试模块的debug包也未出现闪退。&lt;/p&gt;
+
+&lt;p&gt;“帮忙把这6个模块的名字发出来，我打算找出它们的负责人，然后拉个群问问看它们有没有在这些测试模块中catch住这个闪退。”老Y激动的说，L便去查找每个模块的负责人。正当此时，老Y增加日志的安装包已经构建完成，他下载并安装了这个包，然后熟练的在业务环境去验证。果然，这个包依然没有闪退。接着他获取了程序运行的日志并开始分析。&lt;/p&gt;
+
+&lt;p&gt;现象很奇怪，日志中有刚刚老Y增加的部分，在野指针访问之前，一切都正常，并且也证实了他们之前的猜想，代码走到了另外一个静态库F中，而这个旧的代码并没有初始化新增加的成员变量，这也是导致野指针的原因。可是，时间在这个线程仿佛停止了，野指针访问之后的日志都没有出现。同时，接下来的所有日志中再也没有出现该线程的其它任何活动。“奇怪，看起来像是这个线程在访问了野指针之后被干掉了一样，会发生这种事情吗？”，老Y疑惑的想，“难道是那几个测试模块把闪退捕获了，但没有处理好？”&lt;/p&gt;
+
+&lt;p&gt;这时，L拿到了这6个模块的名称，并找到了对应负责的同学。老Y将他们拉到一个新建的群中，然后描述了所遇到的问题：“各位测试模块的owner们，我们这边遇到一个棘手的问题，一个C++的必现闪退在debug包中不会出现，但在release包中会出现，对比发现debug包里面多了各位的测试模块。在必现闪退的地方，打了日志发现在闪退前的位置有日志，闪退后的位置没有日志，且整个线程也看起来被干掉了，所以想问下各位，有没有哪位的模块把C++的野指针访问异常catch住了。”在漫长的等待之后，有几个模块的负责人表示其负责的模块中并没有捕获闪退的代码。&lt;/p&gt;
+
+&lt;p&gt;老Y也继续尝试增加日志，发现不管是空指针，还是野指针，都一样不会闪退。刚开始他还怀疑是野指针是不是有可能访问到一个有效的地址而没有闪退，空指针才会闪退，但打印出来的日志粉碎了他这一猜想。时间就在他们不停的尝试与分析当中迅速流逝，夜幕很快就降临，在与团队同学一起吃饭时，他描述了问题以及当前的进展，大家也都表示这个问题很诡异，没有遇到过类似的问题。&lt;/p&gt;
+
+&lt;p&gt;当天是周五，看这天的进度，问题原因恐怕很难被快速定位出来，所以复盘也从2点推迟到4点，虽然最终阻塞提审的问题早就解决了，但是背后影响更大的问题还没有思路，如果这个问题不分析出来，复盘意义不大。所以老Y与测试同学讨论将复盘改在下周进行。&lt;/p&gt;
+
+&lt;p&gt;老Y所在的公司地理位置较好，楼下有个海边公园，每次吃完晚饭，大家便不约而同的绕着海边散步，缓解一天的疲劳。但今天老Y却没有和大家一起去，他打算尽量在周末之前搞定，这样便不用在周末还挂念此事，于是吃完晚饭之后，老Y立刻回到了办公位，他还是想着在本地复现这个问题，定位出具体哪个测试模块是罪魁祸首。他又对比本地与后台安装包的模块与版本是否完全一致，以防止出现遗漏。经过仔细对比，发现确实有几个模块在本地没有，于是他又尝试去后台下载了这几个缺少的模块，手动链接这些库，但还是和之前一样，本地必现的闪退，&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;EXC_BAD_ACCESS&lt;/code&gt;，无法在本地验证。&lt;/p&gt;
+
+&lt;p&gt;不知不觉折腾到11点多，老Y周末之前搞定的计划落空。很无奈，本地无法复现，只能依赖服务端。他找到L，“我们目前的结论是6个测试模块捕获了闪退异常，有没有办法能够在服务端尝试加载不同的测试模块，确定是哪个测试模块吞了这个闪退吗？”好在L也很重视这个问题，即便是周末，也答应了一定帮定位出是哪个模块，这让折腾一天疲惫的老Y心里感到一丝安慰。老Y查了一整天，但总有些力不从心的感觉，无法在本地复现问题，甚至打个日志验证都需要10分钟以上的时间，身心俱疲。老Y准备周末好好休息一下，调整好状态，周一接着查。&lt;/p&gt;
+
+&lt;h2 id=&quot;第2天-堆栈&quot;&gt;第2天 堆栈&lt;/h2&gt;
+
+&lt;p&gt;深圳虽已是冬季，但仍和中部地区的初秋差不多，一件薄外套即可抵御寒冷。一年当中深圳从3月-11月都是夏季，只有此时的阳光显得温暖却不炎热，即便是正午，也可在户外活动。深圳遍布的公园草地上都铺满了大大小小的野餐垫，孩子们与爸爸妈妈享受这个快节奏城市里难得悠闲的时光，空中飘着各色各样的风筝，宛如秋游的景象，如果不看日历的话，绝难想到此时已是12月中旬。&lt;/p&gt;
+
+&lt;p&gt;老Y晚上睡得不好，好像做梦都在思考这个问题。早上起来之后，老Y回顾了昨天的分析过程，“这个线程后面没有了任何的日志，那么它到底在干什么？是线程被干掉了吗？还是说函数异常中止去做了其它的事情？”，“有什么办法能够获取到当前这个线程的状态？”，这几个问题一直萦绕在老Y的心里。整个上午老Y做什么事都一幅心不在焉的样子。午饭过后，突然间老Y有了灵感，“是否能用什么手段让整个应用崩掉，从而获取所有线程的堆栈？”&lt;/p&gt;
+
+&lt;p&gt;顺着这个思路，老Y想到一个办法。此刻也顾不得午睡，打开电脑便开始了尝试。他想在另外一个线程直接通过ObjC的方式来让程序崩掉，让一个程序崩掉的方法有很多，因为之前是C++的闪退无法处理，那么这里就通过ObjC的方式。很轻松的，老Y写了几行代码，直接创建一个ObjC对象，然后向它发送一个并不存在的方法。“这样便会出现对象无法响应方法的闪退了”，老Y自言自语道，“那么在什么时机来调用这个方法？先试试压后台吧。”老Y在一个类的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;load&lt;/code&gt;方法中注册了应用压后台的通知，并在回调中调用了触发闪退的方法。&lt;/p&gt;
+
+&lt;div class=&quot;language-objc highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;triggerCrash&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;XLog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;enter crash&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;UIView&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;view&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;UIView&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;alloc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;initWithFrame&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;CGRectZero&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]];&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;view&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;performSelector&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;@selector&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;hello&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)];&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;XLog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;leave crash&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;接着提交代码，等待漫长的打包结果。打包成功后，老Y立刻安装并进行了测试，首先是测试业务流程，空指针访问处没有闪退。接着程序压入后台，如他所料，闪退出现。老Y兴奋的赶紧去服务端捞取对应的闪退报告，可奇怪的是，服务端的最新报告日期竟然还是前一天，刚刚的尝试完全没有闪退报告。“难道是OOM了？只有这种情况下才没有报告”，老Y猜想。他又试了一次，更为奇怪的是，程序在还未进入后台时就崩了，服务端依然没有闪退报告。因为老Y的注意力都在没有查到闪退报告这件事上，所以他忽略了为什么程序还未进入后台时就崩溃这个细节。&lt;/p&gt;
+
+&lt;p&gt;这下老Y突然有些不知所措，怪事一件接一件的发生，但好在他已经做好了没那么顺利的心理准备，冷静下来之后想，“之前即使是发生了OOM，在Xcode中应该可以直接从手机上捞出来对应的报告，这是由系统生成的，可以试着捞一下”，老Y便连上手机，在Xcode中查看设备日志。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;老Y说: 系统在应用闪退之后，会生成一份闪退报告，这里甚至会包含OOM类型的报告，可以通过Xcode的设备日志获取。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;在等待日志同步之后，老Y发现有两份闪退日志，但都不是OOM，而是普通的闪退。最新闪退是第二次的尝试，未压后台就崩掉，它与之前业务测试时发现的报告完全一致。挂在了空指针的访问处，闪退线程如下：&lt;/p&gt;
+
+&lt;div class=&quot;language-cpp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;Thread&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;54&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Crashed&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;
+&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;   &lt;span class=&quot;n&quot;&gt;XXX&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x0000000108ab01c0&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Image&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;float&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;bool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;99549632&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;file&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cpp&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;259&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;老Y又打开了另外一份报告，惊喜的发现这便是他这次实验想获取的那份。闪退的原因正如代码所写，在压后台时上面的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;triggerCrash&lt;/code&gt;方法闪退，找不到对应的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;selector&lt;/code&gt;。接着他向下查找其它线程。终于，在最后一个线程，那个本该闪退的地方出现了：&lt;/p&gt;
+
+&lt;div class=&quot;language-cpp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;Thread&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;54&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;  &lt;span class=&quot;n&quot;&gt;Dispatch&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;queue&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;com&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;xxx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;xxx&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;Thread&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;54&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;
+&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;   &lt;span class=&quot;n&quot;&gt;XXX&lt;/span&gt;  &lt;span class=&quot;mh&quot;&gt;0x00000001066d01c0&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Image&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;float&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;bool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;99549632&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;file&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cpp&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;259&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;   &lt;span class=&quot;n&quot;&gt;XXX&lt;/span&gt;  &lt;span class=&quot;mh&quot;&gt;0x00000001066d01b4&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Image&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;float&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;bool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;99549620&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;file&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cpp&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;259&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;值得高兴的是，这个线程并没有被干掉，也没有从闪退的方法中退出，它就停在空指针访问的地方。但令人崩溃的是，堆栈中竟然有两个闪退的方法调用。“A::run的代码中并不存在嵌套调用，怎么可能堆栈中会出现两次？”，老Y再次感到不解。从两个frame的地址上看，两者相差12个字节，上面正常闪退的最后一个frame的地址与frame 0相同，都是995449632，那么下面的99549620是什么？“代码上来看，两者是同一行，那便只能从汇编上进行分析了。”&lt;/p&gt;
+
+&lt;p&gt;老Y打开了专业的汇编分析工具&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Hopper Disassembler&lt;/code&gt;，然后对着&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;file.cpp:259&lt;/code&gt;开始分析，259行代码是：&lt;/p&gt;
+
+&lt;div class=&quot;language-cpp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;mi&quot;&gt;257&lt;/span&gt;   &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;j&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;j&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;j&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+&lt;span class=&quot;mi&quot;&gt;258&lt;/span&gt;       &lt;span class=&quot;n&quot;&gt;XLog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;run 5.2&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;mi&quot;&gt;259&lt;/span&gt;       &lt;span class=&quot;kt&quot;&gt;float&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;j&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;j&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;span class=&quot;mi&quot;&gt;260&lt;/span&gt;       &lt;span class=&quot;n&quot;&gt;XLog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;run 5.3&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;mi&quot;&gt;261&lt;/span&gt;       &lt;span class=&quot;kt&quot;&gt;float&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;j&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;j&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;span class=&quot;mi&quot;&gt;262&lt;/span&gt;       &lt;span class=&quot;n&quot;&gt;XLog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;run 5.4&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;mi&quot;&gt;263&lt;/span&gt;       &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;j&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;mi&quot;&gt;264&lt;/span&gt;       &lt;span class=&quot;n&quot;&gt;XLog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;run 5.5&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;mi&quot;&gt;265&lt;/span&gt;   &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;接着老Y用工具加载闪退版本的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.ipa&lt;/code&gt;包，再从闪退报告中找到偏移地址：&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;99549632&lt;/code&gt;，在工具中跳转到该偏移地址处，得到汇编：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/img/posts/6days-assembly.jpg&quot; alt=&quot;汇编&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;凭借增加的日志，老Y很方便便找到了C++代码与汇编之间的对应关系。可是，即使从汇编中也无法找到栈的调用关系，理解不了为何出现两个&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;run&lt;/code&gt;。老Y接着在技术群里面询问了该汇编代码及闪退报告的奇怪之处，暂时也没有人从这段代码中找出来问题。&lt;/p&gt;
+
+&lt;p&gt;此时，L那边也来了消息，他做了很多实验，最后发现即使没有任何测试模块，debug安装包也不会闪退，也就是说闪退根本不是被测试模块吞掉了，而是另有其它。连续的两个暂时性的结论让老Y的分析走进了死胡同，不知不觉他已经坐在电脑前接近10个小时。唯一令老Y感到高兴的是，他知道这个线程还活着，并且停留在本该闪退的位置，同时也排除了测试模块的影响。这下他的分析可以聚焦在本该闪退的线程处。&lt;/p&gt;
+
+&lt;p&gt;暂时也没有其它的思路，老Y在“阻审问题分析”的笔记中记录了分析的过程及当前的进展，然后决定周日休息一天，放空大脑，周一再继续。&lt;/p&gt;
+
+&lt;h2 id=&quot;第3天-信号&quot;&gt;第3天 信号&lt;/h2&gt;
+
+&lt;p&gt;经过周日充分的休息，老Y周一上班时感觉头脑很清醒，因为之前在笔记中做了详细的记录，他快速的回到了工作的状态，像是程序在函数调用时将调用前的状态压入堆栈，等函数调用完毕后又从堆栈中弹出一般。“突破口应该还是在这段堆栈之中，也许与闪退报告打过无数交道的框架同学可以给些建议”，于是老Y找到框架的同学老Q，描述了这个问题及现在的进展，老Q向老Y要了异常与正常闪退的报告。果然，老Y这一步走的非常正确，老Q很快便看出来了这份报告的异常之处。“这两份报告都是系统生成的，在生成的过程中可能会受到程序运行状态的影响，其寄存器等状态都不对，无法准确反应出闪退时刻的状态”，老Q继续补充道：“你需要找到应用自己生成的闪退报告。”&lt;/p&gt;
+
+&lt;p&gt;老Y听到这里很兴奋，终于他不用再纠着这段汇编不放，于是说：“我试过了让程序访问无效方法去获取堆栈，虽然应用闪退了，但是并没有在服务端捞到报告，只找到了这两份系统生成的报告。现在我并不需要程序真的崩掉，我只是想拿到程序当前的运行状态，知道那个线程在做什么。”老Y没有停下，继续道，“有没有可以让应用获取当前所有线程堆栈的方法？”&lt;/p&gt;
+
+&lt;p&gt;果然找对了人，老Q提供了一个API，可以像闪退时程序获取闪退报告一样去获取当前所有线程的运行状态，老Y赶紧将这一API加在了测试代码中。将之前的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;triggerCrash&lt;/code&gt;方法换成了这个API去获取报告，并将报告打印在日志中。10分钟后，老Y在打好的包中再次尝试，日志中的堆栈出现在老Y眼前的那一刻，他长舒一口气，果然之前的两个&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;run&lt;/code&gt;不正常，堆栈与release包闪退堆栈一致，只有一个&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;run&lt;/code&gt;，“这就可以解释为什么空指针访问之后的日志都没有打印出来，线程完全停在这一行，没能向下执行”，可是除了PC错误以外，老Y暂时想不出还有什么办法能让线程停下。&lt;/p&gt;
+
+&lt;p&gt;老Y又盯着报告看了很久，突然注意到报告的最上面，这种类型的异常都是段错误&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGSEGV&lt;/code&gt;，非法地址访问。突然老Y想起之前怀疑测试模块时的情形，当时怀疑某个测试模块拦截了闪退，就像在程序遇到闪退时，有时间来生成闪退报告一样。&lt;/p&gt;
+
+&lt;div class=&quot;language-cpp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;Exception&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;  &lt;span class=&quot;n&quot;&gt;SIGSEGV&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;Exception&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Codes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SEGV_MAPERR&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;at&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x0&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;Crashed&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Thread&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;  &lt;span class=&quot;mi&quot;&gt;54&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;“是否可能是哪个模块处理了&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGSEGV&lt;/code&gt;，但是没有处理好导致的？”老Y猜想，“先在demo中试一下，如果这个信号被注册，但是不处理，是否会有一样的现象？”，于是老Y构建了一个这样的demo，给&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGSEGV&lt;/code&gt;设置一个仅打印日志的空handler，观察会发生什么：&lt;/p&gt;
+
+&lt;div class=&quot;language-cpp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// ViewController.m&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sig&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;siginfo_t&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dont_care&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dont_care_either&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;NSLog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;sigsegv&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;// viewDidLoad&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// ...&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;sigaction&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sa&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;memset&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sa&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;sizeof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sa&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;sigemptyset&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sa&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sa_mask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;sa&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sa_flags&lt;/span&gt;     &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SA_NODEFER&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;sa&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sa_sigaction&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;sigaction&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;SIGSEGV&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sa&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; 
+&lt;span class=&quot;n&quot;&gt;NSLog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;current SIGSEGV handler address: %p&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sa&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sa_sigaction&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;sigaction&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;oldact&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;sigaction&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;SIGSEGV&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;oldact&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;NSLog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;current SIGSEGV handler address: %p&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;oldact&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sa_sigaction&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;NSLog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;before sigsegv&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;NSLog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;after sigsegv&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// ...&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;但当程序运行起来的那一刻，老Y再次懵掉，Xcode直接停留在于了&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*a = 0&lt;/code&gt;那里，&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;EXC_BAD_ACCESS&lt;/code&gt;错误，虽然日志上可以看出设置了handler，但并没有进入到handler的回调中。“奇怪，明明注册了signal，不可能不回调吧，难道是不能debug？”，老Y抱着试试的想法，直接点开了demo，奇迹发生了，程序竟然没闪退。这可能是分析这个问题几天时间以来，老Y最为震惊，也收获最大的一个意外。他赶紧打开了&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;控制台&lt;/code&gt;，去抓取当前demo的日志，发现不停的打印着&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sigsegv&lt;/code&gt;的日志，而且程序并未崩溃。&lt;/p&gt;
+
+&lt;p&gt;为了获取handler处理之前的日志，老Y杀了进程，又重新进入demo，闪退之前的日志出现在了&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;控制台&lt;/code&gt;中，随后不停的打印&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sigsegv&lt;/code&gt;，闪退之后的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;after sigsegv&lt;/code&gt;一直没有出现。老Y兴奋的想，“这不就和我们遇到的情况一样吗？这个线程显然没有向下执行，一直在打印handler的日志，但主程序还活着”。此时，老Y获取到了handler的地址，“能否通过这个地址找到对应的符号名？”老Y想，&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Hopper&lt;/code&gt;是可以通过地址获取到符号名，但当前的地址是程序加载后符号的地址，包含了二进制本身的偏移，比如任意一个闪退报告：&lt;/p&gt;
+
+&lt;div class=&quot;language-cpp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;                             &lt;span class=&quot;n&quot;&gt;symbol&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;address&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;image&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;address&lt;/span&gt;   &lt;span class=&quot;n&quot;&gt;offset&lt;/span&gt;
+                                    &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;               &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;          &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;
+&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;   &lt;span class=&quot;n&quot;&gt;libsystem_kernel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dylib&lt;/span&gt;  &lt;span class=&quot;mh&quot;&gt;0x00000001b2c74dd0&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x1b2c71000&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;15824&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;堆栈中有三个地址，分别是：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;symbol address: 程序运行时符号的地址&lt;/li&gt;
+  &lt;li&gt;image address: 对应image加载的首地址&lt;/li&gt;
+  &lt;li&gt;offset: 符号相对于image的偏移地址&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;而老Y在日志中获取到的是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;symbol address&lt;/code&gt;，还需要拿到&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;image address&lt;/code&gt;才能够分析出最终的符号。如何才能够获取到&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;image address&lt;/code&gt;？老Y已经驾轻就熟，在demo中又构建了一个无响应方法闪退，通过Xcode拿到了设备的闪退日志，这其中就有&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;image address&lt;/code&gt;，很容易就可以计算出&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;offset&lt;/code&gt;的值，并在&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Hopper&lt;/code&gt;找到符号的名称就是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;handler&lt;/code&gt;。但每次&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Hopper&lt;/code&gt;处理的速度太慢，老Y有点不耐烦，换了更快的命令：&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;atos &lt;span class=&quot;nt&quot;&gt;-arch&lt;/span&gt; arm64 &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; demo.app.dSYM/Contents/Resources/DWARF/demo &lt;span class=&quot;nt&quot;&gt;-l&lt;/span&gt; &amp;lt;image address&amp;gt;  &amp;lt;symbol address&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;“通过同样的方法可以在App中获取闪退之前注册的所有信号的handler”，老Y似乎看到了希望，因为每实验一次的耗费的时间太长，所以他仔细的设计了这个实验的方案，确保可以一次尝试得到所需要的信息：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;首先在程序启动之后打印一次，获取初始的handler&lt;/li&gt;
+  &lt;li&gt;刚进入业务打印，获取当前handler，防止被某个业务修改&lt;/li&gt;
+  &lt;li&gt;正常执行业务场景&lt;/li&gt;
+  &lt;li&gt;执行完成后打印handler，确认handler是否改变&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;因为是在压后台的时刻调用获取handler方法，所以共总会压后台三次。修改完demo，老Y提交了代码并开始打包，然后在心里记录好操作的步骤，分析是否还有遗漏之处。经过了焦急的等待，服务端终于构建好安装包，老Y赶紧下载并进行测试。他小心翼翼的按照上面设计好的步骤来操作，一切都如他所期望的那样，程序依然没有崩溃。在最后一次压完后之后，他将手机放在了一旁，打开&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;MacVim&lt;/code&gt;开始分析日志。&lt;/p&gt;
+
+&lt;p&gt;所有的信号都被打印了出来，但有三点出乎他的意料之外，首先每一次压后台的操作获取到的handler都完全一样，这说明在他选择的这几个时机，程序的handler都没有改变。&lt;/p&gt;
+
+&lt;p&gt;第二个奇怪之处是很多信号的handler地址是0x1。老Y仔细查看了文档，发现原来它是和后面的flags一起使用，代表&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIG_IGN&lt;/code&gt;，意味着忽略该信号，通过&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;signal(SIGHUP, SIG_IGN);&lt;/code&gt;API设置。&lt;/p&gt;
+
+&lt;p&gt;第三个奇怪的地方是只有&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGABRT&lt;/code&gt;注册了handler，&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGSEGV&lt;/code&gt;并没有handler。老Y又查了文档，了解到&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGABRT&lt;/code&gt;是在程序调用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;abort&lt;/code&gt;时才会抛出的信号。但空指针的访问一定是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGSEGV&lt;/code&gt;，前面的堆栈报告中也证实了这一结论。“难道&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGABRT&lt;/code&gt;也能够处理非法地址访问的信号吗？”老Y有点不敢相信。&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;SIGHUP handler address: 0x1, mask:0, flags:2
+SIGINT handler address: 0x1, mask:0, flags:2
+SIGQUIT handler address: 0x1, mask:0, flags:2
+SIGILL handler address: 0x0, mask:0, flags:0
+SIGTRAP handler address: 0x0, mask:0, flags:0
+SIGABRT handler address: 0x1013597ac, mask:0, flags:65
+SIGSEGV handler address: 0x0, mask:0, flags:0
+...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;“先看看&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGABRT&lt;/code&gt;的handler是哪个模块注册的吧”，老Y想，于是他通过前面的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;atos&lt;/code&gt;命令获得了这个handler的符号名：&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;plcrash_signal_handler&lt;/code&gt;，接着在所有库中查了一次，找到它属于&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;PLCrashReporter&lt;/code&gt;模块，这是一个开源的闪退报告库。“这个handler做了些什么？难道它还能处理&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGSEGV&lt;/code&gt;吗？”&lt;/p&gt;
+
+&lt;p&gt;时间已经是深夜十点半，老Y的眼睛感觉有些干涩，一整天的注意力高度集中让身体有些吃不消。现在他已经不太想看&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;plcrash_signal_handler&lt;/code&gt;的源码，当前的精神状态下完全看不进去，只是随便在Google上搜了这个方法，找到一篇&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;PLCrashReporter&lt;/code&gt;的&lt;a href=&quot;http://www.zoomfeng.com/blog/plcrashreporter-1.html&quot;&gt;源码分析文章&lt;/a&gt; ，简单浏览了一遍，但文章太长，他先记了下来，打算明天再看。&lt;/p&gt;
+
+&lt;p&gt;“从日志来看，&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGSEGV&lt;/code&gt;并没有注册handler，只有&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGABRT&lt;/code&gt;有一个奇怪的handler，难道是就是它导致的闪退被吞掉？”老Y看了看时间，发觉已经很晚，便想先以最快速的方式验证自己的猜想，“先试试如果将这个handler设置成空，是否就一定能够必现闪退了”。他将&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;signal(SIGABRT, SIG_DFL)&lt;/code&gt;加在了进入业务之后，“这样就可以在执行业务的代码之前将handler设置为默认值，如果还是不闪退，则表明不handler的问题。但如果闪退了，则表示是这个handler的影响。”老Y对自己的推理感觉很满意，再次提交代码并进行打包，接着他摘了眼镜，闭上眼睛休息，想着实验的可能性。“已经被这个问题折腾了好几天，这下是不是可以找到突破口了？”，老Y满心期待。&lt;/p&gt;
+
+&lt;p&gt;十分钟过后，安装包构建完成的通知惊醒了老Y，短短的时间他竟然睡着了，他戴好眼镜，开始尝试这个安装包，果然如他所料，App崩溃了。“太好了，这便足以证明是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGABRT&lt;/code&gt; handler的问题，接下来就只需要顺着这个handler做了去分析便能够找到问题所在”，老Y很激动，他将这一进展记录在笔记中，准备合上电脑之后，他突然像想起了什么，又打开电脑，补充了一句：“但这里还有一个问题，&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGABRT&lt;/code&gt;为什么还会处理&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGSEGV&lt;/code&gt;的信号？明天继续分析”。&lt;/p&gt;
+
+&lt;p&gt;写完后，老Y带着电脑离开了公司，此时已经接近12点。老Y开着车行驶在滨海大道上，虽然觉得有些疲惫，但因为三天来的分析终于有了进展，所以内心显得有些兴奋。他不停的想象着明天可能会有什么新的发现，“估计明天就能解决了吧”，老Y想。路上的车依然很多，不停有看似滴滴快车的电动车迅速从旁边驶过，广播中响起FM 104.9的音乐，午夜的音乐广播有种特殊的魔力，像是周围一切都暗了下来，为的便是有人对着耳边低声吟唱一般。不消一会便到了，老Y打开门，一盏温暖的夜灯亮着。&lt;/p&gt;
+
+&lt;h2 id=&quot;第4天-提速&quot;&gt;第4天 提速&lt;/h2&gt;
+
+&lt;p&gt;前一天的发现让老Y信心满满，一大早来到公司就开始了接下来的实验。“昨天已经确定了是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGABRT&lt;/code&gt; handler还原成默认值之后就正常，但为什么它会处理本该是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGSEGV&lt;/code&gt;的信号？”带着这个问题，老Y开始在demo中做起了实验，在前面的demo中不再注册&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGSEGV&lt;/code&gt;，取而代之的是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGABRT&lt;/code&gt;，其它没有任何变化。“如果程序依然不闪退，则表示空指针访问是可以被&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGABRT&lt;/code&gt; catch住”，虽然不太相信，但老Y期望是这样的结果。&lt;/p&gt;
+
+&lt;p&gt;可是等到程序运行时，结果却与他所想的完全不同，不管跑多少次都会发生空指针访问的闪退。又看了看前一天打印出的日志，“难道除了信号本身，还有另外一个参数flags是65有关？”，老Y不解的猜到，他又将flags设置成65。可依然得到的是同样的结果。这个结果让老Y喜忧参半，喜的是空指针访问就应该是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGSEGV&lt;/code&gt;来处理，而不是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGABRT&lt;/code&gt;。忧的是他还要继续寻找原因，“为什么还原了&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGABRT&lt;/code&gt;就会正常？”&lt;/p&gt;
+
+&lt;p&gt;老Y还得继续尝试分析原因，然后谨慎的在App中做实验，因为每次尝试都需要十分钟以上的时间，这让老Y感到效率太低，也是过去几天影响分析速度的一个很重要的原因。在刚刚的demo实验失败之后，他突然有了一个想法，足以大大加速这之后的分析过程。&lt;/p&gt;
+
+&lt;p&gt;因为在demo中测试信号时，他发现只有直接运行时，handler才会被处理，一旦连接Xcode联调，程序会直接挂在空指针的访问处，handler也无法被调用，老Y突然醒悟到：“之前本地调试时一直必现闪退，所以才在服务端打包。但会不会并不是本地与服务端打包的差别导致问题只在服务端的包中出现，而是由于使用Xcode联调？如果用本地打包，不联调，直接运行，会不会也能够重现出问题？”想到这点，老Y立马开始了尝试，首先它直接用Xcode调试，果然，程序挂在了空指针访问处。接着他停止了联调，直接打开程序，进入业务的页面。“会不会不闪退？”老Y竟然有些紧张，拿着手机的掌心微微出了些汗。&lt;/p&gt;
+
+&lt;p&gt;他尝试了一遍，奇迹般的，闪退并未出现。为以防是程序意外没有走到空指针的访问处，他又一次进行了尝试，依然没有闪退。随后老Y又去分析了一遍日志，确认了空指针访问处的代码的确被执行了，也通过压后台，得到了当时的堆栈，线程停留在空指针的那一行。“这样便确定了即使在本地也可以复现出问题，与服务端打包无关”，老Y为这次意外尝试得出的结论显得极其兴奋，因为所有的猜想与尝试都可以快速得到验证，而不需要经过服务端打包漫长的流程。&lt;/p&gt;
+
+&lt;p&gt;“从demo中看，只要是空指针访问都会产生&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGSEGV&lt;/code&gt;信号，那是否同样可以直接构建这一闪退，而无需通过业务的复杂入口？”，为了进一步简化复现流程，老Y打算构建新的场景。在应用启动之后，他打算根据固定的事件来触发不同的操作，目前需要的操作包含三个：&lt;/p&gt;
+
+
+
+&lt;p&gt;他同时重写了应用的首页，添加三个按钮分别触发这三个操作，如此一来整体测试的流程大大简化，验证一个猜想也可以控制在一分钟以内。在构建了这样一个简化版的操作之后，老Y在笔记中写下了他的三个验证用例：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;程序启动后，先触发空指针访问，此时应该不会闪退；接着打印堆栈，可以确定线程卡在空指针访问处；&lt;/li&gt;
+  &lt;li&gt;从日志中找到&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGABRT&lt;/code&gt;信号的handler，分析是否依然是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;plcrash_reporter_handler&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;重启一次应用，先恢复&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGABRT&lt;/code&gt;信号，再次触发空指针操作，此时应该闪退&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Xcode刷完应用后，老Y便开始了测试，用例1和3都如他所料，但第2个用例无法验证，因为&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;atos&lt;/code&gt;的命令需要dsym文件，但刚刚编译时dsym的配置未打开。老Y重新设置好编译选项后，再次安装好应用，继续上面的用例，正当老Y满怀期望之时，意外发生了。第一个用例失败，空指针访问竟然立刻发生了闪退，他有些不敢相信，再次打开应用执行了一遍，依然闪退，而且堆栈也指向空指针的访问处。“为什么会这样？dsym应该不会影响结果，难道是覆盖安装影响？”，老Y将信将疑，删除了旧包，重新进行安装、测试，没想到三个用例成功的通过了。&lt;/p&gt;
+
+&lt;p&gt;“如果猜想是正确的话，修改代码，再次覆盖安装，用例1应该会失败”，老Y为了证明这个猜想，增加了一行日志，覆盖安装进行了验证，结果如他所料，覆盖安装后会导致闪退行为正常，handler并不会捕获闪退。&lt;/p&gt;
+
+&lt;p&gt;这个意外的发现让情况似乎又变的更加复杂了些，老Y停下来整理了目前得到的信息，“现象是release包空指针访问闪退，但debug包空指针访问不闪退，可以确定的是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGABRT&lt;/code&gt;信号被注册，它捕获了本应是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGSEGV&lt;/code&gt;处理的空指针访问，这里还有些奇怪，刚刚在demo中也验证了&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGABRT&lt;/code&gt;无法捕捉空指针访问，为什么App中就可以？如果将&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGABRT&lt;/code&gt;的handler还原成默认，则闪退立刻会出现。信号的handler是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;plcrash_reporter_handler&lt;/code&gt;，是由一个闪退报告的第三方开源库注册。另外一个意外获取的信息是首次安装运行时闪退才不会出现，但覆盖安装时会正常闪退。”&lt;/p&gt;
+
+&lt;p&gt;待老Y整理完所有的信息之后，他微微感到有些头痛，不停出现的奇怪现象让问题看起来越变越复杂，一个意外的出现可能随时就会推翻他之前得到的结论，但好在一个意外的发现也让得以本地验证，从而加速了问题分析的进程。这一天其它方面的事情也不断找上来，老Y不停的被打断，让他无法全身心的分析问题，来回之间的状态切换就像程序有资源消耗一样，也消耗着老Y的精力，在疲惫中老Y结束了一天的工作。&lt;/p&gt;
+
+&lt;h2 id=&quot;第5天-浮现&quot;&gt;第5天 浮现&lt;/h2&gt;
+
+&lt;p&gt;老Y本想花时间去仔细分析&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;plcrash_reporter_handler&lt;/code&gt;的逻辑，可其源码的逻辑看似很复杂，于是他想先以更快的方式定位到原因。“既然是这个handler的影响，那么先看看这个handler具体是谁在什么时间注册的，如果关掉它是不是闪退就一定会出现？”基于这个想法，老Y先分析了App中&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;main&lt;/code&gt;方法所在的Portal模块，终于在一个&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;load&lt;/code&gt;方法中，找到了名为&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;enable_crash_reporter_service&lt;/code&gt;的方法，看起来它便是启动整个闪退报告服务的地方。&lt;/p&gt;
+
+&lt;p&gt;老Y尝试将这个方法注释掉，看是否闪退还会被捕获。如他所料，当闪退报告服务关闭之后，空指针立刻触发闪退。为以防万一，他再次取消该注释，重新运行，闪退没有发生，证明该方法调用确实是引起问题的原因。在验证了debug环境之后，老Y又切到release，不管闪退报告服务是否打开，空指针一定会造成闪退。“由以上实验可以得出结论”，老Y在笔记中记录到，“debug环境下的闪退服务导致了空指针访问闪退被吞掉，但release不受影响”。“debug与release有什么区别，即使是debug包，Portal所依赖的所有模块已经是release版本，只有Portal本身不同，同时还有link的参数有区别”，老Y又开始了他的分析。&lt;/p&gt;
+
+&lt;p&gt;在老Y尝试打开闪退报告服务时，他意外的发现了另一个现象，如果是debug包首次安装，第一次运行时空指针访问时闪退不会出现，但是杀了进程第二次运行时，空指针访问竟然在接近10秒之后出现了闪退。这个意外的收获让老Y对之前的覆盖安装问题有了全新的解释，“难道这就解释了为什么覆盖安装时空指针访问会闪退的原因了？”，老Y接着推测，“其实并不是与覆盖安装有关，而是首次运行与非首次运行的缘故”，“一定是应用在首次运行时写入了某个配置，第二次运行可以读到该配置所以没有走异常的逻辑，导致现象不同。之前认为debug包下闪退会被吞掉其实还有一个限制条件，即首次安装运行时才会发生”，老Y为了验证这一推论，他又找了测试同学帮忙尝试线上业务是否也是同样的现象，即第一次不会闪退，但杀进程后再次运行会正常闪退。不一会，测试的结论也同步了过来，果然如老Y所料，debug包不会吞掉所有的闪退，仅仅是首次运行应用时才会发生。于是老Y顺着这个思路，结合前面得到的debug与release的差别，开始分析Portal的代码。&lt;/p&gt;
+
+&lt;p&gt;因为Portal的代码并不多，很快老Y便发现了一个可疑之处，有一段被&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DEBUG&lt;/code&gt;宏所包围的代码逻辑，用于清理缓存目录。本着快速排查问题的原则，老Y并不急于去分析这段代码，而是直接注释掉然后运行。奇迹发生了，debug包不再吞掉空指针的访问闪退。老Y感到十分兴奋，这下已经可以确定是由于闪退报告服务与缓存清理逻辑之间存在问题，可能是清理缓存导致了闪退报告服务的异常。&lt;/p&gt;
+
+&lt;p&gt;确定了清理缓存的逻辑存在问题之后，老Y开始仔细分析这段代码，想查出具体是哪个目录被清理掉导致的问题。经过几次试验，老Y定位到了&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Library/Caches&lt;/code&gt;目录。他又对比了清理缓存前后目录中文件的具体差别，发现在清理之前有一个闪退报告的缓存目录。“这下可以确定问题所在，由于debug环境下闪退报告的缓存目录被清理，导致闪退报告服务出现问题，所以闪退被吞掉。但第二次运行时，由于&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DEBUG&lt;/code&gt;宏之间的清理逻辑并不会被执行，因此后续的闪退并不会被吞掉。”&lt;/p&gt;
+
+&lt;p&gt;老Y接着分析，“闪退报告的目录应该是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;load&lt;/code&gt;方法中被闪退报告服务所创建，它早于&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;main&lt;/code&gt;函数的执行，可在&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;main&lt;/code&gt;函数中缓存目录又意外被清理，如果将清理逻辑提前到闪退报告服务启动之前是不是就正常了？”，老Y进行了尝试，一切如他所料，这种情况下所有的闪退均能够正常出现。老Y还发现，除了首次安装以外，在切换线上与线下环境时，也会触发清理缓存的逻辑，如此一来，很有可能许多业务在回归验证时，会让本该出现的闪退被吞掉，将一些问题带到线上？认识到问题的严重性，他赶紧联系了Portal模块的负责同学，并告知现在分析出来的结论，由他接手剩余的工作。&lt;/p&gt;
+
+&lt;p&gt;至此，老Y已经定位到是由于闪退报告服务的缓存目录被清理导致了闪退被吞掉，看起来已经可以结出结论，但现在依然有两个问题没有得到合理的解释，这让老Y并不愿到此为止。&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;首先是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGABRT&lt;/code&gt;为什么会捕获空指针异常&lt;/li&gt;
+  &lt;li&gt;为什么闪退报告的缓存目录被清理了之后闪退就会被吞掉？&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;此时已经是深夜11点，老Y感到已经离“真相”不远，“估计明天这个问题就会解决了吧”，老Y在笔记上记录了当前的进展及第二天需要从哪里开始查起的思路，便合上电脑离开了公司。&lt;/p&gt;
+
+&lt;h2 id=&quot;第6天-真相&quot;&gt;第6天 真相&lt;/h2&gt;
+
+&lt;p&gt;经过前面几天的分析，还剩下两个问题待解决，一是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGABRT&lt;/code&gt;为什么会捕获空指针访问异常。二是缓存目录被清理之后为什么会导致闪退报告服务异常并吞掉闪退。老Y一大早赶在其它同事过来之前就来到了公司，这样他就可以在正式工作开始之前快速解决剩余的问题，他已经花了太长的时间在这个问题上。&lt;/p&gt;
+
+&lt;p&gt;这两个问题都需要从&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;PLCrashReporter&lt;/code&gt;的&lt;a href=&quot;https://github.com/microsoft/plcrashreporter/&quot;&gt;源码&lt;/a&gt;进行分析，现在该代码库由微软维护，但老Y没有立刻去分析源代码，而是从网上的文章入手，因为这能够帮助他以最快的速度找到切入点。这两篇文章详细的分析了&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;PLCrashReporter&lt;/code&gt;的源码：&lt;a href=&quot;http://www.zoomfeng.com/blog/plcrashreporter-1.html&quot;&gt;PLCrashreporter源码分析其一&lt;/a&gt;及&lt;a href=&quot;http://www.zoomfeng.com/blog/plcrashreporter-2.html&quot;&gt;PLCrashreporter源码分析其二&lt;/a&gt;，它们很好的解释了&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;plcrash_signal_handler&lt;/code&gt;的工作原理，如此一来，前一天遗留的第一个问题得到了解决。&lt;/p&gt;
+
+&lt;p&gt;原来有两种类型的异常，平常在使用Xcode联调时遇到空指针访问会收到&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;EXC_BAD_ACCESS&lt;/code&gt;的错误，而这便是Mach层抛出的异常，这些异常会被host层转成对应的BSD信号，如空指针访问异常被转换成BSD标准的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGSEGV&lt;/code&gt;信号抛到出错的线程。前面所说的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGSEGV&lt;/code&gt;及&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGABRT&lt;/code&gt;都是BSD类型的信号。而在&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;PLCrashReporter&lt;/code&gt;中，处理的便是Mach类型的异常。但同时，它还注册了BSD的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGABRT&lt;/code&gt;信号，其handler为&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;plcrash_signal_handler&lt;/code&gt;，用于捕获最终的闪退异常，具体原因可以参考下面的源码注释：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/img/posts/6days-mach.png&quot; alt=&quot;SIGABRT&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;“如此一来，便可以解释为什么App没有注册&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGSEGV&lt;/code&gt;却能够收到空指针访问类型的错误了，原来闪退报告模块已经从Mach层捕获了异常”，老Y喃喃道，“这个问题解决之后，接下来便只需分析为什么缓存目录被删除之后空指针访问异常被吞掉”。老Y直接clone了&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;PLCrashReporter&lt;/code&gt;的源码，想看看最新的版本中这个问题是否已经处理。于是他模拟之前遇到的情况，在demo中启动闪退报告服务之后，立刻删除了缓存目录，运行起来之后果然空指针的访问无法引起闪退。“看起来这不是一个常见的case，否则这么久以来，怎么可能问题还没有修复”。&lt;/p&gt;
+
+&lt;p&gt;“因为是缓存目录被清理导致的问题，所以优先需要分析使用了该目录的代码”，老Y便开始搜索整个repo中使用该目录的代码，很快，他便找出一处&lt;a href=&quot;https://github.com/microsoft/plcrashreporter/blob/e9e257e65624cac025e6012315d2265ef2c8e1d6/Source/PLCrashReporter.m#L298&quot;&gt;可疑代码&lt;/a&gt;，如下图所示：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/img/posts/6days-bug.png&quot; alt=&quot;PLCrashReporter的bug&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;260行处的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mach_exception_callback&lt;/code&gt;是PLCrashReporter处理Mach异常的回调函数，296行调用了一个函数&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mach_exception_callback_live_cb&lt;/code&gt;，这个函数会写闪退报告，如257行所示。但由于目标路径不存在，所以一定会写失败，从而296行的if条件命中，于是执行297与298处代码，问题就出了这里。&lt;/p&gt;
+
+&lt;p&gt;向上可以看到260行的返回值类型是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;kern_return_t&lt;/code&gt;，它是一个&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;int&lt;/code&gt;类型的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;typedef&lt;/code&gt;，但是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;KERN_SUCCESS&lt;/code&gt;与&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;KERN_FAILURE&lt;/code&gt;等定义如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/img/posts/6days-kern-success.jpg&quot; alt=&quot;KERN_SUCCESS&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;KERN_SUCCESS&lt;/code&gt;的值是0，而298处返回了&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;false&lt;/code&gt;，它的值刚好是0，所以本应该是认为失败的场景，却因为返回false，而被当成了&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;KERN_SUCCESS&lt;/code&gt;，误认为是成功，程序逻辑出现异常，这应该是开发者笔误写错了返回值类型导致的问题。“为什么返回了错误的类型就会出现空指针访问被吞掉呢？”老Y继续刨根问底。他找到这个callback的声明处，发现注释中赫然写着：“如果返回了&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;KERN_SUCCESS&lt;/code&gt;，则线程会恢复执行”。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/img/posts/6days-plcrash.jpg&quot; alt=&quot;mach_exception_callback&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;“原来是这样，因为错误的返回值，导致了空指针的访问线程被恢复执行，立刻再次触发Mach异常，如此陷入了死循环”，老Y想，为了验证这一想法，他在298处增加了一段日志，运行之后如他所料，不断的在打印这处新增加的日志，由此也证明了他刚刚的猜想。&lt;/p&gt;
+
+&lt;p&gt;为了防止后续有人再遇到这个问题，老Y向&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;PLCrashReporter&lt;/code&gt;的github仓库发起了一个&lt;a href=&quot;https://github.com/microsoft/plcrashreporter/pull/159&quot;&gt;MR&lt;/a&gt;。至此，由一个阻塞提审问题引发的耗时长达六天的问题追踪终于告一段落，老Y长长松了一口气，开如准备复盘文档，接下来估计还有一阵枪林弹雨。&lt;/p&gt;
+
+&lt;h2 id=&quot;后记&quot;&gt;后记&lt;/h2&gt;
+
+&lt;p&gt;老Y与这个问题斗争六天的故事也至此告一段落，后续的复盘会议中依然发现还存在其它的问题，老Y又花了近一天的时间分析并找到解释，但这篇故事已经够长且显得啰嗦，后面的事情有机会再聊。&lt;/p&gt;
+
+&lt;p&gt;从最终的修复方案上来看，技术上的问题似乎非常简单：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;首先是debug环境下清理缓存的逻辑需要优化，不能够在初始化闪退报告之后又清理其创建的缓存目录&lt;/li&gt;
+  &lt;li&gt;然后是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;PLCrashReporter&lt;/code&gt;在写入闪退报告失败后的&lt;a href=&quot;https://github.com/microsoft/plcrashreporter/pull/159&quot;&gt;bug&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;但就是这样一个简单的问题，为什么耗时如此之久才得出结论，导致复盘的时间一推再推，难点究竟在哪里，老Y在复盘时也进行了总结，主要包含以下几点：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;App复杂，依赖数百个模块，很难快速定位问题出自何处&lt;/li&gt;
+  &lt;li&gt;开始几天只能在后台打包测试，Xcode无法调试，验证猜想的周期太长&lt;/li&gt;
+  &lt;li&gt;后台debug包与release包相比依赖了一些测试模块，对推理过程造成干扰&lt;/li&gt;
+  &lt;li&gt;测试过程中的出现一些奇怪现象：覆盖安装不出现、第一次不闪退第二次运行正常、不注册&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SIGSEGV&lt;/code&gt;也异常等也给推理造成了困难&lt;/li&gt;
+  &lt;li&gt;。。。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;正是由于以上一些因素组合起来，才导致了问题复杂度提升，让整个追查过程走了很多弯路。中间出现的异常现象在初次发现时，也曾被老Y当成是异常操作忽略过，并没有当成一回事，但最后发现所有测试中发现的所谓“奇怪”或偶然现象都不是偶然，而是某种条件下由bug引起的必然，都不应该被忽略，它们之中也许就藏着解决问题的关键性钥匙。在程序的世界里，任何问题只要能找出复现路径，问题就能得以复现。整个过程让老Y想起曾着迷过的侦探小说，解bug的过程就是破案的过程，任何蛛丝马迹都可能成为破案的关键。侦探根据获取的线索进行大胆猜想，并小心求证，一步步还原真相。&lt;/p&gt;
+
+&lt;p&gt;除了技术上的bug以外，该问题也同时暴露出沟通及开发流程中的一些问题，所以老Y也觉得在遇到这类问题时流程中有复盘这一环是个特别好的机制，开发、测试以不同的视角，对遇到的每个问题抛根问底，不会放过任何一个可疑的点，不存在无法解释的问题，任何问题都需要给出合理的解释，这样的复盘才不至于是为了流程而走个过场，才能保证如此大规模的App每次更新都维持最高的质量。出现问题并不可怕，可怕的是下次类似的问题一而再再而三的出现，这便是复盘的意义所在吧。&lt;/p&gt;
+
+&lt;p&gt;像这样的问题，作为一个程序员可能经常会遇到，尤其在如此大规模的系统中。程序员与bug缠斗的故事每天都在上演，而这六天，是老Y的故事。&lt;/p&gt;
+
+&lt;p&gt;(全文完)&lt;/p&gt;
+
+&lt;p&gt;feihu&lt;/p&gt;
+
+&lt;p&gt;2021.01.07 于 Shenzhen&lt;/p&gt;
+
+
+&lt;hr/&gt;
+
+
+
+
+
+&lt;/section&gt;
+&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
 <guid>3f70160b55293dea985538977822bfc4</guid>
