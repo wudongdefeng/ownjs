@@ -67,15 +67,728 @@
             &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
+<guid>b8098f7a4e62d5eaf5f99730867ae331</guid>
+<title>用 Pandas 计算日志中事件的时间间隔</title>
+<link>https://toutiao.io/k/o73tkeh</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;p&gt;&lt;img src=&quot;https://img.toutiao.io/attachment/18c599fbfd924453b429eaabacf6dc21/w600&quot; alt=&quot;file&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;通常我们需要对日志数据清洗出一些事件间隔的特征，给数据分析或者机器学习建模提供数据支持。&lt;/p&gt;
+
+&lt;p&gt;假设我们有一些事件日志，这些日志记录了用户在App中事件类型、时间戳、用户ID等其他一些数据，像下面这样:&lt;/p&gt;
+
+&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;data = &quot;&quot;&quot;user_id,event_time,event_type
+100003,2021-01-18 01:06:00,onLaunch
+100001,2021-01-19 08:30:00,onLaunch
+100003,2021-01-20 02:39:00,onLaunch
+100003,2021-01-20 08:15:00,onLaunch
+100002,2021-01-20 10:05:00,onLaunch
+100001,2021-01-20 14:40:00,onLaunch
+100001,2021-01-20 18:05:00,onLaunch
+100002,2021-01-21 21:11:00,onLaunch
+100003,2021-01-22 10:05:00,onLaunch
+100001,2021-01-23 09:18:00,onLaunch
+100003,2021-01-23 17:35:00,onLaunch
+100001,2021-01-25 16:49:00,onLaunch
+100003,2021-01-26 12:13:00,onLaunch
+100001,2021-01-27 19:56:00,onLaunch&quot;&quot;&quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;我们把日志读取到 Pandas 的内存表 DataFrame 中．真实环境可以通过 &lt;code&gt;read_sql&lt;/code&gt; 或者 &lt;code&gt;read_csv&lt;/code&gt; 等方法读取数据源&lt;/p&gt;
+
+&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;import pandas as pd
+ldata = [x.split(&#x27;,&#x27;) for x in data.split(&#x27;\n&#x27;)]
+df = pd.DataFrame(ldata[1:], columns=ldata[0])
+df[&#x27;event_time&#x27;] =  pd.to_datetime(df[&#x27;event_time&#x27;])
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;table border=&quot;1&quot; class=&quot;dataframe&quot;&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th/&gt;
+      &lt;th&gt;user_id&lt;/th&gt;
+      &lt;th&gt;event_time&lt;/th&gt;
+      &lt;th&gt;event_type&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;100003&lt;/td&gt;
+      &lt;td&gt;2021-01-18 01:06:00&lt;/td&gt;
+      &lt;td&gt;onLaunch&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;100001&lt;/td&gt;
+      &lt;td&gt;2021-01-19 08:30:00&lt;/td&gt;
+      &lt;td&gt;onLaunch&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;100003&lt;/td&gt;
+      &lt;td&gt;2021-01-20 02:39:00&lt;/td&gt;
+      &lt;td&gt;onLaunch&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;100003&lt;/td&gt;
+      &lt;td&gt;2021-01-20 08:15:00&lt;/td&gt;
+      &lt;td&gt;onLaunch&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;100002&lt;/td&gt;
+      &lt;td&gt;2021-01-20 10:05:00&lt;/td&gt;
+      &lt;td&gt;onLaunch&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;我们希望提取出每个用户的启动次数（&lt;code&gt;lifetime_launchs&lt;/code&gt;）、昨日启动次数(&lt;code&gt;yesterday_launchs&lt;/code&gt;) 以及距离上次登录的天数 (&lt;code&gt;days_since_last_launch&lt;/code&gt;)。&lt;/p&gt;
+
+&lt;p&gt;使用 pandas，我们按照用户和日期进行汇总，得到每个用户每天的启动次数。&lt;/p&gt;
+
+&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;user_launchs = (df.set_index(&#x27;event_time&#x27;)
+               .groupby([&#x27;user_id&#x27;, pd.Grouper(freq=&#x27;D&#x27;)])
+               .size()
+               .rename(&#x27;launchs&#x27;))
+user_launchs
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;user_id  event_time
+100001   2021-01-19    1
+         2021-01-20    2
+         2021-01-23    1
+         2021-01-25    1
+         2021-01-27    1
+100002   2021-01-20    1
+         2021-01-21    1
+100003   2021-01-18    1
+         2021-01-20    2
+         2021-01-22    1
+         2021-01-23    1
+         2021-01-26    1
+Name: launchs, dtype: int64
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;可以看出，这里只有有启动的日志，日期不连续，为了提取出上面的特征，我们需要填充没有启动的日期.
+把用户放到一个连续的时间轴上.&lt;/p&gt;
+
+&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;# 创建一个日期范围作为 DataFrame 的索引
+dates = pd.date_range(df.event_time.min().date(),
+                      df.event_time.max().date(),
+                      freq=&#x27;1D&#x27;)
+
+# 取出去重的用户ID
+users = df[&#x27;user_id&#x27;].unique()
+
+
+# 通过用户和日期交叉创建出一个 MultiIndex
+idx = pd.MultiIndex.from_product([users, dates], names=[&#x27;user_id&#x27;, &#x27;event_time&#x27;])
+
+# 索引建索引
+user_launchs = user_launchs.reindex(idx)
+
+user_launchs.head()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;user_id  event_time
+100003   2021-01-18    1.0
+         2021-01-19    NaN
+         2021-01-20    2.0
+         2021-01-21    NaN
+         2021-01-22    1.0
+Name: launchs, dtype: float64
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这样我们构建了一个连续的时间序列．现在可以提取我们需要的特征了.&lt;/p&gt;
+
+&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;# 为空的数据行把空填充0,并转成 DataFrame
+user_launchs = user_launchs.fillna(0).to_frame()
+user_launchs.head()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;table border=&quot;1&quot; class=&quot;dataframe&quot;&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th&gt;launchs&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;user_id&lt;/th&gt;
+      &lt;th&gt;event_time&lt;/th&gt;
+      &lt;th/&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th rowspan=&quot;5&quot; valign=&quot;top&quot;&gt;100003&lt;/th&gt;
+      &lt;th&gt;2021-01-18&lt;/th&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-19&lt;/th&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-20&lt;/th&gt;
+      &lt;td&gt;2.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-21&lt;/th&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-22&lt;/th&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;通过&lt;code&gt;shift&lt;/code&gt;方法向下移动一行作为下一行的前一天，给 user_launchs 增加 &lt;code&gt;launchs_yesterday&lt;/code&gt; 字段&lt;/p&gt;
+
+&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;user_launchs[&#x27;launchs_yesterday&#x27;] = user_launchs.groupby(level=&#x27;user_id&#x27;)[&#x27;launchs&#x27;].shift(1)
+user_launchs.head()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;table border=&quot;1&quot; class=&quot;dataframe&quot;&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th&gt;launchs&lt;/th&gt;
+      &lt;th&gt;launchs_yesterday&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;user_id&lt;/th&gt;
+      &lt;th&gt;event_time&lt;/th&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th rowspan=&quot;5&quot; valign=&quot;top&quot;&gt;100003&lt;/th&gt;
+      &lt;th&gt;2021-01-18&lt;/th&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-19&lt;/th&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-20&lt;/th&gt;
+      &lt;td&gt;2.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-21&lt;/th&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;2.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-22&lt;/th&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;滚动的累计出当前日期下每个用户的总启动次数，给 user_launchs 增加 &lt;code&gt;lifetime_launchs&lt;/code&gt; 字段．&lt;/p&gt;
+
+&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;user_launchs[&#x27;lifetime_launchs&#x27;] = (user_launchs
+                                  .groupby(level=&#x27;user_id&#x27;)
+                                  .launchs.cumsum()
+                                  .groupby(level=&#x27;user_id&#x27;).shift(1))
+user_launchs.head()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;table border=&quot;1&quot; class=&quot;dataframe&quot;&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th&gt;launchs&lt;/th&gt;
+      &lt;th&gt;launchs_yesterday&lt;/th&gt;
+      &lt;th&gt;lifetime_launchs&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;user_id&lt;/th&gt;
+      &lt;th&gt;event_time&lt;/th&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th rowspan=&quot;5&quot; valign=&quot;top&quot;&gt;100003&lt;/th&gt;
+      &lt;th&gt;2021-01-18&lt;/th&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-19&lt;/th&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-20&lt;/th&gt;
+      &lt;td&gt;2.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-21&lt;/th&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;2.0&lt;/td&gt;
+      &lt;td&gt;3.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-22&lt;/th&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;3.0&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;user_launchs.groupby(level=&#x27;user_id&#x27;).cumsum().groupby([&#x27;user_id&#x27;, &#x27;launchs&#x27;]).cumcount()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;user_id  event_time
+100003   2021-01-18    0
+         2021-01-19    1
+         2021-01-20    0
+         2021-01-21    1
+         2021-01-22    0
+         2021-01-23    0
+         2021-01-24    1
+         2021-01-25    2
+         2021-01-26    0
+         2021-01-27    1
+100001   2021-01-18    0
+         2021-01-19    0
+         2021-01-20    0
+         2021-01-21    1
+         2021-01-22    2
+         2021-01-23    0
+         2021-01-24    1
+         2021-01-25    0
+         2021-01-26    1
+         2021-01-27    0
+100002   2021-01-18    0
+         2021-01-19    1
+         2021-01-20    0
+         2021-01-21    0
+         2021-01-22    1
+         2021-01-23    2
+         2021-01-24    3
+         2021-01-25    4
+         2021-01-26    5
+         2021-01-27    6
+dtype: int64
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;距离上次登录的天数 (&lt;code&gt;days_since_last_launch&lt;/code&gt;)&lt;/p&gt;
+
+&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;user_launchs[&#x27;days_since_last_launch&#x27;] = (user_launchs
+                                        .groupby(level=&#x27;user_id&#x27;)
+                                        .cumsum()
+                                        .groupby([&#x27;user_id&#x27;, &#x27;launchs&#x27;])
+                                        .cumcount()
+                                        .groupby(level=&#x27;user_id&#x27;).shift(1))
+user_launchs.head()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;table border=&quot;1&quot; class=&quot;dataframe&quot;&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th&gt;launchs&lt;/th&gt;
+      &lt;th&gt;launchs_yesterday&lt;/th&gt;
+      &lt;th&gt;lifetime_launchs&lt;/th&gt;
+      &lt;th&gt;days_since_last_launch&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;user_id&lt;/th&gt;
+      &lt;th&gt;event_time&lt;/th&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th rowspan=&quot;5&quot; valign=&quot;top&quot;&gt;100003&lt;/th&gt;
+      &lt;th&gt;2021-01-18&lt;/th&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-19&lt;/th&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-20&lt;/th&gt;
+      &lt;td&gt;2.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-21&lt;/th&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;2.0&lt;/td&gt;
+      &lt;td&gt;3.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-22&lt;/th&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;3.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;类似的，我们还可以滚动的创建 &lt;code&gt;launchs_last_n_days&lt;/code&gt;&lt;/p&gt;
+
+&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;for n in [7, 14]: 
+    col = &#x27;launchs_last_{}_days&#x27;.format(n)
+    user_launchs[col] = (user_launchs
+                        .groupby(level=&#x27;user_id&#x27;)
+                        .launchs
+                        .apply(lambda d: d.rolling(n).sum().shift(1)))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;给空值填充 &lt;code&gt;0&lt;/code&gt;, 并格式化为 integer 类型&lt;/p&gt;
+
+&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;user_launchs.fillna(0).applymap(int)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;table border=&quot;1&quot; class=&quot;dataframe&quot;&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th&gt;launchs&lt;/th&gt;
+      &lt;th&gt;launchs_yesterday&lt;/th&gt;
+      &lt;th&gt;lifetime_launchs&lt;/th&gt;
+      &lt;th&gt;days_since_last_launch&lt;/th&gt;
+      &lt;th&gt;launchs_last_7_days&lt;/th&gt;
+      &lt;th&gt;launchs_last_14_days&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;user_id&lt;/th&gt;
+      &lt;th&gt;event_time&lt;/th&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th rowspan=&quot;10&quot; valign=&quot;top&quot;&gt;100003&lt;/th&gt;
+      &lt;th&gt;2021-01-18&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-19&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-20&lt;/th&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-21&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-22&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-23&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-24&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-25&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-26&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-27&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;6&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th rowspan=&quot;10&quot; valign=&quot;top&quot;&gt;100001&lt;/th&gt;
+      &lt;th&gt;2021-01-18&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-19&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-20&lt;/th&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-21&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-22&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-23&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-24&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-25&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-26&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-27&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th rowspan=&quot;10&quot; valign=&quot;top&quot;&gt;100002&lt;/th&gt;
+      &lt;th&gt;2021-01-18&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-19&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-20&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-21&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-22&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-23&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-24&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-25&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-26&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-01-27&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;是不是很神奇&lt;/p&gt;
+&lt;/div&gt;
+  &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
 <guid>4cd9d0b868239025d4061db08b50c960</guid>
 <title>为什么说 TypeScript 是开发大型前端项目的必备语言</title>
 <link>https://toutiao.io/k/eivpxcf</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;h1 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;为什么说 TypeScript 是开发大型前端项目的必备语言&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;前言&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;❝&lt;/span&gt;&lt;p&gt;怎么忍心怪你犯了错，是我给你自由过了火。-- 张信哲《过火》&lt;/p&gt;&lt;span&gt;❞&lt;/span&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;可能很多软件工程师都或多或少知道或了解 TypeScript（简写 TS），使用过 TypeScript 的前端开发者们也出奇一致的对 TypeScript 抱有好感。如果你在搜索引擎里搜索 TypeScript，会发现几乎铺天盖地都是称赞或表扬 TS 的文章，例如 《TypeScript 让你不会想用回 JavaScript》、《TypeScript 真香系列》、《再不拥抱TypeScript你就老了！》。根据最新的 《2020 State of JS 调研报告》，TypeScript 的受欢迎度（Popularity）以及满意度（Satisfaction）都在逐年增加，包括本文作者在内的 “TS 粉”（在 State of JS 中回答 “会继续使用”）的开发者甚至超过了 70%（如下图）。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vh4PtSfBxFMiagajmVjiaNAjY1doibjKtKggmnmCLLDOzyHq3eEu0glyvnWfBo2USeiaBbRkgmF5zZIc6icf2Y6SMgw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-ratio=&quot;0.4935185185185185&quot; data-w=&quot;1080&quot;/&gt;&lt;figcaption&gt;&lt;span/&gt;typescript-2020-stateofjs-survey&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;总而言之，TS 如今在前端领域具有不可撼动的核心地位，是非常重要的前端工程开发工具。TS 是微软在拥抱开源项目之后为软件行业作出的突出贡献之一。然而，TypeScript 既不能提高 JavaScript 代码在浏览器中的运行效率，又不像 React、Vue 前端框架那样可以提高开发人员的生产力，更不能让你开发的前端页面变得好看而吸引人。那究竟是什么让它成为如此广受欢迎的 “真香语言” 呢，是什么让它令前端人员爱不释手呢？如果你带有这样类似的疑问，请继续阅读接下来的内容，本文将详细解释利用 TS 开发大型前端项目的优势。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;TS 简介&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/vh4PtSfBxFMiagajmVjiaNAjY1doibjKtKgv97MOxVJq2N7n7cB8VEW1aibbMmaQX2icNXUicK6kFPGEhhjibG2icKia30Q/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-ratio=&quot;1&quot; data-w=&quot;474&quot;/&gt;&lt;figcaption&gt;&lt;span/&gt;typescript-es6&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;TypeScript 诞生于微软（Microsoft），由 C# 首席架构师、.NET（dotnet）创立者 Anders Hejlsberg 设计开发。TypeScript 简单来说就是强类型系统的 JavaScript。它是 JS 的超集（Superset），也就是说，TS 支持 JS 中所有语法，并且还扩展了很多面向对象编程（OOP）的一些功能。TypeScript 首个公开版本 0.8 于 2012 年 10 月发布，并受到了 GNOME 之父 Miguel de Icaza 的称赞，不过他指出 TypeScript 的最大缺点是它缺乏成熟的 IDE 支持，例如当时唯一能支持 TS 只有运行在 Windows 上的 Visual Studio，因此 Mac 和 Linux 使用者无法有效使用 TS 编写项目。不过，这个缺点很快被克服了。1 年之后，很多编辑器，例如 Eclipse、Sublime、Vim 等，都开始支持 TypeScript 语法。如今，绝大多数主流编辑器都能有效支持 TypeScript。而有了 TypeScript 的加持，你在 IDE 中就可以爽快的享受 TS 特有的自动完成（Autocomplete）以及类型提示（Typing Hint），以便于编写可靠而高质量的代码。正如官网中对 TypeScript 的一句话介绍：“Typed JavaScript at Any Scale”。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;面向接口编程&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;TypeScript 的设计理念来自于面向接口编程（IOP），一种基于抽象类型约定（Abstract Type Constraint）的程序设计模式。要真正了解 TypeScript，首先得了解面向接口编程的概念和原理。最初引入 IOP 概念的论文《面向接口编程》发表于 2004 年，它属于面向对象编程（OOP）体系的一部分，是更为先进和独立的编程思想。作为 OOP 体系的一部分，IOP 更加强调规则和约束，以及接口类型方法的约定，从而让开发人员尽可能的关注更抽象的程序逻辑，而不是在更细节的实现方式上浪费时间。很多大型项目采用的都是 IOP 的编程模式。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vh4PtSfBxFMiagajmVjiaNAjY1doibjKtKg64B7kj440jIicGeka9NpehEnTO07G1AibsNV0znB7HpA2vGBHuS6WYAg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-ratio=&quot;0.8033980582524272&quot; data-w=&quot;824&quot;/&gt;&lt;figcaption&gt;&lt;span/&gt;typescript-iop&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上图是 IOP 编程模式的示意图，在  Java 或 C# 这样的 OOP 语言中，随处可见这样的处理方式。类型（Class）的方法（Method）由接口（Interface）来约定，而类型中需要实现（Implement）接口中定义的抽象方法。例如 &lt;code&gt;IService&lt;/code&gt; 接口定义了 &lt;code&gt;Request(url)&lt;/code&gt;、&lt;code&gt;Auth(usr, pwd)&lt;/code&gt; 方法，而这个接口不管这两个方法如何实现，只是将方法的名称、参数与返回值定义下来，而具体的实现，即就是实现该功能的核心代码，将在 &lt;code&gt;Service&lt;/code&gt; 这个类中完成。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这样注重抽象方法约定的设计模式对于构建大型项目来说具有非常大的优势。首先，它不要求编程人员在程序开发早期或设计系统阶段编写任何核心代码，从而编程人员可以将主要精力放在架构设计以及业务逻辑，避免浪费过多时间在思考具体实现上。其次，由于 IOP 中多了接口这一抽象层，避免将核心代码细节暴露给开发者，不熟悉该模块的开发者可以从文档、名称、参数、返回值等来快速推断程序逻辑，这大大的降低了程序复杂性以及维护成本。最后，IOP 可以让编程变得更灵活，它天生支持多态（Polymorphic），可以作为 OOP 中类继承（Class Inheritance）的有效替代。可能很多初学者会抱怨说这种设计理念让编程变得臃肿，但不得不说这种附加的约束能够让大型项目在面对复杂性和多变性时显得更加稳定和反脆弱。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;读者可能会问，这跟 TypeScript 有什么关系？其实，如果你用 TS 编写过大型项目，应该能够意识到 IOP 这种理念在 TS 中发挥的作用。接下来，本文将介绍 TS 的一些核心概念，这将有助于读者进一步理解 TS 的特性以及它为何适合大型项目。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;TS 核心概念&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;基本语法&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;之前也提到，TS 是 JS 的超集，也就是说 JS 的语法 TS 全部都包括，而且在此基础上还添加了类型系统。类型的定义主要是以 “变量或属性名称后面加冒号跟类型来制定的，即 &lt;code&gt;&amp;lt;variable/attribute&amp;gt;: &amp;lt;type&amp;gt;&lt;/code&gt;。下面分别用 JavaScript 和 TypeScript 的代码举例说明。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;// JS&lt;/span&gt;&lt;br/&gt;&lt;span&gt;const&lt;/span&gt; strVal = &lt;span&gt;&#x27;string-value&#x27;&lt;/span&gt;;&lt;br/&gt;&lt;span&gt;const&lt;/span&gt; objVal = {&lt;br/&gt;  &lt;span&gt;key&lt;/span&gt;: &lt;span&gt;&#x27;string-value&#x27;&lt;/span&gt;,&lt;br/&gt;  &lt;span&gt;value&lt;/span&gt;: &lt;span&gt;1&lt;/span&gt;,&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;const&lt;/span&gt; func = &lt;span&gt;&lt;span&gt;param&lt;/span&gt; =&amp;gt;&lt;/span&gt; param * &lt;span&gt;2&lt;/span&gt;;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;而 TS 中类似的写法是这样。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;// TS&lt;/span&gt;&lt;br/&gt;&lt;span&gt;const&lt;/span&gt; strVal: &lt;span&gt;string&lt;/span&gt; = &lt;span&gt;&#x27;string-value&#x27;&lt;/span&gt;;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;interface&lt;/span&gt; IObject {&lt;br/&gt;  key: &lt;span&gt;string&lt;/span&gt;;&lt;br/&gt;  value: &lt;span&gt;number&lt;/span&gt;;&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;const&lt;/span&gt; objVal: IObject = {&lt;br/&gt;  key: &lt;span&gt;&#x27;string-value&#x27;&lt;/span&gt;,&lt;br/&gt;  value: &lt;span&gt;1&lt;/span&gt;,&lt;br/&gt;};&lt;br/&gt;&lt;br/&gt;&lt;span&gt;type&lt;/span&gt; Func = &lt;span&gt;(&lt;span&gt;param: &lt;span&gt;number&lt;/span&gt;&lt;/span&gt;) =&amp;gt;&lt;/span&gt; &lt;span&gt;number&lt;/span&gt;;&lt;br/&gt;&lt;span&gt;const&lt;/span&gt; func: Func = &lt;span&gt;(&lt;span&gt;param: &lt;span&gt;number&lt;/span&gt;&lt;/span&gt;) =&amp;gt;&lt;/span&gt; param * &lt;span&gt;2&lt;/span&gt;;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;看到区别了么？首先你可能会注意到 JS 要比 TS 简洁得多。这很自然，因为 TS 加入了类型系统，必然会增加一些额外的约束代码。JS 是弱类型动态语言，类型之间可以自由转换，显得非常灵活。然而由这种灵活和自由度产生的编码快感只能持续短短一段时间，当项目不断发展，变量类型变多，模块间的交互关系变得复杂之后，这种自由度带来的麻烦很可能是灾难级的。坊间传言 “动态一时爽，重构火葬场” 说的就是这个道理。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;你可能也会注意到，对象变量 &lt;code&gt;objVal&lt;/code&gt; 被接口 &lt;code&gt;IObject&lt;/code&gt; 约束（它是用 &lt;code&gt;interface&lt;/code&gt; 这个关键词来定义的），其中规定了它要求的属性以及相应的类型，因此在对其赋值或取值时不能随意处理。同理，函数（Function）也可以用关键词 &lt;code&gt;type&lt;/code&gt; 来定义，这里定义了函数类型 &lt;code&gt;Func&lt;/code&gt; 的参数名、参数类型，以及返回的结果类型。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;基础类型&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;跟其他主流编程语言一样，TypeScript 同样有基础数据类型。其中大部分跟 JavaScript 的基础数据类型一致，另外还添加了一些 TS 特有的类型。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;基础类型列表如下：&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;类型名称&lt;/th&gt;&lt;th&gt;描述&lt;/th&gt;&lt;th&gt;例子&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Boolean&lt;/td&gt;&lt;td&gt;布尔值&lt;/td&gt;&lt;td&gt;&lt;code&gt;const a: boolean = true;&lt;/code&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Number&lt;/td&gt;&lt;td&gt;数值&lt;/td&gt;&lt;td&gt;&lt;code&gt;const a: number = 1;&lt;/code&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;String&lt;/td&gt;&lt;td&gt;字符串&lt;/td&gt;&lt;td&gt;&lt;code&gt;const a: string = &#x27;text&#x27;;&lt;/code&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Array&lt;/td&gt;&lt;td&gt;数组，不定长度，相同类型&lt;/td&gt;&lt;td&gt;&lt;code&gt;const a: string[] = [&#x27;a&#x27;, &#x27;b&#x27;];&lt;/code&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Tuple&lt;/td&gt;&lt;td&gt;元组，固定长度，可以不同类型&lt;/td&gt;&lt;td&gt;&lt;code&gt;const a: [string, number] = [&#x27;a&#x27;, 1];&lt;/code&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Enum&lt;/td&gt;&lt;td&gt;枚举&lt;/td&gt;&lt;td&gt;官网例子&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Unknown&lt;/td&gt;&lt;td&gt;不确定&lt;/td&gt;&lt;td&gt;官网例子&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Any&lt;/td&gt;&lt;td&gt;任意类&lt;/td&gt;&lt;td&gt;官网例子&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Void&lt;/td&gt;&lt;td&gt;无类型&lt;/td&gt;&lt;td&gt;官网例子&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Null and Undefined&lt;/td&gt;&lt;td&gt;空值&lt;/td&gt;&lt;td&gt;官网例子&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Never&lt;/td&gt;&lt;td&gt;用于只抛错的函数等&lt;/td&gt;&lt;td&gt;官网例子&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Object&lt;/td&gt;&lt;td&gt;对象，表示非基础类型&lt;/td&gt;&lt;td&gt;官网例子&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/section&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;接口与字面类型&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;TS 中除了基础类型以外，还可以自定义项目中需要的类型。这种自定义类型在 TS 中通常用接口（Interface）或字面类型（Literal Type）来定义。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;接口是 TypeScript 中非常重要的核心概念。接口的定义方法非常简单，在 TS 代码里用 &lt;code&gt;interface&lt;/code&gt; 关键词加接口名，后跟花括号 &lt;code&gt;{...}&lt;/code&gt;，并在花括号中定义这个接口包含的属性以及属性对应的类型，可以是基础类型，也可以是接口（Interface）、类（Class）、类型（Type）。请注意到，函数也是类型的一种。下面用代码举例说明。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;interface&lt;/span&gt; Client {&lt;br/&gt;  host: &lt;span&gt;string&lt;/span&gt;;&lt;br/&gt;  port?: &lt;span&gt;string&lt;/span&gt;;&lt;br/&gt;  username?: &lt;span&gt;string&lt;/span&gt;;&lt;br/&gt;  password?: &lt;span&gt;string&lt;/span&gt;;&lt;br/&gt;  connect: &lt;span&gt;&lt;span&gt;()&lt;/span&gt; =&amp;gt;&lt;/span&gt; &lt;span&gt;void&lt;/span&gt;;&lt;br/&gt;  disconnect: &lt;span&gt;&lt;span&gt;()&lt;/span&gt; =&amp;gt;&lt;/span&gt; &lt;span&gt;void&lt;/span&gt;;&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;interface&lt;/span&gt; ResponseData {&lt;br/&gt;  code: &lt;span&gt;number&lt;/span&gt;;&lt;br/&gt;  error?: &lt;span&gt;string&lt;/span&gt;;&lt;br/&gt;  message: &lt;span&gt;string&lt;/span&gt;;&lt;br/&gt;  data: &lt;span&gt;any&lt;/span&gt;;&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;interface&lt;/span&gt; Service {&lt;br/&gt;  name?: &lt;span&gt;string&lt;/span&gt;;&lt;br/&gt;  client: Client;&lt;br/&gt;  request: &lt;span&gt;(&lt;span&gt;url: &lt;span&gt;string&lt;/span&gt;&lt;/span&gt;) =&amp;gt;&lt;/span&gt; ResponseData;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;以上是接口定义代码，下面看一下如何使用。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;const&lt;/span&gt; client: Client = {&lt;br/&gt;  host: &lt;span&gt;&#x27;localhost&#x27;&lt;/span&gt;,&lt;br/&gt;  connect: &lt;span&gt;&lt;span&gt;()&lt;/span&gt; =&amp;gt;&lt;/span&gt; { &lt;br/&gt;    &lt;span&gt;console&lt;/span&gt;.log(&lt;span&gt;&#x27;connecting to remote server&#x27;&lt;/span&gt;); &lt;br/&gt;  },&lt;br/&gt;  disconnect: &lt;span&gt;&lt;span&gt;()&lt;/span&gt; =&amp;gt;&lt;/span&gt; { &lt;br/&gt;    &lt;span&gt;console&lt;/span&gt;.log(&lt;span&gt;&#x27;disconnecting from remote server&#x27;&lt;/span&gt;); &lt;br/&gt;  },&lt;br/&gt;};&lt;br/&gt;&lt;br/&gt;&lt;span&gt;const&lt;/span&gt; service: Service = {&lt;br/&gt;  name: &lt;span&gt;&#x27;Mock Service&#x27;&lt;/span&gt;,&lt;br/&gt;  client,&lt;br/&gt;  request: &lt;span&gt;(&lt;span&gt;url: &lt;span&gt;string&lt;/span&gt;&lt;/span&gt;) =&amp;gt;&lt;/span&gt; {&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; {&lt;br/&gt;      code: &lt;span&gt;200&lt;/span&gt;,&lt;br/&gt;      message: &lt;span&gt;&#x27;success&#x27;&lt;/span&gt;,&lt;br/&gt;      data: url,&lt;br/&gt;    },&lt;br/&gt;  },&lt;br/&gt;};&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这是一个模拟客户端服务定义的非常简单的代码。可以注意到，接口定义了后面实例（Instance）&lt;code&gt;client&lt;/code&gt;、&lt;code&gt;service&lt;/code&gt; 的属性（Attributes，有些文章会称作 “字段 Field”）和方法（Methods），该接口约束下的实例必须包含对应要求的属性和正确类型，否则在编译时（Compile Time）就会报错。接口中属性名后面带一个问号 &lt;code&gt;?&lt;/code&gt; 是代表该属性是可选的（Optional）。因此，模块或功能首先由接口来定义，将大框架考虑好之后再实现接口中的核心逻辑，这也就满足了面向接口编程中的设计模式。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;而字面类型（Literal Type）主要是简化一些比较简单的自定义类型。其定义方式同样非常简单，限于篇幅就不展开讲解。感兴趣的读者可以到官网文档深入了解。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;鸭子类型&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;了解了基础类型、接口、字面类型之后，我们可以开始着手用 TS 写一些可靠的代码了。不过为了加深对 TS 类型系统的理解，我们需要了解什么情况下，接口与实例的绑定是合法的？TypeScript 中的类型合法性检测方法是如何规定？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;TypeScript 采用了所谓的 “鸭子类型”（Duck Typing）策略。所谓鸭子类型，就是当两个类型具有相同的属性以及方法时，它们就可以看作是同一类型。例如，狗既能吃饭又能拉屎，还有两个眼睛一张嘴；人同样也是既能吃饭又能拉屎，还有两个眼睛一张嘴。单从这些属性来看，狗跟人是同一类型。但很显然这个结论是荒唐的。人类可以说话，狗却不能；狗可以摇尾巴，而人却不能。但如果一个外星人到地球来访问，TA 很可能会将人和狗分为一类，因为它们既能吃饭又能拉屎，还有两个眼睛一张嘴（误）。不过外星人通过选择性的观测两种生物，可以快速的将它们进行归类。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其实，鸭子类型在类型约束的同时，又带有一些灵活性，代码显得灵活而精简，不会因为严格的约束条件而让代码变得臃肿。TypeScript 用这种方式来校验类型合法性，可以提升编写 TS 的体验感，绕开了传统 OOP 语言（例如 Java、C#）死板的类型约束，让写 TS 变得轻松而有趣。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;其他&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;限于篇幅原因，本文不打算详解所有 TS 的特性。不过，TS 中有很多其他实用的特性，例如联合类型、枚举、泛型、命名空间 等，希望进一步了解或使用 TS 的读者可以到官方文档深入了解。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;用 TS 构建大型项目&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;对于大型项目，你首先联想到的是什么？对于不同领域的开发工程师来说，可能有不同的理解。不过单就软件行业来看，一个软件开发项目被称作 “大型项目”（Large Project），通常意味着将涉及大量的功能模块，从而具有较高系统复杂性（Complexity）。一个大型项目的成功，除了满足传统项目管理中的周期、预算控制以外，还需要注重质量，从软件工程角度看来就是可靠性（Robustness）、稳定性（Stability）、可维护性（Maintainability）、可扩展性（Scalability）等等。就像建筑工程一样，你一定不希望自己设计的建筑是摇摇欲坠的，你需要它尽可能的稳固，在狂风暴雨下屹立不倒，同时可以灵活修缮维护。而为了保障这些非功能性需求或者质量要求，必须要有一些明确的规范和标准，在建筑工程里也许是工程图纸、精密测量等，而在软件工程里则是代码规范（Coding Standard）、设计模式（Design Patterns）、流程规范（Process Standard）、系统架构（System Architecture）、单元测试（Unit Testing）等等。其中的代码规范和设计模式尤为重要，因为这是整个软件系统的基础。没有代码，将没有软件程序；而没有好的代码规范和设计模式，将没有好的代码，也就没有可靠的软件程序，有的只是源源不断的程序 Bug 和系统崩溃。TypeScript 可以在代码规范和设计模式上极大的提高代码质量，进而增强系统的可靠性、稳定性和可维护性。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;代码规范&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;代码风格经常是前端项目的痛点，这个可以用 JavaScript 风格检测工具 ESLint 来规范。但是，ESLint 无法解决类型方面带来的问题。只有 TypeScript 可以静态检测在类型层面上可能出现的问题。如果用 TS 来编写前端项目，我会建议对所有可能的变量和方法都用类型约束。而且尽可能不要用 &lt;code&gt;any&lt;/code&gt; 类型，因为 &lt;code&gt;any&lt;/code&gt; 类型可以涵盖所有其他类型，相当于没有类型，这也失去了类型系统的意义。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;跟纯 JS 相比，TS 虽然多了一些额外的类型声明代码，但它却因此而获得了更好的可读性、可理解性和可预测性，因此也会更加稳定和可靠。如果你是从 JS 转到 TS 的初学者，请尽可能克制住不要用 &lt;code&gt;any&lt;/code&gt;，这会毁了你的规范和标准。如果你是前后端分离的架构而且在用纯 JS 写前端，在没有明确且可靠的后端接口数据结构约定时，你可能会被迫使写很多类型判断的代码，这跟在静态语言中用反射（Reflect）一样会污染整个代码风格。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;TS 其实就是在 JS 上多了一个静态类型系统，没有什么其他的魔法。但就是这个 “小小的” 的附加功能让代码变得规范和可维护，从而成为大型前端项目的首选。很多高级前端工程师都喜欢用 React 或 Angular 来构建大型项目，就是因为它们能支持 TS。不过近期发布的 Vue 3 也及时的加入了 TS 的支持，让它能够胜任大型项目的开发。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;目录结构&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在你编写大型前端项目时，推荐使用声明文件（Declaration Files）来管理接口或其他自定义类型。声明文件一般是 &lt;code&gt;&amp;lt;module_name&amp;gt;.d.ts&lt;/code&gt; 的形式，在这类文件中只定义模块中的类型，没有任何实际的实现逻辑。声明文件可以单独放在一个目录里，我喜欢命名为 &lt;code&gt;interfaces&lt;/code&gt;，意思就是接口。这样，就可以充分将抽象类型、方法、属性等与实际内容分开。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;以下例子是一个集成了 TS 的 Vue 项目目录。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;.&lt;br/&gt;├── babel.config.js   // Babel 编译配置文件&lt;br/&gt;├── jest.config.ts   // 单元测试配置文件&lt;br/&gt;├── package.json    // 项目配置文件&lt;br/&gt;├── public       // 公共资源&lt;br/&gt;├── src         // 源代码目录&lt;br/&gt;│   ├── App.vue     // 主应用&lt;br/&gt;│   ├── assets     // 静态资源&lt;br/&gt;│   ├── components   // 组件&lt;br/&gt;│   ├── constants    // 常量&lt;br/&gt;│   ├── i18n      // 国际化&lt;br/&gt;│   ├── interfaces   // 声明文件目录&lt;br/&gt;│   │   ├── components  // 组件声明&lt;br/&gt;│   │   ├── index.d.ts  // 主声明&lt;br/&gt;│   │   ├── layout   // 布局声明&lt;br/&gt;│   │   ├── store    // 状态管理声明&lt;br/&gt;│   │   └── views    // 页面声明&lt;br/&gt;│   ├── layouts     // 布局&lt;br/&gt;│   ├── main.ts     // 主入口&lt;br/&gt;│   ├── router     // 路由&lt;br/&gt;│   ├── shims-vue.d.ts // 兼容 Vue 声明文件&lt;br/&gt;│   ├── store      // 状态管理&lt;br/&gt;│   ├── styles     // CSS/SCSS 样式&lt;br/&gt;│   ├── &lt;span&gt;test&lt;/span&gt;      // 测试&lt;br/&gt;│   ├── utils      // 公共方法&lt;br/&gt;│   └── views      // 页面&lt;br/&gt;└── tsconfig.json    // TS 配置文件&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其中可以看到，&lt;code&gt;interfaces&lt;/code&gt; 这个目录跟其他模块在同一级，而其子目录则是其他模块所对应的类型声明。编写代码前，尽量先创建并设计声明文件内容，设计好之后再到实际的模块下完成实现。当然，这个 “定义 -&amp;gt; 实现“ 是一个不断迭代的过程，可能实现过程中发现有类型设计问题，可以回到声明文件中完善定义，再到实现代码里进行优化。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;设计模式&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在 ES6 出来之前，JavaScript 的类型系统是比较难以理解的，主要原因之一就是它难以掌握的原型继承模式。在 ES6 之前，要实现一个传统 OOP 中的工厂方法，都显得举步维艰。不过，ES6 的出现缓解了前端工程师的痛点。ES6 引入了 &lt;code&gt;class&lt;/code&gt; 语法糖来实现传统的 OOP 的类创建与继承。不过这在 TypeScript 看来，只是 “小打小闹”。虽然 ES6 中的 &lt;code&gt;class&lt;/code&gt; 让 JS 拥有了一部分封装的能力，但在构建大型项目或系统模块时还显得力不从心。缺少类型系统，尤其是泛型，是 JS 的一个致命弱点。而 TS 不仅有 ES6 种 &lt;code&gt;class&lt;/code&gt; 的所有功能，还有接口、泛型、装饰器等功能来实现各种灵活而强大的框架级系统。泛型（Generics）通常是框架类库的必备特性，它可以让一个类或方法变得更通用。我建议在大型项目中广泛的使用接口、泛型等特性来抽象你的代码和逻辑，从而提取出重复代码，并在整体上对项目进行优化。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;如何学习 TS&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;本文的主要目的是鼓励开发者用 TypeScript 构建大型前端项目，而并不是一个参考指南。因此，本篇文章不会详细介绍如何从头开始创建 TS 项目，或如何运用各种 TS 特性来编写代码。在阅读过本文之后的读者如果对 TS 有深入研究的兴趣，需要阅读更多 TS 参考文章来深入理解。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;对于初学者来说，本文将给出一些途径来帮助你快速掌握 TS。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;官方文档&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;官方文档是最权威的参考指南，直接从官方文档上手是最系统也是最有效的学习途径。&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;仔细阅读 TypeScript 官方文档，包括 Get Started、Hand Book、Tutorials 等等；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如果不习惯阅读英文文档，可以去 TypeScript 中文网 查看文档。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;技术文章&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;TS 已经发展了很多年，在网上介绍 TS 的技术文章已经汗牛充栋，这里只介绍一些比较有帮助的博客文章。&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;Typescript 最佳实践&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;一份不可多得的 TS 学习指南&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;结合实例学习 Typescript&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;可能是你需要的 React + TypeScript 50 条规范和经验&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;实践项目&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;“实践出真理”，在学习过程中，理论和实践始终是分不开的。如果能将所学知识运用在实际项目中，不仅会加深印象，还可以亲自体会新技术带来的好处以及它还存在的缺点。你可以尝试以下实践项目的途径。&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;从头开始创建一个 TypeScript 项目，用脚手架工具 Vue CLI、create-react-app 等搭建 TS 项目；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;学习成熟的 TS 项目，例如 Ant Design、Nest、Angular 等，了解声明文件的组织方式；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;学习开源项目 DefinitelyTyped，理解并实践如何让老 JS 项目支持 TS。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;总结&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;拥抱 TypeScript 是现代前端工程的主流。任何一个前端工程师都需要学习 TS，这有助于拓宽你的知识技能，以及加强自己的专业度和职业背景。不过，我们必须意识到，拥抱 TS 并不是终点。如果你研究过前端发展的历史，你会发现 TypeScript 的盛行是前端工程化、模块化和规模化的结果，是前端需求变得越来越复杂的必然产物。TS 只是用后端工程知识解决前端工程问题的一个有效解决方案。TypeScript  之父巧妙的将 C# 的经验移植到了 JavaScript，由此诞生了 TypeScript，革命性的解放了前端工程师的生产力。而这个解决方案会持续多久，我们无法预测。但可以确定，前端工程将继续发展，各种新技术也将层出不穷。作为一个软件工程师，你需要不断学习，这样才能不被后浪拍死在沙滩上。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/vh4PtSfBxFMiagajmVjiaNAjY1doibjKtKgdekL1CkulljibBibufDUwN3TLK9mwb2iaww8M2NqhCNftLWcGVcmW7Q0A/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-ratio=&quot;0.9828125&quot; data-w=&quot;640&quot;/&gt;&lt;figcaption&gt;&lt;span/&gt;typescript-abandon&lt;/figcaption&gt;&lt;/figure&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>2126bb4debd9716a49f48f6e9350d6de</guid>
-<title>用了很多年 Dubbo，连 Dubbo 线程池监控都不知道，觉得自己很厉害？</title>
-<link>https://toutiao.io/k/ph03air</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;前言&lt;/span&gt;&lt;span/&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;micrometer 中自带了很多其他框架的指标信息，可以很方便的通过 prometheus 进行采集和监控，常用的有 JVM 的信息，Http 请求的信息，Tomcat 线程的信息等。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;对于一些比较活跃的框架，有些还是不支持的，比如 Dubbo。如果想监控 Dubbo 的一些指标，比如线程池的状况，我们需要手动去扩展，输出对应的线程池指标才行。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在这种情况下，肯定是没什么思路的，因为你不知道怎么去扩展，下面给大家介绍去做一件事情之前的思考，方式方法很重要。&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;Dubbo 有没有现成的实现?&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;参考 micrometer 中指标的实现，依葫芦画瓢？&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt; &lt;/span&gt;&lt;span/&gt;&lt;span&gt;Dubbo 有没有现成的实现?&lt;/span&gt;&lt;span/&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;完整的实现应该没有，至少我还没用过，也没有那种去搜索引擎一搜就大把结果的现状，于是我在 Dubbo 的 Github 上找到了一个相关的项目 dubbo-spring-boot-actuator。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;https://github.com/apache/dubbo-spring-boot-project/tree/master/dubbo-spring-boot-actuator&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;dubbo-spring-boot-actuator 看名称就知道，提供了 Dubbo 相关的各种信息端点和健康检查。从这里面也许能发现点有用的代码。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;果不其然，在介绍页面中看到了想要的内容，线程池的指标数据，只不过是拼接成了字符串显示而已。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&quot;threadpool&quot;: {&lt;br/&gt;      &quot;source&quot;: &quot;management.health.dubbo.status.extras&quot;,&lt;br/&gt;      &quot;status&quot;: {&lt;br/&gt;        &quot;level&quot;: &quot;OK&quot;,&lt;br/&gt;        &quot;message&quot;: &quot;Pool status:OK, max:200, core:200, largest:0, active:0, task:0, service port: 12345&quot;,&lt;br/&gt;        &quot;description&quot;: null&lt;br/&gt;      }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;然后就去翻 dubbo-spring-boot-actuator 的代码了，没找到线程池这块的代码。后面在 dubbo.jar 中找到了 ThreadPoolStatusChecker 这个类，核心逻辑在这里面。&lt;strong&gt;现在已经解决了第一个问题，就是获取到 Dubbo 的线程池对象。&lt;/strong&gt;&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.6704805491990846&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/WRLYshvT39xYZdZSRAspAObFYXiczydc0UMX38ANJjic5RHPzOicsZpxFiccCfkdavxVZ4wCh790MjyOaqPbHdxVkw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1748&quot;/&gt;&lt;figcaption&gt;&lt;br/&gt;&lt;/figcaption&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt; &lt;/span&gt;&lt;span&gt;参考 micrometer 中指标的实现，依葫芦画瓢？&lt;/span&gt;&lt;span/&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;线程池对象能拿到了，各种数据也就能获取了。接下来的问题就是如何暴露出去给 prometheus 采集。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;两种方式，一种是自定义一个新的端点暴露，一种是直接在已有的 prometheus 端点中增加指标数据的输出，也就是依葫芦画瓢。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;看源码中已经有很多 Metrics 的实现了，我们也实现一个 Dubbo 线程池的 Metrics 即可。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;1.3828715365239295&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/WRLYshvT39xYZdZSRAspAObFYXiczydc0L6fSMibzibgdnVGq9zQ0bF29Z3ALf7ekZSiagHsbziaIEOGJJw0tBSicNsw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;794&quot;/&gt;&lt;figcaption&gt;&lt;br/&gt;&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上图框起来的就是一个已经存在的线程池 Metrics，可以直接复用代码。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;实现的主要逻辑就是实现一个 MeterBinder 接口，然后将你需要的指标进行输出即可。于是打算在 bindTo 方法中获取 Dubbo 的线程池对象，然后输出指标。经过测试，在 MeterBinder 实例化的时候 Dubbo 还没初始化好，拿不到线程池对象，绑定后无法成功输出指标。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;后面还是打算采用定时采样的方式来输出，自定义一个后台线程，定时去输出数据。可以用 Timer，我这图简单就直接 while 循环了。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;/**&lt;br/&gt; * Dubbo线程池指标&lt;br/&gt; *&lt;br/&gt; * @author yinjihuan&lt;br/&gt; */&lt;br/&gt;@Configuration&lt;br/&gt;public class DubboThreadMetrics {&lt;br/&gt;    @Autowired&lt;br/&gt;    private MeterRegistry meterRegistry;&lt;br/&gt;    private final Iterable&amp;lt;Tag&amp;gt; TAG = Collections.singletonList(Tag.of(&quot;thread.pool.name&quot;, &quot;dubboThreadPool&quot;));&lt;br/&gt;    @PostConstruct&lt;br/&gt;    public void init() {&lt;br/&gt;        new Thread(() -&amp;gt; {&lt;br/&gt;            while (true) {&lt;br/&gt;                try {&lt;br/&gt;                    Thread.sleep(1000);&lt;br/&gt;                } catch (InterruptedException e) {&lt;br/&gt;                    e.printStackTrace();&lt;br/&gt;                }&lt;br/&gt;                DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();&lt;br/&gt;                Map&amp;lt;String, Object&amp;gt; executors = dataStore.get(Constants.EXECUTOR_SERVICE_COMPONENT_KEY);&lt;br/&gt;                for (Map.Entry&amp;lt;String, Object&amp;gt; entry : executors.entrySet()) {&lt;br/&gt;                    ExecutorService executor = (ExecutorService) entry.getValue();&lt;br/&gt;                    if (executor instanceof ThreadPoolExecutor) {&lt;br/&gt;                        ThreadPoolExecutor tp = (ThreadPoolExecutor) executor;&lt;br/&gt;                        Gauge.builder(&quot;dubbo.thread.pool.core.size&quot;, tp, ThreadPoolExecutor::getCorePoolSize)&lt;br/&gt;                                .description(&quot;核心线程数&quot;)&lt;br/&gt;                                .baseUnit(&quot;threads&quot;)&lt;br/&gt;                                .register(meterRegistry);&lt;br/&gt;                        Gauge.builder(&quot;dubbo.thread.pool.largest.size&quot;, tp, ThreadPoolExecutor::getLargestPoolSize)&lt;br/&gt;                                .description(&quot;历史最高线程数&quot;)&lt;br/&gt;                                .baseUnit(&quot;threads&quot;)&lt;br/&gt;                                .register(meterRegistry);&lt;br/&gt;                        Gauge.builder(&quot;dubbo.thread.pool.max.size&quot;, tp, ThreadPoolExecutor::getMaximumPoolSize)&lt;br/&gt;                                .description(&quot;最大线程数&quot;)&lt;br/&gt;                                .baseUnit(&quot;threads&quot;)&lt;br/&gt;                                .register(meterRegistry);&lt;br/&gt;                        Gauge.builder(&quot;dubbo.thread.pool.active.size&quot;, tp, ThreadPoolExecutor::getActiveCount)&lt;br/&gt;                                .description(&quot;活跃线程数&quot;)&lt;br/&gt;                                .baseUnit(&quot;threads&quot;)&lt;br/&gt;                                .register(meterRegistry);&lt;br/&gt;                        Gauge.builder(&quot;dubbo.thread.pool.thread.count&quot;, tp, ThreadPoolExecutor::getPoolSize)&lt;br/&gt;                                .description(&quot;当前线程数&quot;)&lt;br/&gt;                                .baseUnit(&quot;threads&quot;)&lt;br/&gt;                                .register(meterRegistry);&lt;br/&gt;                        Gauge.builder(&quot;dubbo.thread.pool.queue.size&quot;, tp, e -&amp;gt; e.getQueue().size())&lt;br/&gt;                                .description(&quot;队列大小&quot;)&lt;br/&gt;                                .baseUnit(&quot;threads&quot;)&lt;br/&gt;                                .register(meterRegistry);&lt;br/&gt;                        Gauge.builder(&quot;dubbo.thread.pool.taskCount&quot;, tp, ThreadPoolExecutor::getTaskCount)&lt;br/&gt;                                .description(&quot;任务总量&quot;)&lt;br/&gt;                                .baseUnit(&quot;threads&quot;)&lt;br/&gt;                                .register(meterRegistry);&lt;br/&gt;                        Gauge.builder(&quot;dubbo.thread.pool.completedTaskCount&quot;, tp, ThreadPoolExecutor::getCompletedTaskCount)&lt;br/&gt;                                .description(&quot;已完成的任务量&quot;)&lt;br/&gt;                                .baseUnit(&quot;threads&quot;)&lt;br/&gt;                                .register(meterRegistry);&lt;br/&gt;                    }&lt;br/&gt;                }&lt;br/&gt;            }&lt;br/&gt;        }).start();&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;指标信息：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.46458333333333335&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/WRLYshvT39xYZdZSRAspAObFYXiczydc04icBeAedUQEuGiaAOGsLwjictGnjPBYvSIYzxwZvWxaTHzfW1icboIribRg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1920&quot;/&gt;&lt;figcaption&gt;&lt;br/&gt;&lt;/figcaption&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt; &lt;/span&gt;&lt;span/&gt;&lt;span&gt;配置线程池图表&lt;/span&gt;&lt;span/&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;创建一个新的 dashboard 配置图表，然后新建 panel 配置指标信息&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.19635416666666666&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/WRLYshvT39xYZdZSRAspAObFYXiczydc0ib7WR7xhOs7eCYkia4fvicUCEAkmVGPZErFHju6EbgB5ibO1uwj5tS31pQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1920&quot;/&gt;&lt;figcaption&gt;图片&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;左侧配指标信息，右侧选择对应的图表格式。需要注意的是，如果有多个服务实例，Metrics 这边最好是根据服务实例来显示，需要在指标后面增加条件，如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;dubbo_thread_pool_max_size_theads{application=&quot;$application&quot;, instance=~&quot;$instance&quot;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.5223958333333333&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/WRLYshvT39xYZdZSRAspAObFYXiczydc0ibAnCLuF2qnhicUP6OMBlibokib6oGBdDO8X1GNHwUeOELYyoLOXO36tWw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1920&quot;/&gt;&lt;figcaption&gt;图片&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;关于作者&lt;/strong&gt;：尹吉欢，简单的技术爱好者，《Spring Cloud 微服务-全栈技术与案例解析》, 《Spring Cloud 微服务 入门 实战与进阶》作者, 公众号&lt;strong&gt;猿天地&lt;/strong&gt;发起人。&lt;/p&gt;&lt;span&gt;- END -&lt;/span&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
