@@ -216,7 +216,7 @@ var url=yqjx.toUrl(jiek+src.split('"')[0]);
 return url!=""?url:getUrl(jiek+src.split('"')[0]);
 }else if(src.indexOf("135-cdn")!=-1){
 refreshX5WebView(src);return "toast://请等待加载选集！";
-}else if(src.indexOf("share")!=-1){
+}else if(src.indexOf("/share/")!=-1){
 try{
 var link=src.split("/share")[0];
 var fc=fetch(src,{}).replace("var purl","var main");
