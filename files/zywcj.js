@@ -203,19 +203,19 @@ setHomeResult(res);
 
 //动态解析
 function lazyRu() {
-var src=input.replace(/amp;/g,"");
+var src=input.replace(/amp;/g,"").replace(/^\s*/,"");
 if(src.indexOf("html")!=-1){
 var jiek="https://1717.ntryjd.net/0526/?url=";
 if(!fetch("hiker://files/rules/parse.js",{})){
 var fileUrl="https://cdn.jsdelivr.net/gh/lzk23559/Public_folder/parse.js";
 }else{
 var fileUrl="hiker://files/rules/parse.js"}
-var js=fetch(fileUrl,{});
-eval(js);
+eval(fetch(fileUrl,{}));
 var url=yqjx.toUrl(jiek+src.split('"')[0]);
 return url!=""?url:getUrl(jiek+src.split('"')[0]);
 }else if(src.indexOf("135-cdn")!=-1){
-refreshX5WebView(src);return "toast://请等待加载选集！";
+refreshX5WebView(src);
+return "toast://请等待加载选集！";
 }else if(src.indexOf("/share/")!=-1){
 try{
 var link=src.split("/share")[0];
@@ -223,26 +223,32 @@ var fc=fetch(src,{}).replace("var purl","var main");
 if(fc.indexOf("main")!=-1){
 var mat=fc.match(/var main.*?;/)[0];
 eval(mat);
-return main.indexOf("http")!=-1?main:link+main;
+var play=(main.indexOf("http")!=-1?main:link+main);
 }else{
 var main=fc.match(/url:.*?[\'\"](.*?)[\'\"]/)[1];
-return main.indexOf("http")!=-1?main:link+main};
-} catch(e) {refreshX5WebView(src);return "toast://请等待加载选集！"};
+var play=(main.indexOf("http")!=-1?main:link+main)};
+return play;
+} catch(e) {
+refreshX5WebView(src);
+return "toast://请等待加载选集！"};
 }else if(src.indexOf("meiju11")!=-1){
 var meiju=fetch(src,{headers:{"User-Agent":MOBILE_UA,"Referer":"https://www.meiju11.com"}});
 return meiju.match(/url:.*?[\'\"](.*?)[\'\"]/)[1];
 }else if(src.indexOf("leduotv")!=-1){
 var pla=request(src,{}).split("var url=\'")[1].split("\'")[0];
 if(pla.indexOf("m3u8")!=-1){
-return pla.split("=")[1]};
+return pla.split("=")[1];
+}else{
+return src};
 }else if(src.indexOf("aHR0c")!=-1){
 return decodeURIComponent(base64Decode(src.split("&")[0]));
 }else if(src.indexOf("haodanxia")!=-1||src.indexOf("cqzyw")!=-1){
 var ul=JSON.parse(fetch(src, {headers:{"User-Agent":"Dalvik/2.1.0"}, redirect:false, withStatusCode:true}));
 if(ul.statusCode=="302"){
-return ul.headers.location[0];
+var play=ul.headers.location[0];
 }else{
-return src};
+var play=src};
+return play;
 }else if(src.indexOf("shenma4480")!=-1){
 var sm="https://www.shenma4480.com/"+fetch(src,{headers:{"User-Agent":MOBILE_UA,"Referer":"https://www.shenma4480.com"}}).match(/var u=\"(.*?)\"/)[1];
 return fetch(sm,{headers:{"User-Agent":MOBILE_UA,"Referer":"https://www.shenma4480.com"}}).match(/url:.*?[\'\"](.*?)[\'\"]/)[1].replace(/[+]/g,"%20");
@@ -253,14 +259,14 @@ var fileUrl ="https://cdn.jsdelivr.net/gh/lzk23559/rulehouse/pako-min.js";
 eval(request(fileUrl,{}));
 return realUrl;
 }else{
-return src+"#.mp4"};
+return src+"#isVideo=true#"};
 }else if(src.indexOf("ddyunp")!=-1||src.indexOf("90mm.me")!=-1){
 if(!fetch("hiker://files/rules/js/kem.js",{})){
-refreshX5WebView(src);return "toast://请等待加载选集！";
+refreshX5WebView(src);
+return "toast://请等待加载选集！";
 }else{
 var fileUrl="hiker://files/rules/js/kem.js";
-var ddjs=fetch(fileUrl,{});
-eval(ddjs);
+eval(fetch(fileUrl,{}));
 return tools.DdyunPlayer.toUrl(src).replace("ddyunp.com","90mm.me")};
 }else if(src.indexOf("xsp1")!=-1){
 var pli=parseDomForHtml(fetch(src,{headers:{"Referer":"https://zz22x.com"}}),"body&&iframe&&src").split("url=")[1];
@@ -269,17 +275,20 @@ if(!fetch("hiker://files/rules/parse.js",{})){
 var fileUrl="https://cdn.jsdelivr.net/gh/lzk23559/Public_folder/parse.js";
 }else{
 var fileUrl="hiker://files/rules/parse.js"}
-var js=fetch(fileUrl,{});
-eval(js);
+eval(fetch(fileUrl,{}));
 var url=yqjx.toUrl(jiek+pli);
 return url!=""?url:getUrl(jiek+pli);
 }else if(src.indexOf("baipiaozy")!=-1||src.indexOf("bowang")!=-1){
-refreshX5WebView(src);return "toast://请等待加载选集！";
+refreshX5WebView(src);
+return "toast://请等待加载选集！";
 }else if(src.indexOf("murl")!=-1){
-refreshX5WebView(src);return "toast://请等待加载选集！";
+refreshX5WebView(src);
+return "toast://请等待加载选集！";
 }else if(src.indexOf("47api")!=-1){
-refreshX5WebView(src);return "toast://请等待加载选集！";
+refreshX5WebView(src);
+return "toast://请等待加载选集！";
 }else if(src.indexOf("yparse.com")!=-1){
-refreshX5WebView(src);return "toast://请等待加载选集！";
+refreshX5WebView(src);
+return "toast://请等待加载选集！";
 }else{return src}
 }
