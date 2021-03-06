@@ -5,30 +5,911 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>268fd05e4baef3c3e471c3b310ef5801</guid>
-<title>字体指南</title>
-<link>https://toutiao.io/k/szwgk5e</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;reward_qrcode_area reward_area tc&quot; id=&quot;js_reward_qrcode&quot;&gt;
-                                &lt;p class=&quot;tips_global&quot;&gt;Long-press QR code to transfer me a reward&lt;/p&gt;
-                                                                &lt;p class=&quot;reward_tips&quot;&gt;赞后➕好友&lt;/p&gt;
-                                &lt;span class=&quot;reward_qrcode_img_wrp&quot;&gt;&lt;img class=&quot;reward_qrcode_img&quot; id=&quot;js_reward_qrcode_img&quot;/&gt;&lt;/span&gt;
-                                &lt;p class=&quot;tips_global&quot;&gt;As required by Apple&#x27;s new policy, the Reward feature has been disabled on Weixin for iOS. You can still reward an Official Account by transferring money via QR code.&lt;/p&gt;
-                            &lt;/div&gt;
-                                                                            
-                              
-            &lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>59b0073567bd95b462182cded9a48649</guid>
+<title>用 Pandas 做用户留存分析</title>
+<link>https://toutiao.io/k/13jbibt</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;%matplotlib inline
+import matplotlib 
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+sns.set(rc={&quot;figure.figsize&quot;: (16, 10)})
+matplotlib.rc(&#x27;font&#x27;, family=&#x27;simhei&#x27;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;我们聚合出了一份 2019 年度的用户下单样例数据，有三个字段，首单月，下单月，用户量&lt;/p&gt;
+
+&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;df1 = pd.read_csv(&quot;./data/order_user_cnt_cohort_sample_data.csv&quot;)
+df1.head()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;div&gt;
+&lt;table border=&quot;1&quot; class=&quot;dataframe&quot;&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th/&gt;
+      &lt;th&gt;首单年月&lt;/th&gt;
+      &lt;th&gt;下单年月&lt;/th&gt;
+      &lt;th&gt;user_cnt&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;2019-01&lt;/td&gt;
+      &lt;td&gt;2019-01&lt;/td&gt;
+      &lt;td&gt;88760&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;2019-01&lt;/td&gt;
+      &lt;td&gt;2019-02&lt;/td&gt;
+      &lt;td&gt;9552&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;2019-02&lt;/td&gt;
+      &lt;td&gt;2019-02&lt;/td&gt;
+      &lt;td&gt;87155&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;2019-03&lt;/td&gt;
+      &lt;td&gt;2019-03&lt;/td&gt;
+      &lt;td&gt;101254&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;2019-02&lt;/td&gt;
+      &lt;td&gt;2019-03&lt;/td&gt;
+      &lt;td&gt;10453&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+
+&lt;p&gt;创建透视表，其实透视表就可以看出留存情况了，只是没那么好理解&lt;/p&gt;
+
+&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;df2 = df1.pivot_table(
+    index=[&#x27;首单年月&#x27;], columns=&#x27;下单年月&#x27;, values=&#x27;user_cnt&#x27;)
+df2
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;div&gt;
+&lt;table border=&quot;1&quot; class=&quot;dataframe&quot;&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;下单年月&lt;/th&gt;
+      &lt;th&gt;2019-01&lt;/th&gt;
+      &lt;th&gt;2019-02&lt;/th&gt;
+      &lt;th&gt;2019-03&lt;/th&gt;
+      &lt;th&gt;2019-04&lt;/th&gt;
+      &lt;th&gt;2019-05&lt;/th&gt;
+      &lt;th&gt;2019-06&lt;/th&gt;
+      &lt;th&gt;2019-07&lt;/th&gt;
+      &lt;th&gt;2019-08&lt;/th&gt;
+      &lt;th&gt;2019-09&lt;/th&gt;
+      &lt;th&gt;2019-10&lt;/th&gt;
+      &lt;th&gt;2019-11&lt;/th&gt;
+      &lt;th&gt;2019-12&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;首单年月&lt;/th&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2019-01&lt;/th&gt;
+      &lt;td&gt;88760.0&lt;/td&gt;
+      &lt;td&gt;9552.0&lt;/td&gt;
+      &lt;td&gt;8207.0&lt;/td&gt;
+      &lt;td&gt;6403.0&lt;/td&gt;
+      &lt;td&gt;5178.0&lt;/td&gt;
+      &lt;td&gt;4894.0&lt;/td&gt;
+      &lt;td&gt;3343.0&lt;/td&gt;
+      &lt;td&gt;3063.0&lt;/td&gt;
+      &lt;td&gt;2443.0&lt;/td&gt;
+      &lt;td&gt;1966.0&lt;/td&gt;
+      &lt;td&gt;3212.0&lt;/td&gt;
+      &lt;td&gt;2278.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2019-02&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;87155.0&lt;/td&gt;
+      &lt;td&gt;10453.0&lt;/td&gt;
+      &lt;td&gt;6388.0&lt;/td&gt;
+      &lt;td&gt;5511.0&lt;/td&gt;
+      &lt;td&gt;4673.0&lt;/td&gt;
+      &lt;td&gt;3335.0&lt;/td&gt;
+      &lt;td&gt;3024.0&lt;/td&gt;
+      &lt;td&gt;2503.0&lt;/td&gt;
+      &lt;td&gt;1815.0&lt;/td&gt;
+      &lt;td&gt;2889.0&lt;/td&gt;
+      &lt;td&gt;1991.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2019-03&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;101254.0&lt;/td&gt;
+      &lt;td&gt;10673.0&lt;/td&gt;
+      &lt;td&gt;8068.0&lt;/td&gt;
+      &lt;td&gt;6835.0&lt;/td&gt;
+      &lt;td&gt;4769.0&lt;/td&gt;
+      &lt;td&gt;4180.0&lt;/td&gt;
+      &lt;td&gt;3531.0&lt;/td&gt;
+      &lt;td&gt;2671.0&lt;/td&gt;
+      &lt;td&gt;4078.0&lt;/td&gt;
+      &lt;td&gt;2841.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2019-04&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;102449.0&lt;/td&gt;
+      &lt;td&gt;10497.0&lt;/td&gt;
+      &lt;td&gt;9495.0&lt;/td&gt;
+      &lt;td&gt;5869.0&lt;/td&gt;
+      &lt;td&gt;5164.0&lt;/td&gt;
+      &lt;td&gt;4244.0&lt;/td&gt;
+      &lt;td&gt;3177.0&lt;/td&gt;
+      &lt;td&gt;5519.0&lt;/td&gt;
+      &lt;td&gt;3600.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2019-05&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;89913.0&lt;/td&gt;
+      &lt;td&gt;11471.0&lt;/td&gt;
+      &lt;td&gt;6562.0&lt;/td&gt;
+      &lt;td&gt;5420.0&lt;/td&gt;
+      &lt;td&gt;4240.0&lt;/td&gt;
+      &lt;td&gt;3090.0&lt;/td&gt;
+      &lt;td&gt;5278.0&lt;/td&gt;
+      &lt;td&gt;3611.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2019-06&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;82524.0&lt;/td&gt;
+      &lt;td&gt;7230.0&lt;/td&gt;
+      &lt;td&gt;5491.0&lt;/td&gt;
+      &lt;td&gt;4311.0&lt;/td&gt;
+      &lt;td&gt;3013.0&lt;/td&gt;
+      &lt;td&gt;6027.0&lt;/td&gt;
+      &lt;td&gt;3579.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2019-07&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;66243.0&lt;/td&gt;
+      &lt;td&gt;6927.0&lt;/td&gt;
+      &lt;td&gt;4457.0&lt;/td&gt;
+      &lt;td&gt;3309.0&lt;/td&gt;
+      &lt;td&gt;5105.0&lt;/td&gt;
+      &lt;td&gt;3090.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2019-08&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;63119.0&lt;/td&gt;
+      &lt;td&gt;5325.0&lt;/td&gt;
+      &lt;td&gt;3454.0&lt;/td&gt;
+      &lt;td&gt;4656.0&lt;/td&gt;
+      &lt;td&gt;3245.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2019-09&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;55891.0&lt;/td&gt;
+      &lt;td&gt;4336.0&lt;/td&gt;
+      &lt;td&gt;5745.0&lt;/td&gt;
+      &lt;td&gt;3748.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2019-10&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;45593.0&lt;/td&gt;
+      &lt;td&gt;5389.0&lt;/td&gt;
+      &lt;td&gt;3550.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2019-11&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;69600.0&lt;/td&gt;
+      &lt;td&gt;5860.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2019-12&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;47870.0&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+
+&lt;p&gt;现在我们按下单月顺序排列&lt;/p&gt;
+
+&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;def cohort_period(df):
+    df[&#x27;CohortPeriod&#x27;] = np.arange(len(df)) + 1
+    return df
+
+cohorts = df1.groupby(&#x27;首单年月&#x27;).apply(cohort_period)
+cohorts.head()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;div&gt;
+&lt;table border=&quot;1&quot; class=&quot;dataframe&quot;&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th/&gt;
+      &lt;th&gt;首单年月&lt;/th&gt;
+      &lt;th&gt;下单年月&lt;/th&gt;
+      &lt;th&gt;user_cnt&lt;/th&gt;
+      &lt;th&gt;CohortPeriod&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;2019-01&lt;/td&gt;
+      &lt;td&gt;2019-01&lt;/td&gt;
+      &lt;td&gt;88760&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;2019-01&lt;/td&gt;
+      &lt;td&gt;2019-02&lt;/td&gt;
+      &lt;td&gt;9552&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;2019-02&lt;/td&gt;
+      &lt;td&gt;2019-02&lt;/td&gt;
+      &lt;td&gt;87155&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;2019-03&lt;/td&gt;
+      &lt;td&gt;2019-03&lt;/td&gt;
+      &lt;td&gt;101254&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;2019-02&lt;/td&gt;
+      &lt;td&gt;2019-03&lt;/td&gt;
+      &lt;td&gt;10453&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+
+&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;cohorts.set_index([&#x27;首单年月&#x27;, &#x27;CohortPeriod&#x27;], inplace=True)
+cohorts.head()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;div&gt;
+&lt;table border=&quot;1&quot; class=&quot;dataframe&quot;&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th&gt;下单年月&lt;/th&gt;
+      &lt;th&gt;user_cnt&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;首单年月&lt;/th&gt;
+      &lt;th&gt;CohortPeriod&lt;/th&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th rowspan=&quot;2&quot; valign=&quot;top&quot;&gt;2019-01&lt;/th&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;2019-01&lt;/td&gt;
+      &lt;td&gt;88760&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;2019-02&lt;/td&gt;
+      &lt;td&gt;9552&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2019-02&lt;/th&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;2019-02&lt;/td&gt;
+      &lt;td&gt;87155&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2019-03&lt;/th&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;2019-03&lt;/td&gt;
+      &lt;td&gt;101254&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2019-02&lt;/th&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;2019-03&lt;/td&gt;
+      &lt;td&gt;10453&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+
+&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;cohort_group_size = cohorts[&#x27;user_cnt&#x27;].groupby(&#x27;首单年月&#x27;).first()
+cohort_group_size
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;首单年月
+2019-01     88760
+2019-02     87155
+2019-03    101254
+2019-04    102449
+2019-05     89913
+2019-06     82524
+2019-07     66243
+2019-08     63119
+2019-09     55891
+2019-10     45593
+2019-11     69600
+2019-12     47870
+Name: user_cnt, dtype: int64
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;cohorts[&#x27;user_cnt&#x27;].unstack(0)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;div&gt;
+&lt;table border=&quot;1&quot; class=&quot;dataframe&quot;&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;首单年月&lt;/th&gt;
+      &lt;th&gt;2019-01&lt;/th&gt;
+      &lt;th&gt;2019-02&lt;/th&gt;
+      &lt;th&gt;2019-03&lt;/th&gt;
+      &lt;th&gt;2019-04&lt;/th&gt;
+      &lt;th&gt;2019-05&lt;/th&gt;
+      &lt;th&gt;2019-06&lt;/th&gt;
+      &lt;th&gt;2019-07&lt;/th&gt;
+      &lt;th&gt;2019-08&lt;/th&gt;
+      &lt;th&gt;2019-09&lt;/th&gt;
+      &lt;th&gt;2019-10&lt;/th&gt;
+      &lt;th&gt;2019-11&lt;/th&gt;
+      &lt;th&gt;2019-12&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;CohortPeriod&lt;/th&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;88760.0&lt;/td&gt;
+      &lt;td&gt;87155.0&lt;/td&gt;
+      &lt;td&gt;101254.0&lt;/td&gt;
+      &lt;td&gt;102449.0&lt;/td&gt;
+      &lt;td&gt;89913.0&lt;/td&gt;
+      &lt;td&gt;82524.0&lt;/td&gt;
+      &lt;td&gt;66243.0&lt;/td&gt;
+      &lt;td&gt;63119.0&lt;/td&gt;
+      &lt;td&gt;55891.0&lt;/td&gt;
+      &lt;td&gt;45593.0&lt;/td&gt;
+      &lt;td&gt;69600.0&lt;/td&gt;
+      &lt;td&gt;47870.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;9552.0&lt;/td&gt;
+      &lt;td&gt;10453.0&lt;/td&gt;
+      &lt;td&gt;10673.0&lt;/td&gt;
+      &lt;td&gt;10497.0&lt;/td&gt;
+      &lt;td&gt;11471.0&lt;/td&gt;
+      &lt;td&gt;7230.0&lt;/td&gt;
+      &lt;td&gt;6927.0&lt;/td&gt;
+      &lt;td&gt;5325.0&lt;/td&gt;
+      &lt;td&gt;4336.0&lt;/td&gt;
+      &lt;td&gt;5389.0&lt;/td&gt;
+      &lt;td&gt;5860.0&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;8207.0&lt;/td&gt;
+      &lt;td&gt;6388.0&lt;/td&gt;
+      &lt;td&gt;8068.0&lt;/td&gt;
+      &lt;td&gt;9495.0&lt;/td&gt;
+      &lt;td&gt;6562.0&lt;/td&gt;
+      &lt;td&gt;5491.0&lt;/td&gt;
+      &lt;td&gt;4457.0&lt;/td&gt;
+      &lt;td&gt;3454.0&lt;/td&gt;
+      &lt;td&gt;5745.0&lt;/td&gt;
+      &lt;td&gt;3550.0&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;6403.0&lt;/td&gt;
+      &lt;td&gt;5511.0&lt;/td&gt;
+      &lt;td&gt;6835.0&lt;/td&gt;
+      &lt;td&gt;5869.0&lt;/td&gt;
+      &lt;td&gt;5420.0&lt;/td&gt;
+      &lt;td&gt;4311.0&lt;/td&gt;
+      &lt;td&gt;3309.0&lt;/td&gt;
+      &lt;td&gt;4656.0&lt;/td&gt;
+      &lt;td&gt;3748.0&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;5&lt;/th&gt;
+      &lt;td&gt;5178.0&lt;/td&gt;
+      &lt;td&gt;4673.0&lt;/td&gt;
+      &lt;td&gt;4769.0&lt;/td&gt;
+      &lt;td&gt;5164.0&lt;/td&gt;
+      &lt;td&gt;4240.0&lt;/td&gt;
+      &lt;td&gt;3013.0&lt;/td&gt;
+      &lt;td&gt;5105.0&lt;/td&gt;
+      &lt;td&gt;3245.0&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;6&lt;/th&gt;
+      &lt;td&gt;4894.0&lt;/td&gt;
+      &lt;td&gt;3335.0&lt;/td&gt;
+      &lt;td&gt;4180.0&lt;/td&gt;
+      &lt;td&gt;4244.0&lt;/td&gt;
+      &lt;td&gt;3090.0&lt;/td&gt;
+      &lt;td&gt;6027.0&lt;/td&gt;
+      &lt;td&gt;3090.0&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;7&lt;/th&gt;
+      &lt;td&gt;3343.0&lt;/td&gt;
+      &lt;td&gt;3024.0&lt;/td&gt;
+      &lt;td&gt;3531.0&lt;/td&gt;
+      &lt;td&gt;3177.0&lt;/td&gt;
+      &lt;td&gt;5278.0&lt;/td&gt;
+      &lt;td&gt;3579.0&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;8&lt;/th&gt;
+      &lt;td&gt;3063.0&lt;/td&gt;
+      &lt;td&gt;2503.0&lt;/td&gt;
+      &lt;td&gt;2671.0&lt;/td&gt;
+      &lt;td&gt;5519.0&lt;/td&gt;
+      &lt;td&gt;3611.0&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;9&lt;/th&gt;
+      &lt;td&gt;2443.0&lt;/td&gt;
+      &lt;td&gt;1815.0&lt;/td&gt;
+      &lt;td&gt;4078.0&lt;/td&gt;
+      &lt;td&gt;3600.0&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;10&lt;/th&gt;
+      &lt;td&gt;1966.0&lt;/td&gt;
+      &lt;td&gt;2889.0&lt;/td&gt;
+      &lt;td&gt;2841.0&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;11&lt;/th&gt;
+      &lt;td&gt;3212.0&lt;/td&gt;
+      &lt;td&gt;1991.0&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;12&lt;/th&gt;
+      &lt;td&gt;2278.0&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+
+&lt;p&gt;转换成百分比&lt;/p&gt;
+
+&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;user_retention = cohorts[&#x27;user_cnt&#x27;].unstack(0).divide(cohort_group_size, axis=1)
+user_retention
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;div&gt;
+&lt;table border=&quot;1&quot; class=&quot;dataframe&quot;&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;首单年月&lt;/th&gt;
+      &lt;th&gt;2019-01&lt;/th&gt;
+      &lt;th&gt;2019-02&lt;/th&gt;
+      &lt;th&gt;2019-03&lt;/th&gt;
+      &lt;th&gt;2019-04&lt;/th&gt;
+      &lt;th&gt;2019-05&lt;/th&gt;
+      &lt;th&gt;2019-06&lt;/th&gt;
+      &lt;th&gt;2019-07&lt;/th&gt;
+      &lt;th&gt;2019-08&lt;/th&gt;
+      &lt;th&gt;2019-09&lt;/th&gt;
+      &lt;th&gt;2019-10&lt;/th&gt;
+      &lt;th&gt;2019-11&lt;/th&gt;
+      &lt;th&gt;2019-12&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;CohortPeriod&lt;/th&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+      &lt;th/&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;1.000000&lt;/td&gt;
+      &lt;td&gt;1.000000&lt;/td&gt;
+      &lt;td&gt;1.000000&lt;/td&gt;
+      &lt;td&gt;1.000000&lt;/td&gt;
+      &lt;td&gt;1.000000&lt;/td&gt;
+      &lt;td&gt;1.000000&lt;/td&gt;
+      &lt;td&gt;1.000000&lt;/td&gt;
+      &lt;td&gt;1.000000&lt;/td&gt;
+      &lt;td&gt;1.000000&lt;/td&gt;
+      &lt;td&gt;1.000000&lt;/td&gt;
+      &lt;td&gt;1.000000&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;0.107616&lt;/td&gt;
+      &lt;td&gt;0.119936&lt;/td&gt;
+      &lt;td&gt;0.105408&lt;/td&gt;
+      &lt;td&gt;0.102461&lt;/td&gt;
+      &lt;td&gt;0.127579&lt;/td&gt;
+      &lt;td&gt;0.087611&lt;/td&gt;
+      &lt;td&gt;0.104570&lt;/td&gt;
+      &lt;td&gt;0.084364&lt;/td&gt;
+      &lt;td&gt;0.077580&lt;/td&gt;
+      &lt;td&gt;0.118198&lt;/td&gt;
+      &lt;td&gt;0.084195&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;0.092463&lt;/td&gt;
+      &lt;td&gt;0.073295&lt;/td&gt;
+      &lt;td&gt;0.079681&lt;/td&gt;
+      &lt;td&gt;0.092680&lt;/td&gt;
+      &lt;td&gt;0.072982&lt;/td&gt;
+      &lt;td&gt;0.066538&lt;/td&gt;
+      &lt;td&gt;0.067283&lt;/td&gt;
+      &lt;td&gt;0.054722&lt;/td&gt;
+      &lt;td&gt;0.102789&lt;/td&gt;
+      &lt;td&gt;0.077863&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;0.072138&lt;/td&gt;
+      &lt;td&gt;0.063232&lt;/td&gt;
+      &lt;td&gt;0.067504&lt;/td&gt;
+      &lt;td&gt;0.057287&lt;/td&gt;
+      &lt;td&gt;0.060280&lt;/td&gt;
+      &lt;td&gt;0.052239&lt;/td&gt;
+      &lt;td&gt;0.049952&lt;/td&gt;
+      &lt;td&gt;0.073765&lt;/td&gt;
+      &lt;td&gt;0.067059&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;5&lt;/th&gt;
+      &lt;td&gt;0.058337&lt;/td&gt;
+      &lt;td&gt;0.053617&lt;/td&gt;
+      &lt;td&gt;0.047099&lt;/td&gt;
+      &lt;td&gt;0.050406&lt;/td&gt;
+      &lt;td&gt;0.047157&lt;/td&gt;
+      &lt;td&gt;0.036511&lt;/td&gt;
+      &lt;td&gt;0.077065&lt;/td&gt;
+      &lt;td&gt;0.051411&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;6&lt;/th&gt;
+      &lt;td&gt;0.055137&lt;/td&gt;
+      &lt;td&gt;0.038265&lt;/td&gt;
+      &lt;td&gt;0.041282&lt;/td&gt;
+      &lt;td&gt;0.041425&lt;/td&gt;
+      &lt;td&gt;0.034367&lt;/td&gt;
+      &lt;td&gt;0.073033&lt;/td&gt;
+      &lt;td&gt;0.046646&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;7&lt;/th&gt;
+      &lt;td&gt;0.037663&lt;/td&gt;
+      &lt;td&gt;0.034697&lt;/td&gt;
+      &lt;td&gt;0.034873&lt;/td&gt;
+      &lt;td&gt;0.031011&lt;/td&gt;
+      &lt;td&gt;0.058701&lt;/td&gt;
+      &lt;td&gt;0.043369&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;8&lt;/th&gt;
+      &lt;td&gt;0.034509&lt;/td&gt;
+      &lt;td&gt;0.028719&lt;/td&gt;
+      &lt;td&gt;0.026379&lt;/td&gt;
+      &lt;td&gt;0.053871&lt;/td&gt;
+      &lt;td&gt;0.040161&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;9&lt;/th&gt;
+      &lt;td&gt;0.027524&lt;/td&gt;
+      &lt;td&gt;0.020825&lt;/td&gt;
+      &lt;td&gt;0.040275&lt;/td&gt;
+      &lt;td&gt;0.035139&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;10&lt;/th&gt;
+      &lt;td&gt;0.022150&lt;/td&gt;
+      &lt;td&gt;0.033148&lt;/td&gt;
+      &lt;td&gt;0.028058&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;11&lt;/th&gt;
+      &lt;td&gt;0.036187&lt;/td&gt;
+      &lt;td&gt;0.022844&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;12&lt;/th&gt;
+      &lt;td&gt;0.025665&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+
+&lt;p&gt;通过颜色渐变的方式用热图展示出来，现在我们可以对比第三个月的留存情况&lt;/p&gt;
+
+&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;plt.figure(figsize=(20, 10))
+plt.title(&#x27;用户下单留存分析&#x27;)
+sns.heatmap(user_retention.T, mask=user_retention.T.isnull(), annot=True, cmap=&quot;rocket_r&quot;, fmt=&#x27;.2%&#x27;);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://img.toutiao.io/attachment/cda6df9b949d4e2ca816e0a1cc3ae3b4/w600&quot; alt=&quot;file&quot;/&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;HowTos 项目 Github 地址： &lt;a href=&quot;https://github.com/toutiaoio/HowTos&quot;&gt;https://github.com/toutiaoio/HowTos&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/div&gt;
+  &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>fa7be8af22ace5afe95386bc4b2d95dd</guid>
-<title>[推荐] 面试官问：在读多写少的情况下，如果优化 MySQL 的数据查询方案</title>
-<link>https://toutiao.io/k/kvgofut</link>
+<guid>6190751319d9314e97acfac4e768aba9</guid>
+<title>万字长文聊缓存（下）：应用级缓存</title>
+<link>https://toutiao.io/k/c1uc4c2</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;摘要&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在上一篇文章 万字长文聊缓存（上）中，我们主要如何围绕着Http做缓存优化，在后端服务器的应用层同样有很多地方可以做缓存，提高服务的效率；本篇我们就来继续聊聊应用级的缓存。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;缓存的命中率&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;缓存的命中率是指从缓存中获取到数据的次数和总读取次数的比率，命中率越高证明缓存的效果越好。这是一个很重要的指标，应该通过监控这个指标来判断我们的缓存是否设置的合理。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;缓存的回收策略&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;基于时间&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;存活期：在设置缓存的同时设置该缓存可以存活多久，不论在存活期内被访问了多少次，时间到了都会过期&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;空闲期：是指缓存的数据多久没有被访问就过期&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;基于空间&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;设置缓存的存储空间，比如：设置缓存的空间是 1G，当达到了1G之后就会按照一定的策略将部分数据移除&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;基于缓存数量&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;设置缓存的最大条目数，当达到了设置的最大条目数之后按照一定的策略将旧的数据移除&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;基于Java对象引用&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;弱引用：当垃圾回收器开始回收内存的时候，如果发现了弱引用，它将立即被回收。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;软引用：当垃圾回收器发现内存已不足的情况下会回收软引用的对象，从而腾出一下空间，防止发生内存溢出。软引用适合用来做堆缓存&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;缓存的回收算法&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;FIFO 先进先出算法&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;LRU 最近最少使用算法&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;LFU 最不常用算法&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;Java缓存的类型&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;堆缓存&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;堆缓存是指把数据缓存在JVM的堆内存中，使用堆缓存的好处是没有序列化和反序列化的操作，是最快的缓存。如果缓存的数据量很大，为了避免造成OOM通常情况下使用的时软引用来存储缓存对象；堆缓存的缺点是缓存的空间有限，并且垃圾回收器暂停的时间会变长。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;Gauva Cache实现堆缓存&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;Cache&amp;lt;String, String&amp;gt; cache = CacheBuilder.newBuilder()&lt;br/&gt;                .build();&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;通过&lt;code&gt;CacheBuilder&lt;/code&gt;构建缓存对象&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Gauva Cache的主要配置和方法&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;put&lt;/code&gt; : 向缓存中设置key-value&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;V get(K key, Callable&amp;lt;? extends V&amp;gt; loader)&lt;/code&gt; : 获取一个缓存值，如果缓存中没有，那么就调用loader获取一个然后放入到缓存&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;expireAfterWrite&lt;/code&gt; : 设置缓存的存活期，写入数据后指定时间之后失效&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;expireAfterAccess&lt;/code&gt; : 设置缓存的空闲期，在给定的时间内没有被访问就会被回收&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;maximumSize&lt;/code&gt; : 设置缓存的最大条目数&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;weakKeys/weakValues&lt;/code&gt; : 设置弱引用缓存&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;softValues&lt;/code&gt; : 设置软引用缓存&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;invalidate/invalidateAll&lt;/code&gt;: 主动失效指定key的缓存数据&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;recordStats&lt;/code&gt; : 启动记录统计信息，可以查看到命中率&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;removalListener&lt;/code&gt; : 当缓存被删除的时候会调用此监听器，可以用于查看为什么缓存会被删除&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;Caffeine实现堆缓存&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Caffeine是使用Java8对Guava缓存的重写版本，高性能Java本地缓存组件，也是Spring推荐的堆缓存的实现，与spring的集成可以查看文档https://docs.spring.io/spring-framework/docs/current/reference/html/integration.html#cache-store-configuration-caffeine。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;由于是对Guava缓存的重写版本，所以很多的配置参数都是和Guava缓存一致：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;initialCapacity&lt;/code&gt;: 初始的缓存空间大小&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;maximumSize&lt;/code&gt;: 缓存的最大条数&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;maximumWeight&lt;/code&gt;: 缓存的最大权重&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;expireAfterAccess&lt;/code&gt;: 最后一次写入或访问后经过固定时间过期&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;expireAfterWrite&lt;/code&gt;: 最后一次写入后经过固定时间过期&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;expireAfter&lt;/code&gt; : 自定义过期策略&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;refreshAfterWrite&lt;/code&gt;: 创建缓存或者最近一次更新缓存后经过固定的时间间隔，刷新缓存&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;weakKeys&lt;/code&gt;: 打开key的弱引用&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;weakValues&lt;/code&gt;：打开value的弱引用&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;softValues&lt;/code&gt;：打开value的软引用&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;recordStats&lt;/code&gt;：开启统计功能&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Caffeine的官方文档：https://github.com/ben-manes/caffeine/wiki&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;pom.xml中添加依赖&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&amp;lt;dependency&amp;gt;&lt;br/&gt;    &amp;lt;groupId&amp;gt;com.github.ben-manes.caffeine&amp;lt;/groupId&amp;gt;&lt;br/&gt;    &amp;lt;artifactId&amp;gt;caffeine&amp;lt;/artifactId&amp;gt;&lt;br/&gt;    &amp;lt;version&amp;gt;2.8.4&amp;lt;/version&amp;gt;&lt;br/&gt;&amp;lt;/dependency&amp;gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;ol start=&quot;2&quot; data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;Caffeine Cache提供了三种缓存填充策略：手动、同步加载和异步加载。&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;手动加载：在每次get key的时候指定一个同步的函数，如果key不存在就调用这个函数生成一个值&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;public Object manual(String key) {&lt;br/&gt;    Cache&amp;lt;String, Object&amp;gt; cache = Caffeine.newBuilder()&lt;br/&gt;            .expireAfterAccess(1, TimeUnit.SECONDS) //设置空闲期时长&lt;br/&gt;            .maximumSize(10)&lt;br/&gt;            .build();&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; cache.get(key, t -&amp;gt; setValue(key).apply(key));&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;public Function&amp;lt;String, Object&amp;gt; setValue(String key){&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; t -&amp;gt; &lt;span&gt;&quot;https://silently9527.cn&quot;&lt;/span&gt;;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;同步加载：构造Cache时候，build方法传入一个CacheLoader实现类。实现load方法，通过key加载value。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;public Object sync(String key){&lt;br/&gt;    LoadingCache&amp;lt;String, Object&amp;gt; cache = Caffeine.newBuilder()&lt;br/&gt;            .maximumSize(100)&lt;br/&gt;            .expireAfterWrite(1, TimeUnit.MINUTES) //设置存活期时长&lt;br/&gt;            .build(k -&amp;gt; setValue(key).apply(key));&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; cache.get(key);&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;public Function&amp;lt;String, Object&amp;gt; setValue(String key){&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; t -&amp;gt; &lt;span&gt;&quot;https://silently9527.cn&quot;&lt;/span&gt;;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;异步加载：AsyncLoadingCache是继承自LoadingCache类的，异步加载使用Executor去调用方法并返回一个CompletableFuture&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;public CompletableFuture async(String key) {&lt;br/&gt;    AsyncLoadingCache&amp;lt;String, Object&amp;gt; cache = Caffeine.newBuilder()&lt;br/&gt;            .maximumSize(100)&lt;br/&gt;            .expireAfterWrite(1, TimeUnit.MINUTES)&lt;br/&gt;            .buildAsync(k -&amp;gt; setAsyncValue().get());&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; cache.get(key);&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;public CompletableFuture&amp;lt;Object&amp;gt; &lt;span&gt;&lt;span&gt;setAsyncValue&lt;/span&gt;&lt;/span&gt;() {&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; CompletableFuture.supplyAsync(() -&amp;gt; &lt;span&gt;&quot;公众号：贝塔学JAVA&quot;&lt;/span&gt;);&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;ol start=&quot;3&quot; data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;监听缓存被清理的事件&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;public void &lt;span&gt;&lt;span&gt;removeListener&lt;/span&gt;&lt;/span&gt;() {&lt;br/&gt;    Cache&amp;lt;String, Object&amp;gt; cache = Caffeine.newBuilder()&lt;br/&gt;            .removalListener((String key, Object value, RemovalCause cause) -&amp;gt; {&lt;br/&gt;                System.out.println(&lt;span&gt;&quot;remove lisitener&quot;&lt;/span&gt;);&lt;br/&gt;                System.out.println(&lt;span&gt;&quot;remove Key:&quot;&lt;/span&gt; + key);&lt;br/&gt;                System.out.println(&lt;span&gt;&quot;remove Value:&quot;&lt;/span&gt; + value);&lt;br/&gt;            })&lt;br/&gt;            .build();&lt;br/&gt;    cache.put(&lt;span&gt;&quot;name&quot;&lt;/span&gt;, &lt;span&gt;&quot;silently9527&quot;&lt;/span&gt;);&lt;br/&gt;    cache.invalidate(&lt;span&gt;&quot;name&quot;&lt;/span&gt;);&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;ol start=&quot;4&quot; data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;统计&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;public void &lt;span&gt;&lt;span&gt;recordStats&lt;/span&gt;&lt;/span&gt;() {&lt;br/&gt;    Cache&amp;lt;String, Object&amp;gt; cache = Caffeine.newBuilder()&lt;br/&gt;            .maximumSize(10000)&lt;br/&gt;            .recordStats()&lt;br/&gt;            .build();&lt;br/&gt;    cache.put(&lt;span&gt;&quot;公众号&quot;&lt;/span&gt;, &lt;span&gt;&quot;贝塔学JAVA&quot;&lt;/span&gt;);&lt;br/&gt;    cache.get(&lt;span&gt;&quot;公众号&quot;&lt;/span&gt;, (t) -&amp;gt; &lt;span&gt;&quot;&quot;&lt;/span&gt;);&lt;br/&gt;    cache.get(&lt;span&gt;&quot;name&quot;&lt;/span&gt;, (t) -&amp;gt; &lt;span&gt;&quot;silently9527&quot;&lt;/span&gt;);&lt;br/&gt;&lt;br/&gt;    CacheStats stats = cache.stats();&lt;br/&gt;    System.out.println(stats);&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;通过 &lt;code&gt;Cache.stats()&lt;/code&gt; 获取到&lt;code&gt;CacheStats&lt;/code&gt;。&lt;code&gt;CacheStats&lt;/code&gt;提供以下统计方法：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;hitRate()&lt;/code&gt;: 返回缓存命中率&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;evictionCount()&lt;/code&gt;: 缓存回收数量&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;averageLoadPenalty()&lt;/code&gt;: 加载新值的平均时间&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;EhCache实现堆缓存&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;EhCache 是老牌Java开源缓存框架，早在2003年就已经出现了，发展到现在已经非常成熟稳定，在Java应用领域应用也非常广泛，而且和主流的Java框架比如Srping可以很好集成。相比于 Guava Cache，EnCache 支持的功能更丰富，包括堆外缓存、磁盘缓存，当然使用起来要更重一些。使用 Ehcache 的Maven 依赖如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&amp;lt;dependency&amp;gt;&lt;br/&gt;    &amp;lt;groupId&amp;gt;org.ehcache&amp;lt;/groupId&amp;gt;&lt;br/&gt;    &amp;lt;artifactId&amp;gt;ehcache&amp;lt;/artifactId&amp;gt;&lt;br/&gt;    &amp;lt;version&amp;gt;3.6.3&amp;lt;/version&amp;gt;&lt;br/&gt;&amp;lt;/dependency&amp;gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;CacheManager cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(&lt;span&gt;true&lt;/span&gt;);&lt;br/&gt;&lt;br/&gt;ResourcePoolsBuilder resource = ResourcePoolsBuilder.heap(10); //设置最大缓存条目数&lt;br/&gt;&lt;br/&gt;CacheConfiguration&amp;lt;String, String&amp;gt; cacheConfig = CacheConfigurationBuilder&lt;br/&gt;        .newCacheConfigurationBuilder(String.class, String.class, resource)&lt;br/&gt;        .withExpiry(ExpiryPolicyBuilder.timeToIdleExpiration(Duration.ofMinutes(10)))&lt;br/&gt;        .build();&lt;br/&gt;&lt;br/&gt;Cache&amp;lt;String, String&amp;gt; cache = cacheManager.createCache(&lt;span&gt;&quot;userInfo&quot;&lt;/span&gt;, cacheConfig);&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;ResourcePoolsBuilder.heap(10)&lt;/code&gt;设置缓存的最大条目数，这是简写方式，等价于&lt;code&gt;ResourcePoolsBuilder.newResourcePoolsBuilder().heap(10, EntryUnit.ENTRIES);&lt;/code&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;ResourcePoolsBuilder.newResourcePoolsBuilder().heap(10, MemoryUnit.MB)&lt;/code&gt;设置缓存最大的空间10MB&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;withExpiry(ExpiryPolicyBuilder.timeToIdleExpiration(Duration.ofMinutes(10)))&lt;/code&gt; 设置缓存空闲时间&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(10)))&lt;/code&gt; 设置缓存存活时间&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;remove/removeAll&lt;/code&gt;主动失效缓存，与Guava Cache类似，调用方法后不会立即去清除回收，只有在get或者put的时候判断缓存是否过期&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;withSizeOfMaxObjectSize(10,MemoryUnit.KB)&lt;/code&gt;限制单个缓存对象的大小，超过这两个限制的对象则不被缓存&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;堆外缓存&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;堆外缓存即缓存数据在堆外内存中，空间大小只受本机内存大小限制，不受GC管理，使用堆外缓存可以减少GC暂停时间，但是堆外内存中的对象都需要序列化和反序列化，KEY和VALUE必须实现Serializable接口，因此速度会比堆内缓存慢。在Java中可以通过 &lt;code&gt;-XX:MaxDirectMemorySize&lt;/code&gt; 参数设置堆外内存的上限&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;CacheManager cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(&lt;span&gt;true&lt;/span&gt;);&lt;br/&gt;// 堆外内存不能按照存储条目限制，只能按照内存大小进行限制，超过限制则回收缓存&lt;br/&gt;ResourcePoolsBuilder resource = ResourcePoolsBuilder.newResourcePoolsBuilder().offheap(10, MemoryUnit.MB);&lt;br/&gt;&lt;br/&gt;CacheConfiguration&amp;lt;String, String&amp;gt; cacheConfig = CacheConfigurationBuilder&lt;br/&gt;        .newCacheConfigurationBuilder(String.class, String.class, resource)&lt;br/&gt;        .withDispatcherConcurrency(4)&lt;br/&gt;        .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(10)))&lt;br/&gt;        .withSizeOfMaxObjectSize(10, MemoryUnit.KB)&lt;br/&gt;        .build();&lt;br/&gt;&lt;br/&gt;Cache&amp;lt;String, String&amp;gt; cache = cacheManager.createCache(&lt;span&gt;&quot;userInfo2&quot;&lt;/span&gt;, cacheConfig);&lt;br/&gt;cache.put(&lt;span&gt;&quot;website&quot;&lt;/span&gt;, &lt;span&gt;&quot;https://silently9527.cn&quot;&lt;/span&gt;);&lt;br/&gt;System.out.println(cache.get(&lt;span&gt;&quot;website&quot;&lt;/span&gt;));&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;磁盘缓存&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;把缓存数据存放到磁盘上，在JVM重启时缓存的数据不会受到影响，而堆缓存和堆外缓存都会丢失；并且磁盘缓存有更大的存储空间；但是缓存在磁盘上的数据也需要支持序列化，速度会被比内存更慢，在使用时推荐使用更快的磁盘带来更大的吞吐率，比如使用闪存代替机械磁盘。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;CacheManagerConfiguration&amp;lt;PersistentCacheManager&amp;gt; persistentManagerConfig = CacheManagerBuilder&lt;br/&gt;        .persistence(new File(&lt;span&gt;&quot;/Users/huaan9527/Desktop&quot;&lt;/span&gt;, &lt;span&gt;&quot;ehcache-cache&quot;&lt;/span&gt;));&lt;br/&gt;&lt;br/&gt;PersistentCacheManager persistentCacheManager = CacheManagerBuilder.newCacheManagerBuilder()&lt;br/&gt;        .with(persistentManagerConfig).build(&lt;span&gt;true&lt;/span&gt;);&lt;br/&gt;&lt;br/&gt;//disk 第三个参数设置为 &lt;span&gt;true&lt;/span&gt; 表示将数据持久化到磁盘上&lt;br/&gt;ResourcePoolsBuilder resource = ResourcePoolsBuilder.newResourcePoolsBuilder().disk(100, MemoryUnit.MB, &lt;span&gt;true&lt;/span&gt;);&lt;br/&gt;&lt;br/&gt;CacheConfiguration&amp;lt;String, String&amp;gt; config = CacheConfigurationBuilder&lt;br/&gt;        .newCacheConfigurationBuilder(String.class, String.class, resource).build();&lt;br/&gt;Cache&amp;lt;String, String&amp;gt; cache = persistentCacheManager.createCache(&lt;span&gt;&quot;userInfo&quot;&lt;/span&gt;,&lt;br/&gt;        CacheConfigurationBuilder.newCacheConfigurationBuilder(config));&lt;br/&gt;&lt;br/&gt;cache.put(&lt;span&gt;&quot;公众号&quot;&lt;/span&gt;, &lt;span&gt;&quot;贝塔学JAVA&quot;&lt;/span&gt;);&lt;br/&gt;System.out.println(cache.get(&lt;span&gt;&quot;公众号&quot;&lt;/span&gt;));&lt;br/&gt;persistentCacheManager.close();&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在JVM停止时，一定要记得调用&lt;code&gt;persistentCacheManager.close()&lt;/code&gt;，保证内存中的数据能够dump到磁盘上。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.9418181818181818&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ggRgNal7zG9F2ju7gN8IBGuHEx94w4UMPM8pORdbfyQj7PYPgpkGpkWibHaXwJUslSuquYeaSDbX9ZoicRottmTg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;275&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这是典型 heap + offheap + disk 组合的结构图，上层比下层速度快，下层比上层存储空间大，在ehcache中，空间大小设置 &lt;code&gt;heap &amp;gt; offheap &amp;gt; disk&lt;/code&gt;，否则会报错；ehcache 会将最热的数据保存在高一级的缓存。这种结构的代码如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;CacheManagerConfiguration&amp;lt;PersistentCacheManager&amp;gt; persistentManagerConfig = CacheManagerBuilder&lt;br/&gt;        .persistence(new File(&lt;span&gt;&quot;/Users/huaan9527/Desktop&quot;&lt;/span&gt;, &lt;span&gt;&quot;ehcache-cache&quot;&lt;/span&gt;));&lt;br/&gt;&lt;br/&gt;PersistentCacheManager persistentCacheManager = CacheManagerBuilder.newCacheManagerBuilder()&lt;br/&gt;        .with(persistentManagerConfig).build(&lt;span&gt;true&lt;/span&gt;);&lt;br/&gt;&lt;br/&gt;ResourcePoolsBuilder resource = ResourcePoolsBuilder.newResourcePoolsBuilder()&lt;br/&gt;        .heap(10, MemoryUnit.MB)&lt;br/&gt;        .offheap(100, MemoryUnit.MB)&lt;br/&gt;        //第三个参数设置为&lt;span&gt;true&lt;/span&gt;，支持持久化&lt;br/&gt;        .disk(500, MemoryUnit.MB, &lt;span&gt;true&lt;/span&gt;);&lt;br/&gt;&lt;br/&gt;CacheConfiguration&amp;lt;String, String&amp;gt; config = CacheConfigurationBuilder&lt;br/&gt;        .newCacheConfigurationBuilder(String.class, String.class, resource).build();&lt;br/&gt;&lt;br/&gt;Cache&amp;lt;String, String&amp;gt; cache = persistentCacheManager.createCache(&lt;span&gt;&quot;userInfo&quot;&lt;/span&gt;,&lt;br/&gt;        CacheConfigurationBuilder.newCacheConfigurationBuilder(config));&lt;br/&gt;&lt;br/&gt;//写入缓存&lt;br/&gt;cache.put(&lt;span&gt;&quot;name&quot;&lt;/span&gt;, &lt;span&gt;&quot;silently9527&quot;&lt;/span&gt;);&lt;br/&gt;// 读取缓存&lt;br/&gt;System.out.println(cache.get(&lt;span&gt;&quot;name&quot;&lt;/span&gt;));&lt;br/&gt;&lt;br/&gt;// 再程序关闭前，需要手动释放资源&lt;br/&gt;persistentCacheManager.close();&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;分布式集中缓存&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;前面提到的堆内缓存和堆外缓存如果在多个JVM实例的情况下会有两个问题：1.单机容量毕竟有限；2.多台JVM实例缓存的数据可能不一致；3.如果缓存数据同一时间都失效了，那么请求都会打到数据库上，数据库压力增大。这时候我们就需要引入分布式缓存来解决，现在使用最多的分布式缓存是redis&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.6351351351351351&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ggRgNal7zG9F2ju7gN8IBGuHEx94w4UM1zxrCeWl4MRrFl6G5VjSVbjcDyBtPvraH9QKco8FA7uyQsu68L1HOg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;740&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当引入分布式缓存之后就可以把应用缓存的架构调整成上面的结构。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;缓存使用模式的实践&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;缓存使用的模式大概分为两类：Cache-Aside、Cache-As-SoR（SoR表示实际存储数据的系统，也就是数据源）&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;Cache-Aside&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;业务代码围绕着缓存来写，通常都是从缓存中来获取数据，如果缓存没有命中，则从数据库中查找，查询到之后就把数据放入到缓存；当数据被更新之后，也需要对应的去更新缓存中的数据。这种模式也是我们通常使用最多的。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;value = cache.get(key); //从缓存中读取数据&lt;br/&gt;&lt;span&gt;if&lt;/span&gt;(value == null) {&lt;br/&gt;    value = loadFromDatabase(key); //从数据库中查询&lt;br/&gt;    cache.put(key, value); //放入到缓存中&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;wirteToDatabase(key, value); //写入到数据库&lt;br/&gt;cache.put(key, value); //放入到缓存中 或者 可以删除掉缓存 cache.remove(key) ，再读取的时候再查一次&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Spring的Cache扩展就是使用的Cache-Aside模式，Spring为了把业务代码和缓存的读取更新分离，对Cache-Aside模式使用AOP进行了封装，提供了多个注解来实现读写场景。官方参考文档：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;@Cacheable&lt;/code&gt; : 通常是放在查询方法上，实现的就是&lt;code&gt;Cache-Aside&lt;/code&gt;读的场景，先查缓存，如果不存在在查询数据库，最后把查询出来的结果放入到缓存。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;@CachePut&lt;/code&gt; : 通常用在保存更新方法上面，实现的就是&lt;code&gt;Cache-Aside&lt;/code&gt;写的场景，更新完成数据库后把数据放入到缓存中。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;@CacheEvict&lt;/code&gt; : 从缓存中删除指定key的缓存&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;❝&lt;/span&gt;&lt;p&gt;对于一些允许有一点点更新延迟基础数据可以考虑使用canal订阅binlog日志来完成缓存的增量更新。&lt;/p&gt;&lt;p&gt;Cache-Aside还有个问题，如果某个时刻热点数据缓存失效，那么会有很多请求同时打到后端数据库上，数据库的压力会瞬间增大&lt;/p&gt;&lt;span&gt;❞&lt;/span&gt;&lt;/blockquote&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;Cache-As-SoR&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Cache-As-SoR模式也就会把Cache看做是数据源，所有的操作都是针对缓存，Cache在委托给真正的SoR去实现读或者写。业务代码中只会看到Cache的操作，这种模式又分为了三种&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;Read Through&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;应用程序始终从缓存中请求数据，如果缓存中没有数据，则它负责使用提供的数据加载程序从数据库中检索数据，检索数据后，缓存会自行更新并将数据返回给调用的应用程序。Gauva Cache、Caffeine、EhCache都支持这种模式；&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;Caffeine实现Read Through
+由于Gauva Cache和Caffeine实现类似，所以这里只展示Caffeine的实现，以下代码来自Caffeine官方文档&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;LoadingCache&amp;lt;Key, Graph&amp;gt; cache = Caffeine.newBuilder()&lt;br/&gt;    .maximumSize(10_000)&lt;br/&gt;    .expireAfterWrite(10, TimeUnit.MINUTES)&lt;br/&gt;    .build(key -&amp;gt; createExpensiveGraph(key));&lt;br/&gt;&lt;br/&gt;// Lookup and compute an entry &lt;span&gt;if&lt;/span&gt; absent, or null &lt;span&gt;if&lt;/span&gt; not computable&lt;br/&gt;Graph graph = cache.get(key);&lt;br/&gt;// Lookup and compute entries that are absent&lt;br/&gt;Map&amp;lt;Key, Graph&amp;gt; graphs = cache.getAll(keys);&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在build Cache的时候指定一个&lt;code&gt;CacheLoader&lt;/code&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;[1] 在应用程序中直接调用&lt;code&gt;cache.get(key)&lt;/code&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;[2] 首先查询缓存，如果缓存存在就直接返回数据&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;[3] 如果不存在，就会委托给&lt;code&gt;CacheLoader&lt;/code&gt;去数据源中查询数据，之后在放入到缓存，返回给应用程序&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;❝&lt;/span&gt;&lt;p&gt;&lt;code&gt;CacheLoader&lt;/code&gt;不要直接返回null，建议封装成自己定义的Null对像，在放入到缓存中，可以防止缓存击穿&lt;/p&gt;&lt;span&gt;❞&lt;/span&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;为了防止因为某个热点数据失效导致后端数据库压力增大的情况，我可以在&lt;code&gt;CacheLoader&lt;/code&gt;中使用锁限制只允许一个请求去查询数据库，其他的请求都等待第一个请求查询完成后从缓存中获取，在上一篇 《万字长文聊缓存（上）》中我们聊到了Nginx也有类似的配置参数&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;value = loadFromCache(key);&lt;br/&gt;&lt;span&gt;if&lt;/span&gt;(value != null) {&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; value;&lt;br/&gt;}&lt;br/&gt;synchronized (lock) {&lt;br/&gt;    value = loadFromCache(key);&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt;(value != null) {&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; value;&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; loadFromDatabase(key);&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;ol start=&quot;2&quot; data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;EhCache实现Read Through&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;CacheManager cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(&lt;span&gt;true&lt;/span&gt;);&lt;br/&gt;ResourcePoolsBuilder resource = ResourcePoolsBuilder.newResourcePoolsBuilder().heap(10, MemoryUnit.MB); //设置最大缓存条目数&lt;br/&gt;CacheConfiguration&amp;lt;String, String&amp;gt; cacheConfig = CacheConfigurationBuilder&lt;br/&gt;        .newCacheConfigurationBuilder(String.class, String.class, resource)&lt;br/&gt;        .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(10)))&lt;br/&gt;        .withLoaderWriter(new CacheLoaderWriter&amp;lt;String, String&amp;gt;(){&lt;br/&gt;            @Override&lt;br/&gt;            public String load(String key) throws Exception {&lt;br/&gt;                //load from database&lt;br/&gt;                &lt;span&gt;return&lt;/span&gt; &lt;span&gt;&quot;silently9527&quot;&lt;/span&gt;;&lt;br/&gt;            }&lt;br/&gt;&lt;br/&gt;            @Override&lt;br/&gt;            public void write(String key, String value) throws Exception {&lt;br/&gt;&lt;br/&gt;            }&lt;br/&gt;&lt;br/&gt;            @Override&lt;br/&gt;            public void delete(String key) throws Exception {&lt;br/&gt;&lt;br/&gt;            }&lt;br/&gt;        })&lt;br/&gt;        .build();&lt;br/&gt;&lt;br/&gt;Cache&amp;lt;String, String&amp;gt; cache = cacheManager.createCache(&lt;span&gt;&quot;userInfo&quot;&lt;/span&gt;, cacheConfig);&lt;br/&gt;System.out.println(cache.get(&lt;span&gt;&quot;name&quot;&lt;/span&gt;));&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在EhCache中使用的是&lt;code&gt;CacheLoaderWriter&lt;/code&gt;来从数据库中加载数据；解决因为某个热点数据失效导致后端数据库压力增大的问题和上面的方式一样，也可以在&lt;code&gt;load&lt;/code&gt;中实现。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;Write Through&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;和Read Through模式类似，当数据进行更新时，先去更新SoR，成功之后在更新缓存。&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;Caffeine实现Write Through&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;Cache&amp;lt;String, String&amp;gt; cache = Caffeine.newBuilder()&lt;br/&gt;        .maximumSize(100)&lt;br/&gt;        .writer(new CacheWriter&amp;lt;String, String&amp;gt;() {&lt;br/&gt;            @Override&lt;br/&gt;            public void write(@NonNull String key, @NonNull String value) {&lt;br/&gt;                //write data to database&lt;br/&gt;                System.out.println(key);&lt;br/&gt;                System.out.println(value);&lt;br/&gt;            }&lt;br/&gt;&lt;br/&gt;            @Override&lt;br/&gt;            public void delete(@NonNull String key, @Nullable String value, @NonNull RemovalCause removalCause) {&lt;br/&gt;                //delete from database&lt;br/&gt;            }&lt;br/&gt;        })&lt;br/&gt;        .build();&lt;br/&gt;&lt;br/&gt;cache.put(&lt;span&gt;&quot;name&quot;&lt;/span&gt;, &lt;span&gt;&quot;silently9527&quot;&lt;/span&gt;);&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Caffeine通过使用&lt;code&gt;CacheWriter&lt;/code&gt;来实现Write Through，&lt;code&gt;CacheWriter&lt;/code&gt;可以同步的监听到缓存的创建、变更和删除操作，只有写成功了才会去更新缓存&lt;/p&gt;&lt;ol start=&quot;2&quot; data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;EhCache实现Write Through&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;CacheManager cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(&lt;span&gt;true&lt;/span&gt;);&lt;br/&gt;ResourcePoolsBuilder resource = ResourcePoolsBuilder.newResourcePoolsBuilder().heap(10, MemoryUnit.MB); //设置最大缓存条目数&lt;br/&gt;CacheConfiguration&amp;lt;String, String&amp;gt; cacheConfig = CacheConfigurationBuilder&lt;br/&gt;        .newCacheConfigurationBuilder(String.class, String.class, resource)&lt;br/&gt;        .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(10)))&lt;br/&gt;        .withLoaderWriter(new CacheLoaderWriter&amp;lt;String, String&amp;gt;(){&lt;br/&gt;            @Override&lt;br/&gt;            public String load(String key) throws Exception {&lt;br/&gt;                &lt;span&gt;return&lt;/span&gt; &lt;span&gt;&quot;silently9527&quot;&lt;/span&gt;;&lt;br/&gt;            }&lt;br/&gt;&lt;br/&gt;            @Override&lt;br/&gt;            public void write(String key, String value) throws Exception {&lt;br/&gt;                //write data to database&lt;br/&gt;                System.out.println(key);&lt;br/&gt;                System.out.println(value);&lt;br/&gt;            }&lt;br/&gt;&lt;br/&gt;            @Override&lt;br/&gt;            public void delete(String key) throws Exception {&lt;br/&gt;                //delete from database&lt;br/&gt;            }&lt;br/&gt;        })&lt;br/&gt;        .build();&lt;br/&gt;&lt;br/&gt;Cache&amp;lt;String, String&amp;gt; cache = cacheManager.createCache(&lt;span&gt;&quot;userInfo&quot;&lt;/span&gt;, cacheConfig);&lt;br/&gt;System.out.println(cache.get(&lt;span&gt;&quot;name&quot;&lt;/span&gt;));&lt;br/&gt;&lt;br/&gt;cache.put(&lt;span&gt;&quot;website&quot;&lt;/span&gt;,&lt;span&gt;&quot;https://silently9527.cn&quot;&lt;/span&gt;);&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;EhCache还是通过&lt;code&gt;CacheLoaderWriter&lt;/code&gt;来实现的，当我们调用&lt;code&gt;cache.put(&quot;xxx&quot;,&quot;xxx&quot;)&lt;/code&gt;进行写缓存的时候，EhCache首先会将写的操作委托给&lt;code&gt;CacheLoaderWriter&lt;/code&gt;，有&lt;code&gt;CacheLoaderWriter.write&lt;/code&gt;去负责写数据源&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;Write Behind&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这种模式通常先将数据写入缓存，再异步地写入数据库进行数据同步。这样的设计既可以减少对数据库的直接访问，降低压力，同时对数据库的多次修改可以合并操作，极大地提升了系统的承载能力。但是这种模式也存在风险，如当缓存机器出现宕机时，数据有丢失的可能。&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;Caffeine要想实现Write Behind可以在&lt;code&gt;CacheLoaderWriter.write&lt;/code&gt;方法中把数据发送到MQ中，实现异步的消费，这样可以保证数据的安全，但是要想实现合并操作就需要扩展功能更强大的&lt;code&gt;CacheLoaderWriter&lt;/code&gt;。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;EhCache实现Write Behind&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;//1 定义线程池&lt;br/&gt;PooledExecutionServiceConfiguration testWriteBehind = PooledExecutionServiceConfigurationBuilder&lt;br/&gt;        .newPooledExecutionServiceConfigurationBuilder()&lt;br/&gt;        .pool(&lt;span&gt;&quot;testWriteBehind&quot;&lt;/span&gt;, 5, 10)&lt;br/&gt;        .build();&lt;br/&gt;&lt;br/&gt;CacheManager cacheManager = CacheManagerBuilder.newCacheManagerBuilder()&lt;br/&gt;        .using(testWriteBehind)&lt;br/&gt;        .build(&lt;span&gt;true&lt;/span&gt;);&lt;br/&gt;ResourcePoolsBuilder resource = ResourcePoolsBuilder.newResourcePoolsBuilder().heap(10, MemoryUnit.MB); //设置最大缓存条目数&lt;br/&gt;&lt;br/&gt;//2 设置回写模式配置&lt;br/&gt;WriteBehindConfiguration testWriteBehindConfig = WriteBehindConfigurationBuilder&lt;br/&gt;        .newUnBatchedWriteBehindConfiguration()&lt;br/&gt;        .queueSize(10)&lt;br/&gt;        .concurrencyLevel(2)&lt;br/&gt;        .useThreadPool(&lt;span&gt;&quot;testWriteBehind&quot;&lt;/span&gt;)&lt;br/&gt;        .build();&lt;br/&gt;&lt;br/&gt;CacheConfiguration&amp;lt;String, String&amp;gt; cacheConfig = CacheConfigurationBuilder&lt;br/&gt;        .newCacheConfigurationBuilder(String.class, String.class, resource)&lt;br/&gt;        .withLoaderWriter(new CacheLoaderWriter&amp;lt;String, String&amp;gt;() {&lt;br/&gt;            @Override&lt;br/&gt;            public String load(String key) throws Exception {&lt;br/&gt;                &lt;span&gt;return&lt;/span&gt; &lt;span&gt;&quot;silently9527&quot;&lt;/span&gt;;&lt;br/&gt;            }&lt;br/&gt;&lt;br/&gt;            @Override&lt;br/&gt;            public void write(String key, String value) throws Exception {&lt;br/&gt;                //write data to database&lt;br/&gt;            }&lt;br/&gt;&lt;br/&gt;            @Override&lt;br/&gt;            public void delete(String key) throws Exception {&lt;br/&gt;            }&lt;br/&gt;        })&lt;br/&gt;        .add(testWriteBehindConfig)&lt;br/&gt;        .build();&lt;br/&gt;&lt;br/&gt;Cache&amp;lt;String, String&amp;gt; cache = cacheManager.createCache(&lt;span&gt;&quot;userInfo&quot;&lt;/span&gt;, cacheConfig);&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;首先使用&lt;code&gt;PooledExecutionServiceConfigurationBuilder&lt;/code&gt;定义了线程池配置；然后使用&lt;code&gt;WriteBehindConfigurationBuilder&lt;/code&gt;设置会写模式配置，其中&lt;code&gt;newUnBatchedWriteBehindConfiguration&lt;/code&gt;表示不进行批量写操作，因为是异步写，所以需要把写操作先放入到队列中，通过&lt;code&gt;queueSize&lt;/code&gt;设置队列大小，&lt;code&gt;useThreadPool&lt;/code&gt;指定使用哪个线程池; &lt;code&gt;concurrencyLevel&lt;/code&gt;设置使用多少个并发线程和队列进行Write Behind&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;EhCache实现批量写的操作也很容易&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;首先把&lt;code&gt;newUnBatchedWriteBehindConfiguration()&lt;/code&gt;替换成&lt;code&gt;newBatchedWriteBehindConfiguration(10, TimeUnit.SECONDS, 20)&lt;/code&gt;，这里设置的是数量达到20就进行批处理，如果10秒内没有达到20个也会进行处理&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;其次在&lt;code&gt;CacheLoaderWriter&lt;/code&gt;中实现wirteAll 和 deleteAll进行批处理&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;❝&lt;/span&gt;&lt;p&gt;如果需要把对相同的key的操作合并起来只记录最后一次数据，可以通过&lt;code&gt;enableCoalescing()&lt;/code&gt;来启用合并&lt;/p&gt;&lt;span&gt;❞&lt;/span&gt;&lt;/blockquote&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;写到最后 点关注，不迷路&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;文中或许会存在或多或少的不足、错误之处，有建议或者意见也非常欢迎大家与我交流。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;最后，&lt;strong&gt;「白嫖不好，创作不易」&lt;/strong&gt;，希望朋友们可以&lt;strong&gt;「点赞」&lt;/strong&gt;，因为这些就是我分享的全部动力来源🙏&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;❝&lt;/span&gt;&lt;p&gt;源码地址：https://github.com/silently9527/CacheTutorial&lt;/p&gt;&lt;span&gt;❞&lt;/span&gt;&lt;/blockquote&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.8764044943820225&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/ggRgNal7zG9F2ju7gN8IBGuHEx94w4UMydibnddeSnUT3qibF1VjpOBzlVbcL7SbbLl6P2eKgzYOicNtupI6nBY0A/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;267&quot;/&gt;&lt;/figure&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>55a6f34dc6fa9d286e4a1c9d19e487ad</guid>
+<title>Golang 性能诊断看这篇就够了</title>
+<link>https://toutiao.io/k/3loin1u</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
                     
 
                     
                     
                     
-                    &lt;p&gt;&lt;img data-ratio=&quot;0.75&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/cyZVqTO3RQbXysT9VpzL335vGMekdkJosXSTGicr1zZkOY0H7WnSkX4PBXuzt1tsKsnPf7tuRR2zvmhMptoagNA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;4032&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;面试官问：假设你负责的某业务在双十一期间要搞运营活动，公司投入了大量的营销费用进行推广，此举会带来巨大的流量，如果你作为架构师或者技术负责人，要如何设计方案来优化 MySQL，从而支持这种突发流量的读多写少的场景？&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;&lt;strong&gt;旁白&lt;/strong&gt;：首先，我们要知道，对于大部分 OLTP 系统来说，读流量都是远远高于写流量的，可能达到几个数量级的差距，例如微信朋友圈，大部分人都是看的多，但可能一个月都发不了一条消息，同理，你上京东，更多的情况下是搜索并浏览商品，真正下单的比例会低很多。其次，使用 Redis 作为 MySQL 的前置缓存，是可以帮助 MySQL 拦截大部分查询请求的，但这种方案适用于与用户账号关联不大的系统，例如搜索系统、商品系统等，这类系统中，每个用户看到的内容是一样的，Redis 缓存命中率非常高。因此实际到达 MySQL 的流量就很低了。但对于像订单系统、账户系统等跟用户账号相关的系统，缓存的命中率就没那么高了，毕竟我们不可能把所有用户的这些信息都缓存到 Redis 中。因此，这种场景下，到达 MySQL 流量就很高了。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;候选人&lt;/strong&gt;：在正常的流量情况下，我们 MySQL 的架构是主从部署模式，读写都是在主库，从库只是作为数据备份。为了应对读多写少的场景，读写分离是首选的方案。对于写操作，数据还是写到主库中，对于读操作，就不再直接从主库中读取数据了，改成读从库，而且，为了支持大流量的读操作，需要部署多个从节点，组成一个集群（从节点之间的数据是一样的，是数据复制不是分片），实现一主多从的部署模式。如下图所示：&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5051124744376279&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/cyZVqTO3RQbXysT9VpzL335vGMekdkJoicxX3ZPq3j4nIzUc5Mfp2af4PZaGctc3vB047LLEA0nzKMOqF2DKAicw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1956&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;面试官&lt;/strong&gt;：好的，那在这种模式下，当你的系统往这个 MySQL 集群提交了一个事务，MySQL 会执行哪些操作呢？&lt;/p&gt;&lt;p&gt;&lt;strong&gt;旁白&lt;/strong&gt;：这个问题的本质是面试官想了解你对 MySQL 集群主从复制原理的掌握情况。MySQL 的主从复制的核心是 binlog，MySQL 的数据变化会以二进制的形式保存到磁盘文件 binlog 中，主从复制的过程就是将 binlog 从主库传输到从库的过程。通常情况下是异步的，但也支持同步方式和半同步方式。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;候选人&lt;/strong&gt;：这个过程可以分成三个阶段：&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;binlog 的写入：MySQL 主库在收到客户端提交事务的请求后，会先把相关操作写入 binlog，然后再提交事务，更新存储引擎中的数据，事务提交完成后，返回给客户端操作成功的响应；&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;binlog 的同步：MySQL 从库会创建一个专门的 I/O 线程，它会连接主库的 log dump 线程，从主库接收 binlog 日志文件，然后把 binlog 信息写入本地的 relay log 中继日志文件中，最后返回复制成功的响应给主库；&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;binlog 的回放：同时，从库会创建一个专门回放 binlog 的线程，它会读取 relay log 中继日志，然后回放 binlog 从而更新存储引擎中的数据，最终实现主从数据的复制和一致性。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;面试官&lt;/strong&gt;：好的，前面你提到 MySQL 是一主多从的部署模式，那当活动期间系统流量很大时，是不是可以通过多增加几台从库的方式就能扛住这种并发的读请求呢？&lt;/p&gt;&lt;p&gt;&lt;strong&gt;候选人&lt;/strong&gt;：不是这样的，从前面我们聊到的主从复制原理可以知道，随着从库数量的增加，连接到主库的从库 I/O 线程也会随之增多，这意味着主库也要创建同样数量的 log dump 线程来处理复制请求，这会对主库造成比较高的资源消耗，同时也会受制于主库的网络带宽。因此，在线上场景中，一个主库通常跟 2～3 个从库。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;面试官&lt;/strong&gt;：好的，那 binlog 从主库复制到从库的过程，是同步的还是异步的？会不会造成数据的丢失？&lt;/p&gt;&lt;p&gt;&lt;strong&gt;候选人&lt;/strong&gt;：默认是异步方式，但也支持同步方式和半同步方式：&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;异步方式：MySQL 提交事务的线程完全不关心 binlog 是否已经同步到从库，事务执行完成就会返回客户端响应结果，这种模式如果主库宕机，数据存在丢失的风险；&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;同步方式：MySQL 提交事务的线程会等待所有从库 binlog 同步成功的响应，这种情况不存在丢数据的情况；&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;半同步方式：MySQL 5.7 版本之后增加的功能，MySQL 提交事务的线程不会等待所有从库 binlog 同步成功的响应，只要有一部分从库同步成功，它就会返回客户端响应结果，同样的，这种方式也不存在丢数据的风险，但性能又比同步方式高。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;面试官&lt;/strong&gt;：好的，由于主从复制存在时间差，而读写分离的方案只会写主库，读从库，那就存在客户端已经将数据写到主库了，但由于主从复制存在延迟的问题，客户端读取不到这条数据，那这种情况有什么解决方案吗？&lt;/p&gt;&lt;p&gt;&lt;strong&gt;候选人&lt;/strong&gt;：这个需要结合具体的业务场景进行分析，主要从架构设计上去做权衡，目前我想到的比较通用的有两种方案：&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;数据放到缓存中：在数据写入主库的同时，也写到缓存（例如 Redis）中，而读取数据时，优先从缓存中读取。不过这种方案存在缓存和数据库一致性的问题，不过这个属于另外一个范畴了，也存在解决方案，这里就不细说了。&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;读主库：通常情况下，我们是禁止读主库的，因为主库存在写请求，会锁行，如果查询的数据量很大且频繁时，会影响读请求的执行，最终对主库造成较大的压力。所以这个方案的执行要谨慎考虑。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;面试官&lt;/strong&gt;：好的，那从代码实现层面看，如果实现读写分离？&lt;/p&gt;&lt;p&gt;&lt;strong&gt;候选人&lt;/strong&gt;：主要有三种方式：&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;自己改造代码，判断 SQL 语句是读还是写，从而将这条语句发送到对应的数据源（主库或者从库）中进行处理&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;部署代理中间件，例如 MyCat，由中间件来处理读写分离，此种方式对对开发者透明，缺点是会增加 SQL 请求的链路长度，增加网络调用的开销&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;使用内嵌到服务中的分库分表组件，例如 Sharding JDBC，该组件会代理所有的数据库请求，自动将请求路由到对应数据库实例上。&lt;/span&gt;&lt;/p&gt;&lt;h3&gt;拓展阅读&lt;/h3&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;&lt;span&gt;读多写少：MySQL 如何优化数据查询方案？&lt;sup&gt;[1]&lt;/sup&gt;&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;&lt;span&gt;MySQL如何应对高并发（二）：读写分离&lt;sup&gt;[2]&lt;/sup&gt;&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;&lt;span&gt;高性能数据库集群：读写分离&lt;sup&gt;[3]&lt;/sup&gt;&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;&lt;span&gt;读写分离有哪些坑？&lt;sup&gt;[4]&lt;/sup&gt;&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;&lt;span&gt;数据库主从同步的作用是什么，如何解决数据不一致问题？&lt;sup&gt;[5]&lt;/sup&gt;&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;&lt;span&gt;数据库优化方案（一）：查询请求增加时，如何做主从分离？&lt;sup&gt;[6]&lt;/sup&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;h3&gt;References&lt;/h3&gt;&lt;p&gt;&lt;code&gt;[1]&lt;/code&gt; 读多写少：MySQL 如何优化数据查询方案？: &lt;em&gt;https://kaiwu.lagou.com/course/courseInfo.htm?courseId=592#/detail/pc?id=6061&lt;/em&gt;&lt;br/&gt;&lt;code&gt;[2]&lt;/code&gt; MySQL如何应对高并发（二）：读写分离: &lt;em&gt;https://time.geekbang.org/column/article/215330&lt;/em&gt;&lt;br/&gt;&lt;code&gt;[3]&lt;/code&gt; 高性能数据库集群：读写分离: &lt;em&gt;https://time.geekbang.org/column/article/8269&lt;/em&gt;&lt;br/&gt;&lt;code&gt;[4]&lt;/code&gt; 读写分离有哪些坑？: &lt;em&gt;https://time.geekbang.org/column/article/77636&lt;/em&gt;&lt;br/&gt;&lt;code&gt;[5]&lt;/code&gt; 数据库主从同步的作用是什么，如何解决数据不一致问题？: &lt;em&gt;https://time.geekbang.org/column/article/135697&lt;/em&gt;&lt;br/&gt;&lt;code&gt;[6]&lt;/code&gt; 数据库优化方案（一）：查询请求增加时，如何做主从分离？: &lt;em&gt;https://time.geekbang.org/column/article/145095&lt;/em&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;
+                    &lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;p&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;&lt;/p&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;img data-ratio=&quot;1.0909090909090908&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/zKDkic1rP1QqFfULibMaiaSmYUW7hCHZWPJIZHepEibOw1peSm7T1cU4N760yuUkh33VV0WdUkM7iadUxpiabR0CYaDw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;44&quot;/&gt;&lt;br/&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;p data-mid=&quot;&quot;&gt;点击上方&lt;span data-mid=&quot;&quot;&gt;蓝字&lt;/span&gt;关注我们&lt;/p&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;img data-ratio=&quot;1.1176470588235294&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/l6ryX6MCe8gbTZCu4DCDb0G8icjTQbP0oAp7UwiaVCX2bFe7EqIKj0OQmSX1dveSTOOiafythEico4lRx5jRXKricXw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;34&quot;/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.66640625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/brwbhUj36Sx7lCvulE3DIfgAPYFGGUfOf2ruibNMpw9CMr3jO4qp4yN4vsuVf18Ueu6bcq50jbELCFXQRpNQqjg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;section&gt;我们日常接触性能诊断问题，一般分为两种情况，一是线上应用真的出现性能问题；二是我们需要对准备上线的系统进行性能预估；后者需要压力测试辅助进行，此处不表。&lt;br/&gt;&lt;/section&gt;&lt;section&gt;针对GO应用，性能诊断工具主要分为两层:OS层面和GO应用层面(go tool pprof /trace /gc)&lt;/section&gt;&lt;p&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;&lt;/p&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;OS诊断&lt;br/&gt;&lt;/section&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;系统诊断，我们一般主要关注三个方面: CPU 、Memory、I/O&lt;br/&gt;&lt;/section&gt;&lt;p&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;&lt;/p&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;h2 mpa-is-content=&quot;t&quot;&gt;&lt;span&gt;1.1 CPU&lt;/span&gt;&lt;/h2&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;CPU诊断主要关注平均负载（Load Average），CPU使用率，上下文切换（Context Switch）。常用&lt;span&gt;&lt;strong&gt;top&lt;/strong&gt;&lt;/span&gt;命令查看cpu使用率以及服务器负载情况。&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.1296875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/brwbhUj36Sx7lCvulE3DIfgAPYFGGUfOouKulWoXicmX7ib8xnpJQmSZjB1EZQjLEFl6472bIYfUorhWVEibYarSw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;平均负载:0.14 0.07 0.06 分别表示过去1分钟、5分钟、15分钟的机器负载的平均值，根据经验，若负载数值小于0.7*CPU个数则正常，超过或者达到CPU核数的四五倍，则系统的负载就明显偏高。&lt;/p&gt;&lt;p&gt;CPU的上下文切换情况可&lt;span&gt;通过&lt;/span&gt;&lt;strong&gt;&lt;span&gt;vmstat&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;命令可以查看，上下文切换发生的场景有如下几种:&lt;/span&gt;&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;时间片用完，CPU正常调度下一个任务&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;被其他优先级更高的任务抢占&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;执行任务碰到I/O阻塞，挂起当前任务，切换到下一个任务&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;用户代码主动挂起当前任务让出CPU&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;多任务抢占资源，因没抢到而被挂起&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;硬件中断&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;h2 mpa-is-content=&quot;t&quot;&gt;&lt;span&gt;1.2  Memory&lt;/span&gt;&lt;/h2&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;从操作系统角度，内存关注应用进程是否足够，可以使用 free –m 命令查看内存的使用情况。&lt;/p&gt;&lt;p&gt;通过 top 命令可以查看进程使用的虚拟内存 VIRT 和物理内存 RES，根据公式 VIRT = SWAP + RES 可以推算出具体应用使用的交换分区（Swap）情况，使用交换分区过大会影响 应用性能，可以将 swappiness 值调到尽可能小。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;&lt;/p&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;h2 mpa-is-content=&quot;t&quot;&gt;&lt;span&gt;1.3 I/O&lt;/span&gt;&lt;/h2&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;I/O 包括磁盘 I/O 和网络 I/O，一般情况下磁盘更容易出现 I/O 瓶颈。通过&lt;span&gt;&lt;strong&gt;iostat&lt;/strong&gt;&lt;/span&gt;可以查看磁盘的读写情况，通过 CPU 的 I/O wait 可以看出磁盘 I/O 是否正常。&lt;/p&gt;&lt;p&gt;如果磁盘 I/O 一直处于很高的状态，说明磁盘太慢或故障，成为了性能瓶颈，需要进行应用优化或者磁盘更换。&lt;/p&gt;&lt;p&gt;除了常用的 top、 ps、vmstat、iostat 等命令，还有其他 Linux 工具可以诊断系统问题，如 mpstat、tcpdump、netstat、pidstat、sar 等 更多Linux性能诊断工具如下图：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.5873873873873874&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/brwbhUj36Sx7lCvulE3DIfgAPYFGGUfODpGoMKJia5YRHkgWiaFicyBDjM2rAfnNC4crRBOtUHVrPV84picvtg9zAQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;555&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;GO应用诊断&lt;/section&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;go生态已经为我们提供了大量的API和诊断工具帮助我们解决go应用的性能问题。我们常用的大致可以分为两类:&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;h2 mpa-is-content=&quot;t&quot;&gt;&lt;span mpa-is-content=&quot;t&quot;&gt;2.1 profiling&lt;/span&gt;&lt;/h2&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;profile一般被称为性能分析，对程序而言，就是程序运行时的各种概况信息，包括cpu占用情况、内存情况、线程情况等。方便分析昂贵或频繁调用的程序场景。&lt;/section&gt;&lt;section&gt;&lt;span&gt;如何使用？&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;1.首先&lt;/span&gt;&lt;span&gt;profiling代码埋入&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;go&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;import&lt;/span&gt; _ &lt;span class=&quot;code-snippet__string&quot;&gt;&quot;net/http/pprof&quot;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__keyword&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        log.Println(http.ListenAndServe(&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;0.0.0.0:9090&quot;&lt;/span&gt;, &lt;span class=&quot;code-snippet__literal&quot;&gt;nil&lt;/span&gt;))&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    }()&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    ...&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2.保存特定时间点的profile，例如保存heap信息&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;nginx&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attribute&quot;&gt;curl&lt;/span&gt; http://localhost:6060/debug/pprof/heap --output heap.tar.gz&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;3.使用go tool pprof 分析保存的profile快照，如分析上述heap信息&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;css&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__selector-tag&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;code-snippet__selector-tag&quot;&gt;tool&lt;/span&gt; &lt;span class=&quot;code-snippet__selector-tag&quot;&gt;pprof&lt;/span&gt; &lt;span class=&quot;code-snippet__selector-tag&quot;&gt;heap&lt;/span&gt;&lt;span class=&quot;code-snippet__selector-class&quot;&gt;.tar&lt;/span&gt;&lt;span class=&quot;code-snippet__selector-class&quot;&gt;.gz&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;h2 mpa-is-content=&quot;t&quot;&gt;&lt;span mpa-is-content=&quot;t&quot;&gt;2.1.1  CPU Profiling&lt;/span&gt;&lt;/h2&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;pprof可以帮忙我们分析出函数执行缓慢问题 &lt;span&gt; &lt;/span&gt;&lt;span&gt;C&lt;/span&gt;&lt;span&gt;PU占用过高问题&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;ruby&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;go tool pprof &lt;span class=&quot;code-snippet__symbol&quot;&gt;http:&lt;/span&gt;/&lt;span class=&quot;code-snippet__regexp&quot;&gt;/localhost:6060/debug&lt;/span&gt;&lt;span class=&quot;code-snippet__regexp&quot;&gt;/pprof/profile&lt;/span&gt;?second=&lt;span class=&quot;code-snippet__number&quot;&gt;10&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;命令行方式: 常用命令 top  list traces&lt;/p&gt;&lt;p&gt;top: 查看按照占用内存或cpu多少排序的前10的函数信息&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;flat:当前函数占用的CPU时长（&lt;span&gt;&lt;strong&gt;不包含其调用的其他函数&lt;/strong&gt;&lt;/span&gt;）&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;flat%:当前函数使用CPU占总CPU时长的百分比&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;sum%:前面每一行flat百分比的和&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;cum: 累计量，当前函数及其子函数占用CPU时长 &lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;cum%:累计量占总量的百分比&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;       cum&amp;gt;=flat&lt;/p&gt;&lt;p&gt;list: 查看某个函数的代码 以及该函数每行代码的指标信息&lt;/p&gt;&lt;p&gt;traces:打印所有函数调用栈 以及调用栈的指标信息&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;1.0140625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/brwbhUj36Sx7lCvulE3DIfgAPYFGGUfOeQA3ECiaHM1QIZqylVJPwcDpH681RanMxxdVgMpIibAvZ1HvfKfI5CQg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;UI界面方式：从服务器download下生成的sample文件  &lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;nginx&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attribute&quot;&gt;go&lt;/span&gt; tool pprof -http=:&lt;span class=&quot;code-snippet__number&quot;&gt;8080&lt;/span&gt; pprof.xxx.samples.cpu.&lt;span class=&quot;code-snippet__number&quot;&gt;001&lt;/span&gt;.pb.gz&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.61328125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/brwbhUj36Sx7lCvulE3DIfgAPYFGGUfOyicag1qDSS6EXqGTCWA0icI2Ilm5SZwk8qMMGoicfic8iclm8nBNmS5wiaEw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.51015625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/brwbhUj36Sx7lCvulE3DIfgAPYFGGUfO87PlJ6OgdxD0SA79sGG7rwZPvoYsbVAeZ1luAwCkrfzJO3OJgh3wOA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;Flame graph很清晰得可以看到当前CPU被哪些函数执行栈占用&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;1.2 Heap Profiling&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;ruby&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;go tool pprof &lt;span class=&quot;code-snippet__symbol&quot;&gt;http:&lt;/span&gt;/&lt;span class=&quot;code-snippet__regexp&quot;&gt;/localhost:6060/debug&lt;/span&gt;&lt;span class=&quot;code-snippet__regexp&quot;&gt;/pprof/heap&lt;/span&gt;?second=&lt;span class=&quot;code-snippet__number&quot;&gt;10&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;命令行 UI查看方式 同理&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.66796875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/brwbhUj36Sx7lCvulE3DIfgAPYFGGUfO37ZQPFXLfV6gS3hj3THd6nXBWalicznicS3jXvhIl1fWom5IZvKIaVZA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.396875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/brwbhUj36Sx7lCvulE3DIfgAPYFGGUfO6Gib1BCUmRKqKu43LWRI2ZaqS7icB1pAItMlsbiceTwbibKxZM3ouibp0CA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;graph中方框越大 占用内存越多  火焰图 宽度越大 占用内存越多&lt;/p&gt;&lt;p&gt;SAMPLE-&amp;gt;inuse_objects可以查看当前的对象数量 这个参数对于分析gc线程占用较高cpu时很有用处 它侧重查看对象数量&lt;/p&gt;&lt;p&gt;inuse_space图可以查看具体的内存占用&lt;/p&gt;&lt;p&gt;毕竟对于10个100m的对象和1亿个10字节的对象占用内存几乎一样大，但是回收起来一亿个小对象肯定比10个大对象要慢很多。&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;ruby&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;go tool pprof -inuse_space &lt;span class=&quot;code-snippet__symbol&quot;&gt;http:&lt;/span&gt;/&lt;span class=&quot;code-snippet__regexp&quot;&gt;/localhost:6060/debug&lt;/span&gt;&lt;span class=&quot;code-snippet__regexp&quot;&gt;/pprof/heap&lt;/span&gt; : 分析应用程序的常驻内存占用情况 （默认）&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;go tool pprof -alloc_objects &lt;span class=&quot;code-snippet__symbol&quot;&gt;http:&lt;/span&gt;/&lt;span class=&quot;code-snippet__regexp&quot;&gt;/localhost:6060/debug&lt;/span&gt;&lt;span class=&quot;code-snippet__regexp&quot;&gt;/pprof/heap&lt;/span&gt;: 分析应用程序的内存临时分配情况&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;1&lt;/span&gt;&lt;span&gt;.3 并发请求问题 查看方式跟上面类似。&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;ruby&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;go tool pprof &lt;span class=&quot;code-snippet__symbol&quot;&gt;http:&lt;/span&gt;/&lt;span class=&quot;code-snippet__regexp&quot;&gt;/localhost:6060/debug&lt;/span&gt;&lt;span class=&quot;code-snippet__regexp&quot;&gt;/pprof/goroutine&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;go tool pprof &lt;span class=&quot;code-snippet__symbol&quot;&gt;http:&lt;/span&gt;/&lt;span class=&quot;code-snippet__regexp&quot;&gt;/localhost:6060/debug&lt;/span&gt;&lt;span class=&quot;code-snippet__regexp&quot;&gt;/pprof/block&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;go tool pprof &lt;span class=&quot;code-snippet__symbol&quot;&gt;http:&lt;/span&gt;/&lt;span class=&quot;code-snippet__regexp&quot;&gt;/localhost:6060/debug&lt;/span&gt;&lt;span class=&quot;code-snippet__regexp&quot;&gt;/pprof/mutex&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;h2 mpa-is-content=&quot;t&quot;&gt;&lt;span&gt;2.2 tracing&lt;/span&gt;&lt;/h2&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;trace并不是万能的，它更侧重于记录分析 采样时间内运行时系统具体干了什么。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;收集trace数据的三种方式:&lt;/p&gt;&lt;p&gt;1. 使用runtime/trace包 调用trace.Start()和trace.Stop()&lt;/p&gt;&lt;p&gt;2. 使用go test -trace=&amp;lt;file&amp;gt;测试标识&lt;/p&gt;&lt;p&gt;3. 使用debug/pprof/trace handler 获取运行时系统最好的方法&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;例如，通过 &lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;nginx&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attribute&quot;&gt;go&lt;/span&gt; tool pprof http://localhost:6060/debug/pprof/trace?seconds=20 &amp;gt; trace.out&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;获取运行时服务的trace信息，&lt;span&gt;使用&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;cs&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;go tool trace trace.&lt;span class=&quot;code-snippet__keyword&quot;&gt;out&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt; 会自动打开浏览器展示出UI界面&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.846875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/brwbhUj36Sx7lCvulE3DIfgAPYFGGUfO1kJnnAJbibgqlVmbOcx0jmmhW3ibZY7ySAibq3pubELMicZbufq4CyduFg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;其中trace view 只能使用chrome浏览器查看，这里go截止1.14版本存在一个 bug，解决办法如下：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;properties&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attr&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;code-snippet__string&quot;&gt;tool trace trace.out 无法查看trace view&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attr&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;code-snippet__string&quot;&gt;bug:https://github.com/golang/go/issues/25151&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attr&quot;&gt;mac&lt;/span&gt; &lt;span class=&quot;code-snippet__string&quot;&gt;解决版本：安装gotip&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attr&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;code-snippet__string&quot;&gt;get golang.org/dl/gotip&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attr&quot;&gt;gotip&lt;/span&gt; &lt;span class=&quot;code-snippet__string&quot;&gt;download&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attr&quot;&gt;then&lt;/span&gt;  &lt;span class=&quot;code-snippet__string&quot;&gt;使用 gotip tool trace trace.out即可&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;获取的trace.out 二进制文件也可以转化为pprof格式的文件&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;properties&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attr&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;code-snippet__string&quot;&gt;tool trace -pprof=TYPE trace.out &amp;gt; TYPE.pprof&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attr&quot;&gt;Tips&lt;/span&gt;:&lt;span class=&quot;code-snippet__string&quot;&gt;生成的profile文件 支持 network profiling、synchronization profiling、syscall profiling、scheduler profiling&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attr&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;code-snippet__string&quot;&gt;tool pprof TYPE.pprof&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;使用gotip tool trace trace.out可以查看到trace view的丰富操作界面：&lt;/p&gt;&lt;p&gt;操作技巧：&lt;/p&gt;&lt;p&gt;ctrl + 1  选择信息&lt;/p&gt;&lt;p&gt;ctrl + 2 移动选区&lt;/p&gt;&lt;p&gt;ctrl + 3 放大选区&lt;/p&gt;&lt;p&gt;ctrl + 4 指定选区区间&lt;/p&gt;&lt;p&gt;shift + ? 帮助信息&lt;/p&gt;&lt;p&gt;AWSD跟游戏快捷键类似 玩起来跟顺手&lt;/p&gt;&lt;p&gt;整体的控制台信息 如下图：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.315625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/brwbhUj36Sx7lCvulE3DIfgAPYFGGUfOMqvic3WmearPhlg0IoCRzXnN2L3ItRSd5FO6lzldibj6giaeGiaWMR1jmg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;goroutine区域选中时间区间&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5934065934065934&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/brwbhUj36Sx7lCvulE3DIfgAPYFGGUfOk2LAklZclufTyWe4EntS6n3bRrApTQNPBnf8FiaUUha5ozQQ9icwGa5A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1274&quot;/&gt;&lt;/p&gt;&lt;p&gt;OS线程(Machine): 显示在执行期间有多少个线程在运行，其包含正在调用 Syscall（InSyscall）、运行中（Running）这两种状态。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.55390625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/brwbhUj36Sx7lCvulE3DIfgAPYFGGUfOmz7lJXS0aO6yOOZwHrODvXLD6G7MxkL9tGK9bTv8dCD2vicRYJwic1Cw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;每个Processor分两层，上一层表示Processor上运行的goroutine的信息，下一层表示processor附加的事件比如SysCall 或runtime system events&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.34609375&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/brwbhUj36Sx7lCvulE3DIfgAPYFGGUfO9kkhzmn68CvaZQGcDLvutOEPz48BHMkcd1lCkHmPib0YdXuAHx3gK5w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;ctrl+3 放大选区，选中goroutine 可以查看，特定时间点 特定goroutine的执行堆栈信息以及关联的事件信息&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.55078125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/brwbhUj36Sx7lCvulE3DIfgAPYFGGUfOEtDxDXIF2PNnhDqnksOAHCSn92GQsubINZUrWfaNnXXV6hCJnTsJXA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;goroutine analysis&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.63046875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/brwbhUj36Sx7lCvulE3DIfgAPYFGGUfO23bdp926gOtQV45lJKeqXPHoicicjbMDW2FyZyQNXLodK0CKgvMAIM7Q/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;点击goroutine的id 可以跳到trace view 详细查看goroutine具体干了什么&lt;/p&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td valign=&quot;top&quot;&gt;名称&lt;br/&gt;&lt;/td&gt;&lt;td valign=&quot;top&quot;&gt;含义&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;top&quot;&gt;Execution&lt;/td&gt;&lt;td valign=&quot;top&quot;&gt;执行时间&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;top&quot;&gt;Network wait&lt;/td&gt;&lt;td valign=&quot;top&quot;&gt;网络等待时间&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;top&quot;&gt;Sync Block&lt;/td&gt;&lt;td valign=&quot;top&quot;&gt;同步阻塞时间&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;top&quot;&gt;Blocking syscall&lt;/td&gt;&lt;td valign=&quot;top&quot;&gt;系统调用阻塞时间&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;top&quot;&gt;Scheduler wait&lt;/td&gt;&lt;td valign=&quot;top&quot;&gt;调度等待时间&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;top&quot;&gt;GC Sweeping&lt;/td&gt;&lt;td valign=&quot;top&quot;&gt;GC清扫时间&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;top&quot;&gt;GC Pause&lt;/td&gt;&lt;td valign=&quot;top&quot;&gt;GC暂停时间&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;实践 一个延迟问题诊断&lt;/p&gt;&lt;p&gt;当我们一个执行关键任务的协程从运行中被阻塞。这里可能的原因：被syscall阻塞 、阻塞在共享内存(channel/mutex etc)、阻塞在运行时(如 GC)、甚至有可能是运行时调度器不工作导致的。这种问题使用pprof很难排查，&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;使用trace只要我们确定了时间范围就可以在proc区域很容易找到问题的源头&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.321875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/brwbhUj36Sx7lCvulE3DIfgAPYFGGUfOVgb9CFk7SuDlOXq3bcIfwarPKrQdm8iaXhILvmTmpydMAK1fMzKMYEQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;上图可见，GC 的MARK阶段阻塞了主协程的运行&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;h2 mpa-is-content=&quot;t&quot;&gt;&lt;span mpa-is-content=&quot;t&quot;&gt;2.3 GC&lt;/span&gt;&lt;/h2&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;golang的gc算法是根据标记清除改进的三色标记法，大概流程:&lt;br/&gt;&lt;/section&gt;&lt;p&gt;初始所有对象都是白色&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;Stack scan阶段:&lt;span&gt;从root&lt;/span&gt;&lt;span&gt;出发扫描所有可达对象，标记为灰色并放入待处理队列；root包括全局指针和goroutine栈上的指针&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;Mark阶段:1.&lt;span&gt;从待处理队列取出灰色对象，将其引用的对象标记为灰色并放入队列，自身标记为黑色 2. re-scan全局指针和栈，因为mark和用户程序并行运行，故过程1的时候可能会有新的对象分配，这时需要通过写屏障(write barrier)记录下来；re-scan再完成检查；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;重复步骤Mark阶段，直到灰色对象队列为空，执行清扫工作（白色即为垃圾对象）&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;section&gt;go的三色标记法也存在STW(Stop The World&lt;span&gt;),大致有两个场景&lt;/span&gt;&lt;/section&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;GC即将开始时，需要STW 做一些准备工作， 如enable write barrier&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;re-scan也需要STW，否则上面Mark阶段的re-scan无法终止&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;通过GODEBUG=gctrace=1可以开启gc日志，查看gc的结果信息&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;properties&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__meta&quot;&gt;$&lt;/span&gt; &lt;span class=&quot;code-snippet__string&quot;&gt;GODEBUG=gctrace=1 go run main.go   &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attr&quot;&gt;gc&lt;/span&gt; &lt;span class=&quot;code-snippet__string&quot;&gt;1 @0.001s 19%: 0.014+3.7+0.015 ms clock, 0.11+2.8/5.7/3.2+0.12 ms cpu, 5-&amp;gt;6-&amp;gt;6 MB, 6 MB goal, 8 P&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attr&quot;&gt;gc&lt;/span&gt; &lt;span class=&quot;code-snippet__string&quot;&gt;2 @0.024s 6%: 0.004+3.4+0.010 ms clock, 0.032+1.4/4.5/5.3+0.085 ms cpu, 13-&amp;gt;14-&amp;gt;13 MB, 14 MB goal, 8 P&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attr&quot;&gt;gc&lt;/span&gt; &lt;span class=&quot;code-snippet__string&quot;&gt;3 @0.093s 3%: 0.004+6.1+0.027 ms clock, 0.032+0.19/11/15+0.22 ms cpu, 24-&amp;gt;25-&amp;gt;22 MB, 26 MB goal, 8 P&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attr&quot;&gt;scvg&lt;/span&gt;: &lt;span class=&quot;code-snippet__string&quot;&gt;0 MB released&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attr&quot;&gt;scvg&lt;/span&gt;: &lt;span class=&quot;code-snippet__string&quot;&gt;inuse: 4, idle: 58, sys: 63, released: 58, consumed: 4 (MB)&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attr&quot;&gt;scvg&lt;/span&gt;: &lt;span class=&quot;code-snippet__string&quot;&gt;0 MB released&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attr&quot;&gt;scvg&lt;/span&gt;: &lt;span class=&quot;code-snippet__string&quot;&gt;inuse: 4, idle: 58, sys: 63, released: 58, consumed: 4 (MB)&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attr&quot;&gt;scvg&lt;/span&gt;: &lt;span class=&quot;code-snippet__string&quot;&gt;0 MB released&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attr&quot;&gt;scvg&lt;/span&gt;: &lt;span class=&quot;code-snippet__string&quot;&gt;inuse: 4, idle: 58, sys: 63, released: 58, consumed: 4 (MB)&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attr&quot;&gt;scvg&lt;/span&gt;: &lt;span class=&quot;code-snippet__string&quot;&gt;0 MB released&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attr&quot;&gt;scvg&lt;/span&gt;: &lt;span class=&quot;code-snippet__string&quot;&gt;inuse: 4, idle: 58, sys: 63, released: 58, consumed: 4 (MB)&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;格式&lt;/p&gt;&lt;p&gt;gc # @#s #%: #+#+# ms clock, #+#/#/#+# ms cpu, #-&amp;gt;#-&amp;gt;# MB, # MB goal, # P&lt;/p&gt;&lt;p&gt;含义&lt;/p&gt;&lt;p&gt;gc#：GC 执行次数的编号，每次叠加。&lt;/p&gt;&lt;p&gt;@#s：自程序启动后到当前的具体秒数。&lt;/p&gt;&lt;p&gt;#%：自程序启动以来在GC中花费的时间百分比。&lt;/p&gt;&lt;p&gt;#+...+#：GC 的标记工作共使用的 CPU 时间占总 CPU 时间的百分比。&lt;/p&gt;&lt;p&gt;#-&amp;gt;#-&amp;gt;# MB：分别表示 GC 启动时, GC 结束时, GC 活动时的堆大小.&lt;/p&gt;&lt;p&gt;#MB goal：下一次触发 GC 的内存占用阈值。&lt;/p&gt;&lt;p&gt;#P：当前使用的处理器 P 的数量。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;拓展&lt;/section&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;当我们的程序陷入CPU 和IO混和负载过高时，我们使用pprof profile只能检测出CPU耗时的函数，但是屏蔽了IO等待过长的函数。&lt;/section&gt;&lt;p&gt;https://github.com/felixge/fgprof  给出了一个解决方案：&lt;/p&gt;&lt;section&gt;具体做法是:用一个后台协程在采样时间区间内每秒99次调用runtime.GoruntineProfile，返回的结果忽略了协程当时消耗CPU还是非消耗CPU的区别 进行统计，保存在内存中的map中，可导出转化为pprof&lt;/section&gt;&lt;p&gt;具体用法：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;go&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;package&lt;/span&gt; main&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;import&lt;/span&gt;(&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    _ &lt;span class=&quot;code-snippet__string&quot;&gt;&quot;net/http/pprof&quot;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__string&quot;&gt;&quot;github.com/felixge/fgprof&quot;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    http.DefaultServeMux.Handle(&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;/debug/fgprof&quot;&lt;/span&gt;, fgprof.Handler())&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__keyword&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        log.Println(http.ListenAndServe(&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;:6060&quot;&lt;/span&gt;, &lt;span class=&quot;code-snippet__literal&quot;&gt;nil&lt;/span&gt;))&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    }()&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;git clone https:&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;cd FlameGraph&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;curl -s &lt;span class=&quot;code-snippet__string&quot;&gt;&#x27;localhost:6060/debug/fgprof?seconds=3&#x27;&lt;/span&gt; &amp;gt; fgprof.fold&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;./flamegraph.pl fgprof.fold &amp;gt; fgprof.svg&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;如果遇到这种CPU消耗型和非CPU消耗型混合的情况下 可以试试排查下。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;&lt;/p&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-mpa-category=&quot;引导&quot; data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;p data-mid=&quot;&quot;&gt;扫描二维码&lt;/p&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;p data-mid=&quot;&quot;&gt;获取更多精彩&lt;/p&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;p data-mid=&quot;&quot;&gt;光华路程序猿&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;img data-cropselx1=&quot;0&quot; data-cropselx2=&quot;120&quot; data-cropsely1=&quot;0&quot; data-cropsely2=&quot;120&quot; data-ratio=&quot;1&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/brwbhUj36SyoCoJyPpV17ks2fEH3zn3D4nqD0TiaoytDa1nWVy2otQWNbQQKtvESltEUzqLyMOeAicCSPH2fMvwQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;258&quot;/&gt; &lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;
                 &lt;/div&gt;
 
                 
@@ -41,22 +922,70 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>4c320e6da05ed325d7e9977b083c5f33</guid>
-<title>[推荐] ​程序员划水指南</title>
-<link>https://toutiao.io/k/gheevc3</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section&gt;&lt;p&gt;快过年了，跟我可爱的小侄子通了个电话，上来就说，&quot;叔叔你头发怎么变少了&quot;，我很痛心，我的小侄子，年纪轻轻的，眼神已经这么不好使了。但转念一想，这也是他对我的一种关心，作为叔叔，也该回应一把，今年过年给他带一本《少儿编程》回去当礼物吧。&lt;/p&gt;&lt;p&gt;但转念又一想，也许我真的头发变少了呢，我强壮的体魄不再足以支撑我肮脏的灵魂了呢，或许真的应了那句古语，&lt;strong&gt;程序员固有一死，要么骚死，要么猝死？&lt;/strong&gt; 我好残忍，我竟然想让我的小侄走上这么一条不归路。&lt;/p&gt;&lt;p&gt;可是我这一身编程本领好想传授予人，我还想不想那么快一&quot;猝&quot;而就。我还想看着小侄子长大成人，然后在面试他的时候偷偷放水，再把他招进部门结对编程，我一定要活久一点。我想一定还有跟我一样有未了心愿的程序员，于是今天我将祭出所有防猝死技能，&lt;strong&gt;希望赠与有缘人&lt;/strong&gt;。&lt;/p&gt;&lt;h2&gt;&lt;span&gt;换行业&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;这是最直接的解决方案，那么问题来了，应该去哪个行业呢？程序员下岗后一般再就业的岗位不是送外卖就是送快递，这两个工作从工作强度和工作时长来说，丝毫不比程序员轻松。这就片面了。&lt;/p&gt;&lt;figure&gt;&lt;img data-ratio=&quot;1.0018587360594795&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmm7iaMouITfYqrY8uwKgQHDGIw3jTuL6XbhicqBe43ck0pEDfAHOaCcfA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1076&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;有时间送快递和外卖的话，那不如老老实实考个公务员吧。程序员怎么成为公务员？这里正好有一个github项目，就教你如何成为一个公务员。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;1&lt;/span&gt;https:&lt;span&gt;//github.com/coder2gwy/coder2gwy&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;连怎么安排学习时间，怎么请假都安排得明明白白，贼吉尔细心。&lt;/p&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.6261040235525025&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmQNO4T7I6kmUcPyueAmzROHjslh1T74z5xQleBNibhSzQnmmARibqwBhw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2038&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.4456824512534819&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicm0DVeTA8CgAY8ia0pB84PGeML7jsHfjwhB75Y0rnXIpCrcnS49hRsqdA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2154&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;h2&gt;&lt;span&gt;跳槽到965的公司&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;从程序员跳槽到公务员或者是教师这条路子比较艰难，虽然我相信大部分程序员在考试上面都比常人要更擅长些。&lt;/p&gt;&lt;p&gt;一旦选择考公务员，等于放弃自己学习多年的技能，什么&lt;code&gt;mysql&lt;/code&gt;，&lt;code&gt;redis&lt;/code&gt;，&lt;code&gt;java&lt;/code&gt;，&lt;code&gt;设计模式&lt;/code&gt;这些，都将成为过眼云烟，选择成本巨大。就算成了，也可能会后悔，或许会在某个四下无人的下午三点，用当年的程序员杯子装着这周xx办主任送的茶叶泡的茶，写着 &lt;strong&gt;《下班总结》&lt;/strong&gt;，感叹这个世界少了一个出色的程序员。&lt;/p&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.998&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmYsBGINEWdlhCklolcbDMdJ0sAOPPp4oPK8UlZG13NmnulfMGPibdiabQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;500&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;那么跳槽到一个965的公司，可能可以帮助你远离猝死。那么问题来了，怎么样找到995的公司？&lt;/p&gt;&lt;p&gt;还记得n年前的那个996icu吗？&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;1&lt;/span&gt;https:&lt;span&gt;//github.com/996icu/996.ICU&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.4294478527607362&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmuDdq7tJO63hqnwZh1wicCRDr6789JGRp7u7iaxaF3Iib6rr6t518UkFjQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1630&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;br/&gt;里面贴心地给出了一份996的公司名单，如果你坚决拒绝996，那么从拒绝这份名单里的公司offer开始。&lt;pre&gt;&lt;code&gt;&lt;span&gt;1&lt;/span&gt;https:&lt;span&gt;//github.com/996icu/996.ICU/tree/master/blacklist&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.6169811320754717&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmLynMYMb6OMYFMmMegnsTG44zgiaeySyax5ax0SemELm1c6ByvWrpbqg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2120&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;br/&gt;同时给出了这些公司996的证据，真正做到&quot;拒绝张嘴就来&quot;和有理有据，非常符合程序员讲事实摆道理的性格。&lt;p&gt;建议大家根据钱包厚度和身体承受能力进行选择，996下班不可怕，可怕的是，半夜一个报警就可以爬起来愉快网上冲浪了。以前高中的时候还要翻墙出去网吧通宵，现在在家里就能做到！&lt;/p&gt;&lt;p&gt;同时也给出了一份965的公司名单。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;1&lt;/span&gt;https:&lt;span&gt;//github.com/996icu/996.ICU/tree/master/whitelist&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;但是值得一提，这些公司都比较少，同时不排除哪一天不会变成996。毕竟制度是人定的，公司也是要盈利的，哪天换了个领导冲kpi，大家也只能一起冲冲冲了。&lt;/p&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.5968342644320298&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmn9xzM74ocnID1wwYW5KMcVObfBH755kd9Wbhyn61V2wYWrL4iamkv3w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2148&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;结论上来说，996的公司比965的公司&lt;strong&gt;多太多&lt;/strong&gt;，大部分有志青年都在996的公司里，&lt;strong&gt;既然无法避免，那就要学会怎么在工作中防猝死&lt;/strong&gt;。&lt;/p&gt;&lt;h2&gt;&lt;span&gt;学会划水&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;如果你已经在996的公司里，同时你的钱包需要你通过这种方式出卖劳动，那么显然换行业，跳槽，都不太适合，毕竟轻松意味着钱少。那么怎么在996公司里防猝死呢？&lt;br/&gt;划水成为唯一答案，划水其实也是一种技术，是分等级的，下面分享几个实用的划水技巧。&lt;/p&gt;&lt;h3&gt;&lt;span&gt;初级划水技能&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;初级划水技能是属于每个程序员都要学会的基础技能。&lt;/p&gt;&lt;h4&gt;&lt;span&gt;不要让自己看起来很闲&lt;/span&gt;&lt;/h4&gt;&lt;p&gt;不管是因为你是真的很闲，还是因为你效率高很快把活干完了。如果你看起来很闲，老板就容易会认为你工作不饱和，从而不断加活，直到你看起来一直在忙为止。既然如此，如果你一直看起来很忙，那么这样的问题可以被很好的避免。而vscode是程序员最常用的编辑器，我们可以在此基础上找到很多划水神器。&lt;/p&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.9840909090909091&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmqdmOPNhHRrVianTbunkrdQ0qjnzlzUm0p2wxwGNUAIJHrYbflCT0Hmg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;440&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;h5&gt;&lt;span&gt;模拟写代码&lt;/span&gt;&lt;/h5&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;1&lt;/span&gt;https:&lt;span&gt;//github.com/zy445566/vscode-plugin-swimming&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;代码写的快，提早完工被压榨怎么办？你需要一个模拟写代码工具，让VSCode模拟写代码，划水、摸鱼神器，让代码自己重写一遍。&lt;/p&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.6749116607773852&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmqS7FP8Ur2rBeDpfiaabcVSxianVueahfp48icLUOWDQwp6MYQTolSJorQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1132&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;h5&gt;&lt;span&gt;看小说工具&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;上学那会偷偷摸摸看小说时会在小说本上套上一层课本封面，以此来掩盖上课划水的行为。同样的道理，下面这个插件感觉跟上课看小说的经历有点像，他让开发者可以在 VSCode 上边写代码边看小说。&lt;/p&gt;&lt;p&gt;下次等产品经理路过你身旁的时候，以为你写了一堆密密麻麻的的代码，都不好意思再给你加需求。&lt;/p&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.6391402714932126&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmlufEN7KxgzIcz1ibaJMLO5T2X4TGU98XyYHA22F1p5EnkhMzibjwWKLw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1768&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;1&lt;/span&gt;https://github.com/zrk1993/&lt;span&gt;read&lt;/span&gt;-vscode&lt;span&gt;-e&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h5&gt;&lt;span&gt;听音乐插件&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;做事做全套，还要在vscode装上听音乐的插件。&lt;/p&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.6666666666666666&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmibneajL8NAjcXE2r1LZZceEjtakicKrKf65bjich0NVqFlEpk6w9zGMoQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;720&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;1&lt;/span&gt;https:&lt;span&gt;//github.com/nondanee/vsc-netease-music&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h5&gt;&lt;span&gt;炒股&lt;/span&gt;&lt;/h5&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.7212449255751014&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmuIVGCaXWEY70nhFgyic7mW9BMXhG0Eic5JdbxSicPWr2DVUOVfjoRibu6Q/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1478&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;1&lt;/span&gt;https:&lt;span&gt;//github.com/roblourens/vscode-stocks&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3&gt;&lt;span&gt;中级划水技能&lt;/span&gt;&lt;/h3&gt;&lt;h4&gt;&lt;span&gt;项目时间预估&lt;/span&gt;&lt;/h4&gt;&lt;p&gt;每次需求迭代，产品都会让开发给出一个开发时间。&lt;/p&gt;&lt;p&gt;我接触过的百分之90的程序员都是老实的小伙子，是多少就报多少，有些为了方便产品快速看效果，还会压缩自己的时间，这种情况在新人程序员里尤为明显。&lt;/p&gt;&lt;p&gt;但有些不讲武德的产品，会动不动做一点 &lt;strong&gt;小小的改动&lt;/strong&gt;，同时因为改动&lt;strong&gt;较小&lt;/strong&gt;，之前提到的时间一般不会更改。&lt;/p&gt;&lt;p&gt;如果你所在的项目中产品不止一个人，就可能出现多个产品给你提需求的情况，改动不大，但挺急。&lt;/p&gt;&lt;p&gt;一个程序员越老实，就越不会表达，选择闷头苦干，有些甚至牺牲节假日时间在家干活。&lt;/p&gt;&lt;p&gt;因此为了更好的应对这些非常常见的情况，建议再估计工时的时候，都多预估至少20~50%的时间当做buffer。&lt;/p&gt;&lt;p&gt;如果你提前做好需求，&lt;strong&gt;请务必不要提前给产品看，这只会方便他在看到实物后做出更多的变更&lt;/strong&gt;。&lt;/p&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.990909090909091&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmtpPLa28OdaHTOHNO2FbCXia3dFCicq4yPomxQIKG5UkblofHUyoL0D0A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;440&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;h4&gt;&lt;span&gt;如何巧妙的推掉需求&lt;/span&gt;&lt;/h4&gt;&lt;p&gt;很多产品在做每一期迭代开发需求的时候，会有无穷无尽的想法，而且恨不得都全部实现，最好今天就能给到。&lt;/p&gt;&lt;p&gt;大部分老实的程序员，会选择尽可能满足这些可爱的需求。这些永远没办法做完的需求，才是耗尽程序员心力的重要因素。&lt;/p&gt;&lt;p&gt;你需要给每个需求和变更排期，给需求留足buffer，确保线上出问题的时候你还有时间去处理。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;让产品给这些需求排优先级&lt;/strong&gt;，从高到低，算好每个需求的人日，做不了一定要提出来，剩下的让不同产品去pk优先级，确保你不过劳。&lt;/p&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.9138576779026217&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmJhPS55cW3JqGox0QgkSqI75DxGGx7Uu6G2Co58EOD96jtKKL0E4mFA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;267&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;h4&gt;&lt;span&gt;减少不必要的沟通&lt;/span&gt;&lt;/h4&gt;&lt;p&gt;很多不明真相的产品、运营、其他部门的开发会通过各种途径找到你，大部分时候他们找你都是为了向你询问一些无关痛痒的问题。&lt;/p&gt;&lt;p&gt;有些时候当他们询问的问题触及技术细节的时候，新人程序员都会想要试图产生程序实现原理细节。&lt;/p&gt;&lt;p&gt;请记住一句话，&lt;strong&gt;千万不要跟不是搞技术的人聊实现细节，如果可以，最好别跟任何人聊技术实现细节&lt;/strong&gt;，不仅会把他们的思路带跑偏，还会越解释越迷糊。&lt;/p&gt;&lt;p&gt;另外还有一些人遇到一些疑问，会用企业微信或钉钉找到你，如果这个人说的事情不是紧急的事情，同时没有直接找到你面前，&lt;strong&gt;尽量选择过半小时后再处理&lt;/strong&gt;。&lt;/p&gt;&lt;p&gt;你要相信他们自己解决问题的能力，大部分不重要或跟你关系不大的问题，会因为你的延缓处理&lt;strong&gt;自动消失&lt;/strong&gt;。&lt;/p&gt;&lt;p&gt;大部分真正需要你解决的问题，&lt;strong&gt;半小时后还会再找你一次&lt;/strong&gt;。&lt;/p&gt;&lt;p&gt;另外，哪怕不听音乐，&lt;strong&gt;带上耳机，可以减少10%的无效沟通&lt;/strong&gt;，懂的自然懂。&lt;/p&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.9921875&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmoauKbWJSJqEMC3PRLEIWvUIJnEvHoicYcfVXuVKLhtL4dc60uXPiaNpw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;256&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;h4&gt;&lt;span&gt;提升办事效率&lt;/span&gt;&lt;/h4&gt;&lt;p&gt;提升办事效率是为了减少自己无用时间的支出，从而不至于让自己没有时间在工作之余锻炼休闲。&lt;/p&gt;&lt;p&gt;提升效率这个事情其实比较简单。&lt;/p&gt;&lt;p&gt;选择适合自己的办公软件。比如印象笔记或有道云笔记来记录工作要点和备忘，用番茄学习时间来强迫自己专心写代码，同时还能装个眼睛护士定时提醒自己要放松一下眼睛。&lt;/p&gt;&lt;p&gt;另外我个人强烈建议大家&lt;strong&gt;多喝水&lt;/strong&gt;。&lt;/p&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.42371134020618556&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmzmZprpoiaUKEGZRp2yKFmBuMwJyTgicL0qdLOpf6dTyNvnPVDoq98NXQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;970&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;另外推荐几个 VSCode 效率插件&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;1&lt;/span&gt;https:&lt;span&gt;//www.infoq.cn/article/c4wbmkc7sslz28gyazll&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;mac 效率神器&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;1&lt;/span&gt;https:&lt;span&gt;//github.com/Louiszhai/tool&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3&gt;&lt;span&gt;高级划水技能&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;防猝死的最高技巧是提升技术水平，可以减少排查问题的时间，提升工作效率，更好的预估时间（意味着可以更精确地给自己多估两天排期）。&lt;/p&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.43004418262150224&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicm7e50gM6PJYjrsZxO5YUIa0Ij6RqoGVWichpv8yb7fbX0tSgia1IdRagQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;679&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.9393939393939394&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmQymSceqDUORyCgxe0PcONiay6AibhJUjg953zdYNMmAbPCrG1VEyS18A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;198&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.24676445211389128&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmVgwsGQhQicUKqXgmNPK5p00XWILNwKv2NFDYRqOmbDvibJm6tzMQgGcQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1159&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;figure&gt;&lt;img data-ratio=&quot;1&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmD825riaGk6ibMEHezPQQMXRDldNxx9Xh4XuC05HuXSZ9WjURJljDhlsA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;380&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;只有提升自身硬实力，才能打破这个死循环。&lt;/p&gt;&lt;p&gt;下面介绍一个golang程序员学习提升的项目,里面有&lt;strong&gt;超全的golang面试问题和学习路线整理&lt;/strong&gt;，用问题驱动去学习，&lt;strong&gt;点击文章最底部【阅读原文】立刻体验在知识的海洋里呛水的感觉。&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;同时还有一张完整的入门进阶知识图谱，值得star一个啊。关于其他编程语言的学习路线，欢迎各位私信我学习地址。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;1&lt;/span&gt;https:&lt;span&gt;//github.com/xiaobaiTech/golangFamily&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;figure&gt;&lt;img data-ratio=&quot;2.8077571669477233&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmhqr5kR5fMNPP6y2bC4P1xwibCeIHt7PbLMJEaBTKo92pn4gmziaq94VA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1186&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;&lt;/p&gt;&lt;h2&gt;&lt;span&gt;学会管理自己的时间&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;要学习时间管理，就要像这个领域里最顶尖的大师学习。&lt;/p&gt;&lt;p&gt;而这个领域里我只认罗老师，罗老师去年荣获时间管理大师称号。在业务能力上罗老师绝对是个优秀的好歌手好演员，各领域开花，忙是不可避免的，工作强度不会比程序员弱。&lt;/p&gt;&lt;p&gt;在此基础上，还能做到宛如影分身之术一般时间管理能力，除了熬出两个黑眼圈外，身体却十分硬朗。仔细一想，罗老师是在承受着身体和心理都在长时间承受高强度的压力，但却不影响他身心健康。&lt;/p&gt;&lt;p&gt;我们可以好好分析一下，罗老师为什么能在防猝死这件事情上做的如此出类拔萃。个人拙见，有三点&lt;/p&gt;&lt;h3&gt;&lt;span&gt;热爱自己的事业&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;我们可以看下，罗老师的日程表。&lt;/p&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.7661290322580645&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmuKdDRfDcAdnWTwkiaFrLZml1Nam2icq5oVYvrPex4I9cuumDvFOLLyTA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1240&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;&lt;span&gt;这工作强度映射到程序员身上，也差不多跟连续开会写代码997差不多了吧，然而他却硬朗得很。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;他到底是怎么做到的呢？一言以蔽之，&lt;strong&gt;热爱&lt;/strong&gt;。解bug的过程可能是难受压抑紧张的，但是解bug成功带来的成就感真的很爽。&lt;/p&gt;&lt;p&gt;如果不热爱这份工作，那么成就感没了，只剩下难受和压抑了，不快乐的人，说不定哪天&lt;strong&gt;说没就没了&lt;/strong&gt;。&lt;/p&gt;&lt;figure&gt;&lt;img data-ratio=&quot;1&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmhBkL00guIbAJNjSFbr8cdluYxMHX0RyP6aeNzpHxwwicqia0ksLIYgSw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;180&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;锻炼身体&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;他热爱跳舞，被称为“亚洲舞王”。虽然这个称呼有点夸张，但是他不是天赋型选手，跳舞能力是花时间练出来的。&lt;/p&gt;&lt;p&gt;而跳舞这件事情，和健身类似，让身体动起来了，出汗了，你自然就爽了。&lt;/p&gt;&lt;p&gt;大家应该都有一种感觉，运动，会让你出汗，会让身体巨酸巨累，但是这个过程中，会让心情变得畅快不压抑，还能让你&lt;strong&gt;因为敲代码而变得瘦弱的肱二头肌变得粗壮一些&lt;/strong&gt;。&lt;/p&gt;&lt;figure&gt;&lt;img data-ratio=&quot;1&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicm1hiaxH3sQGdHYzb8gkm7HpnEwMIgZ5Etnj5dyRgaN8XppuSpWCjEx2Q/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;200&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;事业之外还有自己的爱好&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;这个世界上只有一种真正的英雄主义，就是在认清生活的真相之后，还能热爱生活。&lt;/p&gt;&lt;p&gt;很多程序员在大学刚毕业的时候，都想着自己以后能做一个牛逼哄哄的软件，然后跟乔布斯一样改变这个世界，但是往往又在几年后选择成为一条咸鱼，每天疲惫于跟产品经理斗智斗勇，只要能砍掉哪怕一个需求，那也是一次重大胜利。&lt;/p&gt;&lt;p&gt;我们都只是普通人，产品经理没错，程序猿也没错，当一条咸鱼也挺香的，但是在工作中当咸鱼可以，唯唯诺诺可以，但下了班，你必须重拳出击。&lt;/p&gt;&lt;p&gt;你得有自己的爱好，可以是爬山旅游，篮球游泳。如果这些都太索然无味，你还可以去酒吧&lt;strong&gt;跟各种臭妹妹坏弟弟喝上一杯&lt;/strong&gt;。&lt;/p&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.956&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicm6lNOBiapXSZoJACvHGHaM6TdRib7mn2XPqJc8eicmNT4aYbFWiaDniaaogQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;250&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;&lt;/p&gt;&lt;h2&gt;&lt;span&gt;最后&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;要&lt;strong&gt;每天看一遍猝死的新闻&lt;/strong&gt;，坚定自己划水的信念。&lt;/p&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.9315068493150684&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmLkYayiaCJ4038SrzzISBVCTefoxkEFSVZX0Z2yibibf2neJnXdibsCd4tA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1314&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;鲁迅曾经说过，&lt;strong&gt;划水最好的时候两个时间，一个是十年前，一个是现在&lt;/strong&gt;。你懂我意思吧？&lt;/p&gt;&lt;figure&gt;&lt;img data-ratio=&quot;1&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicm7hU4ouc6ukTbXe7YY5s3OUbgN6Onicj8yJy2icOm5wCSWnKTGowL5Ribg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;255&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;没懂? &lt;strong&gt;点个在看，你的每一次扩散都可能拯救一个在猝死边缘的程序猿！&lt;/strong&gt;&lt;/p&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.8574561403508771&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmq73gZ1Hbpm9YfjvA8nByPib4O8Tg8eYmkp6Bkiat0ddgsolxLEWt1IEw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;912&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.5555555555555556&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/FmVWPHrDdnkeTvagibkdxicXBoYaqwXuicmZAHNaMptpG1RuAGbeqKpU7aEFRJmBicITysibicOxYlQmSP1rr2YY6Giag/640?wx_fmt=gif&quot; data-type=&quot;gif&quot; data-w=&quot;900&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>852129aefd8f04dc4b529bf0ace84287</guid>
+<title>酷瓜云课堂（腾讯云版）v1.2.7 发布 - 钉钉机器人群通知</title>
+<link>https://toutiao.io/k/qavfm9w</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;container app-preview post-body&quot;&gt;
+  &lt;div class=&quot;preview&quot;&gt;&lt;h3&gt;新增&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;钉钉机器人群消息通知&lt;/li&gt;
+&lt;li&gt;demo分支重置演示帐号计划任务&lt;/li&gt;
+&lt;li&gt;添加学员自动加入相关课程群组&lt;/li&gt;
+&lt;li&gt;后台查看积分记录&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;更新&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;路由重命名 admin.group -&amp;gt; admin.im_group&lt;/li&gt;
+&lt;li&gt;路由重命名 home.group -&amp;gt; home.im_group&lt;/li&gt;
+&lt;li&gt;样式重命名 sidebar-teacher-card -&amp;gt; sidebar-user-card&lt;/li&gt;
+&lt;li&gt;获取版本发布信息改成异步模式&lt;/li&gt;
+&lt;li&gt;去除顶部积分导航&lt;/li&gt;
+&lt;li&gt;用户中心部分样式调整&lt;/li&gt;
+&lt;li&gt;后台部分导航调整&lt;/li&gt;
+&lt;li&gt;不能删除课程教师问题&lt;/li&gt;
+&lt;li&gt;积分模块可通过后台控制是否启用&lt;/li&gt;
+&lt;li&gt;解除好友关系后好友数量未递减&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://upload-images.jianshu.io/upload_images/326350-1ff6357c9622a6df.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240&quot; alt=&quot;钉钉机器人通知.png&quot;/&gt;&lt;/p&gt;
+
+&lt;h3&gt;项目介绍&lt;/h3&gt;
+
+&lt;p&gt;酷瓜云课堂，依托腾讯云基础服务架构，采用C扩展框架Phalcon开发，GPL-2.0开源协议，致力开源网课系统，开源网校系统，开源在线教育系统。&lt;/p&gt;
+
+&lt;h3&gt;系统功能&lt;/h3&gt;
+
+&lt;p&gt;实现了点播、直播、专栏、会员、微聊等&lt;/p&gt;
+
+&lt;h3&gt;托管仓库&lt;/h3&gt;
+
+
+
+&lt;h3&gt;意见反馈&lt;/h3&gt;
+
+
+
+&lt;h3&gt;开源助力&lt;/h3&gt;
+
+&lt;p&gt;毫无保留的真开源不容易，如果对你有帮助，请给我们 &lt;strong&gt;STAR&lt;/strong&gt; ！！！&lt;/p&gt;
+&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>03047ad62fa8fe2faf0068059cd60731</guid>
-<title>[推荐] 生产力至少提升 5 倍，大厂火拼的低代码平台究竟还有哪些坑？</title>
-<link>https://toutiao.io/k/ipuno05</link>
+<guid>f191715275b058b272c94e60ac72f4ce</guid>
+<title>程序员的发展空间有多大，如何突破 35 岁瓶颈？</title>
+<link>https://toutiao.io/k/rampztn</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
                     
 
                     
                     
                     
-                    &lt;p data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-backh=&quot;289&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.5&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_png/DT8udUick9sINXn4zpQNM4Micy9ZNrBsLKSmrRN5HKibFiaXgmGnX0qQRDicmicmh8Rm8nRTicJkeAtoL3zEnsHicKYyXw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;section data-id=&quot;708&quot; data-style=&quot;max-width: 100%; color: rgba(255, 255, 255, 0.8); font-family: -apple-system-font, BlinkMacSystemFont, &amp;quot;Helvetica Neue&amp;quot;, &amp;quot;PingFang SC&amp;quot;, &amp;quot;Hiragino Sans GB&amp;quot;, &amp;quot;Microsoft YaHei UI&amp;quot;, &amp;quot;Microsoft YaHei&amp;quot;, Arial, sans-serif; letter-spacing: 0.544px; white-space: normal; background-color: rgb(35, 35, 35); visibility: visible; box-sizing: border-box !important; overflow-wrap: break-word !important;&quot; class=&quot;js_darkmode__0&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;708&quot; data-style=&quot;max-width: 100%; box-sizing: border-box; background-color: rgb(255, 255, 255); color: rgb(62, 62, 62); letter-spacing: 0.544px; font-family: 微软雅黑; border-width: 0px; border-style: none; border-color: initial; visibility: visible; overflow-wrap: break-word !important;&quot; class=&quot;js_darkmode__1&quot;&gt;&lt;section data-style=&quot;padding: 35px; max-width: 100%; box-sizing: border-box; background-color: rgb(245, 245, 244); border-color: rgb(245, 245, 244); color: rgb(123, 123, 111); visibility: visible; overflow-wrap: break-word !important;&quot; class=&quot;js_darkmode__2&quot;&gt;&lt;section&gt;&lt;section data-style=&quot;max-width: 100%; box-sizing: border-box; border-color: rgb(245, 245, 244); color: inherit; visibility: visible; overflow-wrap: break-word !important;&quot; class=&quot;js_darkmode__3&quot;&gt;&lt;section data-style=&quot;max-width: 100%; font-family: -apple-system-font, system-ui, &amp;quot;Helvetica Neue&amp;quot;, &amp;quot;PingFang SC&amp;quot;, &amp;quot;Hiragino Sans GB&amp;quot;, &amp;quot;Microsoft YaHei UI&amp;quot;, &amp;quot;Microsoft YaHei&amp;quot;, Arial, sans-serif; letter-spacing: 0.544px; white-space: normal; background-color: rgb(255, 255, 255); box-sizing: border-box !important; overflow-wrap: break-word !important;&quot; class=&quot;js_darkmode__0&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section data-style=&quot;padding: 10px; max-width: 100%; box-sizing: border-box; color: rgb(62, 62, 62); line-height: 25.6px; display: inline-block; width: 670px; border-width: 2px; border-style: dashed; border-color: transparent; background-color: rgb(239, 239, 239); overflow-wrap: break-word !important;&quot; class=&quot;js_darkmode__1&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;随着数字化转型的不断加速，企业对IT系统的敏捷性要求越来越高，但开发人员的缺口一直补不上，无代码/低代码的开发技术优势逐渐凸显出来。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;根据 Gartner 数据，到2024年，65%的应用程序开发将是低代码。到2023年，超过50％的大中型企业将采用低代码应用程序平台（LCAP）作为其战略应用平台之一。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;当下的低代码/无代码领域非常复杂，有许多的解决方案、平台和子市场。虽然低代码/无代码平台有很多好处（比如高效性和易用性，加快生产和效率），但它们也存在一些关键挑战。比如，企业文化改变、&lt;strong&gt;需要学习曲线（技术门槛并不低&lt;/strong&gt;）、缺乏社区和资源支持等。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;总体而言，行业处在早期，许多最佳实践才刚刚出现，相对来说还不成熟。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;编译 | &lt;/span&gt;&lt;/strong&gt;&lt;span&gt;机器之能&lt;/span&gt;&lt;strong&gt;&lt;span/&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们最近都听到了关于低代码和无代码平台的宣传。无代码平台的承诺是，它们将使软件开发变得像使用Word或PowerPoint一样简单，这样的话，普通业务用户可以在不需要工程团队额外成本(金钱和时间)的情况下推进项目。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;与无代码平台不同，低代码平台仍然需要编码技能，但允许开发人员使用预先编写的代码组件，从而加速软件开发。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;根据Gartner的数据，&lt;strong&gt;到2024年，65%的应用程序开发将是低代码。到2023年，超过50％的大中型企业将采用低代码应用程序平台（LCAP）作为其战略应用平台之一。&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;早在2017年，我就参与了传统开发(使用Java)和模型驱动的低代码/无代码开发项目之间的早期生产率基准测试比较。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;结果令人印象深刻：&lt;strong&gt;低代码/无代码开发的生产力提高了5倍到7倍。2020年「无代码普查」(No-Code Census)的一项调查显示，与传统编程相比，生产率提高了4.6倍。&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt; 一 &lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;strong&gt;低代码/无代码:一个分散的市场&lt;/strong&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;低代码/无代码领域非常复杂，有许多的解决方案、平台和子市场。例如，有针对大型企业、中型企业和小型企业的子市场。企业低代码/无代码平台可以提供高可伸缩性，兼具性能与安全性的应用程序集成。它们往往更昂贵。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;以下是Gartner为企业低代码平台设计的魔力象限:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;1&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_png/DT8udUick9sINXn4zpQNM4Micy9ZNrBsLKuXTM0qmKhfahGYJHPW3vtVKxwQzdjf5KFydHnMrMfxAibanCztVuaicA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;725&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;企业低代码应用平台的魔力象限，资料来源：Gartner（2020年9月）&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;Gartner将低代码应用程序平台(LCAP)定义为，「使用声明性的高级编程抽象（例如模型驱动和基于元数据的编程语言）支持快速应用程序开发，一步部署、执行和管理的应用程序平台。」&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;G2为小型企业提供了类似的概况。小企业和企业低代码平台之间没有太多交集。一些小型平台供应商在企业中并不为人所知或被认可。同样的，中小型企业通常不购买企业平台，主要是因为它们的定价和复杂性。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这一点都不奇怪，许多低代码平台都是业务流程管理平台。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;这种&lt;/strong&gt;&lt;strong&gt;以过程为中心的低代码解决方案非常&lt;/strong&gt;&lt;strong&gt;受欢迎。&lt;/strong&gt;&lt;strong&gt;BPM低代码/无代码平台的例子包括Appian、Pega和Outsystems。&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;但在低代码/无代码保护伞下还有其他的范例:&lt;/strong&gt;&lt;/span&gt;&lt;strong/&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;网站低代码/无代码平台&lt;/strong&gt;&lt;strong&gt;：&lt;/strong&gt;任何规模的企业都可以利用这些平台。主要的竞争者是WordPress、Wix、Squarespace和WebFlow。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;数据库管理低代码/无代码平台&lt;/strong&gt;&lt;strong&gt;：&lt;/strong&gt;&lt;span&gt;对于高端(企业)，有像Mendix这样的平台。对于较低端的，有Airtable。还有一些低代码/无代码的NoSQL数据库平台，如用于知识图的KgBase。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;自动集成低代码/无代码平台&lt;/strong&gt;&lt;strong&gt;：&lt;/strong&gt;在这个领域有一些令人兴奋的新兴平台，例如Zapier、Parabola和Integromat都属于这一类。企业可以通过这些工具相对快速地开发强大而复杂的集成流。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;span&gt;以下是Parabola工作流的例子，它从一个API中提取数据，进行一些数据操作，然后将其发送到另一个API。&lt;/span&gt;&lt;span&gt;自动化的工作流可以按需运行、调度或通过webhook调用。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.36328125&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_png/DT8udUick9sINXn4zpQNM4Micy9ZNrBsLKT8eCPpFl7p9XSE4lxEH405ticagPguddfOdZ9ejjFvFNuxxHzAC1lHQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1024&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;其中许多平台为特定类型的应用程序提供了丰富的插件和模板集合。低代码/无代码平台的其他类别针对特定的应用领域或细分市场:&lt;/span&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;电子商务和网上商店&lt;/strong&gt;&lt;strong&gt;：&lt;/strong&gt;Shopify是这方面的领先案例。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;工作管理&lt;/strong&gt;&lt;strong&gt;：&lt;/strong&gt;Monday.com是这方面很好的例子。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;ERP应用&lt;/strong&gt;&lt;strong&gt;：&lt;/strong&gt;Zoho是这方面很有趣的例子，此前在Gartner的魔力象限表中列出。另一个对ERP和CRM有重要影响的平台是Salesforce。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;区块链和物联网&lt;/strong&gt;&lt;strong&gt;：&lt;/strong&gt;Atra是区块链方面的案例。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;人工智能&lt;/strong&gt;&lt;strong&gt;：&lt;/strong&gt;人工智能是低代码/无代码的一个迷人领域，当中就有C3 AI Ex Machina这个例子出现。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt; 二 &lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;strong&gt;低代码 /无代码的挑战&lt;/strong&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;低代码/无代码平台有很多好处，但它们也存在一些挑战，需要学习曲线。&lt;strong&gt;许多最佳实践才刚刚出现，相对来说还不成熟。这是&lt;/strong&gt;&lt;strong&gt;至关重要的责任&lt;/strong&gt;&lt;strong&gt;。&lt;/strong&gt; 使用传统编程，有大量的经验、强大的社区和有据可查的最佳实践。在许多方面，低代码/无代码还处于起步阶段，尽管MDD已经存在很长一段时间了，特别是在BPM平台上。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;以下是低代码/无代码的一些更关键挑战:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;1、&lt;strong&gt;它涉及到文化的改变&lt;/strong&gt;：低代码/无代码要求改变组织文化，无论该组织是企业还是初创企业。改变文化以消除「烟囱」并非易事。它需要执行的远见和认可。它还需要对低码/无码数字转换能力中心进行预算分配和授权。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2、&lt;strong&gt;学习这些平台需要时间和精力：低代码/无代码&lt;/strong&gt;&lt;strong&gt;可&lt;/strong&gt;&lt;strong&gt;提高速度和生产率。但这并不容易。这些工具和平台并不是微不足道的，而且开发一定程度的专业知识需要时间。这是低代码/无代码最容易被误解的方面之一。复杂的编程结构(如嵌套循环)在任何平台上都不是那么容易。&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;3、&lt;strong&gt;您可能需要多个平台&lt;/strong&gt;：某些平台比其他平台更完整。例&lt;span&gt;如，Unqork和Bubble旨在用于任何用例，因此提供了许多与企业系统集成的选项。但是，他们可以从专门用于特定领域的其他组件中受益匪浅；例如，Bubble和Parabola或Zapier插件一起进行自动集成。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;与Bubble中的原生功能相比，Parabola或Zapier中的数据操作和集成功能更易于使用。还有其他插件或技术组件可通过其他技术补充低代码/无代码平台：例如，Unqork的技术合作伙伴或Bubble的插件综合列表。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;4、&lt;strong&gt;资源和社区支持匮乏&lt;/strong&gt;：许多低代码/无代码平台相对不成熟。使用传统编程语言的开发人员有数百万，有时甚至数千万。许多在线和现场的课程、书籍和材料都是现成的，适用于Java或c#等语言。外包有很多社区和资源。对于低代码/无代码来说，这是一个完全不同的场景——特别是对于较新的平台。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;5、&lt;strong&gt;定价可能令人困惑&lt;/strong&gt;：企业低代码/无代码平台往往是不必要的昂贵。中小型市场的平台成本较低，但通常伸缩性较差。端到端解决方案涉及多个平台，使定价问题更加复杂。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这些只是一些关键的挑战。他们清楚地表明，低代码/无代码不是万灵药。然而，无论是对现有企业还是初创企业，开发创新解决方案仍是一个强劲趋势。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;随着这个领域的不断成熟，我们应该会听到更多的挑战。也会有失败的项目。&lt;strong&gt;但优势——尤其是在加快发展和生产率方面——将赢得胜利。&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;你准备好了吗?&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;参考链接:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;https://venturebeat.com/2021/02/14/no-code-low-code-why-you-should-be-paying-attention/&lt;/span&gt;&lt;/p&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-id=&quot;90835&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-autoskip=&quot;1&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;机器之能&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;面向正在进行数字化转型及智能化升级的各领域产业方，为他们提供高质量信息、研究洞见、数据库、技术供应商调研及对接等服务，帮助他们更好的理解并应用技术。产业方对以上服务有任何需求，都可联系我们。&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;strong&gt;&lt;span&gt;zhaoyunfeng@jiqizhixin.com&lt;/span&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;
+                    &lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzA3ODk1Mzg0Mg==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/wzyc1ToJM6ia6icRKFLmvF8YJDluMxibzHolMFib4E1hXicpaKibTtn3QBHjGJROqpuOgLLhRjdpAy2pZkGRkW7NgMpA/0?wx_fmt=png&quot; data-nickname=&quot;老王说编程&quot; data-alias=&quot;lwsbc1024&quot; data-signature=&quot;还原编程思想、深入日常开发、分享最新技术及编程经验&quot;/&gt;&lt;/section&gt;&lt;p cid=&quot;n0&quot; mdtype=&quot;paragraph&quot;&gt;&lt;em&gt;&lt;span&gt;漫漫编程路，多少个日夜我们沉浸在扫除 BUG 的路上，永远在变的需求使我们养成了独特的好脾气。即使这样，还要面对在 35 岁的瓶颈时被扫地出门的窘况，这是很多程序员思考最多的问题，然而，只要梳理好每个阶段的规划，在每个阶段里不断进步这条程序路也能走出不一样的光彩。&lt;/span&gt;&lt;/em&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.39655172413793105&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/wzyc1ToJM6iacGByibqaBuibO8ibxHOJCXa716R1xqy9ia5ADfJM6BmhIOTczgJsnlwpZO62GHV35OdTuEVoGM9iadLg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;580&quot;/&gt;&lt;/p&gt;&lt;p cid=&quot;n4&quot; mdtype=&quot;paragraph&quot;&gt;&lt;span md-inline=&quot;plain&quot;&gt;根据资料显示，在一般的职业发展中主要分为三个阶段：1-3 年是初级阶段，3-5 年是中级阶段，5-10 年是高级阶段，再往后可以是技术专家、技术总监、项目管理者等等。随着这几个阶段越来越高的情况下程序员的薪资水平也是越来越高的，工作年限越长企业自然认为你的能力也越强，但是你如果到了高级阶段的年龄却仍然还是中级阶段的技术或管理水平，这个时候企业当然会选择比你更年轻、身体状态更好的年轻人来做这件事情。所谓程序员的 35 岁瓶颈其实就是你的年龄和你的能力不匹配的问题，作为猿童鞋不能只做编码的搬运工，活到老、学到老这是我们必须具备的一种编程素质。&lt;/span&gt;&lt;/p&gt;&lt;p cid=&quot;n4&quot; mdtype=&quot;paragraph&quot;&gt;&lt;mpcpc js_editor_cpcad=&quot;&quot; class=&quot;js_cpc_area cpc_iframe&quot; src=&quot;/cgi-bin/readtemplate?t=tmpl/cpc_tmpl#1614007248101&quot; data-category_id_list=&quot;42&quot; data-id=&quot;1614007248101&quot;/&gt;&lt;/p&gt;&lt;p cid=&quot;n6&quot; mdtype=&quot;paragraph&quot;&gt;&lt;span md-inline=&quot;plain&quot;&gt;一般在工作 5 年时间的时候就应该提前认真考虑自己的发展方向了，作为项目开发的猿童鞋发展方向还是比较多的。如果一直钟爱技术，那就必须积累系统架构方面的知识，因为以后你是要掌控全局的，没有对项目整体的技术把控那是不可行的。当然，测试岗位也是一个不错的选择，而且薪资也不错，在这里我要说一下 “千万不要小看测试”，大多数项目中测试人员的分量比需求还大，面对不断变化的需求有时候只有测试人员才说的清楚。另外，还可以转型为管理岗，作为 PM 猿童鞋转过来也是比较容易的，但是要特别注意的就是自己的沟通态度得好好练练。也有猿童鞋能够凭借自己的努力当上 CTO，那也是令多数猿童鞋比较羡慕的。如果可以，数据库 DBA 也是比较好的。最后就是自己创业或者做一个自由职业者，凭借自己的技术、经验选择一个自己喜欢的方向。&lt;/span&gt;&lt;/p&gt;&lt;p cid=&quot;n6&quot; mdtype=&quot;paragraph&quot;&gt;&lt;span&gt;&lt;em&gt;&lt;span&gt;欢迎关注 “老王说编程“，每天进步一点点，您的每一个点赞、在看、分享都是在致力于减少 “攻城狮” 产出的 BUG，欢迎大家在评论区进行留言，一起学习，一起成长！&lt;/span&gt;&lt;/em&gt;&lt;/span&gt;&lt;/p&gt;&lt;h5 cid=&quot;n22&quot; mdtype=&quot;heading&quot;&gt;&lt;span&gt;&lt;em&gt;&lt;span md-inline=&quot;plain&quot;&gt;往期精彩&lt;/span&gt;&lt;/em&gt;&lt;/span&gt;&lt;span md-inline=&quot;plain&quot;/&gt;&lt;/h5&gt;&lt;p&gt;&lt;em&gt;&lt;span&gt;&lt;span md-inline=&quot;plain&quot;&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzA3ODk1Mzg0Mg==&amp;amp;mid=2649848595&amp;amp;idx=1&amp;amp;sn=5deeb995e4c42ae4decf4785f5254b1d&amp;amp;chksm=87bf370eb0c8be183538b1717b2422ebd40f2d3decc05b891a5d19adce1984301dbaedbe7458&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;Linux 的常用命令你真的都了解吗，100 个必须要学会的 Shell 命令&lt;/a&gt;&lt;br/&gt;&lt;/span&gt;&lt;/span&gt;&lt;/em&gt;&lt;/p&gt;&lt;p&gt;&lt;em&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/em&gt;&lt;/p&gt;&lt;p&gt;&lt;em&gt;&lt;span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzA3ODk1Mzg0Mg==&amp;amp;mid=2649848581&amp;amp;idx=1&amp;amp;sn=09371d0291c7e3790d4ba7a41bdfe4d0&amp;amp;chksm=87bf3718b0c8be0e918aff84cf41a3bf78f063fcf0981ecb626893d9c9663f62713f0d6b062d&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;IPython 的编程技巧（Python 开发必备神器）&lt;/a&gt;&lt;br/&gt;&lt;/span&gt;&lt;/em&gt;&lt;/p&gt;&lt;p&gt;&lt;em&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/em&gt;&lt;/p&gt;&lt;p&gt;&lt;em&gt;&lt;span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzA3ODk1Mzg0Mg==&amp;amp;mid=2649848575&amp;amp;idx=1&amp;amp;sn=c96eeba40c46e907556e88fd8cf79a5e&amp;amp;chksm=87bf36e2b0c8bff48bbf2d8a7f938c96771874c3348d41e757e1090b9cf2d929aa42dd663d02&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;Tomcat 性能调优应该注意什么？&lt;/a&gt;&lt;/span&gt;&lt;/em&gt;&lt;/p&gt;&lt;p&gt;&lt;em&gt;&lt;br/&gt;&lt;/em&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzA3ODk1Mzg0Mg==&amp;amp;mid=2649848555&amp;amp;idx=1&amp;amp;sn=7e62c6396761c41da77992ef6225b360&amp;amp;chksm=87bf36f6b0c8bfe08b78892983cabe8dabeb2ea825fd380d899987b9c59b190d076de810bd2b&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;em&gt;&lt;span&gt;Java8 的 Lambda 表达式&lt;/span&gt;&lt;/em&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzA3ODk1Mzg0Mg==&amp;amp;mid=2649848550&amp;amp;idx=1&amp;amp;sn=ebf37329e00c2622f0271bc3fb0118e9&amp;amp;chksm=87bf36fbb0c8bfed9f1f8411d21bfaed8a11d85401a5680265d75f4998e9df9c90598dfbd020&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;em&gt;&lt;span&gt;Python 如何实现最简单的多人聊天室&lt;/span&gt;&lt;/em&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzA3ODk1Mzg0Mg==&amp;amp;mid=2649848514&amp;amp;idx=1&amp;amp;sn=e330c08961a24b710bb713e9641aefc2&amp;amp;chksm=87bf36dfb0c8bfc9d95f3655cd0b6d0fe455a7c3ec370e783a629d94cd3204d4511202be9911&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;em&gt;&lt;span&gt;Python 如何正确使用 MongoDB 数据库&lt;/span&gt;&lt;/em&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzA3ODk1Mzg0Mg==&amp;amp;mid=2649848483&amp;amp;idx=1&amp;amp;sn=f000a9164091cfda69e57b89756a9c0a&amp;amp;chksm=87bf36beb0c8bfa8e80334c9e26e518c53597f1ac055ae1d83248a5669d086c4f5fc78ae6647&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;em&gt;&lt;span&gt;Crontab 定时任务的正则表达式&lt;/span&gt;&lt;/em&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;
                 &lt;/div&gt;
 
                 
@@ -67,16 +996,5 @@
 
                 
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>ad3a8f7eca00783d4f7999de9d62e895</guid>
-<title>[推荐] Java 高并发编程基础之 AQS</title>
-<link>https://toutiao.io/k/6s1vey3</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;引言&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;曾经有一道比较比较经典的面试题“你能够说说&lt;code&gt;java&lt;/code&gt;的并发包下面有哪些常见的类？”大多数人应该都可以说出
-CountDownLatch、CyclicBarrier、Sempahore多线程并发三大利器。这三大利器都是通过&lt;code&gt;AbstractQueuedSynchronizer&lt;/code&gt;抽象类(下面简写AQS)来实现的，所以学习三大利器之前我们有必要先来学习下&lt;code&gt;AQS&lt;/code&gt;。&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;★&lt;/span&gt;&lt;p&gt;AQS是一种提供了原子式管理同步状态、阻塞和唤醒线程功能以及队列模型的简单框架&lt;/p&gt;&lt;span&gt;”&lt;/span&gt;&lt;/blockquote&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;AQS结构&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;说到同步我们如何来保证同步？大家第一印象肯定是加锁了，说到锁的话大家肯定首先会想到的是Synchronized。Synchronized大家应该基本上都会使用，加锁和释放锁都是jvm 来帮我们实现的，我们只需要简单的加个 Synchronized关键字就可以了。用起来超级方便。但是有没有一种情况我们设置一个锁的超时时间Synchronized就有点实现不了，这时候我们就可以用ReentrantLock来实现,ReentrantLock是通过aqs来实现的，今天我们就通过ReentrantLock来学习一下aqs。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;CAS &amp;amp;&amp;amp; 公平锁和非公平锁&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;AQS里面用到了大量的CAS学习AQS之前我们还是有必要简单的先了解下&lt;code&gt;CAS&lt;/code&gt;、公平锁和非公平锁。&lt;/p&gt;&lt;h5 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;CAS&lt;span/&gt;&lt;/h5&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;CAS&lt;/strong&gt; 全称是 compare and swap，是一种用于在多线程环境下实现同步功能的机制。&lt;code&gt;CAS&lt;/code&gt; 操作包含三个操作数 ：内存位置、预期数值和新值。&lt;code&gt;CAS&lt;/code&gt; 的实现逻辑是将内存位置处的数值与预期数值相比较，若相等，则将内存位置处的值替换为新值。若不相等，则不做任何操作,这个操作是个原子性操作，java里面的&lt;code&gt;AtomicInteger&lt;/code&gt;等类都是通过cas来实现的。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h5 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;公平锁和非公平锁&lt;span/&gt;&lt;/h5&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;公平锁：多个线程按照申请锁的顺序去获得锁，线程会直接进入队列去排队，队列中第一个才能获得到锁。优点：等待锁的线程不会饿死，每个线程都可以获取到锁。缺点：整体吞吐效率相对非公平锁要低，等待队列中除第一个线程以外的所有线程都会阻塞，CPU唤醒阻塞线程的开销比非公平锁大。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;非公平锁：多个线程去获取锁的时候，会直接去尝试获取，获取不到，再去进入等待队列，如果能获取到，就直接获取到锁。优点：可以减少CPU唤醒线程的开销，整体的吞吐效率会高点，CPU也不必唤醒所有线程，会减少唤起线程的数量。缺点：处于等待队列中的线程可能会饿死，或者等很久才会获得锁。文字有点拗口，我们来个实际的例子说明下。比如我们去食堂就餐的时候都要排队，大家都按照先来后到的顺序排队打饭，这就是公平锁。如果等到你准备拿盘子打饭的时候
-直接蹦出了一个五大三粗的胖子插队到你前面，你看打不赢他只能忍气吞声让他插队，等胖子打完饭了又来个小个子也来插你队，这时候你没法忍了，直接大吼一声让他滚，这个
-小个子只能屁颠屁颠到队尾去排队了这就是非公平锁。我们先来看看AQS有哪些属性&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;// 头节点&lt;/span&gt;&lt;br/&gt;&lt;span&gt;private&lt;/span&gt; &lt;span&gt;transient&lt;/span&gt; &lt;span&gt;volatile&lt;/span&gt; Node head;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;// 阻塞的尾节点，每个新的节点进来，都插入到最后，也就形成了一个链表&lt;/span&gt;&lt;br/&gt;&lt;span&gt;private&lt;/span&gt; &lt;span&gt;transient&lt;/span&gt; &lt;span&gt;volatile&lt;/span&gt; Node tail;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;// 这个是最重要的，代表当前锁的状态，0代表没有被占用，大于 0 代表有线程持有当前锁&lt;/span&gt;&lt;br/&gt;&lt;span&gt;// 这个值可以大于 1，是因为锁可以重入，每次重入都加上 1&lt;/span&gt;&lt;br/&gt;&lt;span&gt;private&lt;/span&gt; &lt;span&gt;volatile&lt;/span&gt; &lt;span&gt;int&lt;/span&gt; state;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;// 代表当前持有独占锁的线程，举个最重要的使用例子，因为锁可以重入&lt;/span&gt;&lt;br/&gt;&lt;span&gt;// reentrantLock.lock()可以嵌套调用多次，所以每次用这个来判断当前线程是否已经拥有了锁&lt;/span&gt;&lt;br/&gt;&lt;span&gt;// if (currentThread == getExclusiveOwnerThread()) {state++}&lt;/span&gt;&lt;br/&gt;&lt;span&gt;private&lt;/span&gt; &lt;span&gt;transient&lt;/span&gt; Thread exclusiveOwnerThread; &lt;span&gt;//继承自AbstractOwnableSynchronizer&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;下面我们来写一个demo分析下lock 加锁和释放锁的过程&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;   &lt;span&gt;&lt;span&gt;final&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;lock&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;            &lt;span&gt;// 上来先试试直接把状态置位1，如果此时没人获取锁就直接&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; (compareAndSetState(&lt;span&gt;0&lt;/span&gt;, &lt;span&gt;1&lt;/span&gt;))&lt;br/&gt;                 &lt;span&gt;// 争抢成功则修改获得锁状态的线程&lt;/span&gt;&lt;br/&gt;                setExclusiveOwnerThread(Thread.currentThread());&lt;br/&gt;            &lt;span&gt;else&lt;/span&gt;&lt;br/&gt;                acquire(&lt;span&gt;1&lt;/span&gt;);&lt;br/&gt;        }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;cas&lt;/code&gt;尝试失败，说明已经有人再持有锁，所以进入acquire方法&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt; &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;final&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;acquire&lt;/span&gt;&lt;span&gt;(&lt;span&gt;int&lt;/span&gt; arg)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; (!tryAcquire(arg) &amp;amp;&amp;amp;&lt;br/&gt;            acquireQueued(addWaiter(Node.EXCLUSIVE), arg))&lt;br/&gt;            selfInterrupt();&lt;br/&gt;    }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;tryAcquire&lt;/code&gt;方法，看名字大概能猜出什么意思，就是试一试。tryAcquire实际上是调用了父类Sync的&lt;code&gt;nonfairTryAcquire&lt;/code&gt;方法&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;  &lt;span&gt;&lt;span&gt;final&lt;/span&gt; &lt;span&gt;boolean&lt;/span&gt; &lt;span&gt;nonfairTryAcquire&lt;/span&gt;&lt;span&gt;(&lt;span&gt;int&lt;/span&gt; acquires)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;            &lt;span&gt;final&lt;/span&gt; Thread current = Thread.currentThread();&lt;br/&gt;             &lt;span&gt;// 获取下当前锁的状态&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;int&lt;/span&gt; c = getState();&lt;br/&gt;            &lt;span&gt;// 这个if 逻辑跟前面一进来就获取锁的逻辑一样都是通过cas尝试获取下锁&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; (c == &lt;span&gt;0&lt;/span&gt;) {&lt;br/&gt;                &lt;span&gt;if&lt;/span&gt; (compareAndSetState(&lt;span&gt;0&lt;/span&gt;, acquires)) {&lt;br/&gt;                    setExclusiveOwnerThread(current);&lt;br/&gt;                    &lt;span&gt;return&lt;/span&gt; &lt;span&gt;true&lt;/span&gt;;&lt;br/&gt;                }&lt;br/&gt;            }&lt;br/&gt;            &lt;span&gt;// 进入这个判断说明 锁重入了 状态需要进行+1&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;else&lt;/span&gt; &lt;span&gt;if&lt;/span&gt; (current == getExclusiveOwnerThread()) {&lt;br/&gt;                &lt;span&gt;int&lt;/span&gt; nextc = c + acquires;&lt;br/&gt;                 &lt;span&gt;// 如果锁的重入次数大于int的最大值，直接就抛出异常了，正常情况应该不存在这种情况，不过jdk还是严谨的&lt;/span&gt;&lt;br/&gt;                &lt;span&gt;if&lt;/span&gt; (nextc &amp;lt; &lt;span&gt;0&lt;/span&gt;) &lt;span&gt;// overflow&lt;/span&gt;&lt;br/&gt;                    &lt;span&gt;throw&lt;/span&gt; &lt;span&gt;new&lt;/span&gt; Error(&lt;span&gt;&quot;Maximum lock count exceeded&quot;&lt;/span&gt;);&lt;br/&gt;                setState(nextc);&lt;br/&gt;                &lt;span&gt;return&lt;/span&gt; &lt;span&gt;true&lt;/span&gt;;&lt;br/&gt;            }&lt;br/&gt;            &lt;span&gt;// 返回false 说明尝试获取锁失败了，失败了就要进行acquireQueued方法了&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;return&lt;/span&gt; &lt;span&gt;false&lt;/span&gt;;&lt;br/&gt;        }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;tryAcquire&lt;/code&gt;方法如果获取锁失败了,那么肯定就要排队等待获取锁。排队的线程需要待在哪里等待获取锁？这个就跟我们线程池执行任务一样，线程池把任务都封装成一个work，然后当线程处理任务不过来的时候，就把任务放到队列里面。AQS同样也是类似的，把排队等待获取锁的线程封装成一个NODE。然后再把NODE放入到一个队列里面。队列如下所示，不过需要注意一点head是不存NODE的。&lt;img data-ratio=&quot;0.3125&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/qu3ItokgsAribV9N3OiakAlkoCaXptm2AkJtW7icagn8LOTGjRTaA145YLvhUEq9HzQdpPpPoxXJzZIT7xsviauGjg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1408&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;接下来我们继续分析源码，看下获取锁失败是如何被加入队列的。就要执行acquireQueued方法，执行acquireQueued方法之前需要先执行addWaiter方法&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;    &lt;span&gt;&lt;span&gt;private&lt;/span&gt; Node &lt;span&gt;addWaiter&lt;/span&gt;&lt;span&gt;(Node mode)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        Node node = &lt;span&gt;new&lt;/span&gt; Node(Thread.currentThread(), mode);&lt;br/&gt;        &lt;span&gt;// Try the fast path of enq; backup to full enq on failure&lt;/span&gt;&lt;br/&gt;        Node pred = tail;&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; (pred != &lt;span&gt;null&lt;/span&gt;) {&lt;br/&gt;            node.prev = pred;&lt;br/&gt;            &lt;span&gt;// cas 加入队列队尾&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; (compareAndSetTail(pred, node)) {&lt;br/&gt;                pred.next = node;&lt;br/&gt;                &lt;span&gt;return&lt;/span&gt; node;&lt;br/&gt;            }&lt;br/&gt;        }&lt;br/&gt;        &lt;span&gt;// 尾结点不为空 || cas 加入尾结点失败&lt;/span&gt;&lt;br/&gt;        enq(node);&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; node;&lt;br/&gt;    }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;enq&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;接下来再看看enq方法&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;// 通过自旋和CAS一定要当前node加入队尾&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;private&lt;/span&gt; Node &lt;span&gt;enq&lt;/span&gt;&lt;span&gt;(&lt;span&gt;final&lt;/span&gt; Node node)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;for&lt;/span&gt; (;;) {&lt;br/&gt;            Node t = tail;&lt;br/&gt;            &lt;span&gt;// 尾结点为空说明队列还是空的，还没有被初始化，所以初始化头结点，可以看到头结点的node 是没有绑定线程的也就是不存数据的&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; (t == &lt;span&gt;null&lt;/span&gt;) { &lt;span&gt;// Must initialize&lt;/span&gt;&lt;br/&gt;                &lt;span&gt;if&lt;/span&gt; (compareAndSetHead(&lt;span&gt;new&lt;/span&gt; Node()))&lt;br/&gt;                    tail = head;&lt;br/&gt;            } &lt;span&gt;else&lt;/span&gt; {&lt;br/&gt;                node.prev = t;&lt;br/&gt;                &lt;span&gt;if&lt;/span&gt; (compareAndSetTail(t, node)) {&lt;br/&gt;                    t.next = node;&lt;br/&gt;                    &lt;span&gt;return&lt;/span&gt; t;&lt;br/&gt;                }&lt;br/&gt;            }&lt;br/&gt;        }&lt;br/&gt;    }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;通过addWaiter方法已经把获取锁的线程通过封装成一个NODE加入对列。上述方法的一个执行流程图如下：&lt;img data-ratio=&quot;0.7497219132369299&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/qu3ItokgsAribV9N3OiakAlkoCaXptm2AksU1ic1nEp3v4OzYUxlB0wZXVrqk55x6ibibickjfLtXlOQffWutmfOXBow/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;899&quot;/&gt;，接下来就是继续执行acquireQueued方法&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;acquireQueued&lt;span/&gt;&lt;/h3&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;    &lt;span&gt;&lt;span&gt;final&lt;/span&gt; &lt;span&gt;boolean&lt;/span&gt; &lt;span&gt;acquireQueued&lt;/span&gt;&lt;span&gt;(&lt;span&gt;final&lt;/span&gt; Node node, &lt;span&gt;int&lt;/span&gt; arg)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;boolean&lt;/span&gt; failed = &lt;span&gt;true&lt;/span&gt;;&lt;br/&gt;        &lt;span&gt;try&lt;/span&gt; {&lt;br/&gt;            &lt;span&gt;boolean&lt;/span&gt; interrupted = &lt;span&gt;false&lt;/span&gt;;&lt;br/&gt;            &lt;span&gt;for&lt;/span&gt; (;;) {&lt;br/&gt;                 &lt;span&gt;// 通过自旋去获取锁 前驱节点==head的时候去尝试获取锁，这个方法在前面已经分析过了。&lt;/span&gt;&lt;br/&gt;                &lt;span&gt;final&lt;/span&gt; Node p = node.predecessor();&lt;br/&gt;                &lt;span&gt;if&lt;/span&gt; (p == head &amp;amp;&amp;amp; tryAcquire(arg)) {&lt;br/&gt;                    setHead(node);&lt;br/&gt;                    p.next = &lt;span&gt;null&lt;/span&gt;; &lt;span&gt;// help GC&lt;/span&gt;&lt;br/&gt;                    failed = &lt;span&gt;false&lt;/span&gt;;&lt;br/&gt;                    &lt;span&gt;return&lt;/span&gt; interrupted;&lt;br/&gt;                }&lt;br/&gt;               &lt;span&gt;// 进入这个if说明node的前驱节点不等于head 或者尝试获取锁失败了&lt;/span&gt;&lt;br/&gt;               &lt;span&gt;// 判断是否需要挂起当前线程&lt;/span&gt;&lt;br/&gt;                &lt;span&gt;if&lt;/span&gt; (shouldParkAfterFailedAcquire(p, node) &amp;amp;&amp;amp;&lt;br/&gt;                    parkAndCheckInterrupt())&lt;br/&gt;                    interrupted = &lt;span&gt;true&lt;/span&gt;;&lt;br/&gt;            }&lt;br/&gt;        } &lt;span&gt;finally&lt;/span&gt; {&lt;br/&gt;               &lt;span&gt;// 异常情况进入cancelAcquire，在jdk11的时候这个源码直接是catch (Throwable e){ cancelAcquire(node);} 简单明了&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; (failed)&lt;br/&gt;                cancelAcquire(node);&lt;br/&gt;        }&lt;br/&gt;    }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;setHead&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这个方法每当有一个node获取到锁了，就把当前&lt;code&gt;node&lt;/code&gt;节点设置为头节点，可以简单的看做当前节点获取到锁了就把当前节点”移除“（变为头结点）队列。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;shouldParkAfterFailedAcquire&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;说到这个方法我们就要先看下NODE可能会有哪些状态在源码里面我们可以看到总共会有四种状态&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;CANCELLED&lt;/strong&gt;：值为1，在同步队列中等待的线程等待超时或被中断，需要从同步队列中取消该Node的结点，其结点的waitStatus为CANCELLED，即结束状态，进入该状态后的结点将不会再变化。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;SIGNAL&lt;/strong&gt;：值为-1，被标识为该等待唤醒状态的后继结点，当其前继结点的线程释放了同步锁或被取消，将会通知该后继结点的线程执行。说白了，就是处于唤醒状态，只要前继结点释放锁，就会通知标识为SIGNAL状态的后继结点的线程执行。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;CONDITION&lt;/strong&gt;：值为-2，与Condition相关，该标识的结点处于等待队列中，结点的线程等待在Condition上，当其他线程调用了Condition的signal()方法后，CONDITION状态的结点将从等待队列转移到同步队列中，等待获取同步锁。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;PROPAGATE&lt;/strong&gt;：值为-3，与共享模式相关，在共享模式中，该状态标识结点的线程处于可运行状态。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;private&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;boolean&lt;/span&gt; &lt;span&gt;shouldParkAfterFailedAcquire&lt;/span&gt;&lt;span&gt;(Node pred, Node node)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;int&lt;/span&gt; ws = pred.waitStatus;&lt;br/&gt;        &lt;span&gt;// 前驱节点状态 如果这个状态为-1 则返回true，把当前线程挂起&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; (ws == Node.SIGNAL)&lt;br/&gt;            &lt;span&gt;return&lt;/span&gt; &lt;span&gt;true&lt;/span&gt;;&lt;br/&gt;        &lt;span&gt;// 大于0，说明状态为CANCELLED &lt;/span&gt;&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; (ws &amp;gt; &lt;span&gt;0&lt;/span&gt;) {&lt;br/&gt;            &lt;span&gt;do&lt;/span&gt; {&lt;br/&gt;               &lt;span&gt;// 删除被取消的node（让被取消的node成为一个没有引用的node等着下次GC被回收）&lt;/span&gt;&lt;br/&gt;                node.prev = pred = pred.prev;&lt;br/&gt;            } &lt;span&gt;while&lt;/span&gt; (pred.waitStatus &amp;gt; &lt;span&gt;0&lt;/span&gt;);&lt;br/&gt;            pred.next = node;&lt;br/&gt;        } &lt;span&gt;else&lt;/span&gt; {&lt;br/&gt;            &lt;span&gt;// 进入这里只能是 0，-2，-3。NODE节点初始化的时候waitStatus默认值是0，所以只有这里才有修改waitStatus的地方&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;// 通过cas 把前驱节点的状态设置为-1，然后返回false ，外面调用这个方法的是个循环，又会调用一次这个方法&lt;/span&gt;&lt;br/&gt;            compareAndSetWaitStatus(pred, ws, Node.SIGNAL);&lt;br/&gt;        }&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; &lt;span&gt;false&lt;/span&gt;;&lt;br/&gt;    }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;parkAndCheckInterrupt&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;挂起当前线程，并且阻塞&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;private&lt;/span&gt; &lt;span&gt;final&lt;/span&gt; &lt;span&gt;boolean&lt;/span&gt; &lt;span&gt;parkAndCheckInterrupt&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    LockSupport.park(&lt;span&gt;this&lt;/span&gt;); &lt;span&gt;// 挂起当前线程，阻塞&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; Thread.interrupted();&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;1.3282122905027933&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/qu3ItokgsAribV9N3OiakAlkoCaXptm2AkicuDhTLSMU3WH9cxxT9oUAw8fVXlxNYqD6ricKKvyiawwwicJlr4J9cypA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;716&quot;/&gt;&lt;figcaption&gt;在这里插入图片描述&lt;/figcaption&gt;&lt;/figure&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;解锁&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;加锁成功了，那锁用完了就应该释放锁了，释放锁重点看下unparkSuccessor这个方法就好了&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt; &lt;span&gt;&lt;span&gt;private&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;unparkSuccessor&lt;/span&gt;&lt;span&gt;(Node node)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;          &lt;span&gt;// 头结点状态&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;int&lt;/span&gt; ws = node.waitStatus;&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; (ws &amp;lt; &lt;span&gt;0&lt;/span&gt;)&lt;br/&gt;            compareAndSetWaitStatus(node, ws, &lt;span&gt;0&lt;/span&gt;);&lt;br/&gt;        Node s = node.next;&lt;br/&gt;        &lt;span&gt;// s==null head的successor节点获取锁成功后，执行了head.next=null的操作后，解锁线程读取了head.next，因此s==null&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;// head的successor节点被取消（cancelAcquire）时，执行了如下操作：successor.waitStatus=1 ; successor.next = successor;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; (s == &lt;span&gt;null&lt;/span&gt; || s.waitStatus &amp;gt; &lt;span&gt;0&lt;/span&gt;) {&lt;br/&gt;            s = &lt;span&gt;null&lt;/span&gt;;&lt;br/&gt;            &lt;span&gt;// 从尾节点开始往前找，找到最前面的非取消的节点 这里没有break 哦&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;for&lt;/span&gt; (Node t = tail; t != &lt;span&gt;null&lt;/span&gt; &amp;amp;&amp;amp; t != node; t = t.prev)&lt;br/&gt;                &lt;span&gt;if&lt;/span&gt; (t.waitStatus &amp;lt;= &lt;span&gt;0&lt;/span&gt;)&lt;br/&gt;                    s = t;&lt;br/&gt;        }&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; (s != &lt;span&gt;null&lt;/span&gt;)&lt;br/&gt;             &lt;span&gt;// 唤醒线程 ，唤醒的线程会从acquireQueued去获取锁&lt;/span&gt;&lt;br/&gt;            LockSupport.unpark(s.thread);&lt;br/&gt;    }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;释放锁代码比较简单，基本都写在代码注释里面了，流程如下：&lt;img data-ratio=&quot;1.0345285524568393&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/qu3ItokgsAribV9N3OiakAlkoCaXptm2Aks1vK9UvA7ncZw6vICwgaTZtaiakLY9EcZA1zNcHUk3eBjJPL0iaQumLA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;753&quot;/&gt;这段代码里面有一个比较经典的面试题：如果头结点的下一个节点为空或者头结点的下一个节点的状态为取消的时候为什么要从后往前找，找到最前面非取消的节点？&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;node.prev = pred; compareAndSetTail(pred, node) 这两个地方可以看作Tail入队的原子操作，但是此时pred.next = node;还没执行，如果这个时候执行了unparkSuccessor方法，就没办法从前往后找了，所以需要从后往前找。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;在产生CANCELLED状态节点的时候，先断开的是Next指针，Prev指针并未断开，因此也是必须要从后往前遍历才能够遍历完全部的Node&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;总结&lt;span/&gt;&lt;/h3&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;reentrantLock的获取锁和释放锁基本就讲完了，里面还涉及多比较多的细节，感兴趣的同学可以对着源码一行一行去debug试试。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;适当的了解aqs才能更好的学习CountDownLatch、CyclicBarrier、Sempahore，因为这三个利器都是基于aqs来实现的。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;结束&lt;span/&gt;&lt;/h3&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;由于自己才疏学浅，难免会有纰漏，假如你发现了错误的地方，还望留言给我指出来,我会对其加以修正。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如果你觉得文章还不错，你的转发、分享、赞赏、点赞、留言就是对我最大的鼓励。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;感谢您的阅读,十分欢迎并感谢您的关注。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzIyMjQwMTgyNA==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/qu3ItokgsApF99T8iaeM8zcTTMB6stsfYOGjWJ9MkQlr5zJ2gDIOFInycWpDDZjNk0mft0UNxytqBsE3qQicrlVw/0?wx_fmt=png&quot; data-nickname=&quot;java金融&quot; data-alias=&quot;java4299&quot; data-signature=&quot;关注【java金融】后台回复「666」 领取一份面试资料《Java面试BATJ通关手册》，覆盖了Java核心技术、JVM、Java并发、SSM、微服务、数据库、数据结构简历等等。&quot;/&gt;&lt;/section&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;站在巨人的肩膀上摘苹果:&lt;/section&gt;&lt;section&gt;https://tech.meituan.com/2019/12/05/aqs-theory-and-apply.html
-https://javadoop.com/post/AbstractQueuedSynchronizer
-https://www.cnblogs.com/yanlong300/p/10953185.html&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
