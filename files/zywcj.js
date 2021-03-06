@@ -188,7 +188,6 @@ if(flag=='xsp1'){url='https://jx.api.xhfhttc.cn/jx/?type=xsp1&url='+url}
 if(flag=='bb'){url='https://jx.api.xhfhttc.cn/jx/?url='+url}
 if(flag=='pll'){url='https://jx.baipiaozy.com/player/?url='+url}
 if(flag=='msp'){url='https://titan.mgtv.com.bowang.tv/player/analysis.php?v='+url}
-if(flag=='bilibili'){url='https://www.murl.us/?url='+url}
 items.push({
 title:list[j].split('$')[0].indexOf('http')!=-1?[j+1]:list[j].split('$')[0],
 url:url.replace(/\n*/g,'')+`@lazyRule=.js:eval(fetch('hiker://files/rules/zywcj.js'));lazyRu();`,
@@ -281,8 +280,8 @@ return url!=""?url:getUrl(jiek+pli);
 }else if(src.indexOf("baipiaozy")!=-1||src.indexOf("bowang")!=-1){
 refreshX5WebView(src);
 return "toast://请等待加载选集！";
-}else if(src.indexOf("murl")!=-1){
-refreshX5WebView(src);
+}else if(src.indexOf("www.bilibili.com")!=-1){
+refreshX5WebView('https://www.murl.us/?url='+src);
 return "toast://请等待加载选集！";
 }else if(src.indexOf("47api")!=-1){
 refreshX5WebView(src);
