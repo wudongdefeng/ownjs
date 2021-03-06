@@ -289,5 +289,8 @@ return "toast://请等待加载选集！";
 }else if(src.indexOf("yparse.com")!=-1){
 refreshX5WebView(src);
 return "toast://请等待加载选集！";
+}else if(src.indexOf("//520.com")!=-1){
+refreshX5WebView("https://titan.mgtv.com.o8tv.com/jiexi/?url="+src);
+return "toast://请等待加载选集！";
 }else{return src}
 }
