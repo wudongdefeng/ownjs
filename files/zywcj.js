@@ -219,7 +219,7 @@ var fileUrl="https://codeberg.org/lzk23559/PublicRule/raw/branch/master/parse.js
 }else{
 var fileUrl="hiker://files/rules/parse.js"}
 eval(fetch(fileUrl,{}));
-var play=yqjx.toUrl(src.split('"')[0]);
+var play=vodkey.toUrl(src.split('"')[0]);
 return play!=""?play:getUrl(src.split('"')[0]);
 }else if(src.indexOf("135-cdn")!=-1){
 refreshX5WebView(src);
