@@ -36,6 +36,7 @@ var url = parseDomForHtml(list[j],"body&&id&&Text");
 var note = parseDomForHtml(list[j],"body&&note&&Text"); 
 var typ = parseDomForHtml(list[j],"body&&type&&Text");
 var last = parseDomForHtml(list[j],"body&&last&&Text");
+if(typ.indexOf("伦理")==-1&&typ.indexOf("福利")==-1&&typ.indexOf("写真")==-1&&typ.indexOf("VIP")==-1&&typ.indexOf("美女")==-1&&typ.indexOf("里番")==-1&&typ.indexOf("性感")==-1&&typ.indexOf("倫理")==-1&&typ.indexOf("论理")==-1){
 if(html.indexOf("</pic>")!=-1){
 var pic=parseDomForHtml(list[j],"body&&pic&&Text").replace("http://t.8kmm.com","https://www.wxtv.net");
 eval(fetch("hiker://files/rules/zywcj.js"));
@@ -55,6 +56,7 @@ desc:last+' '+typ+' '+dt,
 url:arrr+"?ac=videolist&ids="+url+`@rule=js:eval(fetch('hiker://files/rules/zywcj.js'));SSEJ();`,
 col_type:"text_1"
 })
+    }
     }
   }
 } catch(e) {}
@@ -79,6 +81,7 @@ var type = parseDomForHtml(rescod,"class&&Html").match(/<ty[\s]id[\s\S]*?<\/ty>/
 for(var i=0;i<type.length;i++){
 var title = parseDomForHtml(type[i],"body&&Text").split('{')[0];
 var url = parseDomForHtml(type[i],"body&&ty&&id");
+if(title.indexOf("伦理")==-1&&title.indexOf("福利")==-1&&title.indexOf("写真")==-1&&title.indexOf("VIP")==-1&&title.indexOf("美女")==-1&&title.indexOf("里番")==-1&&title.indexOf("性感")==-1&&title.indexOf("倫理")==-1&&title.indexOf("论理")==-1){
 items.push({
 title:title,
 url:arrr+"?ac=list&pg=fypage&t="+url+`@rule=js:\
@@ -105,6 +108,7 @@ eval(fetch('hiker://files/rules/zywcj.js'));\
 listfun();\
 res.data=items;setHomeResult(res);`,
 col_type:"text_3"});
+  }
   }
 } catch(e) {}
 items.push({
@@ -149,6 +153,7 @@ var pic = parseDomForHtml(html,"rss&&pic&&Text").replace("http://t.8kmm.com","ht
 eval(fetch('hiker://files/rules/zywcj.js'));
 picfun();
 var typ = parseDomForHtml(html,"body&&type&&Text");
+if(typ.indexOf("伦理")==-1&&typ.indexOf("福利")==-1&&typ.indexOf("写真")==-1&&typ.indexOf("VIP")==-1&&typ.indexOf("美女")==-1&&typ.indexOf("里番")==-1&&typ.indexOf("性感")==-1&&typ.indexOf("倫理")==-1&&typ.indexOf("论理")==-1){
 items.push({
 title: parseDomForHtml(html, "rss&&name&&Text")+"  剧情简介：",
 desc:parseDomForHtml(html, "rss&&des&&Text"),
@@ -196,6 +201,10 @@ col_type: 'text_2'});
    }
   }
  }
+ ;}else{items.push({
+title:'珍爱生命，远离情色',
+col_type: 'text_center_1'
+})}
 } catch(e) {}
 res.data=items;
 setHomeResult(res);
