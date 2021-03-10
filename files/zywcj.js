@@ -205,14 +205,13 @@ setHomeResult(res);
 function lazyRu() {
 var src=input.replace(/amp;/g,"").replace(/^\s*/,"");
 if(src.indexOf("html")!=-1){
-var jiek="https://1717.ntryjd.net/0526/?url=";
 if(!fetch("hiker://files/rules/parse.js",{})){
-var fileUrl="https://cdn.jsdelivr.net/gh/lzk23559/Public_folder/parse.js";
+var fileUrl="https://codeberg.org/lzk23559/PublicRule/raw/branch/master/parse.js";
 }else{
 var fileUrl="hiker://files/rules/parse.js"}
 eval(fetch(fileUrl,{}));
-var url=yqjx.toUrl(jiek+src.split('"')[0]);
-return url!=""?url:getUrl(jiek+src.split('"')[0]);
+var play=yqjx.toUrl(src.split('"')[0]);
+return play!=""?play:getUrl(src.split('"')[0]);
 }else if(src.indexOf("135-cdn")!=-1){
 refreshX5WebView(src);
 return "toast://请等待加载选集！";
@@ -270,14 +269,13 @@ eval(fetch(fileUrl,{}));
 return tools.DdyunPlayer.toUrl(src).replace("ddyunp.com","90mm.me")};
 }else if(src.indexOf("xsp1")!=-1){
 var pli=parseDomForHtml(fetch(src,{headers:{"Referer":"https://zz22x.com"}}),"body&&iframe&&src").split("url=")[1];
-var jiek="https://1717.ntryjd.net/0526/?url=";
 if(!fetch("hiker://files/rules/parse.js",{})){
-var fileUrl="https://cdn.jsdelivr.net/gh/lzk23559/Public_folder/parse.js";
+var fileUrl="https://codeberg.org/lzk23559/PublicRule/raw/branch/master/parse.js";
 }else{
 var fileUrl="hiker://files/rules/parse.js"}
 eval(fetch(fileUrl,{}));
-var url=yqjx.toUrl(jiek+pli);
-return url!=""?url:getUrl(jiek+pli);
+var play=yqjx.toUrl(pli);
+return play!=""?play:getUrl(pli);
 }else if(src.indexOf("kudian6.com")!=-1){
 var html=request(src);
 return html.match(/url\":\"(.*?)\"/)[1];
@@ -285,8 +283,13 @@ return html.match(/url\":\"(.*?)\"/)[1];
 refreshX5WebView(src);
 return "toast://请等待加载选集！";
 }else if(src.indexOf("www.bilibili.com")!=-1){
-refreshX5WebView('https://www.murl.us/?url='+src);
-return "toast://请等待加载选集！";
+if(!fetch("hiker://files/rules/parse.js",{})){
+var fileUrl="https://codeberg.org/lzk23559/PublicRule/raw/branch/master/parse.js";
+}else{
+var fileUrl="hiker://files/rules/parse.js"}
+eval(fetch(fileUrl,{}));
+var play=llqplay.toUrl(src);
+return play==''?getUrl(src):play;
 }else if(src.indexOf("47api")!=-1){
 refreshX5WebView(src);
 return "toast://请等待加载选集！";
