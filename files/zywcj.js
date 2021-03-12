@@ -154,12 +154,19 @@ eval(fetch('hiker://files/rules/zywcj.js'));
 picfun();
 var typ = parseDomForHtml(html,"body&&type&&Text");
 if(typ.indexOf("伦理")==-1&&typ.indexOf("福利")==-1&&typ.indexOf("写真")==-1&&typ.indexOf("VIP")==-1&&typ.indexOf("美女")==-1&&typ.indexOf("里番")==-1&&typ.indexOf("性感")==-1&&typ.indexOf("倫理")==-1&&typ.indexOf("论理")==-1){
+var des=parseDomForHtml(html, "rss&&des&&Text");
 items.push({
-title: parseDomForHtml(html, "rss&&name&&Text")+"  剧情简介：",
-desc:parseDomForHtml(html, "rss&&des&&Text"),
+title:'演员：'+'\n'+parseDomForHtml(html, "rss&&actor&&Text"),
+desc:'导演：'+parseDomForHtml(html, "rss&&director&&Text"),
 pic_url:pic,
 url:pic,
-col_type: 'pic_1'
+col_type: 'movie_1_vertical_pic'
+});
+
+items.push({
+title: "剧情简介：",
+desc:des,
+col_type: 'text_1'
 });
 var conts=parseDomForArray(html,'rss&&dl&&dd');
 var url=parseDomForHtml(html,'rss&&id&&Text');
@@ -195,10 +202,11 @@ if(flag=='pll'){url='https://jx.baipiaozy.com/player/?url='+url}
 if(flag=='msp'){url='https://titan.mgtv.com.bowang.tv/player/analysis.php?v='+url}
 if(flag=='kdyx'||flag=='kdsx'){url='http://api.kudian6.com/jm/pdplayer.php?url='+url}
 if(flag=='789pan'){url='https://play.789pan.cn/player/tm.php?url='+url}
+var title=(list[j].split('$')[0].indexOf('http')!=-1?[j+1]:list[j].split('$')[0]);
 items.push({
 title:list[j].split('$')[0].indexOf('http')!=-1?[j+1]:list[j].split('$')[0],
 url:url.replace(/\n*/g,'')+`@lazyRule=.js:/*refreshX5WebView*/eval(fetch('hiker://files/rules/zywcj.js'));lazyRu();`,
-col_type: list.length>=13?'text_3':'text_2'});
+col_type: title.length>=6?'text_2':'text_3'});
    }
   }
  }
