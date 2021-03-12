@@ -9,7 +9,10 @@ col_type: 'text_center_1'
 });
 res.data=items;
 setHomeResult(res);
-}
+};
+
+eval(function(p,a,c,k,e,r){e=String;if('0'.replace(0,e)==0){while(c--)r[e(c)]=k[c];k=[function(e){return r[e]||e}];e=function(){return'[23]'};c=1};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p}('function filter(c){2 b=["伦理","写真","福利","VIP","美女","里番","性感","倫理","论理","成人","情色","无码","有码","妻","诱","乳","红主","莉","品推","文字","三级","美少","HEY","骑兵","产自","性爱","裸聊","乱伦","偷","AV","av","淫","妖","男同","女同","人","妇","丝","私","盗","虚拟","交","SM","慰","精品","学生","射","3P","大秀","精品","口味","高潮","极品","DMM","首次","辣椒","家擂","色情","主播","名优","幼","眉","女","阴","奸","轨","师","情侣","激","态","控","飞机","推","潮","麻豆","ey"];for(2 a=0;a<b.length;a++){if(c.indexOf(b[a])>-1){3 true}}3 false}',[],4,'||var|return'.split('|'),0,{}));
+
 //图片替换函数
 function picfun() {
 if(MY_URL.indexOf("pangniaozyw")!=-1||MY_URL.indexOf("leshizyw")!=-1||MY_URL.indexOf("9191zy")!=-1){
@@ -25,7 +28,7 @@ pic=pic.replace("img.maccms.com","img.17kanju.com");
 }else if(MY_URL.indexOf("potatost")!=-1){
 pic=pic.replace("http://img.maccms.com//pic=","");
 }
-}
+};
 //列表解析函数
 function listfun() {
 try{
@@ -36,7 +39,7 @@ var url = parseDomForHtml(list[j],"body&&id&&Text");
 var note = parseDomForHtml(list[j],"body&&note&&Text"); 
 var typ = parseDomForHtml(list[j],"body&&type&&Text");
 var last = parseDomForHtml(list[j],"body&&last&&Text");
-if(typ.indexOf("伦理")==-1&&typ.indexOf("福利")==-1&&typ.indexOf("写真")==-1&&typ.indexOf("VIP")==-1&&typ.indexOf("美女")==-1&&typ.indexOf("里番")==-1&&typ.indexOf("性感")==-1&&typ.indexOf("倫理")==-1&&typ.indexOf("论理")==-1){
+if(!filter(typ)){
 if(html.indexOf("</pic>")!=-1){
 var pic=parseDomForHtml(list[j],"body&&pic&&Text").replace("http://t.8kmm.com","https://www.wxtv.net");
 eval(fetch("hiker://files/rules/zywcj.js"));
@@ -60,7 +63,7 @@ col_type:"text_1"
     }
   }
 } catch(e) {}
-}
+};
 //二级规则函数
 function TWEJ() {
 var res = {};
@@ -81,7 +84,7 @@ var type = parseDomForHtml(rescod,"class&&Html").match(/<ty[\s]id[\s\S]*?<\/ty>/
 for(var i=0;i<type.length;i++){
 var title = parseDomForHtml(type[i],"body&&Text").split('{')[0];
 var url = parseDomForHtml(type[i],"body&&ty&&id");
-if(title.indexOf("伦理")==-1&&title.indexOf("福利")==-1&&title.indexOf("写真")==-1&&title.indexOf("VIP")==-1&&title.indexOf("美女")==-1&&title.indexOf("里番")==-1&&title.indexOf("性感")==-1&&title.indexOf("倫理")==-1&&title.indexOf("论理")==-1){
+if(!filter(title)){
 items.push({
 title:title,
 url:arrr+"?ac=list&pg=fypage&t="+url+`@rule=js:\
@@ -135,7 +138,7 @@ listfun();
 //对列表处理结束
 res.data=items;
 setHomeResult(res);
-}
+};
 //搜索二级函数
 function SSEJ() {
 var res = {};
@@ -153,7 +156,7 @@ var pic = parseDomForHtml(html,"rss&&pic&&Text").replace("http://t.8kmm.com","ht
 eval(fetch('hiker://files/rules/zywcj.js'));
 picfun();
 var typ = parseDomForHtml(html,"body&&type&&Text");
-if(typ.indexOf("伦理")==-1&&typ.indexOf("福利")==-1&&typ.indexOf("写真")==-1&&typ.indexOf("VIP")==-1&&typ.indexOf("美女")==-1&&typ.indexOf("里番")==-1&&typ.indexOf("性感")==-1&&typ.indexOf("倫理")==-1&&typ.indexOf("论理")==-1){
+if(!filter(typ)){
 var des=parseDomForHtml(html, "rss&&des&&Text");
 items.push({
 title:'演员：'+'\n'+parseDomForHtml(html, "rss&&actor&&Text"),
@@ -210,23 +213,17 @@ col_type: title.length>=6?'text_2':'text_3'});
    }
   }
  }
- ;}else{items.push({
-title:'珍爱生命，远离情色',
-col_type: 'text_center_1'
-})}
+ }//
 } catch(e) {}
 res.data=items;
 setHomeResult(res);
-}
+};
 
 //动态解析
 function lazyRu() {
 var src=input.replace(/amp;/g,"").replace(/^\s*/,"");
 if(src.indexOf("html")!=-1){
-if(!fetch("hiker://files/rules/parse.js",{})){
 var fileUrl="https://codeberg.org/lzk23559/PublicRule/raw/branch/master/parse.js";
-}else{
-var fileUrl="hiker://files/rules/parse.js"}
 eval(fetch(fileUrl,{}));
 var play=vodkey.toUrl(src.split('"')[0]);
 return play!=""?play:getUrl(src.split('"')[0]);
@@ -287,10 +284,7 @@ eval(fetch(fileUrl,{}));
 return tools.DdyunPlayer.toUrl(src).replace("ddyunp.com","90mm.me")};
 }else if(src.indexOf("xsp1")!=-1){
 var pli=parseDomForHtml(fetch(src,{headers:{"Referer":"https://zz22x.com"}}),"body&&iframe&&src").split("url=")[1];
-if(!fetch("hiker://files/rules/parse.js",{})){
 var fileUrl="https://codeberg.org/lzk23559/PublicRule/raw/branch/master/parse.js";
-}else{
-var fileUrl="hiker://files/rules/parse.js"}
 eval(fetch(fileUrl,{}));
 var play=yqjx.toUrl(pli);
 return play!=""?play:getUrl(pli);
@@ -301,10 +295,7 @@ return html.match(/url\":.*?[\'\"](.*?)[\'\"]/)[1];
 refreshX5WebView(src);
 return "toast://请等待加载选集！";
 }else if(src.indexOf("www.bilibili.com")!=-1){
-if(!fetch("hiker://files/rules/parse.js",{})){
 var fileUrl="https://codeberg.org/lzk23559/PublicRule/raw/branch/master/parse.js";
-}else{
-var fileUrl="hiker://files/rules/parse.js"}
 eval(fetch(fileUrl,{}));
 var play=llqplay.toUrl(src);
 return play==''?getUrl(src):play;
@@ -318,4 +309,4 @@ return "toast://请等待加载选集！";
 refreshX5WebView("https://titan.mgtv.com.o8tv.com/jiexi/?url="+src);
 return "toast://请等待加载选集！";
 }else{return src}
-}
+};
