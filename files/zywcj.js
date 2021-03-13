@@ -46,7 +46,7 @@ eval(fetch("hiker://files/rules/zywcj.js"));
 picfun();
 items.push({
 title:title,
-pic_url:pic,
+pic_url:pic+'@Referer='+pic,
 desc:note,
 url:arrr+"?ac=videolist&ids="+url+`@rule=js:eval(fetch('hiker://files/rules/zywcj.js'));SSEJ();`,
 col_type:"movie_3"
@@ -161,7 +161,7 @@ var des=parseDomForHtml(html, "rss&&des&&Text");
 items.push({
 title:'演员：'+'\n'+parseDomForHtml(html, "rss&&actor&&Text"),
 desc:'导演：'+parseDomForHtml(html, "rss&&director&&Text"),
-pic_url:pic,
+pic_url:pic+'@Referer='+pic,
 url:pic,
 col_type: 'movie_1_vertical_pic'
 });
