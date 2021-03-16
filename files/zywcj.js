@@ -202,7 +202,7 @@ if(flag=='hkm3u8'){url='https://pl.tcc-interiors.com/hls/'+url}
 if(flag=='xsp1'){url='https://jx.api.xhfhttc.cn/jx/?type=xsp1&url='+url}
 if(flag=='bb'){url='https://jx.api.xhfhttc.cn/jx/?url='+url}
 if(flag=='pll'){url='https://jx.baipiaozy.com/player/?url='+url}
-if(flag=='msp'){url='https://titan.mgtv.com.bowang.tv/player/analysis.php?v='+url}
+if(flag=='msp'){url='https://titan.mgtv.com.bowang.tv/player/?url='+url}
 if(flag=='kdyx'||flag=='kdsx'){url='http://api.kudian6.com/jm/pdplayer.php?url='+url}
 if(flag=='789pan'){url='https://play.789pan.cn/player/tm.php?url='+url}
 var title=(list[j].split('$')[0].indexOf('http')!=-1?[j+1]:list[j].split('$')[0]);
