@@ -77,33 +77,15 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>9715503309ab23693d063e4eff773d6e</guid>
-<title>几个你不知道的 dubbo 注册中心细节</title>
-<link>https://toutiao.io/k/qmh5nuk</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
-
-                    
-                    
-                    
-                    &lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;你会正确配置backup地址吗？&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在配置dubbo注册中心时，一般会这样写&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;dubbo.registry.protocol=zookeeper&lt;br/&gt;dubbo.registry.address=127.0.0.1:2181&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;也会简单地写成&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;dubbo.registry.address=zookeeper://127.0.0.1:2181&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当zookeeper地址不止一个，需要配置backup地址时，会这样写&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;dubbo.registry.protocol=zookeeper&lt;br/&gt;dubbo.registry.address=127.0.0.1:2181,127.0.0.1:2182&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这时候如果你简写成这样&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;dubbo.registry.address=zookeeper://127.0.0.1:2181,127.0.0.1:2182&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;那就启动报错了~看下报错日志&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;java.lang.IllegalStateException: Failed to receive INITIALIZED event from zookeeper, pls. check &lt;span&gt;if&lt;/span&gt; url zookeeper://127.0.0.1:2181,127.0.0.1:2182/org.apache.dubbo.metadata.report.MetadataReport?client=&amp;amp;dubbo.config-center.root-path=/ is correct&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;为什么会这样？&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.8508230452674898&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_png/xacdaKuBM0QbUz7URRssvgRe8fOYRSYRjG5syy9AncnUJhV0rdlyOkZUNdNyVFvicTUBDYLkkeCvtWtjl1NYF7g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;972&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;从源码上能看出，当address中包含&lt;code&gt;://&lt;/code&gt;时就认为address配置的是一个&lt;code&gt;URL&lt;/code&gt;，此时如果要配置backup地址必须在URL参数中指定backup参数才行；&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;dubbo.registry.address=zookeeper://127.0.0.1:2181?backup=127.0.0.1:2182&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但当address中不包含&lt;code&gt;://&lt;/code&gt;时，dubbo认为你配置的第一个地址是主，逗号后的地址都是backup。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;多注册中心有什么猫腻？&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;多注册中心可以这样配置&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;dubbo.registries.zk1.address=zookeeper://127.0.0.1:2181&lt;br/&gt;dubbo.registries.zk2.address=disf://127.0.0.1:2182&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这样配置dubbo的默认行为是&lt;code&gt;双注册&lt;/code&gt;，&lt;code&gt;都消费&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;双注册不用说，就是会将服务注册到这两个注册中心上去，应用&lt;code&gt;启动耗时增加&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;都消费指的是针对每个provider，consumer都会和它建立连接，消费时按注册中心顺序挑选一个可用的invoker进行调用，也就是说将两个注册中心中提供的服务merge起来进行调用。假设这两个注册中心提供了相同的服务，consumer会和每个provider建立&lt;code&gt;2条长链接&lt;/code&gt;。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;设置默认消费注册中心怎么这么难？&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;接上条，如果消费了两个注册中心，两个注册中心都提供了相同的服务，我想设置个默认消费的注册中心怎么设置呢？一般是这么设置&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;dubbo.registries.zk1.default=&lt;span&gt;true&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但是经过实践你会发现，有可能不生效，追一下源码&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.4768153980752406&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_png/xacdaKuBM0QbUz7URRssvgRe8fOYRSYRIbNz9o90PAL7fVwkRJS3H3K6iceCYqUwYhgtmyJXtUCkGlngAvLq7CQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1143&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;可以看到当注册中心带了&lt;code&gt;default&lt;/code&gt;是会被优先选中的，但为什么有时候这么配置又不行呢？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这是因为dubbo的版本问题，上图是&lt;code&gt;2.7.3&lt;/code&gt;版本的代码，到&lt;code&gt;2.7.5&lt;/code&gt;以后&lt;code&gt;RegistryAwareClusterInvoker&lt;/code&gt;被换成了&lt;code&gt;ZoneAwareClusterInvoker&lt;/code&gt;，看下这个类&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.453525641025641&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_png/xacdaKuBM0QbUz7URRssvgRe8fOYRSYRy8k3oKBrImnxp3XibJ3qGOoUDdGXCicqFkTafP4q9vyCmRJ95dG6z09g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1248&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;default&lt;/code&gt;参数被换成了&lt;code&gt;preferred&lt;/code&gt;，所以我们的配置需要改成&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;dubbo.registries.zookeeper.preferred=&lt;span&gt;true&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果不放心，可以两个配置都加上，以防万一。&lt;/p&gt;&lt;hr data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;欢迎关注我的公众号&lt;/span&gt;&lt;/section&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzI5NjE2MDQwNg==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/sz_mmbiz_png/xacdaKuBM0R19lB7JoT94iah3micefMU9jTG9ibib690ia5q2NC2vlTXzxtNAy9M1mLwysbyj6WI2RWLNEA3M99prJw/0?wx_fmt=png&quot; data-nickname=&quot;捉虫大师&quot; data-alias=&quot;&quot; data-signature=&quot;中间件开发，专注后端，偶尔跑题，不是标题党，文章朴素，欢迎关注。&quot;/&gt;&lt;/section&gt;
-                &lt;/div&gt;
-
-                
-
-                
-
-
-
-                
-                &lt;div class=&quot;reward_qrcode_area reward_area tc&quot; id=&quot;js_reward_qrcode&quot;&gt;
-                                &lt;p class=&quot;tips_global&quot;&gt;Long-press QR code to transfer me a reward&lt;/p&gt;
-                                                                &lt;p class=&quot;reward_tips&quot;/&gt;
-                                &lt;span class=&quot;reward_qrcode_img_wrp&quot;&gt;&lt;img class=&quot;reward_qrcode_img&quot; id=&quot;js_reward_qrcode_img&quot;/&gt;&lt;/span&gt;
-                                &lt;p class=&quot;tips_global&quot;&gt;As required by Apple&#x27;s new policy, the Reward feature has been disabled on Weixin for iOS. You can still reward an Official Account by transferring money via QR code.&lt;/p&gt;
-                            &lt;/div&gt;
-                                                                            
-                              
-            &lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>f06a331686f3d5ac119d92740bca437b</guid>
+<title>低代码、无代码、零代码</title>
+<link>https://toutiao.io/k/x603bub</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;weui-dialog&quot;&gt;
+      &lt;p class=&quot;weui-dialog__hd&quot;&gt;&lt;strong class=&quot;weui-dialog__title&quot;&gt;&quot;Top Stories&quot; is disabled&lt;/strong&gt;&lt;/p&gt;
+      &lt;p class=&quot;weui-dialog__bd&quot;&gt;
+        Enable &quot;Top Stories&quot; in &quot;Settings&quot; &amp;gt; &quot;General&quot; &amp;gt; &quot;Manage Discover&quot;      &lt;/p&gt;
+      
+    &lt;/div&gt;
+  &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
