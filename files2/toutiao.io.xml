@@ -49,6 +49,277 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
+<guid>282a674ceb130f670be7950699c1fa8c</guid>
+<title>基于 Flink 的分布式离线和实时的数据同步框架</title>
+<link>https://toutiao.io/k/ilvyhe8</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;body class=&quot;logged-out env-production page-responsive page-blob&quot; id=&quot;readabilityBody&quot;&gt;
+    
+
+    
+
+  &lt;p id=&quot;start-of-content&quot; class=&quot;show-on-focus&quot;/&gt;
+
+
+
+
+
+    
+
+
+    
+
+  &lt;include-fragment class=&quot;js-notification-shelf-include-fragment&quot; data-base-src=&quot;https://github.com/notifications/beta/shelf&quot;/&gt;
+
+
+
+
+  &lt;div class=&quot;application-main &quot; data-commit-hovercards-enabled=&quot;&quot; data-discussion-hovercards-enabled=&quot;&quot; data-issue-and-pr-hovercards-enabled=&quot;&quot;&gt;
+          &lt;div itemscope=&quot;&quot; itemtype=&quot;http://schema.org/SoftwareSourceCode&quot; class=&quot;&quot;&gt;
+    &lt;main id=&quot;js-repo-pjax-container&quot; data-pjax-container=&quot;&quot;&gt;
+      
+
+      
+
+
+    
+
+
+
+
+
+
+  
+
+
+  
+
+
+&lt;div class=&quot;container-xl clearfix new-discussion-timeline px-3 px-md-4 px-lg-5&quot;&gt;
+  &lt;div id=&quot;repo-content-pjax-container&quot; class=&quot;repository-content &quot;&gt;
+
+    
+      
+    
+
+&lt;div&gt;
+  
+
+
+    &lt;a class=&quot;d-none js-permalink-shortcut&quot; data-hotkey=&quot;y&quot; href=&quot;/DTStack/flinkx/blob/196ce51196b779aa7bc88fdf6653e105fc5f8b32/README_CH.md&quot;&gt;Permalink&lt;/a&gt;
+
+    
+
+    
+
+
+
+    &lt;div class=&quot;Box d-flex flex-column flex-shrink-0 mb-3&quot;&gt;
+      
+  
+
+  &lt;div class=&quot;Box-body d-flex flex-items-center flex-auto border-bottom-0 flex-wrap&quot;&gt;
+    &lt;details class=&quot;details-reset details-overlay details-overlay-dark lh-default color-text-primary float-left mr-3&quot; id=&quot;blob_contributors_box&quot;&gt;
+      &lt;summary class=&quot;Link--primary&quot;&gt;
+        &lt;svg class=&quot;octicon octicon-people text-gray&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M5.5 3.5a2 2 0 100 4 2 2 0 000-4zM2 5.5a3.5 3.5 0 115.898 2.549 5.507 5.507 0 013.034 4.084.75.75 0 11-1.482.235 4.001 4.001 0 00-7.9 0 .75.75 0 01-1.482-.236A5.507 5.507 0 013.102 8.05 3.49 3.49 0 012 5.5zM11 4a.75.75 0 100 1.5 1.5 1.5 0 01.666 2.844.75.75 0 00-.416.672v.352a.75.75 0 00.574.73c1.2.289 2.162 1.2 2.522 2.372a.75.75 0 101.434-.44 5.01 5.01 0 00-2.56-3.012A3 3 0 0011 4z&quot;/&gt;&lt;/svg&gt;
+        &lt;strong&gt;2&lt;/strong&gt;
+        
+        contributors
+      &lt;/summary&gt;
+      &lt;details-dialog class=&quot;Box Box--overlay d-flex flex-column anim-fade-in fast&quot; aria-label=&quot;Users who have contributed to this file&quot; src=&quot;/DTStack/flinkx/contributors-list/1.10_release/README_CH.md&quot; preload=&quot;&quot;&gt;
+        &lt;div class=&quot;Box-header&quot;&gt;
+          &lt;button class=&quot;Box-btn-octicon btn-octicon float-right&quot; type=&quot;button&quot; aria-label=&quot;Close dialog&quot; data-close-dialog=&quot;&quot;&gt;
+            &lt;svg class=&quot;octicon octicon-x&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z&quot;/&gt;&lt;/svg&gt;
+          &lt;/button&gt;
+          &lt;h3 class=&quot;Box-title&quot;&gt;
+            Users who have contributed to this file
+          &lt;/h3&gt;
+        &lt;/div&gt;
+        &lt;include-fragment&gt;
+          &lt;svg viewbox=&quot;0 0 16 16&quot; fill=&quot;none&quot; class=&quot;my-3 mx-auto d-block&quot;&gt;
+  &lt;circle cx=&quot;8&quot; cy=&quot;8&quot; r=&quot;7&quot; stroke=&quot;currentColor&quot; stroke-opacity=&quot;0.25&quot; stroke-width=&quot;2&quot; vector-effect=&quot;non-scaling-stroke&quot;/&gt;
+  &lt;path d=&quot;M15 8a7.002 7.002 0 00-7-7&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; vector-effect=&quot;non-scaling-stroke&quot;&gt;
+    &lt;animatetransform attributename=&quot;transform&quot; type=&quot;rotate&quot; from=&quot;0 8 8&quot; to=&quot;360 8 8&quot; dur=&quot;1s&quot; repeatcount=&quot;indefinite&quot;/&gt;
+  &lt;/path&gt;
+&lt;/svg&gt;
+        &lt;/include-fragment&gt;
+      &lt;/details-dialog&gt;
+    &lt;/details&gt;
+      &lt;span class=&quot;&quot;&gt;
+    &lt;a class=&quot;avatar-link&quot; data-hovercard-type=&quot;user&quot; data-hovercard-url=&quot;/users/kanata163/hovercard&quot; data-octo-click=&quot;hovercard-link-click&quot; data-octo-dimensions=&quot;link_type:self&quot; href=&quot;/DTStack/flinkx/commits/1.10_release/README_CH.md?author=kanata163&quot;&gt;
+      &lt;img class=&quot;avatar mr-2 avatar-user&quot; src=&quot;https://avatars.githubusercontent.com/u/35188210?s=48&amp;amp;v=4&quot; alt=&quot;@kanata163&quot;/&gt; 
+&lt;/a&gt;    &lt;a class=&quot;avatar-link&quot; data-hovercard-type=&quot;user&quot; data-hovercard-url=&quot;/users/yanghuaiGit/hovercard&quot; data-octo-click=&quot;hovercard-link-click&quot; data-octo-dimensions=&quot;link_type:self&quot; href=&quot;/DTStack/flinkx/commits/1.10_release/README_CH.md?author=yanghuaiGit&quot;&gt;
+      &lt;img class=&quot;avatar mr-2 avatar-user&quot; src=&quot;https://avatars.githubusercontent.com/u/38883656?s=48&amp;amp;v=4&quot; alt=&quot;@yanghuaiGit&quot;/&gt; 
+&lt;/a&gt;
+&lt;/span&gt;
+
+  &lt;/div&gt;
+    &lt;/div&gt;
+
+
+
+
+
+
+
+    &lt;div class=&quot;Box mt-3 position-relative&amp;#10;      &quot;&gt;
+      
+&lt;div class=&quot;Box-header py-2 d-flex flex-column flex-shrink-0 flex-md-row flex-md-items-center&quot;&gt;
+  &lt;p class=&quot;text-mono f6 flex-auto pr-3 flex-order-2 flex-md-order-1 mt-2 mt-md-0&quot;&gt;
+
+      127 lines (92 sloc)
+      &lt;span class=&quot;file-info-divider&quot;/&gt;
+    8.56 KB
+  &lt;/p&gt;
+
+  
+&lt;/div&gt;
+
+      
+  &lt;div id=&quot;readme&quot; class=&quot;Box-body readme blob js-code-block-container p-5 p-xl-6 gist-border-0&quot;&gt;
+    &lt;article class=&quot;markdown-body entry-content container-lg&quot; itemprop=&quot;text&quot;&gt;&lt;h1&gt;&lt;a id=&quot;user-content-flinkx&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#flinkx&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;FlinkX&lt;/h1&gt;
+&lt;p&gt;&lt;a href=&quot;https://www.apache.org/licenses/LICENSE-2.0.html&quot; rel=&quot;nofollow&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/266dbf1c12e7e7f112914eb37138734857bde343e4fca6e01dfeb40553cf209a/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f6c6963656e73652d417061636865253230322d3445423142412e737667&quot; alt=&quot;License&quot; data-canonical-src=&quot;https://img.shields.io/badge/license-Apache%202-4EB1BA.svg&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;/DTStack/flinkx/blob/1.10_release/README.md&quot;&gt;English&lt;/a&gt; | 中文&lt;/p&gt;
+&lt;h1&gt;&lt;a id=&quot;user-content-技术交流&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#技术交流&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;技术交流&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;招聘&lt;strong&gt;Flink研发工程师&lt;/strong&gt;，如果有兴趣可以联系思枢（微信号：ysqwhiletrue）&lt;br/&gt;
+Flink开发工程师JD要求：&lt;br/&gt;
+1.负责袋鼠云基于Flink的衍生框架数据同步flinkx和实时计算flinkstreamsql框架的开发；&lt;br/&gt;
+2.调研和把握当前最新大数据实时计算技术，将其中的合适技术引入到平台中，改善产品，提升竞争力；&lt;br/&gt;
+职位要求：&lt;br/&gt;
+1、本科及以上学历，3年及以上的Flink开发经验，精通Java，熟悉Scala、Python优先考虑；&lt;br/&gt;
+2、熟悉Flink原理，有基于Flink做过二次源码的开发，在github上贡献者Flink源码者优先；&lt;br/&gt;
+3、有机器学习、数据挖掘相关经验者优先；&lt;br/&gt;
+4、对新技术有快速学习和上手能力，对代码有一定的洁癖；&lt;br/&gt;
+加分项：&lt;br/&gt;
+1.在GitHub或其他平台上有过开源项目&lt;br/&gt;
+可以添加本人微信号ysqwhiletrue，注明招聘，如有意者发送简历至&lt;a href=&quot;mailto:sishu@dtstack.com&quot;&gt;sishu@dtstack.com&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;我们使用&lt;a href=&quot;https://www.dingtalk.com/&quot; rel=&quot;nofollow&quot;&gt;钉钉&lt;/a&gt;沟通交流，可以搜索群号[&lt;strong&gt;30537511&lt;/strong&gt;]或者扫描下面的二维码进入钉钉群&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;&lt;a id=&quot;user-content-介绍&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#介绍&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;介绍&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;FlinkX是在是袋鼠云内部广泛使用的基于flink的分布式离线和实时的数据同步框架，实现了多种异构数据源之间高效的数据迁移。&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;不同的数据源头被抽象成不同的Reader插件，不同的数据目标被抽象成不同的Writer插件。理论上，FlinkX框架可以支持任意数据源类型的数据同步工作。作为一套生态系统，每接入一套新数据源该新加入的数据源即可实现和现有的数据源互通。&lt;/p&gt;
+
+&lt;p&gt;FlinkX是一个基于Flink的批流统一的数据同步工具，既可以采集静态的数据，比如MySQL，HDFS等，也可以采集实时变化的数据，比如MySQL binlog，Kafka等。FlinkX目前包含下面这些特性：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;大部分插件支持并发读写数据，可以大幅度提高读写速度；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;部分插件支持失败恢复的功能，可以从失败的位置恢复任务，节约运行时间；&lt;a href=&quot;/DTStack/flinkx/blob/1.10_release/docs/restore.md&quot;&gt;失败恢复&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;关系数据库的Reader插件支持间隔轮询功能，可以持续不断的采集变化的数据；&lt;a href=&quot;/DTStack/flinkx/blob/1.10_release/docs/offline/reader/mysqlreader.md&quot;&gt;间隔轮询&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;部分数据库支持开启Kerberos安全认证；&lt;a href=&quot;/DTStack/flinkx/blob/1.10_release/docs/kerberos.md&quot;&gt;Kerberos&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;可以限制reader的读取速度，降低对业务数据库的影响；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;可以记录writer插件写数据时产生的脏数据；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;可以限制脏数据的最大数量；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;支持多种运行模式；&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;FlinkX目前支持下面这些数据库：&lt;/p&gt;
+
+&lt;h1&gt;&lt;a id=&quot;user-content-基本原理&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#基本原理&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;基本原理&lt;/h1&gt;
+&lt;p&gt;在底层实现上，FlinkX依赖Flink，数据同步任务会被翻译成StreamGraph在Flink上执行，基本原理如下图：&lt;/p&gt;
+
+&lt;h1&gt;&lt;a id=&quot;user-content-快速开始&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#快速开始&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;快速开始&lt;/h1&gt;
+&lt;p&gt;请点击&lt;a href=&quot;/DTStack/flinkx/blob/1.10_release/docs/quickstart.md&quot;&gt;快速开始&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;&lt;a id=&quot;user-content-通用配置&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#通用配置&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;通用配置&lt;/h1&gt;
+&lt;p&gt;请点击&lt;a href=&quot;/DTStack/flinkx/blob/1.10_release/docs/generalconfig.md&quot;&gt;插件通用配置&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;&lt;a id=&quot;user-content-统计指标&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#统计指标&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;统计指标&lt;/h1&gt;
+&lt;p&gt;请点击&lt;a href=&quot;/DTStack/flinkx/blob/1.10_release/docs/statistics.md&quot;&gt;统计指标&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;&lt;a id=&quot;user-content-kerberos&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#kerberos&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;Kerberos&lt;/h1&gt;
+&lt;p&gt;请点击&lt;a href=&quot;/DTStack/flinkx/blob/1.10_release/docs/kerberos.md&quot;&gt;Kerberos&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;&lt;a id=&quot;user-content-questions&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#questions&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;Questions&lt;/h1&gt;
+&lt;p&gt;请点击&lt;a href=&quot;/DTStack/flinkx/blob/1.10_release/docs/questions.md&quot;&gt;Questions&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;&lt;a id=&quot;user-content-如何贡献flinkx&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#如何贡献flinkx&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;如何贡献FlinkX&lt;/h1&gt;
+&lt;p&gt;请点击&lt;a href=&quot;/DTStack/flinkx/blob/1.10_release/docs/contribution.md&quot;&gt;如何贡献FlinkX&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;&lt;a id=&quot;user-content-license&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#license&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;License&lt;/h1&gt;
+&lt;p&gt;FlinkX is under the Apache 2.0 license. See the &lt;a href=&quot;http://www.apache.org/licenses/LICENSE-2.0&quot; rel=&quot;nofollow&quot;&gt;LICENSE&lt;/a&gt; file for details.&lt;/p&gt;
+&lt;/article&gt;
+  &lt;/div&gt;
+
+    &lt;/div&gt;
+
+  
+
+  &lt;details class=&quot;details-reset details-overlay details-overlay-dark&quot; id=&quot;jumpto-line-details-dialog&quot;&gt;
+    &lt;summary data-hotkey=&quot;l&quot; aria-label=&quot;Jump to line&quot;/&gt;
+    &lt;details-dialog class=&quot;Box Box--overlay d-flex flex-column anim-fade-in fast linejump&quot; aria-label=&quot;Jump to line&quot;&gt;
+          &lt;/details-dialog&gt;
+  &lt;/details&gt;
+
+    
+
+
+&lt;/div&gt;
+
+
+
+  &lt;/div&gt;
+&lt;/div&gt;
+
+    &lt;/main&gt;
+  &lt;/div&gt;
+
+
+  &lt;/div&gt;
+
+          
+
+
+
+
+  &lt;div id=&quot;ajax-error-message&quot; class=&quot;ajax-error-message flash flash-error&quot; hidden=&quot;&quot;&gt;
+    &lt;svg class=&quot;octicon octicon-alert&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M8.22 1.754a.25.25 0 00-.44 0L1.698 13.132a.25.25 0 00.22.368h12.164a.25.25 0 00.22-.368L8.22 1.754zm-1.763-.707c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0114.082 15H1.918a1.75 1.75 0 01-1.543-2.575L6.457 1.047zM9 11a1 1 0 11-2 0 1 1 0 012 0zm-.25-5.25a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5z&quot;/&gt;&lt;/svg&gt;
+    &lt;button type=&quot;button&quot; class=&quot;flash-close js-ajax-error-dismiss&quot; aria-label=&quot;Dismiss error&quot;&gt;
+      &lt;svg class=&quot;octicon octicon-x&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z&quot;/&gt;&lt;/svg&gt;
+    &lt;/button&gt;&lt;p&gt;
+    You can’t perform that action at this time.
+  &lt;/p&gt;&lt;/div&gt;
+
+  &lt;div class=&quot;js-stale-session-flash flash flash-warn flash-banner&quot; hidden=&quot;&quot;&gt;
+    &lt;svg class=&quot;octicon octicon-alert&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M8.22 1.754a.25.25 0 00-.44 0L1.698 13.132a.25.25 0 00.22.368h12.164a.25.25 0 00.22-.368L8.22 1.754zm-1.763-.707c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0114.082 15H1.918a1.75 1.75 0 01-1.543-2.575L6.457 1.047zM9 11a1 1 0 11-2 0 1 1 0 012 0zm-.25-5.25a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5z&quot;/&gt;&lt;/svg&gt;
+    &lt;span class=&quot;js-stale-session-flash-signed-in&quot; hidden=&quot;&quot;&gt;You signed in with another tab or window. &lt;a href=&quot;&quot;&gt;Reload&lt;/a&gt; to refresh your session.&lt;/span&gt;
+    &lt;span class=&quot;js-stale-session-flash-signed-out&quot; hidden=&quot;&quot;&gt;You signed out in another tab or window. &lt;a href=&quot;&quot;&gt;Reload&lt;/a&gt; to refresh your session.&lt;/span&gt;
+  &lt;/div&gt;
+    &lt;template id=&quot;site-details-dialog&quot;&gt;
+  &lt;details class=&quot;details-reset details-overlay details-overlay-dark lh-default color-text-primary hx_rsm&quot; open=&quot;&quot;&gt;
+    &lt;summary role=&quot;button&quot; aria-label=&quot;Close dialog&quot;/&gt;
+    &lt;details-dialog class=&quot;Box Box--overlay d-flex flex-column anim-fade-in fast hx_rsm-dialog hx_rsm-modal&quot;&gt;
+      &lt;button class=&quot;Box-btn-octicon m-0 btn-octicon position-absolute right-0 top-0&quot; type=&quot;button&quot; aria-label=&quot;Close dialog&quot; data-close-dialog=&quot;&quot;&gt;
+        &lt;svg class=&quot;octicon octicon-x&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z&quot;/&gt;&lt;/svg&gt;
+      &lt;/button&gt;
+      &lt;p class=&quot;octocat-spinner my-6 js-details-dialog-spinner&quot;/&gt;
+    &lt;/details-dialog&gt;
+  &lt;/details&gt;
+&lt;/template&gt;
+
+    
+
+
+
+
+  &lt;/body&gt;
+&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
 <guid>a5bc86914646f6d83aee2f3a2fcf5e7f</guid>
 <title>[译] BPF 可移植性和 CO-RE（一次编译，到处运行）</title>
 <link>https://toutiao.io/k/o88fd7y</link>
@@ -780,81 +1051,5 @@ compilation errors in runtime）了。&lt;/p&gt;
                                                                             
                               
             &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>28287ca4f741964eb1d96a6dbc930646</guid>
-<title>如何对集合对象求合计，然后追加在该集合对象中</title>
-<link>https://toutiao.io/k/qpoc0hv</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;header class=&quot;post-header&quot;&gt;
-        &lt;h1 class=&quot;post-title&quot; itemprop=&quot;name headline&quot;&gt;
-          如何对集合对象求合计，然后追加在该集合对象中
-        &lt;/h1&gt;
-
-        &lt;p class=&quot;post-meta&quot;&gt;
-            &lt;span class=&quot;post-meta-item&quot;&gt;
-              &lt;span class=&quot;post-meta-item-icon&quot;&gt;
-                &lt;i class=&quot;far fa-calendar&quot;/&gt;
-              &lt;/span&gt;
-              &lt;span class=&quot;post-meta-item-text&quot;&gt;发表于&lt;/span&gt;
-
-              &lt;time title=&quot;创建时间：2021-03-13 00:00:00&quot; itemprop=&quot;dateCreated datePublished&quot; datetime=&quot;2021-03-13T00:00:00+00:00&quot;&gt;2021-03-13&lt;/time&gt;
-            &lt;/span&gt;
-
-          
-            &lt;span class=&quot;post-meta-item&quot; title=&quot;本文字数&quot;&gt;
-              &lt;span class=&quot;post-meta-item-icon&quot;&gt;
-                &lt;i class=&quot;far fa-file-word&quot;/&gt;
-              &lt;/span&gt;
-                &lt;span class=&quot;post-meta-item-text&quot;&gt;本文字数：&lt;/span&gt;
-              &lt;span&gt;4.7k&lt;/span&gt;
-            &lt;/span&gt;
-            &lt;span class=&quot;post-meta-item&quot; title=&quot;热度&quot; id=&quot;busuanzi_container_page_pv&quot;&gt;
-              &lt;span class=&quot;post-meta-item-icon&quot;&gt;
-                &lt;i class=&quot;fa fa-eye&quot;/&gt;
-              &lt;/span&gt;
-              &lt;span class=&quot;post-meta-item-text&quot;&gt;热度&lt;/span&gt;
-              &lt;span id=&quot;busuanzi_value_page_pv&quot;/&gt;℃
-            &lt;/span&gt;
-
-        &lt;/p&gt;
-      &lt;/header&gt;
-
-    
-    
-    
-    &lt;div class=&quot;post-body&quot; itemprop=&quot;articleBody&quot;&gt;
-
-      
-        &lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;/&gt;前言&lt;/h3&gt;&lt;p&gt;在日常工作中，我们经常会遇到对一个列表的每一项求合计，然后追加到列表的最后一行。如&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://qn.minwk.top/img/20210313165840.png&quot; alt=&quot;1&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://qn.minwk.top/img/20210313165921.png&quot; alt=&quot;22&quot;/&gt;&lt;/p&gt;
-&lt;h3 id=&quot;方案&quot;&gt;&lt;a href=&quot;#方案&quot; class=&quot;headerlink&quot; title=&quot;方案&quot;/&gt;方案&lt;/h3&gt;&lt;ol&gt;
-&lt;li&gt;修改该统计查询的sql，在里面追加一行合计计算。不太好的地方就是在sql有好多的函数计算，而且还要修改这个统计的sql，本来sql已经很复杂，然后再加就搞得又臭又长。&lt;a id=&quot;more&quot;/&gt;&lt;/li&gt;
-&lt;li&gt;在代码中计算，这个也是比较麻烦。所以拿出来我这个方法了&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;之前我是这样写的，遍历集合中的每个对象，求和，将和放到新对象然后追加到集合中&lt;/p&gt;
-&lt;figure class=&quot;highlight java&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;12&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;13&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;14&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;15&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;16&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;17&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;18&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;function&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;sumDataScreening&lt;/span&gt;&lt;span class=&quot;params&quot;&gt;(List&amp;lt;IpepShipWasteData&amp;gt; list)&lt;/span&gt; &lt;/span&gt;{&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        IpepShipWasteData data = &lt;span class=&quot;keyword&quot;&gt;new&lt;/span&gt; IpepShipWasteData();&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        data.setCode(&lt;span class=&quot;string&quot;&gt;&quot;合计&quot;&lt;/span&gt;);&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        list.stream().forEach(d-&amp;gt;{&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;            data.setProvideTimes(Optional.ofNullable(data.getProvideTimes()).orElse(&lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;) + d.getProvideTimes());&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;            data.setShipRubbishTransportAmount(Optional.ofNullable(data.getShipRubbishReceiveAmount()).orElse(&lt;span class=&quot;number&quot;&gt;0f&lt;/span&gt;) + d.getShipRubbishReceiveAmount());&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;            data.setShipRubbishReceiveAmount(Optional.ofNullable(data.getShipRubbishReceiveAmount()).orElse(&lt;span class=&quot;number&quot;&gt;0f&lt;/span&gt;) + d.getShipRubbishReceiveAmount());&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;            data.setShipRubbishReceiveTimes(Optional.ofNullable(data.getShipRubbishReceiveTimes()).orElse(&lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;) + d.getShipRubbishReceiveTimes());&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;            data.setSewageTransportAmount(Optional.ofNullable(data.getShipRubbishReceiveAmount()).orElse(&lt;span class=&quot;number&quot;&gt;0f&lt;/span&gt;) + d.getShipRubbishReceiveAmount());&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;            data.setSewageReceiveAmount(Optional.ofNullable(data.getSewageReceiveAmount()).orElse(&lt;span class=&quot;number&quot;&gt;0f&lt;/span&gt;) + d.getSewageReceiveAmount());&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;            data.setSewageReceiveTimes(Optional.ofNullable(data.getSewageReceiveTimes()).orElse(&lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;) + d.getSewageReceiveTimes());&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;            data.setOilyTransportAmount(Optional.ofNullable(data.getOilyTransportAmount()).orElse(&lt;span class=&quot;number&quot;&gt;0f&lt;/span&gt;) + d.getOilyTransportAmount());&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;            data.setOilyReceiveAmount(Optional.ofNullable(data.getOilyReceiveAmount()).orElse(&lt;span class=&quot;number&quot;&gt;0f&lt;/span&gt;) + d.getOilyReceiveAmount());&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;            data.setOilyReceiveTimes(Optional.ofNullable(data.getOilyReceiveTimes()).orElse(&lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;) + d.getOilyReceiveTimes());&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;            data.setElectricityConsumption(Optional.ofNullable(data.getElectricityConsumption()).orElse(&lt;span class=&quot;number&quot;&gt;0f&lt;/span&gt;) + d.getElectricityConsumption());&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        });&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        list.add(data);&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    }&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-
-&lt;p&gt;看到这密密麻麻的代码是不是想吐？我都快吐了，身为一个有志之士怎么能写这样的代码呢！太对不起我这句话了&lt;strong&gt;“致力于写出思路更加清晰，逻辑性更强，冗余度更低，可维护性和可重用性更高的代码”&lt;/strong&gt;，所以第二天我就把它优化了&lt;/p&gt;
-&lt;p&gt;这是改了之后的代码&lt;/p&gt;
-&lt;figure class=&quot;highlight java&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;function&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;sumDataScreening&lt;/span&gt;&lt;span class=&quot;params&quot;&gt;(List&amp;lt;IpepShipWasteData&amp;gt; list)&lt;/span&gt; &lt;/span&gt;{&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        IpepShipWasteData data = CalculateUtil.getSumValue(list, IpepShipWasteData&lt;span class=&quot;class&quot;&gt;.&lt;span class=&quot;keyword&quot;&gt;class&lt;/span&gt;)&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        data.setCode(&lt;span class=&quot;string&quot;&gt;&quot;合计&quot;&lt;/span&gt;);&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        list.add(data);&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    }&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-
-&lt;p&gt;一下就少了好多，用到了CalculateUtil.getSumValue这个方法&lt;/p&gt;
-&lt;h3 id=&quot;想法&quot;&gt;&lt;a href=&quot;#想法&quot; class=&quot;headerlink&quot; title=&quot;想法&quot;/&gt;想法&lt;/h3&gt;&lt;p&gt;从上面的密麻代码中可以发现，我是想把该集合对象的某个属性的值累加起来然后放到该对象的对应属性中。其实就是一直在重复这个操作，遍历这个集合，获取它每个属性的值，然后累加再放到一个新对象的这个属性。是不是突然发现，反射就能做到这个事。所以就有了下面这个工具代码。&lt;/p&gt;
-&lt;h3 id=&quot;工具&quot;&gt;&lt;a href=&quot;#工具&quot; class=&quot;headerlink&quot; title=&quot;工具&quot;/&gt;工具&lt;/h3&gt;&lt;figure class=&quot;highlight java&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;12&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;13&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;14&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;15&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;16&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;17&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;18&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;19&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;20&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;21&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;22&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;23&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;24&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;25&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;26&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;27&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;28&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;29&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;30&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;31&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;32&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;33&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;34&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;35&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;36&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;37&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;38&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;39&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;40&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;41&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;42&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;43&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;44&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;45&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;46&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;47&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;48&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;49&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;50&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;51&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;52&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;53&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;54&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;55&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;56&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;57&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;58&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;59&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;60&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;61&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;62&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;63&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;64&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;65&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;66&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;67&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;68&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;69&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;70&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;71&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;72&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;73&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;74&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;75&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;76&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;77&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;78&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;79&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;80&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;81&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;82&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;83&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;84&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;85&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;86&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;87&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;88&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;89&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;90&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;91&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;92&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;93&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;import&lt;/span&gt; java.lang.reflect.Field;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;import&lt;/span&gt; java.math.BigDecimal;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;import&lt;/span&gt; java.util.ArrayList;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;import&lt;/span&gt; java.util.List;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;import&lt;/span&gt; java.util.Objects;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;import&lt;/span&gt; java.util.Optional;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;/**&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt; * 数值计算工具&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt; *&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt; * &lt;span class=&quot;doctag&quot;&gt;@author&lt;/span&gt; MinWeikai&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt; * &lt;span class=&quot;doctag&quot;&gt;@date&lt;/span&gt; 2021/3/13 10:29&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt; */&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;CalculateUtil&lt;/span&gt; &lt;/span&gt;{&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;comment&quot;&gt;/**&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;     * 计算集合中数值的合计值，并赋予该新对象&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;     *&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;     * &lt;span class=&quot;doctag&quot;&gt;@param&lt;/span&gt; sources 源集合对象&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;     * &lt;span class=&quot;doctag&quot;&gt;@param&lt;/span&gt; voClass 源对象&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;     * &lt;span class=&quot;doctag&quot;&gt;@param&lt;/span&gt; &amp;lt;T&amp;gt;&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;     * &lt;span class=&quot;doctag&quot;&gt;@return&lt;/span&gt; 已计算合计后的源对象&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;     */&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;static&lt;/span&gt; &amp;lt;T&amp;gt; &lt;span class=&quot;function&quot;&gt;T &lt;span class=&quot;title&quot;&gt;getSumValue&lt;/span&gt;&lt;span class=&quot;params&quot;&gt;(List&amp;lt;? extends Object&amp;gt; sources, &lt;span class=&quot;keyword&quot;&gt;final&lt;/span&gt; Class&amp;lt;T&amp;gt; voClass)&lt;/span&gt; &lt;/span&gt;{&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        Field[] fields = voClass.getDeclaredFields();&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        T data = &lt;span class=&quot;keyword&quot;&gt;null&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        &lt;span class=&quot;keyword&quot;&gt;try&lt;/span&gt; {&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;            data = voClass.newInstance();&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;            T finalData = data;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;            sources.stream().forEach(d -&amp;gt; {&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                &lt;span class=&quot;keyword&quot;&gt;for&lt;/span&gt; (Field field : fields) {&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                    &lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt; (Objects.equals(&lt;span class=&quot;string&quot;&gt;&quot;serialVersionUID&quot;&lt;/span&gt;, field.getName())) {&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                        &lt;span class=&quot;keyword&quot;&gt;continue&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                    }&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                    Object oldTemp = &lt;span class=&quot;keyword&quot;&gt;null&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                    Object newoldTemp = &lt;span class=&quot;keyword&quot;&gt;null&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                    &lt;span class=&quot;keyword&quot;&gt;try&lt;/span&gt; {&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                        oldTemp = ReflectionUtil.invokeGetterMethod(d, field.getName());&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                        newoldTemp = ReflectionUtil.invokeGetterMethod(finalData, field.getName());&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                    } &lt;span class=&quot;keyword&quot;&gt;catch&lt;/span&gt; (Exception e) {&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                        e.printStackTrace();&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                    }&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                    &lt;span class=&quot;comment&quot;&gt;// 此处可以自定义匹配类型，或可以结合业务重写该方法，做一些加减乘除的复杂计算&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                    &lt;span class=&quot;keyword&quot;&gt;switch&lt;/span&gt; (field.getType().getSimpleName()) {&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                        &lt;span class=&quot;keyword&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&quot;Integer&quot;&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                            oldTemp = (&lt;span class=&quot;keyword&quot;&gt;int&lt;/span&gt;) Optional.ofNullable(oldTemp).orElse(&lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;) +&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                                    (&lt;span class=&quot;keyword&quot;&gt;int&lt;/span&gt;) Optional.ofNullable(newoldTemp).orElse(&lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;);&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                            &lt;span class=&quot;keyword&quot;&gt;break&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                        &lt;span class=&quot;keyword&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&quot;Float&quot;&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                            oldTemp = (&lt;span class=&quot;keyword&quot;&gt;float&lt;/span&gt;) Optional.ofNullable(oldTemp).orElse(&lt;span class=&quot;number&quot;&gt;0f&lt;/span&gt;) +&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                                    (&lt;span class=&quot;keyword&quot;&gt;float&lt;/span&gt;) Optional.ofNullable(newoldTemp).orElse(&lt;span class=&quot;number&quot;&gt;0f&lt;/span&gt;);&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                            oldTemp = &lt;span class=&quot;keyword&quot;&gt;new&lt;/span&gt; BigDecimal((&lt;span class=&quot;keyword&quot;&gt;float&lt;/span&gt;) oldTemp)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                                    .setScale(&lt;span class=&quot;number&quot;&gt;2&lt;/span&gt;, BigDecimal.ROUND_HALF_UP).floatValue();&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                            &lt;span class=&quot;keyword&quot;&gt;break&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                        &lt;span class=&quot;keyword&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&quot;BigDecimal&quot;&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                            oldTemp = &lt;span class=&quot;keyword&quot;&gt;new&lt;/span&gt; BigDecimal(String.valueOf(Optional.ofNullable(oldTemp).orElse(BigDecimal.ZERO)))&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                                    .add(&lt;span class=&quot;keyword&quot;&gt;new&lt;/span&gt; BigDecimal(String.valueOf(Optional.ofNullable(newoldTemp).orElse(BigDecimal.ZERO))))&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                                    .setScale(&lt;span class=&quot;number&quot;&gt;2&lt;/span&gt;, BigDecimal.ROUND_HALF_UP);&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                            &lt;span class=&quot;keyword&quot;&gt;break&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                        &lt;span class=&quot;keyword&quot;&gt;default&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                            oldTemp = &lt;span class=&quot;keyword&quot;&gt;null&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                    }&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                    &lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt; (!Objects.isNull(oldTemp)) {&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                        ReflectionUtil.invokeSetterMethod(finalData, field.getName(), oldTemp);&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                    }&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;                }&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;            });&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        } &lt;span class=&quot;keyword&quot;&gt;catch&lt;/span&gt; (InstantiationException | IllegalAccessException e) {&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;            e.printStackTrace();&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        }&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        &lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt; data;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    }&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;function&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;params&quot;&gt;(String[] args)&lt;/span&gt; &lt;/span&gt;{&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        List&amp;lt;Person&amp;gt; list = &lt;span class=&quot;keyword&quot;&gt;new&lt;/span&gt; ArrayList&amp;lt;&amp;gt;();&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        Person data1 = &lt;span class=&quot;keyword&quot;&gt;new&lt;/span&gt; Person();&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        data1.setAge(&lt;span class=&quot;number&quot;&gt;14&lt;/span&gt;);&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        data1.setMoney(BigDecimal.ONE);&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        data1.setWeight(&lt;span class=&quot;number&quot;&gt;15.2f&lt;/span&gt;);&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        list.add(data1);&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        Person data2 = &lt;span class=&quot;keyword&quot;&gt;new&lt;/span&gt; Person();&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        data2.setAge(&lt;span class=&quot;number&quot;&gt;1&lt;/span&gt;);&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        data2.setMoney(BigDecimal.valueOf(&lt;span class=&quot;number&quot;&gt;1.4f&lt;/span&gt;));&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        data2.setWeight(&lt;span class=&quot;number&quot;&gt;11f&lt;/span&gt;);&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        list.add(data2);&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        Person person = CalculateUtil.getSumValue(list, Person&lt;span class=&quot;class&quot;&gt;.&lt;span class=&quot;keyword&quot;&gt;class&lt;/span&gt;)&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        System.out.println(person);&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    }&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;}&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-
-&lt;p&gt;这个方法有优化的地方或者问题，可以联系我呦！可以在&lt;a href=&quot;https://gitee.com/mwk719/spring-learn/tree/master/src/main/java/com/mwk/utils&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;gitee提issue&lt;/a&gt;。。&lt;/p&gt;
-&lt;p&gt;方法中用到了一个反射方法工具&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://gitee.com/mwk719/spring-learn/blob/master/src/main/java/com/mwk/utils/ReflectionUtil.java&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;ReflectionUtil工具地址&lt;/a&gt;&lt;/p&gt;
-
-    &lt;/div&gt;
-
-    
-    
-    
-
- 
-
-      &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
