@@ -5,349 +5,771 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>f1a565a5213d786b131dcdcd0af16b64</guid>
-<title>加密技术的未来：从服务端密码存储到用户数据加密方案</title>
-<link>https://toutiao.io/k/lq6l2fa</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;p&gt;经作者授权转载，&lt;a href=&quot;https://markdowner.net/article/158265681589440512&quot;&gt;原文链接&lt;/a&gt;，作者：&lt;a href=&quot;https://markdowner.net/u/129319864136368128&quot;&gt;Roronoa Zoro&lt;/a&gt;&lt;/p&gt;
+<guid>f3b438075a7ca31ae49e223112d83d5c</guid>
+<title>业务开发的价值</title>
+<link>https://toutiao.io/k/s8mmugr</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
 
-&lt;p&gt;本文主要讲常见场景的数据加密方案，以及对未来加密技术的展望，先看几条新闻：&lt;/p&gt;
+                    
+                    
+                    
+                    &lt;p&gt;说一下我个人的经历，其实在我刚毕业的第一家公司里，做的就是底层的中间件开发。但是做的过程中，觉得并不喜欢这种远离实际业务的感觉，所以后来换工作的时候就有意的选择了业务部门。所以，今天想讲一下为什么会做这种选择。&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;我为什么不做底层开发&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;首先，我想说一个很多人的认知，就是认为做底层的开发更容易学到东西，成长更快。我觉得这就是业务开发同学的臆想而已，底层开发没有大家想的那么利于学习，业务开发也没有大家想的那么不利于学习，原因我会在后边展开说。而之所以很多人有这样的认知，很大程度上是因为底层开发的招聘标准通常会高一些，所以这些人本身的学习能力和意愿就是要好一些。&lt;/p&gt;&lt;p&gt;其实底层开发的日常和业务开发也没有太大区别，都是在做需求。只是业务需求的来源是产品经理，底层需求的来源是其他开发，或者底层开发者本人的思考和想法。这里，我要说自己为什么不愿意做底层开发的第一个原因了，就是需求的来源不科学。首先，如果只做底层开发，而脱离了实际业务场景的话，对于技术的认知很可能是有偏差的，这样导致自己想做的一些事很可能是在自嗨，并没有实际应用价值。而如果从其他那些搜集需求呢，也会有类似的问题，业务开发的同学提出的意见可能也就是他自己的非常浅的想法而已，不一定经过了很完善的考虑；再者，业务同学对基础组件究竟该干什么也未必理解准确，他可能分不清楚什么事应该基础组件解决，什么事应该自己解决。&lt;/p&gt;&lt;p&gt;在这，引入了我不愿意做底层开发的第二个原因，就是职责边界不明确。这个和配合的业务方的能力强相关。有时候，自己有些事没做好，业务方也能找到办法解决；而有时，明明和自己没关系，也要被迫处理一些上层的逻辑。&lt;/p&gt;&lt;p&gt;大家也可以看到，上边两个问题都极度依赖同事的能力，所以，如果你一定要做底层开发的话，一定要去技术能力储备强的公司，这个直接关系到你的工作幸福度。公司的选择还影响一件事，就是工作内容，简单的说，就是要造轮子，还是完善开源工具，两类工作可以说是天差地别。造轮子，需要对各种底层知识很熟悉，确实是很能促进进步，这个也是“做底层有利于成长”这种想法的来源。但是这种事仅存在为数不多的几家大公司中。其他大量的完善开源工具的工作，其实和业务开发没有任何区别，只需要了解一下开源工具的边边角角，就可以完成大部分工作，既没有深度，也没有广度。我开篇的时候说底层开发并不能帮助学习，原因也就在这。&lt;/p&gt;&lt;p&gt;所以，要做底层开发，公司的选择至关重要，大，技术能力强，两个条件缺一不可。大家肯定会问，我去这样的公司做不就行了吗。话是这么说没错，但这带来的问题也就来了，这也是我不想做底层开发的第三个原因，职业选择面太窄。国内java底层做的好的也就某里某团两家而已，这两家的企业文化大家也都清楚。所以，不想去这样的公司，是不是就不干了？即使你能接受，巨大的供需量对比，也会带来疯狂的内卷，就像算法岗那样，你是否有足够的把握赢得这场内卷游戏呢？而对于业务开发来说，大厂经历只是一段必要的学习经历和自己简历上的一个亮点，当你对大厂的整个规范流程熟悉了之后，就可以自由的选择想去的公司了。&lt;/p&gt;&lt;h2/&gt;&lt;h2&gt;&lt;span&gt;&lt;strong&gt;业务开发的价值&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;前边讲底层开发说的太多了，下边进入正题，就是业务开发的价值。在我看来，业务开发带给我的能力提升主要在三个方面：业务知识的积累，技术广度的提升和综合能力的提升。&lt;/p&gt;&lt;p&gt;先说业务知识，业务知识其实就是对现实世界的理解。对于我个人来说，工作之余，了解一下其他行业的运转模式，首先就是一个很有意思的事情。其次，不断的去了解不同行业的行业知识，我是完全能感受的到对我认知能力的提升的。这种能力能不能变现？当然是可以的。比如去炒股，工作中的积累让我有了分析一个公司商业模式的能力，对于什么样的是好公司好股票，显然可以比一般人理解的深一些。当然，这儿扯的太远了，大家看看就好，关键是看自己的兴趣，有没有意愿去了解一些技术之外的事情。&lt;/p&gt;&lt;p&gt;接下来是技术广度。业务开发和底层开发的最大区别，其实就是底层开发对深度要求更高，而业务开发对广度要求更高。业务开发需要对各种各样的框架、中间件都有所了解，并且不能了解的太浅，也需要一定的深度，要能够理解它们能解决什么问题，又会带来什么问题，适用于什么场景；面对复杂的业务场景和复杂的系统，要能够全面理解；发生问题时，要有能力快速定位到问题在哪。这些除了需要知识的积累，也需要实际场景下经验的积累。&lt;/p&gt;&lt;p&gt;然后说一下综合能力的提升，相比底层开发，业务开发对人的通用基础能力会有更大的锻炼，比如沟通能力、分析解决问题的能力、权衡取舍的能力。这些能力可以说和技术有关，但关联也没那么大，极端的讲，即使你将来转行了，这些普适性的能力也会很有帮助。我时常在想，学着用一个开源工具，和打王者荣耀，究竟有什么区别。作为新手，参考着现成的例子做一个demo, 就相当于第一次接触这个游戏，随便打打。而随着对这个逐渐熟悉，有的人可能就成了没有感情的调包机器，而有的人就可以逐渐去了解底层的实现。就像游戏里，有的人一直浑浑噩噩，打了几千场连电刀和无尽战刃有什么区别都不知道，而有的人就会去探索伤害的数值机制。所以，我觉得大家别把程序员看成一个多特殊的职业，它和其他职业并没有什么本质的区别。大部分职业事实上都是在用不同的方式解决问题，比如律师是依靠法律，基金经理是依靠对市场和基本面的认知，程序员就是靠代码。我们在不断的工作中，锻炼的是解决问题的能力，而解决的方法并没有人要求你一定要限制在技术之内。&lt;/p&gt;&lt;p&gt;我们在业务开发中，就是要不断积累上边三个方面的能力，这样才能滚起雪球，从而从容的应对中年危机。我写这篇文章，当然也并不是要说业务开发就是好，主要还是想帮大家分析清楚业务开发和底层开发的区别，从而做出一个理性的选择。&lt;/p&gt;&lt;p&gt;如果大家有什么想法，也可以来和我沟通。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;
+                &lt;/div&gt;
 
-&lt;p&gt;Facebook 明文存储用户密码：&lt;/p&gt;
+                
 
-&lt;blockquote&gt;
-&lt;p&gt;Hundreds of millions of Facebook users had their account passwords stored in plain text and searchable by thousands of Facebook employees — in some cases going back to 2012, KrebsOnSecurity has learned. Facebook says an ongoing investigation has so far found no indication that employees have abused access to this data.&lt;/p&gt;
+                
 
-&lt;p&gt;早在 2012 年，Facebook 明文存储数亿用户的账户密码，成千上万的 Facebook 的员工可以随意进行搜索......&lt;/p&gt;
 
-&lt;p&gt;原文：&lt;a href=&quot;https://krebsonsecurity.com/tag/plaintext-passwords/&quot;&gt;Facebook Stored Hundreds of Millions of User Passwords in Plain Text for Years&lt;/a&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
 
-&lt;p&gt;CSDN 600万用户账号密码泄露：&lt;/p&gt;
+                
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>a5bc86914646f6d83aee2f3a2fcf5e7f</guid>
+<title>[译] BPF 可移植性和 CO-RE（一次编译，到处运行）</title>
+<link>https://toutiao.io/k/o88fd7y</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;post&quot;&gt;
+  
+  &lt;h1 class=&quot;postTitle&quot;&gt;[译] BPF 可移植性和 CO-RE（一次编译，到处运行）（Facebook，2020）&lt;/h1&gt;
+  &lt;p class=&quot;meta&quot;&gt;Published at 2021-03-12 | Last Update 2021-03-12&lt;/p&gt;
 
-&lt;blockquote&gt;
-&lt;p&gt;北京时间12月21日晚间消息，中国开发者技术在线社区CSDN今晚发表声明，就“600万用户账号密码泄露”一事公开道歉，承认部分用户账号面临风险，将临时关闭用户登录，并要求“2009年4月以前注册的帐号，且2010年9月之后没有修改过密码”的用户立即修改密码。&lt;/p&gt;
+  
+  
+  &lt;h3 id=&quot;译者序&quot;&gt;译者序&lt;/h3&gt;
 
-&lt;p&gt;原文：&lt;a href=&quot;https://tech.qq.com/a/20111221/000485.htm&quot;&gt;CSDN详解600万用户密码泄露始末：暂关闭登录&lt;/a&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;本文翻译自 2020 年 Facebook 的一篇博客：
+&lt;a href=&quot;https://facebookmicrosites.github.io/bpf/blog/2020/02/19/bpf-portability-and-co-re.html&quot;&gt;BPF Portability and CO-RE&lt;/a&gt;，
+作者 Andrii Nakryiko。&lt;/p&gt;
 
-&lt;h2&gt;为什么不能明文存储密码&lt;/h2&gt;
-
-&lt;p&gt;很多新手程序员都是这样存储密码的：&lt;/p&gt;
-
-&lt;table&gt;&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;username&lt;/th&gt;
-&lt;th&gt;phone&lt;/th&gt;
-&lt;th&gt;password&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;小明&lt;/td&gt;
-&lt;td&gt;18888888888&lt;/td&gt;
-&lt;td&gt;asd123456&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;大明&lt;/td&gt;
-&lt;td&gt;17777777777&lt;/td&gt;
-&lt;td&gt;123abc!@#&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;&lt;/table&gt;
-
-&lt;p&gt;为什么这样做是不安全的？&lt;/p&gt;
-
-&lt;p&gt;首先，如果遇到数据泄露事件，明文密码直接将用户隐私暴露在空中，任何人可以登陆暴露密码的账号，随意更改。其次，即使不会泄露，内部员工也可以轻易访问用户的明文密码，当公司上了规模，你无法保证公司内部没有坏人，他们是否会搜索某些用户的密码，侵犯用户隐私。所以明文存储密码是绝对不安全的。&lt;/p&gt;
-
-&lt;p&gt;即使你用了这样的密码：ppnn13%dkstFeb.1st（娉娉袅袅十三余，豆蔻梢头二月初），明文存储，安全性也是木有的。&lt;/p&gt;
+&lt;p&gt;关于 BPF CO-RE 的目标，引用文中的一段总结就是：&lt;/p&gt;
 
 &lt;blockquote&gt;
-&lt;p&gt;再复杂的密码， 也敌不过CSDN的明文&lt;/p&gt;
-
-&lt;p&gt;来自知乎用户：&lt;a href=&quot;https://www.zhihu.com/people/softwaring&quot;&gt;Right Here&lt;/a&gt;&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;作为一种&lt;strong&gt;&lt;mark&gt;简单的方式&lt;/mark&gt;&lt;/strong&gt;，帮助 BPF 开发者解决&lt;strong&gt;&lt;mark&gt;简单的移植性问题&lt;/mark&gt;&lt;/strong&gt;（例如读取结构体的字段），并且&lt;/li&gt;
+    &lt;li&gt;作为一种&lt;strong&gt;&lt;mark&gt;不是最优，但可用的方式&lt;/mark&gt;&lt;/strong&gt;，帮助 BPF 开发者
+解决&lt;strong&gt;&lt;mark&gt;复杂的移植性问题&lt;/mark&gt;&lt;/strong&gt;（例如不兼容的数据结构改动、复杂的用户空间控制条件等）。&lt;/li&gt;
+    &lt;li&gt;使开发者能遵循”一次编译、到处运行“（Compile Once – Run Everywhere）范式。&lt;/li&gt;
+  &lt;/ul&gt;
 &lt;/blockquote&gt;
 
-&lt;p&gt;题外话：&lt;a href=&quot;https://www.zhihu.com/question/21460228&quot;&gt;历史上最有名的电脑密码是什么？&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;由于译者水平有限，本文不免存在遗漏或错误之处。如有疑问，请查阅原文。&lt;/strong&gt;&lt;/p&gt;
 
-&lt;table&gt;&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;密码&lt;/th&gt;
-&lt;th&gt;含义&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;FLZX3000cY4yhx9day&lt;/td&gt;
-&lt;td&gt;飞流直下三千尺，疑似银河下九天&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;hanshansi.location()!∈[gusucity]&lt;/td&gt;
-&lt;td&gt;姑苏城外寒山寺&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;hold?fish:palm&lt;/td&gt;
-&lt;td&gt;鱼和熊掌不可兼得&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;Tree_0f0=sprintf(&quot;2_Bird_ff0/a&quot;)&lt;/td&gt;
-&lt;td&gt;两个黄鹂鸣翠柳&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;csbt34.ydhl12s&lt;/td&gt;
-&lt;td&gt;池上碧苔三四点，叶底黄鹂一两声&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;for_\$n(@ RenSheng)_\$n+=&quot;die&quot;&lt;/td&gt;
-&lt;td&gt;人生自古谁无死&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;while(1)Ape1Cry&amp;amp;&amp;amp;Ape2Cry&lt;/td&gt;
-&lt;td&gt;两岸猿声啼不住&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;doWhile(1){LeavesFly();YangtzeRiverFlows()};&lt;/td&gt;
-&lt;td&gt;无边落木萧萧下，不尽长江滚滚来&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;dig?F*ckDang5&lt;/td&gt;
-&lt;td&gt;锄禾日当午&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;&lt;/table&gt;
+&lt;p&gt;以下是译文。&lt;/p&gt;
 
-&lt;h2&gt;如何存储 &amp;amp; 检查密码&lt;/h2&gt;
+&lt;hr/&gt;
 
-&lt;p&gt;既然密码不能明文存储，那怎么存储才是安全的？我如何检查用户输入的密码是正确的？&lt;/p&gt;
 
-&lt;p&gt;存储相关信息用于校验是必须的，有没有一种机制能够只保存密码的部分信息，也能用于密码校验？这样即使数据库泄露，攻击者也无法通过这些信息反推用户的密码，进而保护用户账号安全。&lt;/p&gt;
 
-&lt;p&gt;&lt;a href=&quot;https://zh.wikipedia.org/wiki/%E6%95%A3%E5%88%97%E5%87%BD%E6%95%B8&quot;&gt;哈希函数&lt;/a&gt;（hash function）可以解决这个问题。&lt;/p&gt;
+&lt;hr/&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://content.markdowner.net/pub/3e6Wnp-038oQV9&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;本文介绍 BPF 可移植性面临的问题，以及 BPF CO-RE（Compile Once – Run Everywhere）
+是如何解决这些问题的。&lt;/p&gt;
 
-&lt;p&gt;哈希函数是单向不可逆的，从上图很好理解，经过 hash 函数都会被丢弃一部分信息，就如同这个算法：&lt;/p&gt;
+&lt;h1 id=&quot;1-bpf-现状&quot;&gt;1 BPF 现状&lt;/h1&gt;
 
-&lt;blockquote&gt;
-&lt;p&gt;算法：存储用户名时丢弃用户姓氏然后随机打乱顺序，输入赵日天，输出天日。&lt;/p&gt;
+&lt;p&gt;(e)BPF 出来之后，社区一直在试图&lt;strong&gt;简化 BPF 程序的开发过程&lt;/strong&gt; —— 最好能像开发
+用户空间应用程序（userspace application）一样简单直接 —— 可惜这个目标从未实现。
+具体来说，在使用性（usability）方面确实有很大进步，但另一个重要方面却被忽略了
+（&lt;strong&gt;大部分出于技术原因&lt;/strong&gt;）：可移植性。&lt;/p&gt;
 
-&lt;p&gt;即使知道这个算法和天日这个数据，也无法推断出赵日天这个名字，因为部分信息丢失了。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;那么，什么是 &lt;mark&gt;”BPF 可移植性“&lt;/mark&gt;（BPF portability）？我们定义它是
+&lt;strong&gt;这样一种能力&lt;/strong&gt;：编写的程序&lt;strong&gt;通过编译和内核校验之后&lt;/strong&gt;，能&lt;mark&gt;正确地&lt;/mark&gt;在
+&lt;strong&gt;不同版本的内核&lt;/strong&gt;上运行 —— 而&lt;strong&gt;无需针对不同内核重新编译&lt;/strong&gt;。&lt;/p&gt;
 
-&lt;p&gt;$$
-h = hash(p)
-$$&lt;/p&gt;
-
-&lt;p&gt;h 为最终存储到数据库的值，p 为用户原始密码，在用户登陆时，输入密码 p1，我们通过计算 $h_1 = hash(p_1)$，判断 h1 是否与数据库中的记录 h 相同，确定用户输入的密码是否正确。&lt;/p&gt;
-
-&lt;p&gt;所有哈希函数都有一个性质：如果两个 h 值是不一致的，那么输入 p 值也不一样（单向散列函数），但另一方面输入和输出并非一一对应的关系，比如存在不同的 h 值，使得经过 hash 函数计算后的 p 值是一样的。&lt;/p&gt;
-
-&lt;h2&gt;哈希函数就安全了吗？&lt;/h2&gt;
-
-&lt;p&gt;没有，由于上述哈希函数的性质，如果两个用户都用了123456abc，这样的密码，那么数据库存储的 h 值都是一样的，而且不同密码可能计算出来的 h 值是一样的（碰撞攻击），那么攻击者就可以根据 hash 函数，暴力计算所有可能性，做成一张表格，这样拿到 h 值的时候就可以推断出密码是 123456abc 了。这种做法叫&lt;a href=&quot;https://zh.wikipedia.org/zh-hans/%E5%BD%A9%E8%99%B9%E8%A1%A8#:%7E:text=%E5%BD%A9%E8%99%B9%E8%A1%A8%E6%98%AF%E4%B8%80%E4%B8%AA%E7%94%A8,%E5%A6%82%E4%BF%A1%E7%94%A8%E5%8D%A1%E3%80%81%E6%95%B0%E5%AD%97%E7%AD%89%EF%BC%89%E3%80%82&quot;&gt;彩虹表&lt;/a&gt;攻击。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://content.markdowner.net/pub/aOzpRP-zAzv85w&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;比如以前常用的哈希函数 &lt;a href=&quot;https://zh.wikipedia.org/wiki/MD5&quot;&gt;MD5&lt;/a&gt;，由于计算力逐步增强，现在已经是不安全的了：&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;MD5 1996年后被证实存在弱点，可以被加以破解，对于需要高度安全性的资料，专家一般建议改用其他算法，如SHA-2。2004年，证实MD5算法无法防止碰撞攻击，因此不适用于安全性认证，如SSL公开密钥认证或是数字签名等用途&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2&gt;安全加固：加盐&lt;/h2&gt;
-
-&lt;p&gt;对付彩虹表可以用 Sated Hash 的方式，比如对于每个用户密码存储时都记录一个随机的 salt 值（盐值），用这个盐值和密码 p，计算出 h 值：&lt;/p&gt;
-
-&lt;p&gt;$$
-h = hash(salt, p)
-$$&lt;/p&gt;
-
-&lt;p&gt;数据库同样存储了 salt 值和 h 值，这样攻击者想获取一个用户的密码，就得建立一个对应的彩虹表，增大攻击者的成本。&lt;/p&gt;
-
-&lt;p&gt;但即使这样，使用 SHA-2 再加盐也不是安全的，因为计算力逐年提升，攻击成本下降，有财力的攻击集团还是能够建立这些彩虹表，进而窃取用户密码。&lt;/p&gt;
-
-&lt;h2&gt;安全加固：提高计算强度&lt;/h2&gt;
-
-&lt;p&gt;加盐的方式只是多了独立的彩虹表，如果我们可以利用硬件控制每次 hash 计算的时间比如1秒，且无论用什么机器，什么高性能的CPU计算，每次都要1秒的时间，攻击者要计算这个彩虹表，1000万个组合就得115天（hash 空间远远超过 1000万），那这种方式就很难破解了。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://content.markdowner.net/pub/Pyz9VX-E6nrb6&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;&lt;a href=&quot;https://zh.wikipedia.org/wiki/Bcrypt&quot;&gt;bcrypt&lt;/a&gt; 是一个由Niels Provos以及David Mazières根据Blowfish加密算法所设计的密码散列函数，于1999年在USENIX中展示[1]。实现中bcrypt会使用一个加盐的流程以防御彩虹表攻击，同时bcrypt还是适应性函数，它可以借由增加迭代之次数来抵御日益增进的电脑运算能力透过暴力法破解。&lt;/p&gt;
-
-&lt;p&gt;除了对您的数据进行加密，默认情况下，bcrypt在删除数据之前将使用随机数据三次覆盖原始输入文件，以阻挠可能会获得您的计算机数据的人恢复数据的尝试。如果您不想使用此功能，可设置禁用此功能。&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;除了 bcrypt 这种调整计算强度，抵御日益增长的CPU 计算力带来攻击风险的算法，scrypt 算法还利用了内存空间，每次计算都要占用一定内容，不过 bcrypt 算法由于有成熟的实现，实际使用较多，spring boot security 的密码加密就用的这个算法。&lt;/p&gt;
-
-&lt;p&gt;比如某个密码经过 bcrypt 加密后变成这样：&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;\$2a\$07\$woshiyigesaltzhi\$\$\$\$\$.lrU488y7E1Xw.JA4uizIu.PBSSe7t4y&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;2a 表示 bcrypt 算法的版本，07代表迭代次数，次数越高，每次计算所需的时间越长，后面的woshiyigesaltzhi$$$$$ 代表加密用的 salt 值，数据库可以直接存储这个字段，比如：&lt;/p&gt;
-
-&lt;table&gt;&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;name&lt;/th&gt;
-&lt;th&gt;phone&lt;/th&gt;
-&lt;th&gt;pwd_hash&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;小明&lt;/td&gt;
-&lt;td&gt;1234&lt;/td&gt;
-&lt;td&gt;\$2a\$07\$woshiyigesaltzhi\$\$\$\$\$.lrU488y7E1Xw.JA4uizIu.PBSSe7t4y&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;&lt;/table&gt;
-
-&lt;p&gt;这种也是本文推荐的密码存储方式，hash + salt + 计算强度，可以较好保护用户密码安全，由于登陆不是频繁的操作，每次登陆时用户等待 1 秒也没有太大关系。&lt;/p&gt;
-
-&lt;h2&gt;用户数据密码加密方案：双重 hash&lt;/h2&gt;
-
-&lt;p&gt;密码信息可以 hash，达到不可逆的目的，但是一些用户数据是可逆的，而且要求加密，怎么办？比如用户在线文档，通过用户自定义的密码加解密。&lt;/p&gt;
-
-&lt;p&gt;很容易想到的就是 &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Encryption_Standard&quot;&gt;AES256&lt;/a&gt; 之类的对称加密技术：&lt;/p&gt;
-
-&lt;p&gt;$$
-e = AES256(salt, text)
-$$&lt;/p&gt;
-
-&lt;p&gt;通过拿用户的密码作为 salt 值加解密文档，服务端存储用户密码。&lt;/p&gt;
-
-&lt;p&gt;还是前面的问题，明文存储密码是不安全的行为，这里可以用双重 hash 的方法保证一定的安全性（这里的双重 hash 不是连续计算两次 hash 的意思）：&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;实现方案&lt;/strong&gt;：&lt;/p&gt;
-
-&lt;p&gt;用户密码存储仍然采用前面提到的方案，可以用 bcrypt 算法，这里记存储的值为 h1，当用户请求加密数据时，提供了加密密码，我们通过 h1 检验用户密码的正确性，同时用用户的密码计算出另一个 hash 值，记为 h2，h2 的计算方式与 h1 不同，只是简单的 hash，不能加盐，这时我们使用 h2 加解密用户文档：&lt;/p&gt;
-
-&lt;p&gt;$$
-e = AES256(h2, text)
-$$&lt;/p&gt;
-
-&lt;p&gt;记住，h2 的值是不能存储的（不能保存于数据库中），用于加解密数据。由于 h2 的值用完就丢掉。h2 的 hash 函数可以是私有的，进一步保障安全性。&lt;/p&gt;
-
-&lt;p&gt;为什么需要 h2 这个参数？首先用户密码长度不一致，像 AES 之类的对称加密算法需要有一个固定长度的加密参数，其次经过 hash 之后能够进一步保障数据安全性，如果数据库泄露，攻击者即使知道用户密码，不知道私有 hash 函数也无法进行解密。&lt;/p&gt;
-
-&lt;h2&gt;其他用户数据的加密&lt;/h2&gt;
-
-&lt;p&gt;上述提到的加密方案是用户密码控制的，数据安全性非常高（只有用户知道密码，且密码丢失后数据不可恢复），但是这种做法很多场景不适合，比如常规的用户数据：手机号、社交账号、地址、姓名，高频访问的数据不适合用密码加密，效率太低，那如何保护用户这类数据的安全性呢？&lt;/p&gt;
-
-&lt;p&gt;理解这个问题，需要知道用户数据是怎样传输的：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://content.markdowner.net/pub/bWxAQB-0GogEm2&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;用户在客户端软件上产生数据（比如浏览器上），经过 https 加密传输到后端服务器，有服务端软件处理（比如 java），之后经过调用数据库接口通过数据库软件（比如 mysql）存储到存储设备中（比如硬盘）。&lt;/p&gt;
-
-&lt;p&gt;有 4 个阶段可以进行数据加密，加密的过程越靠近用户越安全（客户端加密后面说）：&lt;/p&gt;
+&lt;p&gt;本文首先介绍 BPF 可移植性面临的问题，然后介绍我们的&lt;strong&gt;&lt;mark&gt;解决方案：BPF CO-RE&lt;/mark&gt;&lt;/strong&gt;
+（Compile Once – Run Everywhere）。接下来内容如下：&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;服务端软件加密：数据到达服务端后立马加密存储（内存中执行），比如 java 执行 AES256&lt;/li&gt;
-&lt;li&gt;数据库软件加密：调用数据库API实现数据库加密，比如 mysql 的 AES 加密&lt;/li&gt;
-&lt;li&gt;存储端落盘加密：使用硬件加密技术进行加密存储，比如云服务商提供的云盘加密功能&lt;/li&gt;
+  &lt;li&gt;首先讨论 BPF 可移植性问题本身，分析它所面临的挑战，以及为什么解决这些挑战如此重要；&lt;/li&gt;
+  &lt;li&gt;然后从较高层次查看 BPF CO-RE 的各组件，以及它们是如何组织成一个完整方案解决这个问题的；&lt;/li&gt;
+  &lt;li&gt;最后以一些例子（BPF 代码片段）结束本文，这些例子展示了 BPF CO-RE 中用户可见 API。&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;table&gt;&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;加密方式&lt;/th&gt;
-&lt;th&gt;防止内部泄露&lt;/th&gt;
-&lt;th&gt;防止数据库泄露&lt;/th&gt;
-&lt;th&gt;防止物理机丢失泄露&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;服务端软件加密&lt;/td&gt;
-&lt;td&gt;√（大部分场景）&lt;/td&gt;
-&lt;td&gt;√&lt;/td&gt;
-&lt;td&gt;√&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;数据库软件加密&lt;/td&gt;
-&lt;td/&gt;
-&lt;td&gt;√&lt;/td&gt;
-&lt;td&gt;√&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;存储端落盘加密&lt;/td&gt;
-&lt;td/&gt;
-&lt;td/&gt;
-&lt;td&gt;√&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;&lt;/table&gt;
+&lt;h1 id=&quot;2-bpf-可移植性面临的问题&quot;&gt;2 BPF 可移植性面临的问题&lt;/h1&gt;
 
-&lt;p&gt;前两者加密方式都可以保证即使是数据库管理员也无法查看用户数据，最后一种通常意义不大，但一些国家、地区的法律要求，或者用户要求有硬盘加密措施，仍然需要使用。数据库软件加密仍然存在内部泄露的风险，比如 mysql 的 binlog，即使你使用了 AES256，数据同步时密钥也会存储在 binlog 中，存在泄露的途径。&lt;/p&gt;
+&lt;p&gt;BPF 程序是&lt;strong&gt;由用户提供的&lt;/strong&gt;、经过验证之后&lt;strong&gt;&lt;mark&gt;在内核上下文中执行&lt;/mark&gt;&lt;/strong&gt;的程序。
+BPF &lt;mark&gt;运行在内核内存空间&lt;/mark&gt;（kernel memory space）执行，&lt;mark&gt;能访问大量的
+内核内部状态&lt;/mark&gt;（internal kernel state）。
+这使得 BPF 程序功能极其强大，也是为什么它能成功地应用在大量不同场景的原因之一。&lt;/p&gt;
 
-&lt;p&gt;如果相关用户数据没有搜索的需求（只有常规读写需求），可以使用服务端加密或者数据库加密的手段保护用户数据。但如果相关数据需要支持搜索功能，这个问题就很棘手了。&lt;/p&gt;
+&lt;p&gt;但另一方面，与强大能力相伴而生的是我们如今面临的可移植性问题：&lt;mark&gt;BPF 程序
+并不控制它&lt;strong&gt;运行时所在内核&lt;/strong&gt;的内存布局&lt;/mark&gt;（memory layout）。
+因此，BPF 程序只能运行在&lt;strong&gt;开发和编译这些程序时&lt;/strong&gt;所在的内核。&lt;/p&gt;
 
-&lt;h2&gt;可搜索加密技术&lt;/h2&gt;
+&lt;p&gt;另外，&lt;strong&gt;内核类型（kernel types）和数据结构（data structures）也在不断变化&lt;/strong&gt;。
+不同的内核版本中，同一结构体的同一字段所在的位置可能会不同 —— 甚至已经
+移到一个新的内部结构体（inner struct）中。此外，字段还可能会被重命名、删除、
+改变类型，或者（根据不同内核配置）被条件编译掉。&lt;/p&gt;
 
-&lt;p&gt;这篇论文 &lt;a href=&quot;https://ieeexplore.ieee.org/document/848445&quot;&gt;Practical techniques for searches on encrypted data&lt;/a&gt; 发表于 2000 年，开创了一个新的研究方向 &lt;a href=&quot;https://en.wikipedia.org/wiki/Searchable_symmetric_encryption&quot;&gt;Searchable Encryption&lt;/a&gt;，提出了第一个实用的可搜索加密方案 SWP，实现思路大概是：通过加密每个单词，然后将一个 hash 值嵌入密文中，服务器通过提取改 hash 值，检查密文中是否有类似的特殊格式，确认是否匹配搜索。&lt;/p&gt;
+&lt;h2 id=&quot;21-可移植为什么理论上可行&quot;&gt;2.1 可移植：为什么理论上可行&lt;/h2&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://content.markdowner.net/pub/4XN9vD-z80xbvg&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;以上分析可知，内核版本升级时很多东西都会发生变化，而 BPF 开发者希望能够&lt;mark&gt;
+避免这些变化对 BPF 程序造成影响&lt;/mark&gt;。这听上去似乎不可能 —— 内核环境都在不断变化，
+依赖内核环境执行的 BPF 程序又如何能幸免于难呢？&lt;/p&gt;
 
-&lt;p&gt;上文想法很理想，但是落地时会有很多困难，比如必须使用固定大小的单词，但搜索系统最重要的就是其分词引擎，如何对多种语言进行良好的分词直接决定了搜索的效果，不少搜索系统任然采用如下结构：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://content.markdowner.net/pub/qbBn8O-a446qO1&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;将 mysql 的数据单向同步到 elasticsearch 中，完成相关搜索功能的支持。20 多年过去了，今天，可搜索加密技术依然无法落地使用，甚至可以这么说，如果软件商提供了搜索功能，该数据存储的时候就是没有加密的（硬盘加密对软件层不可见），已加密的数据是无法支持搜索功能的。&lt;/p&gt;
-
-&lt;h2&gt;阴谋实现的前提&lt;/h2&gt;
-
-&lt;p&gt;假如我是一个坏人，要实现某个阴谋，很重要的前提就是操作足够简单，知道的人足够少，当复杂度太大或者需要的人很多的时候就不可能实现这个阴谋。&lt;/p&gt;
-
-&lt;p&gt;知道这一点我们可以很轻松地判断：“美国登月是假的”，这个阴谋猜想是错的。因为登月工程涉及的人很多、工程复杂，无法实现这个阴谋。&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;这个结论是下文内容的基础。&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2&gt;一些软件声明的安全说的是什么？&lt;/h2&gt;
-
-&lt;p&gt;上述提到的可搜索加密技术无法落地，一些软件厂商（包括一些大厂）提供了搜索功能，仍然声称他们对用户数据进行了加密，很安全，他们到底在说什么？&lt;/p&gt;
-
-&lt;p&gt;第一，他们可能说的是硬盘加密，而不是软件层的加密（只能防御硬盘盗窃风险，不能防御数据泄露风险、内部风险）；第二，他们可能说的是传输过程的加密，比如 https 或私有通讯加密协议；第三，他们可能有完善内部管理流程，控制内外部风险。&lt;/p&gt;
-
-&lt;p&gt;利用上面阴谋论的前提，只要增加一些流程，公开透明出来，提高使坏的成本，在技术不可实现的情况下，也能保障用户数据的安全，比如：&lt;/p&gt;
+&lt;p&gt;但实际上，这是可能的：&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;数据库操作日志审查：由其他人审核 DBA 数据库操作是否合规，是否偷偷查看某用户数据等&lt;/li&gt;
-&lt;li&gt;多重密码：由多人掌握密码，只有统一输入密码才能解密数据，提高操作复杂度，如多人审核&lt;/li&gt;
-&lt;li&gt;公开透明的流程：涉密操作流程记录，比如某某由于开发测试原因，需解密数据&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;首先，&lt;strong&gt;&lt;mark&gt;不是所有 BPF 程序都依赖内核内部数据结构&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+    &lt;p&gt;一个例子是 BPF 工具 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;opensnoop&lt;/code&gt;，它基于 kprobes/tracepoints 跟踪进程打开的文件，
+  因此&lt;strong&gt;&lt;mark&gt;只要能拦截到少数几个系统调用&lt;/mark&gt;&lt;/strong&gt;就能工作。由于系统调用接口
+  提供稳定的 ABI，不会随着内核版本而变，因此这样的 BPF 程序做到可移植是问题不大的。&lt;/p&gt;
+
+    &lt;p&gt;不幸的是，这种类型的 BPF 程序很少，而且它们能做的事情通常也是非常有限的。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;其次，内核 BPF 基础设施&lt;strong&gt;&lt;mark&gt;提供了一组有限的”稳定接口“&lt;/mark&gt;&lt;/strong&gt;（stable interfaces），
+内核版本升级时保证稳定，因此 BPF 程序可以依赖这组接口。&lt;/p&gt;
+
+    &lt;p&gt;实际上，底层结构体和工作机制都可能发生变化，但这组稳定接口向用户程序屏蔽了这些变动。
+一个例子是网络应用中的 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;struct sk_buff&lt;/code&gt; 和 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;struct __sk_buff&lt;/code&gt;。&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;struct sk_buff&lt;/code&gt; 是内核中的数据包表示，字段非常多，并且经常发生变化；&lt;/li&gt;
+      &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;struct __sk_buff&lt;/code&gt; 是 &lt;strong&gt;&lt;mark&gt;BPF 校验器提供的一个 sk_buff 的稳定接口&lt;/mark&gt;&lt;/strong&gt;，
+或者说一组属性集合。将用户程序与底层的 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;struct sk_buff&lt;/code&gt; 解耦开来，
+因此后者内存布局发生变化时，不会影响 BPF 程序。&lt;/li&gt;
+      &lt;li&gt;所有对 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;struct __sk_buff&lt;/code&gt; 字段的访问都会被&lt;strong&gt;透明地转换成对 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;struct sk_buff&lt;/code&gt; 的访问&lt;/strong&gt;。&lt;/li&gt;
+    &lt;/ul&gt;
+
+    &lt;p&gt;很多 BPF 程序类型都有类似的机制，&lt;strong&gt;这种封装在 BPF 中称为上下文（context）&lt;/strong&gt;，触发
+BPF 程序执行时，一般传递的就是这样的上下文（指针类型，例如 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;struct __sk_buff
+*ctx&lt;/code&gt;）。因此，如果开发 BPF 程序时使用的是这些结构体，那这样的程序大概率是可移
+植的。&lt;/p&gt;
+  &lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;拥有完善的流程也能让用户放心存储隐私数据。&lt;/p&gt;
+&lt;h2 id=&quot;22-可移植挑战&quot;&gt;2.2 可移植：挑战&lt;/h2&gt;
 
-&lt;h2&gt;加密技术的未来：不用加密&lt;/h2&gt;
+&lt;p&gt;但是，一旦需要查看原始的内核内部数据（raw internal kernel data）—— 例如
+常见的表示进程或线程的 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;struct task_struct&lt;/code&gt;，这个结构体中有非常详细的进程信息 —— 
+那你就只能靠自己了。对于 &lt;strong&gt;tracing、monitoring 和 profiling 应用&lt;/strong&gt;来说这个需求
+非常常见，而这类 BPF 程序也是极其有用的。&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://content.markdowner.net/pub/bWxAQB-0GogEm2&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;h3 id=&quot;内核版本不同字段被重命名或移动位置&quot;&gt;内核版本不同：字段被重命名或移动位置&lt;/h3&gt;
 
-&lt;p&gt;前面没有提到的客户端加密放这里说。加密点越靠近用户，就越安全，如果用户发出来的数据就是经过加密的（非 https 类传输加密），并且自行控制密码，这样服务提供商也无需进一步做加密处理了，标题提到的不用加密指的就是这个，服务商不用再花费大量精力、成本在数据安全上面，将数据所有权交给用户。&lt;/p&gt;
+&lt;p&gt;在这种情况下，&lt;strong&gt;&lt;mark&gt;如何保证读到的一定是我们期望读的那个字段呢&lt;/mark&gt;&lt;/strong&gt; —— 例如，&lt;/p&gt;
 
-&lt;p&gt;上面客户端加密所需的一个技术就是：&lt;a href=&quot;https://zh.wikipedia.org/wiki/%E5%90%8C%E6%80%81%E5%8A%A0%E5%AF%86&quot;&gt;全同态加密&lt;/a&gt;，这是密码学领域的一个重要课题，在 2009 年 9 月，IBM 的博士克雷格·金特里发表了一篇论文：&lt;a href=&quot;https://www.cs.cmu.edu/%7Eodonnell/hits09/gentry-homomorphic-encryption.pdf&quot;&gt;Fully Homomorphic Encryption Using Ideal Lattices&lt;/a&gt;，提出了一个可行方法，自此解决了密码学的一大难题。全同态加密可以简单理解如下：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;原来的程序是从 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;struct task_struct&lt;/code&gt; offset 8 地址读取数据，&lt;/li&gt;
+  &lt;li&gt;由于新内核加个了 16 字节新字段，那此时正确的方式应该是从 offset 24 地址读，&lt;/li&gt;
+&lt;/ul&gt;
 
-&lt;p&gt;$$
-f(data) = DE(\ f(\ E(data)\ ))
-$$&lt;/p&gt;
+&lt;p&gt;这还没完：如果这个字段被改名了呢？例如，&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;thread_struct&lt;/code&gt; 的 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;fs&lt;/code&gt; 字段（获取 thread-local storage 用），
+在 4.6 到 4.7 内核升级时就被重命名为了 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;fsbase&lt;/code&gt;。&lt;/p&gt;
 
-&lt;p&gt;其中 f 是任意操作函数，E 是加密函数，DE 是解密函数，也就是说对密文的任意计算操作等同于对明文做同样的操作。&lt;/p&gt;
+&lt;h3 id=&quot;内核版本相同但配置不同字段在编译时被移除compile-out&quot;&gt;内核版本相同但配置不同：字段在编译时被移除（compile out）&lt;/h3&gt;
 
-&lt;p&gt;这就很牛逼了！！！！！！！！！！！比如我手上有一些财务数据，需要第三方机构进行统计分析，但是我又不想直接给他们数据，他们告诉我可以提供全同态加密服务，那么我可以在给他们数据之前将数据加密一遍，他们给我统计计算后的结果，我解密相关结果即可，真实的数据只有我看得到。&lt;/p&gt;
+&lt;p&gt;另一种情况：内核版本相同，但内核编译时的配置不同，导致
+结构体的某些字段在编译器时被完全移除了。&lt;/p&gt;
 
-&lt;p&gt;全同态加密的这些特性能够很好解决数据安全，信任的问题，克雷格·金特里给出了一个实现，之后很多密码学者也给出其他实现方法，但目前的角度来说该技术还不成熟，比如一个密钥就得 100 MB 大小，对于当下网络环境来说无法实际使用。&lt;/p&gt;
+&lt;p&gt;具体例子：某些可选的&lt;mark&gt;审计字段&lt;/mark&gt;。&lt;/p&gt;
 
-&lt;h2&gt;结语&lt;/h2&gt;
+&lt;h3 id=&quot;小结&quot;&gt;小结&lt;/h3&gt;
 
-&lt;p&gt;没有绝对的安全，只有相对的安全。期待全同态加密技术在商用领域取得突破性进展。&lt;/p&gt;
+&lt;p&gt;所有这些都意味着：依赖&lt;strong&gt;&lt;mark&gt;开发环境本地的内核头文件&lt;/mark&gt;&lt;/strong&gt;编译的 BPF 程序，
+是无法直接分发到其他机器运行 —— 然后期待它们返回正确结果的。
+这是由于不同版本的内核头文件所假设的内存布局是不同的。&lt;/p&gt;
+
+&lt;h2 id=&quot;23-可移植bcc-方式&quot;&gt;2.3 可移植：BCC 方式&lt;/h2&gt;
+
+&lt;p&gt;目前，人们可以用 &lt;a href=&quot;https://github.com/iovisor/bcc/&quot;&gt;BCC&lt;/a&gt; (BPF Compiler Collection)
+解决这个问题，使用方式如下：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;开发：将 BPF C 源码以&lt;strong&gt;&lt;mark&gt;文本字符串&lt;/mark&gt;&lt;/strong&gt;形式，&lt;strong&gt;嵌入（Python 编写的）用户空间控制应用&lt;/strong&gt;（control application）；&lt;/li&gt;
+  &lt;li&gt;部署：将控制应用以源码的形式拷贝到目标机器；&lt;/li&gt;
+  &lt;li&gt;执行：在目标机器上，BCC 调用它内置的 Clang/LLVM，然后 include 本地内核头文件
+  （&lt;strong&gt;需要确保本机已经安装了正确版本的 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;kernel-devel&lt;/code&gt; 包&lt;/strong&gt;）然后&lt;mark&gt;现场执行编译、加载、运行&lt;/mark&gt;。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;这种方式能确保 BPF 程序期望的内存布局与目标机器内核的内存布局是完全一致的。&lt;/p&gt;
+
+&lt;p&gt;对于那些&lt;strong&gt;内核版本相关的可选字段或条件编译相关的配置代码&lt;/strong&gt;，只需要在源代码中
+用 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#ifdef&lt;/code&gt;/&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#else&lt;/code&gt; 做处理，BCC 内置的 Clang 能正确处理这些宏，最终剩下的就是与
+当前内核相匹配的源代码。这就是 BCC 解决内核版本差异的方式。&lt;/p&gt;
+
+&lt;h2 id=&quot;24-bcc-方式的缺点&quot;&gt;2.4 BCC 方式的缺点&lt;/h2&gt;
+
+&lt;p&gt;BCC 方式可行，但存在一些很大的缺点：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;mark&gt;Clang/LLVM 是一个庞大的库&lt;/mark&gt;&lt;/strong&gt;，在部署时除了要分发 BPF 程序，还必须一起分发这个大库。&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Clang/LLVM 这两个庞然大物&lt;strong&gt;非常消耗资源&lt;/strong&gt;，因此&lt;strong&gt;&lt;mark&gt;每次在目标机器上编译 BPF 代码，都将消耗大量系统资源&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;尤其在线上的生产机器，现场编译可能会使机器负载瞬间飙高，导致生产问题。&lt;/li&gt;
+      &lt;li&gt;同样，如果机器本身已经负载很高，那编译一段很小的 BPF 程序可能都要几分钟。&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;此外，这里有个很强的&lt;strong&gt;&lt;mark&gt;前提：内核头文件在目标机器上一定存在&lt;/mark&gt;&lt;/strong&gt;。
+在大部分情况下这都不是问题，但有时可能会带来麻烦。&lt;/p&gt;
+
+    &lt;p&gt;这对内核开发者来说也尤其头疼，因为他们经常要编译和部署一次性的内核，用于在
+ 开发过程中验证某些问题。而机器上没有指定的、版本正确的内核头文件包，基于 BCC
+ 的应用就无法正常工作。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;这种方式会拖慢开发和迭代速度。&lt;/p&gt;
+
+    &lt;p&gt;BPF 程序的&lt;strong&gt;&lt;mark&gt;测试和开发过程也非常繁琐&lt;/mark&gt;&lt;/strong&gt;，很多错误只有到了运行时
+（runtime）才会出现，而一旦出现就只能重启用户空间控制应用。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;总体来说，虽然 bcc 是一个很伟大的工具 —— 尤其是用于快速原型、实验和开发小工具 —— 但
+当用于广泛部署生产 BPF 应用时，它存在非常明显的不足。&lt;/p&gt;
+
+&lt;p&gt;为了更彻底地解决 BPF 移植性问题，我们&lt;strong&gt;设计了 BPF CO-RE&lt;/strong&gt;，并相信这是
+&lt;mark&gt;BPF 程序的未来开发方式&lt;/mark&gt;，尤其适用于开发复杂、真实环境中的 BPF 应用。&lt;/p&gt;
+
+&lt;h1 id=&quot;3-bpf-co-re高层机制&quot;&gt;3 BPF CO-RE：高层机制&lt;/h1&gt;
+
+&lt;p&gt;BPF CO-RE 将它所依赖的如下软件栈和它的数据集中到了一起，&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;内核&lt;/li&gt;
+  &lt;li&gt;&lt;mark&gt;用户空间 BPF 加载器库（libbpf）&lt;/mark&gt;&lt;/li&gt;
+  &lt;li&gt;编译器（clang）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;使得我们能以一种轻松的方式编写可移植 BPF 程序，在&lt;strong&gt;单个预编译的 BPF 程序内
+（pre-compiled BPF program）处理不同内核之间的差异&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;BPF CO-RE 需要下列组件之间的紧密合作：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;BTF 类型信息：使得我们能获取&lt;mark&gt;内核、BPF 程序类型及 BPF 代码的关键信息&lt;/mark&gt;，
+这也是下面其他部分的基础；&lt;/li&gt;
+  &lt;li&gt;编译器（clang）：给 BPF C 代码提供了&lt;mark&gt;表达能力和记录重定位（relocation）信息的能力&lt;/mark&gt;；&lt;/li&gt;
+  &lt;li&gt;BPF loader (&lt;a href=&quot;https://github.com/libbpf/libbpf&quot;&gt;libbpf&lt;/a&gt;)：将内核的 BTF 与 BPF 程序联系起来，
+&lt;mark&gt;将编译之后的 BPF 代码适配到目标机器的特定内核&lt;/mark&gt;；&lt;/li&gt;
+  &lt;li&gt;内核：虽然&lt;strong&gt;&lt;mark&gt;对 BPF CO-RE 完全不感知&lt;/mark&gt;&lt;/strong&gt;，但提供了一些 BPF 高级特性，使某些高级场景成为可能。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;以上几部分相结合，提供了一种开发可移植 BPF 程序的&lt;strong&gt;史无前例的能力&lt;/strong&gt;：这个开发
+过程不仅方便（ease），而且具备很强的适配性（adaptability）和&lt;mark&gt;表达能力&lt;/mark&gt;（expressivity）。
+在此之前，实现同样的可移植效果只能通过 BCC 在运行时编译 BPF C 程序，而前面也分析了，
+BCC 开销非常高。&lt;/p&gt;
+
+&lt;h2 id=&quot;31-btfbpf-type-format&quot;&gt;3.1 BTF（BPF Type Format）&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://www.kernel.org/doc/html/latest/bpf/btf.html&quot;&gt;BTF&lt;/a&gt; 是 BPF CO-RE 的核心之一，
+它是是一种与 DWARF 类似的调试信息，但&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;更通用、表达更丰富，用于描述 C 程序的所有类型信息。&lt;/li&gt;
+  &lt;li&gt;更简单，空间效率更高（使用 &lt;a href=&quot;https://facebookmicrosites.github.io/bpf/blog/2018/11/14/btf-enhancement.html&quot;&gt;BTF 去重算法&lt;/a&gt;），
+占用空间比 DWARF 低 100x。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;如今，让 Linux &lt;strong&gt;内核在运行时（runtime）一直携带 BTF 信息&lt;/strong&gt;是可行的，
+只需在编译时指定 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;CONFIG_DEBUG_INFO_BTF=y&lt;/code&gt;。内核的 BTF 除了被内核自身使用，
+现在还用于增强 BPF 校验器自身的能力 —— 某些能力甚至超越了一年之前我们的想象力所及（例
+如，已经有了直接读取内核内存的能力，不再需要通过 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bpf_probe_read()&lt;/code&gt; 间接读取了）。&lt;/p&gt;
+
+&lt;p&gt;更重要的是，内核已经将这个&lt;mark&gt;自描述的权威 BTF 信息&lt;/mark&gt;（定义结构体的精确内存布局等信息）
+&lt;mark&gt;通过 sysfs 暴露出来&lt;/mark&gt;，在 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/sys/kernel/btf/vmlinux&lt;/code&gt;。
+下面的命令将生成一个&lt;strong&gt;&lt;mark&gt;与所有内核类型兼容的 C 头文件&lt;/mark&gt;&lt;/strong&gt;（通常称为 “&lt;strong&gt;vmlinux.h&lt;/strong&gt;“）：&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;bpftool btf dump file /sys/kernel/btf/vmlinux format c
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;这里说的”所有“真的是&lt;strong&gt;”所有“&lt;/strong&gt;：&lt;mark&gt;包括那些并未通过 kernel-devel package 导出的类型&lt;/mark&gt;！&lt;/p&gt;
+
+&lt;h2 id=&quot;32-编译器支持&quot;&gt;3.2 编译器支持&lt;/h2&gt;
+
+&lt;p&gt;为了让 BPF 加载器（例如 libbpf）将 BPF 程序适配到目标机器所运行的内核上，
+&lt;strong&gt;Clang 增加了几个新的 built-in&lt;/strong&gt;。它们的功能是导出（emit）
+&lt;mark&gt;BTF relocations&lt;/mark&gt;（重定位信息），后者是对 &lt;strong&gt;BPF 程序想读取的那些信息的高层描述&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;例如，如果想访问 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;task_struct-&amp;gt;pid&lt;/code&gt;，那 &lt;mark&gt;clang 将做如下记录&lt;/mark&gt;：这是一个
+&lt;strong&gt;位于结构体 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;struct task_struct&lt;/code&gt; 中、类型为 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pid_t&lt;/code&gt;、名为 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pid&lt;/code&gt; 的字段&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;有了这种方式，即使目标内核的 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;task_struct&lt;/code&gt; 结构体中，&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pid&lt;/code&gt; 字段位置已经发生了变
+化（例如，由于这个字段前面加了新字段），甚至已经移到了某个内部嵌套的匿名结构体
+或 union 中（在 C 语言中这种行为是完全透明的，因此内核开发者这样做时并不会有特别
+的顾虑），我们&lt;mark&gt;仍然能通过名字和类型信息找到这个字段&lt;/mark&gt;。这称为
+&lt;strong&gt;&lt;mark&gt;field offset relocation&lt;/mark&gt;&lt;/strong&gt;（字段偏置重定位）。&lt;/p&gt;
+
+&lt;p&gt;除了字段重定位，其他一些字段相关的操作，例如判断 &lt;mark&gt;field existence&lt;/mark&gt;（
+字段是否存在）或者 &lt;mark&gt;field size（字段长度）&lt;/mark&gt;都是支持的。
+甚至对 bitfields（比特位字段，在 C 语言中是出了名的”难处理“的类型，C 社区一直在努力让它们变得可重定位）
+，我们仍然能基于 BTF 信息来使它们可重定位（relocatable），并且整个过程对 BPF 开
+发者透明。&lt;/p&gt;
+
+&lt;h2 id=&quot;33-bpf-加载器libbpf&quot;&gt;3.3 BPF 加载器（libbpf）&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/libbpf/libbpf&quot;&gt;libbpf&lt;/a&gt; 作为一个 &lt;mark&gt;BPF 程序加载器&lt;/mark&gt;（loader），
+处理前面介绍的内核 BTF 和 clang 重定位信息。它&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;读取编译之后得到的 BPF ELF 目标文件，&lt;/li&gt;
+  &lt;li&gt;进行一些必要的后处理，&lt;/li&gt;
+  &lt;li&gt;&lt;mark&gt;设置各种内核对象&lt;/mark&gt;（bpf maps、bpf 程序等），然后&lt;/li&gt;
+  &lt;li&gt;将 BPF 程序加载到内核，然后触发校验器的验证过程。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;mark&gt;libbpf 知道如何对 BPF 程序进行裁剪，以适配到目标机器的内核上&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;它会查看 BPF 程序记录的 BTF 和重定位信息，然后&lt;/li&gt;
+  &lt;li&gt;拿这些信息跟当前内核提供的 BTF 信息相匹配。然后&lt;/li&gt;
+  &lt;li&gt;解析和匹配所有的类型和字段，更新所有必要的 offsets 和其他可重定位数据。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;最终确保 BPF 程序在这个特定的内核上是能正确工作的。&lt;/p&gt;
+
+&lt;p&gt;如果一切顺利，你（作为 BPF 应用开发者）将得到一个针对目标机器”定制化裁剪“的 BPF
+程序，就像这个程序是专门针对这个内核编译的一样。但这种工作方式无需将 clang 与
+BPF 一起打包部署，也没有在目标机器上运行时编译（runtime）的开销。&lt;/p&gt;
+
+&lt;h2 id=&quot;34-内核&quot;&gt;3.4 内核&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;mark&gt;内核无需太多改动就能支持 BPF CO-RE&lt;/mark&gt;&lt;/strong&gt;，这一点可能令很多人感到惊讶。
+由于设计合理，因此&lt;strong&gt;对于内核来说，libbpf 处理之后的 BPF 程序，与
+其他任何合法的 BPF 程序是一样的&lt;/strong&gt; —— 与在这台机器上依赖最新内核头文件编译出的
+BPF 程序并无区别。这意味要 &lt;mark&gt;BPF CO-RE 并不依赖最新的内核功能&lt;/mark&gt;，因此
+应用范围更广，适配速度更快。&lt;/p&gt;
+
+&lt;p&gt;某些高级场景可能会需要更新的内核，但这些场景很少。接下来介绍 BPF CO-RE 用户侧机制
+时会讨论到这样的场景。&lt;/p&gt;
+
+&lt;h1 id=&quot;4-bpf-co-re用户侧经验&quot;&gt;4 BPF CO-RE：用户侧经验&lt;/h1&gt;
+
+&lt;p&gt;接下来看几个真实世界中 BPF CO-RE 的典型场景，以及它是如何解决面临的一些问题的。
+我们将看到，&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;一些可移植性问题（例如，兼容 struct 内存布局差异）能够处理地非常透明和自然，&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;而另一些则需要通过显式处理的，具体包括，&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;通过 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;if&lt;/code&gt;/&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;else&lt;/code&gt; 条件判断（&lt;strong&gt;而不是 BCC 中的那种条件编译 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#ifdef&lt;/code&gt;/&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#else&lt;/code&gt;&lt;/strong&gt;）。&lt;/li&gt;
+      &lt;li&gt;BPF CO-RE 提供的其他一些额外机制。&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;41-摆脱内核头文件依赖&quot;&gt;4.1 摆脱内核头文件依赖&lt;/h2&gt;
+
+&lt;p&gt;内核 BTF 信息除了用来做字段重定位之外，还可以用来&lt;mark&gt;生成一个大的头文件&lt;/mark&gt;（”&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vmlinux.h&lt;/code&gt;“），
+这个头文件中&lt;strong&gt;&lt;mark&gt;包含了所有的内部内核类型，从而避免了依赖系统层面的内核头文件&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;通过 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bpftool&lt;/code&gt; 获得 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vmlinux.h&lt;/code&gt;：&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;bpftool btf dump file /sys/kernel/btf/vmlinux format c &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; vmlinux.h
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;有了 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vmlinux.h&lt;/code&gt;，就&lt;strong&gt;无需再像通常的 BPF 程序那样 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#include &amp;lt;linux/sched.h&amp;gt;&lt;/code&gt;、&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#include &amp;lt;linux/fs.h&amp;gt;&lt;/code&gt; 等等头文件&lt;/strong&gt;，
+现在只需要 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#include &quot;vmlinux.h&quot;&lt;/code&gt;，&lt;strong&gt;&lt;mark&gt;也不用再安装 kernel-devel &lt;/mark&gt;&lt;/strong&gt;了。&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vmlinux.h&lt;/code&gt; 包含了&lt;strong&gt;所有的内核类型&lt;/strong&gt;：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;作为 UAPI 的一部分暴露的 API&lt;/li&gt;
+  &lt;li&gt;通过 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;kernel-devel&lt;/code&gt; 暴露的内部类型&lt;/li&gt;
+  &lt;li&gt;其他一些&lt;strong&gt;通过任何其他方式都无法获取的内部内核类型&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;不幸的是，&lt;mark&gt;BPF（以及 DWARF）并不记录 &lt;code&gt;#define&lt;/code&gt; 宏，因此某些常用
+的宏可能在 vmlinux.h 中是缺失的&lt;/mark&gt;。但这些没有记录的宏中
+，最常见的一些已经在 &lt;a href=&quot;https://github.com/libbpf/libbpf/blob/master/src/bpf_helpers.h&quot;&gt;bpf_helpers.h&lt;/a&gt;
+（libbpf 提供的内核侧”库“）提供了。&lt;/p&gt;
+
+&lt;h2 id=&quot;42-读取内核结构体字段&quot;&gt;4.2 读取内核结构体字段&lt;/h2&gt;
+
+&lt;p&gt;最常见和最典型的场景就是从某些内核结构体中读取一个字段。&lt;/p&gt;
+
+&lt;h3 id=&quot;421-例子读取-task_struct-pid-字段&quot;&gt;4.2.1 例子：读取 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;task_struct-&amp;gt;pid&lt;/code&gt; 字段&lt;/h3&gt;
+
+&lt;p&gt;假设我们想&lt;strong&gt;读取 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;task_struct&lt;/code&gt; 中的 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pid&lt;/code&gt; 字段&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;h4 id=&quot;方式一bcc可移植&quot;&gt;方式一：BCC（可移植）&lt;/h4&gt;
+
+&lt;p&gt;用 BCC 实现，代码很简单：&lt;/p&gt;
+
+
+
+&lt;p&gt;BCC 有强大的&lt;mark&gt;代码重写（rewrite）&lt;/mark&gt;能力，能自动将以上代码&lt;strong&gt;&lt;mark&gt;转换成一次 bpf_probe_read() 调用&lt;/mark&gt;&lt;/strong&gt;
+（但&lt;strong&gt;有时重写之后的代码并不能正确&lt;/strong&gt;，具体取决于表达式的复杂程度）。&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;libbpf&lt;/code&gt; 没有 BCC 的代码重写魔法（code-rewriting magic），但提供了几种其他方式来
+实现同样的目的。&lt;/p&gt;
+
+&lt;h4 id=&quot;方式二libbpf--bpf_prog_type_tracing不可移植&quot;&gt;方式二：&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;libbpf&lt;/code&gt; + &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BPF_PROG_TYPE_TRACING&lt;/code&gt;（不可移植）&lt;/h4&gt;
+
+&lt;p&gt;如果使用的是最近新加的 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BTF_PROG_TYPE_TRACING&lt;/code&gt; 类型 BPF 程序，那校验器已经足够智
+能了，能&lt;mark&gt;原生地理解和记录 BTF 类型、跟踪指针，直接（安全地）读取内核内存
+&lt;/mark&gt;，&lt;/p&gt;
+
+
+
+&lt;p&gt;从而&lt;strong&gt;避免了调用 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bpf_probe_read()&lt;/code&gt;&lt;/strong&gt;，格式和语法更为自然，而且&lt;strong&gt;&lt;mark&gt;无需编译器重写&lt;/mark&gt;&lt;/strong&gt;（rewrite）。
+但此时，这段代码还不是可移植的。&lt;/p&gt;
+
+&lt;h4 id=&quot;方式三bpf_prog_type_tracing--co-re可移植&quot;&gt;方式三：&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BPF_PROG_TYPE_TRACING&lt;/code&gt; + CO-RE（可移植）&lt;/h4&gt;
+
+&lt;p&gt;要将以上 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BPF_PROG_TYPE_TRACING&lt;/code&gt; 代码其变成可移植的，只需将待访问字段 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;task-&amp;gt;pid&lt;/code&gt;
+放到编译器内置的一个名为
+&lt;mark&gt;&lt;code&gt;__builtin_preserve_access_index()&lt;/code&gt;&lt;/mark&gt; 的宏中：&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;n&quot;&gt;pid_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pid&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;__builtin_preserve_access_index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(({&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;task&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}));&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;这就是全部工作了：这样的程序&lt;mark&gt;在不同内核版本之间是可移植的&lt;/mark&gt;。&lt;/p&gt;
+
+&lt;h4 id=&quot;方式四libbpf--co-re-bpf_core_read可移植&quot;&gt;方式四：libbpf + CO-RE &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bpf_core_read()&lt;/code&gt;（可移植）&lt;/h4&gt;
+
+&lt;p&gt;如果使用的内核版本还没支持 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BPF_PROG_TYPE_TRACING&lt;/code&gt;，就必须显式地使用 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bpf_probe_read()&lt;/code&gt;
+来读取字段。&lt;/p&gt;
+
+&lt;p&gt;Non-CO-RE libbpf 方式：&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;n&quot;&gt;pid_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;bpf_probe_read&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;sizeof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;task&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;有了 CO-RE+libbpf，我们有&lt;mark&gt;两种方式实现这个目的&lt;/mark&gt;。&lt;/p&gt;
+
+&lt;p&gt;第一种，直接将 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bpf_probe_read()&lt;/code&gt; 替换成 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bpf_core_read()&lt;/code&gt;：&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;n&quot;&gt;pid_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;bpf_core_read&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;sizeof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;task&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bpf_core_read()&lt;/code&gt; 是一个很简单的宏，直接展开成以下形式：&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;n&quot;&gt;bpf_probe_read&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;sizeof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;__builtin_preserve_access_index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;task&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;可以看到，第三个参数（&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;amp;task-&amp;gt;pid&lt;/code&gt;）放到了前面已经介绍过的编译器 built-int 中，
+这样 clang 就能记录该字段的重定位信息，实现可移植。&lt;/p&gt;
+
+&lt;p&gt;第二种方式是使用 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BPF_CORE_READ()&lt;/code&gt; 宏，我们通过下面的例子来看。&lt;/p&gt;
+
+&lt;h3 id=&quot;422-例子读取-task-mm-exe_file-f_inode-i_ino-字段&quot;&gt;4.2.2 例子：读取 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;task-&amp;gt;mm-&amp;gt;exe_file-&amp;gt;f_inode-&amp;gt;i_ino&lt;/code&gt; 字段&lt;/h3&gt;
+
+&lt;p&gt;这个字段表示的是当前进程的可执行文件的 inode。
+来看一下访问嵌套层次如此深的结构体字段时，面临哪些问题。&lt;/p&gt;
+
+&lt;h4 id=&quot;方式一bcc可移植-1&quot;&gt;方式一：BCC（可移植）&lt;/h4&gt;
+
+&lt;p&gt;用 BCC 实现的话可能是下面这样：&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;n&quot;&gt;u64&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;inode&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;task&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mm&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;exe_file&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;f_inode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i_ino&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;BCC 会对这个表达式进行重写（rewrite），&lt;mark&gt;转换成 4 次 bpf_probe_read()/bpf_core_read() 调用&lt;/mark&gt;，
+并且每个中间指针都需要一个&lt;mark&gt;额外的临时变量&lt;/mark&gt;来存储。&lt;/p&gt;
+
+&lt;h4 id=&quot;方式二bpf-co-re可移植&quot;&gt;方式二：BPF CO-RE（可移植）&lt;/h4&gt;
+
+&lt;p&gt;下面是 BPF CO-RE 的方式，仍然很简洁，但无需 BCC 的代码重写（code-rewriting magic）：&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;n&quot;&gt;u64&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;inode&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;BPF_CORE_READ&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;exe_file&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;f_inode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i_ino&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;另外一个变种是：&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;n&quot;&gt;u64&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;inode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;BPF_CORE_READ_INTO&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;inode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;exe_file&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;f_inode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i_ino&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;423-其他与字段读取相关的-co-re-宏&quot;&gt;4.2.3 其他与字段读取相关的 CO-RE 宏&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bpf_core_read_str()&lt;/code&gt;：可以直接替换 Non-CO-RE 的 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bpf_probe_read_str()&lt;/code&gt;。&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BPF_CORE_READ_STR_INTO()&lt;/code&gt;：与 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BPF_CORE_READ_INTO()&lt;/code&gt; 类似，但会对最后一个字段执行 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bpf_probe_read_str()&lt;/code&gt;。&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bpf_core_field_exists()&lt;/code&gt;：判断字段是否存在，&lt;/p&gt;
+
+    &lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;      &lt;span class=&quot;n&quot;&gt;pid_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pid&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bpf_core_field_exists&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;task&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;BPF_CORE_READ&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bpf_core_field_size()&lt;/code&gt;：判断字段大小，同一字段在不同版本的内核中大小可能会发生变化，&lt;/p&gt;
+
+    &lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;      &lt;span class=&quot;n&quot;&gt;u32&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;comm_sz&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bpf_core_field_size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;task&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;comm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;cm&quot;&gt;/* will set comm_sz to 16 */&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BPF_CORE_READ_BITFIELD()&lt;/code&gt;：通过&lt;strong&gt;直接内存读取&lt;/strong&gt;（direct memory read）方式，读取比特位字段&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BPF_CORE_READ_BITFIELD_PROBED()&lt;/code&gt;：底层会调用 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bpf_probe_read()&lt;/code&gt;&lt;/p&gt;
+
+    &lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  &lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tcp_sock&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...;&lt;/span&gt;
+    
+  &lt;span class=&quot;cm&quot;&gt;/* with direct reads */&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;is_cwnd_limited&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;BPF_CORE_READ_BITFIELD&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;is_cwnd_limited&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    
+  &lt;span class=&quot;cm&quot;&gt;/* with bpf_probe_read()-based reads */&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;u64&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;is_cwnd_limited&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;BPF_CORE_READ_BITFIELD_PROBED&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;is_cwnd_limited&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;is_cwnd_limited&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;43-处理内核版本和配置差异&quot;&gt;4.3 处理内核版本和配置差异&lt;/h2&gt;
+
+&lt;p&gt;某些情况下，BPF 程序必须处理不同内核版本之间&lt;strong&gt;常用内核结构体的非细微差异&lt;/strong&gt;。例如，&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;字段&lt;mark&gt;被重命名了&lt;/mark&gt;：对依赖这个字段的调用方来说，这其实变成了一个新字段（但语义没变）。&lt;/li&gt;
+  &lt;li&gt;字段名字没变，但&lt;mark&gt;表示的意思变了&lt;/mark&gt;：例如，从 4.6 之后的某个内核版本开始，
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;task_struct&lt;/code&gt; 的 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;utime&lt;/code&gt; 和 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;stime&lt;/code&gt; 字段，原来单位是 jiffies，现在变成了 nanoseconds，因此
+调用方必须自己转换单位。&lt;/li&gt;
+  &lt;li&gt;需要从内核提取的某些数据是&lt;strong&gt;与内核配置有直接关系&lt;/strong&gt;，某些内核在编译时并&lt;mark&gt;没有将相关代码编译进来&lt;/mark&gt;。&lt;/li&gt;
+  &lt;li&gt;其他一些无法用单个、通用的类型定义来适用于所有内核版本的场景。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;对于这些场景，BPF CO-RE 提供了两种互补的解决方式；&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;libbpf 提供的 &lt;mark&gt;extern Kconfig 变量&lt;/mark&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;mark&gt;struct flavors&lt;/mark&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;libbpf-提供的-externs-kconfig-全局变量&quot;&gt;libbpf 提供的 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;externs&lt;/code&gt; Kconfig 全局变量&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;系统中已经有一些”知名的“变量，例如 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;LINUX_KERNEL_VERSION&lt;/code&gt;，表示当前内核的版本。
+BPF 程序能&lt;mark&gt;用 extern 关键字声明这些变量&lt;/mark&gt;。&lt;/li&gt;
+  &lt;li&gt;另外，BPF 还能用 extern 的方式声明 &lt;mark&gt;Kconfig 的某些 key 的名字&lt;/mark&gt;（例如
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;CONFIG_HZ&lt;/code&gt;，表示内核的 HZ 数）。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;接下来的事情交给 libbpf，它会将这些变量&lt;mark&gt;分别匹配到系统中相应的值&lt;/mark&gt;（都是常量），
+并保证这些 extern 变量&lt;mark&gt;与全局变量的效果是一样的&lt;/mark&gt;。&lt;/p&gt;
+
+&lt;p&gt;此外，由于这些 extern ”变量“都是常量，因此 &lt;strong&gt;BPF 校验器&lt;/strong&gt;能用它们来做一些
+&lt;mark&gt;高级控制流分析和死代码消除&lt;/mark&gt;。&lt;/p&gt;
+
+&lt;p&gt;下面是个例子，如何用 BPF CO-RE 来提取线程的 CPU user time：&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;k&quot;&gt;extern&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;u32&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;LINUX_KERNEL_VERSION&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;__kconfig&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;extern&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;u32&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CONFIG_HZ&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;__kconfig&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    
+    &lt;span class=&quot;n&quot;&gt;u64&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;utime_ns&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;LINUX_KERNEL_VERSION&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;KERNEL_VERSION&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;11&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;utime_ns&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;BPF_CORE_READ&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;utime&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
+        &lt;span class=&quot;cm&quot;&gt;/* convert jiffies to nanoseconds */&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;utime_ns&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;BPF_CORE_READ&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;utime&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1000000000UL&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CONFIG_HZ&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;struct-flavors&quot;&gt;struct flavors&lt;/h3&gt;
+
+&lt;p&gt;有些场景中，&lt;strong&gt;不同版本的内核中有不兼容的类型&lt;/strong&gt;，无法用单个通用结构体来为所有内核
+编译同一个 BPF 程序。struct flavor 在这种情况下可以派上用场。&lt;/p&gt;
+
+&lt;p&gt;下面是一个例子，提取 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;fs&lt;/code&gt;/&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;fsbase&lt;/code&gt;（前面提到过，字段名字在内核版本升级时改了）来
+做一些 thread-local 的数据处理：&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cm&quot;&gt;/* up-to-date thread_struct definition matching newer kernels */&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;thread_struct&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;u64&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fsbase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
+
+&lt;span class=&quot;cm&quot;&gt;/* legacy thread_struct definition for &amp;lt;= 4.6 kernels */&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;thread_struct___v46&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;   &lt;span class=&quot;cm&quot;&gt;/* ___v46 is a &quot;flavor&quot; part */&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;u64&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;extern&lt;/span&gt;
+&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;LINUX_KERNEL_VERSION&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;__kconfig&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;thread_struct&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;thr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...;&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;u64&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fsbase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;LINUX_KERNEL_VERSION&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;KERNEL_VERSION&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;6&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;fsbase&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;BPF_CORE_READ&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;thread_struct___v46&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;thr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;fsbase&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;BPF_CORE_READ&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;thr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fsbase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;在这个例子中，对于 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;lt;=4.6&lt;/code&gt; 的内核，我们将原来的 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;thread_struct&lt;/code&gt; 定义为了 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;struct thread_struct___v46&lt;/code&gt;。
+&lt;mark&gt;双下划线及其之后的部分&lt;/mark&gt;，即 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;___v46&lt;/code&gt;，&lt;strong&gt;&lt;mark&gt;称为这个 struct 的 “flavor”&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;&lt;mark&gt;flavor 部分会被 libbpf 忽略&lt;/mark&gt;，这意味着&lt;strong&gt;在目标机器上执行字段重定位时，
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;struct thread_struct__v46&lt;/code&gt; 匹配的仍然是真正的 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;struct thread_struct&lt;/code&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;这种方式使得我们能在单个 C 程序内，为同一个内核类型定义不同的（而且是不兼容的）
+类型，然后在运行时（runtime）取出最合适的一个，这就是用
+&lt;mark&gt;type cast to a struct flavor&lt;/mark&gt; 来提取字段的方式。&lt;/p&gt;
+
+&lt;p&gt;没有 struct flavor 的话，就无法真正实现像上面那样“编译一次”，然后就能在不同内核
+上都能运行的 BPF 程序 —— 而只能用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#ifdef&lt;/code&gt; 来控制源代码，编译成两个独立的 BPF
+程序变种，在运行时（runtime）由控制应用根据所在机器的内核版本选择其中某个变种。
+所有这些都添加了不必要的复杂性和痛苦。
+相比之下，&lt;strong&gt;以上 BPF CO-RE 方式虽然不是透明的&lt;/strong&gt;（上面的代码中也包含了内核
+版本相关的逻辑），但允许用熟悉的 C 代码结构解决即便是这样的高级场景的问题。&lt;/p&gt;
+
+&lt;h2 id=&quot;44-根据用户提供的配置修改程序行为&quot;&gt;4.4 根据用户提供的配置修改程序行为&lt;/h2&gt;
+
+&lt;p&gt;BPF 程序&lt;strong&gt;知道内核版本和配置信息&lt;/strong&gt;，有时还不足以判断如何 —— 以及以何种方式 —— 从该版本的内核获取数据。
+在这些场景中，&lt;mark&gt;用户空间控制应用&lt;/mark&gt;（control application）可能是唯一知道
+究竟需要做哪些事情，以及需要启用或禁用哪些特性的主体。
+这通常是&lt;strong&gt;在用户空间和 BPF 程序之间&lt;/strong&gt;&lt;mark&gt;通过某种形式的配置数据来通信&lt;/mark&gt;的。&lt;/p&gt;
+
+&lt;h3 id=&quot;bpf-map-方式&quot;&gt;BPF map 方式&lt;/h3&gt;
+
+&lt;p&gt;要实现这种目的，一种不依赖 BPF CO-RE 的方式是：&lt;mark&gt;将 BPF map 作为一个存储配置
+数据的地方&lt;/mark&gt;。BPF 程序&lt;strong&gt;从 map 中提取配置信息，然后基于这些信息改变它的控制流&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;但这种方式有几个主要的缺点：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;BPF 程序每次执行 &lt;mark&gt;map 查询操作，都需要运行时开销&lt;/mark&gt;（runtime overhead）。&lt;/p&gt;
+
+    &lt;p&gt;多次查询累积起来，开销就会比较比较明显，尤其在一些高性能 BPF 应用的场景。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;mark&gt;配置内容&lt;/mark&gt;（config value），虽然在 &lt;strong&gt;BPF 程序启动之后就是不可变和只读&lt;/strong&gt;
+  （immutable and read-only）的了，但 &lt;mark&gt;BPF 校验器在校验时扔把它们当作未知的黑盒值&lt;/mark&gt;。&lt;/p&gt;
+
+    &lt;p&gt;这意味着校验器&lt;mark&gt;无法消除死代码，也无法执行其他高级代码分析&lt;/mark&gt;。进一步，
+ 这意味着我们无法将代码逻辑放到 map 中，例如，能处理不同内核版本差异的 BPF 代
+ 码，因为 map 中的内容对校验器都是黑盒，因此校验器对它们是不信任的 ——
+ 即使用户配置信息是安全的。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;只读的全局数据方式&quot;&gt;只读的全局数据方式&lt;/h3&gt;
+
+&lt;p&gt;这种（确实复杂的）场景的&lt;mark&gt;解决方案：使用只读的全局数据&lt;/mark&gt;（read-only global data）。
+这些数据是在 &lt;strong&gt;BPF 程序加载到内核之前，由控制应用设置&lt;/strong&gt;的。&lt;/p&gt;
+
+
+
+&lt;p&gt;因此，针对上面那个例子，&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;某些老内核的 BPF 校验器就能推断出，例如，代码中某个未知的 BPF helper 不可能会用到，接下来就可以将相关代码直接移除。&lt;/li&gt;
+  &lt;li&gt;而对于新内核来说，应用提供的配置（application-provided configuration）会所有不
+同，因此 BPF 程序就能用到功能更强大的 BPF helper，而且这个逻辑能成功通过 BPF 校验器的验证。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;下面的 BPF 代码例子展示了这种用法：&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cm&quot;&gt;/* global read-only variables, set up by control app */&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;use_fancy_helper&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;u32&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fallback_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;u32&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;use_fancy_helper&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bpf_fancy_helper&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ctx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bpf_default_helper&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ctx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fallback_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;从用户空间方面，通过 BPF skeleton 可以很方便地做这种配置。BPF skeleton 的讨论不在
+本文讨论范围内，使用它来简化 BPF 应用的例子，可参考内核源码中的
+&lt;a href=&quot;https://github.com/torvalds/linux/tree/master/tools/bpf/runqslower&quot;&gt;runqslower tool&lt;/a&gt;。&lt;/p&gt;
+
+&lt;h1 id=&quot;5-总结&quot;&gt;5 总结&lt;/h1&gt;
+
+&lt;p&gt;BPF CO-RE 的目标是：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;作为一种&lt;strong&gt;&lt;mark&gt;简单的方式&lt;/mark&gt;&lt;/strong&gt;帮助 BPF 开发者解决&lt;strong&gt;&lt;mark&gt;简单的移植性问题&lt;/mark&gt;&lt;/strong&gt;（例如读取结构体的字段），并且&lt;/li&gt;
+  &lt;li&gt;作为一种&lt;strong&gt;&lt;mark&gt;仍然可行（不是最优，但可容忍）的方式&lt;/mark&gt;&lt;/strong&gt;
+解决&lt;strong&gt;&lt;mark&gt;复杂的移植性问题&lt;/mark&gt;&lt;/strong&gt;（例如不兼容的数据结构改动、复杂的用户空间控制条件等）。&lt;/li&gt;
+  &lt;li&gt;使得开发者能遵循”一次编译、到处运行“（Compile Once – Run Everywhere）范式。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;这是通过几个 BPF CO-RE 模块的组合实现的：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vmlinux.h&lt;/code&gt; &lt;mark&gt;消除了对内核头文件的依赖&lt;/mark&gt;；&lt;/li&gt;
+  &lt;li&gt;&lt;mark&gt;字段重定位信息&lt;/mark&gt;（字段偏置、字段是否存在、字段大小等等）使得&lt;mark&gt;从内核提取数据这个过程变得可移植&lt;/mark&gt;；&lt;/li&gt;
+  &lt;li&gt;libbpf 提供的 &lt;mark&gt;Kconfig extern 变量&lt;/mark&gt;允许 BPF 程序适应不同的内核版本 —— 以及配置相关的差异；&lt;/li&gt;
+  &lt;li&gt;当其他方式都失效时，应用提供的&lt;mark&gt;只读配置和 struct flavor 最终救场&lt;/mark&gt;，能解决
+任何需要复杂处理的场景。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;strong&gt;要成功地编写、部署和维护可移植 BPF 程序，并不是必须用到所有这些 CO-RE 特性&lt;/strong&gt;。
+只需选择若干，用最简单的方式解决你的问题。&lt;/p&gt;
+
+&lt;p&gt;BPF CO-RE 使我们回到了熟悉、自然的工作流程：将 BPF C 源码编译成二进制，然后将
+二进制文件分发到目标机器进行部署和运行 —— 
+无需再随着应用一起分发重量级的编译器库、无需消耗宝贵的运行时资源做运行时编
+译（runtime compilation），也无需等到运行之前才能捕捉一些细微的编译时错误（
+compilation errors in runtime）了。&lt;/p&gt;
+
+&lt;h1 id=&quot;参考资料&quot;&gt;参考资料&lt;/h1&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;BPF CO-RE presentation from LSF/MM2019 conference: &lt;a href=&quot;http://vger.kernel.org/bpfconf2019.html#session-2&quot;&gt;summary&lt;/a&gt;, &lt;a href=&quot;http://vger.kernel.org/bpfconf2019_talks/bpf-core.pdf&quot;&gt;slides&lt;/a&gt;.&lt;/li&gt;
+  &lt;li&gt;Arnaldo Carvalho de Melo’s presentation &lt;a href=&quot;http://vger.kernel.org/~acme/bpf/devconf.cz-2020-BPF-The-Status-of-BTF-producers-consumers/#/29&quot;&gt;“BPF: The Status of BTF”&lt;/a&gt; dives deep into BPF CO-RE and dissects the runqslower tool quite nicely.&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://facebookmicrosites.github.io/bpf/blog/2018/11/14/btf-enhancement.html&quot;&gt;BTF deduplication algorithm&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+
+  
+  
 &lt;/div&gt;
-  &lt;/div&gt;&lt;/div&gt;</content:encoded>
+
+
+          
+
+      &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>425cd80fde4b41a4625c13a067ce405d</guid>
-<title>如何优雅的让 3 个线程打印 ABC</title>
-<link>https://toutiao.io/k/j2jmmcf</link>
+<guid>f04b761da550201e3aa4c5e747c9ef02</guid>
+<title>欧洲最大云厂商遇火灾，数据安全任重道远</title>
+<link>https://toutiao.io/k/ksej3if</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
                     
 
                     
                     
                     
-                    &lt;p&gt;&lt;span&gt;戳蓝字「TopCoder&lt;/span&gt;&lt;span&gt;」关注我们哦！&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;383&quot; data-backw=&quot;575&quot; data-croporisrc=&quot;https://mp.weixin.qq.com/cgi-bin/photogalleryproxy?action=proxy&amp;amp;url=https%3A%2F%2Fpixabay.com%2Fget%2Fgc0a1ba950ed6ebdcd2e4dbccb7ae8ca0ca167841a1af3b858d40c7363c7586317c571f2b23b8aeff7a9ec5e51cfa4f57719bc7d1d872ff91e0dc708682514d6e_1280.jpg%3Fpermalink&amp;amp;supplier=4&amp;amp;from_public_pic=1&quot; data-cropx1=&quot;0&quot; data-cropx2=&quot;1280&quot; data-cropy1=&quot;80.13913043478261&quot; data-cropy2=&quot;796.9391304347827&quot; data-ratio=&quot;0.56015625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/jOD3PUUxTibMaJCZDvsBobLRNj8RjfDiblEAVuPzrXiaSNCXgV3vDT157mx5t2ZDywDlBQnTcBbl7AeyooSSWmOAA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;span/&gt;&lt;/p&gt;&lt;section&gt;&lt;p&gt;让3个线程依次打印ABC，是一个常见的问题，这是阿里和华为都有考过的面试题。比如题目描述如下：&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;编写一个程序，开启三个线程，这三个线程按照顺序依次打印ABC，每个字母打印10次后结束，最后结果如 ABCABCABC… 依次递推&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;这是一道经典的多线程编程面试题，首先吐槽一下，这道题的需求很是奇葩，先开启多线程，然后再串行打印 ABC，这不是吃饱了撑的吗？不过既然是道面试题，就不管这些了，其目的在于考察多线程编程基础。&lt;/p&gt;&lt;p&gt;这个题目肯定是要启动3个线程的，那怎么让这3个线程“协作”按顺序打印A、B、C呢？从大的方面来讲，这种&lt;strong&gt;“协作”&lt;/strong&gt;可分为以下两种：&lt;/p&gt;&lt;h3&gt;&lt;span&gt;竞争型打印&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;多个线程竞争型打印，优势是代码简单易懂，劣势是线程争抢是CPU调度进行的，可能该某个线程打印时结果该线程迟迟未被CPU调度，结果其他线程被CPU调度到但是由于不能执行打印操作而继续争抢，造成CPU性能浪费。示例代码如下：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;@AllArgsConstructor&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;DemoTask&lt;/span&gt; &lt;span&gt;implements&lt;/span&gt; &lt;span&gt;Runnable&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;// 这里将lock对象换成 Lock(ReentrantLock) 进行lock/unlock也是可以的&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;final&lt;/span&gt; Object lock = &lt;span&gt;new&lt;/span&gt; Object();&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;final&lt;/span&gt; &lt;span&gt;int&lt;/span&gt; MAX = &lt;span&gt;30&lt;/span&gt;;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;int&lt;/span&gt; current = &lt;span&gt;0&lt;/span&gt;;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; &lt;span&gt;int&lt;/span&gt; index;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Override&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;run&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;while&lt;/span&gt; (current &amp;lt; MAX) {&lt;br/&gt;            &lt;span&gt;synchronized&lt;/span&gt; (lock) {&lt;br/&gt;                &lt;span&gt;if&lt;/span&gt; ((current &amp;lt; MAX) &amp;amp;&amp;amp; (current % &lt;span&gt;3&lt;/span&gt; == index)) {&lt;br/&gt;                    System.out.println((&lt;span&gt;char&lt;/span&gt;) (&lt;span&gt;&#x27;A&#x27;&lt;/span&gt; + current % &lt;span&gt;3&lt;/span&gt;));&lt;br/&gt;                    current++;&lt;br/&gt;                }&lt;br/&gt;            }&lt;br/&gt;        }&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;(String[] args)&lt;/span&gt; &lt;span&gt;throws&lt;/span&gt; Exception &lt;/span&gt;{&lt;br/&gt;        List&amp;lt;Thread&amp;gt; threadList = Arrays.asList(&lt;br/&gt;                &lt;span&gt;new&lt;/span&gt; Thread(&lt;span&gt;new&lt;/span&gt; DemoTask(&lt;span&gt;0&lt;/span&gt;)),&lt;br/&gt;                &lt;span&gt;new&lt;/span&gt; Thread(&lt;span&gt;new&lt;/span&gt; DemoTask(&lt;span&gt;1&lt;/span&gt;)),&lt;br/&gt;                &lt;span&gt;new&lt;/span&gt; Thread(&lt;span&gt;new&lt;/span&gt; DemoTask(&lt;span&gt;2&lt;/span&gt;))&lt;br/&gt;        );&lt;br/&gt;&lt;br/&gt;        threadList.forEach(Thread::start);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3&gt;&lt;span&gt;协同型打印&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;多个线程协同型打印，优势是各个线程使用“通知”机制进行协同分工，理论上执行效率较高，不过要使用对应的“通知”机制。关于如何“通知”，第一种是可使用Java对象的 &lt;code&gt;wait/notify&lt;/code&gt; 或者&lt;code&gt;Conditon&lt;/code&gt;对象的&lt;code&gt;await/signal&lt;/code&gt;，第二种是以事件或者提交任务的方式（比如通过提交“待打印数字”这个任务给下一个线程）。&lt;/p&gt;&lt;p&gt;第一种方式网上对应的示例代码很多，就不在赘述。下面以第二种方式进行代码分析，打印完成之后，将待打印的数据塞给下一个线程，这样下一个线程就可以打印了，代码如下：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;(String[] args)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    ThreadTask t1 = &lt;span&gt;new&lt;/span&gt; ThreadTask();&lt;br/&gt;    ThreadTask t2 = &lt;span&gt;new&lt;/span&gt; ThreadTask();&lt;br/&gt;    ThreadTask t3 = &lt;span&gt;new&lt;/span&gt; ThreadTask();&lt;br/&gt;&lt;br/&gt;    t1.next = t2;&lt;br/&gt;    t2.next = t3;&lt;br/&gt;    t3.next = t1;&lt;br/&gt;&lt;br/&gt;    t1.start();&lt;br/&gt;    t2.start();&lt;br/&gt;    t3.start();&lt;br/&gt;&lt;br/&gt;    t1.queue.add(&lt;span&gt;0&lt;/span&gt;);&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;ThreadTask&lt;/span&gt; &lt;span&gt;extends&lt;/span&gt; &lt;span&gt;Thread&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;final&lt;/span&gt; Integer END = &lt;span&gt;30&lt;/span&gt;;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Getter&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; BlockingQueue&amp;lt;Integer&amp;gt; queue = &lt;span&gt;new&lt;/span&gt; LinkedBlockingQueue&amp;lt;&amp;gt;();&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; ThreadTask next;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@SneakyThrows&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;@Override&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;run&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;while&lt;/span&gt; (&lt;span&gt;true&lt;/span&gt;) {&lt;br/&gt;            Integer take = queue.take();&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; (take &amp;gt;= END) {&lt;br/&gt;                &lt;span&gt;break&lt;/span&gt;;&lt;br/&gt;            }&lt;br/&gt;&lt;br/&gt;            System.out.println((&lt;span&gt;char&lt;/span&gt;) (&lt;span&gt;&#x27;A&#x27;&lt;/span&gt; + take % &lt;span&gt;3&lt;/span&gt;));&lt;br/&gt;            next.queue.put(take + &lt;span&gt;1&lt;/span&gt;);&lt;br/&gt;        }&lt;br/&gt;&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; (next.isAlive()) {&lt;br/&gt;            next.queue.put(END);&lt;br/&gt;        }&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;代码中使用&lt;code&gt;BlockingQueue&lt;/code&gt;队列，避免了 &lt;code&gt;wait/notify&lt;/code&gt; 或者&lt;code&gt; await/signal&lt;/code&gt;，也能达到通知机制。注意，Java的阻塞队列是一个支持阻塞插入和移除方法的队列，阻塞队列常用于生产者和消费者场景，生产者是向队列中添加元素的线程，消费者是从队列中获取数据的线程。&lt;/p&gt;&lt;p&gt;阻塞队列主要包括两部分内容：&lt;strong&gt;一个是存放数据的容器，另一个就是线程的管理（阻塞/唤醒），前者可以基于Array或者LinkedList数据结构，后者借助于Lock/Condition来实现&lt;/strong&gt;，也就是使用通知模式来实现的，具体可查看Lock/Condition资料。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-style-type=&quot;2&quot; data-tools=&quot;新媒体排版&quot; data-id=&quot;8633&quot;&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;&lt;em&gt;&lt;strong&gt; 推荐阅读 &lt;/strong&gt;&lt;/em&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;
+                    &lt;blockquote&gt;&lt;p&gt;&lt;span&gt;3月10日欧洲最大云计算厂商OVH位于斯特拉斯堡的数据中心，发生历史上史无前例的灾难性事件，整个数据中心被大伙烧毁。3月11日至今仍在努力恢复中。影响包括火爆全球的视频游戏制作公司Rust、Deribit、英法波政府平台等在内的360万个网站。在云迅猛发展的今天，我们该如何应对不确定性带来的业务不可持续和数据安全灾难呢？&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;01 OVHClou&lt;/span&gt;&lt;/strong&gt;&lt;strong&gt;&lt;span&gt;d火灾事&lt;/span&gt;&lt;/strong&gt;&lt;strong&gt;&lt;span&gt;回顾&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;3月10日 周三深夜，OVHcloud位于斯特拉斯堡的SBG2数据中心被大伙烧毁，同时SBG1数据中心也部分受损，SBG3和SBG4数据中心因受消防保护，被迫停服。360万个站点处于离线状态。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;3月11日 火灾造成的破坏程度超过了想象，OVHcloud宣布下周在重新开放斯特拉斯堡的数据中心，同时将Roubaix和Gravelines数据中心的服务器交付给受影响的客户用于恢复。未来几周内，将10000新服务器用于重建斯特拉斯堡数据中心。根据Gartner分析师分析，推测此次火灾是由于UPS故障导致的。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;3月12日 保护和清理现场，为火灾中幸存的SBG1 SBG3 SBG4三个数据中心重新恢复电力和网络。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Jmj2LkhPUr6nqyTqvJFZYIJoeOlbibB7G7dRdqSZ269NjTY2dz7EJiamcgibxT49qX1cNH4S3s13NNeoGv2AvLJOw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-ratio=&quot;1.4408060453400504&quot; data-w=&quot;397&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;02 分析与推测&lt;/span&gt;&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;按照数据中心建设与运营的标准，每个设施内部都应该配置相应的消防系统，包括自动报警设备等，但此次火灾居然烧掉了整个SBG2数据中心，是否在机房消防维护及消防应急演练存在不足呢？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;日常运维工作是否存在不规范的现象？发生火灾时，值班员工做什么？（至少从OVHcloud反馈看，没有看到行动项）&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;不同AZ之间如果有较好的灾备能力，是否至少保障数据不丢失，也可以帮助用户在较短时间内恢复业务?&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;span&gt;03 灾备与业务连续性&lt;/span&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;定义&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;我们先看两个定义，灾难恢复(DR)与业务连续性(BCM):&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;对于各行各业而言，用户数据、系统数据均是企业最核心、最重要的财富，业务的稳定运行、IT系统功能正常是企业最重要的发展诉求。而这些诉求常常因为一些不可预期不可力抗“天灾人祸”变得十分困难，例如自然灾害、物理损坏、逻辑错误还是人为故障等都会导致不可用、功能异常甚至完全中断或数据丢失。我们该如何应对呢？答案就是&lt;strong&gt;DRP和BCP，永远要有PLAN B&lt;/strong&gt;。&lt;/span&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;关键技术指标&lt;/span&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;进行灾备解决方案设计时，需关注灾备的两个关键技术指标：&lt;/span&gt;&lt;/h2&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;RTO&lt;/span&gt;：RecoveryTime Object，恢复时间目标。指灾难发生后，从IT系统宕机导致业务停顿之刻开始，到IT系统恢复至可以支持各部门运作，业务恢复运营之时，此两点之间的时间段称为RTO。RTO是反映业务恢复及时性的指标，体现了企业能容忍的IT系统最长恢复时间。RTO值越小，代表容灾系统的恢复能力越强，但企业投资也越高。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;RPO&lt;/span&gt;：Recovery Point Object，恢复点目标。指灾难发生后，容灾系统进行数据恢复，恢复得来的数据所对应的时间点称为RPO。RPO是反映数据丢失量的指标，体现了企业能容忍的最大数据丢失量的指标。RPO值越小，代表企业数据丢失越少，企业损失越小。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;灾备等级&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.38046875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Jmj2LkhPUr6nqyTqvJFZYIJoeOlbibB7GDGFWsrtkI8Dpia9iaTsWMGbQmcPpSLiaGgPNnMDsNUib1IicjCnE0rHkfUA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;《中华人民共和国国家标准 GB/T 20988-2007 信息安全技术信息系统灾难恢复规范》&lt;/span&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;灾备要领&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;灾备方案的核心就是围绕平衡RTO和RPO的要求，找到最佳的总体投入(TCO)和投资回报(ROI):&lt;/span&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;做好数据异机备份[全备/增量](首要考虑的)&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;定义服务与业务SLA及容忍度&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p&gt;&lt;span&gt;解决单点故障，服务本身容错&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p&gt;&lt;span&gt;同朵云同Region内不同AZ多可用区容错(同城冷/热)&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p&gt;数据不同Region间备份&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p&gt;同朵云不同Region之间容错(异地冷/热)&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p&gt;多云之间数据备份(冷)&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p&gt;多云之间容错(冷/热，成本较高)&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p&gt;计划性验证数据备份有效及灾难恢复演练&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p&gt;人员重要岗位备份&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;最后，灾备恢复千万条，&lt;/strong&gt;&lt;span&gt;&lt;strong&gt;数据备份第一条&lt;/strong&gt;&lt;/span&gt;&lt;strong&gt;!&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;br/&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section data-role=&quot;outer&quot; label=&quot;Powered by 135editor.com&quot;&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;93040&quot;&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;85956&quot;&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;长按二维码加群一起聊聊~&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;img data-ratio=&quot;1&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/Jmj2LkhPUr6LEqwB0nz4zXsZylfgHu8HFCkDiaKELp0uoGcQCA69Q1OvviaQTppkRSXHELND6j2MBdCW5pGD5Gicg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;258&quot;/&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section data-role=&quot;outer&quot; label=&quot;Powered by 135editor.com&quot;&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;93040&quot;&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;85956&quot;&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;长按二维码关注公众号&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;img data-ratio=&quot;0.5555555555555556&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/Jmj2LkhPUr6h3CrSreKn5SViatk7B0AL5liayVdRYmSxBdcfYd82p9BSK5DIKfJoTeyA8lE0hoOIibn3Hd1YFcGXQ/640?wx_fmt=gif&quot; data-type=&quot;gif&quot; data-w=&quot;900&quot;/&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;*本公众号所发布内容仅代表作者观点，不代表社区立场&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;
+                &lt;/div&gt;
+
+                
+
+                
+
+
+
+                
+                &lt;div class=&quot;reward_qrcode_area reward_area tc&quot; id=&quot;js_reward_qrcode&quot;&gt;
+                                &lt;p class=&quot;tips_global&quot;&gt;Long-press QR code to transfer me a reward&lt;/p&gt;
+                                                                &lt;p class=&quot;reward_tips&quot;/&gt;
+                                &lt;span class=&quot;reward_qrcode_img_wrp&quot;&gt;&lt;img class=&quot;reward_qrcode_img&quot; id=&quot;js_reward_qrcode_img&quot;/&gt;&lt;/span&gt;
+                                &lt;p class=&quot;tips_global&quot;&gt;As required by Apple&#x27;s new policy, the Reward feature has been disabled on Weixin for iOS. You can still reward an Official Account by transferring money via QR code.&lt;/p&gt;
+                            &lt;/div&gt;
+                                                                            
+                              
+            &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>58512631540bfbf6f5e51d2cac38ed27</guid>
+<title>AI 艺术家：Pindar Van Arman</title>
+<link>https://toutiao.io/k/4z2o2ct</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
+
+                    
+                    
+                    
+                    &lt;p data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.5859375&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/hZTzZQpn4cF1C6dsXicczllNw9jdLquYTjibe8CuJm8XXt5NWcRqP0z9RcEVX5Gj6YfsYtPa1gqSw6ibR8pSyAlkg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot; data-backw=&quot;578&quot; data-backh=&quot;339&quot;/&gt;&lt;/p&gt;&lt;p line=&quot;E3ub&quot;&gt;&lt;/p&gt;&lt;p line=&quot;71qj&quot;&gt;&lt;span&gt;&lt;span&gt;Pindar Van Arman&lt;/span&gt;：&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;71qj&quot;&gt;&lt;span&gt;正如那些追随我创作的人都知道，我从事绘画创作机器人的历程已超过 15 年。我从未命名过这些机器，因为我只是将它们视为艺术工具。但今年不同于往年，其中一个机器人在创作上变得非常独立，于是我给它起了一个名字：&lt;strong&gt;artonomous&lt;/strong&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p line=&quot;hiQz&quot;&gt;&lt;span&gt;于 2005 年我编写制造了第一个机器人，这些年也有了很多喷漆机器人。成家之后，无暇绘画。出于强烈的创作需求，我想到，我可以调教带有笔刷的绘画机器，同时更换尿布并做所有新父母需要做的那些事情。&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;hiQz&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.67&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/hZTzZQpn4cF1C6dsXicczllNw9jdLquYTPg9AOCkcr7icictCiabjeI6sib3MOTYh4GOibbBiapG0pe7YpAdqw9XwnMfg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;600&quot; data-backw=&quot;578&quot; data-backh=&quot;387&quot;/&gt;&lt;/p&gt;&lt;p line=&quot;hiQz&quot;&gt;&lt;/p&gt;&lt;p line=&quot;NH3l&quot;&gt;&lt;span&gt;机器人工作了，看上去有点吓人，而且经常摔断；但当我忙于其他事情时，他们帮了忙。它们并不是由木材和自制电磁铁制成的花哨机器；它们可以用数字来绘画、并且像之前作品中的点一样能连接起来。&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;NH3l&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/hZTzZQpn4cF1C6dsXicczllNw9jdLquYTdCsNYWVO8d9JRDezoqp9HVMMYRvlP47otKlhxcJBQyYLhep3L9E15g/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1000&quot; data-backw=&quot;578&quot; data-backh=&quot;361&quot;/&gt;&lt;span/&gt;&lt;/p&gt;&lt;p line=&quot;23i8&quot;&gt;&lt;/p&gt;&lt;p line=&quot;23i8&quot;&gt;&lt;span&gt;很感激能开始画画，我可以在孩子们睡着后深夜来做创作。在接下来的五年里，我会给它们图像，它们会和我一起画，作为协作机器人。这个时期的艺术品风格如下图所示。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;1.2527272727272727&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/hZTzZQpn4cF1C6dsXicczllNw9jdLquYTruOt2TLnIPy8HOOBwuMoumh1KCIic1x5ERLLlNabQuO7yiczGjnicAzog/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;550&quot; data-backw=&quot;550&quot; data-backh=&quot;689&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p line=&quot;nvmO&quot;&gt;&lt;span&gt;但随着孩子的成长，似乎我的时间变得更少了。我仍需创作产出，所以我做了改进，不久，他们就为我完成了整幅画作。我通过教它基本的人工智能，比如 &lt;strong&gt;k 均值聚类算法来平衡调色，自定义程序来设计新颖构图&lt;/strong&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p line=&quot;zJsO&quot;&gt;&lt;span&gt;其中就有我在 &lt;strong&gt;SuperRare&lt;/strong&gt; 发行的 NFT 艺术品，非常感谢藏家们对其价值的赏识并将其推向二级市场。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.2578125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/hZTzZQpn4cF1C6dsXicczllNw9jdLquYTS2zHfPD3GngjfdHptK2YT1w0I4iaSlsT5EJYQFOfzOLGqllo5pVlibpg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot; data-backw=&quot;578&quot; data-backh=&quot;149&quot;/&gt;&lt;/p&gt;&lt;p line=&quot;E3ub&quot;&gt;&lt;/p&gt;&lt;p line=&quot;2AfH&quot;&gt;&lt;span&gt;之后有一天画笔坏掉了，机器人用出了故障的画笔完成了绘画。实际上这幅画还可以，您可以看到此肖像中的黑色效果，覆盖了些已绘制的色块。&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;2AfH&quot;&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;1.3563636363636364&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/hZTzZQpn4cF1C6dsXicczllNw9jdLquYTTf5ibEkRTvQWpI7WBtpF20y2FgSiaXvqx8Avo7o5VyMRKEfS6OHCAgSg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;550&quot; data-backw=&quot;550&quot; data-backh=&quot;746&quot;/&gt;&lt;/p&gt;&lt;p line=&quot;E3ub&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;E3ub&quot;&gt;&lt;span&gt;我忽然意识到，机器人需要更聪明。&lt;/span&gt;&lt;span&gt;除非它能看到自己正在做什么并相应地进行调整，否则它只是慢速打印机。&lt;/span&gt;&lt;span&gt;因此，2008 年左右，我添加了一个摄像头来跟踪进度，这是其最重要算法的开始。&lt;/span&gt;&lt;span&gt;我知道&lt;/span&gt;&lt;strong&gt;如今 GAN 和风格转移已成为 AI 艺术的核心，但是这一改进更为重要。&lt;/strong&gt;&lt;span&gt;一旦机器人能够查看自己的工作，反思正在发生的事情，然后进行调整以完成工作，就会开始发生一些真正了不起的事情。&lt;/span&gt;&lt;span&gt;以下是使用此方法的第一幅肖像，它不是由预先确定的说明绘制的。&lt;/span&gt;&lt;span&gt;它是通过问自己如何使画布上的创作更像其记忆中的图像；&lt;/span&gt;&lt;span&gt;它会自己添加笔触，以使绘画的呈现更贴近它的想法。&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;9zGv&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;1.2872727272727273&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/hZTzZQpn4cF1C6dsXicczllNw9jdLquYTJRibauwHeFH28yS3mHhBoSmMU6V3mWDRnVK9rribl4ibpeoDyNSHlDBLA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;550&quot; data-backw=&quot;550&quot; data-backh=&quot;708&quot;/&gt;&lt;/p&gt;&lt;p line=&quot;9zGv&quot;&gt;&lt;/p&gt;&lt;p line=&quot;E9Qf,bpU2&quot;&gt;&lt;span&gt;这是我妻子的画像。在下面的视频中，我捕捉到了机器人绘制我妻子女儿画像的过程，以展示它在作画时的想法。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p/&gt;&lt;p line=&quot;9zGv&quot;&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;艺术家 Paul Klee 将艺术反馈循环描述为艺术家在画布上制作标记的过程，然后在创建下一个标记之前退一步评估标记，一遍又一遍，直到绘画完成。&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;这正是机器人所做的，用&lt;strong&gt;反馈循环&lt;/strong&gt;来绘画。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;也就是这段时间，AI 领域的一个新闻头条引起了我的注意：Le Sedol 在围棋比赛中被 AlphaGo 击败。读到这些引起轰动的新闻时，有报道称 AlphaGo 的动作令人疑惑，以至于它们被认为是具有创造力的。我在想这怎么可能呢？我开始研究，在研究的过程中，我发现了&lt;strong&gt;深度学习&lt;/strong&gt;。起初我对此表示怀疑，但发现&lt;strong&gt;风格转移&lt;/strong&gt;是一个极有趣的工具。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我开始学习它是如何工作的，这可能是我一生中最艰巨的任务：&lt;/span&gt;&lt;span&gt;学习编写神经网络。&lt;/span&gt;&lt;span&gt;现在有很多工具可以帮助艺术家使用神经网络，但那个时候我必须要编写自己的工具。&lt;/span&gt;&lt;span&gt;对于像我这样的艺术家来说，很难。&lt;/span&gt;&lt;span&gt;但我必须要学会使用它，我需要了解它是如何工作的。&lt;/span&gt;&lt;span&gt;经过一年多的失败，我终于找到了一本名为「Grocking Deep Learning」，就在第 127 页上，一切变得明晰，我写了我的第一个神经网络并理解了它。&lt;/span&gt;&lt;span&gt;此后不久，我编写了自己的风格转移网络，并开始将其应用于我的作品，有一件作品便引起了公众的关注：&lt;/span&gt;&lt;span&gt;这是我儿子的肖像，是根据毕加索的「Les Demoiselles d’Avignon」的风格转移而来的。&lt;/span&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;712&quot; data-backw=&quot;550&quot; data-ratio=&quot;1.2945454545454544&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/hZTzZQpn4cF1C6dsXicczllNw9jdLquYTrGdibEN6dpfGQmnluic2tCaNtCJeyozNgm1YGLRnB02Aib5IibEoZOTEnA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;550&quot;/&gt;&lt;/p&gt;&lt;p line=&quot;9zGv&quot;&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;随着我的作品越来越丰富，我开始得到更多的认可，很快我的艺术作品就登上了美国国家公共广播电台的专题节目，同时获得了一个 TEDx 演讲，也获得了在 HBO Vice 上的更多曝光：我演示了机器人如何以毕加索的风格为记者画肖像，皮博迪奖获得者 Elle Reeves，如下图所示。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;707&quot; data-backw=&quot;550&quot; data-ratio=&quot;1.2854545454545454&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/hZTzZQpn4cF1C6dsXicczllNw9jdLquYTvczhkaFvIjHZAiaXibq84vzfD9EoibJx7ZP65ICL151FJpSBgiaBdiaZCvg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;550&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p line=&quot;CjSE&quot;&gt;&lt;span&gt;这篇 HBO 的文章引发了 Jerry Saltz 对 AI 艺术的评论，他在文章中贬损我的作品，说: “它看起来不像是机器人做的，但这并不能说明它有多好。”不是最好的评论，但在两个方面是好的：首先，他评价 Mario Klingemann 的「屠夫之子」更为不友好，这部作品后来赢得了流明数码艺术奖，所以像我一样的人，大有人在。但更重要的是，因为我现在可以截取他的评论，只是简单地引用下面的话.....&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;CjSE&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;324&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.56125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/hZTzZQpn4cF1C6dsXicczllNw9jdLquYTP3OOrufglpFSdGu0wcqg7kc7kYTQiaKSFPiajIgskGSicBh8qwLzyuavQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;800&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;AI 艺术开始迅速普及，我了解到了 Generative Adversarial Networks（GAN）。尽管风格转移在应用样式方面很出色，但我很快意识到它类似于一个过滤器，并不能真正创造出任何新颖的东西。但我听说 &lt;strong&gt;GAN&lt;/strong&gt; 有所不同。它们是两个相互竞争的神经网络，其中一个生成器，可以想象从无到有的东西。与我研究风格转移的方法类似，我必须去尝试并成功创建我设想的肖像系列。我在 CelebA 大规模面部属性数据集上训练了 GAN，让我的机器人生成了人脸，然后在他们从生成器出现的那一刻绘制了这些面孔。我的机器人创作的这一系列绘画作品赢得了 2018 年机器人艺术奖的第一名。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;为了纪念这个系列，我在 SuperRare 上铸造成了 NFT，十分感激早期的支持者们，他们看到了这些作品的价值，并抓住了它们。虽然这是我最成功的系列之一(展览巡回过纽约、伦敦、柏林和首尔) ，但我可能不会再重新创作了，所以如果感兴趣，可以直接联系那些收藏家。我刚刚看到有加密艺术家列出了他收益的 150 ETH，对于 AI 艺术史来说，这是极其低廉的价位！&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;578&quot; data-backw=&quot;578&quot; data-ratio=&quot;1&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/hZTzZQpn4cGbMc1GJQqibFv0Y8dD21WUKXEux7NfcT278rNiaw60Ycqp8b9qydSR3S9BLfH5JfTu1FvGbTYIPU4g/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;600&quot;/&gt;&lt;/p&gt;&lt;p line=&quot;9zGv&quot;&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;当时另一个受欢迎的项目来自一家人工智能公司 GumGum ，它赞助了一项艺术类的图灵测试。他们邀请了我的机器人和其他五个人类艺术家。他们给出的唯一方向是一小部分的著名当代绘画，要求我们作为灵感来源。我再一次转向我妻子的肖像，利用反馈循环和二十多个相互竞争的 AI 算法创建了以下内容。这里的主要进步是，我将多年来开发的所有创意性算法设置为相互竞争。好似在争夺画笔控制权与绘画前进方向的比赛，下面的抽象肖像出现了。在下面的视频中，您可以看到这个机器人在想什么，以及它是如何在三天时间内完成它的作品的。&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;9zGv&quot;&gt;&lt;/p&gt;&lt;p/&gt;&lt;p line=&quot;9zGv&quot;&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;GumGum 的艺术图灵测试是成功的。与 5 幅人类作品放在一起，很少有人猜到我们的画是机器人画的。该项目国际巡回展出，并通过了一个又一个观众的测试。即使你已经知道哪个是机器人的，这里还有其他的艺术品。&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;9zGv&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;你 Pick 哪个？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.2109375&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/hZTzZQpn4cGbMc1GJQqibFv0Y8dD21WUKN4jtWdcL3KenB5GzUmDUdoBr1ibLpjeLfHFJXGe4GqlDNDRicKapXf5g/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot; data-backw=&quot;578&quot; data-backh=&quot;122&quot;/&gt;&lt;/p&gt;&lt;p line=&quot;9zGv&quot;&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;使用新的竞争性生成 AI 系统，我开始艺术创作并用我自己的绘画作为参考，后来就成为了它的艺术风格。我称这个系统为 cloudpainter，您可以在 &lt;/span&gt;&lt;span&gt;cloudpainter.com&lt;/span&gt;&lt;span&gt; 有更多了解。在此注意，我称软件为 cloudpainter，而非机器人。这是因为 cloudpainter 是一个协作工具，我用它来和机器人一起搞艺术创作。这里有一些我们目前艺术创作的例子，您可以在 &lt;/span&gt;&lt;span&gt;https://superrare.co/pindar&lt;/span&gt;&lt;span&gt; 找到。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;279&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.483&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/hZTzZQpn4cGbMc1GJQqibFv0Y8dD21WUKj5guwN8KpV9zHaYBnqIAv5Je2EyeboVIIbkDicLEO9hsXTI4PVvHTyQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1000&quot;/&gt;&lt;/p&gt;&lt;p line=&quot;9zGv&quot;&gt;&lt;span&gt;https://superrare.co/pindar &lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;9zGv&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;最近几年有着我艺术生涯的升华。在学习了几十种技术来提高机器创造力的同时，并让它们彼此竞争之后，其中有一种终于能够独立发挥自己的能力了。&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;9zGv&quot;&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我开启了完全独立的艺术机器 artonomous。为了帮助它进一步发展成为一个优秀艺术机器人，我与摄影师 Kitty Simpson 合作，为它提供了一系列精心策划的肖像。artonomous 描绘这些照片的代表性图像，然后时不时地根据实际的图像和实际完成的绘画，来创作出独特的肖像画。它通过各种程序化 AI、反馈循环和神经网络来实现这一点。像人类艺术家一样，它不断地练习和发展自己的风格与美学。Kitty 和我准备策展和评论，然后把每一个笔触与美学决策都留给 artonomous。&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;9zGv&quot;&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.444&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/hZTzZQpn4cGbMc1GJQqibFv0Y8dD21WUKt6wSpzK7w8w3WpSo6wnddX7MF9k7FN3ZrY2EicEjWiaW9B0icXV404iavg/640?wx_fmt=gif&quot; data-type=&quot;gif&quot; data-w=&quot;1500&quot; data-backw=&quot;578&quot; data-backh=&quot;257&quot;/&gt;&lt;/p&gt;&lt;p line=&quot;9zGv&quot;&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;正如我之前提到的，它的一些艺术品是对 Kitty 摄影的研究，其中部分是它构想出来的。我们不确定它将走向何方，但期待着它的未来发展。您可以在 &lt;/span&gt;&lt;span&gt;https://superrare.co/artonomous&lt;/span&gt;&lt;span&gt; 看到更多精彩。&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;9zGv&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;275&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.476&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/hZTzZQpn4cGbMc1GJQqibFv0Y8dD21WUKicpZC9LWhXicQFDVz3icoxD3YQUwjt4Y4lbfHyx2WqPwNMsSfpqZFUTZw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1000&quot;/&gt;&lt;/p&gt;&lt;p line=&quot;9zGv&quot;&gt;&lt;span&gt;https://superrare.co/artonomous&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;9zGv&quot;&gt;&lt;span/&gt;&lt;/p&gt;&lt;p line=&quot;aQgO&quot;&gt;&lt;span&gt;我目前在做的几个主要的艺术项目，其中包括我与我的机器人 @pindar 合作发行的 NFT，以及用 NFT 记录对 @artonomous 的艺术教育。一直以来，SuperRare 都是我 AI 艺术展示的绝佳窗口，期待与社区的更多合作。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p line=&quot;9zGv&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;hr/&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;欢迎大家加群告诉我们，你喜欢和关注的主题&lt;img data-ratio=&quot;1&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/pMDHibpHlCGaYv0efxEFglnKrD8RDXRicfQdmAMqWvrcyePTsWzpibibgAY5SFlovABQ5wf3dvcp4cMy9LZVNHTOxQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;20&quot;/&gt;：只要关注人数足够多，&lt;/span&gt;&lt;span&gt;Mixlab 随时为大家特邀发起&lt;/span&gt;&lt;span&gt; 『 各类专题内容或者线上、线下专场讨论』！&lt;img data-ratio=&quot;1&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/pMDHibpHlCGbYPD7nBIHlLRicQKibSIrAgA2KQwiaqJa73na9kBkzicRia7aD7FgMhPvO8uw7lM8VmwfATQ1QloAjNfQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;20&quot;/&gt; &lt;/span&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;em&gt;&lt;span&gt;一个人的探索有些孤单，&lt;/span&gt;&lt;/em&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;em&gt;&lt;span&gt;一群人的探索会更有意思。&lt;/span&gt;&lt;/em&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;1.317837837837838&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/pMDHibpHlCGaFRvMPzSJWakM9WTSB9BxDDpeqz2lpOBXzftjCyScL2Xu9e8AZMOl0GqLYLwTF3liaiaGgK6yLJJHw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;925&quot; data-backw=&quot;546&quot; data-backh=&quot;720&quot;/&gt;&lt;/p&gt;
                 &lt;/div&gt;
 
                 
@@ -360,16 +782,16 @@ $$&lt;/p&gt;
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>27480a8d6ea9006bb1d0938d01c4ceb6</guid>
-<title>权限体系设计：网易有数 BI 功能品鉴</title>
-<link>https://toutiao.io/k/nvr0l12</link>
+<guid>2644a83c8487ae856a8f4ecf1f33c526</guid>
+<title>如何构建你的沟通场域</title>
+<link>https://toutiao.io/k/dujfhzb</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
                     
 
                     
                     
                     
-                    &lt;section&gt;&lt;span&gt;权限体系是所有BI产品都会涉及的一个重要组成部分，目的是对不同的人访问资源&lt;/span&gt;&lt;span&gt;进行权限控制，避免因权限控制缺失或操作不当引发的风险，如隐私数据泄露等问题。&lt;/span&gt;&lt;span&gt;有数BI权限体系设计的初衷，希望它&lt;span&gt;既&lt;/span&gt;能满足实际业务中的复杂场景，又能简洁易用，今天我们将详细介绍有数BI的权限体系！&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;86318&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section data-brushtype=&quot;text&quot; hm_fix=&quot;343:511&quot;&gt;角色模型&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;对于权限管理，最简单的办法就是给每个用户配不同的权限，&lt;/span&gt;&lt;span&gt;但这样的设计在用户较多时维护起来就显得非常力不从心。&lt;/span&gt;&lt;span&gt;于是很多人想到在用户和权限之间增加一个角色，也就是迄今为止最为普及的权限设计模型，即RBAC（Role Based Access Control，基于角色的权限访问控制）权限模型。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-croporisrc=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/sYBGQlzfEOXsRSvSfhZ8KdbqjPvyYqybDHvXbxdpk5SIicicmbj1hicMaApN5BWEY8avTdtDp3icQianRoTPViboqNug/0?wx_fmt=jpeg&quot; data-cropx1=&quot;0&quot; data-cropx2=&quot;699&quot; data-cropy1=&quot;59.25778546712803&quot; data-cropy2=&quot;312.0103806228374&quot; data-ratio=&quot;0.36194563662374823&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/sYBGQlzfEOXsRSvSfhZ8KdbqjPvyYqyb0KeLQu0JM2ia0wkz5yK5GVNfs2K7srPibN1LeQKUhgkHEq0mhqXLkg1w/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;699&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;span&gt;RBAC模型认为权限授权实际上是Who、What、How的问题。&lt;/span&gt;&lt;span&gt;在RBAC模型中，Who、What、How构成了访问权限三元组，也就是“Who（权限的拥用者或主体）对What（权限针对的对象或资源）进行How（具体的权限）的操作”。&lt;/span&gt;&lt;span&gt;换句话讲，在RBAC模型中，是通过控制“Who对What进行How的操作”来实现让不同的用户/用户组对不同的资源拥有不同的操作/数据权限的目的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们的权限体系即是依据RBAC模型思想所设计的，相关概念包括权限，角色和用户。角色与权限绑定，即项目中用户的权限与其被赋予的角色相关。一个用户可以拥有多个角色，一个角色也可以被添加给多个用户，每个角色可以被赋予多个权限。以下图所示的结构为例，用户1只拥有角色1的权限，即对资源1进行操作1；而由于用户3拥有3个角色全部的权限，因此该用户可以对资源1和资源2分别进行操作1和操作2。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.9583333333333334&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/sYBGQlzfEOXsRSvSfhZ8KdbqjPvyYqybeib9BeDiaCfyfiaPmp3iadiaVH4jXke77pXKq1QwGKv7Fj06xNTU4keJevQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;864&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;现在，有数BI的权限&lt;span&gt;体系&lt;/span&gt;已经拥有了基础的RBAC模型思想，但还远远不够。通过市场分析，我们发现企业在使用权限&lt;span&gt;体系&lt;/span&gt;的过程中，大多绕不开三大难题：&lt;/span&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;组织规模达到一定程度后，需要管理的资源数量庞大，同时对权限要求又很高时，需设置非常细粒度的权限，导致整个权限&lt;span&gt;体系&lt;/span&gt;显得十分零散和无序，产生大量的维护成本；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;而为了保证数据安全，这样的权限&lt;span&gt;体系&lt;/span&gt;往往是由权限最高的少数管理员来配置组织内部全体成员的权限，给管理员带来巨大的工作量；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;同时，在设置针对个人的不同数据权限时，其复杂程度更是呈几何增长，且当人员变更时，针对每个数据集需要重新配置行级权限，造成大量的权限重复配置操作。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;那么为了解决这些难题，有数BI的权限&lt;span&gt;体系&lt;/span&gt;是如何设计的呢？接下来，本文将围绕这些难题，给出我们的解决方案！&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;86318&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section data-brushtype=&quot;text&quot; hm_fix=&quot;343:511&quot;&gt;资源权限&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;1.基于角色，统一管理&lt;/strong&gt;&lt;/span&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;不同于市面上其他的BI产品，有数BI中资源权限的设置和赋予完全通过角色来实现，这样的设计可以帮助用户基于角色来实现权限的统一管理，极大降低企业设置权限&lt;span&gt;体系&lt;/span&gt;的复杂程度。例如，企业内各人员的资源权限往往是根据企业组织架构来对应设置的，当组织人员变动时，在权限&lt;span&gt;体系&lt;/span&gt;中只需将该用户所拥有的角色变更为对应组织架构角色，就能一键实现资源权限的变更。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-backh=&quot;317&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.54765625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/sYBGQlzfEOXsRSvSfhZ8KdbqjPvyYqybUKm3NPzV2EcgN7RpgwkLHklBznSN10ia5rLUaUku6J7qH90X9Jricseg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;通过对资源权限和数据权限的组合设置，简单勾选即可创建角色，并将对应成员添加到该角色下面，轻松搭建灵活、简洁的权限&lt;span&gt;体系&lt;/span&gt;！&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-backh=&quot;317&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.54765625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/sYBGQlzfEOXsRSvSfhZ8KdbqjPvyYqybERP18a1E5AWLHBF3xHpK7QIlduriaMo7Ju5m2tHqvoicFWF76OQk366w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;2.分级授权，灵活应用&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;现实场景中，当企业发展到一定程度时，往往拥有多层组织架构，而在传统的RBAC模型中，往往都只能由一个权限最高的用户（一般为管理员）来创建所有角色，对所有用户进行权限的授予，进行权限&lt;span&gt;体系&lt;/span&gt;的维护工作，这样导致管理员工作量过大。同时，企业里不同的业务线，或者不同的业务部门都有数据分析需求，如果无法将不同业务线或部门资源分隔开，将对资源的整理和权限配置带来巨大挑战。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;基于上述情况，有数BI提供了“项目+二级管理员”的多项目结合分级授权体系。首先，企业可以为不同的业务部门建立不同的项目，通过“项目列表”在不同的项目前切换，项目管理员拥有该项目内所有资源的所有权限。其次，通过二级管理员的设置来实现二级授权，项目管理员可以将部分资源的授予权限赋予该二级管理员，由二级管理员来管理对应的资源。多租户结合分级授权体系可以帮助用户创建非常丰富立体的权限分配体系。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;具体来看，有数BI将角色分成三类：系统角色、一级角色和二级角色。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;系统角色包括：项目管理员、二级管理员、编辑者、阅览者，系统角色无法编辑、修改和删除。编辑者可以查看或编辑所有的资源；阅览者仅可以查看所有资源。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.7741935483870968&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/sYBGQlzfEOXsRSvSfhZ8KdbqjPvyYqyb936mIqyiaWu1mBXmeaWCRgEB0iafOa9zlHvRtDH4F6wyIgw2iaue3H3IQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;868&quot;/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;一级角色和二级角色由项目管理员和二级管理员创建，一级角色可以拥有编辑权限，二级角色只能拥有阅览权限。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;86318&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section data-brushtype=&quot;text&quot; hm_fix=&quot;343:511&quot;&gt;数据权限&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;1.行列权限，精准定位&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;数据安全对于企业的重要性不言而喻。数据权限解决的便是用户能看到多少数据量和什么数据的问题。现实场景中，企业往往有大量业务数据和权限需求，在设置数据权限时，如何实现数据权限的精准定位，是有数BI在设计数据权限时所考虑的重要方面。因此，有数BI提供行和列级别的数据权限控制粒度，通过对同一张表进行行权限和列权限的配置，就可以精准实现数据权限的高效配置。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;假设这样一个场景：小王的公司在“东北、华北、华东、华南”四个大区都有销售人员，他希望不同大区的销售访问同一张报告时候，都只能看到自己所属大区的数据，在有数BI中，用“数据行级权限”可以实现这样的需求：我们可以创建4个“数据行级权限”，每个“数据行级权限”只能访问一个大区的数据，然后给不同大区的销售人员分配对应的“数据行级权限”。如东北大区的销售人员只能看到“东北”地区的数据，我们可以建立一个“数据行级权限”，然后设置数据访问权限，只允许该角色成员访问“东北”地区的数据，然后将该“数据行级权限”赋予东北大区的销售人员即可。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-backh=&quot;316&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.546875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/sYBGQlzfEOXsRSvSfhZ8KdbqjPvyYqybmq9gxzwLibbfiaoIdPxZ4HGK6GeAXibrdH8B1aE8hiahA38ib8ic9D8cd9fA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;2.属性对应，动态匹配&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;使用上述方法时，当我们存在多少个大区，我们就需要创建对应数量的“数据行级权限”。当组织人员规模达到一定程度后，管理复杂度往往呈几何增长，这样的设置方式必然需要大量的时间成本和人力成本来维护。同时，考虑到组织内不同人员所能拥有的数据权限往往与TA所在的部门、岗位或地区有一定的映射关系，那么，能否提供一种简便的设置路径，能够直接对不同部门的用户匹配不同的行级权限呢？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;基于此，我们在数据权限的创建页提供了固定值和属性值的配置选项，当选择属性值时，就可以通过设置属性值与对应字段的匹配，例如将“属性值-地区”与字段“地区匹配”，就能让不同地区的成员只能看到对应地区的数据，从而极大提高行级授权的管理效率。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;1. 首先，企业域管理-人员信息-属性列表-设置一个属性值“地区”，在对应用户后输入东北或其他地区。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-backh=&quot;317&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.54765625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/sYBGQlzfEOXsRSvSfhZ8KdbqjPvyYqybzuRwR9TD143v0wLkLibD5FyTQbsZQRhFNJBGkjrHvgH9EVeMdMdGuSA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2. 创建一个“数据行级权限”，选择要设置权限的数据连接，设置方式选择“动态值”，选择要设置权限的表跟字段，选择要匹配的用户属性，在本例中，即将“地区”字段匹配“地区”属性。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.546875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/sYBGQlzfEOXsRSvSfhZ8KdbqjPvyYqybdLD9L5caarzsLPl0yqw8MkfVreZRicwGibUwSdLVROjBZbMHmwF7QfZA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;3. 保存后，将该“数据行级权限”分配给所有用户，则每个用户访问报告时会根据该用户所在大区来筛选数据，只能看到自己大区的数据。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-backh=&quot;317&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.54765625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/sYBGQlzfEOXsRSvSfhZ8KdbqjPvyYqyb95HX1p7eMdy10howjO3bPNsyn1icAcCrFHN5tHPBwJeibYGniarTa7cnQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;（未设置数据权限）&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.54765625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/sYBGQlzfEOXsRSvSfhZ8KdbqjPvyYqybtM8uvBtYoOJh9AJp3HSNAlQuVUHKA44HEU5doic2DtribaF2z54mEBfg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;（设置了数据权限）&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;86318&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section data-brushtype=&quot;text&quot; hm_fix=&quot;343:511&quot;&gt;结语&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;为了应对更多复杂各异的组织架构和管理体系，我们仍然在不停地探索之中。&lt;/span&gt;&lt;span&gt;具体来说，目前的分级授权体系仅支持对资源的分级授权，还无法做到对数据权限的&lt;/span&gt;&lt;span&gt;分级授权，我们正在积极寻找更完美的解决办法，在保持用户低使用成本和高数据安全的同时，实现更高的灵活性。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;span&gt;这里剧透一下，有数BI更高效、更简洁的权限&lt;span&gt;体系&lt;/span&gt;不久将会和大家见面，敬请期待！&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzIwNTUxNTI1Ng==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/sYBGQlzfEOV4Bfic2e5zqTMCl0XxmMuVq1XpDOBrbXicVB4KmrEXglsWcnMREoQXfX24sscdvQIR74ic3SiciaLoMFA/0?wx_fmt=png&quot; data-nickname=&quot;网易有数&quot; data-alias=&quot;Youdata_Netease&quot; data-signature=&quot;网易有数致力于帮助用户快速在业务场景中应用大数据，助力业务发展和产业升级，让数据更高效地驱动生产力。网易有数旗下包含有数BI，大数据平台，标签画像、CDP、AI机器学习平台等子产品&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;section&gt;&lt;img data-ratio=&quot;1&quot; data-type=&quot;gif&quot; data-w=&quot;400&quot; class=&quot;__bg_gif&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/sYBGQlzfEOXECeWKgyIia3c7bom7Ir4rh4qI4XdxuRW4lyHudFyglytmLrOM4yYOWs3XNqqj0XlXTEw8icZ2Eb1Q/640?wx_fmt=gif&quot;/&gt;&lt;/section&gt;&lt;section data-brushtype=&quot;text&quot; hm_fix=&quot;317:401&quot;&gt;分享，点赞，在看，安排一下？&lt;/section&gt;
+                    &lt;section data-role=&quot;paragraph&quot;&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这是我的第41篇原创&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.42745709828393136&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/7VHriaQOsnjnjl429MticTHbINBdkJWC4tN4ObUZFdwPGSJBXPn8O21EPyzxqMOYnV6qgyOzb2oSKR2rHlw9JcAw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;641&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;很荣幸，昨天作为特邀嘉宾给奈学教育的架构师们分享一些跨部门沟通协调心得，全部是实操干货，每一个动作都能帮助你解决实际问题。一共50页ppt，咱开始吧！&lt;/span&gt;&lt;/p&gt;&lt;p&gt;OK，let&#x27;s Go！&lt;/p&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tdfvydZOlEwKmMy7EocZgz0sV7ECgu11E8bTH8zproIBFKkibPHNZH5g/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tS2EPczbUZ7DXNnfCVGxDic0KBMYy7kZyGpCm6aIcF2zPLppZFvxnpmw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;正式自我介绍一下：我叫彭文华，数据领域从业15年，5年纯技术，10年管理+技术，擅长BI、数仓、商业数据分析、大数据、团队管理、项目管理、组织架构等领域。这个公众号是我个人运营的，目的是为了帮助朋友圈里的你。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tqTBWKYLGD4ia3I36o9cVQWBDlWxKqtnWkicPTI6lh2govskp3MMpiaLug/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;整个PPT分为三个阶段：&lt;/span&gt;&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;先让大家带入到场景中；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;然后带着场景中的问题，去了解沟通的基础理论及各种工具，顺便解决上述问题；&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;最后，升维，帮助大家架构自己的沟通场域，应对一切挑战。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tKJ5xqFCBEOMPF5JlwibxxT6iadBkP8iataibewlpmZHqvfh9anWjV9GXLQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4to7DR43KicCmG4e54LsX847hrkaDrhZndCDJ2VbQqictgrIoS5YiaxwBAw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tnomMD9LhsyruPxoWqCB39fXvUialVvCJT0x6u38Ficz1AJ6xia5aOYic3A/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tJIeRrXn9WsO8poLH0iaSAo0goEWKAeQknsMjpWYD2QU1YhTwkygFrvQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tebwyT59LxX3uofAUkBOWjE81224RFic8wibtrib8tTSgSg5YbGBPG5ETw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4ttcmQWAibVibXGvyRG8l82maRQAlYWxOJaxwcYfBoqQ1TOwJgA9UjYAlA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;大多数人的典型应对都是退缩，有部分展现出侵略意图的，基本上都会被当成团队中的刺头。那些积极应对的人，活的大多都很累。这就是职场的现状。&lt;/p&gt;&lt;p&gt;从根因上分析，有三层原因：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4ttXg8w35mrwB1Ku1eow4Zib5ToI1iaEEGH9P3IVahPhEB7xWgqGia6Fl5Q/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;组织层面的问题，自然要从组织层面解决。我们身为组织中的一员，无法推动组织变革，但是可以在自己的领域进行好局部组织优化。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tfoIaKNJ2m3wz5IPPWTWR5ia4U7f5afialA995S7H9X4OnGIFyrpoj8rg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;意识层面的问题由来已久，非一时一日之功。我们同样不能改变整个组织的文化意识形态，但是我们可以影响身边的人。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tw8qCkIw9h5uNwwHczuyRyN3ORGkCW2sO5HWwWRXAdVy6vs2ASDvQyA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;人的层面最难优化，因为很多人根本没意识到问题。我们只能先优化自己，再影响他人。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tXAJV5Cs3rwAD422TOJcjaSuJ7Uj1DPp6dicNMgBCSQPbkTqvrLoJmCA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4t2tqBwQGy6EVvjwVkpgGHdNmyxGtUDpjsSS0eW9APoqa6Yk0XiaVUswQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;沟通三要素：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4t1UIY08ibibvBh3BhVBWfq0tT1rlmPkgMy37v4w5KnHZXaibmzFRd6iaj3A/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4txApiclIeibrp5dZKbHktQXFuiafd75qkaHISXsuZTgmzODkm329Ng5dHA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;建议搜索“提问的智慧”，你会回来感谢我的。&lt;/p&gt;&lt;p&gt;好的问题实际上代表了你的思维层次，坏的问题一句话就能明白对方压根没懂你的意思。&lt;/p&gt;&lt;p&gt;与人讨论、聊天的时候要多问开放性的问题，少问封闭性的问题，否则你就是群聊冷场之王。&lt;/p&gt;&lt;p&gt;与人确认需求的时候，要多问封闭性的问题，少问开放性的问题，否则就没完没了。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tErRtgJWFRicPoEqf6bFc8biaK1ZyRNTjHRKKdtPVU5xDztPE4YWUQmNA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;中国人研究人与人之间的关系已经到了炉火纯青的地步，之所以放卡耐基，是因为中国相关研究太多了，一页ppt放不下。推荐读曾国藩、各类官场小说，甚至甄嬛传都ok，从关系的角度上，你能分解出非常有价值的内容。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tgjurmxaAyPv86SwPoekB7AlneYT7cogSNkWwKhRfTyVOQzYUjiaNichg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;部门墙是培训老师最喜欢提的概念，但是大多数培训老师提出很多方式方法都没法落地，不够接地气。很多方法都不是扔给你一个模板就能解决的。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4thJV2SKqNwXhJxTPDVibicibxLB3t4XXadbashib2LRz3KTz2bV21XmvcRQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;正式沟通大部分时间是用来保护自己的。例如：&lt;/p&gt;&lt;p&gt;各位接到的所有需求，请以邮件为准。项目管理软件也不行，因为很多项目管理软件中的需求变化了并不会自动通知你。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tKJDEqEYAppqBbysFVFAD9XFp1uNb3XlAaMCbDDO6RNLqT3QiaYVpk1A/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;非正式沟通好处很多。建议平时多聊天。&lt;/p&gt;&lt;p&gt;正式沟通和非正式沟通要轮流用，以需求沟通为例：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;前期：非正式沟通，先做一轮简单沟通，双方达成共识，这件事情可以做，难度有多大，需要多长时间；&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;中期：正式沟通，以会议纪要、邮件工单等形式正式递交需求；&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;后期：非正式沟通，&lt;span&gt;在推进过程中&lt;/span&gt;&lt;span/&gt;时刻保持密切接触，通告推进进度、问题，防止出现偏差。&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tK1yv7twl1fGpQh3rOeARxicQZFjcJksbpvtBwGlsgbrFu8YQSRiczRsQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;遇到问题无非是情、理、法。&lt;/p&gt;&lt;p&gt;当你的两个同事遇到意见不合时，你要时刻记得脑袋上戴着一顶法官假发，你要为你的职责负责。此时你需要摒弃情面，只讲法理。而在其他时间，要多戴“情”帽，平时攒人品。&lt;/p&gt;&lt;p&gt;在工厂流水线上，工头必须严守规章制度，才能让整条线高效运转，一旦开了徇私的口，整条流水线上的所有人收入将会严重降低。&lt;/p&gt;&lt;p&gt;但是在下了流水线之后，工头会与工人们打成一片，方便开展后续工作。&lt;/p&gt;&lt;p&gt;是的，我们将会逐渐活成我们讨厌的那种Poker Face，但是这些方法会让我们远离是非对错的痛苦。 &lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4t5YTsokbIVia6TKeHvLh26Ec9bPp2mOe9XE93oxtAswtsnibLXJpcUqBg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;远离无效会议的方法就是有标准的会议流程。流程会增加管理成本，但是会提升N倍的沟通效率，降低N倍沟通成本。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tM2zO7G6h7sR7ZERz7EdHMyicIWbpqXsrcC6ibsFMrAMd6XIBdib4nnKvw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tRb7Z5LwF06SWz3h84mlPPakNasvr6hAU6bjcnwo0pAD0XsBia6FonfQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;建议大家看《Lie To Me》，第一季开始那集就ok，非常精彩。&lt;/p&gt;&lt;p&gt;沟通中有一个7、38、55原则，你在与人当面沟通的时候，对方接受到你的信息中，各种渠道占比为：&lt;/p&gt;&lt;p&gt;我们与人沟通时，本来就是一个损耗非常大的信息传输过程。我们把N维的思维，用一维的语言描述出来，对方再用填充、想象为N维的思维。这种信息传输效率低到令人发指。&lt;/p&gt;&lt;p&gt;幸好我们还有表情、动作可以获取到更多信息。一旦你开启微表情的阅读，就相当于开启了第三只眼，能捕捉到更多信息。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tn3jlUZ8Um8yicSzj1XPHFOCazxfib7Ao4CBtBCgCO9TRiaQsfkiacLkOfw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;还是一样，咨询师、外部培训老师总是给一些说起来正确，但是我们无法落实的意见，简称“正确的废话”。那我们如何解决这些实际问题呢？&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4t4hZEV6olmoK5Oz1gicmqicfgt4vJWUdOtjuRicyhALDKouZXEGiar3vHDQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tibxFw9HQyoxBiawOl5KFcibt0J2teclphweOzN7NtYueWNianEbYFgZe9w/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tDNvvSeFFx2MgwUthZ8kfQa49IuvyB3meyLauMskYBuRC9ribciaHMLFQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;为什么会扯皮？因为存在灰色地带，没有界定好职责分工。这条线划不清楚，两边永远在扯皮。所以解决办法就一个：划清道道。工具就是流程图。&lt;/p&gt;&lt;p&gt;你如果在与兄弟部门扯皮，那你们两个负责人坐下来，把道道划清楚。&lt;/p&gt;&lt;p&gt;你如果总是被其他人呼来唤去，那你自己画一个流程图（或者使用说明书），贴在你工位上，让他们按照你的逻辑走。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tV9BiasSZR5cddxHSS41KaaxzibgMHGV9nQDOY4Cb0F4HK4EVhicDTZN4g/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;为什么要甩锅？因为不想背责任。为什么不想背责任？因为责权利不对等、责任划分不清楚、文化建设有问题。&lt;/p&gt;&lt;p&gt;我们作为个体，解决不了文化层的问题，那就从责任划分入手。在每件事情开始的时候，把责任说清楚，权力说清楚，利益说清楚。这件事情由你负责，那么就拥有在这件事情上的所有权力，做好了，有你的利益；事情搞砸了，追究你的责任。&lt;/p&gt;&lt;p&gt;工具有很多，什么首问负责制、Owner负责制等。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4t8Upb5q8apABWHC7GXc5ibnYFnbSql4w2icaT3VEHwqydHZlFhDwicn7Hw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;之前已经讲过会议流程，以后在开会的时候，遵循会议流程就能解决80%的问题。这里再给大家分享一个小妙招：靶子法：&lt;/p&gt;&lt;p&gt;在开会的时候，大家无法达成共识，是因为大家都沉浸在自己的世界里，各抒己见。这时候所有人都是无序的，我们可以利用一个靶子让大家变得有序。这个靶子是对是错都无所谓，甚至是错的更好，所有人都会集中火力打向这个靶子。接下来的任务就是收集意见，总结、提炼，然后落实到人、设置时间、成果物等。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4t0h1vCgticJsojM3QsUaxoajfow2LbHMPsdHofr4vFTILv19iaa5v2qAw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;如果你们平时的工作状态是：各自领完任务后，埋头开发，最后再一起做接口联调，那么联调不成功的概率是99%，剩余的1%是看在你们长时间磨合的情况下给的。&lt;/p&gt;&lt;p&gt;优化后的工作状态应该是跟居委会大妈一样，时刻盯着对方，不断跟进，相互通报，定期还得跟一下质量，有问题及时处理。这样做，问题才不会集中在最后几天爆发。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tKh5U34SKQddAgZvum32WE712ic7r1deD06appWbZoC3KJ9FSjrjafvw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;很多领导山头意识强，喜欢搞派系，这个没办法，我们作为中下层的执行层，只能是从关系入手。上层的问题我们下层是无法解决的。只能改善。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tWnotcb2EOUVGk1R1G718QSuAuic5K7vBU3SAZ69mJ9dPwOGktIRqSkg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;正式沟通&lt;/span&gt;&lt;span&gt;，&lt;/span&gt;&lt;span&gt;正式沟通&lt;/span&gt;&lt;span&gt;，&lt;/span&gt;&lt;span&gt;正式沟通！一定要正式沟通，否则吃亏的就是你。还有打脸的时候不要手软，不要留情面。但是请注意，不要加你的判断，不要带入情绪，只说事实即可。你不是笨蛋，别人也不是，他们能看明白你的意思。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tsFymorPfT4TL6CCZncE7Wu0AC01PPVfribsBt5yUQ6Gng2SZ4RtOgIA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tUdIuKNMibF4Rv4GKzY6eR5icWB945UeVIkIFShtxibQgK1dSDX72wVnSQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.5633587786259542&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/7VHriaQOsnjnjl429MticTHbINBdkJWC4toVJQqQvwvyX8KSibbXVExG9R8o5YubkZdwpicjaWsFEThWabBxhu4hiag/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;655&quot;/&gt;&lt;/p&gt;&lt;p&gt;到这里，职场上的各种理论、方法、手段、解决方案基本都有了。但是这都是法、术、器的层次。&lt;/p&gt;&lt;p&gt;作为架构师，我们还必须得再向上抽象一层，到达“道&lt;span&gt;”&lt;/span&gt;的层次。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4thVeib8N5zUlyEnd0Uxo3eh5nEIenTYziajnnic44yyPrC8xU039Ck3I7Q/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4t36uBtrBzyuJE5YcZF5s1ThfpUX0sTBwdNnIPgVDTyODQwas2ICaRLg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;沟通协作，目的是让所有人发挥出更大的力量。我们作为组织中的个体，首要的任务就是先把自己的力量全部发挥出来。&lt;/p&gt;&lt;p&gt;掌控自己的情绪是掌握自己的第一步。在给大家分享的时候，有人说我能控制负面情绪，说明我掌控的还可以。&lt;/p&gt;&lt;p&gt;对不起，我认为不是。掌控情绪的意思是让情绪成为你的武器。你控制负面情绪，是在压抑自己。你无法抗衡他人，只能压抑自己。&lt;/p&gt;&lt;p&gt;你的喜爱、自信，都应该让他人看见。你的愤怒、轻蔑，也应该成为你的武器，而不是你发泄的手段。请注意这两者的区别。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tPiaHFQhiciaaznO1Q8XHDIO9fVpaWWJWFxTYicMicbqO0AicZFiaPPHCo8Ocw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;掌控自己之后，就是驱动他人。调查问卷中80%以上的人说我人微言轻，推不动事情。其实这是你在给自己设限，是你自己的不自信。&lt;/p&gt;&lt;p&gt;管理学中，把管理能力分为权力性和非权力性。人微言轻指的是权力性中的合法权中的职级。是所有管理能力中的一种而已。其他权利全部握在你的手中，你用过吗？&lt;/p&gt;&lt;p&gt;比如奖赏权。有些人说，我没有考核他的权利。奖赏不等于考核。考核只是手段而已。你和同事成功搞定一个功能，你夸奖他算不算奖赏权？给他带一包小零食算不算奖赏权？&lt;/p&gt;&lt;p&gt;比如职责权。我在内训的时候就给大家看过一张照片：&lt;/p&gt;&lt;p&gt;我们的行政主管，一个95后的矮矮的小姑娘，说话声音很小。但是就是这样一个人拉着一个VP，三个总监，要求技术、产品、数据三个部门调整工位，原因是公司的工位不够了。技术总监反对，说很挤了，小姑娘不慌不忙，拿出工位图：三个部门总共110人，技术大厅一共140个工位，算上你们三个月的招聘需求，也还有富余。&lt;/p&gt;&lt;p&gt;这个职责权是公司赋予你的，每个人都有。每个人在自己职责范围内都是最大的，这与职级无关。所以不要再说你人微言轻，那是你自己的判断。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4t90hDxbJkdura58aXiaUHkqPCJDcjblAOGksYKoxWsMR2FRyBn5ADY7Q/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tVoRNWf4F7t3SSG3l3cpM66HsYVQJRc5IKiaibeEpzhgtdrovWbV5MuyA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;其实你与其他人一样，拥有以上完整的所有力，只不过你不会用而已。而且只要你以上任一种力做到极致，就可以基本忽视其他所有力。这里重点给大家讲一下“物力”。&lt;/p&gt;&lt;p&gt;管理中有向上管理、平行管理、向下管理和自我管理。各位可以去百度一下各种策略。其实这些很简单，只需要找准他们各自的利益即可。&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;想要驱动领导，你只需要告诉他，这是他的OKR、KPI的内容，现在遇到问题了，需要他帮忙，这就可以了。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;想要驱动平级同事，你只需告诉他，你的这个事情，我帮你搞定123了，但是45我的确搞不定，需要你帮忙做一些，这也就OK了。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;想要驱动下属，这里注意，网上教程说的都是KPI，这招不好使。你这只是在用职级权利硬压。下属的利益点在哪里？在提升，在成就感。你需要去帮助他提升，帮助他获得成就感，在他成功的时候祝贺他。&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tolWTKkM2sUkicZBz6g65rmjBFFdybBrTx9BH8rowIXPUKlDNuLV574Q/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tXGxyjE7fCicj4Ps7XONa9C5oExw26Ra4UyoZKtBUq0Y4CLpk921LKVg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;道法术器都有了，你需要做的是根据你自己的实际情况，构建专属于自己的沟通场域。或威严，或刚猛，或绅士，或温柔，或急急似山火，或&lt;span&gt;徐徐若清风。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;大家可以去做一个DISC或者其他的性格测试，让自己更了解自己。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tOvPDKNmUjFBpvV9G83CpicbA9Pero5jInEZZk9pZS3ee07ajZJTlsfg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;强烈建议大家读毛泽东选集。这是一个地狱级难度完美通关的大师秘籍，你在职场遇到的问题与毛爷爷遇到的相比，差别多大？十万分之一都不如，你认可吗？我最喜欢那句话“不管风吹浪打，胜似闲庭信步”。这就&lt;span&gt;是&lt;/span&gt;&lt;span&gt;你修炼&lt;/span&gt;&lt;span/&gt;到达的境界。那如何才能到这个境界呢？我们在道法术器之上，还能再上一个台阶吗？可以！&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tMTxaOrjJsKB2mzWcDvmlBseQItMbbeUAoLe5WBHGSnNRw37tVwKichw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;无惧任何挑战的心法-修行。&lt;/p&gt;&lt;p&gt;绝大部分人的工作状态是：忍受，忍耐，不断消耗自身的意志账户。一旦账户余额不足，就开始改简历，找工作。&lt;/p&gt;&lt;p&gt;其实你应该换一种活法。当你意识到人生就是一场修行的时候，你就不会拘泥于各种小事了。喜怒哀乐自由心，行立坐卧皆修行。此时，你巴不得遇到各种问题，因为解决问题之后，你的收货将远大于你的付出。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tMxYvqIialX1mrkUTrUvibiah1VtRicf8yAZlibA2ykkA7hoHQOVm6Yn6IWg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;同理，想要驱动他人的顶级心法不是用各种力去驱使他，而是点燃他人内心的火种。你只需要点燃他就行了。他会跑的。跑的比你还快。&lt;/p&gt;&lt;p&gt;乔布斯是如何驱动可口可乐总裁斯卡利的？他说:“你是想卖一辈子糖水呢,还是想抓住机会来改变世界?”&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4te1BJaTV8h9R8XtRjC3eibBuia0v0XGxuC3Iacd9mf0EHMz3ZtzmCCz5A/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tUAD2e82aFgBBthLeFiatQ2rk0thTHKfvE6rYmYSjmnSExFZlts3cKqw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tb4xctgia7sGafe4D33cmZ2N77zj0N0qhiaQwK1BAbA1PHTGdUUOsyibAw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjnjl429MticTHbINBdkJWC4tibCBOkgUldyZia0v5aBGckXG9MKVttfZdevwVDnPf2DDMkofcawhNXrQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzIwNjM0MTc0Ng==&amp;amp;mid=2247484028&amp;amp;idx=1&amp;amp;sn=e4a4d718c442e364b9ed26c90756c504&amp;amp;chksm=97225161a055d877fb3ec5c49fe4683f7e5bf6a833afb92c6f25aa65881ddf52ba796214dcb2&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;&lt;span data-raw-text=&quot;干&quot; data-textnode-index=&quot;47&quot; data-index=&quot;2087&quot;/&gt;&lt;/a&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;昨天分享的时候就有很多小伙伴想要ppt，东西已经准备好了，公众号后台回复&lt;/span&gt;&lt;span&gt;GTGT&lt;/span&gt;&lt;span&gt;即可领取~~~&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;90215&quot;&gt;&lt;section&gt;&lt;section data-brushtype=&quot;text&quot; data-width=&quot;100%&quot;&gt;往期&lt;span&gt;精彩&lt;/span&gt;回顾&lt;/section&gt;&lt;section&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section data-bdless=&quot;spin&quot; data-bdlessp=&quot;280&quot; data-bdopacity=&quot;50%&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzIwNjM0MTc0Ng==&amp;amp;mid=2247484362&amp;amp;idx=1&amp;amp;sn=34cbf684840e8fa4e4c58df655a0c498&amp;amp;chksm=972250d7a055d9c1b0188c148b7d85f560532a37c5735fba658f82dd10fd6500a64749db02d0&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;干货 | 团队的温度-绩效管理的核心&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;span data-raw-text=&quot;干&quot; data-textnode-index=&quot;47&quot; data-index=&quot;2087&quot;&gt;干货 | 团队的温度-绩效管理的核心&lt;/span&gt;&lt;/a&gt;&lt;/section&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzIwNjM0MTc0Ng==&amp;amp;mid=2247484084&amp;amp;idx=1&amp;amp;sn=ac1479ef18e77fb12d9ab06ff1a1c56b&amp;amp;chksm=972251a9a055d8bf1e16d2ca793d6fdada0354d3ae7c1e548b27f74a16d92467ca4e57f7b3f2&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;底层规则 | 论数据驱动业务的“力”&lt;/a&gt;&lt;/section&gt;&lt;p&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzIwNjM0MTc0Ng==&amp;amp;mid=2247484184&amp;amp;idx=1&amp;amp;sn=1fc0596b8e4aaa8b1d26b83e840adbb5&amp;amp;chksm=97225005a055d9137ade173cd13b42e785b8c519a5a7bebbc33ff7f0a0b67daf7d647b815f4e&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;热文 | &lt;span&gt;大数据工程师体系职业路径全解&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;section&gt;&lt;img data-ratio=&quot;1&quot; data-type=&quot;gif&quot; data-w=&quot;400&quot; class=&quot;__bg_gif&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/7VHriaQOsnjneEneI8RuAic5xJot9DMPcukYy2iceTc1efcSQENJ71MH1rG7I1ibF0MN5LEzXxR5teia1TlFG4FyONw/640?wx_fmt=gif&quot;/&gt;&lt;/section&gt;&lt;section data-brushtype=&quot;text&quot;&gt;转发，点赞，在看，安排一下？&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;
                 &lt;/div&gt;
 
                 
@@ -380,18 +802,5 @@ $$&lt;/p&gt;
 
                 
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>5a74641caea84680fcbcbf174e019c0b</guid>
-<title>面试官常问的垃圾回收器，这次全搞懂</title>
-<link>https://toutiao.io/k/7aczn5o</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;❝&lt;/span&gt;&lt;p&gt;本文已被Github仓库收录 https://github.com/silently9527/JavaCore&lt;/p&gt;&lt;span&gt;❞&lt;/span&gt;&lt;/blockquote&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;前言&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;前几天写了一篇《JVM性能调优实战：让你的IntelliJ Idea纵享丝滑》，其中有对GC垃圾回收器的选择尝试，本篇我们就来详细的看看JVM中常见的垃圾回收器有哪些以及每个垃圾回收器的特点，这也是面试的时候经常被问的内容&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;JVM堆内存概览&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在聊垃圾回收器之前，我们先来看看JVM堆内存的区域划分是怎么样的，看下图&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.6014897579143389&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ggRgNal7zG99ka1icre2BiblNnPUq9gT24eepVu2F42L4T1Dw0X0g1BhyJv429kd2icicGohYbFdp67sOB90N6JcMA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;537&quot;/&gt;&lt;/figure&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;因为虚拟机使用的垃圾回收算法是分代收集算法，所以堆内存被分为了新生代和老年代&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;新生代使用的垃圾回收算法是复制算法，所以新生代又被分为了 Eden 和Survivor；空间大小比例默认为8:2&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Survivor又被分为了S0、S1，这两个的空间大小比例为1:1&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;内存分配以及垃圾回收&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;对象优先在Eden区进行分配，如果Eden区满了之后会触发一次Minor GC&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Minor GC之后从Eden存活下来的对象将会被移动到S0区域，当S0内存满了之后又会被触发一次Minor GC，S0区存活下来的对象会被移动到S1区，S0区空闲；S1满了之后在Minor GC，存活下来的再次移动到S0区，S1区空闲，这样反反复复GC，每GC一次，对象的年龄就涨一岁，默认达到15岁之后就会进入老年代，对于晋身到老年代的年龄阈值可以通过参数 &lt;code&gt;-XX:MaxTenuringThreshold&lt;/code&gt;设置&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;在Minor GC之后需要的发送晋身到老年代的对象没有空间安置，那么就会触发Full GC (这步非绝对，视垃圾回收器决定)&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;❝&lt;/span&gt;&lt;p&gt;Minor GC和Full GC的区别：Minor GC是指发生在新生代的垃圾收集行为，由于对象优先在Eden区分配，并且很多对象都是朝生夕死，所以触发的频率相对较高；由于采用的复制算法，所以一般回收速度非常快。Full GC是指发生在老年代的垃圾收集行为，Full GC的速度一般会比Minor GC慢10倍以上；所以不能让JVM频繁的发生Full GC&lt;/p&gt;&lt;span&gt;❞&lt;/span&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;为了能够更好的适应不同程序的内存情况，JVM也不一定要求必须达到年龄15岁才能晋身到老年代，如果在Survivor区中相同年龄的所有对象大小总和大于Survivor区空间的一半，年龄大于或者等于这个年龄的对象将会直接进入到老年代&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;Full GC触发条件&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;代码中调用&lt;code&gt;System.gc()&lt;/code&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;老年代空间不足/满了&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;持久区空间不足/满了&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;❝&lt;/span&gt;&lt;p&gt;注意：大对象会直接在老年代分配内存，可以通过参数&lt;code&gt;-XX:PretenureSizeThreshold&lt;/code&gt;控制对象的大小，通常遇到的大对象是很长的字符串或者数组，如果分配了一大群大对象只是临时使用，生命很短暂，那么就会频繁的发生Full GC，但是此时的新生代的空间还有空闲；写代码的时候，这种情况应该避免，特别是在创建数组的时候要当心&lt;/p&gt;&lt;span&gt;❞&lt;/span&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;「空间担保」&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在新生代发生Minor GC的时候，JVM会先检查老年代中可分配的连续空间是否大于新生代所有对象的总和，如果大于，那么本次Minor GC就可以安全的执行；如果不大于，那么JVM会先去检查参数&lt;code&gt;HandlePromotionFailure&lt;/code&gt;设置值是否允许空间担保失败，如果允许，JVM会继续检查老年代可分配的连续空间是否大于历次晋升到老年代对象的平均大小，如果大于，尽管这次Minor GC是有风险的，JVM也会尝试一次Minor GC；如果不允许担保失败，那么JVM直接进行Full GC&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;虽然担保有可能会失败，导致饶一圈才能进行GC，但是还是建议把这个参数打开，可以避免JVM频繁的Full GC&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;垃圾回收器概览&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.5329949238578681&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ggRgNal7zG99ka1icre2BiblNnPUq9gT24RYvGjKfmUFaiaePn6p1vcODtj7tmylHIORA6ZHe9rhCMzjVu8VAvkaw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;591&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;从上图可以看出：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;新生代可以使用的垃圾回收器：Serial、ParNew、Parallel Scavenge&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;老年代可以适用的垃圾回收器：CMS、Serial Old、Parallel Old&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;G1回收器适用于新生代和老年代&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;相互之间有连线的表示可以配合使用&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;❝&lt;/span&gt;&lt;p&gt;CMS和Serial Old同为老年代回收器，为何相互会有连线呢？&lt;/p&gt;&lt;span&gt;❞&lt;/span&gt;&lt;/blockquote&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;1&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ggRgNal7zG99ka1icre2BiblNnPUq9gT24d2b0IWj0E09ekurvzPLOdXCMfsibk2TAhYpE1mG1T6iaIyjvNVWqU72w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;255&quot;/&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;Serial收集器&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这是个单线程收集器，发展历史最悠久的收集器，当它在进行垃圾收集工作的时候，其他线程都必须暂停直到垃圾收集结束（Stop The World）。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;虽然Serial收集器存在Stop The World的问题，但是在并行能力较弱的单CPU环境下往往表现优于其他收集器；因为它简单而高效，没有多余的线程交互开销；Serial对于运行在Client模式下的虚拟机来说是个很好的选择&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;使用&lt;code&gt;-XX:+UseSerialGC&lt;/code&gt;参数可以设置新生代使用这个Serial收集器&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;ParNew收集器&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;ParNew收集器是Serial收集器的多线程版本；除了使用了多线程进行垃圾收集以外，其他的都和Serial一致；它默认开始的线程数与CPU的核数相同，可以通过参数&lt;code&gt;-XX:ParallelGCThreads&lt;/code&gt;来设置线程数。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;从上面的图可以看出，能够与CMS配合使用的收集器，除了Serial以外，就只剩下ParNew，所以ParNew通常是运行在Server模式下的首选新生代垃圾收集器&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;使用&lt;code&gt;-XX:+UseParNewGC&lt;/code&gt;参数可以设置新生代使用这个并行回收器&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;Parallel Scavenge收集器&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Parallel Scavenge收集器依然是个采用复制算法的多线程新生代收集器，它与其他的收集器的不同之处在于它主要关心的是吞吐量，而其他的收集器关注的是尽可能的减少用户线程的等待时间（缩短Stop The World的时间）。吞吐量=用户线程执行时间/(用户线程执行时间+垃圾收集时间)，虚拟机总共运行100分钟，其中垃圾收集花费时间1分钟，那么吞吐量就是 99%&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;「停顿时间越短适合需要和用户进行交互的程序，良好的响应能够提升用户的体验。而高效的吞吐量可以充分的利用CPU时间，尽快的完成计算任务，所以Parallel Scavenge收集器适用于后台计算型任务程序。」&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;-XX:MaxGCPauseMillis&lt;/code&gt;可以控制垃圾收集的最大暂停时间，需要注意不要以为把这个时间设置的很小就可以减少垃圾收集暂用的时间，这可能会导致发生频繁的GC，反而降低了吞吐量&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;-XX:GCTimeRatio&lt;/code&gt;设置吞吐量大小，参数是取值范围0-100的整数，也就是垃圾收集占用的时间，默认是99，那么垃圾收集占用的最大时间 1%&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;-XX:+UseAdaptiveSizePolicy&lt;/code&gt; 如果打开这个参数，就不需要用户手动的控制新生代大小，晋升老年代年龄等参数，JVM会开启GC自适应调节策略&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;Serial Old收集器&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Serial Old收集器也是个单线程收集器，适用于老年代，使用的是标记-整理算法，可以配合Serial收集器在Client模式下使用。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;它可以作为CMS收集器的后备预案，如果CMS出现Concurrent Mode Failure，则SerialOld将作为后备收集器。（后面CMS详细说明）&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;Parallel Old收集器&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Parallel Old收集器可以配合Parallel Scavenge收集器一起使用达到“吞吐量优先”，它主要是针对老年代的收集器，使用的是标记-整理算法。在注重吞吐量的任务中可以优先考虑使用这个组合&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;-XX:+UseParallelOldGc&lt;/code&gt;设置老年代使用该回收器。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;XX:+ParallelGCThreads&lt;/code&gt;设置垃圾收集时的线程数量。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;CMS收集器&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;CMS收集器是一种以获取最短回收停顿时间为目标的收集器，在互联网网站、B/S架构的中常用的收集器就是CMS，因为系统停顿的时间最短，给用户带来较好的体验。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;-XX:+UseConcMarkSweepGC&lt;/code&gt;设置老年代使用该回收器。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;-XX:ConcGCThreads&lt;/code&gt;设置并发线程数量。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;CMS采用的是标记-清除算法，主要分为了4个步骤：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;初始化标记和重新标记这两个步骤依然会发生Stop The World，初始化标记只是标记GC Root能够直接关联到的对象，速度较快，并发标记能够和用户线程并发执行；重新标记是为了修正在并发标记的过程中用户线程产生的垃圾，这个时间比初始化标记稍长，比并发标记短很多。整个过程请看下图&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.3314366998577525&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ggRgNal7zG99ka1icre2BiblNnPUq9gT24KRuM9B5x2hEpLCZvwFHZiceWAxj2xHaibxEQzxG87hjO0P6ibHEBVGcqw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;703&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;「优点」&lt;/strong&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;CMS是一款优秀的收集器，它的主要优点：并发收集、低停顿，因此CMS收集器也被称为并发低停顿收集器（Concurrent Low Pause Collector）。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;「缺点」&lt;/strong&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;CMS收集器对CPU资源非常敏感。在并发阶段，它虽然不会导致用户线程停顿，但会因为占用了一部分线程（或者说CPU资源）而导致应用程序变慢，总吞吐量会降低。CMS默认启动的回收线程数是（CPU数量+3）/4，也就是当CPU在4个以上时，并发回收时垃圾收集线程不少于25%的CPU资源，并且随着CPU数量的增加而下降。但是当CPU不足4个时（比如2个），CMS对用户程序的影响就可能变得很大，如果本来CPU负载就比较大，还要分出一半的运算能力去执行收集器线程，就可能导致用户程序的执行速度忽然降低了50%，其实也让人无法接受。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;无法处理浮动垃圾。由于CMS并发清理阶段用户线程还在运行着，伴随程序运行自然就还会有新的垃圾不断产生。这一部分垃圾出现在标记过程之后，CMS无法再当次收集中处理掉它们，只好留待下一次GC时再清理掉。这一部分垃圾就被称为“浮动垃圾”。也是由于在垃圾收集阶段用户线程还需要运行，那也就还需要预留有足够的内存空间给用户线程使用，因此CMS收集器不能像其他收集器那样等到老年代几乎完全被填满了再进行收集，回收阀值可以通过参数&lt;code&gt;-XX:CMSInitiatingoccupancyFraction&lt;/code&gt;来设置；如果回收阀值设置的太大，在CMS运行期间如果分配大的对象找不到足够的空间就会出现“Concurrent Mode Failure”失败，这时候会临时启动SerialOld GC来重新进行老年代的收集，这样的话停顿的时间就会加长。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;标记-清除算法导致的空间碎片 CMS是一款基于“标记-清除”算法实现的收集器，这意味着收集结束时会有大量空间碎片产生。空间碎片过多时，将会给大对象分配带来很大麻烦，往往出现老年代空间剩余，但无法找到足够大连续空间来分配当前对象。为了解决这个问题CMS提供了一个参数&lt;code&gt;-XX:+UseCMSCompactAtFullCollecion&lt;/code&gt;，如果启用，在Full GC的时候开启内存碎片整理合并过程，由于内存碎片整理的过程无法并行执行，所以停顿的时间会加长。考虑到每次FullGC都要进行内存碎片合并不是很合适，所以CMS又提供了另一个参数&lt;code&gt;-XX:CMSFullGCsBeforeCompaction&lt;/code&gt;来控制执行多少次不带碎片整理的FullGC之后，来一次带碎片整理GC&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;G1收集器&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;G1是一款面向服务端应用的垃圾回收器。&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;并行与并发：与CMS类似，充分里用多核CPU的优势，G1仍然可以不暂停用户线程执行垃圾收集工作&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;分代收集：分代的概念依然在G1保留，当时它不需要和其他垃圾收集器配合使用，可以独立管理整个堆内存&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;空间的整合：G1整体上采用的是标记-整理算法，从局部（Region）采用的是复制算法，这两种算法都意味着G1不需要进行内存碎片整理&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;可预测的停顿：能够让用户指定在时间片段内，消耗在垃圾收集的时间不超过多长时间。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;Region&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;虽然在G1中依然保留了新生代和老年代的概念，但是采用的是一种完全不同的方式来组织堆内存，它把整个堆内存分割成了很多大小相同的区域（Region），并且新生代和老年代在物理上也不是连续的内存区域，请看下图：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.3883333333333333&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ggRgNal7zG99ka1icre2BiblNnPUq9gT24cgaAVMOf1JWIiaiaNpwicea90KmQ3sywHiaNnyicl0QquoyywqrlMectKsA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1200&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;每个Region被标记了E、S、O和H，其中H是以往算法中没有的，它代表Humongous，这表示这些Region存储的是巨型对象，当新建对象大小超过Region大小一半时，直接在新的一个或多个连续Region中分配，并标记为H。Region区域的内存大小可以通过&lt;code&gt;-XX:G1HeapRegionSize&lt;/code&gt;参数指定，大小区间只能是2的幂次方，如：1M、2M、4M、8M&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;G1的GC模式&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;新生代GC：与其他新生代收集器类似，对象优先在eden region分配，如果eden region内存不足就会触发新生代的GC，把存活的对象安置在survivor region，或者晋升到old region&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;混合GC：当越来越多的对象晋升到了old region，当老年代的内存使用率达到某个阈值就会触发混合GC，可以通过参数&lt;code&gt;-XX:InitiatingHeapOccupancyPercent&lt;/code&gt;设置阈值百分比，此参数与CMS中&lt;code&gt;-XX:CMSInitiatingoccupancyFraction&lt;/code&gt;的功能类似；混合GC会回收新生代和&lt;strong&gt;「部分老年代内存」&lt;/strong&gt;，注意是部分老年代而不是全部老年代；G1会跟踪每个Region中的垃圾回收价值，在用户指定的垃圾收集时间内优先回收价值最大的region&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Full GC：如果对象内存分配速度过快，混合GC还未回收完成，导致老年代被填满，就会触发一次full gc，G1的full gc算法就是单线程执行的serial old gc，此过程与CMS类似，会导致异常长时间的暂停时间，尽可能的避免full gc.&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;写到最后（点关注，不迷路）&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;文中或许会存在或多或少的不足、错误之处，有建议或者意见也非常欢迎大家在评论交流。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;最后，请朋友们&lt;strong&gt;「不要白嫖我哟」&lt;/strong&gt;，希望朋友们可以&lt;strong&gt;「点赞」&lt;/strong&gt;，因为这些就是我分享的全部动力来源🙏&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.8764044943820225&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/ggRgNal7zG99ka1icre2BiblNnPUq9gT24qV5GzhtC3trlvOoZcoziatw7nssiaSU22QrTxdyFW73GC41ttg9ndegg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;267&quot;/&gt;&lt;span&gt;&lt;span/&gt;&lt;/span&gt;&lt;/figure&gt;&lt;span&gt;&lt;span/&gt;&lt;/span&gt;&lt;/section&gt;
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>2e7871aa00c0c7545543a99d833f6de9</guid>
-<title>数仓已死？数据湖当立</title>
-<link>https://toutiao.io/k/tpejrbn</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-role=&quot;outer&quot; label=&quot;Powered by 135editor.com&quot;&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzIwNjM0MTc0Ng==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/7VHriaQOsnjnicZ3bhN7MiagiakU9nmdqQ7W5XpwOG1UnOTHiahCaDQJlNuGCTtTzKauXN0CJIKibdKrZaAQLN602aDA/0?wx_fmt=png&quot; data-nickname=&quot;大数据架构师&quot; data-alias=&quot;bigdata_arch&quot; data-signature=&quot;历任多家公司大数据总监、大数据架构师，专注于数字化转型领域。公众号分享大量干货，包括数字化转型方案、数字化转型案例、数字化转型方向，以及大数据技术细节、大数据架构设计、大数据架构方案、数据仓库、数据分析技巧。有数字化转型和大数据架构社群&quot;/&gt;&lt;/section&gt;&lt;h3&gt;&lt;span&gt;前言&lt;/span&gt;&lt;br/&gt;&lt;/h3&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;前两天，&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;我详细剖析了一下这两天脉脉上很火的数据建模帖子。指出来帖子里百度小哥“只见宽表不见建模&lt;span&gt;”的核心原因是整个数据圈的核心逻辑变了。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;然后就引起了建模群里一帮人在疯狂吐槽。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.30456852791878175&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/7VHriaQOsnjkpFgHko6JxQGWLOIIKKeG0lEblOSMVwYUUT4X1ZgPwH9ickH7ric4KEic3F2DrN0Hjz3LTibQuODkGtg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;394&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.22278481012658227&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/7VHriaQOsnjkpFgHko6JxQGWLOIIKKeG0oibCcrlcNkG2nXPIZSVbjBJibdGZwkFkSLeEHDhFTNN7vq8usxeX5AZw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;395&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;也有大厂的数仓大佬高屋建瓴，指点江山，侃侃而谈。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.2631578947368421&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/7VHriaQOsnjkpFgHko6JxQGWLOIIKKeG0M7s8qqnQ34x5GvfYia9ADm7LTviccQb3wp10YeHCWibupRnGZgdLBK5Dg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;380&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;为啥吐槽？因为我们知道，这再也不是以前数据至上、工程为先的俄罗斯方块游戏了，而是客户至上、业务为先的神庙逃亡游戏。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;但是绝大多数企业的数据仓库工程师，究竟还是沦落到拉宽表的境地。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;大清都亡了，你上哪找辫子去啊？&lt;/span&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;玩法变了&lt;/span&gt;&lt;/h3&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;早些年&lt;/span&gt;&lt;span&gt;，&lt;/span&gt;&lt;span&gt;业务变化还没那么频繁，战略是一年定一次，KPI 政策是一年发布一次。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们有充足的时间去规划、业务建模、领域建模、逻辑建模、物理建模、验证模型。如同那时候的爱情，车马慢，一生只够爱一人。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.4255555555555556&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/7VHriaQOsnjkpFgHko6JxQGWLOIIKKeG0UVpBjO70xGHxjpj536Sk9gdMRprd53HPRG0fDj5ADticjBthkQXbufQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;900&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;那时候行业的玩&lt;/span&gt;&lt;span&gt;法基本一致，所以也有了 FSLDM 这种经典数据模型可以套用。&lt;/span&gt;&lt;span&gt;一个模型搞定一个行业有没有？&lt;/span&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;但是现在，谁家的玩法跟别人一毛一样？没有！就算是短视频界的两个直接竞争对手--抖音和快手，都是那么迥然不同的逻辑：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;一个偏向算法推荐，一个偏向社交关系。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;更不用说现在火热的社区团购，都在抢占市场，业务模式每天都在变。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我自己都不敢相信，我会建设一个能够支持 KPI 政策一个月一调整的 KPI 数仓+核算体系！&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;玩法真的变了！这世道变了！&lt;/span&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;建模变了&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;span&gt;在这种边开飞机边换发动机的时代，传统数仓规规矩矩建设的逻辑就不好使了，开始朝着非常诡异的方向发展。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;一个方向&lt;/strong&gt;&lt;/span&gt;，是规模大、技术强、业务趋于稳定的企业，如阿里、美团的固有业务，他们开始尝试一种全新的建模理念。&lt;/p&gt;&lt;p&gt;他们的主题域划分根本不遵循老一套的“中性、通用”，而是“&lt;strong&gt;&lt;span&gt;个性、专用&lt;/span&gt;&lt;/strong&gt;”。所以他们采用的是按业务流程划分主题域，因为这样才能更方便的支撑上面的业务指标体系。这样弄，上哪提炼一个通用的模型去啊？&lt;/p&gt;&lt;p&gt;在建模的时候，传统建模，DWD 层必须是范式建模，而且一般不对外提供服务。如果各部门需要明细数据，则各自建立 DM 解决。&lt;/p&gt;&lt;p&gt;&lt;span&gt;而现在这些大厂的建模方式，则是尽可能压缩范式建模的范围，扩大维度建模的深度。以结构化指标体系开道，用维度模型向下不断穿透，直到 DWD 层。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;是的，DWD 层也是维度建模。所有 ID 统一、代码转换、数据打平的事情放在哪里做？ETL 里做。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;哦，不！应该改叫 ELT 了。先 Load ，再 T&lt;/span&gt;&lt;span&gt;ransformation 。因为超大量的数据输入，我们必须首先解决数据吞吐量的问题。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;另一个方向&lt;/span&gt;&lt;/strong&gt;，是那些创业公司或者大公司的新业务。这类场景的特点是业务一直在变，产品功能也在变，业务数据库也在变。&lt;/p&gt;&lt;p&gt;在这种场景中传统数据仓库建设的逻辑完全失效。因为根本不可能有人能在这么短的时间内，设计出一个能适应 &lt;span&gt;2 周一次的迭代速度的数据仓库模型。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;所以他们选择了简单粗暴的拉宽表！&lt;/p&gt;&lt;p&gt;这就是脉脉上百度小哥疯狂吐槽的根本原因。不是不去建模，而是根本&lt;strong&gt;&lt;span&gt;没时间、没条件给你建模&lt;/span&gt;&lt;/strong&gt;。&lt;/p&gt;&lt;h3&gt;&lt;span&gt;数仓已死？&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;那种业务趋于稳定的大厂毕竟是少数，更多的情况是创业公司、业务不断试错、调整的小厂。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在业务 1 个月变一次方向、产品 2 周迭代一次、业务数据库不断更新还没人告诉你的地狱模式下，基本上宣告了数据仓库的死亡！&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这就像是在玩游戏。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;以前是玩俄罗斯方块，我们得精心设计好，每一块砖都要放在合理的地方，垒的整整齐齐，等待那一根棍子的到来。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;而现在，是在玩神庙逃亡，操作方式同样都是上下左右，但是你根本没办法想合理、结构、布局，稍微迟疑一些，就被怪兽咬到屁股了。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;而对于那些业务日趋稳定的大厂，数据仓库同样也有巨大的困扰。就像新能源汽车车主总有里程焦虑一样，几乎所有的离线数仓工程师都害怕任务失败。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;任务失败就意味着报表出不来，就意味着运营的白眼和扣绩效。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;另外，我们的增量入库方案，由于数据迟到、业务逻辑复杂等各种原因，慢慢的变得越来越复杂。以至于一些小公司干脆直接每天全量，这导致数据延迟更加严重。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;貌似一切正常的离线数仓 T+1 延迟，成为压死数仓的最后一根稻草。因为业务部门已经不能满足于看昨天的数据了。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;“我们并没有做错什么,但不知为什么,我们输了”，诺基亚 CEO 的声音仿佛萦绕耳边。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;什么？你说 Lambda 架构可以满足？是，这样是能&lt;/span&gt;&lt;span&gt;&lt;span&gt;出数，但是你拿实时和离线两个结果对比一下试试看？&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;你现在告诉我，拿什么拯救已然过了&lt;/span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;互联网淘汰年龄&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;的数据仓库？&lt;/span&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;数据湖当立&lt;/span&gt;&lt;br/&gt;&lt;/h3&gt;&lt;p&gt;&lt;span&gt;当互联网 HR 对着年龄超限的数据仓库拿出辞退信的时候，另一个 HR 给一个 09 年才出生的小娃娃发出了 Offer 。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;它就是&lt;strong&gt;&lt;span&gt;数据湖&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;它爹是 Pentaho 的 CTO James Dixon。James 创造它的时候，也没想到这家伙能变得这么牛掰。他当初只是想把磁带上存储的所有数据统统倒进一个地方，方便任意探索。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;而现在的数据湖，已经成长为一个巨无霸！凭借着基于快照的设计方式、满足快照隔离、优秀的原子性、新元数据等巧妙设计，数据湖拥有了支持批流一体、完美增量入库、入库即可计算等特性。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;这些特性意味着什么？&lt;/p&gt;&lt;p&gt;对于 ETL 工程师来说，意味着数据湖没有 T+1 ！太令人兴奋了！&lt;/p&gt;&lt;p&gt;&lt;span&gt;但是更兴奋的是大数据架构师，数据湖不仅意味着什么数据都往里扔，更意味着一种&lt;/span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;新架构的诞生&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;！&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;一个万能的架构，能够满足算法工程师随意淘换原始数据的架构，能够满足大数据工程师随时拉一张准实时宽表出来的架构，能够满足准实时数据增量接入和即时分析的架构，能够让大数据工程师不用早起看任务是否失败的架构。&lt;/span&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;架构变了&lt;/span&gt;&lt;br/&gt;&lt;/h3&gt;&lt;p&gt;&lt;span&gt;Kappa 架构中，最无奈的其实是 Kafka ，生把一个 MQ 整成了数据库。这也直接导致了 Kappa 架构无法存储海量数据的弊端。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.2696817420435511&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/7VHriaQOsnjkpFgHko6JxQGWLOIIKKeG0gyvGdGPj0HjqIhMibibiciayfda642LrUmC7OHfU0xzWNG9UpBHBRzKufA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;597&quot;/&gt;&lt;/p&gt;&lt;p&gt;但是这个弊端，&lt;span&gt;数据湖可以解决啊。&lt;/span&gt;把 Kafka 改成数据湖之后，问题解决了。 &lt;span&gt;Kafka 也终于歇了口气，可以卸下莫名其妙得到的“数据库”头衔。&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.25675675675675674&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/7VHriaQOsnjkpFgHko6JxQGWLOIIKKeG0KpGAmOCibP45UBVZy1OEkQv2U6iarxQ4pLnaicSIDgiavdTrUZsyaotEJQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;592&quot;/&gt;&lt;/p&gt;&lt;/section&gt;&lt;p&gt;而传统数仓的“数据孤岛问题，在数据湖面前，瞬间荡然无存。因为数据湖本来就是大杂烩，什么都往里装呀！&lt;/p&gt;&lt;p&gt;而且现在已经有各种组件与数据湖产品进行对接了。数据湖真的变成了一个湖！&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.9693877551020408&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/7VHriaQOsnjkpFgHko6JxQGWLOIIKKeG0H8xwfXjQCiaolMGlrO8d8KDyKKQfSFiauXj2IssUUwmCfMicOqdfZMiavg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;392&quot;/&gt;&lt;/p&gt;&lt;p&gt;这个架构简直了！&lt;/p&gt;&lt;p&gt;你可以用数据处理组件，从湖里抽数出来，抽完直接做成宽表扔给运营。&lt;/p&gt;&lt;p&gt;也可以写一个 DAG ，数据规整、打通之后扔其他数据库里。&lt;/p&gt;&lt;p&gt;&lt;span&gt;对数据非常了解的人，可以利用查询组件，直接到数据湖里查数据。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;算法工程师同样可以直接对接数据湖，从湖里捞原始数据投喂给算法，训练模型。&lt;/p&gt;&lt;p&gt;最关键的一点，OLAP 引擎也能直接对接数据湖！&lt;/p&gt;&lt;p&gt;这个就厉害了！换句话说，咱可以依据这个构建一个超级无敌的 OLAP 体系，准实时、不用复杂的分层建设、不用担心任务跑不完、业务要啥可以快速给出去！&lt;/p&gt;&lt;h3&gt;&lt;span&gt;市场变了&lt;/span&gt;&lt;br/&gt;&lt;/h3&gt;&lt;p&gt;&lt;span/&gt;&lt;span&gt;你说，这个东东&lt;/span&gt;&lt;span&gt;是不是很牛？&lt;/span&gt;&lt;span&gt;对你来说是不是很有价值？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;是的，不仅对你有价值，对资本市场也很有价值。美国有个公司叫Snowflake，好家伙，直接估值过 1000 亿美金！！！PS 远超其他各大独角兽。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.5502555366269165&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/7VHriaQOsnjkpFgHko6JxQGWLOIIKKeG0u2ZvHOb8sVGANqXCfwibkmIxTqSZ9hpRJaUZdUhynDsIY7PW27wiaDbA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;587&quot;/&gt;&lt;/p&gt;&lt;p&gt;除了 Snowflake 之外，数据湖的老选手亚马逊 AWS 也是一路狂奔，早就有了自己的 OLAP 产品 AWS Athena ，跟自己的数据湖双剑合并，推出了“湖仓一体”的概念。&lt;/p&gt;&lt;p&gt;当然，这里面肯定也少不了中国队的身影，首当其冲的就是阿里系了。阿里的 OSS 大家应该都挺熟悉的，这个存储便宜的要死。&lt;/p&gt;&lt;p&gt;但是你可能不知道，阿里基于 OSS 的存储还整了一个云原生数据湖体系，其中不仅包括了数据湖，还有基于数据湖的 OLAP 产品 DLA ！&lt;/p&gt;&lt;p&gt;当然啊，这个价钱嘛，嘿嘿，你懂的。&lt;/p&gt;&lt;p&gt;其他选择也有哈。目前开源的数据湖有江湖人称“数据湖三剑客”的 Delta Lake、IceBerg 和 Hudi。&lt;/p&gt;&lt;p&gt;上面的 OLAP、查询引擎可以用 Kylin、Presto，Spark SQL、Impala等。&lt;/p&gt;&lt;p&gt;这里着重强调一下 Kylin 哈，不仅是因为这是中国团队开源的产品，更重要的是这玩意我们大数据工程师熟啊~~~&lt;/p&gt;&lt;p&gt;而且，就算你不是大数据工程师，是传统数仓工程师，学习起来也不要太简单了！因为这玩意你可以理解为大数据环境下的 Cube。这不就是我们天天在干的活儿么？&lt;/p&gt;&lt;p&gt;当然，Kylin现在已经不局限于传统的Cube，基本上已经把Cube当成Index和存储了。之前分享过，Kylin现在已经支持明细查询和实时查询的功能。&lt;/p&gt;&lt;p&gt;为了帮大家探路，我厚着脸皮找到了 Kylin 创始团队的史少锋大佬，要来了几份&lt;strong&gt;&lt;span&gt;半公开的资料&lt;/span&gt;&lt;/strong&gt;。大家自己收着就行哈。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.34454638124362896&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/7VHriaQOsnjkpFgHko6JxQGWLOIIKKeG0ibKuD9tibeZNpIkCwkB2IaHRaI6A3iavVNvhT0icapnhzIdpqZmqfSiaFdw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;981&quot;/&gt;&lt;/p&gt;&lt;p&gt;云上数据湖 + Kylin 的这个产品叫 Kyligence Cloud，从上图可以看到它的位置，就在湖之上，可视化之下。因为是直接从湖里取数建 Cube，然后直接展示。这省了多少事儿啊！&lt;/p&gt;&lt;p&gt;有哥们问了，那构建 Cube 不得要时间么？咋说呢，第一次建 Cube，的确要一些时间。但是之后就不需要那么长时间了，因为数据可以增量加载。&lt;/p&gt;&lt;p&gt;因为数据湖的特性，它可以告诉 Kylin 在从上次消费后，有哪些 Partition 发生了修改。这样 Kylin 只要刷新特定的 Partition 就可以了。而且数据湖可以只拉取变化的数据，使得增量修改 Cube 变得可行。如果有查询不能被 Cube 满足，那么直接下压查询数据湖也是支持的，只是性能上会降级到普通水平。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.5230769230769231&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/7VHriaQOsnjkpFgHko6JxQGWLOIIKKeG0aeXl9ppiaeyrQZvWyQOxib70Iam9JnCq8f5qlR1ItHENaxAqfA7ZQusQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;715&quot;/&gt;&lt;/p&gt;&lt;p&gt;这样，整个数据流，从产生到展示，基本上能控制在半个小时以内。啥？你还嫌慢？&lt;/p&gt;&lt;p&gt;嗯，的确，跟 ClickHouse 比起来，的确是慢一些，我也不是过来跟你掰扯那个工具好，谁的并发量高、速度快。&lt;/p&gt;&lt;p&gt;但是，哥们，咱说句良心话，你真的想成为一个&lt;span&gt;&lt;strong&gt;&lt;span&gt;整天“拉宽表”的 SQL Boy&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt; 吗？我之前也写过一篇 ClickHouse 的文章，那个快则快矣，但是小心反噬啊。&lt;/p&gt;&lt;p&gt;我们知道，OLAP 其实基本分为三个发展方向：MOLAP、ROLAP 和 HOLAP 。Kylin 是 MOLAP，ClikcHouse 是 ROLAP，这两个产品，犹如倚天屠龙。ClickHouse就是那倚天，追求极致的快，Kylin就是那屠龙，厚重而沉稳。&lt;/p&gt;&lt;p&gt;如果倚天屠龙能合二为一，各自取长补短，那简直无敌了！期待Kylin和ClickHouse团队的合作，推出更牛的产品，让我们的工作更轻松一些。&lt;/p&gt;&lt;p&gt;不过现在么，单纯的 ClickHouse 只能算是辟邪。辟邪虽好，必先自宫啊。ClickHouse 用的多了，那咱练就的一手建模技巧，恐怕就要废了！&lt;/p&gt;&lt;p&gt;你问问那些吐槽天天拉宽表的哥们，就知道其实哥们很悲观。&lt;/p&gt;&lt;h3&gt;&lt;span&gt;结语&lt;/span&gt;&lt;br/&gt;&lt;/h3&gt;&lt;p&gt;唉，你以为我在耸人听闻，却不知已然是事实。数仓人的前路该往哪个方向？&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.25210084033613445&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/7VHriaQOsnjkpFgHko6JxQGWLOIIKKeG0fnOZhhGLiaPreZViaYBibicKnkyvCrMeZicc3ic7hDTzo25gpFPbpFichAqZg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;357&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这是群里兄弟私信我的问题。说实话，这个问题我不知道怎么回答。时代在变迁，技术在进步，跟不上就必然会淘汰。&lt;/span&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;前几天我在跑步机上看了《百鸟朝凤》，人们喜欢西洋乐队更甚于传统的唢呐。最后焦师傅赌气吐血吹唢呐，宛若凤凰绝唱的时候，我心都碎了。&lt;/p&gt;&lt;p&gt;我是个老数仓人。05 年实习的时候就在做建仓建模的事情，真心觉得这是个手艺活儿。所以不管怎地，我都得找来 Kylin 的资料，分享给大家。相比起其他工具，Kylin 还是更亲近我们数仓人一些的。&lt;/p&gt;&lt;p&gt;感兴趣的可以戳【原文】直接去试用一下，反正又不要钱，领导问起来也好解释，研究新技术么。好歹给自己简历上多写一句话啊。&lt;/p&gt;&lt;p&gt;唉，数仓不知道死没死，但是数据湖已经来了。&lt;span&gt;大家努力吧，&lt;/span&gt;加油！&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;扩展阅读&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;：【6份数据湖资料+4份Kylin内部解决方案、案例】，公众号“大数据架构师”后台回复“&lt;span&gt;数据湖&lt;/span&gt;”，转发即可下载。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.8537037037037037&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/7VHriaQOsnjkpFgHko6JxQGWLOIIKKeG0FJRw2IkEAKhPWOLJ6bCxKMGS9or0z2GmpcszINpXvP6onjWkLibLjLQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;540&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;感谢阅读，本次分享的内容就结束了。&lt;/span&gt;&lt;span&gt;本公众号目前保持日更3000字，为你提供优秀的数据领域的分享。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;欢迎大家加我微信好友，尽个点赞之交，有需要的可以拉你进数据建模交流群，2021更上一层楼!&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/7VHriaQOsnjmmS3OUhvJrCiaQV0XT5WZfReHcJIJ2TofQ6icUJGp984icw45ic0dpRdsLic0LYqKsJX0HGRqWuQsvEEA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-ratio=&quot;1&quot; data-w=&quot;430&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;推荐阅读&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;：&lt;/span&gt;&lt;span/&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p&gt;&lt;strong&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzIwNjM0MTc0Ng==&amp;amp;mid=2247484404&amp;amp;idx=1&amp;amp;sn=49956f21673dae3ab10b52dbc8376b4b&amp;amp;chksm=972250e9a055d9ff556bbedd7e0f68918a4b1b1235e9f0fb09b426deb6699ea9eface10a72cd&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;从数据库一口气说到数据中台&lt;/a&gt;！&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzIwNjM0MTc0Ng==&amp;amp;mid=2247485382&amp;amp;idx=1&amp;amp;sn=c0a95f8033cfe992ee4da346703df1c3&amp;amp;chksm=972254dba055ddcd8950fad23698eb8164e2a3f7ab61f04395454e813c4e39dfbb7810cb895d&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;strong&gt;传统数据仓库转型最佳目标：Kylin！&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzIwNjM0MTc0Ng==&amp;amp;mid=2247484917&amp;amp;idx=1&amp;amp;sn=c757c8874f716b3d1164683ee2679ea5&amp;amp;chksm=972256e8a055dffefa87e00721381ab5c0d350b41e886c0c35bf4d530b80d9f318695f1a0596&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;strong&gt;传统数仓和大数据数仓的区别是什么？&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzIwNjM0MTc0Ng==&amp;amp;mid=2247486961&amp;amp;idx=1&amp;amp;sn=c9ef8a069ddede6863772292d5a866f8&amp;amp;chksm=97225eeca055d7fa3791247b7c66744ab93c6b97b8b3f7c5f28f43fbef6ec5610067b81d4585&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;阿里的《大数据之路》吹牛了？&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/section&gt;&lt;p&gt;更多精彩：&lt;/p&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
