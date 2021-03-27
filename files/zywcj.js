@@ -275,9 +275,11 @@ return realUrl;
 }else{
 return src+"#isVideo=true#"};
 }else if(src.indexOf("ddyunp")!=-1||src.indexOf("90mm.me")!=-1){
-var fileUrl = "https://cdn.jsdelivr.net/gh/lzk23559/rulehouse/ddyun.js";
-eval(fetch(fileUrl,{}));
-return ddyun.toUrl(src);
+eval(getCryptoJS());
+var id=src + 'duoduo' + 'l' + (Math.floor(new Date().getTime() / 100000) * 100).toString();
+var dat=CryptoJS.MD5(id).toString(CryptoJS.enc.Hex);
+var purl='https://hls.90mm.me/ddyun/' + src + '/l/' + dat + '/playlist.m3u8';
+return purl;
 }else if(src.indexOf("xsp1")!=-1){
 var pli=parseDomForHtml(fetch(src,{headers:{"Referer":"https://zz22x.com"}}),"body&&iframe&&src").split("url=")[1];
 var fileUrl="https://codeberg.org/lzk23559/PublicRule/raw/branch/master/parse.js";
@@ -291,10 +293,9 @@ return html.match(/url\":.*?[\'\"](.*?)[\'\"]/)[1];
 refreshX5WebView(src);
 return "toast://请等待加载选集！";
 }else if(src.indexOf("www.bilibili.com")!=-1){
-var fileUrl="https://codeberg.org/lzk23559/PublicRule/raw/branch/master/parse.js";
-eval(fetch(fileUrl,{}));
-var play=llqplay.toUrl(src);
-return play==''?getUrl(src):play;
+var cc=parseDomForHtml(request('https://api.10dy.net/?url='+src,{}),'body&&iframe&&src');
+var html=request('https://api.10dy.net/'+cc,{}).match(/url\": \"(.*?)\"/)[1];
+return html+';{Referer@https://www.bilibili.com&&User-Agent@Mozilla/5.0\}';
 }else if(src.indexOf("47api")!=-1){
 refreshX5WebView(src);
 return "toast://请等待加载选集！";
