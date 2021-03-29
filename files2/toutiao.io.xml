@@ -67,324 +67,166 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>fe3b7214c1bf1326e7fcd8244e2de611</guid>
-<title>基于 NextCloud 打造个人工作台</title>
-<link>https://toutiao.io/k/dllg2zb</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entry-content&quot;&gt;&amp;#13;
+<guid>5f060077e03fa300af8c6e902d7a6282</guid>
+<title>我在架构设计和代码开发中的一些常用原则</title>
+<link>https://toutiao.io/k/sso4l2l</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
 
-&lt;p&gt;Nextcloud 是一款开源免费的私有云存储网盘项目，除了保存数据，通过安装插件，实现更多功能。我已经用Nextcloud 工作一段时间了，本章介绍我的使用心得。&lt;/p&gt;
+                    
+                    
+                    
+                    &lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.6259765625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/Z6bicxIx5naJ8wib0SP8iaWGVgWb0VNrUIe78lY2RAUFY9aHS34u4xnqT0OMDdoXTsD5rJia1icZNvnPuTMMtPlOjng/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1024&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;blockquote&gt;&lt;section&gt;不管我一生中取得了多大的成功，其主要原因都不是我知道多少事情，而是我知道在无知的情况下自己应该怎么做。我一生中学到的最重要的东西是一种以原则为基础的生活方式，是它帮助我发现真相是什么，并据此如何行动。&lt;br/&gt;&lt;br/&gt;——瑞·达利欧（Ray Dalio）&lt;/section&gt;&lt;/blockquote&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;在日常的开发和设计过程中，大家对技术设计上的一些问题往往会面临很多的选择，不同的人会有不同的选择，每每如此，我都会尝试着问自己：我做出选择和判断背后的原则是什么？&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;经过这么多年的发展，在软件设计过程，目前沉淀下来的原则有很多，但很多情况下，很多原则为了普适性，总结得会比较抽象，一旦太过抽象，对原则的解释和理解就会因人而异，譬如：高内聚低耦合原则，大家都懂，但是如何落地和执行却是很难说完全达成一致。因此，需要针对一些实际的场景中的问题去总结和补充，在大的原则下具化形成大家容易理解一致的相对明确原则。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;本文介绍的就是我在工作中遇到的一些问题而总结和使用到的一些常用原则。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;一  常用原则总结&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;1  分层设计相关原则&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;单向依赖原则&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;blockquote&gt;&lt;section&gt;原则上只允许较高层次依赖较低层次，不允许反向依赖。&lt;/section&gt;&lt;/blockquote&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;我们部门是为B类企业提供金融解决方案的技术部门，针对我们部门，在金融平台层系统不能反向依赖业务产品层系统。同一层的金融平台层系统之间的依赖不进行限制，但会尽量减少同层依赖。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;另外，我们在解决底层依赖的高层中沉淀了几种基本方式：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;系统依赖转换为数据依赖；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;接口依赖，通过底层定义SPI，业务层实现，这种做法其实是不得已为之，同时，我们在设计过程中还是尽可能避免走这条路；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;通过事件机制解耦依赖。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;无循环依赖原则&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;blockquote&gt;&lt;section&gt;系统设计时，尽量减少系统之间的依赖，同时需要避免系统之间出现循环调用。&lt;/section&gt;&lt;/blockquote&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;这是微服务场景下最容易出现的一个问题，尤其是同层的领域系统之间的调用，导致系统容易出现循环调用，循环依赖带来的一个严重的问题是影响系统的发布和部署问题。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;避免跨层调用原则&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;blockquote&gt;&lt;section&gt;较高层次不允许之间跨层调用底层。&lt;/section&gt;&lt;/blockquote&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;软件设计中进行分层的一个重要目的是通过分层屏蔽底层的实现细节，如果出现跨层相当于把底层的实现直接暴露了。譬如门面服务层，绕过领域服务层，直接调用DAO层进行数据读写操作，一旦需要重构修改原有的DAO层接口，就发现升级改造成本巨大，我不知道有多少个团队&lt;span&gt;也&lt;/span&gt;面临过这种痛苦。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;单一职责原则&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;该原则由罗伯特·C&lt;span&gt;·&lt;/span&gt;马丁（Robert C. Martin）于《敏捷软件开发：原则、模式和实践》一书中提出的。这里的职责是指类变化的原因，单一职责原则规定一个类应该有且仅有一个引起它变化的原因，否则类应该被拆分（There should never be more than one reason for a class to change）。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;这个原则虽然提出时是解决类的职责定义问题，但实际上在对模块的划分上也有指导意义。该原则虽然很简单，但是往往也容易被忽视。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;在最近的项目中，我充分体会到这个原则的作用，我们部门的金融网络系统主要解决机构标准化对接问题，我们将系统分为了上下两层，下层通过标准化的接口对接机构，提升机构跨产品的复用能力；上层是产品扩展层，通过提供标准接口给到上游的业务产品层，支持同一个产品接入多家机构，屏蔽机构差异。我们判断一个功能到底属于机构对接层，还是产品扩展层的一个简单的原则是：如果新增一家机构，能否做到只影响机构对接层，而保持产品扩展层代码不改；反过来，如果新增一个产品，是否能做到只修改产品扩展层，机构层能否不改代码。同时，为了避免这个原则被突破，我们甚至在机构对接层的代码中，去除了所有和产品有关的参数，这样，根据产品定制的逻辑天然无法放到这一层。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;数据冗余&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;blockquote&gt;&lt;section&gt;架构设计应该使得系统中数据的冗余最小。&lt;/section&gt;&lt;/blockquote&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;譬如我们在实践过程中，接口设计时，在Javadoc上强制指定接口的必传参数，尽量做到最小集，减少上游系统使用接口的成本。另外要求在接口实现时，提前进行参数校验，不让不满足要求的数据冗余到系统中。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;为了提高系统性能，备份节点和子系统/模块必要时需要对数据进行缓存，当发生变化时，必须有相应的机制保证缓存数据的一致性和有效性。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;2  质量属性相关原则&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;数据安全&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;这块在我们金融业务部门中尤其突出，金融由于其特殊性，往往需要收集大量的客户真实和隐私数据，数据安全是设计中需要重点考虑的问题，通常我们会主要关注以下三个方面的问题：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;3  资损防控&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;对金融技术部门而言，资损防控是第一位，而我们在实际过程中发现，由于前期的一些系统在设计之初没有考虑资损的防控，导致核对或者监控的成本很高，因此，在后来的系统数据模型设计时重点会去review是否具备可核对。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;4  并发控制&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;悲观锁：代码编码规范——一锁二查三更新。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;乐观锁：必须在事务内更新。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;5  热点问题&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;blockquote&gt;&lt;section&gt;避免流量倾斜，导致单台机器/单个数据表/数据库集中读写。&lt;/section&gt;&lt;/blockquote&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;这个需要在设计时充分提前预判业务的发展规模和系统的容量问题。在实际实施过程中，我们会提前按照3~5年左右的业务规模来设计。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;6  数据倾斜&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;blockquote&gt;&lt;section&gt;分表分库规则在设计时需要考虑数据分布均匀，避免单库或者单表数据倾斜。&lt;/section&gt;&lt;/blockquote&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;数据倾斜这个在之前踩过比较大的坑，在系统设计之初没有结合业务场景去考虑系统的数据存储层设计，导致数据出现严重倾斜，数据库操作出现瓶颈，现在是我们在设计存储层方案时必须要考虑的一个原则。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;7  性能原则&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;blockquote&gt;&lt;section&gt;可压测：对性能要求高的链路，需要做到可以压测。&lt;/section&gt;&lt;/blockquote&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;这个主要是由于每到大促就需要重新梳理和改造压测链路，耗时费力，苦不堪言。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;8  事务控制相关原则&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;9  一致性相关原则&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;二  API设计相关设计原则&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;1  水平越权控制&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;blockquote&gt;&lt;section&gt;API设计时需要考虑防范水平越权。&lt;/section&gt;&lt;/blockquote&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;目前我们的做法是，从前端到后端，每层都需要进行越权校验。通过从接口设计层面防控，避免某层出现疏忽导致越权的事件发生。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;2  接口幂等控制&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;blockquote&gt;&lt;section&gt;调用方必须提供用于幂等控制的参数，为了控制幂等，同一个请求的幂等参数不变。&lt;/section&gt;&lt;/blockquote&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;在血泪史上，由于接口不幂等导致的问题太多了，这个目前基本上已经成了部门在接口设计上的共识。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;3  兼容性原则&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;blockquote&gt;&lt;section&gt;API升级和调整，需要兼容老的版本。&lt;/section&gt;&lt;/blockquote&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;为了保证接口可以升级，我们对接口的设计就会存在比较高的要求，譬如接口参数中不能使用枚举，不能使用Java基础类型等，同时也要求接口设计需要具备一定前瞻性和通用性，尤其对于面向业务领域的接口设计，更要求对该领域的业务知识有比较多的了解。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;当然还有一些原则在《Java开发手册》中已有叙述，这里就不在赘述。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;三  总结&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;本文介绍了我们在系统设计和开发实际场景中总结出的一些原则，通过这些原则的总结和沉淀，可以在后续出现同类问题时做出相对正确的选择，避免重蹈覆辙。另外，通过在大的原则下进行具体化和明确化，能够让大家容易达成一致，让架构方案更容易落地，不走偏。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;另外，无论是在生活上还是工作上，建议多从成功的经验或者失败的教训中去总结，形成自己的原则，丰富自己的决策系统。这是《&lt;span&gt;原则&lt;/span&gt;》这本书给我带来的一个比较大的启发。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;hr/&gt;&lt;section&gt;&lt;span/&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;电子书免费下载&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;《名人堂》&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;今天，所有的IT技术日趋互联网化，不管是工业还是商业领域的系统，都将面临互联网技术的变革。阿里巴巴CIO学院采访了15位包括金融、工业、交通、建材、钢铁、证券、建筑、家居等领域的知名专家，分享他们对数字化的所思所想，互相交流学习，共同拥抱变化。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;点击“阅读原文”，立即下载&lt;/span&gt;&lt;span&gt;吧~&lt;/span&gt;&lt;/p&gt;
+                &lt;/div&gt;
 
+                
 
+                
 
-&lt;span id=&quot;more-363&quot;/&gt;
 
 
-
-&lt;h3 id=&quot;数据管理&quot;&gt;数据管理&lt;/h3&gt;
-
-
-
-&lt;p&gt;家里用树莓派4跑Nextcloud，外接一个1T的移动硬盘，用来存储全家的数据，打通电脑、手机、平板的数据交互。家里台式机有一块3T硬盘，每隔一段时间会使用台式机增量同步数据做二次备份。&lt;/p&gt;
-
-
-
-&lt;p&gt;树莓派上有安装aria2做下载服务，下载在Samba共享的目录中。之所以不用Nextcloud做下载目录是因为每当目录内容变化，Nextcloud会自动索引。一个文件下载完会发现Nextcloud动态中全是这个文件的修改信息。&lt;/p&gt;
-
-
-
-&lt;p&gt;Nextcloud存储的数据大多是照片、视频、文档。使用Samba挂载ara2的下载目录，方便访问下载的文件。&lt;/p&gt;
-
-
-
-&lt;p&gt;在应用中找到“External storage support”，安装启用。该应用一般是默认安装。&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;在设置中添加外部存储。&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;使用Docker安装默认不支持Samba挂载，可参考之前写的这篇，开启Samba挂载：&lt;a href=&quot;https://engr-z.com/278.html&quot; target=&quot;_blank&quot; rel=&quot;noreferrer noopener&quot;&gt;engr-z.com/278.html&lt;/a&gt;&lt;/p&gt;
-
-
-
-&lt;p&gt;在应用市中还可以下载其他插件，支持挂载Google Driver，OneDrive等插件。&lt;/p&gt;
-
-
-
-&lt;h3 id=&quot;邮件管理&quot;&gt;邮件管理&lt;/h3&gt;
-
-
-
-&lt;p&gt;虽然工作中大多使用IM沟通，但是正式场合邮件必不可少。一般我们都会有多个邮箱，通过Mail插件，我们可以把所有邮箱添加到Nextcloud方便管理和查阅。&lt;/p&gt;
-
-
-
-&lt;p&gt;在应用中搜索“Mail”，安装启用。&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;Mail的入口在顶部，支持IMAP收信和SMTP发送。&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;和POP协议不同，IMAP协议的操作会同步到邮箱服务器，如果删除邮件，邮箱服务器的邮件也会同步删除。&lt;/p&gt;
-
-
-
-&lt;h3 id=&quot;笔记&quot;&gt;笔记&lt;/h3&gt;
-
-
-
-&lt;p&gt;虽然Nextcloud的笔记插件和专业笔记软件比起来差得远了，不过作为临时草稿本还是很实用的。&lt;/p&gt;
-
-
-
-&lt;p&gt;在应用中搜索“Notes”，安装启用&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;笔记支持纯文本的.txt文件和支持markdown语法的.md文件。&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;笔记默认保存在“笔记”目录中，可以在设置中修改保存的文件夹和笔记默认文件格式。&lt;/p&gt;
-
-
-
-&lt;h3 id=&quot;联系人管理&quot;&gt;联系人管理&lt;/h3&gt;
-
-
-
-&lt;p&gt;在应用市场搜索“Contacts”，安装启用。&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;联系人管理入口在顶部：&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;支持 vCard 格式，可以导入/导出，并和手机同步。&lt;/p&gt;
-
-
-
-&lt;h2 id=&quot;书签和密码&quot;&gt;书签和密码&lt;/h2&gt;
-
-
-
-&lt;p&gt;对于常常需要使用多个浏览器的人，最痛苦的是书签和浏览器密码不同步。比如在Chrome中保存的书签，在Firefox中要再保存一次。在Edge中保存的密码，在Chrome又要输入。如果更新密码，则又要手动同步。而且Google账户在国内无法登录，无法使用Chrome同步功能。&lt;/p&gt;
-
-
-
-&lt;p&gt;通过安装第三方书签和密码同步工具可以解决上述问题，而Nextcloud支持书签和密码同步。&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;在应用中搜索“Bookmarks”，安装启用。&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;书签支持导入导出，默认保存在“书签”文件夹中。&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;我们可以建不同的文件夹，区分应用场景。比如建“个人”和“公司”文件夹。在公司只同步“公司”的书签。&lt;/p&gt;
-
-
-
-&lt;p&gt;同步书签的浏览器插件是“floccus”，支持Chrome、Firefox、Edge，在各浏览器应用市场可以搜到。官网：&lt;a href=&quot;https://floccus.org/&quot; target=&quot;_blank&quot; rel=&quot;noreferrer noopener&quot;&gt;floccus.org&lt;/a&gt;&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;设置好后可在浏览器中查看同步状态&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;在手机上也可以查看书签。&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;在应用中搜索“Passwords”，安装启用。&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;Passwords入口在顶部，和书签一样，可以用不同文件夹区分不同场景。我做软件开发时常常要登录测试账号，可以建立“测试”文件夹用于保存账号密码。&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;Passwords插件主流浏览器和Android/IOS手机APP，在Passwords界面提供插件下载入口：&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;以Chrome为例，通过Passwords入口点击“Available on Firefox Add-ons”安装插件，然后点击“Connect with PassLink”连接。&lt;/p&gt;
-
-
-
-&lt;p&gt;连接成功可查看状态：&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;当浏览器跳到登录界面，如果有保存过密码，在插件中可以看到，点击后登录框会自动设置保存的用户名密码&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;浏览器插件只支持查询，相关密码需要在Nextcloud中创建：&lt;/p&gt;
-
-
-
-
-
-
-
-
-
-
-
-&lt;p&gt;有了这两个插件，可以在任意浏览器中切换。&lt;/p&gt;
-
-
-
-&lt;p&gt;手机端也可以安装nextBookmark和Passwords同步管理书签和密码：&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;h3 id=&quot;外部站点&quot;&gt;外部站点&lt;/h3&gt;
-
-
-
-&lt;p&gt;我们可以自定义外部站点，把第三方网站集成到Nextcloud中，比如，集成导航网站，集成搜索等。&lt;/p&gt;
-
-
-
-&lt;p&gt;在应用中搜索“External sites”，安装启用&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;在设置中找到“外部站点”，添加&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;添加成功后在顶部可以看到入口&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;我们还可以自定义图标，分组等。&lt;/p&gt;
-
-
-
-&lt;h3 id=&quot;更多&quot;&gt;更多&lt;/h3&gt;
-
-
-
-&lt;p&gt;Nextcloud的强大远不此如此，安装ONLYOFFICE插件还能处理office文件，还有ToDo类工具，计划任务，工作流等插件。由于篇幅有限就不一一说明了。&lt;/p&gt;
-
-
-
-&lt;p&gt;我在安装应用时发现，安装较大的应用可能会很慢。我们可以手动在官网下载应用，解压到Nextcloud安装目录下的app目录，然后在“应用”管理中启用。&lt;/p&gt;
-
-
-
-&lt;p&gt;Nextcloud App官网：&lt;a href=&quot;https://apps.nextcloud.com/&quot; target=&quot;_blank&quot; rel=&quot;noreferrer noopener&quot;&gt;apps.nextcloud.com&lt;/a&gt;&lt;/p&gt;
-&lt;hr/&gt;&lt;/div&gt;&amp;#13;
-&amp;#13;
-&lt;/div&gt;&lt;/div&gt;</content:encoded>
+                
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>00ae2e387e90f5d1701039adf46b7569</guid>
-<title>[译] 使用 Vue.js 和 MJML 创建响应式电子邮件</title>
-<link>https://toutiao.io/k/wfkmex2</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-cropselx1=&quot;0&quot; data-cropselx2=&quot;558&quot; data-cropsely1=&quot;0&quot; data-cropsely2=&quot;237&quot; data-ratio=&quot;0.6671232876712329&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/WYoaOn5t0AMvmc7dL0N7fvxI4wZJTWXtLl1o11Acx1PiclTVCrBSuqUvPxtfmXayHAm3LXlk7eVFOv5aiaktRVxw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;730&quot;/&gt;&lt;span&gt;原文：https://blog.logrocket.com/creating-responsive-emails-using-mjml/&lt;br/&gt;&lt;span&gt;作者：Ogundipe Samuel&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;MJML是一种现代的电子邮件工具，使开发人员可以在所有设备和邮件客户端上创建美观、响应迅速的出色电子邮件。这种标记语言是为了减少编写响应式电子邮件的痛苦而设计的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;它的语义语法使其易于使用。它还具有功能丰富的标准组件，可缩短开发时间。在本教程中，我们将使用MJML构建漂亮的响应式邮件，并在多个邮件客户端上进行测试。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;开始MJML&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;你可以使用npm安装MJML，以将其与Node.js或CLI结合使用：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;$&lt;/span&gt;&lt;span&gt; npm install -g mjml&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;构建我们的电子邮件&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;首先，请创建一个名为 &lt;code&gt;email.mjml&lt;/code&gt; 的文件，尽管你也可以选择其他任何名称。创建文件后，我们的响应式电子邮件将分为以下几部分：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;公司header&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;图片header&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Email介绍&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;栏目部分&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;图标&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;社交图标&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;栏目&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这些部分是我们响应式电子邮件的框架。如上所示，我们的电子邮件将分为六个部分，在我们的 &lt;code&gt;email.mjml&lt;/code&gt; 文件中：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;&amp;lt;&lt;span&gt;mjml&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;&lt;span&gt;mj-body&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;!-- 公司 Header --&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-section&lt;/span&gt; &lt;span&gt;background-color&lt;/span&gt;=&lt;span&gt;&quot;#f0f0f0&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;span&gt;&amp;lt;/&lt;span&gt;mj-section&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;!-- 图片 Header --&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-section&lt;/span&gt; &lt;span&gt;background-color&lt;/span&gt;=&lt;span&gt;&quot;#f0f0f0&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;span&gt;&amp;lt;/&lt;span&gt;mj-section&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;!-- Email 介绍 --&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-section&lt;/span&gt; &lt;span&gt;background-color&lt;/span&gt;=&lt;span&gt;&quot;#fafafa&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;span&gt;&amp;lt;/&lt;span&gt;mj-section&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;!-- 栏目部分 --&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-section&lt;/span&gt; &lt;span&gt;background-color&lt;/span&gt;=&lt;span&gt;&quot;white&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;span&gt;&amp;lt;/&lt;span&gt;mj-section&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;!-- 图标 --&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-section&lt;/span&gt; &lt;span&gt;background-color&lt;/span&gt;=&lt;span&gt;&quot;#fbfbfb&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;span&gt;&amp;lt;/&lt;span&gt;mj-section&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;!-- 社交图标 --&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-section&lt;/span&gt; &lt;span&gt;background-color&lt;/span&gt;=&lt;span&gt;&quot;#f0f0f0&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;span&gt;&amp;lt;/&lt;span&gt;mj-section&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;/&lt;span&gt;mj-body&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;/&lt;span&gt;mjml&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;从上面可以看到，我们正在使用两个MJML组件：&lt;code&gt;mj-body&lt;/code&gt; 和 &lt;code&gt;mj-section&lt;/code&gt;。&lt;code&gt;mj-body&lt;/code&gt; 定义了我们电子邮件的起点，而 &lt;code&gt;mj-section&lt;/code&gt; 定义了一个包含其他组件的节。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;对于定义的每个部分，还定义了具有各自十六进制值的 &lt;code&gt;background-color&lt;/code&gt; 属性。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;公司 Header&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们电子邮件的此部分仅在中心横幅位置包含我们的公司/品牌名称：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;&amp;lt;!-- 公司 Header --&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;&lt;span&gt;mj-section&lt;/span&gt; &lt;span&gt;background-color&lt;/span&gt;=&lt;span&gt;&quot;#f0f0f0&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-text&lt;/span&gt;  &lt;span&gt;font-style&lt;/span&gt;=&lt;span&gt;&quot;bold&quot;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;font-size&lt;/span&gt;=&lt;span&gt;&quot;20px&quot;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;align&lt;/span&gt;=&lt;span&gt;&quot;center&quot;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;color&lt;/span&gt;=&lt;span&gt;&quot;#626262&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    Central Park Cruise&lt;br/&gt;    &lt;span&gt;&amp;lt;/&lt;span&gt;mj-text&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;/&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;/&lt;span&gt;mj-section&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;mj-column&lt;/code&gt; 组件是用来定义一个列。&lt;code&gt;mj-text&lt;/code&gt; 组件用于我们的文本内容，并采取字体样式、字体大小、颜色等样式属性。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;图片 Header&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在本部分中，我们将有一个背景图片和一段文字，它们应代表我们的公司口号。我们还会有一个号召性用语按钮，指向一个包含更多详细信息的页面。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;要添加图片标题，你必须将该部分的背景颜色替换为 &lt;code&gt;background-url&lt;/code&gt;。与第一个标题相似，你将不得不在垂直和水平方向上居中放置文本，padding保持不变。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;按钮的 &lt;code&gt;href&lt;/code&gt; 设置按钮的位置。为了让背景在列中呈现全宽，将列宽设置为600px，&lt;code&gt;width=“600px&quot;&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们的电子邮件的这一部分将只包含我们的公司/品牌名称的中心横幅位置。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;&amp;lt;!-- Image Header --&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;&lt;span&gt;mj-section&lt;/span&gt; &lt;span&gt;background-url&lt;/span&gt;=&lt;span&gt;&quot;https://ca-times.brightspotcdn.com/dims4/default/2af165c/2147483647/strip/true/crop/2048x1363+0+0/resize/1440x958!/quality/90/?url=https%3A%2F%2Fwww.trbimg.com%2Fimg-4f561d37%2Fturbine%2Forl-disneyfantasy720120306062055&quot;&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;background-size&lt;/span&gt;=&lt;span&gt;&quot;cover&quot;&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;background-repeat&lt;/span&gt;=&lt;span&gt;&quot;no-repeat&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;&lt;span&gt;mj-column&lt;/span&gt; &lt;span&gt;width&lt;/span&gt;=&lt;span&gt;&quot;600px&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-text&lt;/span&gt;  &lt;span&gt;align&lt;/span&gt;=&lt;span&gt;&quot;center&quot;&lt;/span&gt;&lt;br/&gt;             &lt;span&gt;color&lt;/span&gt;=&lt;span&gt;&quot;#fff&quot;&lt;/span&gt;&lt;br/&gt;             &lt;span&gt;font-size&lt;/span&gt;=&lt;span&gt;&quot;40px&quot;&lt;/span&gt;&lt;br/&gt;             &lt;span&gt;font-family&lt;/span&gt;=&lt;span&gt;&quot;Helvetica Neue&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;Christmas Discount&lt;span&gt;&amp;lt;/&lt;span&gt;mj-text&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-button&lt;/span&gt; &lt;span&gt;background-color&lt;/span&gt;=&lt;span&gt;&quot;#F63A4D&quot;&lt;/span&gt; &lt;span&gt;href&lt;/span&gt;=&lt;span&gt;&quot;#&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;      See Promotions&lt;br/&gt;    &lt;span&gt;&amp;lt;/&lt;span&gt;mj-button&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;/&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;/&lt;span&gt;mj-section&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;要使用图像header，我们将向 &lt;code&gt;jms -section&lt;/code&gt; 组件添加 &lt;code&gt;background-url&lt;/code&gt; 属性，然后使用 &lt;code&gt;background-size&lt;/code&gt; 和 &lt;code&gt;background-repeat&lt;/code&gt; 属性设置图像的样式。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;对于我们的口号文本块，我们使用 &lt;code&gt;align&lt;/code&gt; 属性将文本在水平和垂直方向上居中对齐。你还可以根据需要设置文本颜色，字体大小，字体系列等。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;号召性用语按钮是使用 &lt;code&gt;mj-button&lt;/code&gt; 组件实现的。&lt;code&gt;background-color&lt;/code&gt; 属性允许我们指定按钮的背景色，然后使用 &lt;code&gt;href&lt;/code&gt; 指定链接或页面的位置。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-cropselx1=&quot;0&quot; data-cropselx2=&quot;558&quot; data-cropsely1=&quot;0&quot; data-cropsely2=&quot;372&quot; data-ratio=&quot;1.2733333333333334&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/WYoaOn5t0AMvmc7dL0N7fvxI4wZJTWXtmwAuOSN3bibj0McvB5ziaHMzRJWpHllTbsRDxrbeuryNT69RQnCpcG2A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1350&quot;/&gt;&lt;span/&gt;&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;Email件介绍&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;简介文字将由标题，主体文字和号召性用语组成。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;&amp;lt;!-- Intro text --&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;&lt;span&gt;mj-section&lt;/span&gt; &lt;span&gt;background-color&lt;/span&gt;=&lt;span&gt;&quot;#fafafa&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;&lt;span&gt;mj-column&lt;/span&gt; &lt;span&gt;width&lt;/span&gt;=&lt;span&gt;&quot;400px&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-text&lt;/span&gt; &lt;span&gt;font-style&lt;/span&gt;=&lt;span&gt;&quot;bold&quot;&lt;/span&gt;&lt;br/&gt;             &lt;span&gt;font-size&lt;/span&gt;=&lt;span&gt;&quot;20px&quot;&lt;/span&gt;&lt;br/&gt;             &lt;span&gt;font-family&lt;/span&gt;=&lt;span&gt;&quot;Helvetica Neue&quot;&lt;/span&gt;&lt;br/&gt;             &lt;span&gt;color&lt;/span&gt;=&lt;span&gt;&quot;#626262&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;Ultimate Christmas Experience&lt;span&gt;&amp;lt;/&lt;span&gt;mj-text&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-text&lt;/span&gt; &lt;span&gt;color&lt;/span&gt;=&lt;span&gt;&quot;#525252&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rutrum enim eget magna efficitur, eu semper augue semper. Aliquam erat volutpat. Cras id dui lectus. Vestibulum sed finibus lectus, sit amet suscipit nibh. Proin nec commodo purus. Sed eget nulla elit. Nulla aliquet mollis faucibus.&lt;br/&gt;    &lt;span&gt;&amp;lt;/&lt;span&gt;mj-text&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-button&lt;/span&gt; &lt;span&gt;background-color&lt;/span&gt;=&lt;span&gt;&quot;#F45E43&quot;&lt;/span&gt; &lt;span&gt;href&lt;/span&gt;=&lt;span&gt;&quot;#&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;Learn more&lt;span&gt;&amp;lt;/&lt;span&gt;mj-button&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;/&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;/&lt;span&gt;mj-section&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;栏目部分&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在这封邮件的部分，我们会有两栏：一栏是描述性的图片，二栏是我们的文字块，用来补充第一部分的图片。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;&amp;lt;!-- Side image --&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;&lt;span&gt;mj-section&lt;/span&gt; &lt;span&gt;background-color&lt;/span&gt;=&lt;span&gt;&quot;white&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;!-- Left image --&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-image&lt;/span&gt; &lt;span&gt;width&lt;/span&gt;=&lt;span&gt;&quot;200px&quot;&lt;/span&gt;&lt;br/&gt;              &lt;span&gt;src&lt;/span&gt;=&lt;span&gt;&quot;https://navis-consulting.com/wp-content/uploads/2019/09/Cruise1-1.png&quot;&lt;/span&gt;/&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;/&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;!-- right paragraph --&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-text&lt;/span&gt; &lt;span&gt;font-style&lt;/span&gt;=&lt;span&gt;&quot;bold&quot;&lt;/span&gt;&lt;br/&gt;             &lt;span&gt;font-size&lt;/span&gt;=&lt;span&gt;&quot;20px&quot;&lt;/span&gt;&lt;br/&gt;             &lt;span&gt;font-family&lt;/span&gt;=&lt;span&gt;&quot;Helvetica Neue&quot;&lt;/span&gt;&lt;br/&gt;             &lt;span&gt;color&lt;/span&gt;=&lt;span&gt;&quot;#626262&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;      Amazing Experiences&lt;br/&gt;    &lt;span&gt;&amp;lt;/&lt;span&gt;mj-text&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-text&lt;/span&gt; &lt;span&gt;color&lt;/span&gt;=&lt;span&gt;&quot;#525252&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;      Lorem ipsum dolor sit amet, consectetur adipiscing elit. &lt;br/&gt;      Proin rutrum enim eget magna efficitur, eu semper augue semper. &lt;br/&gt;      Aliquam erat volutpat. Cras id dui lectus. Vestibulum sed finibus &lt;br/&gt;      lectus.&lt;br/&gt;    &lt;span&gt;&amp;lt;/&lt;span&gt;mj-text&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;/&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;/&lt;span&gt;mj-section&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;左侧的第一列使用 &lt;code&gt;mj-image&lt;/code&gt; 组件指定要使用的图像。该图像可以是本地文件，也可以是远程托管的图像（在我们的情况下是这样）。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;右侧的第二列包含两个文本块，一个用于我们的标题，另一个用于主体文本。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;图标&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;图标部分将分为三列。你还可以添加更多内容，具体取决于你希望电子邮件的外观。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;&amp;lt;!-- Icons --&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;&lt;span&gt;mj-section&lt;/span&gt; &lt;span&gt;background-color&lt;/span&gt;=&lt;span&gt;&quot;#fbfbfb&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-image&lt;/span&gt; &lt;span&gt;width&lt;/span&gt;=&lt;span&gt;&quot;100px&quot;&lt;/span&gt; &lt;span&gt;src&lt;/span&gt;=&lt;span&gt;&quot;https://191n.mj.am/img/191n/3s/x0l.png&quot;&lt;/span&gt; /&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;/&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-image&lt;/span&gt; &lt;span&gt;width&lt;/span&gt;=&lt;span&gt;&quot;100px&quot;&lt;/span&gt; &lt;span&gt;src&lt;/span&gt;=&lt;span&gt;&quot;https://191n.mj.am/img/191n/3s/x01.png&quot;&lt;/span&gt; /&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;/&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-image&lt;/span&gt; &lt;span&gt;width&lt;/span&gt;=&lt;span&gt;&quot;100px&quot;&lt;/span&gt; &lt;span&gt;src&lt;/span&gt;=&lt;span&gt;&quot;https://191n.mj.am/img/191n/3s/x0s.png&quot;&lt;/span&gt; /&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;/&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;/&lt;span&gt;mj-section&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;每列都有其自己的 &lt;code&gt;mj-image&lt;/code&gt; 组件，用于渲染图标图像。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;社交图标&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;本部分将包含指向我们的社交媒体帐户的图标。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;&amp;lt;&lt;span&gt;mj-section&lt;/span&gt; &lt;span&gt;background-color&lt;/span&gt;=&lt;span&gt;&quot;#e7e7e7&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-social&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;&amp;lt;&lt;span&gt;mj-social-element&lt;/span&gt; &lt;span&gt;name&lt;/span&gt;=&lt;span&gt;&quot;instagram&quot;&lt;/span&gt; /&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;/&lt;span&gt;mj-social&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;/&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;/&lt;span&gt;mj-section&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;MJML带有 &lt;code&gt;mj-social&lt;/code&gt; 组件，可轻松用于显示社交媒体图标。在我们的电子邮件中，我们使用了 Twitter &lt;code&gt;mj-social-element&lt;/code&gt;。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;全部放在一起&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;至此，我们已经实现了所有部分，完整的 &lt;code&gt;email.mjml&lt;/code&gt; 应该如下所示：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;&amp;lt;&lt;span&gt;mjml&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;&lt;span&gt;mj-body&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;!-- Company Header --&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-section&lt;/span&gt; &lt;span&gt;background-color&lt;/span&gt;=&lt;span&gt;&quot;#f0f0f0&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;&amp;lt;&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;&lt;span&gt;mj-text&lt;/span&gt;  &lt;span&gt;font-style&lt;/span&gt;=&lt;span&gt;&quot;bold&quot;&lt;/span&gt;&lt;br/&gt;                 &lt;span&gt;font-size&lt;/span&gt;=&lt;span&gt;&quot;20px&quot;&lt;/span&gt;&lt;br/&gt;                 &lt;span&gt;align&lt;/span&gt;=&lt;span&gt;&quot;center&quot;&lt;/span&gt;&lt;br/&gt;                 &lt;span&gt;color&lt;/span&gt;=&lt;span&gt;&quot;#626262&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;          Central Park Cruises&lt;br/&gt;        &lt;span&gt;&amp;lt;/&lt;span&gt;mj-text&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;&amp;lt;/&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;/&lt;span&gt;mj-section&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;!-- Image Header --&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-section&lt;/span&gt; &lt;span&gt;background-url&lt;/span&gt;=&lt;span&gt;&quot;https://ca-times.brightspotcdn.com/dims4/default/2af165c/2147483647/strip/true/crop/2048x1363+0+0/resize/1440x958!/quality/90/?url=https%3A%2F%2Fwww.trbimg.com%2Fimg-4f561d37%2Fturbine%2Forl-disneyfantasy720120306062055&quot;&lt;/span&gt;&lt;br/&gt;                &lt;span&gt;background-size&lt;/span&gt;=&lt;span&gt;&quot;cover&quot;&lt;/span&gt;&lt;br/&gt;                &lt;span&gt;background-repeat&lt;/span&gt;=&lt;span&gt;&quot;no-repeat&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;&amp;lt;&lt;span&gt;mj-column&lt;/span&gt; &lt;span&gt;width&lt;/span&gt;=&lt;span&gt;&quot;600px&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;&lt;span&gt;mj-text&lt;/span&gt;  &lt;span&gt;align&lt;/span&gt;=&lt;span&gt;&quot;center&quot;&lt;/span&gt;&lt;br/&gt;                 &lt;span&gt;color&lt;/span&gt;=&lt;span&gt;&quot;#fff&quot;&lt;/span&gt;&lt;br/&gt;                 &lt;span&gt;font-size&lt;/span&gt;=&lt;span&gt;&quot;40px&quot;&lt;/span&gt;&lt;br/&gt;                 &lt;span&gt;font-family&lt;/span&gt;=&lt;span&gt;&quot;Helvetica Neue&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;Christmas Discount&lt;span&gt;&amp;lt;/&lt;span&gt;mj-text&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;&lt;span&gt;mj-button&lt;/span&gt; &lt;span&gt;background-color&lt;/span&gt;=&lt;span&gt;&quot;#F63A4D&quot;&lt;/span&gt; &lt;span&gt;href&lt;/span&gt;=&lt;span&gt;&quot;#&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;          See Promotions&lt;br/&gt;        &lt;span&gt;&amp;lt;/&lt;span&gt;mj-button&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;&amp;lt;/&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;/&lt;span&gt;mj-section&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;!-- Email Introduction --&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-section&lt;/span&gt; &lt;span&gt;background-color&lt;/span&gt;=&lt;span&gt;&quot;#fafafa&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;&amp;lt;&lt;span&gt;mj-column&lt;/span&gt; &lt;span&gt;width&lt;/span&gt;=&lt;span&gt;&quot;400px&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;&lt;span&gt;mj-text&lt;/span&gt; &lt;span&gt;font-style&lt;/span&gt;=&lt;span&gt;&quot;bold&quot;&lt;/span&gt;&lt;br/&gt;                 &lt;span&gt;font-size&lt;/span&gt;=&lt;span&gt;&quot;20px&quot;&lt;/span&gt;&lt;br/&gt;                 &lt;span&gt;font-family&lt;/span&gt;=&lt;span&gt;&quot;Helvetica Neue&quot;&lt;/span&gt;&lt;br/&gt;                 &lt;span&gt;color&lt;/span&gt;=&lt;span&gt;&quot;#626262&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;Ultimate Christmas Experience&lt;span&gt;&amp;lt;/&lt;span&gt;mj-text&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;&lt;span&gt;mj-text&lt;/span&gt; &lt;span&gt;color&lt;/span&gt;=&lt;span&gt;&quot;#525252&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rutrum enim eget magna efficitur, eu semper augue semper. Aliquam erat volutpat. Cras id dui lectus. Vestibulum sed finibus lectus, sit amet suscipit nibh. Proin nec commodo purus. Sed eget nulla elit. Nulla aliquet mollis faucibus.&lt;br/&gt;        &lt;span&gt;&amp;lt;/&lt;span&gt;mj-text&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;&lt;span&gt;mj-button&lt;/span&gt; &lt;span&gt;background-color&lt;/span&gt;=&lt;span&gt;&quot;#F45E43&quot;&lt;/span&gt; &lt;span&gt;href&lt;/span&gt;=&lt;span&gt;&quot;#&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;Learn more&lt;span&gt;&amp;lt;/&lt;span&gt;mj-button&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;&amp;lt;/&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;/&lt;span&gt;mj-section&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;!-- Columns section --&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-section&lt;/span&gt; &lt;span&gt;background-color&lt;/span&gt;=&lt;span&gt;&quot;white&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;&amp;lt;!-- Left image --&amp;gt;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;&amp;lt;&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;&lt;span&gt;mj-image&lt;/span&gt; &lt;span&gt;width&lt;/span&gt;=&lt;span&gt;&quot;200px&quot;&lt;/span&gt;&lt;br/&gt;                  &lt;span&gt;src&lt;/span&gt;=&lt;span&gt;&quot;https://navis-consulting.com/wp-content/uploads/2019/09/Cruise1-1.png&quot;&lt;/span&gt;/&amp;gt;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;&amp;lt;/&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;&amp;lt;!-- right paragraph --&amp;gt;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;&amp;lt;&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;&lt;span&gt;mj-text&lt;/span&gt; &lt;span&gt;font-style&lt;/span&gt;=&lt;span&gt;&quot;bold&quot;&lt;/span&gt;&lt;br/&gt;                 &lt;span&gt;font-size&lt;/span&gt;=&lt;span&gt;&quot;20px&quot;&lt;/span&gt;&lt;br/&gt;                 &lt;span&gt;font-family&lt;/span&gt;=&lt;span&gt;&quot;Helvetica Neue&quot;&lt;/span&gt;&lt;br/&gt;                 &lt;span&gt;color&lt;/span&gt;=&lt;span&gt;&quot;#626262&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;          Amazing Experiences&lt;br/&gt;        &lt;span&gt;&amp;lt;/&lt;span&gt;mj-text&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;&lt;span&gt;mj-text&lt;/span&gt; &lt;span&gt;color&lt;/span&gt;=&lt;span&gt;&quot;#525252&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;          Lorem ipsum dolor sit amet, consectetur adipiscing elit. &lt;br/&gt;          Proin rutrum enim eget magna efficitur, eu semper augue semper. &lt;br/&gt;          Aliquam erat volutpat. Cras id dui lectus. Vestibulum sed finibus &lt;br/&gt;          lectus.&lt;br/&gt;        &lt;span&gt;&amp;lt;/&lt;span&gt;mj-text&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;&amp;lt;/&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;/&lt;span&gt;mj-section&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;!-- Icons --&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-section&lt;/span&gt; &lt;span&gt;background-color&lt;/span&gt;=&lt;span&gt;&quot;#fbfbfb&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;&amp;lt;&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;&lt;span&gt;mj-image&lt;/span&gt; &lt;span&gt;width&lt;/span&gt;=&lt;span&gt;&quot;100px&quot;&lt;/span&gt; &lt;span&gt;src&lt;/span&gt;=&lt;span&gt;&quot;https://191n.mj.am/img/191n/3s/x0l.png&quot;&lt;/span&gt; /&amp;gt;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;&amp;lt;/&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;&amp;lt;&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;&lt;span&gt;mj-image&lt;/span&gt; &lt;span&gt;width&lt;/span&gt;=&lt;span&gt;&quot;100px&quot;&lt;/span&gt; &lt;span&gt;src&lt;/span&gt;=&lt;span&gt;&quot;https://191n.mj.am/img/191n/3s/x01.png&quot;&lt;/span&gt; /&amp;gt;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;&amp;lt;/&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;&amp;lt;&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;&lt;span&gt;mj-image&lt;/span&gt; &lt;span&gt;width&lt;/span&gt;=&lt;span&gt;&quot;100px&quot;&lt;/span&gt; &lt;span&gt;src&lt;/span&gt;=&lt;span&gt;&quot;https://191n.mj.am/img/191n/3s/x0s.png&quot;&lt;/span&gt; /&amp;gt;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;&amp;lt;/&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;/&lt;span&gt;mj-section&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;!-- Social icons --&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;mj-section&lt;/span&gt; &lt;span&gt;background-color&lt;/span&gt;=&lt;span&gt;&quot;#e7e7e7&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;&amp;lt;&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;&lt;span&gt;mj-social&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;          &lt;span&gt;&amp;lt;&lt;span&gt;mj-social-element&lt;/span&gt; &lt;span&gt;name&lt;/span&gt;=&lt;span&gt;&quot;instagram&quot;&lt;/span&gt; /&amp;gt;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;/&lt;span&gt;mj-social&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;&amp;lt;/&lt;span&gt;mj-column&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;/&lt;span&gt;mj-section&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;/&lt;span&gt;mj-body&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;/&lt;span&gt;mjml&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;运行我们的应用程序&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;现在我们已经完成了电子邮件的构建，我们可以继续对其进行编译以查看其外观。为此，我们在终端中键入以下内容：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;mjml -r email.mjml -o .&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;-r&lt;/code&gt;：允许MJML读取和编译我们的 &lt;code&gt;mjml&lt;/code&gt; 文件&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;-o .&lt;/code&gt;：告诉MJML将编译后的 &lt;code&gt;mjml&lt;/code&gt; 输出保存到同一目录中&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;MJML完成编译后，你现在应该在同一目录中看到一个 &lt;code&gt;email.html&lt;/code&gt; 文件。使用你喜欢的电子邮件客户端或浏览器打开它，它的外观应类似于下图：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;1.535472972972973&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/WYoaOn5t0AMvmc7dL0N7fvxI4wZJTWXtn3HhqzggLXRgwEfsIq81s9wCkvymMiaxNibbIHPicLp539xfTRhW5ENdw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;592&quot;/&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;总结&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;正如我们刚才看到的，MJML帮助我们生成跨多个浏览器和客户机响应的高质量、漂亮的HTML电子邮件。&lt;/p&gt;&lt;hr data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>e31b5dc4bec38563ae7ccd10d1b4a8d5</guid>
+<title>进程与线程：入门知识篇</title>
+<link>https://toutiao.io/k/8labbkw</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;container app-preview post-body&quot;&gt;
+  &lt;div class=&quot;preview&quot;&gt;&lt;h2&gt;前言&lt;/h2&gt;
+
+&lt;p&gt;大家好啊，我是汤小圆。&lt;/p&gt;
+
+&lt;p&gt;今天给大家推荐的是，进程与线程的入门知识，希望对大家有帮助，谢谢。&lt;/p&gt;
+
+&lt;h2&gt;简介&lt;/h2&gt;
+
+&lt;p&gt;首先用术语来讲一下，进程是系统进行资源调度和分配的基本单元，线程是进程的最小执行单元；&lt;/p&gt;
+
+&lt;p&gt;比如Windows中的任务管理器，就可以看到正在运行的进程，如下所示&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://i.loli.net/2021/03/26/YepVMXJuNsz4tBT.png&quot; alt=&quot;进程-win10&quot;/&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;PS：这里要注意一点，程序不等于进程&lt;/p&gt;
+
+&lt;p&gt;程序是指令的集合，是静态的；进程是正在执行的程序，是活的&lt;/p&gt;
+
+&lt;p&gt;当你双击运行程序（.exe文件）时，程序的指令会加载到内存中，此时你就会得到这个程序的进程&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;好了，术语讲完了，接下来开始讲人话&lt;/p&gt;
+
+&lt;h3&gt;知识点&lt;/h3&gt;
+
+&lt;h4&gt;1. 进程和线程的关系是怎么样的呢？&lt;/h4&gt;
+
+&lt;p&gt;进程可以看作一个容器，线程就是容器内的最小执行单元；&lt;/p&gt;
+
+&lt;p&gt;我们用一个例子来说明，比如有一个宿舍（进程），宿舍里有两个人（线程），一个厕所（共享资源）&lt;/p&gt;
+
+&lt;p&gt;宿舍和人的关系就是进程和线程的关系&lt;/p&gt;
+
+&lt;p&gt;一个进程可以包含多个线程。&lt;/p&gt;
+
+&lt;h4&gt;2. 既然有了进程，为啥还要有线程呢？&lt;/h4&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;每个进程都有自己独立的数据空间，进程之间不共享这些数据资源，通讯不方便；&lt;/p&gt;
+
+&lt;p&gt;但是线程不一样，一个进程内的多个线程共享这个进程的数据资源，通讯方便&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;多进程之间切换开销大；&lt;/p&gt;
+
+&lt;p&gt;但是多线程不会，线程来回切换开销很小&lt;/p&gt;
+
+&lt;p&gt;（这里简单解释下，引入一个虚拟空间的概念，多个进程拥有不同的虚拟空间和缓存，但是多个线程共享进程的虚拟空间和缓存，进程切换之后，缓存失效，要重新去寻址虚拟空间，但是线程因为共享空间，缓存还是可以用的，所以比进程快）&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4&gt;3. 多线程都有哪些好处呢？&lt;/h4&gt;
+
+&lt;p&gt;多线程相互协作，重复利用系统资源，提高系统吞吐率&lt;/p&gt;
+
+&lt;p&gt;如果只是单个线程，那么程序在执行比较耗时的操作（比如IO）时，CPU 是处于空闲的状态，就会造成资源的浪费&lt;/p&gt;
+
+&lt;p&gt;但是多线程可以切换到其他线程，继续执行其他任务，从而充分利用CPU&lt;/p&gt;
+
+&lt;p&gt;比如我们在看电影的时候，眼睛在工作，耳朵也在工作，这样就可以充分利用我们的身体去享受电影；&lt;/p&gt;
+
+&lt;p&gt;但是如果眼睛和耳朵要分开工作，那就难受了（脑补一下声音画面不同步的场景）&lt;/p&gt;
+
+&lt;h4&gt;4. 多线程要怎么确保数据安全呢？&lt;/h4&gt;
+
+&lt;p&gt;有多种方式：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;局部变量，即单个线程内定义的局部变量只有自己可见，那肯定是安全的&lt;/li&gt;
+&lt;li&gt;只读对象，即共享的对象是只读的，那肯定也是安全的&lt;/li&gt;
+&lt;li&gt;线程安全类，即类本身是线程安全的，那么基于这个类的操作肯定也是安全，比如StringBuffer类&lt;/li&gt;
+&lt;li&gt;同步与锁机制，即用户自己通过加锁，来确保数据安全；这个会导致程序变得复杂且容易出现问题&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4&gt;5. 线程的生命周期都有哪些呢？&lt;/h4&gt;
+
+&lt;p&gt;通过JDK源码可以看到，线程的生命周期有6个状态，如下所示&lt;/p&gt;
+
+&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt; public enum State {
+        NEW, // 创建了线程，但是啥也没干
+        RUNNABLE, // 启动了线程，处于运行状态
+        BLOCKED, // 阻塞了线程，处于阻塞状态
+        WAITING, // 等待状态，没有时间限制，直到有其他事件通知
+        TIMED_WAITING, // 等待状态，有时间限制，时间到了，会返回到运行状态
+        TERMINATED; // 终止状态，线程结束
+    }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4&gt;6. 这些状态之间的关系是咋样的呢？&lt;/h4&gt;
+
+&lt;p&gt;可以用一张图来描述，如下所示，可以看到除了NEW状态和TERMINATED状态，其他状态都是跟RUNNABLE状态互通的&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://i.loli.net/2021/03/25/JwSKVbuDkgQe2lH.png&quot; alt=&quot;线程状态图&quot;/&gt;&lt;/p&gt;
+
+&lt;h4&gt;7. 那么线程的创建 New 有几种方式呢？&lt;/h4&gt;
+
+&lt;p&gt;三种&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;（不推荐）继承Thread类，但是这样的话不符合LSP原则（里氏替换原则，详细内容可参考：&lt;a href=&quot;https://www.jianshu.com/p/cf9f3c7c0df5%EF%BC%89&quot;&gt;https://www.jianshu.com/p/cf9f3c7c0df5）&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;（推荐）实现Runnable接口，比第一种灵活，也更加安全&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;（推荐）实现Callable接口，相比于第二种，多了&lt;strong&gt;返回值&lt;/strong&gt;和&lt;strong&gt;异常抛出&lt;/strong&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4&gt;8. BLOCKED 状态一般什么情况下会出现呢？&lt;/h4&gt;
+
+&lt;p&gt;遇到锁的情况下，如果锁没有释放，那么线程就会阻塞&lt;/p&gt;
+
+&lt;h4&gt;9. WAITING 和 TIMED_WAITING有啥区别，不都是等待状态吗？&lt;/h4&gt;
+
+&lt;p&gt;WAITING 状态会无休止的等待下去，直到其他事件通知它，它才会停止等待，进入RUNNABLE状态（被动）&lt;/p&gt;
+
+&lt;p&gt;TIMED_WAITING 状态会有一个等待最长时间，如果到了等待最长时间，还没有人通知它，它会自动停止等待，进入RUNNABLE状态（被动+主动）&lt;/p&gt;
+
+&lt;h2&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;上面只是简单介绍了线程和进程，真正要学的话东西还是很多的&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;参考书籍&lt;/strong&gt;：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Java并发编程实战&lt;/li&gt;
+&lt;li&gt;实战Java高并发程序设计（第二版）&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;strong&gt;参考链接&lt;/strong&gt;：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;里氏替换原则：&lt;a href=&quot;https://www.jianshu.com/p/cf9f3c7c0df5&quot;&gt;https://www.jianshu.com/p/cf9f3c7c0df5&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2&gt;后记&lt;/h2&gt;
+
+&lt;p&gt;最后，感谢大家的观看，谢谢。&lt;/p&gt;
+&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
