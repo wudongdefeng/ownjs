@@ -33,28 +33,6 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>c3865d3842291b7f520639e4de0c5da5</guid>
-<title>喝口可乐聊聊可扩展性设计</title>
-<link>https://toutiao.io/k/jrcl0sb</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
-
-                    
-                    
-                    
-                    &lt;p data-lake-id=&quot;a20d224c568e48b9d67847a2c66a8c01_p_0&quot;&gt;      可扩展性要达到的目的就是在扩展软件功能、增加项目运行时性能的时候，能尽量少的去改动原有的代码，架构等，基于这个目的，我们在架构设计的时候，需要做到下面的标准。&lt;/p&gt;&lt;p data-lake-id=&quot;d6eca464f68f630b330ecbba1d3596b2&quot;&gt;&lt;/p&gt;&lt;h3 data-lake-id=&quot;d48ab1d15ac05e90a95fa88fdbbc0aff&quot;&gt;0x1 可扩展性设计标准&lt;/h3&gt;&lt;ol data-lake-id=&quot;d6ef9ac4f2441ff69cca002686072d94&quot; start=&quot;1&quot; lake-indent=&quot;0&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;代码功能模块之间耦合度尽量低，比如插件化设计&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;源码结构性好，层次，目录分明&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;遵守正向性设计，纵向切割功能模块，封装成单独的服务&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-lake-id=&quot;d5e1ec577e08b60616a43dc48c59722a&quot;&gt;上面是标准，那可以用什么手段去达到上面的标准呢？&lt;/p&gt;&lt;p data-lake-id=&quot;876ffaf47fef27a7dfc8a345d8220388&quot;&gt;&lt;/p&gt;&lt;h3 data-lake-id=&quot;00205f7991bfa86e26cdb5843cca10b1&quot;&gt;0x2 可扩展性设计的手段&lt;/h3&gt;&lt;ol data-lake-id=&quot;7a98056a5844300c2bcab9cd703cd4b0&quot; start=&quot;1&quot; lake-indent=&quot;0&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;面向源码接口编程，每一个功能模块都有固定的调用接口，模块之间只要按照规范调用接口就可以了，不用关心实现。类似interface，implement的设计，如依赖注入，代理模式等设计模式，一些著名的开源项目往往会应用上多种设计模式，就是这个目的。不过我相信不少coder用设计模式主是为了“优雅”，”扩展性设计“只是一个附带的效果，毕竟这样才显得逼格比较高，“优雅”是玄学，等于是“我不喜欢钱，但是钱自然就赚了”,  &lt;span&gt;&lt;strong&gt;就问你&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;&lt;strong&gt;牛不牛 strings.Sprintf(&quot;A%sC&quot;, ?)   // 牛*好像是敏感词，请自行格式化这个字符串&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-lake-id=&quot;3ad06f6ab2647ae8e95dd0888f098ecb&quot;&gt;&lt;/p&gt;&lt;ol data-lake-id=&quot;0f4cc3d924af0ccdb23d82a13d7dae8b&quot; start=&quot;2&quot; lake-indent=&quot;0&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;源码结构这个要视不同的项目而定，例如我们web开发在前后端分离之前的主流架构MVC（现在还有很多web项目是采用MVC架构的），就是按照M-V-C三层去组织代码，通常实现了MVC架构的框架源码架构如下：&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.9314285714285714&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/yetTcGWJiakPWbSAcLtuxCg23icn66vASgasKq0b02cfAe0kzKKWGUbicK4Y2XwcMobHxrHbMlBxU8qHCOuE7ibyoA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;700&quot;/&gt;&lt;/p&gt;&lt;pre&gt;&lt;span&gt;&lt;span&gt;&lt;span/&gt;&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;p data-lake-id=&quot;c61e7f508da3932051d4fce6ac920370&quot;&gt;在这样架构分明的源码之下，随着业务需求的发展，想扩展哪块功能都能明确指向源码的哪个模块，利好项目的扩展性。&lt;/p&gt;&lt;p data-lake-id=&quot;7e6083c45d875299db30a705b5497def&quot;&gt;&lt;/p&gt;&lt;ol data-lake-id=&quot;6fc3644c147d185205978d3954b336cf&quot; start=&quot;3&quot; lake-indent=&quot;0&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;第三点基本上就是微服务的味道了，我们都知道微服务的初衷就是为了让服务隔离，使不同的服务之间减少耦合度，单独为本身的功能负责，通过标准的调用方式供其他服务调用。从利于扩展性设计的角度来看，服务要纵向切割，纵向就表现深度自治，各自管理自己独立的某一类型的功能模块，比如一个电商系统，订单、商品、用户可以单独分为三个不同的服务，当只需要修改订单功能时，我们只需要动订单的服务代码仓库就好。项目运行时，当商品服务的并发比较大的时候，我们可以只增加商品服务的服务节点资源就好（当然由此而带来的其他架构设计、代码复杂度等问题不在此讨论范围内）。&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-lake-id=&quot;df7cf5dc2661cf13fa3cadf87d3c0203&quot;&gt;&lt;/p&gt;&lt;h3 data-lake-id=&quot;bef26a6622d12a399b248e5d8f664765&quot;&gt;0x3 总结&lt;/h3&gt;&lt;p data-lake-id=&quot;cd6bafdc13e89b358c190f3fd2c2a474&quot;&gt;可扩展性设计本人觉得总结来说，基本的标准是有的，不过具体也要看具体的项目而具体分析，需要根据项目本身的业务需求而去权衡这个“可扩展性设计”的&lt;span&gt;&lt;strong&gt;度&lt;/strong&gt;&lt;/span&gt;究竟在哪里，毕竟凡事都得有个度，你写个“hello world&quot;你也扯什么“扩展性设计”那就没啥意思了，本文只是抛砖引玉，是自己的一些总结，不足之处多多包涵，期盼指导共同进步，打完收工。&lt;/p&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-s=&quot;300,640&quot; data-type=&quot;jpeg&quot; data-ratio=&quot;1&quot; data-w=&quot;258&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/yetTcGWJiakOuzNDpuiajaFfeqefR9vjOZNfFH0ibJ33aqnVyBUkvcZ7VQC3Aao8ZtodM864qOC9dnic4uIRic2wiaYA/640?wx_fmt=jpeg&quot;/&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;p&gt;分享科学人文随笔&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;span&gt;感谢您「观看」、「点赞」和「关注」&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;点个在看你最好看~&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;
-                &lt;/div&gt;
-
-                
-
-                
-
-
-
-                
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
 <guid>1fb585560be961aec00f16cd81802a97</guid>
 <title>什么是 API 文档工具？附带 6 款好用的 API 文档工具介绍</title>
 <link>https://toutiao.io/k/9khbqbw</link>
@@ -213,6 +191,28 @@
 &lt;p&gt;&lt;a href=&quot;https://api.kuaidi100.com/blog/detail/APIWoRLDLTsTlD5DAPIJsQs.html&quot;&gt;1.如果你想要了解关于API发展的前景，可以阅读这篇文章&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;a href=&quot;https://api.kuaidi100.com/blog/detail/SMSdsAPIzSTnjSjdl12ZyYhC.html&quot;&gt;2.如果你想要的了解电商支持类的API，如快递物流，仓储管理，用户精细化运营等等，这篇文章更适合你阅读&lt;/a&gt;&lt;/p&gt;
 &lt;/div&gt;
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>c3865d3842291b7f520639e4de0c5da5</guid>
+<title>喝口可乐聊聊可扩展性设计</title>
+<link>https://toutiao.io/k/jrcl0sb</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
+
+                    
+                    
+                    
+                    &lt;p data-lake-id=&quot;a20d224c568e48b9d67847a2c66a8c01_p_0&quot;&gt;      可扩展性要达到的目的就是在扩展软件功能、增加项目运行时性能的时候，能尽量少的去改动原有的代码，架构等，基于这个目的，我们在架构设计的时候，需要做到下面的标准。&lt;/p&gt;&lt;p data-lake-id=&quot;d6eca464f68f630b330ecbba1d3596b2&quot;&gt;&lt;/p&gt;&lt;h3 data-lake-id=&quot;d48ab1d15ac05e90a95fa88fdbbc0aff&quot;&gt;0x1 可扩展性设计标准&lt;/h3&gt;&lt;ol data-lake-id=&quot;d6ef9ac4f2441ff69cca002686072d94&quot; start=&quot;1&quot; lake-indent=&quot;0&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;代码功能模块之间耦合度尽量低，比如插件化设计&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;源码结构性好，层次，目录分明&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;遵守正向性设计，纵向切割功能模块，封装成单独的服务&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-lake-id=&quot;d5e1ec577e08b60616a43dc48c59722a&quot;&gt;上面是标准，那可以用什么手段去达到上面的标准呢？&lt;/p&gt;&lt;p data-lake-id=&quot;876ffaf47fef27a7dfc8a345d8220388&quot;&gt;&lt;/p&gt;&lt;h3 data-lake-id=&quot;00205f7991bfa86e26cdb5843cca10b1&quot;&gt;0x2 可扩展性设计的手段&lt;/h3&gt;&lt;ol data-lake-id=&quot;7a98056a5844300c2bcab9cd703cd4b0&quot; start=&quot;1&quot; lake-indent=&quot;0&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;面向源码接口编程，每一个功能模块都有固定的调用接口，模块之间只要按照规范调用接口就可以了，不用关心实现。类似interface，implement的设计，如依赖注入，代理模式等设计模式，一些著名的开源项目往往会应用上多种设计模式，就是这个目的。不过我相信不少coder用设计模式主是为了“优雅”，”扩展性设计“只是一个附带的效果，毕竟这样才显得逼格比较高，“优雅”是玄学，等于是“我不喜欢钱，但是钱自然就赚了”,  &lt;span&gt;&lt;strong&gt;就问你&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;&lt;strong&gt;牛不牛 strings.Sprintf(&quot;A%sC&quot;, ?)   // 牛*好像是敏感词，请自行格式化这个字符串&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-lake-id=&quot;3ad06f6ab2647ae8e95dd0888f098ecb&quot;&gt;&lt;/p&gt;&lt;ol data-lake-id=&quot;0f4cc3d924af0ccdb23d82a13d7dae8b&quot; start=&quot;2&quot; lake-indent=&quot;0&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;源码结构这个要视不同的项目而定，例如我们web开发在前后端分离之前的主流架构MVC（现在还有很多web项目是采用MVC架构的），就是按照M-V-C三层去组织代码，通常实现了MVC架构的框架源码架构如下：&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.9314285714285714&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/yetTcGWJiakPWbSAcLtuxCg23icn66vASgasKq0b02cfAe0kzKKWGUbicK4Y2XwcMobHxrHbMlBxU8qHCOuE7ibyoA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;700&quot;/&gt;&lt;/p&gt;&lt;pre&gt;&lt;span&gt;&lt;span&gt;&lt;span/&gt;&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;p data-lake-id=&quot;c61e7f508da3932051d4fce6ac920370&quot;&gt;在这样架构分明的源码之下，随着业务需求的发展，想扩展哪块功能都能明确指向源码的哪个模块，利好项目的扩展性。&lt;/p&gt;&lt;p data-lake-id=&quot;7e6083c45d875299db30a705b5497def&quot;&gt;&lt;/p&gt;&lt;ol data-lake-id=&quot;6fc3644c147d185205978d3954b336cf&quot; start=&quot;3&quot; lake-indent=&quot;0&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;第三点基本上就是微服务的味道了，我们都知道微服务的初衷就是为了让服务隔离，使不同的服务之间减少耦合度，单独为本身的功能负责，通过标准的调用方式供其他服务调用。从利于扩展性设计的角度来看，服务要纵向切割，纵向就表现深度自治，各自管理自己独立的某一类型的功能模块，比如一个电商系统，订单、商品、用户可以单独分为三个不同的服务，当只需要修改订单功能时，我们只需要动订单的服务代码仓库就好。项目运行时，当商品服务的并发比较大的时候，我们可以只增加商品服务的服务节点资源就好（当然由此而带来的其他架构设计、代码复杂度等问题不在此讨论范围内）。&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-lake-id=&quot;df7cf5dc2661cf13fa3cadf87d3c0203&quot;&gt;&lt;/p&gt;&lt;h3 data-lake-id=&quot;bef26a6622d12a399b248e5d8f664765&quot;&gt;0x3 总结&lt;/h3&gt;&lt;p data-lake-id=&quot;cd6bafdc13e89b358c190f3fd2c2a474&quot;&gt;可扩展性设计本人觉得总结来说，基本的标准是有的，不过具体也要看具体的项目而具体分析，需要根据项目本身的业务需求而去权衡这个“可扩展性设计”的&lt;span&gt;&lt;strong&gt;度&lt;/strong&gt;&lt;/span&gt;究竟在哪里，毕竟凡事都得有个度，你写个“hello world&quot;你也扯什么“扩展性设计”那就没啥意思了，本文只是抛砖引玉，是自己的一些总结，不足之处多多包涵，期盼指导共同进步，打完收工。&lt;/p&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-s=&quot;300,640&quot; data-type=&quot;jpeg&quot; data-ratio=&quot;1&quot; data-w=&quot;258&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/yetTcGWJiakOuzNDpuiajaFfeqefR9vjOZNfFH0ibJ33aqnVyBUkvcZ7VQC3Aao8ZtodM864qOC9dnic4uIRic2wiaYA/640?wx_fmt=jpeg&quot;/&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;p&gt;分享科学人文随笔&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;span&gt;感谢您「观看」、「点赞」和「关注」&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;点个在看你最好看~&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;
+                &lt;/div&gt;
+
+                
+
+                
+
+
+
+                
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
