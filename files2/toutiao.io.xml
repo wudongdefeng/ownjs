@@ -57,25 +57,259 @@
 这个时候就需要 &lt;strong&gt;&lt;em&gt;for&lt;/em&gt;&lt;/strong&gt; 循环（简单但又强大的 for loop）。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上文里我们已经得出了状态转移方程：&lt;/p&gt;&lt;span data-tool=&quot;mdnice编辑器&quot;&gt;&lt;section role=&quot;presentation&quot; data-formula=&quot;f(n) = min[f(n -1),f(n -5),f(n - 11)] + 1&amp;#10;&quot; data-formula-type=&quot;block-equation&quot;&gt;&lt;embed src=&quot;https://mmbiz.qlogo.cn/mmbiz_svg/UGrobmT8GcIUcH8mVoZu167IVREVBDiaezmhmj3jfUV9sSPrOpMTrbkCMs8oHrYs94KSZAXb3Asygfs6SWqAHut98de4lNIhJ/0?wx_fmt=svg&quot; data-type=&quot;svg+xml&quot;/&gt;&lt;/section&gt;&lt;/span&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;假设一组数据是这样：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;coins = {1,2,5,7,10} amount = 14&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;首先我们建立 dp table:&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;int&lt;/span&gt;[] dp = &lt;span&gt;int&lt;/span&gt;[&lt;span&gt;15&lt;/span&gt;];&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;初始化 dp[0] = 0&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们考虑这样&lt;em&gt;自底向上&lt;/em&gt;写：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;用变量 i 从 1 循环至 amount，依次计算金额 1 至 amount 的最优解，即 dp[amount]。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/og5r7PHGHoiaKTP6vlvqzWdN7yBP6Gnc6chJdrWGtlsazu6r7wuWUYPG1PsGjjSRMHICQmLd2kfDSOM0CEvozUg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-ratio=&quot;0.2570145903479237&quot; data-w=&quot;891&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们可以写出第一层 for 循环：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;for&lt;/span&gt;(&lt;span&gt;int&lt;/span&gt; i = &lt;span&gt;1&lt;/span&gt;;i &amp;lt;= amount;i++){&lt;br/&gt;&lt;br/&gt;   ...&lt;br/&gt;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;然后：对于每个金额 &lt;strong&gt;i&lt;/strong&gt;，使用变量 &lt;strong&gt;j&lt;/strong&gt; 遍历硬币面值 &lt;strong&gt;coins[]&lt;/strong&gt; 数组：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/og5r7PHGHoiaKTP6vlvqzWdN7yBP6Gnc64pxfTNPXHtpDaCibYFTcSKQT38ia6WpRSgfVgTiciaYpYL7pu2p4sibMWWw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-ratio=&quot;0.4081381011097411&quot; data-w=&quot;811&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;对于所有小于等于 i 的面值 coins[j]，找出最小的 i - coins[j] 金额的最优解 dp[i - coins[j]]。&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;那么 dp[i] 的最优解即为 dp[i - coins[j]] + 1。&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如下图所示：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/og5r7PHGHoiaKTP6vlvqzWdN7yBP6Gnc6rJC2pKOL8kW4S8GQaxJFiaeFXDcUvaXUNln9icQzofCDJicCtNAg9mgyA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-ratio=&quot;0.4017094017094017&quot; data-w=&quot;819&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;假如当前 &lt;strong&gt;i&lt;/strong&gt; 指向金额 &lt;strong&gt;6&lt;/strong&gt;，&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;对于所有小于等于 6 的面额 coins[j]&lt;/strong&gt;，即&lt;strong&gt;coins[0]，coins[1]，coins[2] 分别为 1，2，5。&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;找出最小的 6 - coins[j] 金额的最优解 dp[i - coins[j]]&lt;/strong&gt;，&lt;strong&gt;即&lt;/strong&gt;：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;6 - 1 = 5 dp[5] = 1&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;6 - 2 = 4 dp[4] = 2&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;6 - 5 = 1 dp[1] = 1&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;那么 dp[i]的最优解即为 dp[i - coins[j]] + 1&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;dp[6] = min(dp[1],dp[4],dp[5]) + 1&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;由以上可知：&lt;strong&gt;dp[6] = 1 + 1 = 2&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;后续依次计算...&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;由此，我们可以写出里层的 for 循环：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;//来一个整型最大数，保证其它数第一次和这个数比较时都比这个数小&lt;/span&gt;&lt;br/&gt;&lt;span&gt;//变量名叫min，这是对应外层i循环，即:求每个dp[i]的最优解&lt;/span&gt;&lt;br/&gt;&lt;span&gt;int&lt;/span&gt; min = Integer.MAX_VALUE;&lt;br/&gt;&lt;span&gt;for&lt;/span&gt;(&lt;span&gt;int&lt;/span&gt; j = &lt;span&gt;0&lt;/span&gt;;j &amp;lt; coins.length;j++){&lt;br/&gt; &lt;span&gt;//所有小于等于i的面值coins[j]，并且最优解小于默认最大值&lt;/span&gt;&lt;br/&gt; &lt;span&gt;if&lt;/span&gt;(coins[j] &amp;lt;= i &amp;amp;&amp;amp; dp[i - coins[j]] &amp;lt; min){&lt;br/&gt;   min = dp[i - coins[j]] + &lt;span&gt;1&lt;/span&gt;;&lt;span&gt;//更新dp&lt;/span&gt;&lt;br/&gt; }&lt;br/&gt;}&lt;br/&gt; dp[i] = min;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这个 for 循环，这也是此题思想代码的核心。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们将两个 for 循环写一起，即写出了完整代码：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Solution&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;  &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;int&lt;/span&gt; &lt;span&gt;coinChange&lt;/span&gt;&lt;span&gt;(&lt;span&gt;int&lt;/span&gt;[] coins, &lt;span&gt;int&lt;/span&gt; amount)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;      &lt;span&gt;if&lt;/span&gt;(coins.length == &lt;span&gt;0&lt;/span&gt;) &lt;span&gt;return&lt;/span&gt; -&lt;span&gt;1&lt;/span&gt;;&lt;br/&gt;      &lt;span&gt;int&lt;/span&gt;[] dp = &lt;span&gt;new&lt;/span&gt; &lt;span&gt;int&lt;/span&gt;[amount + &lt;span&gt;1&lt;/span&gt;];&lt;br/&gt;      dp[&lt;span&gt;0&lt;/span&gt;] = &lt;span&gt;0&lt;/span&gt;;&lt;br/&gt;      &lt;span&gt;for&lt;/span&gt;(&lt;span&gt;int&lt;/span&gt; i = &lt;span&gt;1&lt;/span&gt;;i &amp;lt;= amount;i++){&lt;br/&gt;        &lt;span&gt;int&lt;/span&gt; min = Integer.MAX_VALUE;&lt;br/&gt;        &lt;span&gt;for&lt;/span&gt;(&lt;span&gt;int&lt;/span&gt; j = &lt;span&gt;0&lt;/span&gt;;j &amp;lt; coins.length;j++){&lt;br/&gt;          &lt;span&gt;if&lt;/span&gt;(coins[j] &amp;lt;= i &amp;amp;&amp;amp; dp[i - coins[j]] &amp;lt; min){&lt;br/&gt;            min = dp[i - coins[j]] + &lt;span&gt;1&lt;/span&gt;;&lt;br/&gt;          }&lt;br/&gt;        }&lt;br/&gt;        dp[i] = min;&lt;br/&gt;      }&lt;br/&gt;      &lt;span&gt;return&lt;/span&gt; dp[amount] == Integer.MAX_VALUE ? -&lt;span&gt;1&lt;/span&gt; : dp[amount];&lt;br/&gt;  }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这就是&lt;strong&gt;自底向上&lt;/strong&gt;的写法，也是&lt;strong&gt;动态规划&lt;/strong&gt;的核心。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;总结&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们再回顾整个流程，如何尝试去处理一个&lt;strong&gt;动态规划&lt;/strong&gt;问题？&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;首先分析这个问题符不符合&lt;strong&gt;动态规划&lt;/strong&gt;最重要的前两个性质（&lt;strong&gt;重叠子问题，最优子结构&lt;/strong&gt;）；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如果满足前两个性质，那么我们尝试写出&lt;strong&gt;状态转移方程&lt;/strong&gt;，也即&lt;strong&gt;递归式&lt;/strong&gt;；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;优化：将&lt;strong&gt;自顶向下&lt;/strong&gt;的递归式（&lt;em&gt;函数调用&lt;/em&gt;）改为&lt;strong&gt;自底向上&lt;/strong&gt;的&lt;strong&gt;动态规划&lt;/strong&gt;（&lt;em&gt;for loop&lt;/em&gt;）&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;好了，今天的动态规划问题到此就结束啦，当然动态规划的威力还远不止于此，关于动态规划更多的内容，我们后续再见～&lt;span/&gt;&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>f89cd620bfe8903fea31f62402e893c0</guid>
-<title>Golang 面试题：对已经关闭的的 chan 进行读写，会怎么样？为什么？</title>
-<link>https://toutiao.io/k/blmg8fq</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
+<guid>eea1c954513458634287fe0d16e0aaf9</guid>
+<title>Java 中的映射 Map（入门篇）</title>
+<link>https://toutiao.io/k/2j4xsag</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;h2&gt;前言&lt;/h2&gt;
 
-                    
-                    
-                    
-                    &lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.4255555555555556&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnnOGH8GxaUZDibkMDVBu32IG6PdicicjFniboatPO8svW7ciaTuwvEiayu3xEibkQg7pmcGd3GUSUic6Ca1ibg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;900&quot;/&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;问题&lt;/span&gt;&lt;span/&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;对&lt;strong&gt;已经关闭&lt;/strong&gt;的的 &lt;code&gt;chan&lt;/code&gt; 进行读写，会怎么样？&lt;strong&gt;为什么？&lt;/strong&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;怎么答&lt;/span&gt;&lt;span/&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;读&lt;strong&gt;已经关闭&lt;/strong&gt;的 &lt;code&gt;chan&lt;/code&gt; 能一直读到东西，但是读到的内容根据通道内&lt;code&gt;关闭前&lt;/code&gt;是否有元素而不同。&lt;/section&gt;&lt;/li&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;如果 &lt;code&gt;chan&lt;/code&gt; 关闭前，&lt;code&gt;buffer&lt;/code&gt; 内有元素&lt;strong&gt;还未读&lt;/strong&gt; , 会正确读到 &lt;code&gt;chan&lt;/code&gt; 内的值，且返回的第二个 bool 值（是否读成功）为 &lt;code&gt;true&lt;/code&gt;。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如果 &lt;code&gt;chan&lt;/code&gt; 关闭前，&lt;code&gt;buffer&lt;/code&gt; 内有元素&lt;strong&gt;已经被读完&lt;/strong&gt;，&lt;code&gt;chan&lt;/code&gt; 内无值，接下来所有接收的值都会非阻塞直接成功，返回 &lt;code&gt;channel&lt;/code&gt; 元素的&lt;strong&gt;零值&lt;/strong&gt;，但是第二个 &lt;code&gt;bool&lt;/code&gt; 值一直为 &lt;code&gt;false&lt;/code&gt;。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;li&gt;&lt;section&gt;写&lt;strong&gt;已经关闭&lt;/strong&gt;的 &lt;code&gt;chan&lt;/code&gt; 会 &lt;code&gt;panic&lt;/code&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;举例&lt;/span&gt;&lt;span/&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;h5 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;1. 写已经关闭的 chan&lt;/span&gt;&lt;span/&gt;&lt;/h5&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.5706874189364461&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnnOGH8GxaUZDibkMDVBu32IGCjRgeS4rTZKYpxCobNicaZ7YWaxicn1hzt7I4c7hbcjljtkjKDEHkOmA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1542&quot;/&gt;&lt;/figure&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;注意这个 &lt;code&gt;send on closed channel&lt;/code&gt;，待会会提到。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h5 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;2. 读已经关闭的 chan&lt;/span&gt;&lt;span/&gt;&lt;/h5&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;1.9213161659513591&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnnOGH8GxaUZDibkMDVBu32IGpVAWDnIKE3gFibicjknjOagY0G5BjFIo9lsCibCbJJ0lOn5CaBtglBCTQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1398&quot;/&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;多问一句&lt;/span&gt;&lt;span/&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;1. 为什么写已经关闭的 &lt;code&gt;chan&lt;/code&gt; 就会 &lt;code&gt;panic&lt;/code&gt; 呢？&lt;/strong&gt;&lt;img data-ratio=&quot;0.4558258642765685&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnnOGH8GxaUZDibkMDVBu32IGMbn9CTXtvq6LBZStvLdrbso2sMASgb7ibBfjND9keeCbMAXZ9O4ReHA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1562&quot;/&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;当 &lt;code&gt;c.closed != 0&lt;/code&gt; 则为通道关闭，此时执行写，源码提示直接 panic，输出的内容就是上面提到的 &lt;code&gt;&quot;send on closed channel&quot;&lt;/code&gt;。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;2. 为什么读已关闭的 &lt;code&gt;chan&lt;/code&gt; 会一直能读到值？&lt;/strong&gt;&lt;img data-ratio=&quot;0.7656065959952886&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnnOGH8GxaUZDibkMDVBu32IGNgAqmP7nlpqSj8O1QgiavXoQic0fKOCL5juDQGwtNvw9N7icjRxwCia2ow/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1698&quot;/&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;c.closed != 0 &amp;amp;&amp;amp; c.qcount == 0&lt;/code&gt; 指通道已经关闭，且缓存为空的情况下（已经读完了之前写到通道里的值）&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如果接收值的地址 &lt;code&gt;ep&lt;/code&gt; 不为空&lt;/section&gt;&lt;/li&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;那接收值将获得是一个&lt;strong&gt;该类型的零值&lt;/strong&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;typedmemclr&lt;/code&gt; 会&lt;strong&gt;根据类型清理&lt;/strong&gt;相应地址的内存&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;这就解释了上面代码为什么关闭的 &lt;code&gt;chan&lt;/code&gt; 会返回对应类型的零值&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/ul&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;文章推荐：&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;h6 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;如果你想每天学习一个知识点？&lt;/span&gt;&lt;span/&gt;&lt;/h6&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.3183856502242152&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/FmVWPHrDdnnOGH8GxaUZDibkMDVBu32IGVkffoB9xS4A7aXcV9jDoVHODcibptGnQGxR4FCb4ib2mAKznWib0qOVFg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1338&quot;/&gt;&lt;/figure&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;
-                &lt;/div&gt;
+&lt;p&gt;大家好啊，我是汤圆，今天给大家带来的是《Java中的映射Map - 入门篇》，希望对大家有帮助，谢谢&lt;/p&gt;
 
-                
+&lt;h2&gt;简介&lt;/h2&gt;
 
-                
+&lt;p&gt;前面介绍了集合List，这里开始简单介绍下映射&lt;code&gt;Map&lt;/code&gt;，相关类如下图所示&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://i.loli.net/2021/03/30/kTAnEyP9cv1DXai.png&quot; alt=&quot;集合&quot;/&gt;&lt;/p&gt;
+
+&lt;h2&gt;正文&lt;/h2&gt;
+
+&lt;p&gt;Map是一种存储键值对的数据集合，键以散列或者树形结构进行存储；&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;为什么会设计Map接口呢？&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;假设我们有一个员工类，里面有Id属性和姓名等其他信息，现在我们把所有员工都存到List里，然后要找出Id为001的员工，你会发现，你需要从List中遍历每个对象，然后取出Id进行比较；&lt;/p&gt;
+
+&lt;p&gt;你会发现这种查找法效率很低，有点杀鸡用牛刀的感觉；&lt;/p&gt;
+
+&lt;p&gt;这时如果有一个集合类，可以以键值对映射的方式的存储员工信息（Id作为键，员工信息作为值），那么就可以只遍历键列表，然后进行比较；&lt;/p&gt;
+
+&lt;p&gt;你会发现这种查找法效率提高了很多，因为物尽其用了（比较的是Id，也只是取了Id，没有浪费）；&lt;/p&gt;
+
+&lt;p&gt;这就是Map接口的作用，可以根据某个键去查找对应的信息，有点类似于数据库的设计。&lt;/p&gt;
+
+&lt;h3&gt;Map的种类&lt;/h3&gt;
+
+&lt;p&gt;Map主要有三种类型：HashMap(常用)、TreeMap（树形结构）、LinkedHashMap（前两者的结合）&lt;/p&gt;
+
+&lt;p&gt;我们先来看一下Map接口主要的几个方法：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;V put(K key, V value)&lt;/code&gt;：往Map中添加键值对，其中key为键，value为值；如果key存在，则覆盖原有的值；如果不存在，则新建键值对。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;V get(Object key)&lt;/code&gt;：从Map中查找键key对应的值，如果没有，则返回null&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;default V getOrDefault(Object key, V defaultValue)&lt;/code&gt;：从Map中查找键key对应的值，如果没有，则返回第二个参数（设置的默认值）；这里的修饰符default是用在接口方法中，表示这个方法在接口中已经实现了，子类可以不实现（Java8开始支持）&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Set&amp;lt;K&amp;gt; keySet()&lt;/code&gt;：返回Map中Key的集合；之所以返回Set，是因为Map中的key不能有重复，所以用Set最适合了&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Collection&amp;lt;V&amp;gt; values()&lt;/code&gt;：返回Map中Values的集合&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;下面我们简单看下三者的区别&lt;/p&gt;
+
+&lt;table&gt;&lt;thead&gt;
+&lt;tr&gt;
+&lt;th/&gt;
+&lt;th&gt;HashMap&lt;/th&gt;
+&lt;th&gt;TreeMap&lt;/th&gt;
+&lt;th&gt;LinkedHashMap&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;访问速度&lt;/td&gt;
+&lt;td&gt;快&lt;/td&gt;
+&lt;td&gt;慢&lt;/td&gt;
+&lt;td&gt;适中&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;元素是否有序&lt;/td&gt;
+&lt;td&gt;无序&lt;/td&gt;
+&lt;td&gt;有序，默认按key排序&lt;/td&gt;
+&lt;td&gt;有序，默认按插入的顺序&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;适用场景&lt;/td&gt;
+&lt;td&gt;普通的插入，查询（用的最多）&lt;/td&gt;
+&lt;td&gt;需要对key进行排序的场景（比如员工按年龄排序等）&lt;/td&gt;
+&lt;td&gt;需要保证查询和插入顺序一致的场景（类似队列）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;
+
+&lt;p&gt;接下来我们以HashMap为例，来介绍Map接口&lt;/p&gt;
+
+&lt;h3&gt;HashMap&lt;/h3&gt;
+
+&lt;p&gt;HashMap内部是数组+链表的结构；&lt;/p&gt;
+
+&lt;p&gt;因为在添加键值对的时候，Key做了hash处理，然后按照hash值进行排列；&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;如果hash值没有重复，就按照数组的方式依次排列；&lt;/li&gt;
+&lt;li&gt;如果hash值有重复的，就添加到已有的键值对后面（Java8以后是尾部插入），形成链表结构；&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;整体结构 如下图所示&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://i.loli.net/2021/03/31/5qnM3zwZDgakGV4.png&quot; alt=&quot;HashMap结构&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;这里只是简单介绍，以后再深入了解&lt;/p&gt;
+
+&lt;p&gt;下面用代码示范一下&lt;/p&gt;
+
+&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;// 键值对集合，键不可以重复
+Map&amp;lt;String, Integer&amp;gt; map = new HashMap&amp;lt;&amp;gt;();
+// 添加：首先会检查对应的key是否存在，如果不存在，则新建键值对，然后填充；如果存在，则覆盖已有的值
+map.put(&quot;a&quot;, 1); // 这里的1会自动装箱为Intege类型
+// 查询
+int value1 = map.get(&quot;a&quot;);
+int value2 = map.get(&quot;b&quot;); 
+System.out.println(map);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;这里有个很有意思的现象，你觉得value2会是多少呢？&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;答案是多少都不是，因为程序运行到这一行就出错了，报空指针异常&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://i.loli.net/2021/03/31/BoQ6x2Kzf3P8vMH.png&quot; alt=&quot;HashMap空指针异常&quot;/&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;不应该返回null吗？怎么会出错？&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;这里涉及到拆箱和装箱的问题，上面我们在添加put的时候，int 1自动装箱为Integer；&lt;/p&gt;
+
+&lt;p&gt;然后在获取get的时候，对应的也是要进行拆箱的，将Integer转为int；&lt;/p&gt;
+
+&lt;p&gt;但是由于获取的value = null，所以就相当于对null进行拆箱，结果就报错了。&lt;/p&gt;
+
+&lt;p&gt;解决办法就是严格按照Map的类型信息进行添加和获取；&lt;/p&gt;
+
+&lt;p&gt;将上面的代码加以修改，如下所示&lt;/p&gt;
+
+&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;// 键值对集合，键不可以重复
+Map&amp;lt;String, Integer&amp;gt; map = new HashMap&amp;lt;&amp;gt;();
+// 添加：首先会检查对应的key是否存在，如果不存在，则新建键值对，然后填充；如果存在，则覆盖已有的值
+map.put(&quot;a&quot;, 1); // 这里的1会自动装箱为Intege类型
+// 查询
+Integer value1 = map.get(&quot;a&quot;);
+Integer value2 = map.get(&quot;b&quot;);
+System.out.println(map);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;此时value2就等于null了。&lt;/p&gt;
+
+&lt;p&gt;关于自动装箱和拆箱，网上资源很多，这里就不再细说了&lt;/p&gt;
+
+&lt;h3&gt;TreeMap&lt;/h3&gt;
+
+&lt;p&gt;TreeMap在插入的时候，可以按照键的顺序进行排序&lt;/p&gt;
+
+&lt;p&gt;它适合用在排序比较多的场景，性能会比HashMap差一些&lt;/p&gt;
+
+&lt;h3&gt;LinkedHashMap&lt;/h3&gt;
+
+&lt;p&gt;LinkedHashMap拥有HashMap的大部分优点，且保证了插入的顺序，使得在查询的时候，可以按照插入的顺序依次读取&lt;/p&gt;
+
+&lt;h3&gt;三者的排序比较&lt;/h3&gt;
+
+&lt;p&gt;下面用代码演示一下，依次插入100个数，看看他们分别是怎么排序的&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;HashMapDemo.java&lt;/code&gt;&lt;/p&gt;
+
+&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;public class HashMapDemo {
+    public static void main(String[] args) {
+        // 键值对集合，键不可以重复
+        Map&amp;lt;String, Integer&amp;gt; map = new HashMap&amp;lt;&amp;gt;();
+        // 倒序插入100个数
+        int i =100;
+        while (i--&amp;gt;0){
+            map.put(&quot;&quot;+i, i);
+        }
+        // 查询
+        for (String str :
+                map.keySet()) {
+            // 这里会乱序输出
+            System.out.println(str);
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;输出如下所示：很乱&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://i.loli.net/2021/03/31/D4ow987uz1OPtHa.png&quot; alt=&quot;HashMap输出乱序&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;TreeMapDemo.java&lt;/code&gt;&lt;/p&gt;
+
+&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;public class MapDemo {
+    public static void main(String[] args) {
+
+        // TreeMap
+        Map&amp;lt;String, Integer&amp;gt; map1 = new TreeMap&amp;lt;&amp;gt;();
+        // 连续倒序插入100个数
+        int k =100;
+        while (k--&amp;gt;0){
+            map1.put(&quot;&quot;+k, k);
+        }
+        // 查询
+        for (String str :
+                map1.keySet()) {
+            // 这里会正序输出
+            System.out.println(str);
+        }
+    }
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;输出如下所示：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://i.loli.net/2021/03/31/Bhs86gVfPiN5d9W.png&quot; alt=&quot;TreeMap输出正序&quot;/&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;细心的你们，应该会发现上面的输出有点别致&lt;/p&gt;
+
+&lt;p&gt;那是因为这里的键key(0~99)其实不是整型，而是字符串类型，所以排序按照字符串的升序来排，才会出现如图所示的结果&lt;/p&gt;
+
+&lt;p&gt;（建议实际场景不要这样搞，容易出事，字符串尽量不要用纯数字，而是要跟字母做拼接；）&lt;/p&gt;
+
+&lt;p&gt;正确的做法是key=“a”+i，这种方式&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;code&gt;LinkedHashMapDemo.java&lt;/code&gt;&lt;/p&gt;
+
+&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;public class MapDemo {
+    public static void main(String[] args) {
+        // LinkedHashMap
+        Map&amp;lt;String, Integer&amp;gt; map2 = new LinkedHashMap&amp;lt;&amp;gt;();
+        // 倒序插入100个数
+        int j =100;
+        while (j--&amp;gt;0){
+            map2.put(&quot;a&quot;+j, j);
+        }
+        for (String str :
+                map2.keySet()) {
+            // 这里按照插入的顺序依次输出
+            System.out.println(map2.get(str));
+        }
+    }
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;输出如下所示：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://i.loli.net/2021/03/31/N2vaT4BheJn8OYp.png&quot; alt=&quot;LinkedHashMap按插入顺序输出&quot;/&gt;&lt;/p&gt;
+
+&lt;h2&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;Map一般用到的有HashMap，TreeMap，LinkedHashMap，当然还有并发相关的，这里入门级别的先不涉及（比如ConcurrentHashMap）&lt;/p&gt;
 
 
 
-                
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+&lt;h2&gt;后记&lt;/h2&gt;
+
+&lt;p&gt;最后，感谢大家的观看，谢谢&lt;/p&gt;
+&lt;/div&gt;
+  &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
