@@ -662,9 +662,258 @@ public:
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>3fe94919e2e61405665b6e1719a7b790</guid>
-<title>该如何理解 Java 中的 Class 类</title>
-<link>https://toutiao.io/k/rjmq5lr</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section&gt;&lt;p&gt;&lt;code&gt;java&lt;/code&gt;里面一切都是类和对象&lt;/p&gt;&lt;p&gt;当我们在程序中要表达&lt;code&gt;书&lt;/code&gt;这个实体时，往往会定义一个&lt;code&gt;Book&lt;/code&gt;类。例如&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Book&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; String name;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; &lt;span&gt;double&lt;/span&gt; price;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; String publish;&lt;br/&gt;    &lt;br/&gt;    &lt;span&gt;&lt;span&gt;private&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;read&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;reading...&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;当我们在程序中要表达&lt;code&gt;车&lt;/code&gt;这个实体时，往往会定义一个&lt;code&gt;Car&lt;/code&gt;类。例如&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Car&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; String brand;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; &lt;span&gt;double&lt;/span&gt; price;&lt;br/&gt;    &lt;br/&gt;    &lt;span&gt;&lt;span&gt;private&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;run&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;running...&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;总之不同的实体都会定义不同&lt;code&gt;类&lt;/code&gt;用来表示相关信息。&lt;/p&gt;&lt;p&gt;其实&lt;code&gt;JVM&lt;/code&gt;里面所有的&lt;code&gt;类&lt;/code&gt;本身也是一个实体。每个类都有类名，都有方法名，都有属性名。那么我们用什么来表示这些信息呢？答案就是&lt;code&gt;Class&lt;/code&gt;类。&lt;/p&gt;&lt;h5&gt;&lt;span&gt;为什么需要&lt;code&gt;Class&lt;/code&gt;类。&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;如果想在运行时或者编译时拿到类或者对象的信息；那么必须借助&lt;code&gt;Class&lt;/code&gt;类。运行时获取类型信息可以让我们写出更灵活更强大的程序，比如实现&lt;code&gt;RMI&lt;/code&gt;，动态代理，反射等等。&lt;/p&gt;&lt;h4&gt;&lt;span&gt;举个例子&lt;/span&gt;&lt;/h4&gt;&lt;p&gt;Animal类&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;abstract&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Animal&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;&lt;span&gt;void&lt;/span&gt; &lt;span&gt;print&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt;{System.out.println(&lt;span&gt;&quot;I&#x27;m &quot;&lt;/span&gt; + &lt;span&gt;this&lt;/span&gt;);}&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;abstract&lt;/span&gt; String &lt;span&gt;toString&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt;;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;BarkPet接口&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;interface&lt;/span&gt; &lt;span&gt;BarkPet&lt;/span&gt; &lt;/span&gt;{    &lt;span&gt;&lt;span&gt;void&lt;/span&gt; &lt;span&gt;bark&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt;; }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Dog类&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Dog&lt;/span&gt; &lt;span&gt;extends&lt;/span&gt; &lt;span&gt;Animal&lt;/span&gt; &lt;span&gt;implements&lt;/span&gt; &lt;span&gt;BarkPet&lt;/span&gt; &lt;/span&gt;{        &lt;br/&gt;    &lt;span&gt;@Override&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;bark&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{       &lt;br/&gt;        System.out.println(&lt;span&gt;&quot;wang wang ...&quot;&lt;/span&gt;); &lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;@Override&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; String &lt;span&gt;toString&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; &lt;span&gt;&quot;Dog&quot;&lt;/span&gt;;&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Cat类&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Cat&lt;/span&gt; &lt;span&gt;extends&lt;/span&gt; &lt;span&gt;Animal&lt;/span&gt; &lt;span&gt;implements&lt;/span&gt; &lt;span&gt;BarkPet&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;@Override&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;bark&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;miao miao ...&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Override&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; String &lt;span&gt;toString&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; &lt;span&gt;&quot;Cat&quot;&lt;/span&gt;;&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Fish类&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Fish&lt;/span&gt; &lt;span&gt;extends&lt;/span&gt; &lt;span&gt;Animal&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;@Override&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; String &lt;span&gt;toString&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; &lt;span&gt;&quot;Fish&quot;&lt;/span&gt;;&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;AnimalDemo类&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;AnimalDemo&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;(String[] args)&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;        List&amp;lt;Animal&amp;gt; animals = &lt;span&gt;new&lt;/span&gt; ArrayList&amp;lt;Animal&amp;gt;();&lt;br/&gt;        animals.add(&lt;span&gt;new&lt;/span&gt; Dog());&lt;br/&gt;        animals.add(&lt;span&gt;new&lt;/span&gt; Cat());&lt;br/&gt;        animals.add(&lt;span&gt;new&lt;/span&gt; Fish());&lt;br/&gt;&lt;br/&gt;        &lt;span&gt;//如果我想找出，小猫和小狗怎么办？&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;for&lt;/span&gt; (Animal animal : animals){&lt;br/&gt;            &lt;span&gt;//??&lt;/span&gt;&lt;br/&gt;        }&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;对于&lt;code&gt;AnimalDemo&lt;/code&gt;类，我想在程序运行的过程中，找到&lt;code&gt;Dog&lt;/code&gt;和&lt;code&gt;Cat&lt;/code&gt;类型的对象，这就是所谓的运行时获取类型信息。&lt;/p&gt;&lt;h4&gt;&lt;span&gt;Class基本介绍&lt;/span&gt;&lt;/h4&gt;&lt;p&gt;每个类都有一个&lt;code&gt;Class&lt;/code&gt;对象。&lt;/p&gt;&lt;p&gt;当我们编写并且编译完成一个类之后，就会自动生成对应的&lt;code&gt;Class&lt;/code&gt;对象(和类同名的&lt;code&gt;.class&lt;/code&gt;文件)。当程序创建第一个对类的静态成员的的引用时，就会加载这个类。&lt;/p&gt;&lt;p&gt;这里有必要说一下类加载过程。&lt;/p&gt;&lt;p&gt;&lt;span&gt;类加载器首先检查这个类的&lt;code&gt;Class&lt;/code&gt;对象是否已经加载，如果尚&lt;/span&gt;未&lt;span&gt;加载，默认的类加载器就会根据类名查找 &lt;/span&gt;&lt;code&gt;.class&lt;/code&gt;&lt;span&gt;文件(也可以自定义类加载器，加载指定路径的&lt;/span&gt;&lt;code&gt;.class&lt;/code&gt;&lt;span&gt;文件，比如数据库，或者网络)。&lt;/span&gt;&lt;span&gt;加载完成后，&lt;/span&gt;&lt;code&gt;JVM&lt;/code&gt;&lt;span&gt;会对其进行验证，确保没有被损坏，且没有不良代码。&lt;/span&gt;&lt;span&gt;一旦某个类的&lt;/span&gt;&lt;code&gt;Class&lt;/code&gt;&lt;span&gt;对象被载入内存，它就可以被用来创建对象了。&lt;/span&gt;&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;注意：&lt;code&gt;Java&lt;/code&gt;并不是在一开始的时候就把所有的类加载进内存，而是按需加载，也就是在第一次对类的静态成员引用的时候加载。构造器也是类的静态方法。&lt;/p&gt;&lt;/blockquote&gt;&lt;h4&gt;&lt;span&gt;如何使用Class对象&lt;/span&gt;&lt;/h4&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;code&gt;Class c = Class.forName(&quot;com.example.demo.Dog&quot;)&lt;/code&gt;&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;类字面量 &lt;code&gt;Class c = Dog.class&lt;/code&gt;&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;两者区别：通过类字面量的方式创建对&lt;code&gt;Class&lt;/code&gt;对象的引用时，不会自动初始化该&lt;code&gt;Class&lt;/code&gt;对象。&lt;/p&gt;&lt;p&gt;要很好理解两者的区别，还需要了解一个类从加载到可用要经历哪些过程：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;加载，这是由类加载器执行的。该步骤负责查找字节码（通常在&lt;code&gt;classpath&lt;/code&gt;所指定的路径中查找，但并非必须），并从这些字节码中创建一个&lt;code&gt;Class&lt;/code&gt;对象。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;链接，在链接阶段将验证类中的字节码，为&lt;code&gt;static&lt;/code&gt;字段分配存储空间，并且如果需要的话，将解析这个类创建的对其它类的所有引用。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;初始化，如果该类具有超类，则先初始化超类，执行&lt;code&gt;static&lt;/code&gt;初始化器和&lt;code&gt;static&lt;/code&gt;初始化块。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;下面通过一段简单的demo代码来对&lt;code&gt;Class&lt;/code&gt;类的应用做一个简单的说明。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;try&lt;/span&gt; {&lt;br/&gt;            &lt;span&gt;//获取Class引用方式1&lt;/span&gt;&lt;br/&gt;            Class dog1 = Class.forName(&lt;span&gt;&quot;com.example.demo.Dog&quot;&lt;/span&gt;);&lt;br/&gt;&lt;br/&gt;            &lt;span&gt;//获取Class引用方式2&lt;/span&gt;&lt;br/&gt;            Dog dogObj = &lt;span&gt;new&lt;/span&gt; Dog();&lt;br/&gt;            Class dog2 = dogObj.getClass();&lt;br/&gt;&lt;br/&gt;            &lt;span&gt;//获取Class引用方式3&lt;/span&gt;&lt;br/&gt;            Class dog3 = Dog&lt;span&gt;.&lt;span&gt;class&lt;/span&gt;&lt;/span&gt;;&lt;br/&gt;&lt;br/&gt;            &lt;span&gt;//name = com.example.demo.Dog&lt;/span&gt;&lt;br/&gt;            String name = dog1.getName();&lt;br/&gt;&lt;br/&gt;            &lt;span&gt;//dogSuperClass = com.example.demo.Animal&lt;/span&gt;&lt;br/&gt;            Class dogSuperClass = dog1.getSuperclass();&lt;br/&gt;&lt;br/&gt;            &lt;span&gt;// dogInterface[0] = interface com.example.demo.BarkPet&lt;/span&gt;&lt;br/&gt;            Class[] dogInterface = dog1.getInterfaces();&lt;br/&gt;&lt;br/&gt;            &lt;span&gt;//dogAnnotations = null&lt;/span&gt;&lt;br/&gt;            Annotation[] dogAnnotations = dog1.getAnnotations();&lt;br/&gt;            &lt;br/&gt;            Field[] dogFields = dog1.getFields();&lt;br/&gt;            Constructor[] dogConstructors =  dog1.getConstructors();&lt;br/&gt;            Method[] methods = dog1.getMethods();&lt;br/&gt;            &lt;span&gt;for&lt;/span&gt; (Method method : methods){&lt;br/&gt;                &lt;span&gt;//通过反射调用Dog的bark方法&lt;/span&gt;&lt;br/&gt;                &lt;span&gt;if&lt;/span&gt; (method.getName() == &lt;span&gt;&quot;bark&quot;&lt;/span&gt;){&lt;br/&gt;                    method.invoke(dogObj);&lt;br/&gt;                }&lt;br/&gt;            }&lt;br/&gt;        } &lt;span&gt;catch&lt;/span&gt; (ClassNotFoundException e) {&lt;br/&gt;            e.printStackTrace();&lt;br/&gt;        } &lt;span&gt;catch&lt;/span&gt; (IllegalAccessException e) {&lt;br/&gt;            e.printStackTrace();&lt;br/&gt;        } &lt;span&gt;catch&lt;/span&gt; (InvocationTargetException e) {&lt;br/&gt;            e.printStackTrace();&lt;br/&gt;        }&lt;br/&gt;&lt;br/&gt;        &lt;span&gt;//如果我想找出，小猫和小狗怎么办？&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;for&lt;/span&gt; (Animal animal : animals) {&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; (animal &lt;span&gt;instanceof&lt;/span&gt; Dog){&lt;br/&gt;                &lt;span&gt;//成功拿到Dog类型对象&lt;/span&gt;&lt;br/&gt;            }&lt;br/&gt;&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; (Dog&lt;span&gt;.&lt;span&gt;class&lt;/span&gt;.&lt;span&gt;isInstance&lt;/span&gt;(&lt;span&gt;animal&lt;/span&gt;))&lt;/span&gt;{&lt;br/&gt;                &lt;span&gt;//成功拿到Dog类型对象&lt;/span&gt;&lt;br/&gt;            }&lt;br/&gt;        }&lt;br/&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h4&gt;&lt;span&gt;总结&lt;/span&gt;&lt;/h4&gt;&lt;p&gt;总之当你想在运行时获取类型信息，或者编译的过程中拿到类型信息，一定要想到&lt;code&gt;Class&lt;/code&gt;。&lt;code&gt;Class&lt;/code&gt;是用来表示所有类型信息的类。&lt;code&gt;Spring Framework&lt;/code&gt;里面很多重要功能都借助了该知识点的应用，比如&lt;code&gt;IOC&lt;/code&gt;，&lt;code&gt;AOP&lt;/code&gt;等等，想深入了解可以多参考&lt;code&gt;Spring&lt;/code&gt;的源码和相关文档。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;推荐阅读&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzUzMzE4MDY0Nw==&amp;amp;mid=2247484022&amp;amp;idx=1&amp;amp;sn=d3176ea73e48360b64c3f50e8fd622bf&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;1. Java并发编程那些事儿(十)——最后的总结&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzUzMzE4MDY0Nw==&amp;amp;mid=2247484092&amp;amp;idx=1&amp;amp;sn=5618300d2182d57bc3af6751fdc21fd1&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;2. 不会使用虚拟机的程序员不是好程序员&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzUzMzE4MDY0Nw==&amp;amp;mid=2247483893&amp;amp;idx=1&amp;amp;sn=85f6a2063048cc244aedde3172444e32&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;3. Awk这件上古神兵你会用了吗&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzUzMzE4MDY0Nw==&amp;amp;mid=2247483852&amp;amp;idx=1&amp;amp;sn=6efb0db3d5dff639fae2aaec978c2160&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;4. 手把手教你搭建一套ELK日志搜索运维平台&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>05cc677eb439f9d8a63cfa571b9ce0f3</guid>
+<title>Android 逆向之逆向工具</title>
+<link>https://toutiao.io/k/ghevi3w</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;markdown-body&quot;&gt;
+              &lt;blockquote&gt;
+&lt;p&gt;Android逆向可能会用到的的工具整理，包括root、hook、apk反编译、脱壳、网络分析、反汇编、Magisk模块、Xposed模块等方面。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;span id=&quot;more&quot;/&gt;
+
+&lt;h2 id=&quot;root&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#root&quot;/&gt; root&lt;/h2&gt;
+&lt;p&gt;root具有系统中的最高权限，能够帮助用户越过手机制造商的限制，得以卸载本身预装的程序，或运行需要系统权限的动作。因为Android的内核为Linux，安卓root实际上就是取得Linux的root用户权限。&lt;/p&gt;
+&lt;p&gt;一般出厂机器会禁用常规Bootloader的直接刷机功能，因此实现root一般都要先解锁BL，每个厂商解锁BL方式和难度都不同，小米官方提供了解锁BL工具。&lt;/p&gt;
+
+&lt;p&gt;是台湾学生topjohnwu开发的一套用于定制Android的开源工具，涵盖了root、引导脚本、SELinux 修补、移除 AVB2.0、强制加密等功能，支持版本为&lt;strong&gt;Android4.2 ~ 11&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;Magisk以&lt;code&gt;systemless&lt;/code&gt;方式实现root，在系统分区之外创建了一个magisk分区，并没有直接修改/system。&lt;/p&gt;
+&lt;p&gt;除能实现root和root授权之外，Magisk还提供了其他功能：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Magisk Hide隐藏root&lt;/li&gt;
+&lt;li&gt;systemless方式修改hosts&lt;/li&gt;
+&lt;li&gt;修改Magisk应用名（可以绕过一些针对Magisk的检测）&lt;/li&gt;
+&lt;li&gt;通过 Google的SafetyNet检查&lt;/li&gt;
+&lt;li&gt;支持功能模块，可通过安装模块实现Exposed等&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;曾经最流行的root获取和授权工具，原生无广告，支持简体中文，界面简洁美观并且稳定。&lt;br/&gt;
+但目前基本停止更新，不支持Android 8.0以上。&lt;/p&gt;
+
+&lt;p&gt;小米官方提供了解锁BL工具，可以很方便实现小米手机BL解锁，解锁流程：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;进入“设置 -&amp;gt; 开发者选项 -&amp;gt; 设备解锁状态”中绑定账号和设备&lt;/li&gt;
+&lt;li&gt;手动进入Bootloader模式&lt;/li&gt;
+&lt;li&gt;通过USB连接手机，点击 “解锁”按钮&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&quot;hook&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#hook&quot;/&gt; hook&lt;/h2&gt;
+
+&lt;p&gt;是一种支持windows、macos、linux、android、ios多平台，采用动态二进制插桩技术(DBI)的hook框架，并支持native级别的hook。&lt;/p&gt;
+&lt;p&gt;注入脚本使用javascript语言编写，Frida的方面的介绍和使用可以参考&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://myelin.gitee.io/blog/2021/03/08/Android%E9%80%86%E5%90%91%E4%B9%8Bfrida/&quot;&gt;Android逆向之frida&lt;/a&gt;一文。&lt;/p&gt;
+
+&lt;p&gt;是一个著名的开源Java层Hook框架，支持功能模块，可以在不触摸任何APK的情况下更改系统和应用程序的行为，如何官方已经停止更新，官方支持版本为&lt;strong&gt;Android5.0 ~ 8.1&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;运行原理&lt;/strong&gt;：通过替换/system/bin/app_process程序控制zygote进程，使得app_process在启动过程中会加载XposedBridge.jar这个jar包，从而完成对Zygote进程及其创建的Dalvik虚拟机的劫持。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;hook原理&lt;/strong&gt;：修改ART/Davilk虚拟机，将需要hook的方法注册为Native层函数，当执行到这一方法是虚拟机会优先执行Native层函数，然后再去执行Java层函数，从而完成方法的hook。&lt;/p&gt;
+&lt;p&gt;由于过于流行，也导致不少APP针对xposed进行了检测。&lt;/p&gt;
+
+&lt;p&gt;基于Riru实现的开源ART hook框架，类似于Xposed，提供了与OG Xposed一致的API，提供YAHFA和SandHook两种实现方式，成为Xposed停止更新后的官方接任者，支持版本为&lt;strong&gt;Android 8.0 ~ 11&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;可以通过Magisk安装模块实现EdXposed安装，比如&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://lanzous.com/b0eviqogf&quot;&gt;EdXposed完整框架&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;是一个在虚拟机层面、以 Java Method 为粒度的运行时 AOP Hook 框架。简单来说，Epic 就是 ART 上的 Dexposed，可以拦截本进程内部几乎任意的 Java 方法调用，可用于实现 AOP 编程、运行时插桩、性能分析、安全审计等。Epic 被 VirtualXposed 以及 太极 使用，用来实现非 Root 场景下的 Xposed 功能。支持版本为&lt;strong&gt;Android 5.0 ~ 11&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;是基于VirtualApp 和 epic 在非ROOT环境下运行Xposed模块的实现，支持版本为&lt;strong&gt;Android 5.0 ~ 10.0&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;与 Xposed 相比，目前 VirtualXposed 有两个限制：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;不支持修改系统（可以修改普通APP中对系统API的调用），因此重力工具箱，应用控制器等无法使用。&lt;/li&gt;
+&lt;li&gt;暂不支持资源HOOK，因此资源钩子不会起任何作用；使用资源HOOK的模块，相应的功能不会生效。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;一个 类Xposed框架，本身与Xposed没有任何关系，设计思路、实现机制到运作逻辑也完全不同，但能够运行Xposed模块的框架，既能以传统的 Root/刷机方式运作，也能免 Root/ 免刷机运行。支持版本为&lt;strong&gt;Android 5.0 ~ 10.0&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;有两种工作模式：免 root 模式和 magisk 模式。免 root 模式无法修改系统，magisk 模式具有更强大的功能。&lt;/p&gt;
+
+&lt;p&gt;基于Cydia实现的早期hook框架，支持java、native层的hook，并同时支持ios和Android系统，支持版本为&lt;strong&gt;Android 2.3 ~ 4.4&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;一种hook native的实现方式，通过替换函数开始处的指令为跳转指令，使得原函数跳转到自己的函数，支持thumb16、thumb32、arm32指令。&lt;/p&gt;
+&lt;p&gt;hook脚本用C语言编写，使用ndk-build来执行hook脚本。&lt;/p&gt;
+
+&lt;p&gt;在 Android ART 虚拟机上的 Java 层 Hook 框架，作用于进程内，不需要 Root，支持版本为&lt;strong&gt;Android 4.4 ~ 11&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;主要基于 inline hook，条件不允许时进行 ArtMethod 入口替换，支持对象方法、Static 方法、构造方法、JNI 方法、系统方法的 hook 。&lt;/p&gt;
+
+&lt;p&gt;一个针对 Android 平台 ELF (可执行文件和动态库) 的 PLT (Procedure Linkage Table) hook 库，不需要 Root，支持版本为&lt;strong&gt;Android 4.0 ~ 10.0&lt;/strong&gt;。&lt;/p&gt;
+&lt;h2 id=&quot;反编译&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#反编译&quot;/&gt; 反编译&lt;/h2&gt;
+
+&lt;p&gt;一个十六进位文件编辑器，可使用&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://www.sweetscape.com/010editor/repository/templates/&quot;&gt;模板&lt;/a&gt;格式解析二进制文件，可用来分析Android的AndroidManifest.xml、resource.arsc、.dex等文件。&lt;/p&gt;
+
+&lt;p&gt;一个APK反编译工具，可以将资源解码得到资源文件与.smali文件，还可以重新打包为apk。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;反编译&lt;/p&gt;
+&lt;figure class=&quot;highlight xml&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter hljs&quot;/&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;hljs code-wrapper&quot;&gt;&lt;pre&gt;&lt;code class=&quot;hljs xml&quot;&gt;apktool d &lt;span class=&quot;hljs-tag&quot;&gt;&amp;lt;&lt;span class=&quot;hljs-name&quot;&gt;apkPath&lt;/span&gt;&amp;gt;&lt;/span&gt; o &lt;span class=&quot;hljs-tag&quot;&gt;&amp;lt;&lt;span class=&quot;hljs-name&quot;&gt;outputPath&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;重新打包&lt;/p&gt;
+&lt;figure class=&quot;highlight xml&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter hljs&quot;/&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;hljs code-wrapper&quot;&gt;&lt;pre&gt;&lt;code class=&quot;hljs xml&quot;&gt;apktool b &lt;span class=&quot;hljs-tag&quot;&gt;&amp;lt;&lt;span class=&quot;hljs-name&quot;&gt;fileDirPath&lt;/span&gt;&amp;gt;&lt;/span&gt; -o &lt;span class=&quot;hljs-tag&quot;&gt;&amp;lt;&lt;span class=&quot;hljs-name&quot;&gt;apkPath&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;一个操作Android的.dex的工具集，常用来把.dex文件反编译转换为.jar文件。&lt;br/&gt;
+将要反编译的APK后缀名改为.rar或者 .zip后解压，便可得到其中的classes.dex文件。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;反编译&lt;/p&gt;
+  &lt;figure class=&quot;highlight xml&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter hljs&quot;/&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;hljs code-wrapper&quot;&gt;&lt;pre&gt;&lt;code class=&quot;hljs xml&quot;&gt;d2j-dex2jar &lt;span class=&quot;hljs-tag&quot;&gt;&amp;lt;&lt;span class=&quot;hljs-name&quot;&gt;dexFilePath&lt;/span&gt;&amp;gt;&lt;/span&gt; -o &lt;span class=&quot;hljs-tag&quot;&gt;&amp;lt;&lt;span class=&quot;hljs-name&quot;&gt;outputJarFilePath&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;重编译&lt;/p&gt;
+  &lt;figure class=&quot;highlight xml&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter hljs&quot;/&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;hljs code-wrapper&quot;&gt;&lt;pre&gt;&lt;code class=&quot;hljs xml&quot;&gt;d2j-jar2dex &lt;span class=&quot;hljs-tag&quot;&gt;&amp;lt;&lt;span class=&quot;hljs-name&quot;&gt;jarFilePath&lt;/span&gt;&amp;gt;&lt;/span&gt; -o &lt;span class=&quot;hljs-tag&quot;&gt;&amp;lt;&lt;span class=&quot;hljs-name&quot;&gt;outputDexFilePath&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;一个用来查看.jar源码的GUI工具，可以使用dex2jar得到.jar，再拖入jd-gui中查看源码。&lt;/p&gt;
+
+&lt;p&gt;一款反编译利器，支持命令行和图形界面，支持apk、dex、jar、aar等格式的文件查看，还可以将反编译的源码导出为Gradle工程。&lt;/p&gt;
+
+&lt;p&gt;可用来获取APK文件中的 包名、版本号及图标，可以二进制XML文件反编译明文输出，比如反编译得到AndroidManifest.xml：&lt;/p&gt;
+&lt;figure class=&quot;highlight mipsasm&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter hljs&quot;/&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;hljs code-wrapper&quot;&gt;&lt;pre&gt;&lt;code class=&quot;hljs mipsasm&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;java &lt;/span&gt;-&lt;span class=&quot;hljs-keyword&quot;&gt;jar &lt;/span&gt;AXMLPrinter2.&lt;span class=&quot;hljs-keyword&quot;&gt;jar &lt;/span&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;AndroidManifest.xml &lt;/span&gt;&amp;gt; ok.xml&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+
+&lt;p&gt;在 Android 7.0 中引入了全新的 APK Signature Scheme v2签名方，apksigner是Google官方提供的v2签名及验证的专用工具。&lt;/p&gt;
+
+
+&lt;p&gt;用于将dex文件与smali文件格式进行互相转换。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;dex转smali：&lt;/p&gt;
+&lt;figure class=&quot;highlight mipsasm&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter hljs&quot;/&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;hljs code-wrapper&quot;&gt;&lt;pre&gt;&lt;code class=&quot;hljs mipsasm&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;java &lt;/span&gt;-&lt;span class=&quot;hljs-keyword&quot;&gt;jar &lt;/span&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;baksmali.jar &lt;/span&gt;d classes.dex&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;smali转dex：&lt;/p&gt;
+&lt;figure class=&quot;highlight mipsasm&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter hljs&quot;/&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;hljs code-wrapper&quot;&gt;&lt;pre&gt;&lt;code class=&quot;hljs mipsasm&quot;&gt;&lt;span class=&quot;hljs-keyword&quot;&gt;java &lt;/span&gt;-&lt;span class=&quot;hljs-keyword&quot;&gt;jar &lt;/span&gt;smali.&lt;span class=&quot;hljs-keyword&quot;&gt;jar &lt;/span&gt;a smali-&lt;span class=&quot;hljs-keyword&quot;&gt;dir&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;一个java实现的GUI逆向工具。内置DJ-GUI/Core，Procyon，CFR，Fernflower，Krakatau和JADX-Core六个反编译器；使用CFIDE进行字节码反编译；内置恶意代码扫描程序；用Ranino编译器编译反编译的Java类；可通过Smali/Baksmali修改APK；使用JD-Core快速反编译类。&lt;/p&gt;
+
+&lt;p&gt;一个python实现的逆向工程、恶意程序分析工具集。提供了解析AndroidManifest.xml、解析resources.arsc、打印证书签名、反编译APK创建流程图、字节码反汇编、创建方法调用图等功能。&lt;/p&gt;
+
+&lt;p&gt;一个用于监视和篡改macOS，iOS和android上的本机应用程序的系统API调用的自动化框架，基于Frida实现。可用于扫描系统可疑安全问题，也可以通过脚本来修改系统功能逻辑，例如DeviceID欺骗、GPS欺骗、绕过TouchID等。&lt;/p&gt;
+&lt;h2 id=&quot;反汇编&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#反汇编&quot;/&gt; 反汇编&lt;/h2&gt;
+
+&lt;p&gt;目前最棒的一个静态反编译软件，本质是一种递归下降反汇编器，支持Intel X86、Intel x86-64、MIPS、ARM等多达数十种CPU指令集。&lt;/p&gt;
+&lt;p&gt;可用来逆向分析Android中的so动态库文件，支持反调试。&lt;/p&gt;
+
+&lt;p&gt;一个收费的逆向工程平台，支持对Android应用和Dalvik字节码反编译，还支持ARM 32、ARM-Thumb、Intel x86、Intel x86-64、MIPS 32的反汇编。&lt;/p&gt;
+&lt;h2 id=&quot;脱壳&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#脱壳&quot;/&gt; 脱壳&lt;/h2&gt;
+&lt;p&gt;利用Android反编译工具可以很容易得到源码和资源文件，还可以修改资源代码、重新打包编译。为了提高安全性，可以对APK进行加固，加固的方式有代码混淆、dex文件加密、dex method抽取到外部、so加密、dex method动态解密、对抗脱壳、vmp等，目前大致可分为四代壳，针对这些壳逆向人员也研究出各种脱壳技术。&lt;/p&gt;
+&lt;p&gt;Android 4.4之前以全部是Dalvik虚拟机，5.0以后则全部采用ART为默认虚拟机，因为目前市场大部分系统都基本高于5.0版本，因此此处整理大部分为针对5.0及以上ART的脱壳技术。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;名称&lt;/th&gt;
+&lt;th&gt;实现方式&lt;/th&gt;
+&lt;th&gt;原理&lt;/th&gt;
+&lt;th&gt;已知适用Android版本&lt;/th&gt;
+&lt;th&gt;适用壳&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://github.com/dstmath/frida-unpack&quot;&gt;frida-unpack&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Frida hook&lt;/td&gt;
+&lt;td&gt;hook libart.so中的OpenMemory或者libdexfile.so中的OpenCommon方法，得到dex地址&lt;/td&gt;
+&lt;td&gt;7.0~10.0&lt;/td&gt;
+&lt;td&gt;一代壳&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://github.com/hluwa/FRIDA-DEXDump&quot;&gt;FRIDA-DEXDump&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Frida hook&lt;/td&gt;
+&lt;td&gt;完整的dex，直接内存中暴力搜索magic魔数；抹头的dex，通过匹配一些特征查找&lt;/td&gt;
+&lt;td&gt;5.0~12.0&lt;/td&gt;
+&lt;td&gt;一代壳&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://github.com/DrizzleRisk/drizzleDumper&quot;&gt;drizzleDumper&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Ptrace注入&lt;/td&gt;
+&lt;td&gt;通过Ptrace附加需要脱壳的apk进程，然后在脱壳的apk进程的内存中进行dex文件的特征搜索，当搜索到dex文件时，进行dex文件的内存dump&lt;/td&gt;
+&lt;td&gt;5.0&lt;/td&gt;
+&lt;td&gt;一代壳&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://github.com/WrBug/dumpDex&quot;&gt;WrBug/dumpDex&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Xposed hook&lt;/td&gt;
+&lt;td&gt;根据APK内容特征判断是否为腾讯、360、百度、梆梆、爱加密一种，其余壳不支持。再Hook Instrumentation 类的 newApplication() 方法和 ClassLoader 类的 loadClass() 方法，获取 Application 或 Activity 所在的 dex 的数据。&lt;/td&gt;
+&lt;td&gt;7.0~10.0&lt;/td&gt;
+&lt;td&gt;一代特定壳&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://github.com/OakChen/ApkShelling&quot;&gt;ApkShelling&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Xposed hook&lt;/td&gt;
+&lt;td&gt;hook java.lang.ClassLoader类的loadClass方法，获得loadClass返回的Class对象，反射调用Class对象的getDex方法获得Dex对象，将Dex对象提交给写文件的线程并对dex去重，线程异步从队列中读取字节集写到文件中&lt;/td&gt;
+&lt;td&gt;5.1.1&lt;/td&gt;
+&lt;td&gt;一代特定壳&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://github.com/zyq8709/DexHunter&quot;&gt;DexHunter&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;修改Android源码&lt;/td&gt;
+&lt;td&gt;通过feature string定位dex地址，先从内存中从odex文件头到class_defs之前的文件数据内容；读取class_defs之后为data；遍历class_def_item，通过code_item_of判断方法是否在dex范围内，不在则归为extra&lt;/td&gt;
+&lt;td&gt;4.4.3&lt;/td&gt;
+&lt;td&gt;二代指令抽取&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://github.com/F8LEFT/FUPK3&quot;&gt;FUPK3&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;修改Android源码&lt;/td&gt;
+&lt;td&gt;遍历dvmUserDexFiles获取dex，&lt;strong&gt;遍历触发函数&lt;/strong&gt;，解析器处插桩，截取解密后的code_item，数组重组为dex&lt;/td&gt;
+&lt;td&gt;4.4(Nexus5 hammerhead手机)&lt;/td&gt;
+&lt;td&gt;三代动态解密&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://github.com/hanbinglengyue/FART&quot;&gt; FART&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;修改Android源码&lt;/td&gt;
+&lt;td&gt;通过选择合适的时机点获取到应用解密后的dex文件最终依附的Classloader，进而通过java的反射机制最终获取到对应的DexFile的结构体，并完成dex的dump；&lt;strong&gt;主动调用&lt;/strong&gt;类中的每一个方法，并实现对应CodeItem的dump；通过主动调用dump下来的方法的CodeItem进行dex中被抽取的方法的修复。&lt;/td&gt;
+&lt;td&gt;6.0(理论支持任何ART)&lt;/td&gt;
+&lt;td&gt;三代动态解密&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://github.com/FeJQ/AUPK&quot;&gt;AUPK&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;修改Android源码&lt;/td&gt;
+&lt;td&gt;不管壳是否禁用了dex2oat，类的初始化函数始终运行Execute函数，修改该函数从中获取ArtMethod对象再获取DexFile对象；通过dex中Class对象获取所有ArtMethod对象，&lt;strong&gt;主动调用&lt;/strong&gt;使壳做code_item修复，将code_item回填，部分壳还原dex_header中的 Magic 字段。&lt;/td&gt;
+&lt;td&gt;7.1.1(Nexuse 5X)&lt;/td&gt;
+&lt;td&gt;三代动态解密&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;除此以外还有&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://github.com/halfkiss/ZjDroid&quot;&gt;ZjDroid&lt;/a&gt;、&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://github.com/lambdalang/DexExtractor&quot;&gt;DexExtractor&lt;/a&gt;、&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://github.com/strazzere/android-unpacker&quot;&gt;android-unpacker&lt;/a&gt;、&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://github.com/smartdone/dexdump&quot;&gt;dexdump&lt;/a&gt;等很多种脱壳方式，这里没有再一一列举，感兴趣可以去查看源码研究下实现原理。&lt;/p&gt;
+&lt;h2 id=&quot;网络分析&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#网络分析&quot;/&gt; 网络分析&lt;/h2&gt;
+
+&lt;p&gt;一款跨平台 PC 端网络数据包分析器，支持Windows、MacOS、Linux等系统，支持协议很多也很全面，支持HTTPS抓包但不支持解密。&lt;/p&gt;
+&lt;p&gt;使用WinPCAP作为接口，直接与网卡进行数据报文交换。&lt;/p&gt;
+
+&lt;p&gt;一款 PC 端抓包分析工具，是收费软件，通过代理实现，支持Windows、MacOS、Linux等系统，支持 HTTP 和 HTTPS 网络封包，可对HTTPS进行解密。&lt;/p&gt;
+
+&lt;p&gt;一款 PC 端抓包分析工具，Fiddler Everywhere支持跨平台，也是基于代理实现，支持 HTTP 和 HTTPS 抓包与分析。&lt;/p&gt;
+
+&lt;p&gt;一款Android平台上强大的抓包工具，支持支持HTTP、HTTPS、WebSocket等多种协议，并且支持数据筛选、请求注入、请求导出等功能。&lt;/p&gt;
+&lt;p&gt;无需root便可实现抓包，但是Android 7.0以上HTTPS证书安装仍需root权限。&lt;/p&gt;
+
+&lt;p&gt;一款针对于移动流量劫持而开发的手机抓包软件，可以当作是Android版的&quot;Fiddler&quot;，主要功能包括：手机端抓包、PING/DNS/TraceRoute诊断、抓包HAR数据上传分享。&lt;/p&gt;
+
+&lt;p&gt;是一个 java 开发的用于攻击 web 应用程序的集成平台，包含了许多工具。&lt;/p&gt;
+&lt;p&gt;Burp Suite为这些工具设计了许多接口，以加快攻击应用程序的过程。所有工具都共享一个请求，并能处理对应的HTTP 消息、持久性、认证、代理、日志、警报。常用功能有：抓包、重放、爆破。&lt;/p&gt;
+&lt;h2 id=&quot;magisk模块&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#magisk模块&quot;/&gt; Magisk模块&lt;/h2&gt;
+
+&lt;p&gt;很方便安装EdXposed完整环境，内置了Riru、EdXposed、EdXposed Manager等部分。&lt;/p&gt;
+
+&lt;p&gt;可以让 adb 通过&lt;code&gt;adb root&lt;/code&gt;命令获得root权限。&lt;/p&gt;
+
+&lt;p&gt;在启动时让magisk作为root运行&lt;code&gt;frida-server&lt;/code&gt;。&lt;/p&gt;
+&lt;h2 id=&quot;xposed模块&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#xposed模块&quot;/&gt; Xposed模块&lt;/h2&gt;
+
+&lt;p&gt;隐藏root，绕过应用的root检测。&lt;/p&gt;
+
+&lt;p&gt;用来禁用、绕过 SSL 证书检查，对校验 SSL 证书的方法都进行了 Hook，从而绕过证书检查。&lt;/p&gt;
+
+&lt;p&gt;JustTrustMe的升级版，能够对抗OkHttp的混淆加密。&lt;/p&gt;
+
+&lt;p&gt;使用&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://techblog.mediaservice.net/2018/11/universal-android-ssl-pinning-bypass-2/&quot;&gt;Mattia Vinci&lt;/a&gt;的方式绕过SSL证书检查和证书锁定。&lt;/p&gt;
+
+&lt;p&gt;查看并修改安卓手机设备信息： IMEI、AndroidID、Wifi Mac、SerialNum、Wifi SSID、手机号、Bluetooth Mac、Google Ad Id、Wifi BSSID、IMSI、Sim卡状态、运营商信息、机器型号、制造商、品牌、系统版本、CPU_ABI、CPU_ABI2、SDK、BuildID、分辨率、IP等。&lt;/p&gt;
+&lt;h2 id=&quot;其他&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#其他&quot;/&gt; 其他&lt;/h2&gt;
+
+&lt;p&gt;Google的一种反滥用 API，让应用开发者能够评估运行其应用的 Android 设备。该 API 应该用作滥用检测系统的一部分，以帮助确定您的服务器是否与在真实 Android 设备上运行的真实应用互动。&lt;/p&gt;
+
+&lt;p&gt;一个帮助绕过Android N的classloader命名空间限制的实现。&lt;/p&gt;
+&lt;h2 id=&quot;参考&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#参考&quot;/&gt; 参考&lt;/h2&gt;
+
+
+            &lt;/div&gt;
+            &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
