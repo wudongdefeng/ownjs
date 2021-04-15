@@ -263,6 +263,170 @@
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;大家好，我是煎鱼。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;自古应用程序均从 Hello World 开始，你我所写的 Go 语言亦然：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;import &lt;span&gt;&quot;fmt&quot;&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;func &lt;span&gt;&lt;span&gt;main&lt;/span&gt;&lt;/span&gt;() {&lt;br/&gt; fmt.Println(&lt;span&gt;&quot;hello world.&quot;&lt;/span&gt;)&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这段程序的输出结果为 &lt;code&gt;hello world.&lt;/code&gt;，就是这么的简单又直接。但这时候又不禁思考了起来，这个 &lt;code&gt;hello world.&lt;/code&gt; 是怎么输出来，经历了什么过程。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;真是非常的好奇，今天我们就一起来探一探 Go 程序的启动流程。其中涉及到 Go Runtime 的调度器启动，g0，m0 又是什么？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;车门焊死，正式开始吸鱼之路。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;Go 引导阶段&lt;/h2&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;查找入口&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;首先编译上文提到的示例程序：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;$&lt;/span&gt;&lt;span&gt; GOFLAGS=&lt;span&gt;&quot;-ldflags=-compressdwarf=false&quot;&lt;/span&gt; go build &lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在命令中指定了 GOFLAGS 参数，这是因为在 Go1.11 起，为了减少二进制文件大小，调试信息会被压缩。导致在 MacOS 上使用 gdb 时无法理解压缩的 DWARF 的含义是什么（而我恰恰就是用的 MacOS）。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因此需要在本次调试中将其关闭，再使用 gdb 进行调试，以此达到观察的目的：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;$&lt;/span&gt;&lt;span&gt; gdb awesomeProject &lt;/span&gt;&lt;br/&gt;(gdb) info files&lt;br/&gt;Symbols from &quot;/Users/eddycjy/go-application/awesomeProject/awesomeProject&quot;.&lt;br/&gt;Local exec file:&lt;br/&gt; `/Users/eddycjy/go-application/awesomeProject/awesomeProject&#x27;, file type mach-o-x86-64.&lt;br/&gt; Entry point: 0x1063c80&lt;br/&gt; 0x0000000001001000 - 0x00000000010a6aca is .text&lt;br/&gt; ...&lt;br/&gt;(gdb) b *0x1063c80&lt;br/&gt;Breakpoint 1 at 0x1063c80: file /usr/local/Cellar/go/1.15/libexec/src/runtime/rt0_darwin_amd64.s, line 8.&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;通过 Entry point 的调试，可看到真正的程序入口在 runtime 包中，不同的计算机架构指向不同。例如：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;MacOS 在 &lt;code&gt;src/runtime/rt0_darwin_amd64.s&lt;/code&gt;。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Linux 在 &lt;code&gt;src/runtime/rt0_linux_amd64.s&lt;/code&gt;。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其最终指向了 rt0_darwin_amd64.s 文件，这个文件名称非常的直观：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;Breakpoint 1 at 0x1063c80: file /usr/&lt;span&gt;local&lt;/span&gt;/Cellar/go/1.15/libexec/src/runtime/rt0_darwin_amd64.s, line 8.&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;rt0 代表 runtime0 的缩写，指代运行时的创世，超级奶爸：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;darwin 代表目标操作系统（GOOS）。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;amd64 代表目标操作系统架构（GOHOSTARCH）。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;同时 Go 语言还支持更多的目标系统架构，例如：AMD64、AMR、MIPS、WASM 等：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.6489675516224189&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/KVl0giak5ib4iaFHVjJib9IKxJ0wgOXOaibgztHVcvJn9ms2tUj3liagxicSqORVBdjksupFXNB7gxVedvtjicYAOLEOIw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;678&quot;/&gt;&lt;figcaption&gt;源码目录&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;若有兴趣可到 &lt;code&gt;src/runtime&lt;/code&gt; 目录下进一步查看，这里就不一一介绍了。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;入口方法&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在 rt0_linux_amd64.s 文件中，可发现 &lt;code&gt;_rt0_amd64_darwin&lt;/code&gt; JMP 跳转到了 &lt;code&gt;_rt0_amd64&lt;/code&gt; 方法：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;TEXT _rt0_amd64_darwin(SB),NOSPLIT,$-8&lt;br/&gt; JMP _rt0_amd64(SB)&lt;br/&gt;...&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;紧接着又跳转到 &lt;code&gt;runtime·rt0_go&lt;/code&gt; 方法：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;TEXT _rt0_amd64(SB),NOSPLIT,$-8&lt;br/&gt; MOVQ 0(SP), DI // argc&lt;br/&gt; LEAQ 8(SP), SI // argv&lt;br/&gt; JMP runtime·rt0_go(SB)&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;该方法将程序输入的 argc 和 argv 从内存移动到寄存器中。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;栈指针（SP）的前两个值分别是 argc 和 argv，其对应参数的数量和具体各参数的值。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;开启主线&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;程序参数准备就绪后，正式初始化的方法落在 &lt;code&gt;runtime·rt0_go&lt;/code&gt; 方法中：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;TEXT runtime·rt0_go(SB),NOSPLIT,&lt;span&gt;$0&lt;/span&gt;&lt;br/&gt; ...&lt;br/&gt; CALL runtime·check(SB)&lt;br/&gt; MOVL 16(SP), AX  // copy argc&lt;br/&gt; MOVL AX, 0(SP)&lt;br/&gt; MOVQ 24(SP), AX  // copy argv&lt;br/&gt; MOVQ AX, 8(SP)&lt;br/&gt; CALL runtime·args(SB)&lt;br/&gt; CALL runtime·osinit(SB)&lt;br/&gt; CALL runtime·schedinit(SB)&lt;br/&gt;&lt;br/&gt; // create a new goroutine to start program&lt;br/&gt; MOVQ &lt;span&gt;$runtime&lt;/span&gt;·mainPC(SB), AX  // entry&lt;br/&gt; PUSHQ AX&lt;br/&gt; PUSHQ &lt;span&gt;$0&lt;/span&gt;   // arg size&lt;br/&gt; CALL runtime·newproc(SB)&lt;br/&gt; POPQ AX&lt;br/&gt; POPQ AX&lt;br/&gt;&lt;br/&gt; // start this M&lt;br/&gt; CALL runtime·mstart(SB)&lt;br/&gt; ...&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;runtime.check：运行时类型检查，主要是校验编译器的翻译工作是否正确，是否有 “坑”。基本代码均为检查 &lt;code&gt;int8&lt;/code&gt; 在 &lt;code&gt;unsafe.Sizeof&lt;/code&gt; 方法下是否等于 1 这类动作。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;runtime.args：系统参数传递，主要是将系统参数转换传递给程序使用。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;runtime.osinit：系统基本参数设置，主要是获取 CPU 核心数和内存物理页大小。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;runtime.schedinit：进行各种运行时组件的初始化，包含调度器、内存分配器、堆、栈、GC 等一大堆初始化工作。会进行 p 的初始化，并将 m0 和某一个 p 进行绑定。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;runtime.main：主要工作是运行 main goroutine，虽然在&lt;code&gt;runtime·rt0_go&lt;/code&gt; 中指向的是&lt;code&gt;$runtime·mainPC&lt;/code&gt;，但实质指向的是 &lt;code&gt;runtime.main&lt;/code&gt;。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;runtime.newproc：创建一个新的 goroutine，且绑定 &lt;code&gt;runtime.main&lt;/code&gt; 方法（也就是应用程序中的入口 main 方法）。并将其放入 m0 绑定的p的本地队列中去，以便后续调度。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;runtime.mstart：启动 m，调度器开始进行循环调度。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在 &lt;code&gt;runtime·rt0_go&lt;/code&gt; 方法中，其主要是完成各类运行时的检查，系统参数设置和获取，并进行大量的 Go 基础组件初始化。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;初始化完毕后进行主协程（main goroutine）的运行，并放入等待队列（GMP 模型），最后调度器开始进行循环调度。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;小结&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;根据上述源码剖析，可以得出如下 Go 应用程序引导的流程图：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.5568039950062422&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/KVl0giak5ib4iaFHVjJib9IKxJ0wgOXOaibgzYOFibkXganwxcXUhQiaiasNa7k5FXKr7AfzPdN6uFHqibbA7QEjtib9ceXA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1602&quot;/&gt;&lt;figcaption&gt;Go 程序引导过程&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在 Go 语言中，实际的运行入口并不是用户日常所写的 &lt;code&gt;main func&lt;/code&gt;，更不是 &lt;code&gt;runtime.main&lt;/code&gt; 方法，而是从 &lt;code&gt;rt0_*_amd64.s&lt;/code&gt; 开始，最终再一路 JMP 到 &lt;code&gt;runtime·rt0_go&lt;/code&gt; 里去，再在该方法里完成一系列 Go 自身所需要完成的绝大部分初始化动作。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其中整体包括：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;运行时类型检查、系统参数传递、CPU 核数获取及设置、运行时组件的初始化（调度器、内存分配器、堆、栈、GC 等）。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;运行 main goroutine。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;运行相应的 GMP 等大量缺省行为。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;涉及到调度器相关的大量知识。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;后续将会继续剖析将进一步剖析 &lt;code&gt;runtime·rt0_go&lt;/code&gt; 里的爱与恨，尤其像是 &lt;code&gt;runtime.main&lt;/code&gt;、&lt;code&gt;runtime.schedinit&lt;/code&gt; 等调度方法，都有非常大的学习价值，有兴趣的小伙伴可以持续关注。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;Go 调度器初始化&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;知道了 Go 程序是怎么引导起来的之后，我们需要了解 Go Runtime 中调度器是怎么流转的。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;runtime.mstart&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这里主要关注 &lt;code&gt;runtime.mstart&lt;/code&gt; 方法：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;mstart&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt; &lt;span&gt;// 获取 g0&lt;/span&gt;&lt;br/&gt; _g_ := getg()&lt;br/&gt;&lt;br/&gt; &lt;span&gt;// 确定栈边界&lt;/span&gt;&lt;br/&gt; osStack := _g_.stack.lo == &lt;span&gt;0&lt;/span&gt;&lt;br/&gt; &lt;span&gt;if&lt;/span&gt; osStack {&lt;br/&gt;  size := _g_.stack.hi&lt;br/&gt;  &lt;span&gt;if&lt;/span&gt; size == &lt;span&gt;0&lt;/span&gt; {&lt;br/&gt;   size = &lt;span&gt;8192&lt;/span&gt; * sys.StackGuardMultiplier&lt;br/&gt;  }&lt;br/&gt;  _g_.stack.hi = &lt;span&gt;uintptr&lt;/span&gt;(noescape(unsafe.Pointer(&amp;amp;size)))&lt;br/&gt;  _g_.stack.lo = _g_.stack.hi - size + &lt;span&gt;1024&lt;/span&gt;&lt;br/&gt; }&lt;br/&gt; _g_.stackguard0 = _g_.stack.lo + _StackGuard&lt;br/&gt; _g_.stackguard1 = _g_.stackguard0&lt;br/&gt;  &lt;br/&gt;  &lt;span&gt;// 启动 m，进行调度器循环调度&lt;/span&gt;&lt;br/&gt; mstart1()&lt;br/&gt;&lt;br/&gt; &lt;span&gt;// 退出线程&lt;/span&gt;&lt;br/&gt; &lt;span&gt;if&lt;/span&gt; mStackIsSystemAllocated() {&lt;br/&gt;  osStack = &lt;span&gt;true&lt;/span&gt;&lt;br/&gt; }&lt;br/&gt; mexit(osStack)&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;调用 &lt;code&gt;getg&lt;/code&gt; 方法获取 GMP 模型中的 g，此处获取的是 g0。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;通过检查 g 的执行栈 &lt;code&gt;_g_.stack&lt;/code&gt; 的边界（堆栈的边界正好是 lo, hi）来确定是否为系统栈。若是，则根据系统栈初始化 g 执行栈的边界。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;调用 &lt;code&gt;mstart1&lt;/code&gt; 方法启动系统线程 m，进行调度器循环调度。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;调用 &lt;code&gt;mexit&lt;/code&gt; 方法退出系统线程 m。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;runtime.mstart1&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这么看来其实质逻辑在 &lt;code&gt;mstart1&lt;/code&gt; 方法，我们继续往下剖析：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;mstart1&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt; &lt;span&gt;// 获取 g，并判断是否为 g0&lt;/span&gt;&lt;br/&gt; _g_ := getg()&lt;br/&gt; &lt;span&gt;if&lt;/span&gt; _g_ != _g_.m.g0 {&lt;br/&gt;  throw(&lt;span&gt;&quot;bad runtime·mstart&quot;&lt;/span&gt;)&lt;br/&gt; }&lt;br/&gt;&lt;br/&gt; &lt;span&gt;// 初始化 m 并记录调用方 pc、sp&lt;/span&gt;&lt;br/&gt; save(getcallerpc(), getcallersp())&lt;br/&gt; asminit()&lt;br/&gt; minit()&lt;br/&gt;&lt;br/&gt; &lt;span&gt;// 设置信号 handler&lt;/span&gt;&lt;br/&gt; &lt;span&gt;if&lt;/span&gt; _g_.m == &amp;amp;m0 {&lt;br/&gt;  mstartm0()&lt;br/&gt; }&lt;br/&gt; &lt;span&gt;// 运行启动函数&lt;/span&gt;&lt;br/&gt; &lt;span&gt;if&lt;/span&gt; fn := _g_.m.mstartfn; fn != &lt;span&gt;nil&lt;/span&gt; {&lt;br/&gt;  fn()&lt;br/&gt; }&lt;br/&gt;&lt;br/&gt; &lt;span&gt;if&lt;/span&gt; _g_.m != &amp;amp;m0 {&lt;br/&gt;  acquirep(_g_.m.nextp.ptr())&lt;br/&gt;  _g_.m.nextp = &lt;span&gt;0&lt;/span&gt;&lt;br/&gt; }&lt;br/&gt; schedule()&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;调用 &lt;code&gt;getg&lt;/code&gt; 方法获取 g。并且通过前面绑定的 &lt;code&gt;_g_.m.g0&lt;/code&gt; 判断所获取的 g 是否 g0。若不是，则直接抛出致命错误。因为调度器仅在 g0 上运行。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;调用 &lt;code&gt;minit&lt;/code&gt; 方法初始化 m，并记录调用方的 PC、SP，便于后续 schedule 阶段时的复用。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;若确定当前的 g 所绑定的 m 是 m0，则调用 &lt;code&gt;mstartm0&lt;/code&gt; 方法，设置信号 handler。该动作必须在 &lt;code&gt;minit&lt;/code&gt; 方法之后，这样 &lt;code&gt;minit&lt;/code&gt; 方法可以提前准备好线程，以便能够处理信号。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;若当前 g 所绑定的 m 有启动函数，则运行。否则跳过。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;若当前 g 所绑定的 m 不是 m0，则需要调用 &lt;code&gt;acquirep&lt;/code&gt; 方法获取并绑定 p，也就是 m 与 p 绑定。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;调用 &lt;code&gt;schedule&lt;/code&gt; 方法进行正式调度。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;忙活了一大圈，终于进入到开题的主菜了，原来潜伏的很深的 &lt;code&gt;schedule&lt;/code&gt; 方法才是真正做调度的方法，其他都是前置处理和准备数据。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;由于篇幅问题，&lt;code&gt;schedule&lt;/code&gt; 方法会放到下篇再继续剖析，我们先聚焦本篇的一些细节点。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;问题深剖&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;不过到这里篇幅也已经比较长了，积累了不少问题。我们针对在 Runtime 中出镜率最高的两个元素进行剖析：&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;m0&lt;/code&gt; 是什么，作用是？&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;g0&lt;/code&gt; 是什么，作用是？&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;m0&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;m0 是 Go Runtime 所创建的第一个系统线程，一个 Go 进程只有一个 m0，也叫主线程。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;从多个方面来看：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;数据结构：m0 和其他创建的 m 没有任何区别。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;创建过程：m0 是进程在启动时应该汇编直接复制给 m0 的，其他后续的 m 则都是 Go Runtime 内自行创建的。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;变量声明：m0 和常规 m 一样，m0 的定义就是 &lt;code&gt;var m0 m&lt;/code&gt;，没什么特别之处。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;g0&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;g 一般分为三种，分别是：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;执行用户任务的叫做 g。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;执行 &lt;code&gt;runtime.main&lt;/code&gt; 的 main goroutine。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;执行调度任务的叫 g0。。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;g0 比较特殊，每一个 m 都只有一个 g0（仅此只有一个 g0），且每个 m 都只会绑定一个 g0。在 g0 的赋值上也是通过汇编赋值的，其余后续所创建的都是常规的 g。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;从多个方面来看：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;数据结构：g0 和其他创建的 g 在数据结构上是一样的，但是存在栈的差别。在 g0 上的栈分配的是系统栈，在 Linux 上栈大小默认固定 8MB，不能扩缩容。而常规的 g 起始只有 2KB，可扩容。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;运行状态：g0 和常规的 g 不一样，没有那么多种运行状态，也不会被调度程序抢占，调度本身就是在 g0 上运行的。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;变量声明：g0 和常规 g，g0 的定义就是 &lt;code&gt;var g0 g&lt;/code&gt;，没什么特别之处。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;小结&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在本章节中我们讲解了 Go 调度器初始化的一个过程，分别涉及：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;runtime.mstart。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;runtime.mstart1。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;基于此也了解到了在调度器初始化过程中，需要准备什么，初始化什么。另外针对调度过程中最常提到的 m0、g0 的概念我们进行了梳理和说明。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;总结&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在今天这篇文章中，我们详细的介绍了 Go 语言的引导启动过程中的所有流程和初始化动作。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;同时针对调度器的初始化进行了初步分析，详细介绍了 m0、g0 的用途和区别。在下一篇文章中我们将进一步对真正调度的 &lt;code&gt;schedule&lt;/code&gt; 方法进行详解，这块也是个硬骨头了。&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
+<guid>add92fffadf6200d7d07efebdea34566</guid>
+<title>RESTful API 设计最佳实践</title>
+<link>https://toutiao.io/k/4zqz7k1</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;markdown-body&quot; itemprop=&quot;articleBody&quot;&gt;&lt;p&gt;&lt;img src=&quot;./restful.gif&quot; alt=&quot;restful api&quot;/&gt;&lt;/p&gt;&lt;h2 id=&quot;简介&quot;&gt;简介&lt;/h2&gt;&lt;p&gt;RESTful API 是目前最流行的API设计规范，它用于Web数据接口的设计。它允许包括浏览器在内的各种客户端与服务器进行通信。因此正确是设计我们的RESTful是相当重要的！我们的API必须安全、高性能、同时易于使用。&lt;/p&gt;&lt;p&gt;在本文我们将探讨如何设计出易于使用并且安全快速的的RESTful API。&lt;/p&gt;&lt;p&gt;RESTful API 即是基于Rest构建的API。那么在开始之前，我们先来看看 REST 是什么？&lt;/p&gt;&lt;p&gt;REST与技术无关，它代表的是一种软件架构风格，REST它是 Representational State Transfer 的简称，中文的含义是: 表现层状态转移(转移：通过HTTP动词实现)。即 URL 定位资源，HTTP动词操作（GET，POST，PUT，DELETE）描述操作。&lt;/p&gt;&lt;h2 id=&quot;确保接受并响应-json数据格式&quot;&gt;确保接受并响应 JSON数据格式&lt;/h2&gt;&lt;p&gt;RESTful API 应该接受 JSON 格式的请求，并返回的响应体也应该是JSON格式的。JSON 是一种数据传输标准，主流编程语言几乎都能很好的支持它。同时在浏览器中我们的JavaScript也能很轻松方便的操作这些数据。所以，以JSON 格式编写的 RESTful API 具有简单、易读、易用的特点。&lt;/p&gt;&lt;p&gt;为了确保当我们的RESTful API 服务使用 JSON 格式响应，我们应该将其响应头的&lt;code&gt;Content-Type&lt;/code&gt;设置为&lt;code&gt;application/json&lt;/code&gt;。&lt;/p&gt;&lt;p&gt;让我们来看一个接收 JSON 数据并返回 JSON 数据的 API 示例。本示例使用Node.js的 &lt;a href=&quot;https://expressjs.com/&quot;&gt;Express&lt;/a&gt; 框架。我们使用了 &lt;a href=&quot;https://www.npmjs.com/package/body-parser&quot;&gt;body-parser &lt;/a&gt;中间件来解析 JSON 请求体，然后使用 &lt;code&gt;res.json&lt;/code&gt; 返回传入的 JSON 对象。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span&gt;const&lt;/span&gt; &lt;span&gt;express&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;require&lt;/span&gt;(&lt;span&gt;&#x27;express&#x27;&lt;/span&gt;);
+&lt;span&gt;const&lt;/span&gt; &lt;span&gt;bodyParser&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;require&lt;/span&gt;(&lt;span&gt;&#x27;body-parser&#x27;&lt;/span&gt;);
+
+&lt;span&gt;const&lt;/span&gt; &lt;span&gt;app&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;express&lt;/span&gt;();
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;use&lt;/span&gt;(&lt;span&gt;bodyParser&lt;/span&gt;.&lt;span&gt;json&lt;/span&gt;());
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;post&lt;/span&gt;(&lt;span&gt;&#x27;/&#x27;&lt;/span&gt;, (&lt;span&gt;req&lt;/span&gt;, &lt;span&gt;res&lt;/span&gt;) =&amp;gt; {
+  &lt;span&gt;res&lt;/span&gt;.&lt;span&gt;json&lt;/span&gt;(&lt;span&gt;req&lt;/span&gt;.&lt;span&gt;body&lt;/span&gt;);
+});
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;listen&lt;/span&gt;(&lt;span&gt;3000&lt;/span&gt;, () =&amp;gt; &lt;span&gt;console&lt;/span&gt;.&lt;span&gt;log&lt;/span&gt;(&lt;span&gt;&#x27;server started&#x27;&lt;/span&gt;));
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在本示例中 &lt;code&gt;bodyParser.json()&lt;/code&gt; 将 JSON 请求体的字符解析为 JavaScript 对象，然后将其分配给该&lt;code&gt;req.body&lt;/code&gt;对象。&lt;/p&gt;&lt;h2 id=&quot;在-api-路径中使用名词代替动词&quot;&gt;在 API 路径中使用名词代替动词&lt;/h2&gt;&lt;p&gt;RESTful API是面向资源的API，HTTP动词操作（GET，POST，PUT，DELETE）描述操作。&lt;/p&gt;&lt;p&gt;我们不应该在URL路径中使用动词。我们应该使用要操作的实体的名词作为路径名。因为我们的HTTP请求方法本身就是动词，就能描述要进行的操作，如常见的方法包括 GET，POST，PUT和 DELETE，这些请求方法即可完成 &lt;a href=&quot;https://en.wikipedia.org/wiki/Create,_read,_update_and_delete&quot;&gt;CRUD&lt;/a&gt;。&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;p&gt;GET 检索资源。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;POST 将新数据提交到服务器。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;PUT 更新现有数据。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;DELETE 删除数据。&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;例如，我们有个文章(/articles/)资源。我们对其进行CRUD的RESTful API如下：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;使用 GET &lt;code&gt;/articles/&lt;/code&gt;来获取文章列表&lt;/li&gt;&lt;li&gt;使用 POST &lt;code&gt;/articles/ &lt;/code&gt;添加新文章&lt;/li&gt;&lt;li&gt;使用 PUT &lt;code&gt;/articles/:id&lt;/code&gt; 更新给定ID的文章&lt;/li&gt;&lt;li&gt;使用 DELETE&lt;code&gt;/articles/:id&lt;/code&gt; 删除具有给定ID的文章&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;我们通过Express来实现上面这个增删改查的例子，如下所示：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span&gt;const&lt;/span&gt; &lt;span&gt;express&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;require&lt;/span&gt;(&lt;span&gt;&#x27;express&#x27;&lt;/span&gt;);
+&lt;span&gt;const&lt;/span&gt; &lt;span&gt;bodyParser&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;require&lt;/span&gt;(&lt;span&gt;&#x27;body-parser&#x27;&lt;/span&gt;);
+
+&lt;span&gt;const&lt;/span&gt; &lt;span&gt;app&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;express&lt;/span&gt;();
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;use&lt;/span&gt;(&lt;span&gt;bodyParser&lt;/span&gt;.&lt;span&gt;json&lt;/span&gt;());
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;get&lt;/span&gt;(&lt;span&gt;&#x27;/articles&#x27;&lt;/span&gt;, (&lt;span&gt;req&lt;/span&gt;, &lt;span&gt;res&lt;/span&gt;) =&amp;gt; {
+  &lt;span&gt;const&lt;/span&gt; &lt;span&gt;articles&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; [];
+  &lt;span&gt;// code to retrieve an article...
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;res&lt;/span&gt;.&lt;span&gt;json&lt;/span&gt;(&lt;span&gt;articles&lt;/span&gt;);
+});
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;post&lt;/span&gt;(&lt;span&gt;&#x27;/articles&#x27;&lt;/span&gt;, (&lt;span&gt;req&lt;/span&gt;, &lt;span&gt;res&lt;/span&gt;) =&amp;gt; {
+  &lt;span&gt;// code to add a new article...
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;res&lt;/span&gt;.&lt;span&gt;json&lt;/span&gt;(&lt;span&gt;req&lt;/span&gt;.&lt;span&gt;body&lt;/span&gt;);
+});
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;put&lt;/span&gt;(&lt;span&gt;&#x27;/articles/:id&#x27;&lt;/span&gt;, (&lt;span&gt;req&lt;/span&gt;, &lt;span&gt;res&lt;/span&gt;) =&amp;gt; {
+  &lt;span&gt;const&lt;/span&gt; { &lt;span&gt;id&lt;/span&gt; } &lt;span&gt;=&lt;/span&gt; &lt;span&gt;req&lt;/span&gt;.&lt;span&gt;params&lt;/span&gt;;
+  &lt;span&gt;// code to update an article...
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;res&lt;/span&gt;.&lt;span&gt;json&lt;/span&gt;(&lt;span&gt;req&lt;/span&gt;.&lt;span&gt;body&lt;/span&gt;);
+});
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;delete&lt;/span&gt;(&lt;span&gt;&#x27;/articles/:id&#x27;&lt;/span&gt;, (&lt;span&gt;req&lt;/span&gt;, &lt;span&gt;res&lt;/span&gt;) =&amp;gt; {
+  &lt;span&gt;const&lt;/span&gt; { &lt;span&gt;id&lt;/span&gt; } &lt;span&gt;=&lt;/span&gt; &lt;span&gt;req&lt;/span&gt;.&lt;span&gt;params&lt;/span&gt;;
+  &lt;span&gt;// code to delete an article...
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;res&lt;/span&gt;.&lt;span&gt;json&lt;/span&gt;({ &lt;span&gt;deleted&lt;/span&gt;&lt;span&gt;:&lt;/span&gt; &lt;span&gt;id&lt;/span&gt; });
+});
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;listen&lt;/span&gt;(&lt;span&gt;3000&lt;/span&gt;, () =&amp;gt; &lt;span&gt;console&lt;/span&gt;.&lt;span&gt;log&lt;/span&gt;(&lt;span&gt;&#x27;server started&#x27;&lt;/span&gt;));
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在上面的示例代码中，我们定义了API来操作文章(articles)资源。如我们所见，API URL路径中使用的都是名词，作为动词的请求方法说明了API的操作意图。&lt;/p&gt;&lt;h2 id=&quot;使用名词复数&quot;&gt;使用名词复数&lt;/h2&gt;&lt;p&gt;我们应该使用复数名词来命名集合。&lt;/p&gt;&lt;p&gt;通常，我们想要取得的数据都是一个集合，而不是单个项目。同时数据库中的表也是具有多个条目的。所以我们的API 也应该使用复数名词，这样更合乎情理。&lt;/p&gt;&lt;h2 id=&quot;嵌套分层的资源对象&quot;&gt;嵌套分层的资源对象&lt;/h2&gt;&lt;p&gt;在处理嵌套资源的API时，应该将嵌套资源附加到父资源的路径之后。&lt;/p&gt;&lt;p&gt;例如一个文章有评论列表，获取某个文章的评论列表的API则为:&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span&gt;GET&lt;/span&gt; &lt;span&gt;/&lt;/span&gt;&lt;span&gt;articles&lt;/span&gt;&lt;span&gt;/:&lt;/span&gt;&lt;span&gt;articleId&lt;/span&gt;&lt;span&gt;/&lt;/span&gt;&lt;span&gt;comments&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我们可以使用express来做个示范：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span&gt;const&lt;/span&gt; &lt;span&gt;express&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;require&lt;/span&gt;(&lt;span&gt;&#x27;express&#x27;&lt;/span&gt;);
+&lt;span&gt;const&lt;/span&gt; &lt;span&gt;bodyParser&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;require&lt;/span&gt;(&lt;span&gt;&#x27;body-parser&#x27;&lt;/span&gt;);
+
+&lt;span&gt;const&lt;/span&gt; &lt;span&gt;app&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;express&lt;/span&gt;();
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;use&lt;/span&gt;(&lt;span&gt;bodyParser&lt;/span&gt;.&lt;span&gt;json&lt;/span&gt;());
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;get&lt;/span&gt;(&lt;span&gt;&#x27;/articles/:articleId/comments&#x27;&lt;/span&gt;, (&lt;span&gt;req&lt;/span&gt;, &lt;span&gt;res&lt;/span&gt;) =&amp;gt; {
+  &lt;span&gt;const&lt;/span&gt; { &lt;span&gt;articleId&lt;/span&gt; } &lt;span&gt;=&lt;/span&gt; &lt;span&gt;req&lt;/span&gt;.&lt;span&gt;params&lt;/span&gt;;
+  &lt;span&gt;const&lt;/span&gt; &lt;span&gt;comments&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; [];
+  &lt;span&gt;// code to get comments by articleId
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;res&lt;/span&gt;.&lt;span&gt;json&lt;/span&gt;(&lt;span&gt;comments&lt;/span&gt;);
+});
+
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;listen&lt;/span&gt;(&lt;span&gt;3000&lt;/span&gt;, () =&amp;gt; &lt;span&gt;console&lt;/span&gt;.&lt;span&gt;log&lt;/span&gt;(&lt;span&gt;&#x27;server started&#x27;&lt;/span&gt;));
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&quot;使用标准的http状态码&quot;&gt;使用标准的http状态码&lt;/h2&gt;&lt;p&gt;为了消除 API server 发生错误时用户的困惑，我们应该优雅地处理错误，并返回指示发生了具体错误的HTTP响应代码以及明确的错误信息。这可以很好的为API使用者提供了足够的信息来了解所发生的问题。&lt;/p&gt;&lt;p&gt;常见的错误HTTP状态代码包括：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;code&gt;400&lt;/code&gt; 错误的请求 – 这意味着客户端输入验证失败。&lt;/li&gt;&lt;li&gt;&lt;code&gt;401&lt;/code&gt; 未经授权 - 这意味着用户无权访问资源。通常在用户未通过身份验证时返回。&lt;/li&gt;&lt;li&gt;&lt;code&gt;403&lt;/code&gt; 禁止访问 - 表示用户已通过身份验证，但不允许其访问资源。&lt;/li&gt;&lt;li&gt;&lt;code&gt;404&lt;/code&gt; Not Found – 表示找不到资源。&lt;/li&gt;&lt;li&gt;&lt;code&gt;500&lt;/code&gt; 内部服务器错误 – 这是一般服务器错误。它可能不应该明确地抛出。&lt;/li&gt;&lt;li&gt;&lt;code&gt;502&lt;/code&gt; &lt;a href=&quot;https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/502&quot;&gt;错误的网关&lt;/a&gt; - 这表明来自上游服务器的无效响应。&lt;/li&gt;&lt;li&gt;&lt;code&gt;503&lt;/code&gt; 服务不可用 – 这表示服务器端发生了意外情况（可能是服务器过载，系统某些部分发生故障等）。&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;我们应该抛出服务错误相对应的错误码。例如，如果我们要拒绝客服端发起的请求，则应在Express API中返回如下所示的 &lt;code&gt;400&lt;/code&gt; 响应：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span&gt;const&lt;/span&gt; &lt;span&gt;express&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;require&lt;/span&gt;(&lt;span&gt;&#x27;express&#x27;&lt;/span&gt;);
+&lt;span&gt;const&lt;/span&gt; &lt;span&gt;bodyParser&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;require&lt;/span&gt;(&lt;span&gt;&#x27;body-parser&#x27;&lt;/span&gt;);
+
+&lt;span&gt;const&lt;/span&gt; &lt;span&gt;app&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;express&lt;/span&gt;();
+
+&lt;span&gt;// existing users
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;const&lt;/span&gt; &lt;span&gt;users&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; [
+  { &lt;span&gt;email&lt;/span&gt;&lt;span&gt;:&lt;/span&gt; &lt;span&gt;&#x27;&lt;a href=&quot;/cdn-cgi/l/email-protection&quot; class=&quot;__cf_email__&quot; data-cfemail=&quot;4c2d2e2f0c2a2323622f2321&quot;&gt;[email protected]&lt;/a&gt;&#x27;&lt;/span&gt; }
+]
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;use&lt;/span&gt;(&lt;span&gt;bodyParser&lt;/span&gt;.&lt;span&gt;json&lt;/span&gt;());
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;post&lt;/span&gt;(&lt;span&gt;&#x27;/users&#x27;&lt;/span&gt;, (&lt;span&gt;req&lt;/span&gt;, &lt;span&gt;res&lt;/span&gt;) =&amp;gt; {
+  &lt;span&gt;const&lt;/span&gt; { &lt;span&gt;email&lt;/span&gt; } &lt;span&gt;=&lt;/span&gt; &lt;span&gt;req&lt;/span&gt;.&lt;span&gt;body&lt;/span&gt;;
+  &lt;span&gt;const&lt;/span&gt; &lt;span&gt;userExists&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;users&lt;/span&gt;.&lt;span&gt;find&lt;/span&gt;(&lt;span&gt;u&lt;/span&gt; =&amp;gt; &lt;span&gt;u&lt;/span&gt;.&lt;span&gt;email&lt;/span&gt; &lt;span&gt;===&lt;/span&gt; &lt;span&gt;email&lt;/span&gt;);
+  &lt;span&gt;if&lt;/span&gt; (&lt;span&gt;userExists&lt;/span&gt;) {
+    &lt;span&gt;return&lt;/span&gt; &lt;span&gt;res&lt;/span&gt;.&lt;span&gt;status&lt;/span&gt;(&lt;span&gt;400&lt;/span&gt;).&lt;span&gt;json&lt;/span&gt;({ &lt;span&gt;error&lt;/span&gt;&lt;span&gt;:&lt;/span&gt; &lt;span&gt;&#x27;User already exists&#x27;&lt;/span&gt; })
+  }
+  &lt;span&gt;res&lt;/span&gt;.&lt;span&gt;json&lt;/span&gt;(&lt;span&gt;req&lt;/span&gt;.&lt;span&gt;body&lt;/span&gt;);
+});
+
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;listen&lt;/span&gt;(&lt;span&gt;3000&lt;/span&gt;, () =&amp;gt; &lt;span&gt;console&lt;/span&gt;.&lt;span&gt;log&lt;/span&gt;(&lt;span&gt;&#x27;server started&#x27;&lt;/span&gt;));
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在上面的示例中，用户尝试创建一个已经存在的user，将获得 400 响应状态代码，并带有一条&lt;code&gt;&#x27;User already exists&#x27; &lt;/code&gt;的错误消息，让用户知道该用户已经存在。利用这些信息，用户可以通过使用其他 email 来创建新用户。&lt;/p&gt;&lt;p&gt;通常错误代码需要附带明确错误消息，以便用户有足够的信息来了解自己遇到了什么问题。&lt;/p&gt;&lt;p&gt;每当我们的API未成功调用时，都应通过发送明确的错误信息来帮助用户采取纠正措施来完成操作。&lt;/p&gt;&lt;h2 id=&quot;添加过滤排序和分页功能&quot;&gt;添加过滤，排序和分页功能&lt;/h2&gt;&lt;p&gt;通常我们的数据都会非常庞大。我们不可能一次全部返回，这会非常慢也可能导致系统崩溃。因此，我们需要有过滤，分页数据的方式。过滤和分页都可以通过减少消耗服务器资源来提高性能。这些功能相当基础且重要。&lt;/p&gt;&lt;p&gt;分页、过滤、排序查询都功能都应该使用查询参数来实现。如：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;/employees?page=1&amp;amp;pageSize=10&amp;amp;firstName=Xing
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;下面这就是一个带有过滤查询的示例：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span&gt;const&lt;/span&gt; &lt;span&gt;express&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;require&lt;/span&gt;(&lt;span&gt;&#x27;express&#x27;&lt;/span&gt;);
+&lt;span&gt;const&lt;/span&gt; &lt;span&gt;bodyParser&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;require&lt;/span&gt;(&lt;span&gt;&#x27;body-parser&#x27;&lt;/span&gt;);
+
+&lt;span&gt;const&lt;/span&gt; &lt;span&gt;app&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;express&lt;/span&gt;();
+
+&lt;span&gt;// employees data in a database
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;const&lt;/span&gt; &lt;span&gt;employees&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; [
+  { &lt;span&gt;firstName&lt;/span&gt;&lt;span&gt;:&lt;/span&gt; &lt;span&gt;&#x27;Jane&#x27;&lt;/span&gt;, &lt;span&gt;lastName&lt;/span&gt;&lt;span&gt;:&lt;/span&gt; &lt;span&gt;&#x27;Smith&#x27;&lt;/span&gt;, &lt;span&gt;age&lt;/span&gt;&lt;span&gt;:&lt;/span&gt; &lt;span&gt;20&lt;/span&gt; },
+  &lt;span&gt;//...
+&lt;/span&gt;&lt;span/&gt;  { &lt;span&gt;firstName&lt;/span&gt;&lt;span&gt;:&lt;/span&gt; &lt;span&gt;&#x27;John&#x27;&lt;/span&gt;, &lt;span&gt;lastName&lt;/span&gt;&lt;span&gt;:&lt;/span&gt; &lt;span&gt;&#x27;Smith&#x27;&lt;/span&gt;, &lt;span&gt;age&lt;/span&gt;&lt;span&gt;:&lt;/span&gt; &lt;span&gt;30&lt;/span&gt; },
+  { &lt;span&gt;firstName&lt;/span&gt;&lt;span&gt;:&lt;/span&gt; &lt;span&gt;&#x27;Mary&#x27;&lt;/span&gt;, &lt;span&gt;lastName&lt;/span&gt;&lt;span&gt;:&lt;/span&gt; &lt;span&gt;&#x27;Green&#x27;&lt;/span&gt;, &lt;span&gt;age&lt;/span&gt;&lt;span&gt;:&lt;/span&gt; &lt;span&gt;50&lt;/span&gt; },
+]
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;use&lt;/span&gt;(&lt;span&gt;bodyParser&lt;/span&gt;.&lt;span&gt;json&lt;/span&gt;());
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;get&lt;/span&gt;(&lt;span&gt;&#x27;/employees&#x27;&lt;/span&gt;, (&lt;span&gt;req&lt;/span&gt;, &lt;span&gt;res&lt;/span&gt;) =&amp;gt; {
+  &lt;span&gt;const&lt;/span&gt; { &lt;span&gt;firstName&lt;/span&gt;, &lt;span&gt;lastName&lt;/span&gt;, &lt;span&gt;age&lt;/span&gt; } &lt;span&gt;=&lt;/span&gt; &lt;span&gt;req&lt;/span&gt;.&lt;span&gt;query&lt;/span&gt;;
+  &lt;span&gt;let&lt;/span&gt; &lt;span&gt;results&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; [...&lt;span&gt;employees&lt;/span&gt;];
+  &lt;span&gt;if&lt;/span&gt; (&lt;span&gt;firstName&lt;/span&gt;) {
+    &lt;span&gt;results&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;results&lt;/span&gt;.&lt;span&gt;filter&lt;/span&gt;(&lt;span&gt;r&lt;/span&gt; =&amp;gt; &lt;span&gt;r&lt;/span&gt;.&lt;span&gt;firstName&lt;/span&gt; &lt;span&gt;===&lt;/span&gt; &lt;span&gt;firstName&lt;/span&gt;);
+  }
+
+  &lt;span&gt;if&lt;/span&gt; (&lt;span&gt;lastName&lt;/span&gt;) {
+    &lt;span&gt;results&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;results&lt;/span&gt;.&lt;span&gt;filter&lt;/span&gt;(&lt;span&gt;r&lt;/span&gt; =&amp;gt; &lt;span&gt;r&lt;/span&gt;.&lt;span&gt;lastName&lt;/span&gt; &lt;span&gt;===&lt;/span&gt; &lt;span&gt;lastName&lt;/span&gt;);
+  }
+
+  &lt;span&gt;if&lt;/span&gt; (&lt;span&gt;age&lt;/span&gt;) {
+    &lt;span&gt;results&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;results&lt;/span&gt;.&lt;span&gt;filter&lt;/span&gt;(&lt;span&gt;r&lt;/span&gt; =&amp;gt; &lt;span&gt;+&lt;/span&gt;&lt;span&gt;r&lt;/span&gt;.&lt;span&gt;age&lt;/span&gt; &lt;span&gt;===&lt;/span&gt; &lt;span&gt;+&lt;/span&gt;&lt;span&gt;age&lt;/span&gt;);
+  }
+  &lt;span&gt;res&lt;/span&gt;.&lt;span&gt;json&lt;/span&gt;(&lt;span&gt;results&lt;/span&gt;);
+});
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;listen&lt;/span&gt;(&lt;span&gt;3000&lt;/span&gt;, () =&amp;gt; &lt;span&gt;console&lt;/span&gt;.&lt;span&gt;log&lt;/span&gt;(&lt;span&gt;&#x27;server started&#x27;&lt;/span&gt;));
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&quot;保持良好的安全意识&quot;&gt;保持良好的安全意识&lt;/h2&gt;&lt;p&gt;客户端和服务器之间的大多数通信应该是私有的。因此，必须使用SSL/TLS进行安全保护。现在加载SSL成本是相当低的。我们没有理由不使用它。&lt;/p&gt;&lt;p&gt;同时，不同的用户具有不同的数据访问权限。例如，普通用户不应该能够访问其他用户的信息。他们也不应该能够访问管理员的数据。&lt;/p&gt;&lt;h2 id=&quot;适当缓存数据以提高性能&quot;&gt;适当缓存数据以提高性能&lt;/h2&gt;&lt;p&gt;可以适当添加缓存服务，从缓存中返回常用数据，而不是每次都从数据库去读取。缓存的好处是可以更快地获取数据，但是也让我们获取最新的数据变得复杂。缓存方式有很多如：Redis、内存缓存( in-memory cache)等等，我们应该根据自己的应用具体情况来选择是不是该用缓存，使用哪种缓存机制。&lt;/p&gt;&lt;p&gt;这儿我们来使用Express的&lt;a href=&quot;https://www.npmjs.com/package/apicache&quot;&gt;apicache&lt;/a&gt;中间件来实现一个简单的内存缓存:&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span&gt;const&lt;/span&gt; &lt;span&gt;express&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;require&lt;/span&gt;(&lt;span&gt;&#x27;express&#x27;&lt;/span&gt;);
+&lt;span&gt;const&lt;/span&gt; &lt;span&gt;bodyParser&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;require&lt;/span&gt;(&lt;span&gt;&#x27;body-parser&#x27;&lt;/span&gt;);
+&lt;span&gt;const&lt;/span&gt; &lt;span&gt;apicache&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;require&lt;/span&gt;(&lt;span&gt;&#x27;apicache&#x27;&lt;/span&gt;);
+&lt;span&gt;const&lt;/span&gt; &lt;span&gt;app&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;express&lt;/span&gt;();
+&lt;span&gt;let&lt;/span&gt; &lt;span&gt;cache&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;apicache&lt;/span&gt;.&lt;span&gt;middleware&lt;/span&gt;;
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;use&lt;/span&gt;(&lt;span&gt;cache&lt;/span&gt;(&lt;span&gt;&#x27;5 minutes&#x27;&lt;/span&gt;));
+
+&lt;span&gt;// employees data in a database
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;const&lt;/span&gt; &lt;span&gt;employees&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; [
+  { &lt;span&gt;firstName&lt;/span&gt;&lt;span&gt;:&lt;/span&gt; &lt;span&gt;&#x27;Jane&#x27;&lt;/span&gt;, &lt;span&gt;lastName&lt;/span&gt;&lt;span&gt;:&lt;/span&gt; &lt;span&gt;&#x27;Smith&#x27;&lt;/span&gt;, &lt;span&gt;age&lt;/span&gt;&lt;span&gt;:&lt;/span&gt; &lt;span&gt;20&lt;/span&gt; },
+  &lt;span&gt;//...
+&lt;/span&gt;&lt;span/&gt;  { &lt;span&gt;firstName&lt;/span&gt;&lt;span&gt;:&lt;/span&gt; &lt;span&gt;&#x27;John&#x27;&lt;/span&gt;, &lt;span&gt;lastName&lt;/span&gt;&lt;span&gt;:&lt;/span&gt; &lt;span&gt;&#x27;Smith&#x27;&lt;/span&gt;, &lt;span&gt;age&lt;/span&gt;&lt;span&gt;:&lt;/span&gt; &lt;span&gt;30&lt;/span&gt; },
+  { &lt;span&gt;firstName&lt;/span&gt;&lt;span&gt;:&lt;/span&gt; &lt;span&gt;&#x27;Mary&#x27;&lt;/span&gt;, &lt;span&gt;lastName&lt;/span&gt;&lt;span&gt;:&lt;/span&gt; &lt;span&gt;&#x27;Green&#x27;&lt;/span&gt;, &lt;span&gt;age&lt;/span&gt;&lt;span&gt;:&lt;/span&gt; &lt;span&gt;50&lt;/span&gt; },
+]
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;use&lt;/span&gt;(&lt;span&gt;bodyParser&lt;/span&gt;.&lt;span&gt;json&lt;/span&gt;());
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;get&lt;/span&gt;(&lt;span&gt;&#x27;/employees&#x27;&lt;/span&gt;, (&lt;span&gt;req&lt;/span&gt;, &lt;span&gt;res&lt;/span&gt;) =&amp;gt; {
+  &lt;span&gt;res&lt;/span&gt;.&lt;span&gt;json&lt;/span&gt;(&lt;span&gt;employees&lt;/span&gt;);
+});
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;listen&lt;/span&gt;(&lt;span&gt;3000&lt;/span&gt;, () =&amp;gt; &lt;span&gt;console&lt;/span&gt;.&lt;span&gt;log&lt;/span&gt;(&lt;span&gt;&#x27;server started&#x27;&lt;/span&gt;));
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&quot;版本化我们的api&quot;&gt;版本化我们的API&lt;/h2&gt;&lt;p&gt;原则上我们应该尽量让API避免破坏性变更，保持向后兼容。但是经常有些时候破坏性的变更是不可避免的，这时版本化的API就派上用场了。当我们发布了不兼容或重大更改变，则可以将其发布在新版本中的API。&lt;/p&gt;&lt;p&gt;我们通常通过URL来实现版本化，及添加版本号在我们API路径的开头，例如：&lt;code&gt;api.liuxing.io/v1&lt;/code&gt; &lt;code&gt;api.liuxing.io/v2&lt;/code&gt;&lt;/p&gt;&lt;p&gt;我们可以在 express 很简单的实现版本化的RESTful API:&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span&gt;const&lt;/span&gt; &lt;span&gt;express&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;require&lt;/span&gt;(&lt;span&gt;&#x27;express&#x27;&lt;/span&gt;);
+&lt;span&gt;const&lt;/span&gt; &lt;span&gt;bodyParser&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;require&lt;/span&gt;(&lt;span&gt;&#x27;body-parser&#x27;&lt;/span&gt;);
+&lt;span&gt;const&lt;/span&gt; &lt;span&gt;app&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;express&lt;/span&gt;();
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;use&lt;/span&gt;(&lt;span&gt;bodyParser&lt;/span&gt;.&lt;span&gt;json&lt;/span&gt;());
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;get&lt;/span&gt;(&lt;span&gt;&#x27;/v1/employees&#x27;&lt;/span&gt;, (&lt;span&gt;req&lt;/span&gt;, &lt;span&gt;res&lt;/span&gt;) =&amp;gt; {
+  &lt;span&gt;const&lt;/span&gt; &lt;span&gt;employees&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; [];
+  &lt;span&gt;// code to get employees
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;res&lt;/span&gt;.&lt;span&gt;json&lt;/span&gt;(&lt;span&gt;employees&lt;/span&gt;);
+});
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;get&lt;/span&gt;(&lt;span&gt;&#x27;/v2/employees&#x27;&lt;/span&gt;, (&lt;span&gt;req&lt;/span&gt;, &lt;span&gt;res&lt;/span&gt;) =&amp;gt; {
+  &lt;span&gt;const&lt;/span&gt; &lt;span&gt;employees&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; [];
+  &lt;span&gt;// different code to get employees
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;res&lt;/span&gt;.&lt;span&gt;json&lt;/span&gt;(&lt;span&gt;employees&lt;/span&gt;);
+});
+
+&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;listen&lt;/span&gt;(&lt;span&gt;3000&lt;/span&gt;, () =&amp;gt; &lt;span&gt;console&lt;/span&gt;.&lt;span&gt;log&lt;/span&gt;(&lt;span&gt;&#x27;server started&#x27;&lt;/span&gt;));
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;&lt;p&gt;设计高质量RESTful API的最重要的一点是遵循Web标准和约定以保持一致性。JSON、SSL/TLS和HTTP状态代码都是现代Web的标准。性能也是重要的考虑因素。我们可以使用分页、缓存等手段来提升性能。可维护性可扩展性也是我们需要考虑的。&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
 <guid>7810b0925be3ee9a9bf2530c05a2b703</guid>
 <title>ElasticSearch 如何使用 ik 进行中文分词？</title>
 <link>https://toutiao.io/k/ehhe1vm</link>
@@ -283,331 +447,5 @@
 
                 
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>e1018520b46d306e4b1a8ccfaa66b71a</guid>
-<title>一款轻阅读应用 ReadIT，记录我的 RN 躺坑之旅</title>
-<link>https://toutiao.io/k/sr6qcwt</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;h3&gt;背景&lt;/h3&gt;
-
-&lt;p&gt;一款轻阅读应用ReadIT，支持功能：优质文章推送、评论点赞、计划制定、计划闹钟、天气预报、收藏文章、深浅两套主题、多语言切换、极光推送等功能。后续还会继续集成功能。前后端均自主研发，借鉴市面较好的种子工程，目前未上应用市场，文章目前也比较少，后续会持续补充优质文章。欢迎试用。&lt;/p&gt;
-
-&lt;h3&gt;展示效果&lt;/h3&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://read-it.oss-cn-shenzhen.aliyuncs.com/sys/5972ebea149738f80f8ed11aed7dec22.mp4&quot;&gt;点我&lt;/a&gt;&lt;/p&gt;
-
-&lt;h3&gt;下载体验（目前只有安卓版）&lt;/h3&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://img-blog.csdnimg.cn/img_convert/b37fb2e44775d22922d0a995d1579f0a.png&quot; alt=&quot;img&quot;/&gt;&lt;/p&gt;
-
-&lt;h3&gt;Github&lt;/h3&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://github.com/xiaobinwu/readIt&quot;&gt;https://github.com/xiaobinwu/readIt&lt;/a&gt;&lt;/p&gt;
-
-&lt;h3&gt;技能树&lt;/h3&gt;
-
-&lt;p&gt;1、客户端（react-native、@react-navigation、react-native第三方库、typescript、mobx、marked等技术）  &lt;/p&gt;
-
-&lt;p&gt;2、中台后管系统（antd4、react、redux、react-router4、hook等技术）  &lt;/p&gt;
-
-&lt;p&gt;3、后端程序（koa、mongoDb、jsonwebtoken、ali-oss等技术）  &lt;/p&gt;
-
-&lt;h3&gt;react-devtools调试（安卓模拟器）&lt;/h3&gt;
-
-&lt;p&gt;1、开发者菜单中选择&quot;Debug JS Remotely&quot;选项&lt;br/&gt;
-2、自动打开调试页面 http://localhost:8081/debugger-ui（可做断点调试)&lt;br/&gt;
-3、打开有异常时暂停（Pause On Caught Exceptions）选项，能够获得更好的开发体验&lt;br/&gt;
-4、设置环境变量&lt;code&gt;ELECTRON_MIRROR=&#x27;https://npm.taobao.org/mirrors/electron/&#x27;&lt;/code&gt;，防止下载&lt;code&gt;react-devtool&lt;/code&gt;卡住&lt;br/&gt;
-5、安装react-devtools，package.json配置npm script，执行&lt;code&gt;npm run react-devtools&lt;/code&gt;&lt;br/&gt;
-6、执行&lt;code&gt;adb reverse tcp:8097 tcp:8097&lt;/code&gt;&lt;br/&gt;
-7、目前react-native =&amp;gt; 0.61.5，react-devtool =&amp;gt; 3.6.3&lt;br/&gt;
-8、参考资料：&lt;a href=&quot;https://reactnative.cn/docs/debugging.html&quot;&gt;参考资料&lt;/a&gt;  &lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;注意：react-devtools v4 需要 react-native 0.62 或更高版本才能正常工作。一升级就报错，后续跟进  &lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h3&gt;iconfont字体图标使用&lt;/h3&gt;
-
-&lt;p&gt;1、下载Iconfont字体图标项目，下载至本地，获取&lt;code&gt;iconfont.ttf&lt;/code&gt;&lt;br/&gt;
-2、放至&lt;code&gt;src/assets/fonts&lt;/code&gt;目录&lt;br/&gt;
-3、配置&lt;code&gt;react-native.config.js&lt;/code&gt;,&lt;a href=&quot;https://github.com/react-native-community/cli/blob/master/docs/configuration.md&quot;&gt;参考资料&lt;/a&gt;,如下：  &lt;/p&gt;
-
-&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;    module.exports = {
-        project: {
-            ios: {},
-            android: {}, // grouped into &quot;project&quot;
-        },
-        assets: [&quot;./src/assets/fonts/&quot;], // stays the same
-    };
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;4、运行&lt;code&gt;npm run link&lt;/code&gt;，将对应&lt;code&gt;iconfont.ttf&lt;/code&gt;分别添加至&lt;code&gt;iOS&lt;/code&gt;（&lt;code&gt;Info.plist&lt;/code&gt;中&lt;code&gt;Fonts provided by application&lt;/code&gt;下添加一行&lt;code&gt;iconfont.ttf&lt;/code&gt;）、&lt;code&gt;Android&lt;/code&gt;（复制至&lt;code&gt;app/src/main/assets/fonts&lt;/code&gt;文件夹中，并且&lt;code&gt;app/src/build.gradle&lt;/code&gt;添加配置）&lt;br/&gt;
-5、将&lt;code&gt;iconfont.json&lt;/code&gt;复制至&lt;code&gt;src/components/common/iconfont&lt;/code&gt;&lt;br/&gt;
-6、字体图标封装可参考第4步目录相对应组件文件&lt;br/&gt;
-7、参考资料：&lt;a href=&quot;https://reactnative.cn/docs/debugging.html&quot;&gt;参考资料&lt;/a&gt;  &lt;/p&gt;
-
-&lt;h3&gt;tsconfig.json配置&lt;/h3&gt;
-
-&lt;p&gt;1、详细各个配置项解析，可查看&lt;code&gt;tsconfig.json&lt;/code&gt;&lt;br/&gt;
-2、配置&lt;code&gt;paths&lt;/code&gt;,结果不起效，需在&lt;code&gt;src&lt;/code&gt;目录添加&lt;code&gt;package.json&lt;/code&gt;，配置如下  &lt;/p&gt;
-
-&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;{
-  &quot;name&quot;: &quot;@app&quot;
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;第三方库&lt;/h3&gt;
-
-&lt;p&gt;1、&lt;code&gt;autobind-decorator&lt;/code&gt; =&amp;gt; 自动将方法绑定到类实例，针对babel7需额外配置插件，如下：  &lt;/p&gt;
-
-&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;    {
-      plugins:  [&quot;@babel/plugin-proposal-decorators&quot;, { legacy: true }]
-    }
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;2、&lt;code&gt;mobx&lt;/code&gt; / &lt;code&gt;mobx-react&lt;/code&gt; =&amp;gt; 简单、可扩展的状态管理，&lt;a href=&quot;https://cn.mobx.js.org/&quot;&gt;前往&lt;/a&gt;&lt;br/&gt;
-3、&lt;code&gt;@react-navigation/bottom-tabs&lt;/code&gt; / &lt;code&gt;@react-navigation/native&lt;/code&gt; / &lt;code&gt;@react-navigation/stack&lt;/code&gt; =&amp;gt; 跨平台导航方案，&lt;a href=&quot;https://reactnavigation.org/&quot;&gt;前往&lt;/a&gt;&lt;br/&gt;
-4、&lt;code&gt;react-native-appearance&lt;/code&gt; =&amp;gt; 在iOS，Android和Web上访问操作系统外观信息。目前支持检测首选配色方案（浅色/深色），&lt;a href=&quot;https://github.com/expo/react-native-appearance&quot;&gt;前往&lt;/a&gt;&lt;br/&gt;
-5、&lt;code&gt;react-native-localize&lt;/code&gt; =&amp;gt; 用于React Native应用本地化的工具箱，&lt;a href=&quot;https://github.com/zoontek/react-native-localize&quot;&gt;前往&lt;/a&gt;&lt;br/&gt;
-6、&lt;code&gt;@react-native-community/async-storage&lt;/code&gt; =&amp;gt; 简单的、异步的、持久化的 Key-Value 存储系统，&lt;a href=&quot;https://reactnative.cn/docs/next/asyncstorage.html&quot;&gt;前往&lt;/a&gt;&lt;br/&gt;
-7、&lt;code&gt;react-native-actionsheet&lt;/code&gt; =&amp;gt; 跨平台ActionSheet，&lt;a href=&quot;https://github.com/beefe/react-native-actionsheet&quot;&gt;前往&lt;/a&gt;&lt;br/&gt;
-8、&lt;code&gt;react-native-webview&lt;/code&gt; =&amp;gt; WebView,旨在替代内置WebView，&lt;a href=&quot;https://github.com/react-native-webview/react-native-webview&quot;&gt;前往&lt;/a&gt;&lt;br/&gt;
-9、&lt;code&gt;marked&lt;/code&gt; =&amp;gt; markdown编译器，&lt;a href=&quot;https://marked.js.org/&quot;&gt;前往&lt;/a&gt;&lt;br/&gt;
-10、&lt;code&gt;highlight.js&lt;/code&gt; =&amp;gt; 代码高亮工具，&lt;a href=&quot;https://www.fenxianglu.cn/highlight.html&quot;&gt;前往&lt;/a&gt;&lt;br/&gt;
-11、&lt;code&gt;react-native-autoheight-webview&lt;/code&gt; =&amp;gt; React Native的自动高度webview，&lt;a href=&quot;https://github.com/iou90/react-native-autoheight-webview&quot;&gt;前往&lt;/a&gt;&lt;br/&gt;
-12、&lt;code&gt;react-native-image-viewing&lt;/code&gt; =&amp;gt; 图片滑动浏览控件，&lt;a href=&quot;https://github.com/jobtoday/react-native-image-viewing&quot;&gt;前往&lt;/a&gt;&lt;br/&gt;
-13、&lt;code&gt;react-native-root-toast&lt;/code&gt; =&amp;gt; 吐司控件，&lt;a href=&quot;https://github.com/magicismight/react-native-root-toast&quot;&gt;前往&lt;/a&gt;&lt;br/&gt;
-14、&lt;code&gt;react-native-calendars&lt;/code&gt; =&amp;gt; 日历，&lt;a href=&quot;https://github.com/wix/react-native-calendars&quot;&gt;前往&lt;/a&gt;&lt;br/&gt;
-15、&lt;code&gt;jcore-react-native&lt;/code&gt;、&lt;code&gt;jpush-react-native&lt;/code&gt; =&amp;gt; 极光推送&lt;br/&gt;
-16、&lt;code&gt;react-native-alarm-clock&lt;/code&gt; =&amp;gt; 闹钟，&lt;a href=&quot;https://github.com/kmorales13/react-native-alarm-clock&quot;&gt;前往&lt;/a&gt;&lt;br/&gt;
-17、&lt;code&gt;react-native-amap-geolocation&lt;/code&gt; =&amp;gt; 高德地址服务，&lt;a href=&quot;https://github.com/qiuxiang/react-native-amap-geolocation&quot;&gt;前往&lt;/a&gt;&lt;br/&gt;
-18、 &lt;code&gt;react-native-device-info&lt;/code&gt; =&amp;gt; 获取设备信息，&lt;a href=&quot;https://github.com/react-native-device-info/react-native-device-info&quot;&gt;前往&lt;/a&gt;&lt;br/&gt;
-19、 &lt;code&gt;react-native-image-picker&lt;/code&gt; =&amp;gt; 上传图片，&lt;a href=&quot;https://github.com/react-native-image-picker/react-native-image-picker&quot;&gt;前往&lt;/a&gt;&lt;br/&gt;
-20、&lt;code&gt;react-native-modal-datetime-picker&lt;/code&gt; =&amp;gt; 时间选择器，&lt;a href=&quot;https://github.com/mmazzarolo/react-native-modal-datetime-picker&quot;&gt;前往&lt;/a&gt;&lt;br/&gt;
-21、&lt;code&gt;react-native-picker-select&lt;/code&gt; =&amp;gt; 下拉框选择器，&lt;a href=&quot;https://github.com/lawnstarter/react-native-picker-select&quot;&gt;前往&lt;/a&gt;&lt;br/&gt;
-22、&lt;code&gt;react-native-splash-screen&lt;/code&gt; =&amp;gt; 应用启动图，&lt;a href=&quot;https://github.com/crazycodeboy/react-native-splash-screen&quot;&gt;前往&lt;/a&gt;&lt;/p&gt;
-
-&lt;h3&gt;第三方库躺坑&lt;/h3&gt;
-
-&lt;h4&gt;如何获取当前天气、未来三天天气？&lt;/h4&gt;
-
-&lt;p&gt;使用的是和风天气API，需要经纬入参，所以必须先获取位置，需要申请和风天气的appKey。&lt;/p&gt;
-
-&lt;h4&gt;推送服务&lt;/h4&gt;
-
-&lt;p&gt;极光推送服务 &lt;code&gt;jcore-react-native&lt;/code&gt;、&lt;code&gt;jpush-react-native&lt;/code&gt;，需要申请AppKey。&lt;/p&gt;
-
-&lt;h4&gt;如何获取位置？&lt;/h4&gt;
-
-&lt;p&gt;Part1，使用&lt;code&gt;react-native-geolocation-service&lt;/code&gt;第三方库，获取经纬度进行高德逆地理编码API调用，获取城市，开启google play服务，需要有处理获取位置的服务程序&lt;code&gt;app/services/location&lt;/code&gt;（参考&lt;code&gt;react-native-geolocation-service&lt;/code&gt; github example），以及修改&lt;code&gt;android/app/src/main/AndroidManifest.xml&lt;/code&gt;，添加&lt;code&gt;&amp;lt;uses-permission android:name=&quot;android.permission.ACCESS_FINE_LOCATION&quot;/&amp;gt;&lt;/code&gt; 安卓添加权限。结果不行，针对google play服务国内不能使用，所以该方案得摒弃掉，对应&lt;code&gt;app/services/location&lt;/code&gt;会删除。&lt;/p&gt;
-
-&lt;p&gt;Part2，使用&lt;code&gt;react-native-amap-geolocation&lt;/code&gt;第三方库，&lt;a href=&quot;https://qiuxiang.github.io/react-native-amap-geolocation/api/globals.html#setgpsfirst&quot;&gt;接口文档&lt;/a&gt;，&lt;a href=&quot;https://qiuxiang.github.io/react-native-amap-geolocation/#/?id=%e5%bf%ab%e9%80%9f%e4%b8%8a%e6%89%8b&quot;&gt;使用指南&lt;/a&gt;&lt;/p&gt;
-
-&lt;h4&gt;图片上传问题&lt;/h4&gt;
-
-&lt;p&gt;对于&lt;code&gt;react-native-image-picker&lt;/code&gt;第三方库， 对于&lt;code&gt;3.1.4&lt;/code&gt;版本，&lt;code&gt;minSdkVersion&lt;/code&gt;最少要21以上，在使用的&lt;code&gt;react-native 0.61.5&lt;/code&gt;下，修改&lt;code&gt;android/build.gradle&lt;/code&gt;的&lt;code&gt;minSdkVersion&lt;/code&gt;配置  &lt;/p&gt;
-
-&lt;p&gt;阿里oss &lt;code&gt;aliyun-oss-rn&lt;/code&gt;，需要更改&lt;code&gt;aliyun-oss-rn&lt;/code&gt; npm包的&lt;code&gt;android/build.gradle&lt;/code&gt;（如下配置）,提高SDK版本号，以及修改主项目&lt;code&gt;AndroidManifest.xml&lt;/code&gt;,添加&lt;code&gt;android:allowBackup=&quot;true&quot;&lt;/code&gt;,目前使用上仍有问题，于是放弃该方案，改用oss postObject直传方式，&lt;a href=&quot;https://help.aliyun.com/document_detail/31988.html&quot;&gt;参考资料&lt;/a&gt;，使用sts临时授权、policy、Signature配合上传。&lt;/p&gt;
-
-&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;buildscript {
-    repositories {
-        jcenter()
-    }
-
-    dependencies {
-        classpath &#x27;com.android.tools.build:gradle:1.3.1&#x27;
-    }
-}
-
-apply plugin: &#x27;com.android.library&#x27;
-
-android {
-    compileSdkVersion 28
-    buildToolsVersion &#x27;28.0.3&#x27;
-
-    defaultConfig {
-        minSdkVersion 21
-        targetSdkVersion 28
-        versionCode 1
-        versionName &quot;1.0&quot;
-    }
-    lintOptions {
-        abortOnError false
-    }
-}
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    implementation &#x27;com.facebook.react:react-native:+&#x27;
-    implementation &#x27;com.aliyun.dpa:oss-android-sdk:+&#x27;
-}
-
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h4&gt;日历问题&lt;/h4&gt;
-
-&lt;p&gt;&lt;code&gt;react-native-calendars&lt;/code&gt;的&lt;code&gt;Agenda&lt;/code&gt;问题如下：&lt;br/&gt;
-一、国际化切换、主题切换时，日历没有对应切换，对应HACK处理方法，给&lt;code&gt;Agenda&lt;/code&gt;组件设置&lt;code&gt;key&lt;/code&gt;，强制组件卸载，重新加载&lt;br/&gt;
-二、&lt;code&gt;Agenda&lt;/code&gt;在国际化切换、主题切换、添加日程的时候，会导致&lt;code&gt;Agenda&lt;/code&gt;组件内部&lt;code&gt;View&lt;/code&gt;组件&lt;code&gt;onLayout&lt;/code&gt;重复触发（我是不需要其一直触发），导致&lt;code&gt;this.viewHeight&lt;/code&gt;一直发生变化，导致每次动画执行定位不准问题，处理方法，用个变量存储&lt;code&gt;this.viewHeight&lt;/code&gt;，示例代码如下：  &lt;/p&gt;
-
-&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;let VIEW_HEIGHT = 0;
-
-constructor(props) {
-    this.viewHeight = VIEW_HEIGHT || windowSize.height;
-}
-
-onLayout = event =&amp;gt; {
-    if (!VIEW_HEIGHT) {
-        VIEW_HEIGHT = event.nativeEvent.layout.height;
-        this.viewHeight = event.nativeEvent.layout.height;
-        this.viewWidth = event.nativeEvent.layout.width;
-        this.forceUpdate();
-    }
-};
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;三、日程列表改造，只显示当前选中日期的的日程，&lt;code&gt;Agenda&lt;/code&gt;组件代码改造如下：  &lt;/p&gt;
-
-&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;
-  renderReservations() {
-    const reservationListProps = extractComponentProps(ReservationList, this.props);
-    let reservations = {};
-    const { items } = this.props;
-    if (this.props.selected &amp;amp;&amp;amp; items[this.props.selected.dateString]) {
-      reservations = { [this.props.selected.dateString]: items[this.props.selected.dateString] };
-    }
-    console.log(this.props.selected, &#x27;选中的时间&#x27;);
-
-    return (
-      &amp;lt;ReservationList
-        {...reservationListProps}
-        ref={c =&amp;gt; (this.list = c)}
-        reservations={reservations}
-        selectedDay={this.state.selectedDay}
-        topDay={this.state.topDay}
-        onDayChange={this.onDayChange}
-        onScroll={() =&amp;gt; {}}
-      /&amp;gt;
-    );
-  }
-
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h4&gt;闹钟问题&lt;/h4&gt;
-
-&lt;p&gt;&lt;code&gt;react-native-alarm-clock&lt;/code&gt;,目前yarn、npm均不能下载&lt;code&gt;1.0.0&lt;/code&gt;，只能将&lt;code&gt;2.0.0&lt;/code&gt;版本下载至本地，替换&lt;code&gt;node_moudules&lt;/code&gt;中的对应&lt;code&gt;npm&lt;/code&gt;包，功能使用还未考证，仍有问题。  &lt;/p&gt;
-
-&lt;h4&gt;选择下拉框问题&lt;/h4&gt;
-
-&lt;p&gt;&lt;code&gt;react-native-picker-select&lt;/code&gt;，报错信息 &lt;code&gt;&quot;RNCAndroidDialogPicker&quot; was not found in the UIManager&lt;/code&gt;，参考&lt;a href=&quot;https://github.com/lawnstarter/react-native-picker-select/issues/402&quot;&gt;Issues&lt;/a&gt;，解决办法，降级&lt;code&gt;@react-native-picker/picker&lt;/code&gt; 至 &lt;code&gt;1.8.3&lt;/code&gt;  &lt;/p&gt;
-
-&lt;h4&gt;打包 APK 问题&lt;/h4&gt;
-
-&lt;p&gt;管理员CMD，&lt;a href=&quot;https://reactnative.cn/docs/signed-apk-android&quot;&gt;参考&lt;/a&gt;&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;#keytool -genkey -dname &quot;CN=wushaobin,OU=个人,O=个人,L=深圳,ST=广东,C=CN&quot; -alias test -keyalg RSA -validity 400000 -keystore test.keystore  
-#keytool -importkeystore -srckeystore test.keystore -destkeystore test.keystore -deststoretype pkcs12  
-#keytool -list -v -keystore test.keystore -storepass xxxxxxxxx  
-或 keytool -genkeypair -v -keystore test.keystore -alias test -keyalg RSA -keysize 2048 -validity 400000  
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h4&gt;app应用启动图&lt;/h4&gt;
-
-&lt;p&gt;1、下载&lt;code&gt;react-native-splash-screen&lt;/code&gt;  &lt;/p&gt;
-
-&lt;p&gt;2、&lt;code&gt;android/app/src/main/java/com/readit/MainActivity.java&lt;/code&gt;，配置如下：  &lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;import com.facebook.react.ReactActivity;
-
-+ import org.devio.rn.splashscreen.SplashScreen;
-+ import android.os.Bundle;
-
-public class MainActivity extends ReactActivity {
-
-  /**
-@@ -12,4 +15,11 @@
-  protected String getMainComponentName() {
-    return &quot;readIt&quot;;
-  }
-
-  // 添加下面方法
-  + @Override
-  + protected void onCreate(Bundle savedInstanceState) {
-      + SplashScreen.show(this);  // here
-      + super.onCreate(savedInstanceState);
-  + }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;3、&lt;code&gt;android/app/src/main/res/layout/launch_screen.xml&lt;/code&gt;配置如下(没有就添加)：  &lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;&amp;lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&amp;gt;
-&amp;lt;LinearLayout xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;
-              android:layout_width=&quot;match_parent&quot;
-              android:layout_height=&quot;match_parent&quot;
-              android:orientation=&quot;vertical&quot;&amp;gt;
-    &amp;lt;ImageView android:layout_width=&quot;match_parent&quot; android:layout_height=&quot;match_parent&quot; android:src=&quot;@drawable/launch_screen&quot; android:scaleType=&quot;centerCrop&quot; /&amp;gt;
-&amp;lt;/LinearLayout&amp;gt; 
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;4、&lt;code&gt;android/app/src/main/res/values/styles.xml&lt;/code&gt;配置如下：  &lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;    &amp;lt;style name=&quot;AppTheme&quot; parent=&quot;Theme.AppCompat.Light.NoActionBar&quot;&amp;gt;
-        &amp;lt;!-- Customize your theme here. --&amp;gt;
-        &amp;lt;item name=&quot;android:textColor&quot;&amp;gt;#000000&amp;lt;/item&amp;gt;
-        + &amp;lt;!--添加这一行--&amp;gt;
-        + &amp;lt;item name=&quot;android:windowIsTranslucent&quot;&amp;gt;true&amp;lt;/item&amp;gt;
-    &amp;lt;/style&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;5、使用如下：  &lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;import SplashScreen from &#x27;react-native-splash-screen&#x27;;
-
-...
-
-componentDidMount() {
-    SplashScreen.hide();
-}
-
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h4&gt;app应用图标问题&lt;/h4&gt;
-
-&lt;p&gt;替换android/app/src/main/res/mipmap-*文件夹中图标图片&lt;/p&gt;
-
-&lt;p&gt;./gradlew assembleRelease失败问题&lt;br/&gt;
-1、先执行./gradlew clean，卸载上一个debug版本&lt;br/&gt;
-2、再执行./gradlew assembleRelease，生成release版本  &lt;/p&gt;
-
-&lt;p&gt;常用指令 &lt;code&gt;./gradlew clean&lt;/code&gt;、&lt;code&gt;./gradlew build&lt;/code&gt;&lt;/p&gt;
-
-&lt;h4&gt;编译错误：The Kotlin Gradle plugin was loaded multiple times in different subprojects, which is not supported and may break the build. 问题解决方案：&lt;/h4&gt;
-
-&lt;p&gt;参考： &lt;a href=&quot;https://forums.expo.io/t/kotlin-error-when-build-or-install/38868&quot;&gt;https://forums.expo.io/t/kotlin-error-when-build-or-install/38868&lt;/a&gt;&lt;/p&gt;
-
-&lt;h4&gt;./gradlew assembleRelease 编译失败&lt;/h4&gt;
-
-&lt;p&gt;失败信息： Error: ENOENT: no such file or directory, open &#x27;F:\Project\reactnative\readIt\android\app\build\generated\sourcemaps\react\release\index.android.bundle.map&#x27;  &lt;/p&gt;
-
-&lt;p&gt;问题解决方案：&lt;br/&gt;
-参考： &lt;a href=&quot;https://stackoverflow.com/questions/56808518/android-gradlew-assemblerelease-sourcemap-output-fail-because-bundle-doesnt-e&quot;&gt;https://stackoverflow.com/questions/56808518/android-gradlew-assemblerelease-sourcemap-output-fail-because-bundle-doesnt-e&lt;/a&gt;&lt;/p&gt;
-
-&lt;h4&gt;发布版本时，删除&lt;code&gt;build/debug.apk&lt;/code&gt;，执行&lt;code&gt;./gradlew clean&lt;/code&gt;&lt;/h4&gt;
-
-&lt;h4&gt;React Native Android9.0以上打包apk后http请求不到解决方法&lt;/h4&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://blog.csdn.net/Cui_xing_tian/article/details/103874265?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2.control&amp;amp;dist_request_id=&amp;amp;depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2.control&quot;&gt;参考资料&lt;/a&gt;&lt;/p&gt;
-&lt;/div&gt;
-  &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
