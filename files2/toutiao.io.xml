@@ -5,464 +5,356 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>48dcfbb91c22e0a952ebe9fd2660ff13</guid>
-<title>看过这篇剖析，你还不懂 Go sync.Map 吗？</title>
-<link>https://toutiao.io/k/x1rnpcx</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;p&gt;hi, 大家好，我是 haohongfan。&lt;/p&gt;
+<guid>1281816384634400ef1aca153cd5ec7f</guid>
+<title>Java 8 中的 Stream 流式操作：入门篇</title>
+<link>https://toutiao.io/k/w7xb2nj</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;p&gt;作者：汤圆&lt;/p&gt;
 
-&lt;p&gt;本篇文章会从使用方式和源码角度剖析 sync.Map。不过不管是日常开发还是开源项目中，好像 sync.Map 并没有得到很好的利用，大家还是习惯使用 Mutex + Map  来使用。&lt;/p&gt;
+&lt;p&gt;个人博客：&lt;a href=&quot;http://www.javalover.cc&quot;&gt;javalover.cc&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;下面这段代码，看起来很有道理，其实是用错了（背景：并发场景中获取注册信息）。&lt;/p&gt;
+&lt;h2&gt;前言&lt;/h2&gt;
 
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;instance, ok := instanceMap[name]
-if ok {
-    return instance, nil
-}
+&lt;p&gt;之前总是朋友朋友的叫，感觉有套近乎的嫌疑，所以后面还是给大家改个称呼吧&lt;/p&gt;
 
-initLock.Lock()
-defer initLock.Unlock()
+&lt;p&gt;因为大家是来看东西的，所以暂且叫做&lt;strong&gt;官人&lt;/strong&gt;吧（灵感来自于民间流传的四大名著之一《金瓶梅》）&lt;/p&gt;
 
-// double check
-instance, ok = instanceMap[name]
-if ok {
-    return instance, nil
-}
-&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;官人们好啊，我是汤圆，今天给大家带来的是《Java8中的Stream流式操作 - 入门篇》，希望有所帮助，谢谢&lt;/p&gt;
 
-&lt;p&gt;这里使用使用 sync.Map 会更合理些，因为 sync.Map 底层完全包含了这个逻辑。可能写 Java 的同学看着上面这段代码很眼熟，但确实是用错了，关于为什么用错了以及会造成什么影响，请大家关注后续的文章。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;文章纯属原创，个人总结难免有差错，如果有，麻烦在评论区回复或后台私信，谢啦&lt;/p&gt;
+&lt;/blockquote&gt;
 
-&lt;p&gt;我大概分析了下大家宁愿使用 Mutex + Map，也不愿使用 sync.Map 的原因：&lt;/p&gt;
+&lt;h2&gt;简介&lt;/h2&gt;
+
+&lt;p&gt;流式操作也叫做函数式操作，是Java8新出的功能&lt;/p&gt;
+
+&lt;p&gt;流式操作主要用来处理数据（比如集合），就像泛型也大多用在集合中一样（看来集合这个小东西还是很关键的啊，哪哪都有它）&lt;/p&gt;
+
+&lt;p&gt;下面我们主要用例子来介绍下，流的基操（建议先看下&lt;a href=&quot;https://mp.weixin.qq.com/s/zW6fsmM9BNtO3nK6n5hokw&quot;&gt;lambda表达式篇&lt;/a&gt;，里面介绍的&lt;strong&gt;lambda表达式&lt;/strong&gt;、&lt;strong&gt;函数式接口&lt;/strong&gt;、&lt;strong&gt;方法引用&lt;/strong&gt;等，下面会用到）&lt;/p&gt;
+
+&lt;p&gt;先来看下目录&lt;/p&gt;
+
+&lt;h2&gt;目录&lt;/h2&gt;
 
 &lt;ol&gt;
-&lt;li&gt;sync.Map 本身就很难用，使用起来并不像一个 Map。失去了 map 应有的特权语法，如：make,  map[1] 等&lt;/li&gt;
-&lt;li&gt;sync.Map 方法较多。让一个简单的 Map 使用起来有了较高的学习成本。&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;流是什么&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;老板，上栗子&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;流的操作步骤&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;流的特点&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;流式操作和集合操作的区别&lt;/p&gt;&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;不管什么样的原因吧，当你读过这篇文章后，在某些特定的并发场景下，建议使用 sync.Map 代替 Map + Mutex 的。&lt;/p&gt;
+&lt;h2&gt;正文&lt;/h2&gt;
 
-&lt;h2&gt;用法全解&lt;/h2&gt;
+&lt;h3&gt;1. 流是什么&lt;/h3&gt;
 
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;package main
+&lt;p&gt;流是一种以声明性的方式来处理数据的API&lt;/p&gt;
 
-import (
-    &quot;fmt&quot;
-    &quot;sync&quot;
-)
+&lt;blockquote&gt;
+&lt;p&gt;什么是声明性的方式？&lt;/p&gt;
+&lt;/blockquote&gt;
 
-func main() {
-    var syncMap sync.Map
-    syncMap.Store(&quot;11&quot;, 11)
-    syncMap.Store(&quot;22&quot;, 22)
+&lt;p&gt;就是只声明，不实现，类似抽象方法（多态性）&lt;/p&gt;
 
-    fmt.Println(syncMap.Load(&quot;11&quot;)) // 11
-    fmt.Println(syncMap.Load(&quot;33&quot;)) // 空
+&lt;h3&gt;2. 老板，上栗子&lt;/h3&gt;
 
-    fmt.Println(syncMap.LoadOrStore(&quot;33&quot;, 33)) // 33
-    fmt.Println(syncMap.Load(&quot;33&quot;)) // 33
-    fmt.Println(syncMap.LoadAndDelete(&quot;33&quot;)) // 33
-    fmt.Println(syncMap.Load(&quot;33&quot;)) // 空
+&lt;p&gt;&lt;img src=&quot;https://i.loli.net/2021/04/17/TbROapPQEFeunxd.jpg&quot; alt=&quot;举个栗子&quot;/&gt;&lt;/p&gt;
 
-    syncMap.Range(func(key, value interface{}) bool {
-        fmt.Printf(&quot;key:%v value:%v\n&quot;, key, value)
-        return true
-    })
-    // key:22 value:22
-    // key:11 value:11
+&lt;p&gt;下面我们举个栗子，来看下什么是流式操作，然后针对这个栗子，引出后面的相关概念&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;需求&lt;/strong&gt;：&lt;strong&gt;筛选&lt;/strong&gt;年龄大于1的猫（猫的1年≈人的5年），并按年龄递增&lt;strong&gt;排序&lt;/strong&gt;，最后&lt;strong&gt;提取&lt;/strong&gt;名字单独存放到列表中&lt;/p&gt;
+
+&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;
+public class BasicDemo {
+    public static void main(String[] args) {
+      // 以下猫的名字均为真名，非虚构
+        List&amp;lt;Cat&amp;gt; list = Arrays.asList(new Cat(1, &quot;tangyuan&quot;), new Cat(3, &quot;dangdang&quot;), new Cat(2, &quot;milu&quot;));
+        // === 旧代码 Java8之前 ===
+        List&amp;lt;Cat&amp;gt; listTemp = new ArrayList&amp;lt;&amp;gt;();
+        // 1. 筛选
+        for(Cat cat: list){
+            if(cat.getAge()&amp;gt;1){
+                listTemp.add(cat);
+            }
+        }
+        // 2. 排序
+        listTemp.sort(new Comparator&amp;lt;Cat&amp;gt;() {
+            @Override
+            public int compare(Cat o1, Cat o2) {
+                // 递增排序
+                return Integer.compare(o1.getAge(), o2.getAge());
+            }
+        });
+        // 3. 提取名字
+        List&amp;lt;String&amp;gt; listName = new ArrayList&amp;lt;&amp;gt;();
+        for(Cat cat: listTemp){
+            listName.add(cat.getName());
+        }
+        System.out.println(listName);
+
+        // === 新代码 Java8之后 ===
+        List&amp;lt;String&amp;gt; listNameNew = list.stream()
+                    // 函数式接口 Predicate的 boolean test(T t)抽象方法
+                .filter(cat -&amp;gt; cat.getAge() &amp;gt; 1)
+                                // lambda表达式的方法引用
+                      .sorted(Comparator.comparingInt(Cat::getAge))
+                    // 函数式接口 Funtion的 R apply(T t)抽象方法
+                .map(cat-&amp;gt; cat.getName())
+                  // 收集数据，把流转为集合List
+                .collect(Collectors.toList());
+        System.out.println(listNameNew);
+    }
 }
+class Cat{
+    int age;
+    String name;
+
+    public Cat(int age, String name) {
+        this.age = age;
+        this.name = name;
+    }
+    // 省略getter/setter
+}
+
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;其实 sync.Map 并不复杂，只是将普通 map 的相关操作转成对应函数而已。&lt;/p&gt;
+&lt;p&gt;可以看到，用了流式操作，代码简洁了很多（秒哇）&lt;/p&gt;
+
+&lt;p&gt;Q：有的官人可能会想，这跟前面lambda表达式的组合操作有点像啊。&lt;/p&gt;
+
+&lt;p&gt;A：你说对了，确实只是像，区别还是很大的。因为lambda表达式的组合操作其实还是属于直接针对集合的操作；&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;文末会讲到直接操作集合和流式操作的区别，这里先跳过&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;下面我们基于这个栗子，来分别介绍涉及到的知识点&lt;/p&gt;
+
+&lt;h3&gt;3. 流的操作步骤&lt;/h3&gt;
+
+&lt;p&gt;我们先忽略旧版的集合操作（后面介绍流和集合的区别时再说），先来介绍流的操作（毕竟流才是今天的主角嘛）&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://i.loli.net/2021/04/17/ZE8bev1KdxjRrUD.jpg&quot; alt=&quot;主角&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;流的操作分三步走：创建流、中间操作、终端操作&lt;/p&gt;
+
+&lt;p&gt;流程如下图：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://i.loli.net/2021/04/17/HM3vAPNt1b8lJi7.png&quot; alt=&quot;流的操作流程&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;这里我们要关注一个很重要的点：&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;在终端操作开始之前，中间操作不会执行任何处理，它只是声明执行什么操作；&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;你可以想象上面这个流程是一个流水线：我们这里做个简化处理&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;目的：先告诉你，我们要加工瓶装的水（先创建流，告诉你要处理哪些数据）&lt;/li&gt;
+&lt;li&gt;再针对这些瓶子和水，来搭建一个流水线：固定瓶子的夹具、装水的水管、拧盖子的爪子、装箱的打包器（中间操作，声明要执行的操作）&lt;/li&gt;
+&lt;li&gt;最后按下启动按钮，流水线开始工作（终端操作，开始根据中间操作来处理数据）&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://i.loli.net/2021/04/17/XnMqY7kUI9cO8JQ.jpg&quot; alt=&quot;流水线&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;因为每一个中间操作都是返回一个流（Stream），这样他们就可以一直组合下去（我好像吃到了什么东西？），但是他们的组合顺序是不固定的，流会根据系统性能去选择合适的组合顺序&lt;/p&gt;
+
+&lt;p&gt;我们可以打印一些东西来看下：&lt;/p&gt;
+
+&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;List&amp;lt;Cat&amp;gt; list = Arrays.asList(new Cat(1, &quot;tangyuan&quot;), new Cat(3, &quot;dangdang&quot;), new Cat(2, &quot;milu&quot;));
+List&amp;lt;String&amp;gt; listNameNew = list.stream()
+  .filter(cat -&amp;gt; {
+    System.out.println(&quot;filter: &quot; + cat);
+    return cat.getAge() &amp;gt; 1;
+  })
+  .map(cat-&amp;gt; {
+    System.out.println(&quot;map:&quot; + cat);
+    return cat.getName();
+  })
+  .collect(Collectors.toList());
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;输出如下：&lt;/p&gt;
+
+&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;filter: Cat{age=1}
+filter: Cat{age=3}
+map:Cat{age=3}
+filter: Cat{age=2}
+map:Cat{age=2}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;可以看到，中间操作的filter和map组合到一起交叉执行了，尽管他们是两个独立的操作（这个技术叫作&lt;strong&gt;循环合并&lt;/strong&gt;）&lt;/p&gt;
+
+&lt;p&gt;这个合并主要是由流式操作根据系统的性能来自行决定的&lt;/p&gt;
+
+&lt;p&gt;既然讲到了&lt;strong&gt;循环合并&lt;/strong&gt;，那下面捎带说下&lt;strong&gt;短路技巧&lt;/strong&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;短路这个词大家应该比较熟悉（比如脑子短路什么的），指的是本来A-&amp;gt;B-&amp;gt;C是都要执行的，但是在B的地方短路了，所以就变成了A-&amp;gt;C了&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;这里的短路指的是中间操作，由于某些原因（比如下面的limit），导致只执行了部分，没有全部去执行&lt;/p&gt;
+
+&lt;p&gt;我们来修改下上面的例子（加了一个中间操作limit)：&lt;/p&gt;
+
+&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;List&amp;lt;Cat&amp;gt; list = Arrays.asList(new Cat(1, &quot;tangyuan&quot;), new Cat(3, &quot;dangdang&quot;), new Cat(2, &quot;milu&quot;));
+List&amp;lt;String&amp;gt; listNameNew = list.stream()
+  .filter(cat -&amp;gt; {
+    System.out.println(&quot;filter: &quot; + cat);
+    return cat.getAge() &amp;gt; 1;
+  })
+  .map(cat-&amp;gt; {
+    System.out.println(&quot;map:&quot; + cat);
+    return cat.getName();
+  })
+  // 只加了这一行
+  .limit(1)
+  .collect(Collectors.toList());
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;输出如下：&lt;/p&gt;
+
+&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;filter: Cat{age=1}
+filter: Cat{age=3}
+map:Cat{age=3}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;可以看到，因为limit(1)只需要&lt;strong&gt;一个&lt;/strong&gt;元素，所以filter&lt;strong&gt;过滤&lt;/strong&gt;时，只要找到&lt;strong&gt;一个满足条件&lt;/strong&gt;的，就会&lt;strong&gt;停止过滤&lt;/strong&gt;操作（后面的元素就放弃了），这个技巧叫做&lt;strong&gt;短路技巧&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;这个就很大程度上体现了中间操作的组合顺序带来的优点：需要多少，处理多少，即&lt;strong&gt;按需处理&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h3&gt;4. 流的特点&lt;/h3&gt;
+
+&lt;p&gt;特点有三个：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;声明性：简洁，易读，代码行数大大减少（每天有代码行数要求的公司除外）&lt;/li&gt;
+&lt;li&gt;可复合：更灵活，各种组合都可以（只要你想，只要流有）&lt;/li&gt;
+&lt;li&gt;可并行：性能更好（不用我们去写多线程，多好）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;5. 流式操作和集合操作的区别：&lt;/h3&gt;
+
+&lt;p&gt;现在我们再来回顾下开头例子中的集合操作：筛选-&amp;gt;排序-&amp;gt;提取&lt;/p&gt;
+
+&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;List&amp;lt;Cat&amp;gt; listTemp = new ArrayList&amp;lt;&amp;gt;();
+// 1. 筛选
+for(Cat cat: list){
+  if(cat.getAge()&amp;gt;1){
+    listTemp.add(cat);
+  }
+}
+// 2. 排序
+listTemp.sort(new Comparator&amp;lt;Cat&amp;gt;() {
+  @Override
+  public int compare(Cat o1, Cat o2) {
+    // 递增排序
+    return Integer.compare(o1.getAge(), o2.getAge());
+        /**
+    * Q：为啥不用减法 return o1.getAge() - o2.getAge()？
+    * A：因为减法会有数据溢出的风险
+    *    如果o1.getAge()为20亿，o2.getAge()为-2亿，那么结果就会超过int的极限21亿多
+    **/ 
+  }
+});
+// 3. 提取名字
+List&amp;lt;String&amp;gt; listName = new ArrayList&amp;lt;&amp;gt;();
+for(Cat cat: listTemp){
+  listName.add(cat.getName());
+}
+System.out.println(listName);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;可以看到跟流式操作不一样的有两点：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;集合操作中有一个listTemp临时变量（流式操作没），&lt;/li&gt;
+&lt;li&gt;集合操作一直都在处理数据（而流式操作是直到最后一步的终端操作才会去处理数据），依次筛选-&amp;gt;排序-&amp;gt;提取名字，是顺序执行的&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;下面我们用表格来列出区别，应该会直观点&lt;/p&gt;
 
 &lt;table&gt;&lt;thead&gt;
 &lt;tr&gt;
 &lt;th/&gt;
-&lt;th&gt;普通 map&lt;/th&gt;
-&lt;th&gt;sync.Map&lt;/th&gt;
+&lt;th&gt;流式操作&lt;/th&gt;
+&lt;th&gt;集合操作&lt;/th&gt;
 &lt;/tr&gt;
 &lt;/thead&gt;&lt;tbody&gt;
 &lt;tr&gt;
-&lt;td&gt;map 获取某个 key&lt;/td&gt;
-&lt;td&gt;map[1]&lt;/td&gt;
-&lt;td&gt;sync.Load(1)&lt;/td&gt;
+&lt;td&gt;功能&lt;/td&gt;
+&lt;td&gt;处理数据为主&lt;/td&gt;
+&lt;td&gt;存储数据为主&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-&lt;td&gt;map 添加元素&lt;/td&gt;
-&lt;td&gt;map[1] = 10&lt;/td&gt;
-&lt;td&gt;sync.Store(1, 10)&lt;/td&gt;
+&lt;td&gt;迭代方式&lt;/td&gt;
+&lt;td&gt;内部迭代（只迭代一次)，只需声明，不需要实现，流内部自己有实现）&lt;/td&gt;
+&lt;td&gt;外部迭代（可一直迭代）需要自己foreach&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-&lt;td&gt;map 删除一个 key&lt;/td&gt;
-&lt;td&gt;delete(map, 1)&lt;/td&gt;
-&lt;td&gt;sync.Delete(1)&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;遍历 map&lt;/td&gt;
-&lt;td&gt;for...range&lt;/td&gt;
-&lt;td&gt;sync.Range()&lt;/td&gt;
+&lt;td&gt;处理数据&lt;/td&gt;
+&lt;td&gt;直到终端操作，才会开始真正处理数据（按需处理）&lt;/td&gt;
+&lt;td&gt;一直都在处理数据（全部处理）&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/tbody&gt;&lt;/table&gt;
 
-&lt;p&gt;sync.Map 两个特有的函数，不过从字面就能理解是什么意思了。
-LoadOrStore：sync.Map 存在就返回，不存在就插入
-LoadAndDelete：sync.Map 获取某个 key，如果存在的话，同时删除这个 key&lt;/p&gt;
+&lt;p&gt;用生活中的例子来对比的话，可以用电影来比喻&lt;/p&gt;
 
-&lt;h2&gt;源码解析&lt;/h2&gt;
+&lt;p&gt;流就好比在线观看，集合就好本地观看（下载到本地）&lt;/p&gt;
 
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;type Map struct {
-    mu Mutex
-    read atomic.Value // readOnly  read map
-    dirty map[interface{}]*entry  // dirty map
-    misses int
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/e43e8e6d4d5c45e4bd583828ebe90c9a%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;sync map 全景图&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/d0b2ce0bc920486684e9c8be65bd046c%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;Load&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/372873ca13694fa88db13b17f01f05e3%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;Store&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/2eb152ca82e3448ba00dde977fab7ca4%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;Delete&quot;/&gt;&lt;/p&gt;
-
-&lt;h3&gt;read map 的值是什么时间更新的 ？&lt;/h3&gt;
+&lt;h2&gt;总结&lt;/h2&gt;
 
 &lt;ol&gt;
-&lt;li&gt;Load/LoadOrStore/LoadAndDelete 时，当 misses 数量大于等于 dirty map 的元素个数时，会整体复制 dirty map 到 read map&lt;/li&gt;
-&lt;li&gt;Store/LoadOrStore 时，当 read map 中存在这个key，则更新&lt;/li&gt;
-&lt;li&gt;Delete/LoadAndDelete 时，如果 read map 中存在这个key，则设置这个值为 nil&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h3&gt;dirty map 的值是什么时间更新的 ？&lt;/h3&gt;
-
-&lt;ol&gt;
-&lt;li&gt;完全是一个新 key， 第一次插入 sync.Map，必先插入 dirty map&lt;/li&gt;
-&lt;li&gt;Store/LoadOrStore 时，当 read map 中不存在这个key，在 dirty map 存在这个key，则更新&lt;/li&gt;
-&lt;li&gt;Delete/LoadAndDelete 时，如果 read map 中不存在这个key，在 dirty map 存在这个key，则从 dirty map 中删除这个key&lt;/li&gt;
-&lt;li&gt;当 misses 数量大于等于 dirty map 的元素个数时，会整体复制 dirty map 到 read map，同时设置 dirty map 为 nil&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;&lt;strong&gt;疑问：当 dirty map 复制到 read map 后，将 dirty map 设置为 nil，也就是 dirty map 中就不存在这个 key 了。如果又新插入某个 key，多次访问后达到了 dirty map 往 read map 复制的条件，如果直接用 read map 覆盖 dirty map，那岂不是就丢了之前在 read map 但不在 dirty map 的 key ?&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;答：其实并不会。当 dirty map 向 read map 复制后，readOnly.amended 等于了 false。当新插入了一个值时，会将 read map 中的值，重新给 dirty map 赋值一遍，也就是 read map 也会向 dirty map 中复制。&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;func (m *Map) dirtyLocked() {
-    if m.dirty != nil {
-        return
-    }
-
-    read, _ := m.read.Load().(readOnly)
-    m.dirty = make(map[interface{}]*entry, len(read.m))
-    for k, e := range read.m {
-        if !e.tryExpungeLocked() {
-            m.dirty[k] = e
-        }
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;read map 和 dirty map 是什么时间删除的？&lt;/h3&gt;
+&lt;li&gt;流是什么：
 
 &lt;ul&gt;
-&lt;li&gt;当 read map 中存在某个 key 的时候，这个时候只会删除 read map， 并不会删除 dirty map（因为 dirty map 不存在这个值）&lt;/li&gt;
-&lt;li&gt;当 read map 中不存在时，才会去删除 dirty map 里面的值&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;strong&gt;疑问：如果按照这个删除方式，那岂不是 dirty map 中会有残余的 key，导致没删除掉？&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;答：其实并不会。当 misses 数量大于等于 dirty map 的元素个数时，会整体复制 dirty map 到 read map。这个过程中还附带了另外一个操作：将 dirty map 置为 nil。&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;func (m *Map) missLocked() {
-    m.misses++
-    if m.misses &amp;lt; len(m.dirty) {
-        return
-    }
-    m.read.Store(readOnly{m: m.dirty})
-    m.dirty = nil
-    m.misses = 0
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;read map 与 dirty map 的关系 ？&lt;/h3&gt;
-
-&lt;ol&gt;
-&lt;li&gt;在 read map 中存在的值，在 dirty map 中可能不存在。&lt;/li&gt;
-&lt;li&gt;在 dirty map 中存在的值，在 read map 中也可能存在。&lt;/li&gt;
-&lt;li&gt;当访问多次，发现 dirty map 中存在，read map  中不存在，导致 misses 数量大于等于 dirty map 的元素个数时，会整体复制 dirty map 到 read map。&lt;/li&gt;
-&lt;li&gt;当出现 dirty map 向 read map 复制后，dirty map 会被置成 nil。&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;当出现 dirty map 向 read map 复制后，readOnly.amended 等于了 false。当新插入了一个值时，会将 read map 中的值，重新给 dirty map 赋值一遍&lt;/p&gt;
-
-&lt;h3&gt;read/dirty map 中的值一定是有效的吗？&lt;/h3&gt;
-
-&lt;p&gt;并不一定。放入到 read/dirty map 中的值总共有 3 种类型：&lt;/p&gt;&lt;/li&gt;
-&lt;/ol&gt;
+&lt;li&gt;流是一种以声明性的方式来处理数据的API&lt;/li&gt;
+&lt;li&gt;流是从支持&lt;strong&gt;数据处理操作&lt;/strong&gt;的&lt;strong&gt;源&lt;/strong&gt;生成的&lt;strong&gt;元素序列&lt;/strong&gt;
 
 &lt;ul&gt;
-&lt;li&gt;nil：如果获取到的 value 是 nil，那说明这个 key 是已经删除过的。既不在 read map，也不在 dirty map &lt;/li&gt;
-&lt;li&gt;expunged：这个 key 在 dirty map 中是不存在的&lt;/li&gt;
-&lt;li&gt;valid：其实就正常的情况，要么这个值存在在 read map 中，要么存在在 dirty map 中
-## sync.Map 是如何提高性能的？&lt;/li&gt;
-&lt;/ul&gt;
+&lt;li&gt;源：数据的来源，比如集合，文件等（本节只介绍了集合的流式操作，因为用的比较多；后面有空再介绍其他的）&lt;/li&gt;
+&lt;li&gt;数据处理操作：就是流的中间操作，比如filter, map&lt;/li&gt;
+&lt;li&gt;元素序列：通过流的终端操作，返回的结果集&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;流的操作流程：
 
-&lt;p&gt;通过源码解析，我们知道 sync.Map 里面有两个普通 map，read map主要是负责读，dirty map 是负责读和写（加锁）。在读多写少的场景下，read map 的值基本不发生变化，可以让 read map 做到无锁操作，就减少了使用 Mutex + Map 必须的加锁/解锁环节，因此也就提高了性能。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;创建流 -&amp;gt; 中间操作 -&amp;gt; 终端操作&lt;/li&gt;
+&lt;li&gt;中间操作只是声明，不真实处理数据，直到终端操作开始才会执行&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;循环合并：中间操作会自由组合（流根据系统自己来决定组合的顺序）&lt;/li&gt;
+&lt;li&gt;短路技巧：如果中间操作处理的数据已经达到需求，则会立即停止处理数据（比如limit(1)，则当处理完1个就会停止处理）&lt;/li&gt;
+&lt;li&gt;流式操作和集合操作的区别：
 
-&lt;p&gt;不过也能够看出来，read map 也是会发生变化的，如果某些 key 写操作特别频繁的话，sync.Map 基本也就退化成了 Mutex + Map（有可能性能还不如 Mutex + Map）。&lt;/p&gt;
-
-&lt;p&gt;所以，不是说使用了 sync.Map 就一定能提高程序性能，我们日常使用中尽量注意拆分粒度来使用 sync.Map。&lt;/p&gt;
-
-&lt;p&gt;关于如何分析 sync.Map 是否优化了程序性能，同样可以使用 pprof。具体过程可以参考 《这可能是最容易理解的 Go Mutex 源码剖析》&lt;/p&gt;
-
-&lt;h2&gt;sync.Map 应用场景&lt;/h2&gt;
-
-&lt;ol&gt;
-&lt;li&gt;读多写少&lt;/li&gt;
-&lt;li&gt;写操作也多，但是修改的 key 和读取的 key 特别不重合。&lt;/li&gt;
+&lt;ul&gt;
+&lt;li&gt;流&lt;strong&gt;按需处理&lt;/strong&gt;，集合&lt;strong&gt;全处理&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;流主攻&lt;strong&gt;数据处理&lt;/strong&gt;，集合主攻&lt;strong&gt;数据存储&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;流&lt;strong&gt;简洁&lt;/strong&gt;，集合&lt;strong&gt;不&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;流&lt;strong&gt;内部迭代&lt;/strong&gt;（只迭代一次，完后流会消失），集合&lt;strong&gt;外部迭代&lt;/strong&gt;（可一直迭代）&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;关于第二点我觉得挺扯的，毕竟我们很难把控这一点，不过由于是官方的注释还是放在这里。&lt;/p&gt;
+&lt;h2&gt;后记&lt;/h2&gt;
 
-&lt;p&gt;实际开发中我们要注意使用场景和擅用 pprof 来分析程序性能。 &lt;/p&gt;
+&lt;p&gt;最后，感谢大家的观看，谢谢&lt;/p&gt;
 
-&lt;h2&gt;sync.Map 使用注意点&lt;/h2&gt;
-
-&lt;p&gt;和 Mutex 一样， sync.Map 也同样不能被复制，因为 atomic.Value 是不能被复制的。&lt;/p&gt;
-
-&lt;h2&gt;参考链接&lt;/h2&gt;
-
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&quot;https://golang.design/under-the-hood/zh-cn/part1basic/ch05sync/map/&quot;&gt;https://golang.design/under-the-hood/zh-cn/part1basic/ch05sync/map/&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://draveness.me/golang-sync-primitives/&quot;&gt;https://draveness.me/golang-sync-primitives/&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://github.com/golang/go/blob/master/src/sync/map.go&quot;&gt;https://github.com/golang/go/blob/master/src/sync/map.go&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;sync.Map 完整流程图获取链接：链接:  &lt;a href=&quot;https://pan.baidu.com/s/1RIX6NKj8UhWkdFyFHptWwg&quot;&gt;https://pan.baidu.com/s/1RIX6NKj8UhWkdFyFHptWwg&lt;/a&gt;  密码: rsg9。&lt;/p&gt;
+&lt;p&gt;原创不易，期待官人们的三连哟&lt;/p&gt;
 &lt;/div&gt;
   &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>70580e71755732f09d58988d3fd7fb3c</guid>
-<title>聊聊 Raft 协议</title>
-<link>https://toutiao.io/k/zb7loam</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entry-content e-content&quot; itemprop=&quot;description articleBody&quot;&gt;
-&lt;pre&gt;&lt;code class=&quot;&quot;&gt;版权声明 本站原创文章 由 萌叔 发表
-转载请注明 萌叔 | http://vearne.cc
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3&gt;1. 参考资料&lt;/h3&gt;
-
-&lt;blockquote&gt;&lt;p&gt;
-The original project authors have created new raft implementations now used in etcd and InfluxDB.
-&lt;/p&gt;&lt;/blockquote&gt;
-&lt;p&gt;&lt;code&gt;goraft/raftd&lt;/code&gt;的作者参与了&lt;code&gt;etcd&lt;/code&gt;项目的实现，所以&lt;code&gt;goraft/raftd&lt;/code&gt;是有参考价值的 。另外&lt;code&gt;goraft/raftd&lt;/code&gt;的实现不完整，没有实现&lt;code&gt;Log&lt;/code&gt;擦除等功能，因此不能用于生产环境。&lt;/p&gt;
-&lt;h3&gt;2. Node的简单介绍&lt;/h3&gt;
-&lt;h4&gt;2.1 node的三种状态(state)&lt;/h4&gt;
-&lt;p&gt;图1 有限状态自动机&lt;br/&gt;
-&lt;img src=&quot;http://ut-bucket01.sh1a.qingstor.com/woshiaotian/20210412/49c9686a-9b41-11eb-bbaa-784f43a6cab8.png&quot; alt=&quot;&quot; data-pagespeed-url-hash=&quot;4137029170&quot;/&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Leader&lt;/li&gt;
-&lt;li&gt;Candidate&lt;/li&gt;
-&lt;li&gt;Follower&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4&gt;2.2 各种存储&lt;/h4&gt;
-&lt;p&gt;&lt;img src=&quot;http://ut-bucket01.sh1a.qingstor.com/woshiaotian/20210412/f786b7ea-9b42-11eb-a3e6-784f43a6cab8.jpeg&quot; alt=&quot;&quot; data-pagespeed-url-hash=&quot;2223510391&quot;/&gt;&lt;br/&gt;
-&lt;img src=&quot;http://ut-bucket01.sh1a.qingstor.com/woshiaotian/20210413/b49a8c16-9c0c-11eb-8f31-784f43a6cab8.jpeg&quot; alt=&quot;&quot; data-pagespeed-url-hash=&quot;640913661&quot;/&gt;&lt;/p&gt;
-&lt;h5&gt;2.2.1 Write-Ahead Log（WAL）&lt;/h5&gt;
-&lt;p&gt;存储:文件&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;&quot;&gt;      4f
-    raft:join&quot;&amp;gt;{&quot;name&quot;:&quot;2832bfa&quot;,&quot;connectionString&quot;:&quot;http://localhost:4001&quot;}
-       e
-raft:nop      4f
-    raft:join&quot;&amp;gt;{&quot;name&quot;:&quot;3320b68&quot;,&quot;connectionString&quot;:&quot;http://localhost:4002&quot;}
-      4f
-    raft:join&quot;&amp;gt;{&quot;name&quot;:&quot;7bd5bdc&quot;,&quot;connectionString&quot;:&quot;http://localhost:4003&quot;}
-       e
-raft:nop      29
-write&quot;{&quot;key&quot;:&quot;foo&quot;,&quot;value&quot;:&quot;bar&quot;}
-      29
-write&quot;{&quot;key&quot;:&quot;aaa&quot;,&quot;value&quot;:&quot;bbb&quot;}
-      29
-write&quot;{&quot;key&quot;:&quot;bbb&quot;,&quot;value&quot;:&quot;ccc&quot;}
-      29
-    write&quot;{&quot;key&quot;:&quot;ddd&quot;,&quot;value&quot;:&quot;eee&quot;}
-       e
-
-raft:nop       e
-
-       raft:nop      29
-
-    write&quot;{&quot;key&quot;:&quot;foo&quot;,&quot;value&quot;:&quot;bar&quot;}
-      29
-    write&quot;{&quot;key&quot;:&quot;foo&quot;,&quot;value&quot;:&quot;bar&quot;}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h5&gt;2.2.2 状态信息(状态信息)&lt;/h5&gt;
-&lt;p&gt;commitIndex、peer等&lt;/p&gt;
-&lt;p&gt;存储:内存&amp;amp;文件&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;&quot;&gt;type server struct {
-    *eventDispatcher
-
-    name        string
-    path        string
-    // Leader、Follower 或者 Candidate
-    state       string
-    transporter Transporter
-    context     interface{}
-    // 代表它所感知的全局的Term情况
-    currentTerm uint64
-
-    votedFor   string
-    log        *Log
-    // 代表它所感知的全局的leader情况
-    leader     string
-    peers      map[string]*Peer
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&quot;&quot;&gt;type Log struct {
-    ApplyFunc   func(*LogEntry, Command) (interface{}, error)
-    file        *os.File
-    path        string
-    entries     []*LogEntry
-    commitIndex uint64
-    mutex       sync.RWMutex
-    startIndex  uint64 // the index before the first entry in the Log entries
-    startTerm   uint64
-    initialized bool
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;code&gt;goraft&lt;/code&gt;的实现是写完Log.entries, 接着就写WAL&lt;/p&gt;
-&lt;h5&gt;2.2.3 内存数据库&lt;/h5&gt;
-&lt;p&gt;存储:内存&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;&quot;&gt;// The key-value database.
-type DB struct {
-    data  map[string]string
-    mutex sync.RWMutex
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h4&gt;2.3 节点之间的通讯&amp;amp;重要的名词解释&lt;/h4&gt;
-&lt;p&gt;&lt;img src=&quot;http://ut-bucket01.sh1a.qingstor.com/woshiaotian/20210412/e9e592e6-9b47-11eb-9d60-784f43a6cab8.png&quot; alt=&quot;&quot; data-pagespeed-url-hash=&quot;583801909&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;Leader –&amp;gt; Follower&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;&quot;&gt;{
-    &quot;Term&quot;: 17,
-    &quot;PrevLogIndex&quot;: 26, 
-    &quot;PrevLogTerm&quot;: 17,
-    &quot;CommitIndex&quot;: 26,
-    &quot;LeaderName&quot;: &quot;2832bfa&quot;,
-    &quot;Entries&quot;: [{
-        &quot;Index&quot;: 27,
-        &quot;Term&quot;: 17,
-        &quot;CommandName&quot;: &quot;write&quot;,
-        &quot;Command&quot;: &quot;eyJrZXkiOiJhYWEiLCJ2YWx1ZSI6ImJiYiJ9Cg==&quot;
-    }]
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;strong&gt;名词解释&lt;/strong&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;Term&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;CommitIndex&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;LogEntry&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3&gt;3. Leader Election(选举过程)&lt;/h3&gt;
-&lt;p&gt;&lt;strong&gt;注意&lt;/strong&gt;:不需要集群中节点的数量是奇数&lt;br/&gt;
-可以是4、8个，都没关系&lt;/p&gt;
-&lt;h4&gt;3.1 什么时候开始选举？&lt;/h4&gt;
-&lt;h4&gt;3.2 投票相关–如何处理VoteRequest&lt;/h4&gt;
-&lt;p&gt;看参考资料1.4 的演示动画&lt;br/&gt;
-&lt;img src=&quot;http://ut-bucket01.sh1a.qingstor.com/woshiaotian/20210412/dcd25458-9b48-11eb-8c3e-784f43a6cab8.png&quot; alt=&quot;&quot; data-pagespeed-url-hash=&quot;1115556425&quot;/&gt;&lt;/p&gt;
-&lt;h4&gt;3.2.1 一个Term期间，最多只能投出1票&lt;/h4&gt;
-&lt;pre&gt;&lt;code class=&quot;&quot;&gt;// VoteRequest中的Term，必须大于本地的currentTerm
-    if req.Term &amp;lt; s.Term() {
-        s.debugln(&quot;server.rv.deny.vote: cause stale term&quot;)
-        return newRequestVoteResponse(s.currentTerm, false), false
-    }
-
-    // If the term of the request peer is larger than this node, update the term
-    // If the term is equal and we&#x27;ve already voted for a different candidate then
-    // don&#x27;t vote for this candidate.
-// VoteRequest中的Term，如果大于本地的currentTerm，则更新本地的currentTerm
-    if req.Term &amp;gt; s.Term() {
-        s.updateCurrentTerm(req.Term, &quot;&quot;)
-    } else if s.votedFor != &quot;&quot; &amp;amp;&amp;amp; s.votedFor != req.CandidateName {
-        s.debugln(&quot;server.deny.vote: cause duplicate vote: &quot;, req.CandidateName,
-            &quot; already vote for &quot;, s.votedFor)
-        return newRequestVoteResponse(s.currentTerm, false), false
-    }
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h4&gt;3.2.2 获得投票需要满足的条件&lt;/h4&gt;
-&lt;p&gt;raft协议中这样的要求&lt;/p&gt;
-&lt;blockquote&gt;&lt;p&gt;
-candidate’s log is at least as up-to-date as receiver’s log then vote
-&lt;/p&gt;&lt;/blockquote&gt;
-&lt;p&gt;解释起来，就是必须同时满足以下2个条件，才会给candidate投票&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;candidate.LastLogTerm &amp;gt;= receiver.LastLogTerm&lt;/li&gt;
-&lt;li&gt;candidate.LastLogIndex &amp;gt;= receiver.LastLogIndex&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;strong&gt;注意&lt;/strong&gt;: Log中有擦除情况出现，所以条件1是必须的&lt;/p&gt;
-&lt;h4&gt;3.3 当选&amp;amp;当选后的一系列动作&lt;/h4&gt;
-&lt;ul&gt;
-&lt;li&gt;获得&lt;code&gt;majority&lt;/code&gt;投票的候选人当选为&lt;code&gt;Leader&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;通过心跳压制其它&lt;code&gt;Candidate&lt;/code&gt;, 迫使其它&lt;code&gt;Candidate&lt;/code&gt;转变为&lt;code&gt;Follower&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;写入&lt;code&gt;NOPCommand&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;a href=&quot;http://vearne.cc/archives/1851&quot;&gt;聊聊RAFT的一个实现(4)–NOPCOMMAND&lt;/a&gt;&lt;/p&gt;
-&lt;h4&gt;3.4 一种极端场景&lt;/h4&gt;
-&lt;p&gt;&lt;img src=&quot;http://ut-bucket01.sh1a.qingstor.com/woshiaotian/20210413/b6749fc6-9bfe-11eb-8307-784f43a6cab8.jpeg&quot; alt=&quot;&quot; data-pagespeed-url-hash=&quot;3790889467&quot;/&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;注意1&lt;/strong&gt;: &lt;code&gt;Node B&lt;/code&gt;和&lt;code&gt;Node D&lt;/code&gt;每个节点收到2张选票，&lt;br/&gt;
-所以这一轮投票没有选出&lt;code&gt;Leader&lt;/code&gt;。 &lt;code&gt;Node B&lt;/code&gt;和 &lt;code&gt;Node D&lt;/code&gt;的状态仍为&lt;code&gt;candidate&lt;/code&gt;。一段时间后(&lt;code&gt;goraft/raftd&lt;/code&gt;的实现为electionTimeout至2倍electionTimeout之间的随机值)，他们会发起下一轮投票。详情见图1&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;注意2&lt;/strong&gt; 每轮投票&lt;code&gt;Term&lt;/code&gt;均需要加1&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3&gt;4. Log Replication(数据写入)&lt;/h3&gt;
-&lt;p&gt;&lt;a href=&quot;http://vearne.cc/archives/1510&quot;&gt;聊聊RAFT的一个实现(3)–commit&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;http://ut-bucket01.sh1a.qingstor.com/woshiaotian/20210412/f786b7ea-9b42-11eb-a3e6-784f43a6cab8.jpeg&quot; alt=&quot;&quot; data-pagespeed-url-hash=&quot;2223510391&quot;/&gt;&lt;br/&gt;
-Step0. &lt;code&gt;Client&lt;/code&gt;发出&lt;code&gt;WriteCommand&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;Step1. 先写&lt;code&gt;Leader&lt;/code&gt;的Log&lt;/p&gt;
-&lt;p&gt;Step2. 在通过AppendRequest，写&lt;code&gt;Follower&lt;/code&gt;的Log&lt;/p&gt;
-&lt;p&gt;Step3. 执行&lt;code&gt;Leader&lt;/code&gt;的Commit(写内存数据库)&lt;/p&gt;
-&lt;p&gt;Step4. 执行&lt;code&gt;Follower&lt;/code&gt;的Commit&lt;/p&gt;
-&lt;p&gt;Step5. 给&lt;code&gt;Client&lt;/code&gt;返回结果&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;注意1:&lt;/strong&gt; 写入动作，只能由&lt;code&gt;Leader&lt;/code&gt;来发起, 在&lt;code&gt;goraft/raftd&lt;/code&gt;的实现里，&lt;code&gt;Follower&lt;/code&gt;会直接拒绝执行&lt;code&gt;WriteCommand&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;注意2&lt;/strong&gt;: Step5 不需要等到Step4完全完成(收到Follower的response) 就可以开始执行。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;blockquote&gt;&lt;p&gt;
-只要client等到leader完成Commit动作。即使后续leader发生变更或部分节点崩溃，raft协议可以保证，client所提交的改动依然有效。
-&lt;/p&gt;&lt;/blockquote&gt;
-&lt;h3&gt;5. 数据读取&amp;amp;watch&lt;/h3&gt;
-&lt;h4&gt;5.1 默认consul有3种一致性模型&lt;/h4&gt;
-
-&lt;p&gt;默认情况下，consul server(follower）不提供数据查询，仅转发请求给consul server(leader）&lt;br/&gt;
-&lt;a href=&quot;https://www.consul.io/api/features/consistency&quot;&gt;consistency&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;其中consistent模式是强一致性的，其它两种模式都不能保证强一致性。用stale模式可以提高吞吐能力，当然数据短时间内可能会有不一致问题&lt;/p&gt;
-&lt;h4&gt;5.2 &lt;code&gt;default&lt;/code&gt;和&lt;code&gt;consistent&lt;/code&gt;模式的区别&lt;/h4&gt;
-&lt;h4&gt;5.3 如何使用stale模型&lt;/h4&gt;
-&lt;pre&gt;&lt;code class=&quot;&quot;&gt;curl -v &#x27;http://dev1:8500/v1/health/service/es?dc=dc1&amp;amp;passing=1&amp;amp;stale
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&quot;http://ut-bucket01.sh1a.qingstor.com/woshiaotian/20210412/e97f1c6a-9b64-11eb-a499-784f43a6cab8.jpeg&quot; alt=&quot;&quot; data-pagespeed-url-hash=&quot;2025687919&quot;/&gt;&lt;/p&gt;
-&lt;h4&gt;5.4 watch是怎么回事？&lt;/h4&gt;
-&lt;p&gt;&lt;a href=&quot;http://vearne.cc/archives/13983&quot;&gt;玩转CONSUL(1)–WATCH机制探究&lt;/a&gt;&lt;/p&gt;
-&lt;hr/&gt;
-&lt;h4&gt;打赏我&lt;/h4&gt;
-&lt;p&gt;&lt;img src=&quot;http://static.zybuluo.com/woshiaotian/ohw8kvpn5k7hthgbuol4e4aq/WechatIMG29.jpg&quot; alt=&quot;微信支付码&quot; data-pagespeed-url-hash=&quot;2495828515&quot;/&gt;&lt;/p&gt;
-
-&lt;p class=&quot;clear&quot;/&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>b8c6f445dee97a93f0c0f3952dfef6f1</guid>
-<title>这 11 款 Chrome 神器，用起来爽到爆</title>
-<link>https://toutiao.io/k/czntgsa</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.2777777777777778&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/uL371281oDG1aKYT4MgSzhPd7NyIHWcFmbEM5EqlTY8CnLMLiaSBXAYZdJVB9VlDibMibrKsPNvs4MMEWXG6IZ7TA/640?wx_fmt=gif&quot; data-type=&quot;gif&quot; data-w=&quot;1080&quot;/&gt;&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzUxODkzNTQ3Nw==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/uL371281oDFEpxenPicr7Kh8c9P0I97yVWw9JfljjPy5gVBLDiaIrWkzAGHGib09Kib4TQtyw8jpLicW3yoyibMY8yMA/0?wx_fmt=png&quot; data-nickname=&quot;苏三说技术&quot; data-alias=&quot;susanSayJava&quot; data-signature=&quot;「苏三说技术」 维护者目前就职于某知名互联网公司，从事开发、架构和部分管理工作。实战经验丰富，对jdk、spring、springboot、springcloud、mybatis等开源框架源码有一定研究，欢迎关注，和我一起交流。&quot;/&gt;&lt;/section&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;前言&lt;/span&gt;&lt;br/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;对于从事IT行业的我们来说，几乎无时无刻都在用chrome浏览器，因为它给我们的工作和生活带来了极大的便利。今天给大家分享我用过的&lt;code&gt;11&lt;/code&gt;款牛逼的&lt;code&gt;chrome插件&lt;/code&gt;，你看完前&lt;code&gt;3&lt;/code&gt;个可能就会忍不住想&lt;code&gt;点赞&lt;/code&gt;了。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;1. 谷歌翻译&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;很多小伙伴，英语不太好，包括我自己，英语刚过四级。从事软件相关工作时，有时有些吃力，因为很多优秀的技术网站、书籍或者文章都是老外写的，如果因为看不懂就放弃阅读，我们将会少了很多学习和进步的机会。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;今天分享的第一个神器就是：&lt;code&gt;谷歌翻译&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在没使用谷歌翻译之前，访问https://docs.mongodb.com/drivers/java/，看到的页面是这样的，有可能一脸懵逼。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5417348608837971&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDE8cbV3ibotGd6sIHV79ticQBGWPLyzb1iavGLLnRNNXYYyKhJMv8uIUHE1wpsAYYMOlFfgxeNXU1wxw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2444&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;使用&lt;code&gt;谷歌翻译&lt;/code&gt;插件（其实现在已经是chrome浏览器的内置工具）：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.14833501513622604&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDE8cbV3ibotGd6sIHV79ticQBrZ2sp8nCTNhric5ZibkGia8f3hUBQBSdVPvyWzIKqL9LxnN0WqJetnLnQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1982&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;之后看到的页面，变得毫无违和感：&lt;img data-ratio=&quot;0.5345659163987139&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDE8cbV3ibotGd6sIHV79ticQBH8ALdoDRWCXnSyraw3iamYJdsw9cnGia9glgZO13ptJ7MtOZV7bmytuQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2488&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;页面内容一下子变成了全中文，幸福来得太突然了，哈哈哈。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;2. github加速器&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;github&lt;/code&gt;号称是全球第一大同性交友网站，它是程序员的乐园，里面有各种好玩的开源项目。很多编程爱好者，秉承share精神，喜欢把自己优秀代码提交到&lt;code&gt;github&lt;/code&gt;上，能够让更多的人看到，帮助更多的人。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但是，在国内对&lt;code&gt;github&lt;/code&gt;访问非常慢，是很多程序员非常头疼的一件事。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.62472647702407&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDE8cbV3ibotGd6sIHV79ticQBwH6jh8puEuKpl96v1Zj2mj2C2Ne4lS2FwZxpm2BiaCukdiaKP1tE6bRg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1828&quot;/&gt;这时可以用&lt;code&gt;github加速器&lt;/code&gt;插件：&lt;img data-ratio=&quot;0.5199004975124378&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDE8cbV3ibotGd6sIHV79ticQBPqVCHIn1jIt4Yztpt3Fv6zpUoPc1MR28A4aDwVcZ18J0rj4y0FTiafA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;804&quot;/&gt;开启插件功能后，再访问该页面：&lt;img data-ratio=&quot;0.5622389306599833&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDE8cbV3ibotGd6sIHV79ticQBiaNV8b3854ibnDibW2UqxJjIAHlBrKTMk1aXhTrwaic02XVD386O3esk3g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2394&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;2秒&lt;/code&gt;后就能非常愉快的访问&lt;code&gt;github&lt;/code&gt;了。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;3. Octotree&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;github&lt;/code&gt;上默认的项目展示页面，对用户不太友好。如果想要查找某个文件，必须一层层点击往下找，默认是平铺展示内容，无法用树形结构展示。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;默认的页面是长这样子：&lt;img data-ratio=&quot;0.518784972022382&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDE8cbV3ibotGd6sIHV79ticQB6z25C54HOibw0HYicW7BrrGuaDbEPQb0K4sAxxl0h6sibf2mzx0Riaa6UQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2502&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果安装了Octotree插件：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.5150753768844221&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDE8cbV3ibotGd6sIHV79ticQBJibWO5hLJONzY11Grfic7iadWH2mUWcwaZ3TsyMLFZ4ftF5sTrZoy6C1A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;796&quot;/&gt;之后，多了一个树状目录：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.5524769101595298&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDE8cbV3ibotGd6sIHV79ticQBudBbtc1KpM6EvMvMJIJ9wshDtGdVJS1gSL1kbGSRkll2SsYdXhK3dg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2382&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;可以非常方便的查找某个文件。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;4. Infinity&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;不知道你有没有过这种想法：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;觉得自己的浏览器首页太low，想换个背景，不知道怎么换。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;想把自己收藏起来的网站，放在显目的地方，让自己方便访问。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;span&gt;想把搜索引擎放在首页一下子就能看到。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;span/&gt;&lt;/span&gt;&lt;span/&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;恭喜你，这些需求chrome神器：&lt;code&gt;Infinity&lt;/code&gt;都能帮你实现。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;需要安装Infinity插件：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5252525252525253&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDE3zoqFKQ66iaAbic6ciahxIBbMkgWJbxk8XVe8DuIsyI7pUibwzPWGUDoIjSeRYjiakWE8RCmdagWxtFw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;792&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;之后打开浏览器时，就会自动弹出如下页面：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.53515625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDE3zoqFKQ66iaAbic6ciahxIBb1oYxe7fZnsTojEs9IpHLYDujYJ4XOwc9qPdOmCH35bUJf7OuBib3ZMQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;可以自定义你喜欢的任何网站：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.52734375&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDE3zoqFKQ66iaAbic6ciahxIBbpw1buVvthP5BbQnUEoPcNs5GB2JvBG5ia5lkndian7uneIDuibmhHdW8w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;此外，首页右下角的小风车，点击一下就能自动切换一张漂亮的背景图片。据说每天点一下小风车，每天都会拥有好心情。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;5. vue.js devtools&lt;/span&gt;&lt;br/&gt;&lt;/h2&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;如果有接触过前端的朋友会发现，现在基本上是：&lt;code&gt;react&lt;/code&gt; 和 &lt;code&gt;vue&lt;/code&gt; 的天下。我本身是做后端开发的，相较而言，使用更多的是 &lt;span&gt;vue&lt;/span&gt;，它配合&lt;span&gt;Element UI&lt;/span&gt;一起使用，大大提升了开发页面的效率。&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;如果代码运行时出问题了，想调试怎么办？使用传统的&lt;span&gt;debugger&lt;/span&gt;模式，不是说不行，不过我在这里推荐一个更牛逼的调试方法。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;需要安装&lt;span&gt;vue.js devtools&lt;/span&gt;插件：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.513715710723192&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDE3zoqFKQ66iaAbic6ciahxIBbwsTxMWcU3rf1JSHPxcZfFW9pmbVZmjMPIFkTRocUwade8sVxia8LuXQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;802&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;之后，访问页面时，就能调试了：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.48427672955974843&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDE3zoqFKQ66iaAbic6ciahxIBb8fKGNJKogZnKc8UwDuKzElr1342VuOYYhl6wN3q4LLHFq24RNJLSnw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1272&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;你想看到的大部分内容，这里都有。是不是很神奇？&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;6. ImageAssistant&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;在平时的工作或生活当中，我们经常需要上传和下载图片。如果在浏览网页的时，喜欢某些图片，我们需要一张张手动下载，非常不方便。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;有时候需要对上传的图片进行编辑，调整文字大小、样式，加一些水印效果等。我们一般需要先使用专业的图片工具，把图片编辑好，再重新上传，很麻烦。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;有没有一款软件，可以帮我们解决这些问题呢？&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;答案是肯定的，这时可以使用google的&lt;span&gt;ImageAssistant&lt;/span&gt;插件：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.52&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDF3wW2hgFThLtkFrV3Z0ANG2iaG82vVZXB8ekah9P8ic1x1BQtRicg5E3GpBxBm9WzGPPaFSOheEY1cw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;800&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;之后，访问网页时选择 &lt;span&gt;提取本页图片&lt;/span&gt;：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5247275775356245&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDF3wW2hgFThLtkFrV3Z0ANGVdvBGYsWfICcInka8NX4a98haqEGIw35oVYRaCB0QOibicPcMBvGsIibw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2386&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;就会出现如下网页：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5049261083743842&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDF3wW2hgFThLtkFrV3Z0ANGGaTicdDD7YnkHQEjXgYI524V3Zgfrv3MdibRqWO5GI4rchmvC7lytT0A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2436&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;该网页中展示了之前页面中的所有图片，包括尺寸等信息，可以批量下载。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;此外，还能对上传的图片进行编辑：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.4887029288702929&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDF3wW2hgFThLtkFrV3Z0ANGBULsD6Og0N5YXnshDEiaUwbqicpwVSUHyOQC3ykDib0WibGBhiaCpkToP7A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2390&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;看到这里，你爱上它了没？反正我是爱不释手。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;7. LastPass&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;随着互联网的蓬勃发展，出现了越来越多的网站，其中大部分网站为了保持用户的粘性，需要用户自己注册和登录。为了安全起见，用户密码一般要求包含：数字、字母、特殊字符、还要区分大小写等，并且要求密码长度少则8位，多则十几位。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;为了方便，你可以将所有密码设置成一样，但是如果一旦泄露，所有网站上你相关信息都可能会被泄露，风险太高。&lt;span&gt;所以&lt;/span&gt;&lt;span&gt;，还是把&lt;/span&gt;&lt;span&gt;密码设置成不一样吧，&lt;/span&gt;&lt;span&gt;这样我们睡觉也&lt;/span&gt;&lt;span&gt;安心一点。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;如果你只注册了一两个网站还好，但如果你过注册过几十个，甚至上百个网站，那么多密码你都能记得住？&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;答案是否定的，这时就急需一种安全管理密码的工具。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;这时又一个chrome神器:&lt;code&gt;LastPass&lt;/code&gt;出现了。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5240506329113924&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDF3wW2hgFThLtkFrV3Z0ANGN41KDhosnmibDiaFXQia3olWWTUdjq7OcVmeMcNh6pXpXXfekujicZf66g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;790&quot;/&gt;&lt;/p&gt;&lt;p&gt;它需要先注册，这一步很容易完成。然后添加想访问的网站地址、用户名和密码，以后想访问该网站，直接点击一下即可，就不用再重复输入用户名和密码，方便快速访问，并且自动登录。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.6554149085794655&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDF3wW2hgFThLtkFrV3Z0ANGQaF5zwcXbogrQ9trgicJibicRsJLpVOWZowxZONKFhpqIBnQExChs39tw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1422&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;LastPass&lt;/span&gt;的功能非常强大，其他类似的插件还有：1Password、Bitwarden等。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;8. adblock&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;我们在浏览网页的时候，经常会发现广告像狗皮膏药一样，无处不在，如影随形。有些页面甚至广告就占了整个屏幕的一半，真正的有价值的信息，&lt;span&gt;我们&lt;/span&gt;每次都需要用肉眼一一分辨出来，相当让人抓狂，大大增加了搜索资料的时间。这也是很多人喜欢用&lt;span&gt;google&lt;/span&gt;搜索资料，不喜欢用&lt;span&gt;baidu&lt;/span&gt;的主要原因。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;有没有办法，屏蔽掉一些多余的广告，让我们能看到净化后的页面内容呢？&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;答案是有的，可以使用&lt;span&gt;A&lt;/span&gt;&lt;span&gt;d&lt;/span&gt;&lt;span&gt;Block&lt;/span&gt;，它是目前世界排名第一的免费广告拦截程序。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;需要安装&lt;code&gt;AdBlock&lt;/code&gt;插件：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5275&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDE3zoqFKQ66iaAbic6ciahxIBbfwTBV7r0SJdWu3kHMN5jX9eJ9L6plpMtahAZAVnRrzgRZricZMsR4Sg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;800&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;之后，就能使用&lt;code&gt;AdBlock&lt;/code&gt;拦截广告了。一种方式是自定义拦截规则，不过有些复杂，需要仔细研究一下。还有另外一种手动的方式，这种方式相对来说更简单，在需要屏蔽的广告上右键，在弹窗的工具窗口中选择AdBlock中的选项即可。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5478489903424056&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDE3zoqFKQ66iaAbic6ciahxIBbjoov3bwNTuicP5Lf2icwbjGQTJkaSUevsHlwuEuR6W4tDRbCr2wG3Bqg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2278&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;好了，世界终于清净了。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;9. markdown nice&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;对于有些写公众号的朋友来说，在文章排版上花费的时间，有可能比写一篇文章的时间还多。为了解决写文章时的排版问题，一些强大的排版工具应运而生，&lt;span&gt;比如：&lt;/span&gt;&lt;code&gt;md2all&lt;/code&gt;&lt;span&gt; 和 &lt;/span&gt;&lt;code&gt;markdown nice&lt;/code&gt;&lt;span&gt; ，能够解放他们的双手，让他们可以把更多的时间花在文章内容上&lt;/span&gt;。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;需要安装&lt;span&gt;markdown nice&lt;/span&gt;插件：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.513715710723192&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDE8cbV3ibotGd6sIHV79ticQB0n6NwWL4t9kkjJOR1Xl7zutTwvK5qTufbBUmZqibzFuC6ib9cocmhrEA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;802&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;之后，在公众号后台写文章时，你只用专注于写&lt;code&gt;markdown&lt;/code&gt;语法的文章即可，然后选择一种主题和代码主题，其他的交给插件。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5842894969108562&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDE8cbV3ibotGd6sIHV79ticQBaNb6JwalnAgictUVkibesiaiaaps2dnaVmVzx2KGBWNU4JDoX97q78uLIA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2266&quot;/&gt;&lt;/p&gt;&lt;p&gt;最终文章会自动生成左半部分的样式，是不是很nice？&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;10. 掘金&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在国内程序员平时喜欢逛的技术网站，比如：CSDN、博客园、开源中国、思否、51CTO、掘金等。尤其是最近几年，掘金越来越受到广大程序员的喜爱，它是一个帮助程序员成长的网站。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;以前需要访问地址：https://juejin.cn/，才能访问技术文章，访问其他技术网站也类似，必须手动输入网站地址。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.46742957746478875&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDE8cbV3ibotGd6sIHV79ticQBQvtVAibscENfRzk4KXvjtPRZtZp2NMOnTQEVbh4e3bU8pMkdficM8Ddg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2272&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果安装了掘金插件：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.5186104218362283&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDE8cbV3ibotGd6sIHV79ticQB4fCsPWQPiaNmFe7G6ve8UmbJdjecXdznKTwOupMwTmhSR9pp4m3IzaQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;806&quot;/&gt;之后，在打开chrome浏览器的时候，首页默认访问就是掘金，给我们节省了非常多的时间。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.5483050847457627&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDE8cbV3ibotGd6sIHV79ticQBiaLFicRNkYS8ZTticYeLiawW8LMDQXTibESGic1nIE9f2L9araicOjZzVmusg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2360&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;它里面包含两大块：&lt;code&gt;掘金&lt;/code&gt; 和 &lt;code&gt;github&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;掘金可以按类型，比如：后端、前端、IOS、人工智能等，还有热门和最新 过滤文章。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;github可以按 热门 和 新生，以及时间维度：今日、本周、本月，查询排名靠前的开源项目。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这些不都是我们一直都想要的吗？简直太给力了。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;11. JSONView&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;JSON&lt;/code&gt;数据格式简单，结构化，层次分明，是开发人员最常用的数据格式，目前是大部分接口返回值的首先。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;有时我们在浏览器中访问get请求数据，由于接口返回值太多，一眼根本无法看出数据的层次和结构，顿时有点懵逼。针对这种情况，很多人可能会想到，将数据复制到一些在线的Json工具，或者使用postman发送请求，这样就能非常愉快的浏览格式化的数据。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这样不是不行，我想说的是，其实不用这么麻烦，还有更简单的方式。只用安装一款chrome插件，在浏览器中，就能轻松访问&lt;span&gt;浏览&lt;/span&gt;&lt;span&gt;格式化&lt;/span&gt;&lt;span&gt;的数据。&lt;/span&gt;这款插件的名字是：&lt;code&gt;JSONView&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5264483627204031&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDF3wW2hgFThLtkFrV3Z0ANGiaWazU8IC3uEzUC571axoX2WZR5icF47J6waesagGZRIYlVOQQOpNb5w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;794&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;之后，再访问接口时，就能看到更人性化的数据了：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.8370786516853933&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDF3wW2hgFThLtkFrV3Z0ANGicOh9WFk7jbLWicor2pvYJgm9tHAPb8OWZqCkeCDovHIVN3aeHbAukzA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1068&quot;/&gt;&lt;/p&gt;&lt;p&gt;不说了，这就是我想要的。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;其实在我实际工作和生活中，使用过的插件远不止这11种。由于众所众知的原因，很多好插件不便于分享，如果有感兴趣的朋友，可以关注我的公众号，找我私聊，绝对不虚此行。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;最后说一句(求关注，别白嫖我)&lt;/span&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果这篇文章对您有所帮助，或者有所启发的话，帮忙扫描下发二维码关注一下，您的支持是我坚持写作最大的动力。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;求一键三连：点赞、转发、在看。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;关注公众号：【苏三说技术】，在公众号中回复：面试、代码神器、开发手册、时间管理有超赞的粉丝福利，另外回复：加群，可以跟很多BAT大厂的前辈交流和学习。&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzUxODkzNTQ3Nw==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/uL371281oDFEpxenPicr7Kh8c9P0I97yVWw9JfljjPy5gVBLDiaIrWkzAGHGib09Kib4TQtyw8jpLicW3yoyibMY8yMA/0?wx_fmt=png&quot; data-nickname=&quot;苏三说技术&quot; data-alias=&quot;susanSayJava&quot; data-signature=&quot;「苏三说技术」 维护者目前就职于某知名互联网公司，从事开发、架构和部分管理工作。实战经验丰富，对jdk、spring、springboot、springcloud、mybatis等开源框架源码有一定研究，欢迎关注，和我一起交流。&quot;/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>4cdf12d7c48c9457ff46d94507e1f798</guid>
-<title>MySQL 提升笔记（二）：存储引擎盘点</title>
-<link>https://toutiao.io/k/m3yyxtk</link>
+<guid>de208737853366a090e46173422f8816</guid>
+<title>一文搞懂分布式锁的原理与实现</title>
+<link>https://toutiao.io/k/j7fdh6h</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
                     
 
                     
                     
                     
-                    &lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzkwODE5ODM0Ng==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/PMZOEonJxWeFt08hV3N1706WTzfhoTNoXm5LXRV0XibppmeNR4zSNMa3QOJJ7ib4O21P5yohibwuD26Tp9ETWZAqA/0?wx_fmt=png&quot; data-nickname=&quot;三分恶&quot; data-alias=&quot;Fighter3FullStack&quot; data-signature=&quot;一个全栈开发。分享Java后端、Web前端、计算机基础知识。&quot;/&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在前面我们了解了server层调用存储引擎层接口来完成sql的执行，使用存储引擎的好处是：每个存储引擎都有各自的特点，能够根据具体的应用建立不同存储引擎表。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;需要注意的是，存储引擎是基于表的，而不是数据库&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;MySQL 5.7 支持的存储引擎有 InnoDB、MyISAM、Memory、Merge、Archive、Federated、CSV、BLACKHOLE 等。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其中最常用的3种，InnoDB、MyISAM、Memory，MySQL5.5.8以后，默认存储引擎为InnoDB。&lt;/p&gt;&lt;h1 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;1、常用存储引擎&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;1.1、InnoDB存储引擎&lt;/span&gt;&lt;span/&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;InnoDB是MySQL的默认事务型引擎，也是最重要、使用最广泛的存储引擎。特点是行锁设计，支持外键，5.6之后支持全文索引。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;InnoDB的数据存储在一个逻辑表空间（tablespace）中，表空间是由InnoDB管理的一个黑盒，由一系列的数据文件组成。在MySQL 4.1以后的版本中，InnoDB可以将每个表的数据和索引存放在单独的文件中。InnoDB也可以使用裸设备作为表空间的存储介质。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;InnoDB采用MVCC来支持高并发，并且实现了四个标准的隔离级别。其默认级别是REPEATABLE READ（可重复读），并且通过间隙锁（next-key locking）策略防止幻读的出现。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;除此之外，InnoDB存储引擎还提供了插入缓冲（insert buffer）、二次写（double write）、自适应哈希索引（adaptive hash index）、预读（read ahead）等高性能和高可用的功能。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;InnoDB表是基于聚簇索引建立的，InnoDB的索引结构和MySQL的其他存储引擎有很大的不同，聚簇索引对主键查询有很高的性能。&lt;/p&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5051282051282051&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/PMZOEonJxWdJhaVazLGBgWIqDE2z0iakrI5MkE0e0D4FQTJOnJr5HgfTrbCxWjLzHYRPLYmLiauGwHxzibmjK674A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1170&quot;/&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p&gt;&lt;span/&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;figcaption&gt;主键索引&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;InnoDB内部做了很多优化，包括从磁盘读取数据时采用的可预测性预读，能够自动在内存中创建hash索引以加速读操作的自适应哈希索引（adaptive hash index），以及能够加速插入操作的插入缓冲区（insert buffer）等。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;1.2、MyISAM存储引擎&lt;/span&gt;&lt;span/&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;MyISAM存储引擎不支持事务、只支持表锁、支持全文索引。在MySQL5.5之前是MySQl默认的存储引擎。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;MyISAM对整张表加锁，而不是针对行。读取时会对需要读到的所有表加共享锁，写入时则对表加排他锁。但是在表有读取查询的同时，也可以往表中插入新的记录（这被称为并发插入，CONCURRENT INSERT）。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;MyISAM存储引擎表是由MYD和MYI组成，MYD用来存放数据文件，MYI用来存放索引文件。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.17937219730941703&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/PMZOEonJxWdJhaVazLGBgWIqDE2z0iakrOuugmaEMdTxugr9BRqtbAO4WeYXPQ2v5aNVs6EJwlw36qwAiaVLIuSA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;446&quot;/&gt;&lt;figcaption&gt;MyISAM表文件&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;MyISAM引擎设计简单，数据以紧密格式存储，所以在某些场景下的性能很好。MyISAM有一些服务器级别的性能扩展限制，比如对索引键缓冲区（key cache）的Mutex锁，MariaDB基于段（segment）的索引键缓冲区机制来避免该问题。但MyISAM最典型的性能问题还是表锁的问题，很容易导致所有的查询都长期处于“Locked”状态。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;1.3、Memory存储引擎&lt;/span&gt;&lt;span/&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Memory可以理解为临时表——当然二者不是一个东西。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Memory存储引擎将表中的数据存放在内存中，不需要进行磁盘I/O，速度非常快。但是如果数据库重启或者崩溃，Memory表的结构会保留，但表里的数据都会丢失。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Memroy表在很多场景可以发挥好的作用：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;用于查找（lookup）或者映射（mapping）表，例如将邮编和地名映射的表。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;用于缓存周期性聚合数据（periodically aggregated data）的结果。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;用于保存数据分析中产生的中间数据。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Memory表默认使用Hash索引，因此查找操作非常快。虽然Memory表的速度非常快，但还是无法取代传统的基于磁盘的表。Memroy表是表级锁，因此并发写入的性能较低。它不支持BLOB或TEXT类型的列，并且每行的长度是固定的，所以即使指定了VARCHAR列，实际存储时也会转换成CHAR，这可能导致部分内存的浪费（其中一些限制在Percona版本已经解决）。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果MySQL在执行查询的过程中需要使用临时表来保存中间结果，内部使用的临时表就是Memory表。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果中间结果太大超出了Memory表的限制，或者含有BLOB或TEXT字段，则临时表会转换成MyISAM表。&lt;/p&gt;&lt;h1 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;2、存储引擎对比&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;不同的存储引擎都有各自的特点，以适应不同的需求，如表所示。为了做出选择，首先要考虑每一个存储引擎提供了哪些不同的功能。&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;功能&lt;/th&gt;&lt;th&gt;MylSAM&lt;/th&gt;&lt;th&gt;MEMORY&lt;/th&gt;&lt;th&gt;InnoDB&lt;/th&gt;&lt;th&gt;Archive&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;存储限制&lt;/td&gt;&lt;td&gt;256TB&lt;/td&gt;&lt;td&gt;RAM&lt;/td&gt;&lt;td&gt;64TB&lt;/td&gt;&lt;td&gt;None&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;支持事务&lt;/td&gt;&lt;td&gt;No&lt;/td&gt;&lt;td&gt;No&lt;/td&gt;&lt;td&gt;Yes&lt;/td&gt;&lt;td&gt;No&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;支持全文索引&lt;/td&gt;&lt;td&gt;Yes&lt;/td&gt;&lt;td&gt;No&lt;/td&gt;&lt;td&gt;Yes&lt;/td&gt;&lt;td&gt;No&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;支持树索引&lt;/td&gt;&lt;td&gt;Yes&lt;/td&gt;&lt;td&gt;Yes&lt;/td&gt;&lt;td&gt;Yes&lt;/td&gt;&lt;td&gt;No&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;支持哈希索引&lt;/td&gt;&lt;td&gt;No&lt;/td&gt;&lt;td&gt;Yes&lt;/td&gt;&lt;td&gt;Yes&lt;/td&gt;&lt;td&gt;No&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;支持数据缓存&lt;/td&gt;&lt;td&gt;No&lt;/td&gt;&lt;td&gt;N/A&lt;/td&gt;&lt;td&gt;Yes&lt;/td&gt;&lt;td&gt;No&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;支持外键&lt;/td&gt;&lt;td&gt;No&lt;/td&gt;&lt;td&gt;No&lt;/td&gt;&lt;td&gt;Yes&lt;/td&gt;&lt;td&gt;No&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/section&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;InnoDB支持的哈希索引是自适应的，InnoDB会根据表的使用情况自动为表生成哈希索引，不能人为干预是否在一张表中生成哈希索引。&lt;/p&gt;&lt;/blockquote&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;MySQL 5.6开始InnoDB支持全文索引。&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;以根据以下的原则来选择 MySQL 存储引擎：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;如果要提供提交、回滚和恢复的事务安全（ACID 兼容）能力，并要求实现并发控制，InnoDB 是一个很好的选择。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如果数据表主要用来插入和查询记录，则 MyISAM 引擎提供较高的处理效率。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如果只是临时存放数据，数据量不大，并且不需要较高的数据安全性，可以选择将数据保存在内存的 MEMORY 引擎中，MySQL 中使用该引擎作为临时表，存放查询的中间结果。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如果只有 INSERT 和 SELECT 操作，可以选择Archive 引擎，Archive 存储引擎支持高并发的插入操作，但是本身并不是事务安全的。Archive 存储引擎非常适合存储归档数据，如记录日志信息可以使用 Archive 引擎。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;提示&lt;/code&gt;：使用哪一种引擎要根据需要灵活选择，因为存储引擎是基于表的，所以一个数据库中多个表可以使用不同的引擎以满足各种性能和实际需求。使用合适的存储引擎将会提高整个数据库的性能。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;一般MySQL的深入都是围绕InnoDB展开。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;br/&gt;&lt;/p&gt;&lt;hr data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;big&gt;&lt;strong&gt;参考：&lt;/strong&gt;&lt;/big&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;【1】：《高性能MySQL》&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;【2】：极客时间 《MySQL实战45讲》&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;【3】：《MySQL技术内幕 InnoDB存储引擎》&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;【4】：MySQL存储引擎精讲（附带各种存储引擎的对比）&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;【5】：MySQL - 常用存储引擎区别总结（2020最新版）&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;系列目录：&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzkwODE5ODM0Ng==&amp;amp;mid=2247485701&amp;amp;idx=1&amp;amp;sn=bb66ed8733dac01eed2585a5b88ac1ca&amp;amp;chksm=c0cce1a0f7bb68b61cdd51fe4f388ce4e3a3cb48d95e22eea75c80c366cffe3c5ef9756c0c8d&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;MYSQL提升笔记（1）：MySQL逻辑架构&lt;/a&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzkwODE5ODM0Ng==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/PMZOEonJxWeFt08hV3N1706WTzfhoTNoXm5LXRV0XibppmeNR4zSNMa3QOJJ7ib4O21P5yohibwuD26Tp9ETWZAqA/0?wx_fmt=png&quot; data-nickname=&quot;三分恶&quot; data-alias=&quot;Fighter3FullStack&quot; data-signature=&quot;一个全栈开发。分享Java后端、Web前端、计算机基础知识。&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;204&quot; data-backw=&quot;558&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.36484375&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/PMZOEonJxWdBLml8yqRnW8SzBIzu9h5RZaLdMfqqUt3mXMbX3bO0nu0FyfqotEfYm56F1xTqoqsmrQn3icGJ6Dw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;br/&gt;&lt;span/&gt;&lt;/p&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;
+                    &lt;h3 data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.33184855233853006&quot; data-s=&quot;300,640&quot; data-type=&quot;png&quot; data-w=&quot;898&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z2bVaFK6CgRgzIV2YTLYP1C9K6m6ZesXIGMic8cBk5es1ZicMDfULrExGEw49a51icWhlYkA1pXmib62xNNUDrMgXA/640?wx_fmt=png&quot;/&gt;&lt;/h3&gt;&lt;h2&gt;前言&lt;/h2&gt;&lt;p&gt;&lt;span&gt;对于锁，大家应该都不陌生，手机上可以加锁，想用时候解锁，不用的时候上锁，那自行车、房门同样可以加把锁，道理属于类似的情况。&lt;/span&gt;&lt;br/&gt;&lt;img data-ratio=&quot;0.7506666666666667&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/Z2bVaFK6CgTEBM5RYv9Toj9xiavMhwVmTKlsG9ZZnEDIcG9UfTu1JHZAKu1pM5t9VPYSjGyibVjPib5hZN8MicGq4A/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;750&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在日常开发工作中，我们为了保证资源操作的最终一致性，同样需要用到锁来进行操作控制。本Chat结合自己工作中的经验沉淀，来跟大家一起聊聊 分布式锁的那些事，分享一些实用内容给大家。&lt;/span&gt;&lt;/p&gt;&lt;h2&gt;为什么会出现分布式锁？&lt;/h2&gt;&lt;p&gt;&lt;span&gt;如下图所示，一个应用被部署到多个机器上做负载均衡。为了保证一个方法或属性在高并发情况下的同一时间只能被同一个线程执行，我们该如何解决这个问题呢？&lt;/span&gt;&lt;br/&gt;&lt;img data-ratio=&quot;0.7705314009661836&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z2bVaFK6CgTEBM5RYv9Toj9xiavMhwVmTU0ZZjvoSdW01txo4iaOByR8ZavuXbNlheBrkvA0P77N9ibDUicnic4uvkw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;414&quot;/&gt;&lt;br/&gt;&lt;span&gt;在传统单体应用单机部署的情况下，可以使用并发处理相关的功能（如Java并发处理相关的API：ReentrantLcok或synchronized）进行互斥控制来解决。但是，随着业务的发展，系统架构也会逐步优化升级，原本单体单机部署的系统被演化成分布式集群系统，由于分布式系统多线程、多进程并且分布在多个不同机器上，这将使原单机部署情况下的并发控制锁策略无法满足，并不能提供分布式锁的能力。为了解决这个问题就需要一种跨机器的互斥机制来控制共享资源的访问，这就是分布式锁解决的难题！&lt;/span&gt;&lt;/p&gt;&lt;h2&gt;分布式锁应用场景有哪些？&lt;/h2&gt;&lt;p&gt;&lt;span&gt;针对分布式锁的目的来反向推导其应用场景，主要包括两类：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;1、处理效率提升：应用分布式锁，可以减少重复任务的执行，避免资源处理效率的浪费；&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2、数据准确性保障：使用分布式锁可以放在数据资源的并发访问，避免数据不一致情况，甚至数据损失等。&lt;/span&gt;&lt;/p&gt;&lt;h2&gt;分布式锁的实现前提&lt;/h2&gt;&lt;p&gt;&lt;span&gt;分布式的CAP理论：&lt;/span&gt;&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;&lt;span&gt;任何一个分布式系统都无法同时满足一致性（Consistency）、可用性（Availability）和分区容错性（Partition tolerance），最多只能同时满足两项。&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;&lt;span&gt;通常情况下，大家都会牺牲强一致性来换取系统的高可用性，这样我们很多的场景，其实是只需为了保证数据的“最终一致性”。&lt;br/&gt;需要注意的是，这个最终时间需要是用户可以接受的范围内的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;另外，要实现分布式锁，需要具备一些条件，主要包括以下几项：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;1、在分布式系统环境下，一个方法在同一时间只能被一个机器的一个线程执行；&lt;br/&gt;2、获取锁与释放锁的高可用及高性能；&lt;br/&gt;3、具备非阻塞锁特性，获取不到锁将直接返回获取锁失败；&lt;br/&gt;4、具备锁失效机制，防止死锁。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;上述条件，主要突出锁本身的提效和保障准确性的应用特性，同时避免其本身对资源访问造成影响；&lt;/span&gt;&lt;/p&gt;&lt;h2&gt;实现方式有哪些呢？&lt;/h2&gt;&lt;p&gt;&lt;span&gt;关于分布式锁的实现，可以分别控制在不同的环节。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.16862745098039217&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/Z2bVaFK6CgTEBM5RYv9Toj9xiavMhwVmT36ePHxBgJSzDhe1oBVicF5qibrIGStebGkoaFIYsYjeEXqalqibE1iavDQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1530&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;常见的主要分为以下这几种：&lt;/span&gt;&lt;/p&gt;&lt;h4&gt;1、开源组件锁控制：ZooKeeper&lt;/h4&gt;&lt;p&gt;&lt;span&gt;ZooKeeper 是一个分布式协调服务的开源框架。主要用来解决分布式集群中应用系统的一致性的问题，例如怎样避免同时操作同一数据造成脏读的问题。ZooKeeper 本质上是一个分布式的小文件存储系统。提供基于类似于文件系统的目录树方式的数据存储，并且可以对树种的节点进行有效管理。&lt;br/&gt;&lt;/span&gt;&lt;img data-ratio=&quot;0.4142857142857143&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z2bVaFK6CgTEBM5RYv9Toj9xiavMhwVmTxaib3HarAbqmyWf7Lic0RjEu0pmicAJf5aichE6tQnsv16iaEk71UCfqodg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;700&quot;/&gt;&lt;br/&gt;&lt;span&gt;那如何使用ZooKeeper实现分布式锁？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;1）客户端连接zookeeper，并在/tmp下创建临时的且有序的子节点，第一个客户端对应的子节点为lock-0000，第二个为lock-0001，以此类推；&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2）客户端获取/lock下的子节点列表，判断自己创建的子节点是否为当前子节点列表中序号最小的子节点，如果是则认为获得锁，否则监听刚好在自己之前一位的子节点删除消息，获得子节点变更通知后重复此步骤直至获得锁；&lt;/span&gt;&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;&lt;span&gt;例如/tmp下的子节点列表为：lock-0000、lock-0001、lock-0002，序号为1的客户端监听序号为0的子节点删除消息，序号为2的监听序号为1的子节点删除消息。（业务代码执行完即删除子节点）&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;&lt;span&gt;3）执行业务代码流程，删除当前客户端对应的子节点，锁释放。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;ZooKeeper分布式锁方式，性能相对Redis方式较差，主要原因是写操作（获取锁释放锁）都需要在Leader上执行，然后同步到follower。&lt;/span&gt;&lt;/p&gt;&lt;h4&gt;2、任务处理锁控制：Redis&lt;/h4&gt;&lt;p&gt;&lt;span&gt;Redis 是完全开源免费的，遵守BSD协议，是一个高性能的key-value数据库。&lt;br/&gt;主要的优势包括：&lt;/span&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;性能极高 – Redis能读的速度是11w+次/s,写的速度是8w+次/s&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;丰富的数据类型 – Redis主要支持 Strings, Lists, Hashes, Sets 及 Ordered Sets 数据类型&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;原子性 – Redis的所有操作都是原子性的，同时Redis还支持对几个操作合并后的原子性执行&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;丰富的特性 – Redis还支持 publish/subscribe, 通知, key 过期等等特性。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;span&gt;Redis实现简单分布式锁过程：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;（1）获取锁：使用setnx加锁，并使用expire命令为锁添加一个超时时间，超过该时间则自动释放锁，锁的value值为一个随机生成的UUID，通过此在释放锁的时候进行判断。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;（2）获取锁：设置一个获取的超时时间，若超过这个时间则放弃获取锁。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;（3）释放锁：通过UUID判断是不是该锁，若是该锁，则执行delete进行锁释放。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.46408839779005523&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z2bVaFK6CgTEBM5RYv9Toj9xiavMhwVmTRYETDYzTOxtu0qm3rLhJpQkFjIRcYIoicaOgXb3gsrrrBGnHlqFkPdw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;724&quot;/&gt;&lt;br/&gt;&lt;span&gt;利用Redis实现分布式锁，实现可能存在的缺点：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在执行delete进行释放锁的时候，假如操作删除锁动作失败，那此 Key-Value 过期时间则不好控制，可能会一直存在，可能对后续数据验证造成影响。&lt;/span&gt;&lt;/p&gt;&lt;h4&gt;&lt;span&gt;数据写入锁控制：MySQL&lt;/span&gt;&lt;/h4&gt;&lt;p&gt;&lt;span&gt;数据库层面是最终数据写入的时候，对数据做写入控制处理，算是分布式锁的最终末端环节。主要包括以下三种方式，下面分别介绍一下。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;实现方式一：唯一索引&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;UNIQUE KEY `uidx_name` (`name`) USING BTREE；&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;span&gt;上述case中，我们对 &lt;/span&gt;&lt;code&gt;&lt;span&gt;name&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 字段做了索引的唯一性约束，当存在多个新增数据请求同时提交到数据库的话，数据库自身则会利用唯一索引，来保证数据的唯一性。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;实现方式二：排他锁&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;执行以下SQL：&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;SELECT status FROM users WHERE id = 3 FOR UPDATE；&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;span&gt;假如，在另一个事务中再次执行：&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;SELECT status FROM users WHERE id = 3 FOR UPDATE；&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;span&gt;则第二个事务会一直等待上一个事务的提交，此时第二个查询处于阻塞的状态。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;排它锁的应用：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在进行事务操作时，通过 “FOR UPDATE” 语句，MySQL会对查询结果集中每行数据都添加排他锁，其他线程对该记录的更新与删除操作都会阻塞。排他锁包含行锁、表锁。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;实现方式三：乐观锁&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;实现逻辑：乐观锁每次在执行数据修改操作时，都会带上一个数据版本号，一旦版本号和数据的版本号一致就可以执行修改操作并对版本号执行+1 操作，否则就执行失败。因为每次操作的版本号都会随之增加，所以不会出现 ABA 问题。&lt;/span&gt;&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;&lt;span&gt;除了 version 以外，还可以使用时间戳，因为时间戳天然具有顺序递增性。&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;&lt;span&gt;比较麻烦的一点：就是在操作业务前，需要先查询出当前的 version 版本。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;数据库分布式锁实现可能存在的缺点：&lt;/span&gt;&lt;/p&gt;&lt;h2&gt;总结&lt;/h2&gt;&lt;p&gt;&lt;span&gt;上面的几种分布式锁的实现，需要根据不同的应用场景选择最适合的实现方式。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在分布式环境中，对资源进行上锁有时候是很重要的，比如秒杀、抢购某一资源，这时候使用分布式锁就可以很好地控制资源。同时，在具体应用过程中，还需要考虑很多的因素，比如超时时间的选取，获取锁时间的选取对并发量等等，上述各方式实现的分布式锁仅作为一种简单的实现的参考，主要了解其中的思想。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;面对任何问题，希望大家可以多做些深入分析，了解本质问题之后再考虑解决办法进行解决，希望大家能够掌握问题分析以及解决的能力，去触类旁通，做到游刃有余。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;·················· &lt;/span&gt;&lt;span&gt;END&lt;/span&gt;&lt;span&gt; ··················&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;点击关注公众号，免费领取程序员成长大礼包&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzA3MDg5MDkzOA==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/Z2bVaFK6CgQmUQ0Aca9qSYNFn0tQEXQc5EibBkqQLYtibYBj1hXuagwXkNc3kVwplHxIl7KQfBIiagysgn9GDUUibw/0?wx_fmt=png&quot; data-nickname=&quot;架构精进之路&quot; data-alias=&quot;jiagou_jingjin&quot; data-signature=&quot;十年研发风雨路，大厂架构师，CSDN博客专家。专注软件架构研究，技术学习与职业成长，坚持分享接地气儿的架构技术干货文章！&quot;/&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;span&gt;十年研发风雨路，大厂架构师，&lt;/span&gt;&lt;span&gt;CSDN博客专家&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;专注架构技术沉淀学习及分享，职业与认知升级&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;坚持分享接地气儿的干货文章，&lt;span&gt;期待与你一起成长&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;hr/&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;往期热文推荐：&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;hr/&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;98311&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5555555555555556&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z2bVaFK6CgTqLjdQBs7fV8zqHRaQhA2ibia13fFn6ibS5qr5PpmZoxd8nlhAyJu7d1CjLicAruicOEb7uxibEGM476xg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;900&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;87502&quot;&gt;&lt;p&gt;&lt;span&gt;「技术架构精进」专注架构研究，技术分享&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;Thanks for reading!&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;点“赞”和“在看”哦&lt;/span&gt;&lt;img class=&quot;__bg_gif&quot; data-ratio=&quot;1.5925925925925926&quot; data-type=&quot;gif&quot; data-w=&quot;135&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/noz2jw2hPlWiaCrGuJxBicU5mcib3QapDLyo6eKnNVm9dPTV4Z1SicHLtrCCwOG9gblMBFlKf7p9cvwL6wIkZJvamg/640?wx_fmt=gif&quot;/&gt;&lt;/span&gt;&lt;/p&gt;
                 &lt;/div&gt;
 
                 
@@ -475,16 +367,16 @@ Step0. &lt;code&gt;Client&lt;/code&gt;发出&lt;code&gt;WriteCommand&lt;/code&gt
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>ae8f81c3b1d6e7802de92cc9493e238c</guid>
-<title>好代码实践：基于 Redis 的轻量级分布式均衡消费队列</title>
-<link>https://toutiao.io/k/mg4sote</link>
+<guid>3c437c7c35209d48ff34ce795b979cad</guid>
+<title>MyBatis 优秀的设计总结</title>
+<link>https://toutiao.io/k/k81cs3j</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
                     
 
                     
                     
                     
-                    &lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/Z6bicxIx5naKCBHZSLXXMiaicElAGWfOX2G4hiasoMhOpicpX3nKQm41pfJXKicZ3wNpFh7coG67qv1Niajh9yTdvlOmg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1000&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;一  我对好代码的看法&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;1  什么是好代码&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;如果你读过《设计模式之美》，你可能会觉得玩转各种设计模式，符合设计模式的6大基本原则的代码就是好代码；如果读过《clean code》，你可能会觉得好代码的一个标准是——整洁；如果你经常研读Spring源码，你可能会觉得精妙的设计、高度的抽象、灵活的配置才是好代码，就像是一本书，一千个读者眼中有一千个哈姆雷特，每个人按照自己的认知都会有自己的判断。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;2  我认为的好代码&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;如前文所述，不同的人对好代码的认知标准是不同的，我认为的好代码，也局限于我的认知水平，也许今天我觉得是好代码，随着认知的提升，改天也会有不同的想法；就目前的认知而言，我认为的好代码的一些特点：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;可用性&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;对，你没看错，好代码，一定是可用的，可以work的，如果一段代码只是看着好看，用了各种花里胡哨的编码技巧、手法，但是不能work，那就失去了它存在的意义了。所以，好代码，最最最重要的一个特点就是可用性。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;可读性&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;我认为好代码的第二个特点就是可读性，我们的写代码的目标用户有两类，第一类是给编译器看的；第二类是给维护它的程序员看的。针对第一类用户，只要你符合它的语法规范，它就认识，它就可以执行；而第二类用户，就是后期不断的维护它、升级它的程序员同学，如果这段代码，维护它的人都读不懂，那他的长期存在的意义也就不大了。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;其他优秀的特点&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;可维护性、可扩展性、可复用性、强鲁棒性、可测试性等。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;好代码的其他优秀特点太多了，不一一列举了。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;3  让code在计算机上起舞&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;回到根源，我们写代码的目的是干嘛？为的是把我们的所思所想通过计算机认识的指令告诉它，让它来替我们做我们想做的事情。好代码，不仅可以简单地完成我们的所思所想，更能够快速、高效、完备地执行。让我们的code一起在计算机上起舞吧。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;二  我们为什么要做&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;2020年五一期间，当大家都在享受五一假期的快乐时光时，我们突然收到hbase报警，整个hbase的IO压力已经接近瓶颈，直接影响数据读写，临时扩容hbase才勉强支撑过去。按照这个发展趋势，一旦遇到业务高峰时，hbase的读写直接会给整个业务链路带来瓶颈问题。为了能够解决海量巴枪数据实时写入hbase+solr时产生的高IO压力，我们设计出一款基于redis实现的轻量级分布式均衡消费队列，实现巴枪数据按照一定规则进行sharding到不同的队列中，实现批量数据攒批去重，然后按批写入hbase+solr，从而降低hbase+solr的IO压力。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;三  我们怎么做的&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;组件整体设计思路：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;img data-ratio=&quot;0.5888268156424581&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z6bicxIx5naKCBHZSLXXMiaicElAGWfOX2GvNKRnh0tYx38ppcFZCoDX54DM7Yr0cQZ35xf1MxWzwVERsxibiask9yQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;895&quot;/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;整个组件主要分为三大核心模块，master（主节点）、writer（数据写入节点）、worker（工作节点）。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;设计机制：&lt;/span&gt;&lt;span&gt;弱中心机制，任何一个配置好的节点都可能成为master（主节点）、writer（数据写入节点）、worker（工作节点），具备高可用能力，不存在单机单点瓶颈问题。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;master（主节点）职责：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;writer（数据写入节点）职责：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;worker（工作节点）职责：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;blockquote&gt;&lt;p&gt;伟大的linux大神曾说过，&quot;Talk is cheap，让我看看代码&quot;。&lt;/p&gt;&lt;/blockquote&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;四  我们做了什么&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;1  整个组件的包结构图&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;img data-ratio=&quot;0.5683576956147893&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z6bicxIx5naKCBHZSLXXMiaicElAGWfOX2Gu3ZHqbux1x67ic9WYTqh93ZONk9wE6yFGUyul2v2PwBSIx8nbGs10dg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2326&quot;/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;2  简洁的代码结构&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.68828125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z6bicxIx5naKCBHZSLXXMiaicElAGWfOX2G4qrpQgGtYLibL671ibNccBtFicJgCaskgDqM5BXtp7FlOkPN5hjKDkHyg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;整个工程一共60个类，核心代码共1623行， 平均每个类的代码行数为27.05行，最大的一个类代码行数不超过200行。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;3  强大的扩展性&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.52109375&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z6bicxIx5naKib8LgguCoe5AXMNDYPvZ2Nd8qR4alWoKllFdjfpDlgvYDLBtCnkX5nEYChATCIVwpAsaJUrhMxxQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;通过钩子回调方式的设计，方便接入的用户能够快速的注入自己的回调实现方法，进行快速扩展业务能力。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;4  线上日志展示截图&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;日志文件&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;img data-ratio=&quot;0.1388888888888889&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z6bicxIx5naKCBHZSLXXMiaicElAGWfOX2G9VP0oTRn8DnsNiaF2VibMorJcX7jcO7HGOqHlmv6XMaALnTUluniaex2Q/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1224&quot;/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;img data-ratio=&quot;0.27521008403361347&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z6bicxIx5naKCBHZSLXXMiaicElAGWfOX2Gwf6t96vv1icBAn9CBNniak0lXRZfUYiaibIWhbiaOYhIH04c55ibkAU6f1bQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1904&quot;/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;master队列分配日志&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.30859375&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z6bicxIx5naKCBHZSLXXMiaicElAGWfOX2GuZQoPR8f7w4f0Ribce4b6cyeicoo4rryJss4kaf8RCZVia32eJrVF8YicQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;worker数据消费日志&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.2515625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z6bicxIx5naKCBHZSLXXMiaicElAGWfOX2GIE3sDpYccb3eFYhUmCZcSVAPsQaYMNMYUvb20P1RuXVRldQFYicgr9w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span/&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;writer队列负载检测日志&lt;/span&gt;&lt;/strong&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.190625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z6bicxIx5naKCBHZSLXXMiaicElAGWfOX2GxWSIKSYPJ43LJaVx0GH2nAa3c0q71hbO1gvibDFBhlubtV6PtFuYnOw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span/&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;re&lt;/span&gt;&lt;span&gt;dis消费队列监控大盘&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.496875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z6bicxIx5naKCBHZSLXXMiaicElAGWfOX2GzX8RXw3ib6cxQhhSrwUPKVibVMwAF3LL3uicr4EEzZy24zH5WZFQcPH2w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span/&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;五  我们的收益&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;组件部署上线之时，hbase服务端监控指标变化，实现hbase整体使用水位接近50%的优化。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;hbase IOPS使用监控&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;span/&gt;&lt;br/&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.48046875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z6bicxIx5naKCBHZSLXXMiaicElAGWfOX2GtJcTzN0x5PtZaTfYlYsXJicMqtAMmQTH4T2ib2Aicz8zqoeGMW9eQRic6Q/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;hbase CPU使用监控&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;span/&gt;&lt;br/&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.4984375&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z6bicxIx5naKCBHZSLXXMiaicElAGWfOX2GibeCSKXethzq28Vwa0vOiaLF2FapoGicNIdXHuvEhojpo5U5OEiaWbqibOw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;六  我们的展望&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;七  我的一些理解&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;好代码，给人第一个印象的感觉，就像一篇好文章一样，读起来朗朗上口。不同的文章有不同的风格体裁，不同的代码也有不同的编程风格要求。Python有严格的缩进，像诗歌一样工整对仗；C语言面向过程像散文一样形散神聚，意境深邃；Java语言面向对象又像是写小说一样，能勾勒出一个一个人物形象。但是无论哪一种文章体裁，他的可读性和可理解性都非常重要，只有文章是可读的可理解的，才会吸引更多的读者去读它，让他流传下去，代码也一样，它的可维护性和可读性也非常重要，保证代码可用性，提高代码的简洁程度和可维护程度，才能让我们的代码在计算机上跑的更远，更久。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;hr/&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;br/&gt;技术公开课&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;《使用Redis消息队列完成秒杀过期订单处理》&lt;/span&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;本课程共15课时，通过一个Redis的实战案例，介绍Redis消息队列，以及如何在Java程序中监听Redis队列消息，最后结合Redis的key失效机制和消息队列完成对过期订单的处理。&lt;span/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;span&gt;点击“阅读原文”开始学习&lt;/span&gt;&lt;span&gt;吧~&lt;/span&gt;&lt;/p&gt;
+                    &lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;背景&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;在&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUzNjAxODg4MQ==&amp;amp;mid=2247485597&amp;amp;idx=1&amp;amp;sn=555efa9b4b4041a29c4816772b0c1f2c&amp;amp;chksm=fafde233cd8a6b25f5a98a025df7917cb0d27f81e9efece21d4ce0a1f43155598b4108626172&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;《mybatis的本质和原理》&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;《mybatis的本质和原理》&lt;/a&gt;中，我简单介绍了怎么写出一个简化版的mybatis。这个简化版的mybatis已经可以将传统的手动拼接sql的调用数据库方式转化成面向对象的方式。面向对象友好是mybatis长盛不衰的最本质设计优势。此外，还有4个优秀的设计也很值得学习。&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;mybatis的4个“增值“设计&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;动态sql&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;简化版的mybatis虽然面向对象友好，但是有一定的局限性。如果一个sql在不同的条件下会有变化，那就需要写几个sql。而手动拼接的sql却可以使用java的语法，引入if、foreach来减少SQL数，增加可维护性。&lt;br/&gt;&lt;/section&gt;&lt;section&gt;为了解决sql的复用和可维护性问题，mybatis引入动态sql。比如&amp;lt;where&amp;gt;标签可以解决手写where语句+if语句时不好判断是否要加and的问题。记得有人这么在mybatis配置文件里写sql：&lt;br/&gt;&lt;/section&gt;&lt;p&gt;select * from XX where 1=1 &amp;lt;if a!=null&amp;gt;and  a=XXX&amp;lt;/if&amp;gt;&lt;br/&gt;实际上可以&lt;/p&gt;&lt;p&gt;select * from XX &amp;lt;where&amp;gt; &amp;lt;if a!=null&amp;gt;and  a=XXX&amp;lt;/if&amp;gt;&amp;lt;/where&amp;gt;&lt;/p&gt;&lt;section&gt;这样不仅看起来更简洁，在低版本的mysql中，也可以充分使用最左前缀等索引提高效率(在mysql5.7以后，索引都已经在服务端进行优化了，实际效率差别不大)。&lt;br/&gt;&lt;/section&gt;&lt;section&gt;动态sql的设计更好的体现了面向对象的设计原则。&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;内置缓存&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;mysql内置一级缓存和二级缓存。一级缓存是sqlsession级别的缓存，二级缓存是namespace级别的缓存。两层缓存都是默认开启的。能达到的效果是在一个客户端，如果多次执行一个完全相同的查询sql，会优先使用缓存的数据，以提高效率。&lt;br/&gt;&lt;/section&gt;&lt;section&gt;但是mybatis内置的缓存非常简单，就是一个hashmap。作为一个优秀的软件，它懂得它山之石可以攻玉，所以它可以适配第三方缓存，比如ehcache。但是一定要注意，对一版的工具来说，第三方软件的整合一般都不是必需的。&lt;/section&gt;&lt;section&gt;上周有个同事跟踪源码发现spring-web里使用了jackson。得出结论说使用@ResponseBody必须使用jackson。而jackson低版本有代码漏洞需要升级。我就建议他把jackson的包排除掉试试，作为一款流行的框架，这种最基本功能并不需要使用第三方软件。当然其实是可以使用@JsonView标签显示的使用jackson来处理，但应该不是默认。&lt;/section&gt;&lt;section&gt;当然，默认不使用第三方软件并不是评价软件是否优秀的标准，比如springboot就默认使用第三方tomcat作为应用服务器。但是想想看为什么springboot使用tomcat不用jetty呢？因为tomcat是apache的呀。能不用第三方软件做默认就不用，要用还是优先apache。其他公司的产品哪天收费了多麻烦。&lt;br/&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;分页插件&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;section&gt;mysql有pagehelper可以灵活的满足各种前端分页的需求，不管是&lt;br/&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.11837655016910936&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRl9GaVBmHDkkheIXVtliab3fIyic1HShXiapRibJvVmg89aib8A3Arqqj0xzgiaZm7NLk39buyL53nI3VMFw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;887&quot;/&gt;&lt;/p&gt;&lt;p&gt;还是&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.4037735849056604&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRl9GaVBmHDkkheIXVtliab3fIvdpng5uf1Kf4BViaictHnDJa8JgicqTnvonoZJAoSso5SicX2U2AdJia2Lg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;265&quot;/&gt;&lt;/p&gt;&lt;section&gt;pagehelper都能满足，还是物理分页。物理分页和逻辑分页的区别就是物理分页是用到哪些数据去数据库里取哪些数据。逻辑分页是把所有数据都取出来，在内存里对数据做封装。如果逻辑分页，20W+的数据就太慢了。&lt;br/&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;逆向工程&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;mybatis-generator相信很多朋友都用过。它可以称为一个小工具，可以自动的生成常用的增删改查的mapper及接口、pojo等，进一步简化了开发。&lt;/p&gt;&lt;section&gt;这里要提一个概念：ActiveRecord&lt;/section&gt;&lt;section&gt;ActiveRecord 也属于 ORM 层，由 Rails 最早提出，遵循标准的 ORM 模型：表映射到记录，记录映射到对象，字段映射到对象属性。配合遵循的命名和配置惯例，能够很大程度的快速实现模型的操作，而且简洁易懂。&lt;/section&gt;&lt;p&gt;ActiveRecord 的主要思想是：&lt;/p&gt;&lt;p&gt;1. 每一个数据库表对应创建一个类，类的每一个对象实例对应于数据库中表的一行记录；通常表的每个字段在类中都有相应的 Field ；&lt;/p&gt;&lt;p&gt;2. ActiveRecord 同时负责把自己持久化，在 ActiveRecord 中封装了对数据库的访问，即 CURD; &lt;/p&gt;&lt;p&gt;3. ActiveRecord 是一种领域模型 (Domain Model) ，封装了部分业务逻辑；&lt;/p&gt;&lt;p&gt;ActiveRecord 比较适用于：&lt;/p&gt;&lt;p&gt;1. 业务逻辑比较简单，当你的类基本上和数据库中的表一一对应时 , ActiveRecord 是非常方便的，即你的业务逻辑大多数是对单表操作；&lt;/p&gt;&lt;p&gt;2. 当发生跨表的操作时 , 往往会配合使用事务脚本 (Transaction Script) ，把跨表事务提升到事务脚本中；&lt;/p&gt;&lt;p&gt;3. ActiveRecord 最大优点是简单 , 直观。一个类就包括了数据访问和业务逻辑 . 如果配合代码生成器使用就更方便了；&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;mybatis的4个“增值“设计总结&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;本文中的增值是指增值服务，即超出常规服务范畴的服务。mybatis的4个“增值“设计，就是在简化版的mybatis基础上添加的服务。mybatis的设计里还包含了与spring集成等增值设计。不一一细说。mybatis核心功能就是面向设计的来做数据库操作，而完成了这一点之后，它主要做的都是在其外围做事情来提高用户体验。这也是平时设计开发比较推荐的思路：保持核心的稳定，版本的演进主要是功能增强。&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;增强工具包&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;mybatis-plus&lt;span&gt;&lt;span&gt;在 Mybatis 的基础上进行扩展，只做增强不做改变&lt;/span&gt;，简化&lt;/span&gt;&lt;code&gt;CRUD&lt;/code&gt;&lt;span&gt;操作。以下是官方介绍&lt;/span&gt;&lt;br/&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.9021134593993326&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRl9GaVBmHDkkheIXVtliab3fIRzeXq2P6picSTjcYEaRZFrD8nNn2AAdya7wr0Fz2TOEeFIRrSG4icqBA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;899&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span/&gt;mybatis虽然很致力于用户体验，但是越来越多的人开始使用mybatis-plus，因为mybatis-plus吸收了近来流行的优秀设计思想，比如：内置性能分析插件、更友好的日志打印。&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;推荐阅读&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;
                 &lt;/div&gt;
 
                 
@@ -495,5 +387,33 @@ Step0. &lt;code&gt;Client&lt;/code&gt;发出&lt;code&gt;WriteCommand&lt;/code&gt
 
                 
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>2a92ef60f144de7966bcd4c4cb9b3979</guid>
+<title>代码审查 (Code Review) 的本质</title>
+<link>https://toutiao.io/k/xqvnsdu</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
+
+                    
+                    
+                    
+                    &lt;p&gt;&lt;img data-ratio=&quot;0.7234375&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/FBPFm28kpSwicNicHfXibr1GXlxKBo5F8rLlVlbRJt3Sq9MLMmEFxpaLyhDic6bQlaibQXl7rJSp8rnDvR2LBibNgX4Q/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;640&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;h3&gt;什么是代码审查？&lt;/h3&gt;&lt;p&gt;代码审查是一个过程，即代码只有经过非作者本人评审后才能进入代码仓库。&lt;/p&gt;&lt;h3&gt;代码审查的目的&lt;/h3&gt;&lt;p&gt;但是大家为什么要做代码审查？不同团队的原因是各不相同的。笔者假设大家进行代码审查的目的是为了保证代码质量。如果继续问下去，为什么要保证代码质量？这是另一个问题，留给读者朋友思考。&lt;/p&gt;&lt;p&gt;这里还会有另一个问题：如果你写出来的代码质量高，那么，你是不是就不需要代码审查了？答案是肯定的。但是问题是你如何知道你写出来的代码质量是高的？&lt;/p&gt;&lt;h3&gt;什么是代码质量&lt;/h3&gt;&lt;p&gt;既然代码审查的目的是保证代码质量，那么，我们就必须回答什么是代码质量这个问题。&lt;/p&gt;&lt;p&gt;代码质量其实指的是软件系统的内在质量。那是软件系统最终用户看不到的，也不应该看到的。最终用户看得到的，称之为软件系统的外在质量。这在《代码大全》第二十章中有详细介绍。&lt;/p&gt;&lt;p&gt;该书中给出了代码质量的特性：&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;可维护性（Mantinability）&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;灵活性（Flexibility）&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;可移植性（Portability）&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;可重用性（Reusability）&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;可读性（Readability）&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;可测试性（Testability）&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;可理解性（Understandability）&lt;/span&gt;&lt;/p&gt;&lt;p&gt;本文假设《代码大全》是正确的。&lt;/p&gt;&lt;h3&gt;代码可读性与可理解性之间的区别&lt;/h3&gt;&lt;p&gt;有读者注意到可读性与可理解性似乎是同一特性。其实不是。&lt;/p&gt;&lt;p&gt;可读性与可理解性之间的区别是可读性强调的是细节语句，而可理解性强调的是系统设计层面。这好像高中生在做阅读理解题时，你认识文中的每个词，却你无法理解全文。&lt;/p&gt;&lt;h3&gt;为什么代码审查能保证代码质量&lt;/h3&gt;&lt;p&gt;既然我们实践代码审查的目标是为了保证代码的质量，那么，我们为什么认为代码审查能保证我们的代码质量呢？&lt;/p&gt;&lt;p&gt;作为Linux的创始人Linus会这样回答：足够多的眼睛，就可让所有问题浮现（given enough eyeballs, all bugs are shallow）。&lt;/p&gt;&lt;p&gt;但是多少眼睛才算足够多呢？反过来问：如果所有的问题没有被浮现，代表的是我们的眼睛不够多？这是另一个问题了。Linus的回答不足以证明代码审查能保证代码质量。&lt;/p&gt;&lt;p&gt;笔者认为应该以代码的特性为起点，重新审视代码质量的特性。你会发现所有的特性都是从旁观者的角度来看待的。也就是说&lt;strong&gt;只能由旁观者评判代码质量&lt;/strong&gt;。而代码审查就是以旁观者的角度对作者的代码进行审查，基于此，我们认为代码审查是能保证代码质量的。&lt;/p&gt;&lt;p&gt;以下是为什么我认为代码特性是从旁观者的角度看待的：&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;代码可维护性是否好，由其他人向它增加一个功能的容易程度来证明；&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;代码是否灵活，当其他人为了某个特定的目的修改代码时，修改的难易程度才能证明；&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;代码是否具有可移植性，移植到其它环境的难易程度才能证明；&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;代码的可重用性如何，由其它系统使用它的难易程序证明；&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;代码可不可读，由代码评审人读懂该代码所花费的时间决定；&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;代码是否可测，这部分由测试覆盖率来决定；&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;代码的可理解性，由代码评审人理解代码所花费的时间决定；&lt;/span&gt;&lt;/p&gt;&lt;p&gt;但是，以上只是通过逻辑推理来证明代码审查能保证代码质量，并没有真正的证据证明。&lt;/p&gt;&lt;p&gt;代码审查能否真的保证代码质量，最终还是靠数据说话。所以，我们还必须想办法评估代码质量与代码审查之间的关系。&lt;/p&gt;&lt;h3&gt;可理解性的重要性&lt;/h3&gt;&lt;p&gt;在重新审视代码质量的特性时，我们注意到这些特性之间的关系。那就是代码的可理解性是其它特性的基础。如果你不理解你将要修改的代码，谈何维护、扩展、重用、移植、测试？就像演员不理解剧本，是无法表达电影中角色的情感的。&lt;/p&gt;&lt;p&gt;另外 ，从软件工程的成本角度来看。理解代码是我们工作的一部分，即理解代码是软件工程中一个必要成本。理解代码所花费时间越少，我们的成本越低。代码可理解性与软件工程的效率是正相关的。&lt;/p&gt;&lt;p&gt;基于这两个原因，我们认为代码的可理解性是非常重要的。也因此，我们在面临对代码质量的不同特性进行取舍时，代码可理解性应当作为权重最高的选项。&lt;/p&gt;&lt;h3&gt;总结&lt;/h3&gt;&lt;p&gt;代码质量有多种特性，这些特性都是基于旁观者视角的。而代码审查是旁观者评估这些代码特性的一个过程。我们希望通过代码审查这个手段来保证高质量的代码。这就是代码审查的本质。&lt;/p&gt;&lt;p&gt;然而，现实很骨感，同样的手段，用在不同的人，不同的组织上，效果却可能是千差万别。并不是你在团队中推广了代码审查，你们的代码质量就一定高的。就像过去，不少组织中推广“敏捷”，反而让团队更不敏捷一样。&lt;/p&gt;&lt;p&gt;如何做好代码审查，让代码审查真正发挥作用，是我们的另一个课题。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzU1Njk2NjkxNA==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/FBPFm28kpSylnVQR07iciae4vSLoFOz9MZFeicgVPZOAHAroeCXOc1J0UQOuBVuUcChJ8TBAePia5SWE2unpwoa09Q/0?wx_fmt=png&quot; data-nickname=&quot;老翟杂谈&quot; data-alias=&quot;&quot; data-signature=&quot;分享持续交付的实践经验、软件工程感悟&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;
+                &lt;/div&gt;
+
+                
+
+                
+
+
+
+                
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>e5464b4b47f5c512dac7586d2988096a</guid>
+<title>跟我一起学 Go 系列：从写测试用例开始仗剑走天涯</title>
+<link>https://toutiao.io/k/0f8qtmv</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;从入门到深入 Go 我们已经走了很长的路，当你想启动多个测试类的时候你是不是想启动多个 main 方法，但是 Go 限制了在同一个 package 下只能有一个 main，所以这条路你是走不通的。那我们想写单元测试的时候应该如何操作呢？别着急，不用引入任何的第三方包，单元测试 Go 也有默认的规范写法。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;/p&gt;&lt;section label=&quot;Copyright © 2015 playhudong All Rights Reserved.&quot; donone=&quot;shifuMouseDown(&#x27;shifu_t_002&#x27;)&quot;&gt;&lt;span&gt;&lt;section&gt;&lt;p&gt;约定&lt;/p&gt;&lt;/section&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;在 Go SDK 中 ”testing“ 包的内容就是 Go 默认提供的单元测试支持。Go 标准库对单元测试编写的格式有一些硬性要求：&lt;/span&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;所有测试方法必须放在位于以 &lt;em&gt;_test.go&lt;/em&gt; 结尾的文件中，这样在执行 &lt;em&gt;go build&lt;/em&gt; 构建的时候测试代码才会被排除。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;测试函数的命名必须以 &lt;em&gt;Test&lt;/em&gt; 开头，并且跟在 &lt;em&gt;Test&lt;/em&gt; 后面的后缀&lt;strong&gt;开头第一个字母必须大写&lt;/strong&gt;。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;测试方法必须要包含 “t *testing.T” 参数。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;swift&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;TestGetUser&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;(t *testing.T)&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;TestInsert&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;(t *testing.T)&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;其中参数 t 用于报告测试失败和附加的日志信息。&lt;em&gt;testing.T&lt;/em&gt; 的拥有的方法如下：&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;swift&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__params&quot;&gt;(&lt;span class=&quot;code-snippet__built_in&quot;&gt;c&lt;/span&gt; *T)&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;code-snippet__type&quot;&gt;Error&lt;/span&gt;(args ...interface{})&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__params&quot;&gt;(&lt;span class=&quot;code-snippet__built_in&quot;&gt;c&lt;/span&gt; *T)&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;code-snippet__type&quot;&gt;Errorf&lt;/span&gt;(format string, args ...interface{})&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__params&quot;&gt;(&lt;span class=&quot;code-snippet__built_in&quot;&gt;c&lt;/span&gt; *T)&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;code-snippet__type&quot;&gt;Fail&lt;/span&gt;()&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__params&quot;&gt;(&lt;span class=&quot;code-snippet__built_in&quot;&gt;c&lt;/span&gt; *T)&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;code-snippet__type&quot;&gt;FailNow&lt;/span&gt;()&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__params&quot;&gt;(&lt;span class=&quot;code-snippet__built_in&quot;&gt;c&lt;/span&gt; *T)&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;code-snippet__type&quot;&gt;Failed&lt;/span&gt;() bool&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__params&quot;&gt;(&lt;span class=&quot;code-snippet__built_in&quot;&gt;c&lt;/span&gt; *T)&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;code-snippet__type&quot;&gt;Fatal&lt;/span&gt;(args ...interface{})&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__params&quot;&gt;(&lt;span class=&quot;code-snippet__built_in&quot;&gt;c&lt;/span&gt; *T)&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;code-snippet__type&quot;&gt;Fatalf&lt;/span&gt;(format string, args ...interface{})&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__params&quot;&gt;(&lt;span class=&quot;code-snippet__built_in&quot;&gt;c&lt;/span&gt; *T)&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;code-snippet__type&quot;&gt;Log&lt;/span&gt;(args ...interface{})&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__params&quot;&gt;(&lt;span class=&quot;code-snippet__built_in&quot;&gt;c&lt;/span&gt; *T)&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;code-snippet__type&quot;&gt;Logf&lt;/span&gt;(format string, args ...interface{})&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__params&quot;&gt;(&lt;span class=&quot;code-snippet__built_in&quot;&gt;c&lt;/span&gt; *T)&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;code-snippet__type&quot;&gt;Name&lt;/span&gt;() string&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__params&quot;&gt;(t *T)&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;code-snippet__type&quot;&gt;Parallel&lt;/span&gt;()&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__params&quot;&gt;(t *T)&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;code-snippet__type&quot;&gt;Run&lt;/span&gt;(name string, f &lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;(t *T)&lt;/span&gt;&lt;/span&gt;) bool&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__params&quot;&gt;(&lt;span class=&quot;code-snippet__built_in&quot;&gt;c&lt;/span&gt; *T)&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;code-snippet__type&quot;&gt;Skip&lt;/span&gt;(args ...interface{})&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__params&quot;&gt;(&lt;span class=&quot;code-snippet__built_in&quot;&gt;c&lt;/span&gt; *T)&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;code-snippet__type&quot;&gt;SkipNow&lt;/span&gt;()&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__params&quot;&gt;(&lt;span class=&quot;code-snippet__built_in&quot;&gt;c&lt;/span&gt; *T)&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;code-snippet__type&quot;&gt;Skipf&lt;/span&gt;(format string, args ...interface{})&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__params&quot;&gt;(&lt;span class=&quot;code-snippet__built_in&quot;&gt;c&lt;/span&gt; *T)&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;code-snippet__type&quot;&gt;Skipped&lt;/span&gt;() bool&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;比如我们现在有一段回文检测的 func：&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;go&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;package&lt;/span&gt; service&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;IsPalindrome&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;(s &lt;span class=&quot;code-snippet__keyword&quot;&gt;string&lt;/span&gt;)&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;bool&lt;/span&gt;&lt;/span&gt; {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;  &lt;span class=&quot;code-snippet__keyword&quot;&gt;for&lt;/span&gt; i := &lt;span class=&quot;code-snippet__keyword&quot;&gt;range&lt;/span&gt; s {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__keyword&quot;&gt;if&lt;/span&gt; s[i] != s[&lt;span class=&quot;code-snippet__built_in&quot;&gt;len&lt;/span&gt;(s)&lt;span class=&quot;code-snippet__number&quot;&gt;-1&lt;/span&gt;-i] {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;      &lt;span class=&quot;code-snippet__keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;code-snippet__literal&quot;&gt;false&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    }&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;  }&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;  &lt;span class=&quot;code-snippet__keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;code-snippet__literal&quot;&gt;true&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;想在单元测试中调用 这个方法：&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;go&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;package&lt;/span&gt; demo&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;import&lt;/span&gt; (&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;  &lt;span class=&quot;code-snippet__string&quot;&gt;&quot;gorm-demo/service&quot;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;  &lt;span class=&quot;code-snippet__string&quot;&gt;&quot;testing&quot;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;TestString&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;(t *testing.T)&lt;/span&gt;&lt;/span&gt; {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;  palindrome := service.IsPalindrome(&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;3ee3&quot;&lt;/span&gt;)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;  &lt;span class=&quot;code-snippet__keyword&quot;&gt;if&lt;/span&gt; palindrome {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    t.Logf(&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;IsPalindrome test success, param=%s&quot;&lt;/span&gt;, &lt;span class=&quot;code-snippet__string&quot;&gt;&quot;3e1e3&quot;&lt;/span&gt;)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;  } &lt;span class=&quot;code-snippet__keyword&quot;&gt;else&lt;/span&gt; {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    t.Fatalf(&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;IsPalindrome test fail, param=%s&quot;&lt;/span&gt;, &lt;span class=&quot;code-snippet__string&quot;&gt;&quot;3e1e3&quot;&lt;/span&gt;)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;  }&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;根据是否是回文输出对应的结果：&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;diff&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    string_test.go:11: IsPalindrome test success, param=3e1e3&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;PASS&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;除了直接执行对应的测试方法之外我们还可以通过 &lt;em&gt;go test&lt;/em&gt; 命令行的方式来执行测试，&lt;em&gt;go test&lt;/em&gt; 是 Go 语言自带的测试工具，其中包含的是两类：单元测试和性能测试，通过 &lt;em&gt;go help test&lt;/em&gt; 可以看到 &lt;em&gt;go test&lt;/em&gt; 的使用说明：&lt;/span&gt;&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;diff&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;格式形如： go test [-c] [-i] [build flags] [packages] [flags for test binary]&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;参数解读：&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__deletion&quot;&gt;-c : 编译go test成为可执行的二进制文件，但是不运行测试。&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__deletion&quot;&gt;-i : 安装测试包依赖的package，但是不运行测试。&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;关于build flags，调用go help build，这些是编译运行过程中需要使用到的参数，一般设置为空&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;关于packages，调用go help packages，这些是关于包的管理，一般设置为空&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;关于flags for test binary，调用go help testflag，这些是go test过程中经常使用到的参数&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__deletion&quot;&gt;-test.v : 是否输出全部的单元测试用例（不管成功或者失败），默认没有加上，所以只输出失败的单元测试用例。&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__deletion&quot;&gt;-test.run pattern: 只跑哪些单元测试用例&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__deletion&quot;&gt;-test.bench patten: 只跑那些性能测试用例&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__deletion&quot;&gt;-test.benchmem : 是否在性能测试的时候输出内存情况&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__deletion&quot;&gt;-test.benchtime t : 性能测试运行的时间，默认是1s&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__deletion&quot;&gt;-test.cpuprofile cpu.out : 是否输出cpu性能分析文件&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__deletion&quot;&gt;-test.memprofile mem.out : 是否输出内存性能分析文件&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__deletion&quot;&gt;-test.blockprofile block.out : 是否输出内部goroutine阻塞的性能分析文件&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__deletion&quot;&gt;-test.memprofilerate n : 内存性能分析的时候有一个分配了多少的时候才打点记录的问题。这个参数就是设置打点的内存分配间隔，也就是profile中一个sample代表的内存大小。默认是设置为512 * 1024的。如果你将它设置为1，则每分配一个内存块就会在profile中有个打点，那么生成的profile的sample就会非常多。如果你设置为0，那就是不做打点了。&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;你可以通过设置memprofilerate=1和GOGC=off来关闭内存回收，并且对每个内存块的分配进行观察。&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__deletion&quot;&gt;-test.blockprofilerate n: 基本同上，控制的是goroutine阻塞时候打点的纳秒数。默认不设置就相当于-test.blockprofilerate=1，每一纳秒都打点记录一下&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__deletion&quot;&gt;-test.parallel n : 性能测试的程序并行cpu数，默认等于GOMAXPROCS。&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__deletion&quot;&gt;-test.timeout t : 如果测试用例运行时间超过t，则抛出panic&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__deletion&quot;&gt;-test.cpu 1,2,4 : 程序运行在哪些CPU上面，使用二进制的1所在位代表，和nginx的nginx_worker_cpu_affinity是一个道理&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__deletion&quot;&gt;-test.short : 将那些运行时间较长的测试用例运行时间缩短&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;section label=&quot;Copyright © 2015 playhudong All Rights Reserved.&quot; donone=&quot;shifuMouseDown(&#x27;shifu_t_002&#x27;)&quot;&gt;&lt;span&gt;&lt;section&gt;&lt;p&gt;测试覆盖率&lt;/p&gt;&lt;/section&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;Go 提供内置功能来检查你的代码覆盖率。我们可以使用 &lt;em&gt;go test -cover&lt;/em&gt; 来查看测试覆盖率。&lt;/span&gt;&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;bash&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;MacBook-Pro:mockDemo yy$ go &lt;span class=&quot;code-snippet__built_in&quot;&gt;test&lt;/span&gt; -cover&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;PASS&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;coverage: 0.0% of statements&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;ok      gorm-demo/&lt;span class=&quot;code-snippet__built_in&quot;&gt;test&lt;/span&gt;/mockDemo 0.007s&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;Go 还提供了一个额外的-coverprofile 参数，用来将覆盖率相关的记录信息输出到一个文件。例如：&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;bash&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;MacBook-Pro:mockDemo yy$ go &lt;span class=&quot;code-snippet__built_in&quot;&gt;test&lt;/span&gt; -cover -coverprofile=tt.log&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;PASS&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;coverage: 0.0% of statements&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;ok      gorm-demo/&lt;span class=&quot;code-snippet__built_in&quot;&gt;test&lt;/span&gt;/mockDemo 0.007s&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;生成 tt.log 文件之后，执行 &lt;em&gt;go tool cover -html=tt.log&lt;/em&gt;，使用 cover 工具来处理生成的记录信息，该命令会打开本地的浏览器窗口生成一个 HTML 报告。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section label=&quot;Copyright © 2015 playhudong All Rights Reserved.&quot; donone=&quot;shifuMouseDown(&#x27;shifu_t_002&#x27;)&quot;&gt;&lt;span&gt;&lt;section&gt;&lt;p&gt;断言&lt;/p&gt;&lt;/section&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;使用 Java 的同学看到这里估计会问：Go 中没有断言吗？还需要自己去判断。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;其实没有断言这种东西我们仔细想想也并不难理解，从 Go 的 error 包设计将异常作为返回值而不是使用 &lt;em&gt;try-catch&lt;/em&gt; 的模式来说，Go 希望你在测试阶段就知晓每一个可能出现的异常，而不是将异常吞掉。所以 Assert 这种吞掉错误的功能 Go 官方也不想提供。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;当然 Go 官方不提供不代表广大开发同胞真的不想用，这不有大哥开发了灵活又好用的断言库 &lt;/span&gt;testify&lt;span&gt; ，有了它，我们上面的代码就可以改为这样：&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;python&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;assert&lt;/span&gt;.&lt;span class=&quot;code-snippet__keyword&quot;&gt;True&lt;/span&gt;(t, service.IsPalindrome(&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;3e45e3&quot;&lt;/span&gt;))&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;输出：&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;go&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;=== RUN   TestString&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;string_test.&lt;span class=&quot;code-snippet__keyword&quot;&gt;go&lt;/span&gt;:&lt;span class=&quot;code-snippet__number&quot;&gt;11&lt;/span&gt;:&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;Error Trace: string_test.&lt;span class=&quot;code-snippet__keyword&quot;&gt;go&lt;/span&gt;:&lt;span class=&quot;code-snippet__number&quot;&gt;11&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;Error:       Should be &lt;span class=&quot;code-snippet__literal&quot;&gt;true&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;Test:        TestString&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;--- FAIL: TestString (&lt;span class=&quot;code-snippet__number&quot;&gt;0.00s&lt;/span&gt;)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;FAIL&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;简介明了，一眼就知道测试用例是否通过。真的是谁用谁知道。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;具体 testify 还有很多实用的断言方法：&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;cs&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;func &lt;span class=&quot;code-snippet__title&quot;&gt;Equal&lt;/span&gt;(&lt;span class=&quot;code-snippet__params&quot;&gt;t TestingT, expected, actual &lt;span class=&quot;code-snippet__keyword&quot;&gt;interface&lt;/span&gt;{}, msgAndArgs ...&lt;span class=&quot;code-snippet__keyword&quot;&gt;interface&lt;/span&gt;{}&lt;/span&gt;) &lt;span class=&quot;code-snippet__keyword&quot;&gt;bool&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;func &lt;span class=&quot;code-snippet__title&quot;&gt;NotEqual&lt;/span&gt;(&lt;span class=&quot;code-snippet__params&quot;&gt;t TestingT, expected, actual &lt;span class=&quot;code-snippet__keyword&quot;&gt;interface&lt;/span&gt;{}, msgAndArgs ...&lt;span class=&quot;code-snippet__keyword&quot;&gt;interface&lt;/span&gt;{}&lt;/span&gt;) &lt;span class=&quot;code-snippet__keyword&quot;&gt;bool&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;func &lt;span class=&quot;code-snippet__title&quot;&gt;FailNow&lt;/span&gt;(&lt;span class=&quot;code-snippet__params&quot;&gt;t TestingT, failureMessage &lt;span class=&quot;code-snippet__keyword&quot;&gt;string&lt;/span&gt;, msgAndArgs ...&lt;span class=&quot;code-snippet__keyword&quot;&gt;interface&lt;/span&gt;{}&lt;/span&gt;) &lt;span class=&quot;code-snippet__keyword&quot;&gt;bool&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;func &lt;span class=&quot;code-snippet__title&quot;&gt;Nil&lt;/span&gt;(&lt;span class=&quot;code-snippet__params&quot;&gt;t TestingT, &lt;span class=&quot;code-snippet__keyword&quot;&gt;object&lt;/span&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;interface&lt;/span&gt;{}, msgAndArgs ...&lt;span class=&quot;code-snippet__keyword&quot;&gt;interface&lt;/span&gt;{}&lt;/span&gt;) &lt;span class=&quot;code-snippet__keyword&quot;&gt;bool&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;func &lt;span class=&quot;code-snippet__title&quot;&gt;NotNil&lt;/span&gt;(&lt;span class=&quot;code-snippet__params&quot;&gt;t TestingT, &lt;span class=&quot;code-snippet__keyword&quot;&gt;object&lt;/span&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;interface&lt;/span&gt;{}, msgAndArgs ...&lt;span class=&quot;code-snippet__keyword&quot;&gt;interface&lt;/span&gt;{}&lt;/span&gt;) &lt;span class=&quot;code-snippet__keyword&quot;&gt;bool&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;大家有兴趣可以看看 API。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;section label=&quot;Copyright © 2015 playhudong All Rights Reserved.&quot; donone=&quot;shifuMouseDown(&#x27;shifu_t_002&#x27;)&quot;&gt;&lt;span&gt;&lt;section&gt;&lt;p&gt;Mock 功能&lt;/p&gt;&lt;/section&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;使用这个功能之前，先着重声明 mock 的意思。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;mock 模拟，模仿的意思。这里这里提供的功能是模拟某段功能，用我们的模拟逻辑去代替。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;testify 也支持 Mock，不过 Go 原生的 mock 框架就挺好的。GoMock 是由 Go 官方开发维护的测试框架，实现了较为完整的基于 &lt;strong&gt;interface&lt;/strong&gt; 的 Mock 功能。注意它没在 SDK 里面哈。&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;cs&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;go &lt;span class=&quot;code-snippet__keyword&quot;&gt;get&lt;/span&gt; -u github.com/golang/mock/gomock&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;Gomock 还提供了 mockgen 工具用来辅助生成测试代码。&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;cs&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;go &lt;span class=&quot;code-snippet__keyword&quot;&gt;get&lt;/span&gt; -u github.com/golang/mock/mockgen&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;使用的时候这两个包都需要安装。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;安装 mockgen 有两种方式，你可以只在你的当前代码目录执行 go get ，这样 mockgen 命令只对当前目录有效；或者你直接取 mockgen 的目录下执行 &lt;em&gt;go build&lt;/em&gt; ，编译后会在这个目录下生成一个可执行程序 mockgen。然后将这个可执行程序 mockgen 拖到 &lt;em&gt;$GOPATH/bin/&lt;/em&gt; 目录下后面你就可以全局使用 mockgen 。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;mockgen 使用也很简单，可以对包或者源代码文件生成指定&lt;strong&gt;接口&lt;/strong&gt;的 Mock 代码，注意是对接口文件哈。&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;go&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;package&lt;/span&gt; mockDemo&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;type&lt;/span&gt; Task &lt;span class=&quot;code-snippet__keyword&quot;&gt;interface&lt;/span&gt; {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; Do(&lt;span class=&quot;code-snippet__keyword&quot;&gt;string&lt;/span&gt;) (&lt;span class=&quot;code-snippet__keyword&quot;&gt;bool&lt;/span&gt;, error)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;想对指定接口生成 mock 代码使用如下命令：&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;go&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;mockgen -source=源文件路径  -destination=写入文件的路径(没有这个参数输出到终端) -&lt;span class=&quot;code-snippet__keyword&quot;&gt;package&lt;/span&gt;=生成文件的包名&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;demo :&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;mockgen -source=/Users/cc/&lt;span class=&quot;code-snippet__keyword&quot;&gt;go&lt;/span&gt;/src/&lt;span class=&quot;code-snippet__keyword&quot;&gt;go&lt;/span&gt;-web-demo/test/mockDemo/task.&lt;span class=&quot;code-snippet__keyword&quot;&gt;go&lt;/span&gt; -destination=/Users/cc/&lt;span class=&quot;code-snippet__keyword&quot;&gt;go&lt;/span&gt;/src/&lt;span class=&quot;code-snippet__keyword&quot;&gt;go&lt;/span&gt;-web-demo/test/mockDemo/mock_task_test.&lt;span class=&quot;code-snippet__keyword&quot;&gt;go&lt;/span&gt; -&lt;span class=&quot;code-snippet__keyword&quot;&gt;package&lt;/span&gt;=mockDemo&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;-source：设置需要模拟（mock）的接口文件&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;-destination：设置 mock 文件输出的地方，若不设置则打印到标准输出中&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;-&lt;span class=&quot;code-snippet__keyword&quot;&gt;package&lt;/span&gt;：设置 mock 文件的包名，若不设置则为 &lt;span class=&quot;code-snippet__string&quot;&gt;`mock_`&lt;/span&gt; 前缀加上文件名（如本文的包名会为 mock_person）&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;接下来上示例，再次解释 mock 就是要模拟，比如我们的 Do 方法要去连接数据库查询数据，这里因为不方便测试连接数据库这段代码，但是又不想影响整体测试流程所以用 mock 的方式去替代这段逻辑。解释清楚了我们上代码。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;整体测试代码如下：&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;接口：&lt;/span&gt;&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;go&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;package&lt;/span&gt; mockDemo&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;type&lt;/span&gt; Task &lt;span class=&quot;code-snippet__keyword&quot;&gt;interface&lt;/span&gt; {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; Do(&lt;span class=&quot;code-snippet__keyword&quot;&gt;string&lt;/span&gt;) (&lt;span class=&quot;code-snippet__keyword&quot;&gt;bool&lt;/span&gt;, error)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;根据该接口生成 mock 类：&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;go&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;package&lt;/span&gt; mockDemo&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;import&lt;/span&gt; (&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; reflect &lt;span class=&quot;code-snippet__string&quot;&gt;&quot;reflect&quot;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; gomock &lt;span class=&quot;code-snippet__string&quot;&gt;&quot;github.com/golang/mock/gomock&quot;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;type&lt;/span&gt; MockTask &lt;span class=&quot;code-snippet__keyword&quot;&gt;struct&lt;/span&gt; {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; ctrl     *gomock.Controller&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; recorder *MockTaskMockRecorder&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;type&lt;/span&gt; MockTaskMockRecorder &lt;span class=&quot;code-snippet__keyword&quot;&gt;struct&lt;/span&gt; {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; mock *MockTask&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;NewMockTask&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;(ctrl *gomock.Controller)&lt;/span&gt; *&lt;span class=&quot;code-snippet__title&quot;&gt;MockTask&lt;/span&gt;&lt;/span&gt; {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; mock := &amp;amp;MockTask{ctrl: ctrl}&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; mock.recorder = &amp;amp;MockTaskMockRecorder{mock}&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;return&lt;/span&gt; mock&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__params&quot;&gt;(m *MockTask)&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;EXPECT&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;()&lt;/span&gt; *&lt;span class=&quot;code-snippet__title&quot;&gt;MockTaskMockRecorder&lt;/span&gt;&lt;/span&gt; {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;return&lt;/span&gt; m.recorder&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__params&quot;&gt;(m *MockTask)&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;Do&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;(arg0 &lt;span class=&quot;code-snippet__keyword&quot;&gt;string&lt;/span&gt;)&lt;/span&gt; &lt;span class=&quot;code-snippet__params&quot;&gt;(&lt;span class=&quot;code-snippet__keyword&quot;&gt;bool&lt;/span&gt;, error)&lt;/span&gt;&lt;/span&gt; {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; m.ctrl.T.Helper()&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; ret := m.ctrl.Call(m, &lt;span class=&quot;code-snippet__string&quot;&gt;&quot;Do&quot;&lt;/span&gt;, arg0)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; ret0, _ := ret[&lt;span class=&quot;code-snippet__number&quot;&gt;0&lt;/span&gt;].(&lt;span class=&quot;code-snippet__keyword&quot;&gt;bool&lt;/span&gt;)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; ret1, _ := ret[&lt;span class=&quot;code-snippet__number&quot;&gt;1&lt;/span&gt;].(error)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;return&lt;/span&gt; ret0, ret1&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__params&quot;&gt;(mr *MockTaskMockRecorder)&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;Do&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;(arg0 &lt;span class=&quot;code-snippet__keyword&quot;&gt;interface&lt;/span&gt;{})&lt;/span&gt; *&lt;span class=&quot;code-snippet__title&quot;&gt;gomock&lt;/span&gt;.&lt;span class=&quot;code-snippet__title&quot;&gt;Call&lt;/span&gt;&lt;/span&gt; {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; mr.mock.ctrl.T.Helper()&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;return&lt;/span&gt; mr.mock.ctrl.RecordCallWithMethodType(mr.mock, &lt;span class=&quot;code-snippet__string&quot;&gt;&quot;Do&quot;&lt;/span&gt;, reflect.TypeOf((*MockTask)(&lt;span class=&quot;code-snippet__literal&quot;&gt;nil&lt;/span&gt;).Do), arg0)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;测试方法：&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;go&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;package&lt;/span&gt; mockDemo&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;import&lt;/span&gt; (&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; &lt;span class=&quot;code-snippet__string&quot;&gt;&quot;fmt&quot;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; &lt;span class=&quot;code-snippet__string&quot;&gt;&quot;github.com/golang/mock/gomock&quot;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; &lt;span class=&quot;code-snippet__string&quot;&gt;&quot;testing&quot;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;TestMock&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;(t *testing.T)&lt;/span&gt;&lt;/span&gt; {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; ctl := gomock.NewController(t)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;defer&lt;/span&gt; ctl.Finish()&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; task := NewMockTask(ctl)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; gomock.InOrder(task.EXPECT().Do(&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;banana&quot;&lt;/span&gt;).Return(&lt;span class=&quot;code-snippet__literal&quot;&gt;true&lt;/span&gt;, &lt;span class=&quot;code-snippet__literal&quot;&gt;nil&lt;/span&gt;))&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; task.Do(&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;banana&quot;&lt;/span&gt;)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;em&gt;gomock.NewController&lt;/em&gt;：返回 &lt;/span&gt;&lt;code&gt;gomock.Controller&lt;/code&gt;&lt;span&gt;，它代表 mock 生态系统中的顶级控件。定义了 mock 对象的范围、生命周期和期待值。多 goroutine 下是线程安全的。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;em&gt;NewMockTask()&lt;/em&gt; 创建一个新的 MockTask 实例，因为 MockTask 实现了 Task 接口所有后面实际是调用 MockTask 的实现方法。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;em&gt;gomock.InOrder(calls ...*Call)&lt;/em&gt;：声明调用 Call 的顺序，这里可以传入多个 Call。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;em&gt;task.EXPECT().Do(&quot;banana&quot;).Return(true, nil)&lt;/em&gt;：&lt;em&gt;EXPECT()&lt;/em&gt; 是期望拿到返回值，Call 的方法调用类似于 Java 中的 Build 模式，链式调用。有如下方法可供使用：&lt;/span&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;Call.Do()：声明在匹配时要运行的操作&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;Call.DoAndReturn()：声明在匹配调用时要运行的操作，并且模拟返回该函* 数的返回值&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;Call.MaxTimes()：设置最大的调用次数为 n 次&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;Call.MinTimes()：设置最小的调用次数为 n 次&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;Call.AnyTimes()：允许调用次数为 0 次或更多次&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;Call.Times()：设置调用次数为 n 次&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;我们测试一下调用顺序检测，多个 Call 的情况：&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;go&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;package&lt;/span&gt; mockDemo&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;import&lt;/span&gt; (&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; &lt;span class=&quot;code-snippet__string&quot;&gt;&quot;github.com/golang/mock/gomock&quot;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; &lt;span class=&quot;code-snippet__string&quot;&gt;&quot;testing&quot;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;TestMock&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;(t *testing.T)&lt;/span&gt;&lt;/span&gt; {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; ctl := gomock.NewController(t)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;defer&lt;/span&gt; ctl.Finish()&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; task := NewMockTask(ctl)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; call1 := task.EXPECT().Do(&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;banana&quot;&lt;/span&gt;).Return(&lt;span class=&quot;code-snippet__literal&quot;&gt;true&lt;/span&gt;, &lt;span class=&quot;code-snippet__literal&quot;&gt;nil&lt;/span&gt;)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; call2 := task.EXPECT().Do(&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;apple&quot;&lt;/span&gt;).Return(&lt;span class=&quot;code-snippet__literal&quot;&gt;true&lt;/span&gt;, &lt;span class=&quot;code-snippet__literal&quot;&gt;nil&lt;/span&gt;)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; call3 := task.EXPECT().Do(&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;pineapple&quot;&lt;/span&gt;).Return(&lt;span class=&quot;code-snippet__literal&quot;&gt;true&lt;/span&gt;, &lt;span class=&quot;code-snippet__literal&quot;&gt;nil&lt;/span&gt;)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; gomock.InOrder(call1, call2, call3)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; task.Do(&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;apple&quot;&lt;/span&gt;)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; task.Do(&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;banana&quot;&lt;/span&gt;)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; task.Do(&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;pineapple&quot;&lt;/span&gt;)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;顺序不一样的情况下是会报错的。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;总结一下 mock 的使用：mock 是面向接口的测试，当你想测试的逻辑只是一段独立功能性的代码而没有提供接口去抽象化的时候你无法使用 mock 功能。当然不是说必须要面向接口开发，有接口的定义会更加规范化你的代码让你知道写出来的逻辑是审慎总结的。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
