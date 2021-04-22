@@ -5,194 +5,16 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>59c01526d57395228d80f47c441110a6</guid>
-<title>为什么放弃 Kafka，选择 Pulsar?</title>
-<link>https://toutiao.io/k/wxrneux</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;Spring Boot 作为主流微服务框架，拥有成熟的社区生态。市场应用广泛，为了方便大家，整理了一个基于spring boot的常用中间件快速集成入门系列手册，涉及RPC、缓存、消息队列、分库分表、注册中心、分布式配置等常用开源组件，大概有几十篇文章，陆续会开放出来，感兴趣同学请提前关注&amp;amp;收藏&lt;/p&gt;&lt;/blockquote&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;Pulsar 介绍&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Pulsar 是 Yahoo 在 2013 年创建的，2016年贡献给了 Apache 基金会，目前已经是 Apache 的顶级项目。Yahoo、Verizon、Twitter 等很多公司都在使用 Pulsar 来处理海量消息。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Pulsar 声称比 Kafka 更快、运行成本更低、解决了很多 Kafka 的痛点。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Pulsar 非常灵活，可以像&lt;code&gt;Kafka&lt;/code&gt; 一样作为分布式日志系统，也可以作为类似&lt;code&gt;RabbitMQ&lt;/code&gt; 这类简单的消息系统。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Pulsar 有多种订阅类型、传递保障、保存策略。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;特性&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;不同的团队可以使用同一个集群，互相隔离。支持隔离、认证授权、配额。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Pulsar 使用特定的数据层来存储 topic 数据，使用了 Apache BookKeeper 作为数据账本。Broker 与存储分离。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;使用分隔机制可以解决集群的扩展、再平衡、维护等问题。也提升了可用性，不会丢失数据。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因为使用了多层架构，对于 topic 数量没有限制，topic 与存储是分离的，也可以创建非持久化的 topic。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Kafka 中存储是很昂贵的，所以很少存储冷数据。Pulsar 使用了多层存储，可以自动把旧数据移动到专门的存储设备，例如 Amazon S3，但是对于客户端来讲是透明的，还可以正常使用。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Pulsar Function 是一种部署简单，轻量级计算、对开发人员友好的 API，无需像 Kafka 那样运行自己的流处理引擎。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;内置了代理、多租户安全机制、可插入的身份验证等功能。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;partition 被分为了小块儿，所以再平衡时非常快。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;例如 Kafka、RabbitMQ 等系统都可以轻松集成。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;例如 Go、Java、Scala、Node、Python 等等&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;为什么选择 Pulsar&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;目前业界使用比较多的是 Kafka，主要场景是大数据日志处理，较少用于金融场景。RocketMQ 对 Topic 运营不太友好，特别是不支持按 Topic 删除失效消息，以及不具备宕机 Failover 能力。选 Pulsar 是因为其原生的高一致性，基于 BookKeeper 提供高可用存储服务，采用了存储和服务分离架构方便扩容，同时还支持多种消费模式和多域部署模式。Kafka、RocketMQ 和 Pulsar 的对比如下：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.7586705202312138&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/3Ohm6WHibeXLb8xCP32L8huVaUIW7nm3GfctVQTmqQrKEEKOp1PxibWnCDgbzAhleXsmaY4F807U3iaMJveRPSdqw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;692&quot;/&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;Show me the code&lt;br/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;外部依赖：&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在 pom.xml 中添加 Pulsar 依赖：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&amp;lt;dependency&amp;gt;&lt;br/&gt;    &amp;lt;groupId&amp;gt;org.apache.pulsar&amp;lt;/groupId&amp;gt;&lt;br/&gt;    &amp;lt;artifactId&amp;gt;pulsar-client&amp;lt;/artifactId&amp;gt;&lt;br/&gt;    &amp;lt;version&amp;gt;2.4.0&amp;lt;/version&amp;gt;&lt;br/&gt;&amp;lt;/dependency&amp;gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;配置文件：&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在配置文件 &lt;code&gt;application.yaml&lt;/code&gt;中配置 Pulsar 的相关参数，具体内容如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;pulsar:&lt;br/&gt;  service:&lt;br/&gt;    url: pulsar://127.0.0.1:6650&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;Producer 发送消息：&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;生产端提供了一个restful接口，模拟发送一条创建新用户消息。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;Long id = Long.valueOf(new Random().nextInt(1000));&lt;br/&gt;User user = User.builder().id(id).userName(&lt;span&gt;&quot;TomGE&quot;&lt;/span&gt;).age(29).address(&lt;span&gt;&quot;上海&quot;&lt;/span&gt;).build();&lt;br/&gt;userPulsarMsgProducer.send(user);&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;内部通过 &lt;code&gt;@PostConstruct&lt;/code&gt; 在应用启动时，初始化&lt;code&gt;org.apache.pulsar.client.api.Producer&lt;/code&gt;实例，并交由spring 容器统一管理。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;public void send(T msg) {&lt;br/&gt;    String msgBody = JSON.toJSONString(msg);&lt;br/&gt;    try {&lt;br/&gt;        MessageId messageId = producer.send(msgBody.getBytes(StandardCharsets.UTF_8));&lt;br/&gt;        log.info(&lt;span&gt;&quot;pulsar msg send success, topic:{}, messageId:{}, msg:{}&quot;&lt;/span&gt;, getTopic(), messageId, msgBody);&lt;br/&gt;    } catch (Throwable e) {&lt;br/&gt;        log.error(&lt;span&gt;&quot;pulsar msg send failed, topic:{}, msg:{}&quot;&lt;/span&gt;, getTopic(), msgBody);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;Producer 发送延迟消息：&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;适用于一些有&lt;code&gt;延迟处理&lt;/code&gt;要求的业务场景，比如电商交易的&lt;code&gt;自动确认收货&lt;/code&gt;，在卖家发出货品后，有15天的观察期，这期间如果买家没有发起逆向流程/申请退款，将会由系统自动触发&lt;code&gt;超时确认收货&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;不同业务场景，设定不同的延迟时间值，可以让消费端在延迟指定时间后才能拉取到消息并进行消费。借助于该框架特性，有效节省开发成本和难度。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;producer.newMessage().deliverAfter(delay, unit)&lt;br/&gt;        .value(msgBody.getBytes(StandardCharsets.UTF_8))&lt;br/&gt;        .send();&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;Consumer 消费消息：&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;系统启动时，自动创建consumer消费实例，并埋入&lt;code&gt;org.apache.pulsar.client.api.MessageListener&lt;/code&gt;接口实现，用于具体的消息消费处理逻辑。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;@PostConstruct&lt;br/&gt;void init() throws PulsarClientException {&lt;br/&gt;    consumer = client.createConsumer(getTopic(), getSubscriptionName(), new DefaultJsonMsgListener());&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt; class DefaultJsonMsgListener implements MessageListener&amp;lt;byte[]&amp;gt; {&lt;br/&gt;&lt;br/&gt;        @Override&lt;br/&gt;        public void received(Consumer&amp;lt;byte[]&amp;gt; consumer, Message&amp;lt;byte[]&amp;gt; message) {&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; (null != message &amp;amp;&amp;amp; null != message.getData() &amp;amp;&amp;amp; message.getData().length != 0) {&lt;br/&gt;                String msgBody = new String(message.getValue(), StandardCharsets.UTF_8);&lt;br/&gt;&lt;br/&gt;                log.warn(&lt;span&gt;&quot;topic:{} receive message:{}&quot;&lt;/span&gt;, getTopic(), msgBody);&lt;br/&gt;                try {&lt;br/&gt;                    T msg = JSON.parseObject(msgBody, clazzT);&lt;br/&gt;                    handleMsg(msg);&lt;br/&gt;                } catch (Exception e) {&lt;br/&gt;                    log.error(&lt;span&gt;&quot;handle msg failed, topic:{}, message:{}&quot;&lt;/span&gt;, getTopic(), msgBody, e);&lt;br/&gt;                    &lt;span&gt;return&lt;/span&gt;;&lt;br/&gt;                }&lt;br/&gt;            }&lt;br/&gt;&lt;br/&gt;            try {&lt;br/&gt;                // 提交消费位移&lt;br/&gt;                consumer.acknowledge(message);&lt;br/&gt;            } catch (PulsarClientException e) {&lt;br/&gt;                log.error(&lt;span&gt;&quot;topic:{} ack failed&quot;&lt;/span&gt;, getTopic(), e);&lt;br/&gt;            }&lt;br/&gt;        }&lt;br/&gt;    }&lt;/code&gt;&lt;/pre&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;h2&gt;&lt;span&gt;演示代码地址&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;pre&gt;&lt;code&gt;https://github.com/aalansehaiyang/spring-boot-bulking  &lt;br/&gt;&lt;br/&gt;模块：spring-boot-bulking-pulsar&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>9f3cf9678bb7065369cffe0483b71728</guid>
-<title>协程切换会引起什么问题</title>
-<link>https://toutiao.io/k/xkhaihd</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section class=&quot;post&quot;&gt;
-&lt;p&gt;在微信的业务中协程被大规模应用，在使用的过程中遇到了一些和业务场景相关的问题。本文自下而上从 CPU 中断到 Linux 内核态、再到用户态进程、最后到协程，由这种视角去分析协程切换时引起问题的原因，希望可以更好地理解协程。&lt;/p&gt;
-
-&lt;p&gt;计算机里有两类大的资源：CPU 资源和 IO 资源。计算型的任务主要消耗 CPU 资源，比如对字符串进行 base64 编码，我之前遇到 3W/min 的线上接口加了 base64 编码把 CPU 跑满；输入输出类的系统调用主要消耗 IO 资源，部分 IO 和硬件中断相关。CPU 芯片引脚上接入了很多控制芯片，比如中断控制器芯片 8259A。当键盘打字，中断芯片触发 CPU 上的硬件中断，CPU 被调度来处理键盘输入。&lt;/p&gt;
-
-&lt;p&gt;计算机上有这么多的任务需要消耗 CPU 和 IO 资源，操作系统怎么去优化资源利用呢？&lt;/p&gt;
-
-&lt;p&gt;对于计算密集型任务，可以用多进程/线程将任务分发到不同的 CPU 核上并行处理来提高效率；对于 IO 密集型任务，操作系统已经有中断回调机制，对于正在到来的 IO 事件进行处理。&lt;/p&gt;
-
-&lt;hr/&gt;
-
-&lt;h2 id=&quot;中断机制&quot;&gt;中断机制&lt;/h2&gt;
-
-&lt;p&gt;外围硬件设备连接到中断控制器芯片上，产生的电信号经过中断控制器芯片编码后写到 CPU 的控制寄存器中。那 CPU 怎么知道寄存器发生了改变？&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;当执行了一条指令后，cs 和 eip 这对寄存器包含了下一条将要执行的指令的逻辑地址。在处理那条指令之前，控制单元会检查在运行前一条指令时是否已经发生了一个中断或异常，如果发生了一个中断或异常，那么控制单元执行下列操作 ——「深入理解 linux 内核」&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;也就是 CPU 在每个指令周期都会去查看中断寄存器，这是硬件级别的轮询。用这种轮询来实现了中断控制，这种中断回调存在于内核态。&lt;/p&gt;
-
-&lt;hr/&gt;
-
-&lt;h2 id=&quot;操作系统之上再造系统&quot;&gt;操作系统之上再造系统&lt;/h2&gt;
-
-&lt;p&gt;业务的进程中，既需要使用 CPU，又需要使用大量 IO。怎么去优化这种场景？&lt;/p&gt;
-
-&lt;p&gt;在进程中再开线程？在线程中出现 IO 调用时（主要讨论同步 IO，Linux 中还没有完善的异步 IO），让线程睡眠，让其他的线程去处理任务。假设现在 8 核 CPU 上有 4 个进程，每个进程开 10 个线程，理论上也只能同步并行跑 8 个线程，其他线程都是假性的并行运行。如果这时出现大量的阻塞 IO 调用，所有的线程都会进入睡眠，等待同步 IO 的数据返回；如果是非阻塞 IO 调用（O_NONBLOCK），使用 poll/epoll 来轮询事件到来，虽然不会进入睡眠，但线程不断从内核态到用户态的上下文切换效率较低。&lt;/p&gt;
-
-&lt;p&gt;有什么办法可以让用户态的进程/线程中拥有一种异步回调的能力，在发生 IO 调用时切换到其他进程/线程，又能保证不睡眠进入内核态。在 IO 事件到来时，再切换回这个进程/线程，整个过程都是在用户态完成。这相当于在操作系统上重新造了一个操作系统来进行进程/线程调度，梦境之上再造梦境。&lt;/p&gt;
-
-&lt;hr/&gt;
-
-&lt;h2 id=&quot;协程是什么&quot;&gt;协程是什么&lt;/h2&gt;
-
-&lt;p&gt;想象一个人进入到进程中，现在有两个子函数：一个函数负责倒开水，一个函数负责晾衣服。当人看到开水烧开了，调用函数去倒开水；当看到衣服洗好了，调用函数晾衣服。这个人就是程序员本人，他来负责子程序的调度。子程序就是协程，这个人就是程序员本人，可以看作是人肉协程调度器。&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://github.com/Huangtuzhi/ucoroutine/blob/master/ucoroutine.cpp&quot;&gt;ucoroutine&lt;/a&gt; 是一个协程调度的示例，使用 Linux getcontext、makecontext、swapcontext 函数簇来实现协程切换。&lt;/p&gt;
-
-&lt;p&gt;那么人肉调度器可以由什么来自动化替代呢？这个调度器需要实现这些功能&lt;/p&gt;
-
-
-
-&lt;p&gt;比如对于网络应用场景，hook 掉 socket 簇 read、write、connect、send、recv 函数，让这些函数调用时发生用户态协程切换，同时记录下相应的上下文信息&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;加入异步回调机制，在 IO 事件到来时回调到事件对应的处理协程&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;这个东西是不是可以用 epoll 实现？在 IO 调用时把事件注入到 epoll 事件池，同时发生协程切换，等 IO 事件到来时由主协程用 epoll 去回调切换到对应的协程。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&quot;language-C++&quot;&gt;void ucoroutine_body(schedule_t *ps)
-{
-int id = ps-&amp;gt;running_coroutine;
-
-if (id != -1) {
-ucoroutine_t *t = &amp;amp;(ps-&amp;gt;coroutines[id]);
-t-&amp;gt;func(t-&amp;gt;arg);
-// 模拟函数阻塞，进行调度。在这里将事件注入到了 epoll 中即可
-puts(&quot;before yield&quot;);
-ucoroutine_yield(*ps);
-puts(&quot;after yield&quot;);
-t-&amp;gt;state = IDLE;
-ps-&amp;gt;running_coroutine = -1;
-}
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;这样就实现了用户态的操作系统。&lt;/p&gt;
-
-&lt;p&gt;常见的协程库实现有三种方式：&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;使用 glibc 的 ucontext 库&lt;/li&gt;
-  &lt;li&gt;使用汇编代码切换上下文，微信 libco 使用这种方式&lt;/li&gt;
-  &lt;li&gt;利用 C 语言的 setjmp 和 longjmp&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;这些方式的原理都是通过保存和恢复寄存器的状态，来进行各协程上下文的保存和切换。&lt;/p&gt;
-
-&lt;hr/&gt;
-
-&lt;h2 id=&quot;切换引起的问题&quot;&gt;切换引起的问题&lt;/h2&gt;
-
-&lt;p&gt;在使用 libco 时，已 hook 掉所有的 socket read/write/send/recv 系统调用，在发生这些系统调用时，libco 会切换协程，将当前的上下文保存，切换到其他协程使用 CPU。所以在业务代码中发起 RPC 调用会触发协程切换，这种切换会引起一些问题。&lt;/p&gt;
-
-&lt;h4 id=&quot;问题-1幻读&quot;&gt;问题 1：”幻读“&lt;/h4&gt;
-
-&lt;p&gt;最近在进行一个项目的改造，有这样一段代码&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;m_config = config; // 进程变量
-m_config-&amp;gt;cmdid() = 100; // 这个值根据请求不同会变化
-
-id_a = m_config-&amp;gt;cmdid()
-CallRPC()
-id_b = m_config-&amp;gt;cmdid()
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;这个代码段有多个协程共用，最后发现 id_a != id_b，出现了”幻读“问题。&lt;/p&gt;
-
-&lt;p&gt;这是因为 CallRPC 时会发生协程切换，等再次切换回来，cmdid 已经被其他协程修改了。&lt;/p&gt;
-
-&lt;p&gt;使用协程原则：全局变量和静态变量为所有协程共享，不要使用全局变量，静态变量。&lt;/p&gt;
-
-&lt;h4 id=&quot;问题-2死锁&quot;&gt;问题 2：死锁&lt;/h4&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;NoticeConfig::NoticeConfig()
-{
-CallRPC();
-}
-
-NoticeConfig* NoticeConfig::GetDefault()
-{
-static NoticeConfig conf; // 卡在这里
-return &amp;amp;conf;
-}
-
-func()
-{
-auto conf = NoticeConfig::GetDefault();
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;协程 A 中 func 调用 GetDefault 获取单例，GetDefault 中初始化 conf 时，构造函数调用了 RPC 发生了协程切换，CPU 让给协程 B。而对于 static 变量，gcc 在构造时会加锁，所以 A 获得了这把锁。当协程 B 调用 func 时，conf 还没初始化完成，会尝试再次加锁。所以其他协程都会卡死在这里。&lt;/p&gt;
-
-&lt;p&gt;这种场景出现需要满足两个条件&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;构造函数中加了 RPC 操作&lt;/li&gt;
-  &lt;li&gt;用 static 来实现单例&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;hr/&gt;
-
-&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
-
-&lt;p&gt;从上面的分析可以知道协程的使用场景&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;频繁发生 RPC 调用，可以最大程度使用协程的能力。相比线程节省系统资源&lt;/li&gt;
-  &lt;li&gt;非计算密集型任务，CPU 计算不复杂。CPU 计算会占用大量时间，会让协程占用 CPU 时间过长，影响其他协程正常运行。同理 sleep 也不能使用，会让进程睡眠而无法进行切换，使用 poll(NULL, 0, sec) 代替。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;另外操作系统中存在这三种层次的回调&lt;/p&gt;
-
-&lt;p&gt;1、硬件设备往内核态的回调通过硬件中断实现&lt;/p&gt;
-
-&lt;p&gt;2、内核态往用户态的回调通过睡眠队列唤醒 + 进程切换实现&lt;/p&gt;
-
-&lt;p&gt;3、用户态中进程/线程往协程的回调通过协程调度器（epoll）实现&lt;/p&gt;
-
-&lt;hr/&gt;
-
-&lt;h2 id=&quot;参考&quot;&gt;参考&lt;/h2&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://github.com/Tencent/libco&quot;&gt;微信 libco&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://zhuanlan.zhihu.com/p/80206565&quot;&gt;一次系统调用开销到底有多大？&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://sites.google.com/site/polarisnotme/linux/gcc&quot;&gt;GCC 优化编译指南&lt;/a&gt;&lt;/p&gt;
-
-                          
-&lt;/section&gt;
-
-
-
-&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>4103c399710dbdade8475a2b5cb3e864</guid>
-<title>架构模式之分层架构总结</title>
-<link>https://toutiao.io/k/fwtxydd</link>
+<guid>d409fd0bc4fab49deb57ac16df782bae</guid>
+<title>互联网：逻辑上的黑话才是真正的花里胡哨</title>
+<link>https://toutiao.io/k/hk3xm6e</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
                     
 
                     
                     
                     
-                    &lt;p&gt;&lt;strong&gt;&lt;span&gt;背景&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;一个问题，我们要把它搞清楚。需要深入的思考，从演进出发，从核心出发，探索它的本质。这样才能在工作中举一反三。探索本质的思想，对于架构者来说尤其重要。本文想探讨架构模式之分层设计的本质和核心。以便于更好的将正确的方式应用到项目中。&lt;/span&gt;&lt;/p&gt;&lt;p&gt; &lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;为什么分层&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;三层架构，多层架构我们听到的很多，那有没有考虑过为什么需要分层呢？不分不是更简单更方便吗，何必大费周折搞出一个分层架构？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;举一个例子，如果我们开一个饭店，一个人把采购，炒菜，上菜全部做了，一个月也有不错的收入。只是会比较忙，很辛苦。因为自己的能力毕竟有限，有时候也会把事情搞错，再比如哪天生病了，生意就没法做了。当人多了的时候就忙不过来了，大批的顾客就会跑到别人的饭店。这时候，我们就会考虑雇人，人多了就会考虑分工的问题，有的负责采购，有的负责炒菜，有的负责上菜，这样实际分层就产生了。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;分层本质是解耦和分类，解决职责不清的耦合问题，解决职责过大不利于发展的问题，在分层的基础上为团队分工和协作提供了依据。&lt;/span&gt;&lt;/p&gt;&lt;p&gt; &lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;分层的好处&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;1、&lt;span&gt;  &lt;/span&gt;&lt;span&gt;隔离业务复杂度和技术复杂度，可独立变化发展&lt;/span&gt;&lt;/p&gt;&lt;p&gt;2、&lt;span&gt;  &lt;/span&gt;&lt;span&gt;职责清晰，减少耦合，提高复用性，可维护性，扩展性（部分）&lt;/span&gt;&lt;/p&gt;&lt;p&gt;3、&lt;span&gt;  &lt;/span&gt;&lt;span&gt;有利于团队分工协作&lt;/span&gt;&lt;/p&gt;&lt;p&gt; &lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;分层的不足&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;1、&lt;span&gt;  &lt;/span&gt;&lt;span&gt;代码理解的复杂度高了&lt;/span&gt;&lt;/p&gt;&lt;p&gt;2、&lt;span&gt;  &lt;/span&gt;&lt;span&gt;性能低了，原本一次完成的事情，需要调多层实现&lt;/span&gt;&lt;/p&gt;&lt;p&gt;3、&lt;span&gt;  &lt;/span&gt;&lt;span&gt;管理成本高了，需要考虑每层的边界，代码结构和团队情况&lt;/span&gt;&lt;/p&gt;&lt;p&gt; &lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;如何分层&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;         &lt;span&gt;分层设计也是一种抽象的思想，每层代表一个关注点，多层之间的协作实现了整个调用链路。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;1、&lt;span&gt;  &lt;/span&gt;&lt;span&gt;基于职责（关注点）不同进行分层&lt;/span&gt;&lt;/p&gt;&lt;p&gt;2、&lt;span&gt;  &lt;/span&gt;&lt;span&gt;基于变化的程度进行分层&lt;/span&gt;&lt;/p&gt;&lt;p&gt;3、&lt;span&gt;  &lt;/span&gt;&lt;span&gt;同一抽象层次的组件放在同一层&lt;/span&gt;&lt;/p&gt;&lt;p&gt; &lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;分层中的设计思想&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;如果用一句话描述的话，个人理解的就是高内聚，松耦合。展开讲的话有以下几点&lt;/span&gt;&lt;/p&gt;&lt;p&gt;1、&lt;span&gt;  &lt;/span&gt;&lt;span&gt;单一职责原则，分离关注点，每个层的职责是单一的，只做一类事情；&lt;/span&gt;&lt;/p&gt;&lt;p&gt;2、&lt;span&gt;  &lt;/span&gt;&lt;span&gt;开闭原则：隔离变化，对扩展开放，对修改关闭；&lt;/span&gt;&lt;/p&gt;&lt;p&gt;3、&lt;span&gt;  &lt;/span&gt;&lt;span&gt;依赖倒置原则：基于接口（抽象）编程，层与层之间的调用都应该依赖抽象而不是具体。&lt;/span&gt;&lt;/p&gt;&lt;p&gt; &lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;分层的方式&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;         &lt;span&gt;一般讲的都是逻辑分层，实际也存在物理层面进行分层。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;物理分层（&lt;/span&gt;Tier&lt;/strong&gt;&lt;strong&gt;&lt;span&gt;）&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;主要从物理元素切入，个人理解从物理层面有两类，一类从部署的角度考虑，一类从项目结构角度。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;从部署角度考虑，典型的&lt;/span&gt;J2EE N Tire&lt;span&gt;架构，如下图：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt; &lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.4935064935064935&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/UHKG18j8iasYnpqicm3vOlKZoFDg2DAFLCEGFAicp5KR5MN1aW4KibL6taEZiaz7mn5QAfSoMAia2ibd4R3eVmolecWXw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;770&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;大型分布式系统的分层（简化版），如下：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.9141630901287554&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UHKG18j8iasYnpqicm3vOlKZoFDg2DAFLCnFzxy5SbEFPxPGPp6ficoLF2njWBSmibeNU7nAib4MLDxAA3NuSAiaPKRw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;466&quot;/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;从项目结构考虑（很少有人这么讲）&lt;/span&gt;1&lt;span&gt;、项目的分包结构；&lt;/span&gt;2&lt;span&gt;、&lt;/span&gt;maven&lt;span&gt;中的父子项目。&lt;/span&gt;&lt;/p&gt;&lt;p&gt; &lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;逻辑分层（&lt;/span&gt;Layer&lt;/strong&gt;&lt;strong&gt;&lt;span&gt;）&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;         &lt;span&gt;大家常见的分层方式，典型的有三层，四层，七层，如下。&lt;/span&gt;&lt;/p&gt;&lt;p&gt; &lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;1.3875968992248062&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UHKG18j8iasYnpqicm3vOlKZoFDg2DAFLCVWtdL880OPRMgYMdqnolpvTiaOUib6E4IXuUd3b08uskX3s7hqxibicpKQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;516&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;其中三层和四层从结构上看相差不大，主要是在三层数据访问层的基础上，扩展了如服务，设备等的调用。但是从架构层面，已经有比较大的改进。&lt;/span&gt;&lt;/p&gt;&lt;p&gt; &lt;/p&gt;&lt;p&gt;&lt;span&gt;一个架构设计到这个程度就可以了吗？远远不够，下一步需要对分层架构进行细化。&lt;/span&gt;&lt;/p&gt;&lt;p&gt; &lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;分层详解&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在做设计的时候，需要将每一个组件，每一个角色落地，让各个参与者都能清楚，明白。以四层架构为例，详细介绍每层的关注点和设计。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;1、&lt;span&gt;  &lt;/span&gt;&lt;span&gt;明确各层的关注点和职责。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.9356223175965666&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UHKG18j8iasYnpqicm3vOlKZoFDg2DAFLCl04zZsIayiaG7dbn85JS5v29SHlZOkBknWicQp9oGyLr5ymqTsf9gCpw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;466&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;（1）&lt;/span&gt;&lt;span&gt;       &lt;/span&gt;&lt;span&gt;表现层&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;关注点：&lt;/span&gt;&lt;span&gt;用户交互和页面渲染&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;职责：&lt;/span&gt;&lt;span&gt;接收用户输入，调用业务逻辑层，接收业务逻辑返回实现页面渲染。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;（2）&lt;/span&gt;&lt;span&gt;       &lt;/span&gt;&lt;span&gt;业务逻辑层&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;关注点：领域模型和&lt;/span&gt;&lt;span&gt;业务逻辑&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;职责：&lt;/span&gt;&lt;span&gt;系统的核心部分，实现业务逻辑和业务规则，实现事务控制，调用资源访问层；&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;（3）&lt;/span&gt;&lt;span&gt;       &lt;/span&gt;&lt;span&gt;资源整合层：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;关注点：&lt;/span&gt;&lt;span&gt;各类资源的调用和隔离&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;职责：&lt;/span&gt;&lt;span&gt;整合数据访问（读写），整合外部接口，整合设备交互。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;2、&lt;span&gt;  &lt;/span&gt;&lt;span&gt;明确各层的设计（代码级）&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-cropselx1=&quot;0&quot; data-cropselx2=&quot;578&quot; data-cropsely1=&quot;0&quot; data-cropsely2=&quot;671&quot; data-ratio=&quot;1.159744408945687&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UHKG18j8iasYnpqicm3vOlKZoFDg2DAFLCaqDGia7IGGEaV3Q3XWdws8uEN18lmom1EwJEhcW8iciaLFPplWDb7UnIg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;626&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;    上图已经把代码层面的组件画出来了，按照这个方案就可以进行开发了。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;span&gt;（1）&lt;/span&gt;&lt;span&gt;      &lt;/span&gt;&lt;span&gt;VO&lt;/span&gt;&lt;span&gt;，&lt;/span&gt;&lt;span&gt;BO&lt;/span&gt;&lt;span&gt;，&lt;/span&gt;&lt;span&gt;Entity&lt;/span&gt;&lt;span&gt;可以使用同一套实体类也可以分开，比较推荐的做法是&lt;/span&gt;&lt;span&gt;VO&lt;/span&gt;&lt;span&gt;和&lt;/span&gt;&lt;span&gt;BO&lt;/span&gt;&lt;span&gt;使用一套，&lt;/span&gt;&lt;span&gt;Entity&lt;/span&gt;&lt;span&gt;使用一套。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;（2）&lt;span&gt;      &lt;/span&gt;&lt;span&gt;业务逻辑层：抽象了&lt;/span&gt;Logic&lt;span&gt;接口，用于定义每个服务方法的步骤，该部分会有一些通用的&lt;/span&gt;Logic&lt;span&gt;用于多个服务方法复用。&lt;/span&gt;Service&lt;span&gt;会调用具体的&lt;/span&gt;Logic&lt;span&gt;实现逻辑逻辑，达到了最大程度的解耦和复用。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;（3）&lt;/span&gt;&lt;span&gt;   &lt;/span&gt;&lt;span&gt;业务逻辑层：对于&lt;/span&gt;&lt;span&gt;Logic&lt;/span&gt;&lt;span&gt;内复用的，可以下沉到&lt;/span&gt;&lt;span&gt;Manager&lt;/span&gt;&lt;span&gt;中。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;span&gt;（4）&lt;/span&gt;&lt;span&gt;      &lt;/span&gt;&lt;span&gt;业务逻辑层：还可以在&lt;/span&gt;&lt;span&gt;Servide&lt;/span&gt;&lt;span&gt;的基础上封装一层&lt;/span&gt;&lt;span&gt;Façade&lt;/span&gt;&lt;span&gt;，用于聚合多个&lt;/span&gt;&lt;span&gt;Servie&lt;/span&gt;&lt;span&gt;方法的调用。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;（5）资源整合层：包含传统的数据库访问层结构和，调用接口的实现。调用接口使用代理模式实现，隔离了外部差异。复杂的话，可以考虑使用策略+适配器的方式。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;3、&lt;span&gt;  &lt;/span&gt;&lt;span&gt;层之间的调用关系&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;    标准的调用是严格按照上次调用下层的顺序，实际也可以跨层调用（根据团队规范，约定好）。&lt;/span&gt;&lt;span&gt;但是，应避免循环调用。&lt;/span&gt;&lt;/p&gt;&lt;p&gt; &lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;1.1612903225806452&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UHKG18j8iasYnpqicm3vOlKZoFDg2DAFLCoAPc3IzRNlejb0ibIrwoZkhVU0QyzfI7AvMicZhWAczKFNhWktSnDAcQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;341&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;物理分层与逻辑分层的关系&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;        &lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.773371104815864&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UHKG18j8iasYnpqicm3vOlKZoFDg2DAFLCoViawUz3q20A4wriafspocRib6pV0X7C5kZTYb50q90rdUql1a6ibkjkCw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;706&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;逻辑架构会以不同的方式，表现到物理架构中。拿分层来讲，常见的方式有全部逻辑分层一起部署，逻辑分层部分分开部署和逻辑分层完全分开部署。分开部署后会涉及到&lt;/span&gt;RPC&lt;span&gt;调用和服务高可用等问题。&lt;/span&gt;&lt;/p&gt;&lt;p&gt; &lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;文章总结&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;         分层架构是项目中用到的最多的架构模式之一，核心思想是归类和解耦，实现有多种方式，不应局限于三层，四层，也可能是两层，五层，六层，具体以实际的项目为准。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;          本文希望由浅入深的介绍分层相关的知识，使大家不仅知道分层，还知道为什么分，怎么分。从概念到落地是架构师必须跨过的一道坎。通过了这个坎就可以将架构知识灵活的运用到项目中，实现能力的升华，成为真正的架构师。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;           实际每一层还会有一些变化，不同的设计模式和架构模式实现的分层和代码的组织方式也是不同的，没有完全一样的架构，合适的就是最好的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;
+                    &lt;blockquote&gt;&lt;p&gt;互联网上的道理听着都对。&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;&lt;span&gt;01&lt;/span&gt;&lt;/p&gt;&lt;p&gt;最近这段时间，张一鸣年会发言火了，最大的亮点就是他读的一段互联网的常用&quot;黑话&quot;:&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.26953125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/uUIibyNXbAvB0zA65Ufly5SywsOgP1caQniaTXgKmywEvU9hibIkk4HCic9wzTiaZrmVfUoPKdib9zJqGOtwo87FE9kQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;这段内容出自其公司月会材料，被张一鸣放在年会发言，并顺带批评一波这些人不好好说话，引起大批网友共鸣。&lt;/p&gt;&lt;p&gt;随之而来的是互联网某Python大佬的一段神奇脚本，黑话生成器，也跟着火了：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;1.0515625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/uUIibyNXbAvB0zA65Ufly5SywsOgP1caQpc2XHnNIgw3Km61wzjKNGFN1vPleNCqiaibeAfrGib30RibZDW0c0I5Xyw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;(建议这个脚本作者去找个风投，目测估值奇高，市场需求和用户群都不低。)&lt;/p&gt;&lt;p&gt;当时还在公司加班的我迅速在电脑里部署了Python环境，并且运行了几次，其中两次效果如下：&lt;/p&gt;&lt;p&gt;忽然一看好像都对：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.234375&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/uUIibyNXbAvB0zA65Ufly5SywsOgP1caQwvq0AZuNgZqpATGumBqrPLuylktUlnDIvMFkG8vWYR5D2NSjiaFlSlw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;仔细看就看不下去:&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.234375&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/uUIibyNXbAvB0zA65Ufly5SywsOgP1caQv4LzW3QpWgdkswtocBtUiaBAkOToPltOoYcUQx3ibXOdjp6k5zNhKUiag/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;从个别领域上说，不能一下看懂的东西可能会有价值。&lt;/p&gt;&lt;p&gt;这就是互联网黑话的最大特点，整体感觉高端大气，但是好像暗语一般非专业人士不能理解。&lt;/p&gt;&lt;p&gt;另一个特点就是，黑话集中在日报，周报，月报，PPT，各种总结上面，以及各种会议上面，像空气一样。&lt;/p&gt;&lt;p&gt;&lt;span&gt;02&lt;/span&gt;&lt;/p&gt;&lt;p&gt;曾几何时，因为周报过于简单明了，每个月都会被公司CEO点名批评。&lt;/p&gt;&lt;p&gt;每个开发的周报主流可能都是：需求评审、开发、提测上线。这对于开发而言就是实事求是，并且能说的明明白白。&lt;/p&gt;&lt;p&gt;但是在黑话型选手眼中，这就是没有用心，缺乏对业务理解和思考的表现。&lt;/p&gt;&lt;p&gt;后来的后来，被批多了心态就麻木，有时觉得自己可能是火星来的，和该系列选手三观冲突。&lt;/p&gt;&lt;p&gt;&lt;span&gt;03&lt;/span&gt;&lt;/p&gt;&lt;p&gt;在互联网上，有意思的可不止黑话这一种现象，有些鬼才般的逻辑才是感人至深。&lt;/p&gt;&lt;p&gt;作为多年网民选手，你可能经常会听到如下的理论：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.44280442804428044&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/uUIibyNXbAvB0zA65Ufly5SywsOgP1caQc2uh54mGibiaOAcYU3qweP8P6cwxNAbZxQS54BibFiaeLHmIo4LbKS2n4w/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1084&quot;/&gt;&lt;/p&gt;&lt;p&gt;这样两极化的观念都跟着大批叫好的玩家，从根本上看就是在说两个人生态度：保守与激进。&lt;/p&gt;&lt;p&gt;就现实而论两种观念都没有错，虽然都不具备参考价值，但是很具有博流量的能力。&lt;/p&gt;&lt;p&gt;在风投领域里有句话：保守从短期看一定是对的，激进从长期去看一定会犯错。&lt;/p&gt;&lt;p&gt;所以不管是劝你保守，还是想教你如何激进，无非就是割流量与割付费的两种模式区别，而在两者之间最难走的路和选择依旧都要自己去摸爬滚打。&lt;/p&gt;&lt;p&gt;&lt;span&gt;04&lt;/span&gt;&lt;/p&gt;&lt;p&gt;互联网上最大的黑色幽默就是有关收入的话题：收入低的在叫苦连天，收入高的在凡尔赛文学。&lt;/p&gt;&lt;p&gt;热门视频常见，你觉得毕业五年，月收入多少合适：可能起码要3、5万吧？&lt;/p&gt;&lt;p&gt;媒体上常见收入高的，各种没时间吃喝玩乐在谈生意，然后要花费心血拍视频告诉广大网友，引来大批羡慕的和大批嘲讽的。&lt;/p&gt;&lt;p&gt;媒体上常见伴随着每年发布的平均收入，各路大神各种数据分析，平均工资很低月入过万很少，所以该吃吃该乐乐。&lt;/p&gt;&lt;p&gt;同样是两种观念平分秋色，但是角度依旧清奇，人的收入高低和自己所在的行业与城市有很大的关系。&lt;/p&gt;&lt;p&gt;尤其是在互联网行业中的选手，工作三五年之后，如果说感觉月入过万很少，我觉得你可能被生活欺骗了。&lt;/p&gt;&lt;p&gt;互联网行业工资普遍偏高，与这个行业普遍在一二线城市和付出有很大关系，996、大小周、持续学习。&lt;/p&gt;&lt;p&gt;不管是互联网或者媒体网红，这些人聚集在网上，成功带出了&quot;各种年薪百万、人在美国刚下飞机&quot;的氛围。&lt;/p&gt;&lt;p&gt;这些网络上的幽默观念并不具备什么实际参考价值，大部分的人都是在自己行业中不断挣扎努力，一步一脚印。&lt;/p&gt;&lt;p&gt;&lt;span&gt;05&lt;/span&gt;&lt;/p&gt;&lt;p&gt;当下信息时代，互联网上各种神奇理论齐飞，自律文、鸡汤文、毒奶文、佛系文、故事文，无不说的有理有据有声有色。&lt;/p&gt;&lt;p&gt;但是于自身而言，多数都是看了之后一笑了之，或者水深火热的跟风三分钟。&lt;/p&gt;&lt;p&gt;个人依旧认为互联网行业的选手，花时间不断提高自己的专业能力，拓宽认知边界才是最有价值的事情，偶尔看看媒体信息，了解世界之大无奇不有，也是生活一大乐趣。&lt;/p&gt;&lt;p&gt;作为一个将近10年的网民，现在关注最多的就是新闻频道，这里必须要强调一下我并不是老了。&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;END&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzU4Njg0MzYwNw==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvBCuF3zfJnqPKpUia4wfn1FUtTHpxxkR5HvbicPgOjibPicX0goMOkny1NdkLAJvBaqrYh3UdwMjiaDQMA/0?wx_fmt=png&quot; data-nickname=&quot;知了一笑&quot; data-alias=&quot;cicada_smile&quot; data-signature=&quot;积累是一个孤独且枯燥的过程&quot;/&gt;&lt;/section&gt;
                 &lt;/div&gt;
 
                 
@@ -205,546 +27,89 @@ auto conf = NoticeConfig::GetDefault();
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>dbf33734ebfd118f37f9fae450ccab39</guid>
-<title>JavaScript 垃圾回收策略</title>
-<link>https://toutiao.io/k/i8pbfyr</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
-
-                    
-                    
-                    
-                    &lt;section&gt;&lt;blockquote&gt;&lt;p&gt;前段时间，面了不少公司，不少面试官都会问到JavaScript垃圾回收。说实话，平时还真的了解不多，最近正在看“JavaScript高级程序设计”，从头把基础再巩固下。&lt;/p&gt;&lt;/blockquote&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;JavaScript 是使用垃圾回收的语言，通过自动内存管理实现内存分配和闲置资源回收。基本思路很简单：&lt;span&gt;垃圾收集器会按照固定的时间间隔或代码执行中预定的收集时间，周期性地执行操作--找出不再继续使用的变量，然后释放其占用的内存&lt;/span&gt;。如何找出不再继续使用的变量，浏览器发展怎么多年，出现了几种不同的实现方案，标记清理和引用计数。今天简单说说 JavaScript 最常用的垃圾回收策略 -【标记清理】。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;标记清理&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;标记清理（mark-and-sweep）。当变量进入上下文，比如在函数内部声明一个变量时，&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;let&lt;/span&gt; a = 1&lt;span/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;这个变量会被加上存在于上下文中的标记。而在上下文中的变量，逻辑上讲，永远不应该释放它们的内存，因为只要上下文中的代码在运行，就有可能用到它们。当变量离开上下文时，也会被加上离开上下文的标记。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们可以手动释放：&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;let&lt;/span&gt; a = &lt;span&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span&gt;// 释放&lt;/span&gt;&lt;br/&gt;a = &lt;span&gt;null&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;给变量加标记的方式有很多种。比如，当变量进入上下文时，反转某一位；或者可以维护“在上下文中”和“不在上下文中”两个变量列表，可以把变量从一个列表转移到另一个列表。标记过程的实现并不重要，关键是策略。垃圾回收程序运行的时候，会标记内存中存储的所有变量（记住，标记方法有很多种）。然后，它会将所有在上下文中的变量，以及被在上下文中的变量引用的变量的标记去掉。在此之后再被加上标记的变量就是待删除的了，原因是任何在上下文中的变量都访问不到它们了。随后垃圾回收程序做一次内存清理，销毁带标记的所有值并收回它们的内存。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;还有种不太常用的垃圾回收策略-引用计数（reference counting）。引用计数的含义是跟踪记录每个值被引用的次数。由于不太常用，我们这里就不多介绍。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;上面的内容，基本可以在“JavaScript高级程序设计”找到，感兴趣的可以读一读这本书，收获还是蛮大的，之后有时间，我会把书中的知识点整理，总结在公众号中，现在已经整理了一部分，后期会不定时更新。&lt;/span&gt;&lt;/p&gt;
-                &lt;/div&gt;
-
-                
-
-                
-
-
-
-                
-                &lt;div class=&quot;reward_qrcode_area reward_area tc&quot; id=&quot;js_reward_qrcode&quot;&gt;
-                                &lt;p class=&quot;tips_global&quot;&gt;Long-press QR code to transfer me a reward&lt;/p&gt;
-                                                                &lt;p class=&quot;reward_tips&quot;&gt;我坚信，赞赏是不耍流氓的鼓励!&lt;/p&gt;
-                                &lt;span class=&quot;reward_qrcode_img_wrp&quot;&gt;&lt;img class=&quot;reward_qrcode_img&quot; id=&quot;js_reward_qrcode_img&quot;/&gt;&lt;/span&gt;
-                                &lt;p class=&quot;tips_global&quot;&gt;As required by Apple&#x27;s new policy, the Reward feature has been disabled on Weixin for iOS. You can still reward an Official Account by transferring money via QR code.&lt;/p&gt;
-                            &lt;/div&gt;
-                                                                            
-                              
-            &lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>ea6598dcc700d7dc469775b46e34d09f</guid>
+<title>面试必备常见存储引擎与锁的分类，请查收</title>
+<link>https://toutiao.io/k/lyccgvn</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;181&quot; data-backw=&quot;558&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.32344763670064874&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/55HPQyguvpOjRJj3rEmVIcZ4cxnPGXMbOToA3HQiafTrfmjfvOVQH0fLtCJwj3DkfC1GoPIRVmLY5oTemAhXibRQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1079&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们在上篇文章中提到了记录锁（行锁）、间隙锁和临键锁，后台有小伙伴催我更新一下其他的锁。拖延症又犯了，趁周末，今天我们来总结一下&lt;code&gt;MyISAM&lt;/code&gt;和&lt;code&gt;InnoDB&lt;/code&gt;引擎下锁的种类及使用方法。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;MySQL的四大常见存储引擎&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;谈到&lt;code&gt;MyISAM&lt;/code&gt;和&lt;code&gt;InnoDB&lt;/code&gt;了我们先来了解一下什么是存储引擎吧。&lt;code&gt;MySQL&lt;/code&gt;中的数据用各种不同的技术存储在文件（或者内存）中，这些技术中的每一种技术都使用不同的存储机制、索引技巧、锁定水平并且最终提供广泛的不同的功能，我们把这些不同的技术以及配套的相关功能称为存储引擎(也称作表类型)。MySQL默认配置了许多不同的存储引擎，我们可以选择不同的存储引擎来满足我们对数据的处理（存储、检索等）需求，以改善我们应用程序的整体功能。正因为&lt;code&gt;MySQL&lt;/code&gt;存储引擎的多样性，使得&lt;code&gt;MySQL&lt;/code&gt;深受广大开发者的垂青。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们的前提条件：我用的是&lt;code&gt;5.7.24-log&lt;/code&gt;版本，可以在&lt;code&gt;Navicat&lt;/code&gt;中通过&lt;code&gt;SELECT VERSION();&lt;/code&gt;命令查看。那么&lt;code&gt;MySQL&lt;/code&gt;都有哪些存储引擎呢？我们可以使用sql命令&lt;code&gt;SHOW ENGINES;&lt;/code&gt;来查看，结果如下：&lt;img data-ratio=&quot;0.2515391380826737&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/55HPQyguvpMrMeosQsorL6KXxxpXtctC7OFj2BPStbGYKLVFM7PoE19Ttrp6t7AJpWZf6jkgBUwbGAZKwUCdmA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1137&quot;/&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;Engine：表示储存引擎名称；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Support：表示&lt;code&gt;MySQL&lt;/code&gt;是否支持该存储引擎，&lt;code&gt;DEFAULT&lt;/code&gt;为默认的存储引擎；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Comment：是对该存储引擎的功能描述，例如：&lt;code&gt;InnoDB&lt;/code&gt;支持事务、行级锁定和外键；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Transactions：是否支持事务；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;XA：存储引擎是否支持分布式事务；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Savepoints：存储引擎是否支持保存点。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;接着让我们来说一下其中比较常见的四大存储引擎吧。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;InnoDB&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;InnoDB&lt;/code&gt;是&lt;code&gt;MySQL&lt;/code&gt;（&lt;code&gt;MySQL5.5&lt;/code&gt;以后）的默认存储引擎，支持事务、行级锁和外键，被用来处理大量短期事务。如果使用到外键、需求并发程度较高、数据一致性要求较高的话，那么通常选择&lt;code&gt;InnoDB&lt;/code&gt;引擎，这也是互联网大厂使用&lt;code&gt;InnoDB&lt;/code&gt;存储引擎的原因。除非有非常特别的原因需要使用其他的存储引擎，否则建议优先考虑&lt;code&gt;InnoDB&lt;/code&gt;。但是对比&lt;code&gt;MyISAM&lt;/code&gt;，&lt;code&gt;InnoDB&lt;/code&gt;写的处理效率会差一些，并且会占用更多的磁盘空间以保留数据和索引。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;MyISAM&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;MyISAM&lt;/code&gt;提供了大量的特性，包含全文索引、压缩、空间行数等，支持3种不同的存储格式，分别是：静态表、动态表、压缩表。&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;静态表：表中的字段都是非变长字段，这样每个记录都是固定长度的。优点是存储非常迅速，容易缓存，出现故障容易恢复；缺点是占用的空间通常比动态表多（因为存储时会按照列的宽度定义补足空格），在取数据的时候，默认会把字段后面的空格去掉，如果不注意会把数据本身带的空格也会忽略。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;动态表：表中的字段都是变长字段，记录不是固定长度的。这样存储的优点是占用的空间相对较少；缺点是频繁的更新、删除数据容易产生碎片，需要定期执行&lt;code&gt;OPTIMIZE TABLE&lt;/code&gt;或者&lt;code&gt;myisamchk -r&lt;/code&gt;命令来改善性能，并且出现故障的时候恢复相对比较困难。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;压缩表：压缩表由myisamchk工具创建，占据非常小的空间，因为每条记录都是被单独压缩的，所以只有非常小的访问开支。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在&lt;code&gt;MyISAM&lt;/code&gt;中，数据文件和索引文件可以放置在不同的目录（在创建表的时候通过&lt;code&gt;DATA DIRECTORY&lt;/code&gt;和&lt;code&gt;INDEX DIRECTORY&lt;/code&gt;语句指定文件的绝对路径），平均分配IO，获取更快的访问速度。但是&lt;code&gt;MyISAM&lt;/code&gt;不支持事务，不支持外键，也不支持行级锁，支持表级锁，有个缺陷就是崩溃后无法恢复。如果应用程序以检索为主，只有少量的插入、更新和删除操作，并且对事物的完整性、并发程度不是很高的话，通常建议选择&lt;code&gt;MyISAM&lt;/code&gt;存储引擎。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;Memory&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Memory&lt;/code&gt;存储引擎使用存在内存中的内容来创建表，所以它的访问速度非常快，并且默认使用&lt;code&gt;HASH&lt;/code&gt;索引。但是一旦服务器关闭或者&lt;code&gt;mysqld&lt;/code&gt;守护进程崩溃时，所有的&lt;code&gt;Memory&lt;/code&gt;数据都会丢失，但表还会继续存在，获得速度的同时也带来了一些缺陷。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;它要求存储在&lt;code&gt;Memory&lt;/code&gt;数据表里的数据使用的是长度不变的格式，这意味着不能使用&lt;code&gt;BLOB&lt;/code&gt;和&lt;code&gt;TEXT&lt;/code&gt;这样的长度可变的数据类型，&lt;code&gt;VARCHAR&lt;/code&gt;是一种长度可变的类型，但因为它在&lt;code&gt;MySQL&lt;/code&gt;内部当做长度固定不变的&lt;code&gt;CHAR&lt;/code&gt;类型，所以可以使用。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;服务器需要足够的内存来维持在同一时间内使用的&lt;code&gt;MEMORY&lt;/code&gt;表，当不再使用&lt;code&gt;MEMORY&lt;/code&gt;表时，要释放&lt;code&gt;MEMORY&lt;/code&gt;表所占用的内存，应该执行&lt;code&gt;DELETE FROM&lt;/code&gt;或&lt;code&gt;truncate table&lt;/code&gt;或者删除整个表。每个&lt;code&gt;MEMORY&lt;/code&gt;表中放置的数据量的大小，受到&lt;code&gt;max_heap_table_size&lt;/code&gt;系统变量的约束，这个系统变量的初始值是16M，同时在创建&lt;code&gt;MEMORY&lt;/code&gt;表时可以使用&lt;code&gt;MAX_ROWS&lt;/code&gt;子句来指定表中的最大行数。它通常用于更新不太频繁的小表。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;Merge&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Merge&lt;/code&gt;存储引擎是一组&lt;code&gt;MyISAM&lt;/code&gt;表的组合，这些&lt;code&gt;MyISAM&lt;/code&gt;表结构必须完全相同，&lt;code&gt;Merge&lt;/code&gt;表本身没有数据，对&lt;code&gt;Merge&lt;/code&gt;类型的表进行查询、更新、删除的操作，实际上是对内部的&lt;code&gt;MyISAM&lt;/code&gt;表进行的。Merge表在磁盘上保留两个文件，一个是&lt;code&gt;.frm&lt;/code&gt;文件存储表定义、一个是&lt;code&gt;.MRG&lt;/code&gt;文件存储&lt;code&gt;Merge&lt;/code&gt;表的组成等。&lt;code&gt;MERGE&lt;/code&gt;表的优点在于可以突破对单个&lt;code&gt;MyISAM&lt;/code&gt;表大小的限制，并且通过将不同的表分布在多个磁盘上，可以有效地改善&lt;code&gt;MERGE&lt;/code&gt;表的访问效率。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们可以通过&lt;code&gt;show create table 表名&lt;/code&gt; 命令来查看表使用的引擎，由以下代码可以看出&lt;code&gt;test&lt;/code&gt;表使用的是&lt;code&gt;MyISAM&lt;/code&gt;存储引擎。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;CREATE TABLE `test` (&lt;br/&gt;  `id` int(1) NOT NULL AUTO_INCREMENT,&lt;br/&gt;  `name` varchar(8) DEFAULT NULL,&lt;br/&gt;  `age` int(11) DEFAULT NULL,&lt;br/&gt;  PRIMARY KEY (`id`)&lt;br/&gt;) ENGINE=MyISAM AUTO_INCREMENT=46 DEFAULT CHARSET=utf8&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;hr data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;hr data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;相对其他数据库而言，&lt;code&gt;MySQL&lt;/code&gt;的锁机制比较简单，其最显著的特点是不同的存储引擎支持不同的锁机制。比如，&lt;code&gt;MyISAM&lt;/code&gt;和&lt;code&gt;MEMORY&lt;/code&gt;存储引擎采用的是表级锁（&lt;code&gt;table-level locking&lt;/code&gt;）；&lt;code&gt;BDB&lt;/code&gt;存储引擎（5.1之后就不直接支持了，因为&lt;code&gt;BDB&lt;/code&gt;被&lt;code&gt;oracle&lt;/code&gt;收购了）采用的是页面锁（&lt;code&gt;page-level locking&lt;/code&gt;），但也支持表级锁；&lt;code&gt;InnoDB&lt;/code&gt;存储引擎既支持行级锁（&lt;code&gt;row-level locking&lt;/code&gt;），也支持表级锁，但默认情况下是采用行级锁。接下来就让我们来了解一下&lt;code&gt;MyISAM&lt;/code&gt;和&lt;code&gt;InnoDB&lt;/code&gt;锁的具体分类与使用方法。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;MyISAM锁&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;MyISAM&lt;/code&gt;存储引擎支持的表级锁分为表共享读锁（&lt;code&gt;Table Read Lock&lt;/code&gt;）和表独占写锁（&lt;code&gt;Table Write Lock&lt;/code&gt;），以下简称读锁和写锁。先看一下他们的特性：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;读锁：不会阻碍其它进程的读，但是会阻碍写，只有当读锁释放之后，才会执行其它进程的写--读锁阻塞写锁，但是不阻塞读锁；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;写锁：会阻碍其他进程的读和写，只有当写锁释放，才会执行其它写操作--写锁阻塞读锁和写锁；&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;接下来让我们用例子来演示一下上边的结论，在演示之前，先让我们来说几个命令吧。&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;LOCK TABLE 表名 WRITE/READ：给表加写锁或者读锁；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;UNLOCK TABLES：给表解锁&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;演示一：表共享读锁&lt;/strong&gt;&lt;img data-ratio=&quot;0.3485436893203884&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/55HPQyguvpMrMeosQsorL6KXxxpXtctCzknCxmPF6KJEhk29zHWOAlibiaL8bggvg8lMkribxibGLVHt2Km53byCTQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1030&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当&lt;code&gt;session1&lt;/code&gt;给表&lt;code&gt;test&lt;/code&gt;加读锁时，&lt;code&gt;session1&lt;/code&gt;只能读取当前表的数据，不可以读其他表，也不可以修改&lt;code&gt;test&lt;/code&gt;和其他表；&lt;code&gt;session2&lt;/code&gt;可以读取&lt;code&gt;test&lt;/code&gt;表数据，更新&lt;code&gt;test&lt;/code&gt;表阻塞，但是可以修改和查询其他表数据。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;演示二：表独占写锁&lt;/strong&gt;&lt;img data-ratio=&quot;0.30288461538461536&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/55HPQyguvpMrMeosQsorL6KXxxpXtctC9ic8A5DHUur0UWvG80EqSMgYibpH9jOq5pmhVjdE9ibh9GOWPYsKCmvKA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1040&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当&lt;code&gt;session1&lt;/code&gt;给表&lt;code&gt;test&lt;/code&gt;加写锁时，可以更新&lt;code&gt;test&lt;/code&gt;表，读&lt;code&gt;test&lt;/code&gt;表阻塞，但是不可以修改和查询其他表数据；&lt;code&gt;session2&lt;/code&gt;查询和更新&lt;code&gt;test&lt;/code&gt;表阻塞，但是可以查询和更新其他表。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;另外我们还可以使用&lt;code&gt;show open tables&lt;/code&gt;命令来查看在表缓存中当前被打开的非TEMPORARY表的锁使用情况，其中In_use表示有锁正在使用。&lt;img data-ratio=&quot;0.5845410628019324&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/55HPQyguvpMrMeosQsorL6KXxxpXtctCDs8QQxFZyPicjKgibvRd2XZKvd8S5LF0iappHKTjEu6CKGHlr0Pm96eJQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;621&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;也可以使用&lt;code&gt;show status like &#x27;table%&#x27;&lt;/code&gt;命令来查看锁的争夺情况，其中&lt;code&gt;Table_locks_waited&lt;/code&gt;为等待次数，每等待一次，值就加一，值越大，表示存在越严重的表级锁争用；&lt;code&gt;Table_locks_immediate&lt;/code&gt;为产生表级锁定的次数，表示可以立即获取锁的查询次数，每立即获取锁，值加一。&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;★&lt;/span&gt;&lt;p&gt;&lt;code&gt;MyISAM&lt;/code&gt;默认是使用&lt;code&gt;select&lt;/code&gt;语句加读锁，增删改操作加写锁。&lt;code&gt;MyISAM&lt;/code&gt;是偏读锁，读写调度写优先，不适合做写为主的表的引擎。因为写锁后，其他线程不能做任何操作，大量更新会使查询很难得到锁，从而永远阻塞。&lt;/p&gt;&lt;span&gt;”&lt;/span&gt;&lt;/blockquote&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;InnoDB锁&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上篇文章中我们讲过了记录锁（行锁）、间隙锁和临键锁，这里就不再赘述了。接下来我们按照锁的模式讲一下&lt;code&gt;InnoDB&lt;/code&gt;里的共享锁、排他锁和意向锁，其中共享锁和排他锁属于行级锁，行级锁都是基于索引项的，如果没有索引项，则添加的是表级锁；意向锁属于表级锁。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;共享锁：Shared Locks，简称S锁&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;若事务T对数据对象A加上S锁，则事务T只能读A；其他事务只能再对A加S锁，而不能加X锁，直到T释放A上的S锁。这就保证了其他事务可以读A，但在T释放A上的S锁之前不能对A做任何修改。可以通过&lt;code&gt;select ... lock in share mode&lt;/code&gt;来加共享锁，通过&lt;code&gt;Commit&lt;/code&gt;、&lt;code&gt;Rollback&lt;/code&gt;来释放锁。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;排他锁：Exclusive lock，简称X锁，也叫互斥锁&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;若事务T对数据对象A加上X锁，则只允许T读取和修改A，其它任何事务都不能再对A加任何类型的锁（排他锁不可与其他锁共存），直到T释放A上的锁。它防止任何其它事务获取资源上的锁，直到在事务的末尾将资源上的原始锁释放为止。可以通过&lt;code&gt;select ... for update&lt;/code&gt;手动加锁，也可以通过增删改操作自动加锁，通过&lt;code&gt;Commit&lt;/code&gt;、&lt;code&gt;Rollback&lt;/code&gt;来释放锁。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;意向锁：Intention Locks&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;说起意向锁，大家先来考虑一下这个问题：假设存在两个事务A和B对表&lt;code&gt;test&lt;/code&gt;进行操作，首先事务A对第十行数据加了一把读锁，锁住了该行数据，让这一行只能读，不能写；然后事务B想要对该表加一把表级的写锁，那么事务B能否加锁成功呢？思考两秒钟...答案当然是否定的，即事务B无法加锁成功。如果我们假设它加锁成功的话，那么理论上它就能修改表中的任意一行，这将与事务A持有的行级锁（读锁）产生冲突。而数据库想避免这种冲突的话，就需要将事务B的加锁申请给阻塞住，直到事务A的行锁被释放。那么问题来了，数据库是怎么判断这种冲突的呢？我们可以想到两种方案：一、判断表是否已被其他事务用表锁锁表；二、判断表中的每一行是否已被行锁锁住。很显然，如果采用第二种方法的话，需要一行一行去遍历整张表，效率太慢进而造成系统消耗，所以我们选择第一种方法，这也就是意向锁是表锁的原因。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;意向锁是放置在资源层次结构的一个级别上的锁，以保护较低级别资源上的共享锁或排它锁，意向锁无法手动创建。如果对任一结点加锁时，必须先对它的上层结点加意向锁也就是如果对一个结点加意向锁，则说明该结点的下层结点正在被加锁。意向锁的执行流程：如果另一个任务试图在该表级别上应用共享或排它锁，则受到由第一个任务控制的表级别意向锁的阻塞，第二个任务在锁定该表前不必检查各个页或行锁，而只需检查表上的意向锁，所以意向锁不是用来给数据加锁的，而是用来判断数据有没有存在锁的标志。下面介绍两种常用的意向锁：意向共享锁（&lt;code&gt;Intent Share Lock&lt;/code&gt;，简称IS锁）、意向排它锁（&lt;code&gt;Intent Exclusive Lock&lt;/code&gt;，简称IX锁）。&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;意向共享锁（IS）：事务打算给数据行加行共享锁，事务在给一个数据行加共享锁前必须先取得该表的IS锁。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;意向排他锁（IX）：事务打算给数据行加行排他锁，事务在给一个数据行加排他锁前必须先取得该表的IX锁。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;意向锁的兼容关系如下：&lt;img data-ratio=&quot;0.7116154873164219&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/55HPQyguvpMrMeosQsorL6KXxxpXtctCGOuWgxu52D7rq7W890KUNPHnxpRdtCoS03AdgQWHXibia10HkMXkdI0g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;749&quot;/&gt;&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;其他锁简介（了解）&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;InnoDB还包含插入意向锁、自增锁和空间锁。&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;插入意向锁（&lt;code&gt;Insert Intention Locks&lt;/code&gt;）：是间隙锁的一种，它的目的是为了提高插入性能。在多个事务对同一个索引中的同一个范围区间插入记录时，如果插入的位置不冲突，不会阻塞彼此，主要是不需要去申请排他锁。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;自增锁（&lt;code&gt;AUTO-INC Locks&lt;/code&gt;）：自增锁是&lt;code&gt;MySQL&lt;/code&gt;中一种特殊的锁，如果表中存在自增字段，&lt;code&gt;MySQL&lt;/code&gt;便会自动维护一个自增锁。和自增锁相关的一个参数为（5.1.22版本之后加入）&lt;code&gt;innodb_autoinc_lock_mode&lt;/code&gt;，可以设定3个值，0：traditonal（每次都会产生表锁，可以控制插入顺序，效率低）；1：consecutive（会产生一个轻量锁，&lt;code&gt;simple insert&lt;/code&gt;会获得批量的锁，保证连续插入，默认）；2：interleaved（不会锁表，来一个处理一个，并发最高，会存在复制问题）。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;总结&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;MySQL&lt;/code&gt;这三种锁的特性可大致归纳如下：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;表级锁（偏读）：开销小，加锁快；不会出现死锁；锁定粒度大，发生锁冲突的概率最高，并发度最低。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;行级锁（偏写）：开销大，加锁慢；会出现死锁；锁定粒度最小，发生锁冲突的概率最低，并发度也最高。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;页面锁：开销和加锁时间界于表锁和行锁之间；会出现死锁；锁定粒度界于表锁和行锁之间，并发度一般。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;以上就是今天的全部内容了，如果你感兴趣的话，可以关注微信公众号“阿Q说代码”！你也可以后台留言领取&lt;code&gt;java&lt;/code&gt;干货资料:学习笔记与大厂面试题。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;内容推荐&lt;/span&gt;&lt;/strong&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzI5MDg2NjEzNA==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/55HPQyguvpMAn4Ha81WVBfsKnC9ficVemZff27LiaSoKX83JqwnNmrNhb4D4oAjW7wiaDwtkLTTCRs1A1hanfNu9g/0?wx_fmt=png&quot; data-nickname=&quot;阿Q说代码&quot; data-alias=&quot;AQ_Shuo&quot; data-signature=&quot;每天带给你不一样的精彩！&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;觉得还不错？&lt;/span&gt;&lt;span&gt;记得一键四连呦👇&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;/section&gt;
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>3cef4cc8ead3ba832247b2e7390b7bde</guid>
-<title>Java 8 中的 Lambda 表达式</title>
-<link>https://toutiao.io/k/zahd9yv</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;p&gt;作者：汤圆&lt;/p&gt;
-
-&lt;p&gt;个人博客：&lt;a href=&quot;http://www.javalover.cc&quot;&gt;javalover.cc&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2&gt;前言&lt;/h2&gt;
-
-&lt;p&gt;大家好啊，我是汤圆，今天给大家带来的是《Java8中的Lambda表达式》，希望对大家有帮助，谢谢&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;文章纯属原创，个人总结难免有差错，如果有，麻烦在评论区回复或后台私信，谢啦&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2&gt;简介&lt;/h2&gt;
-
-&lt;p&gt;Lambda表达式是一个可传递的代码块，可以在以后执行一次或多次；&lt;/p&gt;
-
-&lt;p&gt;下面贴个对比代码：&lt;/p&gt;
-
-&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;// Java8之前：旧的写法
-Runnable runnable = new Runnable() {
-  @Override
-  public void run() {
-    System.out.println(&quot;old run&quot;);
-  }
-};
-Thread t = new Thread(runnable);
-
-// Java8之后：新的写法
-Runnable runnable1 = ()-&amp;gt;{
-  System.out.println(&quot;lambda run&quot;);
-};
-Thread t1 = new Thread(runnable1);
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;可以看到，有了lambda，代码变得简洁多了&lt;/p&gt;
-
-&lt;p&gt;你可以把lambda当作一个语法糖&lt;/p&gt;
-
-&lt;p&gt;下面让我们一起来探索lambda的美好世界吧&lt;/p&gt;
-
-&lt;h2&gt;目录&lt;/h2&gt;
-
-&lt;p&gt;下面列出本文的目录&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;lambda的语法&lt;/li&gt;
-&lt;li&gt;为啥引入lambda&lt;/li&gt;
-&lt;li&gt;什么是函数式接口&lt;/li&gt;
-&lt;li&gt;什么是行为参数化&lt;/li&gt;
-&lt;li&gt;手写一个函数式接口&lt;/li&gt;
-&lt;li&gt;常用的函数式接口&lt;/li&gt;
-&lt;li&gt;什么是方法引用&lt;/li&gt;
-&lt;li&gt;什么是构造引用&lt;/li&gt;
-&lt;li&gt;lambda的组合操作&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2&gt;正文&lt;/h2&gt;
-
-&lt;h3&gt;1. lambda的语法&lt;/h3&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://tva1.sinaimg.cn/large/008eGmZEgy1gpjlspdm1oj30jv04t0t9.jpg&quot; alt=&quot;lambda语法&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;下面分别说下语法中的三个组成部分&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;参数: &lt;code&gt;( Dog dog )&lt;/code&gt;
-
-&lt;ul&gt;
-&lt;li&gt;参数类型可省略（当编译器可以自动推导时），比如&lt;code&gt;Comparator&amp;lt;String&amp;gt; comparatorTest = (a, b)-&amp;gt;a.length()-b.length();&lt;/code&gt;,可以推导出a,b都为String&lt;/li&gt;
-&lt;li&gt;当参数类型可省略，且只有一个参数时，括弧也可以省略（但是个人习惯保留）&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;符号： &lt;code&gt;-&amp;gt;&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;主体：&lt;code&gt;{ System.out.println(&quot;javalover&quot;); }&lt;/code&gt;
-
-&lt;ul&gt;
-&lt;li&gt;如果是一条语句，则需要加大括号和分号&lt;code&gt;{;}&lt;/code&gt;（比如上图所示）&lt;/li&gt;
-&lt;li&gt;如果是一个表达式，则直接写，啥也不加（比如&lt;code&gt;a.length()- b.length()&lt;/code&gt;）&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3&gt;2. 为啥引入lambda&lt;/h3&gt;
-
-&lt;p&gt;为了简化代码&lt;/p&gt;
-
-&lt;p&gt;因为Java是面向对象语言，所以在lambda出现之前，我们需要先构造一个对象，然后在对象的方法中实现具体的内容，再把构造的对象传递给某个对象或方法&lt;/p&gt;
-
-&lt;p&gt;但是有了lambda以后，我们可以直接将代码块传递给对象或方法&lt;/p&gt;
-
-&lt;p&gt;现在再回头看下开头的例子&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://tva1.sinaimg.cn/large/008eGmZEgy1gpjml3pt6sj30m2092abo.jpg&quot; alt=&quot;lambda减少了模板代码&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;可以看到，用了lambda表达式后，少了很多模板代码，只剩下一个代码块（最核心的部分）&lt;/p&gt;
-
-&lt;h3&gt;3. 什么是函数式接口&lt;/h3&gt;
-
-&lt;p&gt;就是只定义了一个抽象方法的接口&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;正例：有多个&lt;a href=&quot;https://mp.weixin.qq.com/s/NAO8W8YbnxWZpNEDh1xskQ&quot;&gt;默认方法&lt;/a&gt;，但是如果只有一个抽象方法，那它就是函数式接口，示例代码如下&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;@FunctionalInterface
-public interface FunctionInterfaceDemo {
-    void abstractFun();
-    default void fun1(){
-        System.out.println(&quot;fun1&quot;);    
-    }
-    default void fun2(){
-        System.out.println(&quot;fun2&quot;);
-    }   
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;这里的注解@FunctionalInterface可以省略，但是建议加上，就是为了告诉编译器，这是一个函数式接口，此时如果该接口有多个抽象方法，那么编译器就会报错&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;ul&gt;
-&lt;li&gt;反例：比如A extends B，A和B各有一个抽象方法，那么A就不是函数式接口，示例代码如下&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;// 编译器会报错，Multiple non-overriding abstract methods found in XXX
-@FunctionalInterface
-public interface NoFunctionInterfaceDemo extends FunctionInterfaceDemo{
-  void abstractFun2();
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;上面的父接口FunctionInterfaceDemo中已经有了一个抽象方法，此时NoFunctionInterfaceDemo又定义了一个抽象方法，结果编译器就提示了：存在多个抽象方法&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;在Java8之前，其实我们已经接触过函数式接口&lt;/p&gt;
-
-&lt;p&gt;比如Runnable 和 Comparable &lt;/p&gt;
-
-&lt;p&gt;只是没有注解@FunctionalInterface。&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;那这个函数式接口要怎么用呢？&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;配合lambda食用，效果最佳（就是把lambda传递给函数式接口），示例代码如下：&lt;/p&gt;
-
-&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;new Thread(() -&amp;gt; System.out.println(&quot;run&quot;)).start();
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;其中用到的函数式接口是&lt;code&gt;Runnable&lt;/code&gt;&lt;/p&gt;
-
-&lt;h3&gt;4. 什么是行为参数化&lt;/h3&gt;
-
-&lt;p&gt;就是把&lt;strong&gt;行为&lt;/strong&gt;定义成&lt;strong&gt;参数&lt;/strong&gt;，行为就是&lt;strong&gt;函数式接口&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;类似&lt;a href=&quot;https://mp.weixin.qq.com/s/NgqWzRbrHmO9iTBAQM-7zw&quot;&gt;泛型&lt;/a&gt;中的类型参数化&lt;code&gt;&amp;lt;T&amp;gt;&lt;/code&gt;，类型参数化是把&lt;strong&gt;类型&lt;/strong&gt;定义成&lt;strong&gt;参数&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;行为参数化，通俗点来说：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;就是用&lt;strong&gt;函数式接口&lt;/strong&gt;做&lt;strong&gt;形参&lt;/strong&gt;&lt;/li&gt;
-&lt;li&gt;然后传入接口的各种实现内容（即&lt;strong&gt;lambda表达式&lt;/strong&gt;）作为&lt;strong&gt;实参&lt;/strong&gt;&lt;/li&gt;
-&lt;li&gt;最后在lambda内&lt;strong&gt;实现各种行为&lt;/strong&gt;（好像又回到&lt;a href=&quot;&quot;&gt;多态&lt;/a&gt;的那一节了？这也是为啥多态是Java的三大特性的原因之一，应用太广泛了）&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;这样来看的话，&lt;strong&gt;行为参数化&lt;/strong&gt;和设计模式中的&lt;strong&gt;策略模式&lt;/strong&gt;有点像了（后面章节会分别讲常用的几种设计模式）&lt;/p&gt;
-
-&lt;p&gt;下面我们手写一个函数式接口来加深理解吧&lt;/p&gt;
-
-&lt;h3&gt;5. 手写一个函数式接口&lt;/h3&gt;
-
-&lt;p&gt;下面我们循序渐进，先从简单的需求开始&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;第一步：比如我们想要&lt;strong&gt;读取某个文件&lt;/strong&gt;，那可以有如下方法：&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;public static String processFile() throws IOException {
-    // Java7新增的语法，try(){}，可自动关闭资源，减少了代码的臃肿
-    try( BufferedReader bufferedReader = 
-        new BufferedReader(new  FileReader(&quot;D:\\JavaProject\\JavaBasicDemo\\test.txt&quot;))){
-        return bufferedReader.readLine();
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;可以看到，核心的行为动作就是 &lt;code&gt;return bufferedReader.readLine();&lt;/code&gt;，表示读取第一行的数据并返回&lt;/p&gt;
-
-&lt;p&gt;那如果我们想要读取两行呢？三行？&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;第二步：这时就需要用到上面的&lt;strong&gt;函数式接口&lt;/strong&gt;了，下面就是我们自己编写的函数式接口&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;@FunctionalInterface
-interface FileReadInterface{
-    // 这里接受一个BufferedReader对象，返回一个String对象
-    String process(BufferedReader reader) throws IOException;
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;可以看到，只有一个抽象方法&lt;code&gt;process()&lt;/code&gt;，它就是用来处理第一步中的核心动作（读取文件内容）&lt;/p&gt;
-
-&lt;p&gt;至于想读取多少内容，那就需要我们在lambda表达式中定义了&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;第三步：接下来我们定义多个&lt;strong&gt;lambda表达式&lt;/strong&gt;，用来&lt;strong&gt;传递&lt;/strong&gt;给&lt;strong&gt;函数式接口&lt;/strong&gt;，其中每个lambda表达式就代表了一种不同的行为，代码如下：&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;// 读取一行
-FileReadInterface fileReadInterface = reader -&amp;gt; reader.readLine();
-// 读取两行
-FileReadInterface fileReadInterface2 = reader -&amp;gt; reader.readLine() + reader.readLine();
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;ul&gt;
-&lt;li&gt;第四步：我们需要修改第一步的&lt;code&gt;processFile()&lt;/code&gt;，让其接受一个函数式接口，并调用其中的抽象方法，代码如下：&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;// 参数为第二步我们自己手写的函数式接口
-public static String processFile(FileReadInterface fileReadInterface) throws IOException {
-        try( BufferedReader bufferedReader =
-                 new BufferedReader(new FileReader(&quot;./test.txt&quot;))){
-                    // 这里我们不再自己定义行为，而是交给函数式接口的抽象方法来处理，然后通过lambda表达式的传入来实现多个行为
-          return fileReadInterface.process(bufferedReader);
-        }
-    }
-&lt;/code&gt;&lt;/pre&gt;
-
-
-
-&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;public class FileReaderDemo {
-    public static void main(String[] args) throws IOException {
-                // 第三步： 
-        // lambda表达式1 传给 函数式接口：只读取一行
-        FileReadInterface fileReadInterface = reader -&amp;gt; reader.readLine();
-                // lambda表达式2 传给 函数式接口：只读取两行
-        FileReadInterface fileReadInterface2 = reader -&amp;gt; reader.readLine() + reader.readLine();
-        // 最后一步： 不同的函数式接口的实现，表现出不同的行为
-        String str1 = processFile(fileReadInterface);
-        String str2 = processFile(fileReadInterface2);
-        System.out.println(str1);
-        System.out.println(str2);
-    }
-    // 第四步： 读取文件方法，接受函数式接口作为参数
-    public static String processFile(FileReadInterface fileReadInterface) throws IOException {
-        try( BufferedReader bufferedReader =
-                 new BufferedReader(new FileReader(&quot;./test.txt&quot;))){
-                    // 调用函数式接口中的抽象方法来处理数据                   
-          return fileReadInterface.process(bufferedReader);
-        }
-    }
-    // 第一步：
-  public static String processFile() throws IOException {
-        try( BufferedReader bufferedReader =
-                 new BufferedReader(new FileReader(&quot;./test.txt&quot;))){
-          return bufferReader.readLine();
-        }
-    }
-
-
-}
-
-// 第二步： 我们手写的函数式接口
-@FunctionalInterface
-interface FileReadInterface{
-    String process(BufferedReader reader) throws IOException;
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;其实你会发现，我们手写的这个函数式接口，其实就是&lt;code&gt;Function&amp;lt;T&amp;gt;&lt;/code&gt;去除泛型化后的接口，如下所示：&lt;/p&gt;
-
-&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;@FunctionalInterface
-public interface Function&amp;lt;T, R&amp;gt; {
-    // 都是接受一个参数，返回另一个参数
-  R apply(T t);
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;下面我们列出Java中常用的一些函数式接口，你会发现自带的已经够用了，基本不会需要我们自己去写&lt;/p&gt;
-
-&lt;p&gt;这里的手写只是为了自己实现一遍，可以加深理解程度&lt;/p&gt;
-
-&lt;h3&gt;6. 常用的函数式接口&lt;/h3&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://tva1.sinaimg.cn/large/008eGmZEgy1gpkrz12s52j312u0fkwpt.jpg&quot; alt=&quot;常用的函数式接口&quot;/&gt;&lt;/p&gt;
-
-&lt;h3&gt;7. 什么是方法引用&lt;/h3&gt;
-
-&lt;p&gt;我们先看一个例子&lt;/p&gt;
-
-&lt;p&gt;前面我们写的lambda表达式，其实还可以简化，比如&lt;/p&gt;
-
-&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;// 简化前
-Function&amp;lt;Cat, Integer&amp;gt; function = c-&amp;gt;c.getAge();
-// 简化后
-Function&amp;lt;Cat, Integer&amp;gt; function2 = Cat::getAge;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;其中简化后的&lt;code&gt;Cat::getAge&lt;/code&gt;，我们就叫做&lt;strong&gt;方法引用&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;方法引用就是引用类或对象的方法&lt;/strong&gt;；&lt;/p&gt;
-
-&lt;p&gt;下面我们列出方法引用的三种情况：&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;Object::instanceMethod（对象的实例方法）&lt;/li&gt;
-&lt;li&gt;Class::staticMethod（类的静态方法）&lt;/li&gt;
-&lt;li&gt;Class::instanceMethod（类的实例方法）&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;像我们上面举的例子就是第三种：类的实例方法&lt;/p&gt;
-
-&lt;p&gt;下面我们用代码演示上面的三种方法：&lt;/p&gt;
-
-&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;public class ReferenceDemo {
-    public static void main(String[] args) {
-        // 第一种:引用对象的实例方法
-        Cat cat = new Cat(1);
-        Function&amp;lt;Cat, Integer&amp;gt; methodRef1 = cat::getSum; 
-        // 第二种:引用类的静态方法
-        Supplier&amp;lt;Integer&amp;gt; methodRef2 = Cat::getAverageAge;
-        // 第三种：引用类的实例方法
-        Function&amp;lt;Cat, Integer&amp;gt; methodRef3 = Cat::getAge;
-    }
-}
-class Cat {
-    int age;
-
-    public Cat(int age) {
-        this.age = age;
-    }
-
-    // 获取猫的平均年龄
-    public static int getAverageAge(){
-        return 15;
-    }
-    // 获取两只猫的年龄总和
-    public int getSum(Cat cat){
-        return cat.getAge() + this.getAge();
-    }
-
-    public int getAge() {
-        return age;
-    }    public void setAge(int age) {
-        this.age = age;
-    }
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;为啥要用这个方法引用呢？&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;方法引用好比lambda表达式的语法糖，语法更加简洁，清晰&lt;/p&gt;
-
-&lt;p&gt;一看就知道是调用哪个类或对象的哪个方法&lt;/p&gt;
-
-&lt;h3&gt;8. 什么是构造引用&lt;/h3&gt;
-
-&lt;p&gt;上面介绍了方法引用，就是直接引用某个方法&lt;/p&gt;
-
-&lt;p&gt;这里的构造引用同理可得，就是引用某个类的构造方法&lt;/p&gt;
-
-&lt;p&gt;构造引用的表达式为：&lt;code&gt;Class::new&lt;/code&gt;，仅此一种&lt;/p&gt;
-
-&lt;p&gt;如果你有多个构造函数，那编译器会自己进行推断参数（你看看，多好，多简洁）&lt;/p&gt;
-
-&lt;p&gt;比如下面的代码：&lt;/p&gt;
-
-&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;// 这里调用 new Cat()
-Supplier&amp;lt;Cat&amp;gt; constructRef1 = Cat::new;
-// 这里调用 new Cat(Integer)
-Function&amp;lt;Integer, Cat&amp;gt; constructRef2 = Cat::new;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;9. lambda表达式中引入外部变量的限制&lt;/h3&gt;
-
-&lt;p&gt;要求引入lambda表达式中的变量，必须是最终变量，即该变量不会再被修改&lt;/p&gt;
-
-&lt;p&gt;比如下面的代码：&lt;/p&gt;
-
-&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;public static void main(String[] args) {
-  String str = &quot;javalover.cc&quot;;
-  Runnable runnable = ()-&amp;gt;{
-    str = &quot;1&quot;;// 这里会报错，因为修改了str引用的指向
-    System.out.println(str);
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;可以看到，lambda表达式引用了外面的str引用，但是又在表达式内部做了修改，结果就报错了&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;为啥要有这个限制呢？&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;为了线程安全，因为lambda表达式有一个好处就是只在需要的时候才会执行，而不是调用后立马执行&lt;/p&gt;
-
-&lt;p&gt;这样就会存在多个线程同时执行的并发问题&lt;/p&gt;
-
-&lt;p&gt;所以Java就从根源上解决：不让变量被修改，都是只读的&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;那你可能好奇，我不把str的修改代码放到表达式内部可以吗？&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;也不行，道理是一样的，只要lambda有用到这个变量，那这个变量不管是在哪里被修改，都是不允许的&lt;/p&gt;
-
-&lt;p&gt;不然的话，我这边先执行了一次lambda表达式，结果你就改了变量值，那我第二次执行lambda，不就乱了吗&lt;/p&gt;
-
-&lt;h3&gt;10. lambda的组合操作&lt;/h3&gt;
-
-&lt;p&gt;最后是lambda的必杀技：&lt;strong&gt;组合操作&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;在这里叫组合或者复合都可以&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;概述：组合操作就是先用一个lambda表达式，然后再在后面组合另一个lambda表达式，然后再在后面组合另另一个lambda表达式，然后。。。有点像是链式操作&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;学过JS的都知道Promise，里面的链式操作就和这里的组合操作很像&lt;/p&gt;
-
-&lt;p&gt;用过Lombok的朋友，应该很熟悉@Builder注解，其实就是构造者模式&lt;/p&gt;
-
-&lt;p&gt;下面我们用代码演示下组合操作：&lt;/p&gt;
-
-&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;// 重点代码
-public class ComposeDemo {
-    public static void main(String[] args) {
-        List&amp;lt;Dog&amp;gt; list = Arrays.asList(new Dog(1,2), new Dog(1, 1));
-        // 1. 先按年龄排序（默认递增）
-        // Dog::getAge, 上面介绍的方法引用
-        // comparingInt, 是Comparator的一个静态方法，返回Comparator&amp;lt;T&amp;gt;
-        Comparator&amp;lt;Dog&amp;gt; comparableAge = Comparator.comparingInt(Dog::getAge);
-        // 2. 如果有相同的年龄，则年龄相同的再按体重排序（如果年龄已经比较出大小，则下面的体重就不会再去比较）
-        Comparator&amp;lt;Dog&amp;gt; comparableWeight = Comparator.comparingInt(Dog::getWeight);;
-        // 3. 调用list对象的sort方法排序，参数是Comparator&amp;lt;? super Dog&amp;gt;
-        list.sort(comparableAge.thenComparing(comparableWeight));
-        System.out.println(list);
-    }
-}
-// 非重点代码
-class Dog{
-    private int age;
-    private int weight;
-
-    public Dog(int age, int weight) {
-        this.age = age;
-        this.weight = weight;
-    }
-
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
-    }
-
-    public int getWeight() {
-        return weight;
-    }
-
-    public void setWeight(int weight) {
-        this.weight = weight;
-    }
-
-    @Override
-    public String toString() {
-        return &quot;Dog{&quot; +
-                &quot;age=&quot; + age +
-                &quot;, weight=&quot; + weight +
-                &#x27;}&#x27;;
-    }
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;输出：&lt;code&gt;[Dog{age=1, weight=1}, Dog{age=1, weight=2}]&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;比较的流程如下所示：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://tva1.sinaimg.cn/large/008eGmZEgy1gpksrxyd3rj312y0n6wgw.jpg&quot; alt=&quot;组合操作&quot;/&gt;&lt;/p&gt;
-
-&lt;h2&gt;总结&lt;/h2&gt;
-
-&lt;ol&gt;
-&lt;li&gt;&lt;p&gt;lambda的语法:  参数+符合+表达式或语句，比如&lt;code&gt;(a,b)-&amp;gt;{System.out.println(&quot;javalover.cc&quot;);}&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;函数式接口：只有一个抽象方法，最好加@FunctionalInterface，这样编译器可及时发现错误，javadoc也说明这是一个函数式接口（可读性）&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;行为参数化：就是函数式接口作为参数，然后再将lambda表达式传给函数式接口，通过不同的lambda内容实现不同的行为&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;方法引用：lambda的语法糖，总共有三种:&lt;/p&gt;
-
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;构造引用：就一种，编译器自己可判断是哪个构造函数，语法为&lt;code&gt;Class::new&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;在lambda中引入外部变量，必须保证这个变量是最终变量，即不再被修改&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;lambda的组合操作，就是链式操作，组合是通过函数式接口的静态方法来组合（静态方法会返回另一个函数式接口的对象）&lt;/p&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;比如&lt;code&gt;list.sort(comparableAge.thenComparing(comparableWeight));&lt;/code&gt;&lt;/p&gt;
-
-&lt;h2&gt;后记&lt;/h2&gt;
-
-&lt;p&gt;最后，感谢大家的观看，谢谢&lt;/p&gt;
-&lt;/div&gt;
-  &lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>adf7c4d257a3fa50308889a21a11e43d</guid>
+<title>谈谈 Kubernetes 的问题和局限性</title>
+<link>https://toutiao.io/k/0t3be9z</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;article-content&quot;&gt;&lt;p&gt;2014 年发布的 Kubernetes 在今天俨然已成为容器编排领域的事实标准，相信谈到 Kubernetes 的开发者都会一再复述上述现象。如下图所示，今天的大多数个人或者团队都会选择 Kubernetes 管理容器，而也有 75% 的人会在生产环境中使用 Kubernetes。&lt;/p&gt;&lt;p&gt;&lt;img src=&quot;https://img.draveness.me/kube-in-prod-2021-04-17-16186676828761.png&quot; alt=&quot;kube-in-prod&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;图 1 - Kubernetes 容器编排&lt;sup id=&quot;fnref:1&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote-ref&quot; role=&quot;doc-noteref&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;在这种全民学习和使用 Kubernetes 的大背景下，我们也应该非常清晰地知道 Kubernetes 有哪些局限性。虽然 Kubernetes 能够解决容器编排领域的大多数问题，但是仍然有一些场景是它很难处理、甚至无法处理的，只有对这些潜在的风险有清晰的认识，才能更好地驾驭这项技术，这篇文章将从集群管理和应用场景两个部分谈谈 Kubernetes 社区目前的发展和一些局限性。&lt;/p&gt;&lt;h2 id=&quot;集群管理&quot;&gt;集群管理&lt;/h2&gt;&lt;p&gt;集群是一组能够在一起协同工作的计算机，我们可以将集群中的所有计算机看成一个整体，所有资源调度系统都是以集群为维度进行管理的，集群中的所有机器构成了资源池，这个巨大的资源池会为待运行的容器提供资源执行计算任务，这里简单谈一谈 Kubernetes 集群管理面对的几个复杂问题。&lt;/p&gt;&lt;h3 id=&quot;水平扩展性&quot;&gt;水平扩展性&lt;/h3&gt;&lt;p&gt;集群大小是我们在评估资源管理系统时需要关注的重要指标之一，然而 Kubernetes 能够管理的集群规模远远小于业界的其他资源管理系统。集群大小为什么重要呢，我们先来看另一个同样重要的指标 — 资源利用率，很多工程师可能没有在公有云平台上申请过资源，这些资源都相当昂贵，在 AWS 上申请一个与主机差不多配置的虚拟机实例（8 CPU、16 GB）每个月大概需要 150 美金，约为 1000 人民币&lt;sup id=&quot;fnref:2&quot;&gt;&lt;a href=&quot;#fn:2&quot; class=&quot;footnote-ref&quot; role=&quot;doc-noteref&quot;&gt;2&lt;/a&gt;&lt;/sup&gt;。&lt;/p&gt;&lt;p&gt;&lt;img src=&quot;https://img.draveness.me/aws-instance-pricing-2021-04-17-16186676828787.png&quot; alt=&quot;aws-instance-pricing&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;图 2 - AWS EC2 价格&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;大多数的集群都会使用 48 CPU 或者 64 CPU 的物理机或者虚拟机作为集群中的节点，如果我们的集群中需要包含 5,000 个节点，那么这些节点每个月大概要 8,000,000 美元，约为 50,000,000 人民币，在这样的集群中&lt;strong&gt;提升 1% 的资源利用率就相当于每个月节省了 500,000 的成本&lt;/strong&gt;。&lt;/p&gt;&lt;p&gt;多数在线任务的资源利用率都很低，更大的集群意味着能够运行更多的工作负载，而多种高峰和低谷期不同的负载部署在一起可以实现超售，这样能够显著地提高集群的资源利用率，如果单个集群的节点数足够多，我们在部署不同类型的任务时会有更合理的组合，可以完美错开不同服务的高峰期。&lt;/p&gt;&lt;p&gt;Kubernetes 社区对外宣传的是单个集群最多支持 5,000 节点，Pod 总数不超过 150,000，容器总数不超过 300,000 以及单节点 Pod 数量不超过 100 个&lt;sup id=&quot;fnref:3&quot;&gt;&lt;a href=&quot;#fn:3&quot; class=&quot;footnote-ref&quot; role=&quot;doc-noteref&quot;&gt;3&lt;/a&gt;&lt;/sup&gt;，与几万节点的 Apache Mesos 集群、50,000 节点的微软 YARN 集群&lt;sup id=&quot;fnref:4&quot;&gt;&lt;a href=&quot;#fn:4&quot; class=&quot;footnote-ref&quot; role=&quot;doc-noteref&quot;&gt;4&lt;/a&gt;&lt;/sup&gt;相比，Kubernetes 的集群规模整整差了一个数量级。虽然阿里云的工程师也通过优化 Kubernetes 的各个组件实现了 5 位数的集群规模，但是与其他的资源管理方式相比却有比较大的差距&lt;sup id=&quot;fnref:5&quot;&gt;&lt;a href=&quot;#fn:5&quot; class=&quot;footnote-ref&quot; role=&quot;doc-noteref&quot;&gt;5&lt;/a&gt;&lt;/sup&gt;。&lt;/p&gt;&lt;p&gt;&lt;img src=&quot;https://img.draveness.me/Apache-Mesos-vs-Hadoop-YARN-2021-04-17-16186676828795.jpg&quot; alt=&quot;Apache-Mesos-vs-Hadoop-YARN&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;图 3 - Apache Mesos 与 Hadoop YARN&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;需要注意的是 Kubernetes 社区虽然对外宣称单集群可以支持 5,000 节点，同时社区也有各种各样的集成测试保证每个改动都不会影响它的伸缩性&lt;sup id=&quot;fnref:6&quot;&gt;&lt;a href=&quot;#fn:6&quot; class=&quot;footnote-ref&quot; role=&quot;doc-noteref&quot;&gt;6&lt;/a&gt;&lt;/sup&gt;，但是 Kubernetes 真的非常复杂，我们没有办法保证你使用的每个功能在扩容的过程中都不出问题。而在生产环境中，我们甚至可能在集群扩容到 1000 ~ 1500 节点时遇到瓶颈。&lt;/p&gt;&lt;p&gt;每个稍具规模的大公司都想要实现更大规模的 Kubernetes 集群，但是这不是一个改几行代码就能解决的简单问题，它可能需要我们限制 Kubernetes 中一些功能的使用，在扩容的过程中，etcd、API 服务器、调度器以及控制器都有可能出现问题。社区中已经有一些开发者注意到了其中的一些问题，例如在节点上增加缓存降低 API 服务器的负载&lt;sup id=&quot;fnref:7&quot;&gt;&lt;a href=&quot;#fn:7&quot; class=&quot;footnote-ref&quot; role=&quot;doc-noteref&quot;&gt;7&lt;/a&gt;&lt;/sup&gt;，但是要推动类似的改变还是很困难的，有志之士可以尝试在社区推动类似的项目。&lt;/p&gt;&lt;h3 id=&quot;多集群管理&quot;&gt;多集群管理&lt;/h3&gt;&lt;p&gt;单个集群的容量再大也无法解决企业面对的问题，哪怕有一天 Kubernetes 集群可以达到 50,000 节点的规模，我们仍然需要管理多个集群，多集群管理也是 Kubernetes 社区目前正在探索的方向，社区中的多集群兴趣小组（SIG Multi-Cluster）目前就在完成相关的工作&lt;sup id=&quot;fnref:8&quot;&gt;&lt;a href=&quot;#fn:8&quot; class=&quot;footnote-ref&quot; role=&quot;doc-noteref&quot;&gt;8&lt;/a&gt;&lt;/sup&gt;。在作者看来，Kubernetes 的多集群会带来资源不平衡、跨集群访问困难以及提高运维和管理成本三大问题，我们在这里谈一谈目前在开源社区和业界几种可供参考和选择的解决方案。&lt;/p&gt;&lt;h4 id=&quot;kubefed&quot;&gt;kubefed&lt;/h4&gt;&lt;p&gt;首先要介绍的是 &lt;a href=&quot;https://github.com/kubernetes-sigs/kubefed&quot;&gt;kubefed&lt;/a&gt;，该项目是 Kubernetes 社区给出的解决方案，它同时提供了跨集群的资源和网络管理的功能，社区的多集群兴趣小组（SIG Multi-Cluster）负责了该项目的开发工作：&lt;/p&gt;&lt;p&gt;&lt;img src=&quot;https://img.draveness.me/kubernetes-federation-2021-04-17-16186676828802.png&quot; alt=&quot;kubernetes-federation&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;图 4 - Kubernetes 联邦&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;kubefed 通过一个中心化的联邦控制面板管理多集群中的元数据，上层的控制面板会为管理器群中的资源创建对应的联邦对象，例如：&lt;code&gt;FederatedDeployment&lt;/code&gt;：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span&gt;kind&lt;/span&gt;: &lt;span&gt;FederatedDeployment&lt;/span&gt;
+...
+&lt;span&gt;spec&lt;/span&gt;:
+  &lt;span&gt;...&lt;/span&gt;
+  &lt;span&gt;overrides&lt;/span&gt;:
+  &lt;span&gt;# Apply overrides to cluster1&lt;/span&gt;
+    - &lt;span&gt;clusterName&lt;/span&gt;: &lt;span&gt;cluster1&lt;/span&gt;
+      &lt;span&gt;clusterOverrides&lt;/span&gt;:
+        &lt;span&gt;# Set the replicas field to 5&lt;/span&gt;
+        - &lt;span&gt;path&lt;/span&gt;: &lt;span&gt;&quot;/spec/replicas&quot;&lt;/span&gt;
+          &lt;span&gt;value&lt;/span&gt;: &lt;span&gt;5&lt;/span&gt;
+        &lt;span&gt;# Set the image of the first container&lt;/span&gt;
+        - &lt;span&gt;path&lt;/span&gt;: &lt;span&gt;&quot;/spec/template/spec/containers/0/image&quot;&lt;/span&gt;
+          &lt;span&gt;value&lt;/span&gt;: &lt;span&gt;&quot;nginx:1.17.0-alpine&quot;&lt;/span&gt;
+        &lt;span&gt;# Ensure the annotation &quot;foo: bar&quot; exists&lt;/span&gt;
+        - &lt;span&gt;path&lt;/span&gt;: &lt;span&gt;&quot;/metadata/annotations&quot;&lt;/span&gt;
+          &lt;span&gt;op&lt;/span&gt;: &lt;span&gt;&quot;add&quot;&lt;/span&gt;
+          &lt;span&gt;value&lt;/span&gt;:
+            &lt;span&gt;foo&lt;/span&gt;: &lt;span&gt;bar&lt;/span&gt;
+        &lt;span&gt;# Ensure an annotation with key &quot;foo&quot; does not exist&lt;/span&gt;
+        - &lt;span&gt;path&lt;/span&gt;: &lt;span&gt;&quot;/metadata/annotations/foo&quot;&lt;/span&gt;
+          &lt;span&gt;op&lt;/span&gt;: &lt;span&gt;&quot;remove&quot;&lt;/span&gt;
+        &lt;span&gt;# Adds an argument `-q` at index 0 of the args list&lt;/span&gt;
+        &lt;span&gt;# this will obviously shift the existing arguments, if any&lt;/span&gt;
+        - &lt;span&gt;path&lt;/span&gt;: &lt;span&gt;&quot;/spec/template/spec/containers/0/args/0&quot;&lt;/span&gt;
+          &lt;span&gt;op&lt;/span&gt;: &lt;span&gt;&quot;add&quot;&lt;/span&gt;
+          &lt;span&gt;value&lt;/span&gt;: &lt;span&gt;&quot;-q&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;上层的控制面板会根据联邦对象 &lt;code&gt;FederatedDeployment&lt;/code&gt; 的规格文件生成对应的 &lt;code&gt;Deployment&lt;/code&gt; 并推送到下层的集群，下层集群可以正常根据 &lt;code&gt;Deployment&lt;/code&gt; 中的定义创建特定数量的副本。&lt;/p&gt;&lt;p&gt;&lt;img src=&quot;https://img.draveness.me/kubernetes-federated-resources-2021-04-17-16186676828808.png&quot; alt=&quot;kubernetes-federated-resources&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;图 5 - 从联邦对象到普通对象&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;code&gt;FederatedDeployment&lt;/code&gt; 只是一种最简单的分发策略，在生产环境中我们希望通过联邦的集群实现容灾等复杂功能，这时可以利用 &lt;code&gt;ReplicaSchedulingPreference&lt;/code&gt; 在不同集群中实现更加智能的分发策略：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span&gt;apiVersion&lt;/span&gt;: &lt;span&gt;scheduling.kubefed.io/v1alpha1&lt;/span&gt;
+&lt;span&gt;kind&lt;/span&gt;: &lt;span&gt;ReplicaSchedulingPreference&lt;/span&gt;
+&lt;span&gt;metadata&lt;/span&gt;:
+  &lt;span&gt;name&lt;/span&gt;: &lt;span&gt;test-deployment&lt;/span&gt;
+  &lt;span&gt;namespace&lt;/span&gt;: &lt;span&gt;test-ns&lt;/span&gt;
+&lt;span&gt;spec&lt;/span&gt;:
+  &lt;span&gt;targetKind&lt;/span&gt;: &lt;span&gt;FederatedDeployment&lt;/span&gt;
+  &lt;span&gt;totalReplicas&lt;/span&gt;: &lt;span&gt;9&lt;/span&gt;
+  &lt;span&gt;clusters&lt;/span&gt;:
+    &lt;span&gt;A&lt;/span&gt;:
+      &lt;span&gt;minReplicas&lt;/span&gt;: &lt;span&gt;4&lt;/span&gt;
+      &lt;span&gt;maxReplicas&lt;/span&gt;: &lt;span&gt;6&lt;/span&gt;
+      &lt;span&gt;weight&lt;/span&gt;: &lt;span&gt;1&lt;/span&gt;
+    &lt;span&gt;B&lt;/span&gt;:
+      &lt;span&gt;minReplicas&lt;/span&gt;: &lt;span&gt;4&lt;/span&gt;
+      &lt;span&gt;maxReplicas&lt;/span&gt;: &lt;span&gt;8&lt;/span&gt;
+      &lt;span&gt;weight&lt;/span&gt;: &lt;span&gt;2&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;上述调度的策略可以实现工作负载在不同集群之间的权重，在集群资源不足甚至出现问题时将实例迁移到其他集群，这样既能够提高服务部署的灵活性和可用性，基础架构工程师也可以更好地平衡多个集群的负载。&lt;/p&gt;&lt;p&gt;我们可以认为 kubefed 的主要作用是将多个松散的集群组成强耦合的联邦集群，并提供更加高级的网络和部署功能，这样我们可以更容易地解决集群之间资源不平衡和连通性的一些问题，然而该项目的关注点不包含集群生命周期的管理，&lt;/p&gt;&lt;h4 id=&quot;集群接口&quot;&gt;集群接口&lt;/h4&gt;&lt;p&gt;&lt;a href=&quot;https://cluster-api.sigs.k8s.io/&quot;&gt;Cluster API&lt;/a&gt; 也是 Kubernetes 社区中与多集群管理相关的项目，该项目由集群生命周期小组（SIG Cluster-Lifecycle）负责开发，其主要目标是通过声明式的 API 简化多集群的准备、更新和运维工作，你在该项目的 &lt;a href=&quot;https://github.com/kubernetes-sigs/cluster-api/blob/master/docs/scope-and-objectives.md&quot;&gt;设计提案&lt;/a&gt; 中能够找到它的职责范围&lt;sup id=&quot;fnref:9&quot;&gt;&lt;a href=&quot;#fn:9&quot; class=&quot;footnote-ref&quot; role=&quot;doc-noteref&quot;&gt;9&lt;/a&gt;&lt;/sup&gt;。&lt;/p&gt;&lt;p&gt;&lt;img src=&quot;https://img.draveness.me/k8s-cluster-api-concepts-2021-04-17-16186676828819.png&quot; alt=&quot;k8s-cluster-api-concepts&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;图 6 - Cluster API 概念&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;在该项目中最重要的资源就是 &lt;code&gt;Machine&lt;/code&gt;，它表示一个 Kubernetes 集群中的节点。当该资源被创建时，特定提供商的控制器会根据机器的定义初始化并将新的节点注册到集群中，在该资源被更新或者删除时，也会执行操作达到用户的状态。&lt;/p&gt;&lt;p&gt;这种策略与阿里的多集群管理的方式有一些相似，它们都使用声明式的 API 定义机器和集群的状态，然后使用 Kubernetes 原生的 Operator 模型在更高一层的集群中管理下层集群，这能够极大降低集群的运维成本并提高集群的运行效率&lt;sup id=&quot;fnref:10&quot;&gt;&lt;a href=&quot;#fn:10&quot; class=&quot;footnote-ref&quot; role=&quot;doc-noteref&quot;&gt;10&lt;/a&gt;&lt;/sup&gt;，不过类似的项目都没有考虑跨集群的资源管理和网络管理。&lt;/p&gt;&lt;h2 id=&quot;应用场景&quot;&gt;应用场景&lt;/h2&gt;&lt;p&gt;我们在这一节将谈谈 Kubernetes 中一些有趣的应用场景，其中包括应用分发方式的现状、批处理调度任务以及硬多租户在集群中的支持，这些是社区中比较关注的问题，也是 Kubernetes 目前的盲点。&lt;/p&gt;&lt;h3 id=&quot;应用分发&quot;&gt;应用分发&lt;/h3&gt;&lt;p&gt;Kubernetes 主项目提供了几种部署应用的最基本方式，分别是 &lt;code&gt;Deployment&lt;/code&gt;、&lt;code&gt;StatefulSet&lt;/code&gt; 和 &lt;code&gt;DaemonSet&lt;/code&gt;，这些资源分别适用于无状态服务、有状态服务和节点上的守护进程，这些资源能够提供最基本的策略，但是它们无法处理更加复杂的应用。&lt;/p&gt;&lt;p&gt;&lt;img src=&quot;https://img.draveness.me/kubernetes-basic-resources-2021-04-17-16186676828825.png&quot; alt=&quot;kubernetes-basic-resources&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;图 7 - Kubernetes 应用管理&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;随着 CRD 的引入，目前社区的应用管理小组（SIG Apps）基本不会向 Kubernetes 主仓库引入较大的改动，大多数的改动都是在现有资源上进行的修补，很多常见的场景，例如只运行一次的 DaemonSet&lt;sup id=&quot;fnref:11&quot;&gt;&lt;a href=&quot;#fn:11&quot; class=&quot;footnote-ref&quot; role=&quot;doc-noteref&quot;&gt;11&lt;/a&gt;&lt;/sup&gt; 以及金丝雀和蓝绿部署等功能，现在的资源也存在很多问题，例如 StatefulSet 在初始化容器中卡住无法回滚和更新&lt;sup id=&quot;fnref:12&quot;&gt;&lt;a href=&quot;#fn:12&quot; class=&quot;footnote-ref&quot; role=&quot;doc-noteref&quot;&gt;12&lt;/a&gt;&lt;/sup&gt;。&lt;/p&gt;&lt;p&gt;我们可以理解社区不想在 Kubernetes 中维护更多的基本资源，通过几个基本的资源可以覆盖 90% 的场景，剩下的各种复杂场景可以让其他社区通过 CRD 的方式实现。不过作者认为如果社区能够在上游实现更多高质量的组件，这对于整个生态都是很有价值并且很重要的工作，需要注意的是假如各位读者想要在 Kubernetes 项目中成为贡献者，SIG Apps 可能不是一个很好的选择。&lt;/p&gt;&lt;h3 id=&quot;批处理调度&quot;&gt;批处理调度&lt;/h3&gt;&lt;p&gt;机器学习、批处理任务和流式任务等工作负载的运行从 Kubernetes 诞生第一天起到今天都不是它的强项，大多数的公司都会使用 Kubernetes 运行在线服务处理用户请求，用 Yarn 管理的集群运行批处理的负载。&lt;/p&gt;&lt;p&gt;&lt;img src=&quot;https://img.draveness.me/hadoop-yarn-2021-04-17-16186676828831.png&quot; alt=&quot;hadoop-yarn&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;图 8 - Hadoop Yarn&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;在线任务和离线任务往往是两种截然不同的作业，大多数的在线任务都是无状态的服务，它们可以在不同机器上进行迁移，彼此很难有极强的依赖关系；但是很多离线任务的拓扑结构都很复杂，有些任务需要多个作业一同执行，而有些任务需要按照依赖关系先后执行，这种复杂的调度场景在 Kubernetes 中比较难以处理。&lt;/p&gt;&lt;p&gt;在 Kubernetes 调度器引入调度框架之前，所有的 Pod 在调度器看来是没有任何关联的，不过有了调度框架，我们可以在调度系统中实现更加复杂的调度策略，例如保证一组 Pod 同时调度的 PodGroup&lt;sup id=&quot;fnref:13&quot;&gt;&lt;a href=&quot;#fn:13&quot; class=&quot;footnote-ref&quot; role=&quot;doc-noteref&quot;&gt;13&lt;/a&gt;&lt;/sup&gt;，这对于 Spark 和 TensorFlow 任务非常有用。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span&gt;# PodGroup CRD spec&lt;/span&gt;
+&lt;span&gt;apiVersion&lt;/span&gt;: &lt;span&gt;scheduling.sigs.k8s.io/v1alpha1&lt;/span&gt;
+&lt;span&gt;kind&lt;/span&gt;: &lt;span&gt;PodGroup&lt;/span&gt;
+&lt;span&gt;metadata&lt;/span&gt;:
+  &lt;span&gt;name&lt;/span&gt;: &lt;span&gt;nginx&lt;/span&gt;
+&lt;span&gt;spec&lt;/span&gt;:
+  &lt;span&gt;scheduleTimeoutSeconds&lt;/span&gt;: &lt;span&gt;10&lt;/span&gt;
+  &lt;span&gt;minMember&lt;/span&gt;: &lt;span&gt;3&lt;/span&gt;
+---
+&lt;span&gt;# Add a label `pod-group.scheduling.sigs.k8s.io` to mark the pod belongs to a group&lt;/span&gt;
+&lt;span&gt;labels&lt;/span&gt;:
+  &lt;span&gt;pod-group.scheduling.sigs.k8s.io&lt;/span&gt;: &lt;span&gt;nginx&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Volcano 也是在 Kubernetes 上构建的批处理任务管理系统&lt;sup id=&quot;fnref:14&quot;&gt;&lt;a href=&quot;#fn:14&quot; class=&quot;footnote-ref&quot; role=&quot;doc-noteref&quot;&gt;14&lt;/a&gt;&lt;/sup&gt;，它能够处理机器学习、深度学习以及其他大数据应用，可以支持包括 TensorFlow、Spark、PyTorch 和 MPI 在内的多个框架。&lt;/p&gt;&lt;p&gt;&lt;img src=&quot;https://img.draveness.me/volcano-logo-2021-04-17-16186676828837.png&quot; alt=&quot;volcano-logo&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;图 9 - Volcano&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;虽然 Kubernetes 能够运行一些批处理任务，但是距离在这个领域上取代 Yarn 等老牌资源管理系统上还有非常大的差距，相信在较长的一段时间内，大多数公司都会同时维护 Kubernetes 和 Yarn 两种技术栈，分别管理和运行不同类型的工作负载。&lt;/p&gt;&lt;h3 id=&quot;硬多租户&quot;&gt;硬多租户&lt;/h3&gt;&lt;p&gt;多租户是指同一个软件实例可以为不同的用户组提供服务，Kubernetes 的多租户是指多个用户或者用户组使用同一个 Kubernetes 集群，今天的 Kubernetes 还很难做到硬多租户支持，也就是同一个集群的多个租户不会相互影响，也感知不到彼此的存在。&lt;/p&gt;&lt;p&gt;硬多租户在 Kubernetes 中是一个很重要、也很困难的课题，合租公寓就是一个典型的多租户场景，多个租客共享房屋内的基础设施，硬多租户要求多个访客之间不会相互影响，你可以想象这有多么困难，Kubernetes 社区甚至有一个工作小组专门讨论和研究相关的问题&lt;sup id=&quot;fnref:15&quot;&gt;&lt;a href=&quot;#fn:15&quot; class=&quot;footnote-ref&quot; role=&quot;doc-noteref&quot;&gt;15&lt;/a&gt;&lt;/sup&gt;，然而虽然感兴趣的工程师很多，但是成果却非常有限。&lt;/p&gt;&lt;p&gt;&lt;img src=&quot;https://img.draveness.me/multi-tenant-2021-04-17-16186676828844.jpg&quot; alt=&quot;multi-tenant&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;图 10 - 多租户&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;尽管 Kubernetes 使用命名空间来划分虚拟机群，然而这也很难实现真正的多租户。多租户的支持到底有哪些作用呢，这里简单列几个多租户带来的好处：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Kubernetes 带来的额外部署成本对于小集群来说非常高昂，稳定的 Kubernetes 集群一般都需要至少三个运行 etcd 的主节点，如果大多数的集群都是小集群，这些额外的机器会带来很高的额外开销；&lt;/li&gt;&lt;li&gt;Kubernetes 中运行的容器可能需要共享物理机和虚拟机，一些开发者可能在公司内部遇到过自己的服务被其他业务影响，因为主机上容器可能隔离了 CPU 和内存资源，但是没有隔离 I/O、网络 和 CPU 缓存等资源，这些资源的隔离是相对困难的；&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;如果 Kubernetes 能够实现硬多租户，这不仅对云服务商和小集群的使用者来说都是个福音，它还能够隔离不同容器之间的影响并防止潜在安全问题的发生，不过这在现阶段还是比较难实现的。&lt;/p&gt;&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;&lt;p&gt;每个技术都有自己的生命周期，越底层的技术生命周期会越长，而越上层的技术生命周期也就越短，虽然 Kubernetes 是当今容器界的扛把子，但是未来的事情没有人可以说的准。我们要时刻清楚手中工具的优点和缺点，花一些时间学习 Kubernetes 中设计的精髓，不过如果在未来的某一天 Kubernetes 也成为了过去，我们也应该感到喜悦，因为会有更好的工具取代它。&lt;/p&gt;&lt;section class=&quot;footnotes&quot; role=&quot;doc-endnotes&quot;&gt;&lt;hr/&gt;&lt;ol&gt;&lt;li id=&quot;fn:1&quot; role=&quot;doc-endnote&quot;&gt;&lt;p&gt;Kubernetes and Container Security and Adoption Trends &lt;a href=&quot;https://www.stackrox.com/kubernetes-adoption-security-and-market-share-for-containers/&quot;&gt;https://www.stackrox.com/kubernetes-adoption-security-and-market-share-for-containers/&lt;/a&gt; &lt;a href=&quot;#fnref:1&quot; class=&quot;footnote-backref&quot; role=&quot;doc-backlink&quot;&gt;↩︎&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;&lt;li id=&quot;fn:2&quot; role=&quot;doc-endnote&quot;&gt;&lt;p&gt;AWS Pricing Calculator &lt;a href=&quot;https://calculator.aws/#/createCalculator/EC2&quot;&gt;https://calculator.aws/#/createCalculator/EC2&lt;/a&gt; &lt;a href=&quot;#fnref:2&quot; class=&quot;footnote-backref&quot; role=&quot;doc-backlink&quot;&gt;↩︎&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;&lt;li id=&quot;fn:3&quot; role=&quot;doc-endnote&quot;&gt;&lt;p&gt;Considerations for large clusters &lt;a href=&quot;https://kubernetes.io/docs/setup/best-practices/cluster-large/&quot;&gt;https://kubernetes.io/docs/setup/best-practices/cluster-large/&lt;/a&gt; &lt;a href=&quot;#fnref:3&quot; class=&quot;footnote-backref&quot; role=&quot;doc-backlink&quot;&gt;↩︎&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;&lt;li id=&quot;fn:4&quot; role=&quot;doc-endnote&quot;&gt;&lt;p&gt;How Microsoft drives exabyte analytics on the world’s largest YARN cluster &lt;a href=&quot;https://azure.microsoft.com/en-us/blog/how-microsoft-drives-exabyte-analytics-on-the-world-s-largest-yarn-cluster/&quot;&gt;https://azure.microsoft.com/en-us/blog/how-microsoft-drives-exabyte-analytics-on-the-world-s-largest-yarn-cluster/&lt;/a&gt; &lt;a href=&quot;#fnref:4&quot; class=&quot;footnote-backref&quot; role=&quot;doc-backlink&quot;&gt;↩︎&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;&lt;li id=&quot;fn:5&quot; role=&quot;doc-endnote&quot;&gt;&lt;p&gt;备战双 11！蚂蚁金服万级规模 K8s 集群管理系统如何设计？ &lt;a href=&quot;https://www.sofastack.tech/blog/ant-financial-managing-large-scale-kubernetes-clusters/&quot;&gt;https://www.sofastack.tech/blog/ant-financial-managing-large-scale-kubernetes-clusters/&lt;/a&gt; &lt;a href=&quot;#fnref:5&quot; class=&quot;footnote-backref&quot; role=&quot;doc-backlink&quot;&gt;↩︎&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;&lt;li id=&quot;fn:6&quot; role=&quot;doc-endnote&quot;&gt;&lt;p&gt;sig-scalability-kubemark dashboard &lt;a href=&quot;https://testgrid.k8s.io/sig-scalability-kubemark#kubemark-5000&quot;&gt;https://testgrid.k8s.io/sig-scalability-kubemark#kubemark-5000&lt;/a&gt; &lt;a href=&quot;#fnref:6&quot; class=&quot;footnote-backref&quot; role=&quot;doc-backlink&quot;&gt;↩︎&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;&lt;li id=&quot;fn:7&quot; role=&quot;doc-endnote&quot;&gt;&lt;p&gt;Node-local API cache #84248 &lt;a href=&quot;https://github.com/kubernetes/kubernetes/issues/84248&quot;&gt;https://github.com/kubernetes/kubernetes/issues/84248&lt;/a&gt; &lt;a href=&quot;#fnref:7&quot; class=&quot;footnote-backref&quot; role=&quot;doc-backlink&quot;&gt;↩︎&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;&lt;li id=&quot;fn:8&quot; role=&quot;doc-endnote&quot;&gt;&lt;p&gt;Multicluster Special Interest Group &lt;a href=&quot;https://github.com/kubernetes/community/tree/master/sig-multicluster&quot;&gt;https://github.com/kubernetes/community/tree/master/sig-multicluster&lt;/a&gt; &lt;a href=&quot;#fnref:8&quot; class=&quot;footnote-backref&quot; role=&quot;doc-backlink&quot;&gt;↩︎&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;&lt;li id=&quot;fn:9&quot; role=&quot;doc-endnote&quot;&gt;&lt;p&gt;Cluster API Scope and Objectives &lt;a href=&quot;https://github.com/kubernetes-sigs/cluster-api/blob/master/docs/scope-and-objectives.md&quot;&gt;https://github.com/kubernetes-sigs/cluster-api/blob/master/docs/scope-and-objectives.md&lt;/a&gt; &lt;a href=&quot;#fnref:9&quot; class=&quot;footnote-backref&quot; role=&quot;doc-backlink&quot;&gt;↩︎&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;&lt;li id=&quot;fn:10&quot; role=&quot;doc-endnote&quot;&gt;&lt;p&gt;Demystifying Kubernetes as a service – How Alibaba cloud manages 10,000s of Kubernetes clusters &lt;a href=&quot;https://www.cncf.io/blog/2019/12/12/demystifying-kubernetes-as-a-service-how-does-alibaba-cloud-manage-10000s-of-kubernetes-clusters/&quot;&gt;https://www.cncf.io/blog/2019/12/12/demystifying-kubernetes-as-a-service-how-does-alibaba-cloud-manage-10000s-of-kubernetes-clusters/&lt;/a&gt; &lt;a href=&quot;#fnref:10&quot; class=&quot;footnote-backref&quot; role=&quot;doc-backlink&quot;&gt;↩︎&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;&lt;li id=&quot;fn:11&quot; role=&quot;doc-endnote&quot;&gt;&lt;p&gt;Run job on each node once to help with setup #64623 &lt;a href=&quot;https://github.com/kubernetes/kubernetes/issues/64623&quot;&gt;https://github.com/kubernetes/kubernetes/issues/64623&lt;/a&gt; &lt;a href=&quot;#fnref:11&quot; class=&quot;footnote-backref&quot; role=&quot;doc-backlink&quot;&gt;↩︎&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;&lt;li id=&quot;fn:12&quot; role=&quot;doc-endnote&quot;&gt;&lt;p&gt;StatefulSet does not upgrade to a newer version of manifests #78007 &lt;a href=&quot;https://github.com/kubernetes/kubernetes/issues/78007&quot;&gt;https://github.com/kubernetes/kubernetes/issues/78007&lt;/a&gt; &lt;a href=&quot;#fnref:12&quot; class=&quot;footnote-backref&quot; role=&quot;doc-backlink&quot;&gt;↩︎&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;&lt;li id=&quot;fn:13&quot; role=&quot;doc-endnote&quot;&gt;&lt;p&gt;Coscheduling based on PodGroup CRD &lt;a href=&quot;https://github.com/kubernetes-sigs/scheduler-plugins/tree/master/kep/42-podgroup-coscheduling&quot;&gt;https://github.com/kubernetes-sigs/scheduler-plugins/tree/master/kep/42-podgroup-coscheduling&lt;/a&gt; &lt;a href=&quot;#fnref:13&quot; class=&quot;footnote-backref&quot; role=&quot;doc-backlink&quot;&gt;↩︎&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;&lt;li id=&quot;fn:14&quot; role=&quot;doc-endnote&quot;&gt;&lt;p&gt;Volcano · A Kubernetes Native Batch System &lt;a href=&quot;https://github.com/volcano-sh/volcano&quot;&gt;https://github.com/volcano-sh/volcano&lt;/a&gt; &lt;a href=&quot;#fnref:14&quot; class=&quot;footnote-backref&quot; role=&quot;doc-backlink&quot;&gt;↩︎&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;&lt;li id=&quot;fn:15&quot; role=&quot;doc-endnote&quot;&gt;&lt;p&gt;Kubernetes Working Group for Multi-Tenancy &lt;a href=&quot;https://github.com/kubernetes-sigs/multi-tenancy&quot;&gt;https://github.com/kubernetes-sigs/multi-tenancy&lt;/a&gt; &lt;a href=&quot;#fnref:15&quot; class=&quot;footnote-backref&quot; role=&quot;doc-backlink&quot;&gt;↩︎&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;/section&gt;&lt;img src=&quot;https://img.draveness.me/2020-03-11-15839264230785-wechat-qr-code.png&quot; alt=&quot;wechat-account-qrcode&quot;/&gt;&lt;h3&gt;转载申请&lt;/h3&gt;&lt;a rel=&quot;license&quot; href=&quot;http://creativecommons.org/licenses/by/4.0/&quot;&gt;&lt;img alt=&quot;知识共享许可协议&quot; src=&quot;https://img.draveness.me/creative-commons.png&quot;/&gt;&lt;/a&gt;&lt;p&gt;本作品采用&lt;/p&gt;&lt;a rel=&quot;license&quot; href=&quot;http://creativecommons.org/licenses/by/4.0/&quot;&gt;知识共享署名 4.0 国际许可协议&lt;/a&gt;&lt;p&gt;进行许可，转载时请注明原文链接，图片在使用时请保留全部内容，可适当缩放并在引用处附上图片所在的文章链接。&lt;/p&gt;&lt;h3&gt;文章图片&lt;/h3&gt;&lt;p&gt;你可以在 &lt;/p&gt;&lt;a href=&quot;/sketch-and-sketch&quot;&gt;技术文章配图指南&lt;/a&gt;&lt;p&gt; 中找到画图的方法和素材。&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>fc02c19ebfe990a1263bac8d1e2d28c3</guid>
+<title>Seata 搭建与分布式事务入门</title>
+<link>https://toutiao.io/k/n0npgg0</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在单体架构下，我们大多使用的是单体数据库，通过数据库的ACID特性支持，实现了本地事务。但是在微服务架构下复杂的业务关系中，分布式事务是不可避免的问题之一。Seata是Spring Cloud Alibaba分布式事务解决方案中间件，解决了微服务场景下面临的分布式事务问题。本文介绍如何通过搭建Seata环境，并通过其AT模式，实现分布式事务。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;本文中使用的环境版本：&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;nacos-server-1.3.1&lt;br/&gt;seata-server-1.4.0&lt;br/&gt;spring-cloud Hoxton.SR3&lt;br/&gt;spring-cloud-alibaba 2.2.1.RELEASE&lt;/p&gt;&lt;/blockquote&gt;&lt;h5 data-tool=&quot;mdnice编辑器&quot;&gt;1、Seata服务端z下载&lt;/h5&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;下载seata-server-1.4.0：&lt;br/&gt;&lt;code&gt;https://github.com/seata/seata/releases/tag/v1.4.0&lt;/code&gt;&lt;br/&gt;同时下载seata-server-0.0.9，后续需要其中的配置文件和脚本：&lt;br/&gt;&lt;code&gt;https://github.com/seata/seata/releases/tag/v0.9.0&lt;/code&gt;&lt;/p&gt;&lt;/section&gt;&lt;h5 data-tool=&quot;mdnice编辑器&quot;&gt;2、Seata服务file.conf,registry.conf配置&lt;/h5&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在conf目录下，先把配置文件备份后再进行更改&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;修改file.conf，mode选择数据库模式，并配置数据库连接信息&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;  ## store mode: file、db、redis&lt;br/&gt;  mode = &quot;db&quot;&lt;br/&gt;&lt;br/&gt;  ## database store property&lt;br/&gt;  db {&lt;br/&gt;    ## the implement of javax.sql.DataSource, such as DruidDataSource(druid)/BasicDataSource(dbcp)/HikariDataSource(hikari) etc.&lt;br/&gt;    datasource = &quot;druid&quot;&lt;br/&gt;    ## mysql/oracle/postgresql/h2/oceanbase etc.&lt;br/&gt;    dbType = &quot;mysql&quot;&lt;br/&gt;    driverClassName = &quot;com.mysql.jdbc.Driver&quot;&lt;br/&gt;    url = &quot;jdbc:mysql://127.0.0.1:3306/seata&quot;&lt;br/&gt;    user = &quot;xxxxx&quot;&lt;br/&gt;    password = &quot;xxxxxx&quot;&lt;br/&gt;    minConn = 5&lt;br/&gt;    maxConn = 100&lt;br/&gt;    globalTable = &quot;global_table&quot;&lt;br/&gt;    branchTable = &quot;branch_table&quot;&lt;br/&gt;    lockTable = &quot;lock_table&quot;&lt;br/&gt;    queryLimit = 100&lt;br/&gt;    maxWait = 5000&lt;br/&gt;  }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;修改registry.conf，使用nacos作为注册和配置中心。可以在nacos中创建一个命名空间，把生成的命名空间的值拷过来&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;  registry {&lt;br/&gt;  &lt;span&gt;# file 、nacos 、eureka、redis、zk、consul、etcd3、sofa&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;type&lt;/span&gt; = &lt;span&gt;&quot;nacos&quot;&lt;/span&gt;&lt;br/&gt;  &lt;br/&gt;    nacos {&lt;br/&gt;    application = &lt;span&gt;&quot;seata-server&quot;&lt;/span&gt;&lt;br/&gt;    serverAddr = &lt;span&gt;&quot;127.0.0.1:8848&quot;&lt;/span&gt;&lt;br/&gt;    group = &lt;span&gt;&quot;SEATA_GROUP&quot;&lt;/span&gt;&lt;br/&gt;    namespace = &lt;span&gt;&quot;202274f4-218e-42bf-9251-e996df6340f8&quot;&lt;/span&gt;&lt;br/&gt;    cluster = &lt;span&gt;&quot;default&quot;&lt;/span&gt;&lt;br/&gt;    username = &lt;span&gt;&quot;nacos&quot;&lt;/span&gt;&lt;br/&gt;    password = &lt;span&gt;&quot;nacos&quot;&lt;/span&gt;&lt;br/&gt;  }&lt;br/&gt;  &lt;br/&gt;  &lt;br/&gt;  config {&lt;br/&gt;  &lt;span&gt;# file、nacos 、apollo、zk、consul、etcd3&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;type&lt;/span&gt; = &lt;span&gt;&quot;nacos&quot;&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;  nacos {&lt;br/&gt;    serverAddr = &lt;span&gt;&quot;127.0.0.1:8848&quot;&lt;/span&gt;&lt;br/&gt;    namespace = &lt;span&gt;&quot;202274f4-218e-42bf-9251-e996df6340f8&quot;&lt;/span&gt;&lt;br/&gt;    group = &lt;span&gt;&quot;SEATA_GROUP&quot;&lt;/span&gt;&lt;br/&gt;    username = &lt;span&gt;&quot;nacos&quot;&lt;/span&gt;&lt;br/&gt;    password = &lt;span&gt;&quot;nacos&quot;&lt;/span&gt;&lt;br/&gt;  }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h5 data-tool=&quot;mdnice编辑器&quot;&gt;3、导入Seate参数配置到nacos配置中心&lt;/h5&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;首先，把seata-server-0.9的 nacos-config.txt 和nacos-config.sh脚本拷贝到1.4版本的 seata/conf下。我们需要把nacos-config.txt的参数通过脚本nacos-config.sh导入到nacos配置中心，之后微服务项目也从nacos配置中心读取配置。这样就不用像老版本那样，需要把两个配置文件拷到微服务项目的resourcce目录下了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;修改nacos-config.txt，首先修改数据库配置：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;store.mode=db&lt;br/&gt;store.db.url=jdbc:mysql://127.0.0.1:3306/seata?useUnicode=&lt;span&gt;true&lt;/span&gt;&lt;br/&gt;store.db.user=hydra&lt;br/&gt;store.db.password=123456&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;0.9中的参数格式还是使用横线模式，在1.4中规范有所变动，需要把横线变成驼峰，启动需要改动的参数有：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;store.db.db-type=mysql&lt;br/&gt;store.db.driver-class-name=com.mysql.jdbc.Driver&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;需要改成驼峰：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;store.db.dbType=mysql&lt;br/&gt;store.db.driverClassName=com.mysql.jdbc.Driver&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;并且，如果使用的是mysql8.0以上的版本，需要改一下驱动的名称。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其他参数的具体意义可以查看官方文档：&lt;code&gt;https://seata.io/zh-cn/docs/user/configurations.html &lt;/code&gt;，并按照上面的规则进行修改。额外需要注意参数的参数是：&lt;code&gt;service.vgroupMapping&lt;/code&gt;&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;service.vgroupMapping.my_test_tx_group=default&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;官方解释为事务群组，具体使用多少个事务群体没有明确指出。但通过查看文档和部分开源项目发现，大多都采用将key值设置为服务端的服务名，有多少个微服务就添加多少行。在接下来的demo中要使用两个微服务作为示例，因此添加：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;service.vgroupMapping.order-service-group=default&lt;br/&gt;service.vgroupMapping.stock-service-group=default&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;使用gitbash运行nacos-config.sh脚本，参数是nacos的ip：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;sh nacos-config.sh 127.0.0.1&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这样执行完成后参数默认是存在nacos config的public命名空间下，可以在nacos创建一个seata的命名空间，把所有参数拷贝过去，方便进行区分。&lt;/p&gt;&lt;h5 data-tool=&quot;mdnice编辑器&quot;&gt;4、建表：&lt;/h5&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在seata数据库中新建表&lt;span&gt;branch_table&lt;/span&gt;, &lt;span&gt;global_table&lt;/span&gt;,&lt;span&gt; lock_table&lt;/span&gt;，在业务数据库中新建表&lt;span&gt;undo_log&lt;/span&gt;，用于回滚，这些脚本也是seata-server-0.9中也可以直接找到。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;-- the table to store GlobalSession data&lt;/span&gt;&lt;br/&gt;&lt;span&gt;drop&lt;/span&gt; &lt;span&gt;table&lt;/span&gt; &lt;span&gt;if&lt;/span&gt; &lt;span&gt;exists&lt;/span&gt; &lt;span&gt;`global_table`&lt;/span&gt;;&lt;br/&gt;&lt;span&gt;create&lt;/span&gt; &lt;span&gt;table&lt;/span&gt; &lt;span&gt;`global_table`&lt;/span&gt; (&lt;br/&gt;  &lt;span&gt;`xid`&lt;/span&gt; &lt;span&gt;varchar&lt;/span&gt;(&lt;span&gt;128&lt;/span&gt;)  &lt;span&gt;not&lt;/span&gt; &lt;span&gt;null&lt;/span&gt;,&lt;br/&gt;  &lt;span&gt;`transaction_id`&lt;/span&gt; &lt;span&gt;bigint&lt;/span&gt;,&lt;br/&gt;  &lt;span&gt;`status`&lt;/span&gt; &lt;span&gt;tinyint&lt;/span&gt; &lt;span&gt;not&lt;/span&gt; &lt;span&gt;null&lt;/span&gt;,&lt;br/&gt;  &lt;span&gt;`application_id`&lt;/span&gt; &lt;span&gt;varchar&lt;/span&gt;(&lt;span&gt;32&lt;/span&gt;),&lt;br/&gt;  &lt;span&gt;`transaction_service_group`&lt;/span&gt; &lt;span&gt;varchar&lt;/span&gt;(&lt;span&gt;32&lt;/span&gt;),&lt;br/&gt;  &lt;span&gt;`transaction_name`&lt;/span&gt; &lt;span&gt;varchar&lt;/span&gt;(&lt;span&gt;128&lt;/span&gt;),&lt;br/&gt;  &lt;span&gt;`timeout`&lt;/span&gt; &lt;span&gt;int&lt;/span&gt;,&lt;br/&gt;  &lt;span&gt;`begin_time`&lt;/span&gt; &lt;span&gt;bigint&lt;/span&gt;,&lt;br/&gt;  &lt;span&gt;`application_data`&lt;/span&gt; &lt;span&gt;varchar&lt;/span&gt;(&lt;span&gt;2000&lt;/span&gt;),&lt;br/&gt;  &lt;span&gt;`gmt_create`&lt;/span&gt; datetime,&lt;br/&gt;  &lt;span&gt;`gmt_modified`&lt;/span&gt; datetime,&lt;br/&gt;  primary &lt;span&gt;key&lt;/span&gt; (&lt;span&gt;`xid`&lt;/span&gt;),&lt;br/&gt;  &lt;span&gt;key&lt;/span&gt; &lt;span&gt;`idx_gmt_modified_status`&lt;/span&gt; (&lt;span&gt;`gmt_modified`&lt;/span&gt;, &lt;span&gt;`status`&lt;/span&gt;),&lt;br/&gt;  &lt;span&gt;key&lt;/span&gt; &lt;span&gt;`idx_transaction_id`&lt;/span&gt; (&lt;span&gt;`transaction_id`&lt;/span&gt;)&lt;br/&gt;);&lt;br/&gt; &lt;br/&gt;&lt;span&gt;-- the table to store BranchSession data&lt;/span&gt;&lt;br/&gt;&lt;span&gt;drop&lt;/span&gt; &lt;span&gt;table&lt;/span&gt; &lt;span&gt;if&lt;/span&gt; &lt;span&gt;exists&lt;/span&gt; &lt;span&gt;`branch_table`&lt;/span&gt;;&lt;br/&gt;&lt;span&gt;create&lt;/span&gt; &lt;span&gt;table&lt;/span&gt; &lt;span&gt;`branch_table`&lt;/span&gt; (&lt;br/&gt;  &lt;span&gt;`branch_id`&lt;/span&gt; &lt;span&gt;bigint&lt;/span&gt; &lt;span&gt;not&lt;/span&gt; &lt;span&gt;null&lt;/span&gt;,&lt;br/&gt;  &lt;span&gt;`xid`&lt;/span&gt; &lt;span&gt;varchar&lt;/span&gt;(&lt;span&gt;128&lt;/span&gt;) &lt;span&gt;not&lt;/span&gt; &lt;span&gt;null&lt;/span&gt;,&lt;br/&gt;  &lt;span&gt;`transaction_id`&lt;/span&gt; &lt;span&gt;bigint&lt;/span&gt; ,&lt;br/&gt;  &lt;span&gt;`resource_group_id`&lt;/span&gt; &lt;span&gt;varchar&lt;/span&gt;(&lt;span&gt;32&lt;/span&gt;),&lt;br/&gt;  &lt;span&gt;`resource_id`&lt;/span&gt; &lt;span&gt;varchar&lt;/span&gt;(&lt;span&gt;256&lt;/span&gt;) ,&lt;br/&gt;  &lt;span&gt;`lock_key`&lt;/span&gt; &lt;span&gt;varchar&lt;/span&gt;(&lt;span&gt;128&lt;/span&gt;) ,&lt;br/&gt;  &lt;span&gt;`branch_type`&lt;/span&gt; &lt;span&gt;varchar&lt;/span&gt;(&lt;span&gt;8&lt;/span&gt;) ,&lt;br/&gt;  &lt;span&gt;`status`&lt;/span&gt; &lt;span&gt;tinyint&lt;/span&gt;,&lt;br/&gt;  &lt;span&gt;`client_id`&lt;/span&gt; &lt;span&gt;varchar&lt;/span&gt;(&lt;span&gt;64&lt;/span&gt;),&lt;br/&gt;  &lt;span&gt;`application_data`&lt;/span&gt; &lt;span&gt;varchar&lt;/span&gt;(&lt;span&gt;2000&lt;/span&gt;),&lt;br/&gt;  &lt;span&gt;`gmt_create`&lt;/span&gt; datetime,&lt;br/&gt;  &lt;span&gt;`gmt_modified`&lt;/span&gt; datetime,&lt;br/&gt;  primary &lt;span&gt;key&lt;/span&gt; (&lt;span&gt;`branch_id`&lt;/span&gt;),&lt;br/&gt;  &lt;span&gt;key&lt;/span&gt; &lt;span&gt;`idx_xid`&lt;/span&gt; (&lt;span&gt;`xid`&lt;/span&gt;)&lt;br/&gt;);&lt;br/&gt; &lt;br/&gt;&lt;span&gt;-- the table to store lock data&lt;/span&gt;&lt;br/&gt;&lt;span&gt;drop&lt;/span&gt; &lt;span&gt;table&lt;/span&gt; &lt;span&gt;if&lt;/span&gt; &lt;span&gt;exists&lt;/span&gt; &lt;span&gt;`lock_table`&lt;/span&gt;;&lt;br/&gt;&lt;span&gt;create&lt;/span&gt; &lt;span&gt;table&lt;/span&gt; &lt;span&gt;`lock_table`&lt;/span&gt; (&lt;br/&gt;  &lt;span&gt;`row_key`&lt;/span&gt; &lt;span&gt;varchar&lt;/span&gt;(&lt;span&gt;128&lt;/span&gt;) &lt;span&gt;not&lt;/span&gt; &lt;span&gt;null&lt;/span&gt;,&lt;br/&gt;  &lt;span&gt;`xid`&lt;/span&gt; &lt;span&gt;varchar&lt;/span&gt;(&lt;span&gt;96&lt;/span&gt;),&lt;br/&gt;  &lt;span&gt;`transaction_id`&lt;/span&gt; &lt;span&gt;long&lt;/span&gt; ,&lt;br/&gt;  &lt;span&gt;`branch_id`&lt;/span&gt; &lt;span&gt;long&lt;/span&gt;,&lt;br/&gt;  &lt;span&gt;`resource_id`&lt;/span&gt; &lt;span&gt;varchar&lt;/span&gt;(&lt;span&gt;256&lt;/span&gt;) ,&lt;br/&gt;  &lt;span&gt;`table_name`&lt;/span&gt; &lt;span&gt;varchar&lt;/span&gt;(&lt;span&gt;32&lt;/span&gt;) ,&lt;br/&gt;  &lt;span&gt;`pk`&lt;/span&gt; &lt;span&gt;varchar&lt;/span&gt;(&lt;span&gt;36&lt;/span&gt;) ,&lt;br/&gt;  &lt;span&gt;`gmt_create`&lt;/span&gt; datetime ,&lt;br/&gt;  &lt;span&gt;`gmt_modified`&lt;/span&gt; datetime,&lt;br/&gt;  primary &lt;span&gt;key&lt;/span&gt;(&lt;span&gt;`row_key`&lt;/span&gt;)&lt;br/&gt;);&lt;br/&gt; &lt;br/&gt;&lt;span&gt;-- the table to store seata xid data&lt;/span&gt;&lt;br/&gt;&lt;span&gt;-- 0.7.0+ add context&lt;/span&gt;&lt;br/&gt;&lt;span&gt;-- you must to init this sql for you business databese. the seata server not need it.&lt;/span&gt;&lt;br/&gt;&lt;span&gt;-- 此脚本必须初始化在你当前的业务数据库中，用于AT 模式XID记录。与server端无关（注：业务数据库）&lt;/span&gt;&lt;br/&gt;&lt;span&gt;-- 注意此处0.3.0+ 增加唯一索引 ux_undo_log&lt;/span&gt;&lt;br/&gt;&lt;span&gt;drop&lt;/span&gt; &lt;span&gt;table&lt;/span&gt; &lt;span&gt;`undo_log`&lt;/span&gt;;&lt;br/&gt;&lt;span&gt;CREATE&lt;/span&gt; &lt;span&gt;TABLE&lt;/span&gt; &lt;span&gt;`undo_log`&lt;/span&gt; (&lt;br/&gt;  &lt;span&gt;`id`&lt;/span&gt; &lt;span&gt;bigint&lt;/span&gt;(&lt;span&gt;20&lt;/span&gt;) &lt;span&gt;NOT&lt;/span&gt; &lt;span&gt;NULL&lt;/span&gt; AUTO_INCREMENT,&lt;br/&gt;  &lt;span&gt;`branch_id`&lt;/span&gt; &lt;span&gt;bigint&lt;/span&gt;(&lt;span&gt;20&lt;/span&gt;) &lt;span&gt;NOT&lt;/span&gt; &lt;span&gt;NULL&lt;/span&gt;,&lt;br/&gt;  &lt;span&gt;`xid`&lt;/span&gt; &lt;span&gt;varchar&lt;/span&gt;(&lt;span&gt;100&lt;/span&gt;) &lt;span&gt;NOT&lt;/span&gt; &lt;span&gt;NULL&lt;/span&gt;,&lt;br/&gt;  &lt;span&gt;`context`&lt;/span&gt; &lt;span&gt;varchar&lt;/span&gt;(&lt;span&gt;128&lt;/span&gt;) &lt;span&gt;NOT&lt;/span&gt; &lt;span&gt;NULL&lt;/span&gt;,&lt;br/&gt;  &lt;span&gt;`rollback_info`&lt;/span&gt; longblob &lt;span&gt;NOT&lt;/span&gt; &lt;span&gt;NULL&lt;/span&gt;,&lt;br/&gt;  &lt;span&gt;`log_status`&lt;/span&gt; &lt;span&gt;int&lt;/span&gt;(&lt;span&gt;11&lt;/span&gt;) &lt;span&gt;NOT&lt;/span&gt; &lt;span&gt;NULL&lt;/span&gt;,&lt;br/&gt;  &lt;span&gt;`log_created`&lt;/span&gt; datetime &lt;span&gt;NOT&lt;/span&gt; &lt;span&gt;NULL&lt;/span&gt;,&lt;br/&gt;  &lt;span&gt;`log_modified`&lt;/span&gt; datetime &lt;span&gt;NOT&lt;/span&gt; &lt;span&gt;NULL&lt;/span&gt;,&lt;br/&gt;  &lt;span&gt;`ext`&lt;/span&gt; &lt;span&gt;varchar&lt;/span&gt;(&lt;span&gt;100&lt;/span&gt;) &lt;span&gt;DEFAULT&lt;/span&gt; &lt;span&gt;NULL&lt;/span&gt;,&lt;br/&gt;  PRIMARY &lt;span&gt;KEY&lt;/span&gt; (&lt;span&gt;`id`&lt;/span&gt;),&lt;br/&gt;  &lt;span&gt;UNIQUE&lt;/span&gt; &lt;span&gt;KEY&lt;/span&gt; &lt;span&gt;`ux_undo_log`&lt;/span&gt; (&lt;span&gt;`xid`&lt;/span&gt;,&lt;span&gt;`branch_id`&lt;/span&gt;)&lt;br/&gt;) &lt;span&gt;ENGINE&lt;/span&gt;=&lt;span&gt;InnoDB&lt;/span&gt; AUTO_INCREMENT=&lt;span&gt;1&lt;/span&gt; &lt;span&gt;DEFAULT&lt;/span&gt; &lt;span&gt;CHARSET&lt;/span&gt;=utf8;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h5 data-tool=&quot;mdnice编辑器&quot;&gt;5、启动&lt;/h5&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在启动nacos-server的情况下，点击 &lt;code&gt;seata/bin/seata-server.bat&lt;/code&gt;启动seata。&lt;/p&gt;&lt;h5 data-tool=&quot;mdnice编辑器&quot;&gt;6、微服务改造&lt;/h5&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&amp;lt;&lt;span&gt;dependency&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;groupId&lt;/span&gt;&amp;gt;&lt;/span&gt;io.seata&lt;span&gt;&amp;lt;/&lt;span&gt;groupId&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;artifactId&lt;/span&gt;&amp;gt;&lt;/span&gt;seata-spring-boot-starter&lt;span&gt;&amp;lt;/&lt;span&gt;artifactId&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;version&lt;/span&gt;&amp;gt;&lt;/span&gt;1.3.0&lt;span&gt;&amp;lt;/&lt;span&gt;version&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;/&lt;span&gt;dependency&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;&lt;span&gt;dependency&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;groupId&lt;/span&gt;&amp;gt;&lt;/span&gt;com.alibaba.cloud&lt;span&gt;&amp;lt;/&lt;span&gt;groupId&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;artifactId&lt;/span&gt;&amp;gt;&lt;/span&gt;spring-cloud-starter-alibaba-seata&lt;span&gt;&amp;lt;/&lt;span&gt;artifactId&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;exclusions&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;&lt;span&gt;exclusion&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;&amp;lt;&lt;span&gt;groupId&lt;/span&gt;&amp;gt;&lt;/span&gt;io.seata&lt;span&gt;&amp;lt;/&lt;span&gt;groupId&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;&amp;lt;&lt;span&gt;artifactId&lt;/span&gt;&amp;gt;&lt;/span&gt;seata-spring-boot-starter&lt;span&gt;&amp;lt;/&lt;span&gt;artifactId&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;/&lt;span&gt;exclusion&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;/&lt;span&gt;exclusions&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;/&lt;span&gt;dependency&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果微服务中使用的是druid连接池，可以把已有的druid依赖删除，在seata-spring-boot-starter-1.3.0中已经引入了druid-1.1.12。&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;修改每一个微服务yml，配置nacos和seata，&lt;span&gt;tx-service-group&lt;/span&gt;就是nacos-config.txt 中&lt;span&gt;service.vgroupMapping&lt;/span&gt;的key，我们这里使用微服务的名称加上group后缀&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;server:&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;port:&lt;/span&gt; &lt;span&gt;8763&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;spring:&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;application:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;name:&lt;/span&gt; &lt;span&gt;order-service&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;cloud:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;nacos:&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;server-addr:&lt;/span&gt; &lt;span&gt;127.0&lt;/span&gt;&lt;span&gt;.0&lt;/span&gt;&lt;span&gt;.1&lt;/span&gt;&lt;span&gt;:8848&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;datasource:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;url:&lt;/span&gt; &lt;span&gt;jdbc:mysql://localhost:3306/tenant?useUnicode=true&amp;amp;characterEncoding=UTF-8&amp;amp;serverTimezone=UTC&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;username:&lt;/span&gt; &lt;span&gt;hydra&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;password:&lt;/span&gt; &lt;span&gt;123456&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;driver-class-name:&lt;/span&gt; &lt;span&gt;com.mysql.cj.jdbc.Driver&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;type:&lt;/span&gt; &lt;span&gt;com.alibaba.druid.pool.DruidDataSource&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;druid:&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;initial-size:&lt;/span&gt; &lt;span&gt;8&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;min-idle:&lt;/span&gt; &lt;span&gt;1&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;max-active:&lt;/span&gt; &lt;span&gt;10&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;max-wait:&lt;/span&gt; &lt;span&gt;60000&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;seata:&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;enabled:&lt;/span&gt; &lt;span&gt;true&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;application-id:&lt;/span&gt; &lt;span&gt;${spring.application.name}&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;tx-service-group:&lt;/span&gt; &lt;span&gt;${spring.application.name}-group&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;enable-auto-data-source-proxy:&lt;/span&gt; &lt;span&gt;true&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;config:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;type:&lt;/span&gt; &lt;span&gt;nacos&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;nacos:&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;server-addr:&lt;/span&gt; &lt;span&gt;127.0&lt;/span&gt;&lt;span&gt;.0&lt;/span&gt;&lt;span&gt;.1&lt;/span&gt;&lt;span&gt;:8848&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;namespace:&lt;/span&gt; &lt;span&gt;202274f4-218e-42bf-9251-e996df6340f8&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;group:&lt;/span&gt; &lt;span&gt;SEATA_GROUP&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;username:&lt;/span&gt; &lt;span&gt;nacos&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;password:&lt;/span&gt; &lt;span&gt;nacos&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;registry:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;type:&lt;/span&gt; &lt;span&gt;nacos&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;nacos:&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;application:&lt;/span&gt; &lt;span&gt;seata-server&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;server-addr:&lt;/span&gt; &lt;span&gt;127.0&lt;/span&gt;&lt;span&gt;.0&lt;/span&gt;&lt;span&gt;.1&lt;/span&gt;&lt;span&gt;:8848&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;namespace:&lt;/span&gt; &lt;span&gt;202274f4-218e-42bf-9251-e996df6340f8&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;group:&lt;/span&gt; &lt;span&gt;SEATA_GROUP&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;username:&lt;/span&gt; &lt;span&gt;nacos&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;password:&lt;/span&gt; &lt;span&gt;nacos&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;br data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;配置seata的数据库代理，在&lt;span&gt;使用mybatis-plus时的配置方式如下：&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@Configuration&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;DataSourceProxyConfig&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;@Bean&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; SqlSessionFactory &lt;span&gt;sqlSessionFactoryBean&lt;/span&gt;&lt;span&gt;(DataSource dataSource)&lt;/span&gt; &lt;span&gt;throws&lt;/span&gt; Exception &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;// 订单服务中引入了mybatis-plus，所以要使用特殊的SqlSessionFactoryBean&lt;/span&gt;&lt;br/&gt;        MybatisSqlSessionFactoryBean sqlSessionFactoryBean = &lt;span&gt;new&lt;/span&gt; MybatisSqlSessionFactoryBean();&lt;br/&gt;        &lt;span&gt;// 代理数据源&lt;/span&gt;&lt;br/&gt;        sqlSessionFactoryBean.setDataSource(&lt;span&gt;new&lt;/span&gt; DataSourceProxy(dataSource));&lt;br/&gt;        &lt;span&gt;// 生成SqlSessionFactory&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; sqlSessionFactoryBean.getObject();&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;br data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;调用测试，以OrderService调用StockService为例，在被调用的service方法上加上&lt;span&gt;@Transactional&lt;/span&gt;注解&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h6 data-tool=&quot;mdnice编辑器&quot;&gt;StockService提供接口：&lt;/h6&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@Service&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;StockService&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;@Autowired&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; StockMapper stockMapper;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Transactional&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; String &lt;span&gt;reduce&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;减库存&quot;&lt;/span&gt;);&lt;br/&gt;&lt;br/&gt;        Stock stock = stockMapper.selectOne(&lt;span&gt;new&lt;/span&gt; LambdaQueryWrapper&amp;lt;Stock&amp;gt;().eq(Stock::getId, &lt;span&gt;1&lt;/span&gt;));&lt;br/&gt;        System.out.println(stock.toString());&lt;br/&gt;&lt;br/&gt;        stock.setQuantity(stock.getQuantity()-&lt;span&gt;1&lt;/span&gt;);&lt;br/&gt;        &lt;span&gt;int&lt;/span&gt; result = stockMapper.updateById(stock);&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; (result==&lt;span&gt;1&lt;/span&gt;){&lt;br/&gt;            &lt;span&gt;throw&lt;/span&gt; &lt;span&gt;new&lt;/span&gt; RuntimeException(&lt;span&gt;&quot;异常测试，准备rollBack&quot;&lt;/span&gt;);&lt;br/&gt;        }&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; &lt;span&gt;&quot;stock reduce success&quot;&lt;/span&gt;;&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h6 data-tool=&quot;mdnice编辑器&quot;&gt;OrderService调用StockService的服务：&lt;/h6&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;使用了FeignClient调用StockService，并在发起事务的方法上加上&lt;span&gt;@GlobalTransactional&lt;/span&gt;注解：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@Service&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;OrderService&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;@Autowired&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; OrderMapper orderMapper;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Autowired&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; StockClient stockClient;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@GlobalTransactional&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; String &lt;span&gt;buy&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;        Order order=&lt;span&gt;new&lt;/span&gt; Order();&lt;br/&gt;        order.setId(&lt;span&gt;1L&lt;/span&gt;).setMoney(&lt;span&gt;20&lt;/span&gt;D);&lt;br/&gt;        &lt;span&gt;int&lt;/span&gt; result = orderMapper.insert(order);&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; (result==&lt;span&gt;1&lt;/span&gt;){&lt;br/&gt;            System.out.println(&lt;span&gt;&quot;插入订单成功&quot;&lt;/span&gt;);&lt;br/&gt;        }&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; stockClient.reduce();&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;调用OrderService的接口，会在StockService中抛出异常，reduce方法中的本地事务先执行回滚。再查看日志，在order表上执行了回滚操作：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.59921875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/zpom4BeZSicaIAvu7iayHNl0pNeO5eBZF8G8boHxJciaRalgzOsorUvQqLCEZSREHLiaZohjFPouOBTlkWUUaRg8sA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;在上面的日志中，打印出了全局事务的xid、分支的branchId、以及seata使用的模式，在使用&lt;span&gt;AT模式的二阶段提交完成后，显示回滚状态为回滚完成。&lt;/span&gt;&lt;span&gt;查看业务数据库的und_log表，&lt;/span&gt;&lt;span&gt;已经插入了回滚记录&lt;/span&gt;&lt;span&gt;：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.12578125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/zpom4BeZSicaIAvu7iayHNl0pNeO5eBZF8WFbwulLGIetjY5RO3dxKBqiaIsCQpF9tEQic4G5eASp7XgQl0LuWaGhw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这样，就以Seata中默认的AT模式&lt;span&gt;实现了分布式事务&lt;/span&gt;。在该模式下，可以应对大多数的业务场景，并且基本可以做到无业务入侵，对于程序员来说，只需要添加注解，不需要做其他的业务功能改造，就可以以无感知的方式就可以实现分布式事务的解决。&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>fa6c3a4edde806f7f1783ca0db07d978</guid>
+<title>Redis 进阶笔记</title>
+<link>https://toutiao.io/k/ti0gb8i</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;
+
+                
+
+                
+&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
