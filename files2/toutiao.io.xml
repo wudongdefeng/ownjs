@@ -77,206 +77,77 @@
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在上一篇文章《&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzI3NTQyMzEzNQ==&amp;amp;mid=2247486345&amp;amp;idx=1&amp;amp;sn=a3070320d29fe787ec2bdcc60f210a0d&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;写给开发人员的实用密码学 - 数字证书&lt;/a&gt;》中介绍了数字证书，但要让用户信任颁发的数字证书，这里就需要引入 CA 中心。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;所谓CA（Certificate Authority）认证中心，即采用PKI（Public Key Infrastructure）公开密钥基础架构技术，专门提供网络身份认证服务的机构。CA可以是民间团体，也可以是政府机构。CA负责签发和管理数字证书，且具有权威性和公正性，它的作用就像我们现实生活中颁发证件的公司，如护照办理机构。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;根CA信任模型&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;面对全球这么广泛的用户，仅仅一个CA显然不够。PKI引入“信任模型”，用于描述和分析同一CA管理域内部或不同CA管理域之间信任关系的建立和传递过程。PKI信任模型主要采用根CA信任模型，也称作严格层次信任模型。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.595&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/ibQ4mtgHYXv5f5yTQrRjyGjgYg1CuIx9Tvk2ibhOOYjJHia5BH9jFqAFlaobk4gbpBk73UQ7tTnnR82OkL92GMWQA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;400&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;该信任模型下，CA中心可以分为多级，各级CA中心之间呈现严格的层级关系，最上级CA中心只有一个，称作根CA，其它CA称作子CA。根CA的数字证书由自己签发，属于自签名证书，子CA的数字证书由上级CA签发。信任锚可以是根CA，也可以是子CA。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上图中，用户X的信任锚为根CA，因此它可以信任子CA1，从而信任用户A证书，信任链为 &lt;strong&gt;根CA -&amp;gt; 子CA1 -&amp;gt; 用户A证书&lt;/strong&gt;。用户Y的信任锚为子CA2，因此它可信任子CA4，从而信任用户D证书，信任链为 &lt;strong&gt;子CA2 -&amp;gt; 子CA4 -&amp;gt; 用户D证书&lt;/strong&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;注意，不要被上图误导，全球的根CA不止一个，应该说现实世界的CA是&lt;strong&gt;多根CA信任模型&lt;/strong&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;要建立信任锚，就需要获得CA的证书（根据前面的描述，可以是根证书，也可以是二级、三级证书，也可以是用户证书），那这个证书怎么获得呢？会不会获得假冒的证书？其实这个问题的答案非常简单，也可能出乎我们的意料，那就是预置根证书。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;预置根证书&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;根据前面的CA模型，应用程序并不需要预置所有的CA证书，而只需要预置最顶层CA的证书（通常称作根证书）即可，而全球顶层CA中心数量有限，大概十来个，所以不会存在存储上的问题。当然，如果我们去查看系统预置的根证书，发现数量好像远远不止，那是因为为了程序处理的方便，我们也可能预置一些二级CA证书。比如中国的CA中心在全球可能只是二级CA中心，而我们经常会验证中国CA中心颁发的证书，这个时候预置这些二级CA证书，可以避免证书验证时验证链过长，提高效率。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;根证书存为怎样的格式，存放在什么位置，与应用程序的实现有关。就拿浏览器来说，Chrome Windows版本采用的Windows的系统证书存储区，关于证书的处理也是调用Windows的 CryptoAPI。而Chrome Linux版本的根证书则是存储在 NSS 数据库中。到了Android 版本的Chrome浏览器，又使用了Android系统的预置证书。而且随着版本的升级，这些策略还可能调整。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;预置根证书的方式也存在一定的不足，那就是假定全球的顶级CA中心是不变的。实际上，随着互联网对数字证书的需求越来越大，顶层CA中心也在扩容，这就导致新CA中心签发的证书，可能在现有系统得不到承认。此外，有时候虽然证书虽然不是这些权威的CA中心签发的，但你也信任它。比如早年的12306网站，就采用了自签名证书，而没有采用CA中心签发的证书。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因此，大部分软件都提供了证书管理功能，你可以导入证书，下图就是chrome浏览器的证书管理界面：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;1.1525&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibQ4mtgHYXv5f5yTQrRjyGjgYg1CuIx9Tiajw9sKmPdBH3qiaUEawuo08tANeQ731kJJgFjGhC08gedn1MaIO5xqw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;400&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;有些软件更加灵活方便，比如 chrome 浏览器，还在遇到可疑的证书时，让你选择是否信任。如果你选择信任，就可以继续访问。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;所以证书本质上还是一个信任问题，浏览器和操作系统为什么预置证书，是因为开发者信任这些CA中心，信任他们颁发的证书。其它情况下，有些软件可能会让用户做选择，比如浏览器，而有些软件则不会给用户选择，比如播放器，会直接拒绝不信任的证书。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;搭建国密CA中心&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;CA中心听起来名字就很高大上，其实个人也可以整个CA中心，并签发证书，当然这些作为测试用途是没问题的，至于在实际中能否行得通，就要看忽悠能力了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;现实世界的CA是分级管理的，层级可以有多层。本文简单起见，只模拟到三级CA管理，具体来说：&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;Root CA -&amp;gt; Server CA -&amp;gt; Server&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Root CA为一级CA，拥有根CA证书，Server CA为二级CA，其CA证书由Root CA签发，Server为最终的用户，其证书由Server CA签发。当然，Root CA也可以直接给Server签发证书，这里是为了演示CA层级需要而做的这样的假定。&lt;/p&gt;&lt;h5 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;制作根CA证书&lt;span/&gt;&lt;/h5&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;生成SM2私钥：&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;$ gmssl ecparam -genkey -name sm2p256v1 -text -out rootkey.pem&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;根证书的私钥保存在rootkey.pem中，请妥善保存。&lt;/p&gt;&lt;ol start=&quot;2&quot; data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;创建证书请求：&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;$ gmssl req -new -key rootkey.pem -out rootreq.pem&lt;br/&gt;You are about to be asked to enter information that will be incorporated&lt;br/&gt;into your certificate request.&lt;br/&gt;What you are about to enter is what is called a Distinguished Name or a DN.&lt;br/&gt;There are quite a few fields but you can leave some blank&lt;br/&gt;For some fields there will be a default value,&lt;br/&gt;If you enter &#x27;.&#x27;, the field will be left blank.&lt;br/&gt;-----&lt;br/&gt;Country Name (2 letter code) [CN]:&lt;br/&gt;State or Province Name (full name) [Some-State]:Hubei&lt;br/&gt;Locality Name (eg, city) []:Wuhan&lt;br/&gt;Organization Name (eg, company) [Internet Widgits Pty Ltd]:China LianTong      &lt;br/&gt;Organizational Unit Name (eg, section) []:&lt;br/&gt;Common Name (e.g. server FQDN or YOUR name) []:www.china_liantong.com&lt;br/&gt;Email Address []:&lt;br/&gt;Please enter the following &#x27;extra&#x27; attributes&lt;br/&gt;to be sent with your certificate request&lt;br/&gt;A challenge password []:&lt;br/&gt;An optional company name []:&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上面的命令会要求提供一些信息，因为证书是自签名证书，只用于开发测试，所以填写什么内容无关紧要。&lt;/p&gt;&lt;ol start=&quot;3&quot; data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;创建一个 certext.ext 文本文件，内容为：&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;[ v3_ca ]&lt;br/&gt;basicConstraints = CA:true&lt;br/&gt;[ usr_cert ]&lt;br/&gt;subjectAltName = DNS:localhost&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&quot;CA:true&quot; 这个扩展，用于指定所签发的证书是否CA证书。&lt;/p&gt;&lt;ol start=&quot;4&quot; data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;生成证书：&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;$ gmssl x509 -req -days 365 -in rootreq.pem -signkey rootkey.pem -extfile certext.ext -extensions v3_ca -out rootcert.pem&lt;br/&gt;Signature ok&lt;br/&gt;subject=C = CN, ST = Hubei, L = Wuhan, O = China LianTong, CN = www.china_liantong.com&lt;br/&gt;Getting Private key&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;生成的根证书文件为 rootcert.pem。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;注意：上面的命令行参数多了一个 -extensions v3_ca 参数，指定使用上面 certext.ext 文件 v3_ca 节的扩展项。&lt;/p&gt;&lt;h5 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;签发 Server CA 证书&lt;span/&gt;&lt;/h5&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;和上面的步骤一样，这里直接把命令总结一下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;$ gmssl ecparam -genkey -name sm2p256v1 -text -out serverCAkey.pem&lt;br/&gt;$ gmssl req -new -key serverCAkey.pem -out serverCAreq.pem&lt;br/&gt;$ gmssl x509 -req -days 365 -in serverCAreq.pem -extfile certext.ext -extensions v3_ca -CA rootcert.pem -CAkey rootkey.pem -CAcreateserial -out serverCAcert.pem&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;需要注意第三个命令多了 -CA 和 -CAkey 参数，表示使用根证书以及CA的私钥。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这样我们就可以使用 Server CA证书和私钥签发用户证书。&lt;/p&gt;&lt;h5 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;签发 Server 证书&lt;span/&gt;&lt;/h5&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;和上面的步骤一样，这里直接把命令总结一下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;$ gmssl ecparam -genkey -name sm2p256v1 -text -out serverkey.pem&lt;br/&gt;$ gmssl req -new -key serverkey.pem -out serverreq.pem&lt;br/&gt;$ gmssl x509 -req -days 365 -in serverreq.pem -extfile certext.ext -extensions usr_cert -CA serverCAcert.pem -CAkey serverCAkey.pem -CAcreateserial -out servercert.pem&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;注意：第三个命令的 -extensions 给的参数值为 usr_cert ，对应的是 certext.ext 文件 usr_cert 节的扩展项，通常需要给定服务器的DNS名。由此也可以看出，叶子节点的证书和CA证书还是有些属性不同。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这样，生成的 server.pem 包含了根证书、Server CA证书和Server证书，包含了完整的证书链，可以投入测试使用了。你可以尝试在 chrome 浏览器中导入根证书：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.99&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibQ4mtgHYXv5f5yTQrRjyGjgYg1CuIx9TTBIeMZrnJG9JVbwKGcqiaZbhFfmy8vt0jGibvpCDoicvNSm3lWhTLgunQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;400&quot;/&gt;&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;证书链&lt;span/&gt;&lt;br/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在浏览器中，我们可以查看证书信息，一般来说，证书通常是呈现出多级的状态。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;1.23&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibQ4mtgHYXv5f5yTQrRjyGjgYg1CuIx9T1Jibia9IK96S2yySg4jibFn9ACwibiaDtaQyYdzkzS8blvjVIHD3icMxkvew/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;400&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;服务器配置的是CA颁发的服务器实体证书，而客户端（浏览器或操作系统）预置的是根证书，现在的问题是，中间证书怎么获取？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;根据X.509标准，服务器应该发送完整的证书链（不包含根证书）。如果服务器端发送的证书不完整，某些客户端可以去尝试构建完整的证书链，但有些浏览器可能不会执行该操作，这样整个HTTPS协议握手就会失败。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.4075&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibQ4mtgHYXv5f5yTQrRjyGjgYg1CuIx9TpMkUsnaythmONer18690e8zOAnDgp1RyeG35S0OzibQMg6LkPcibial6A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;400&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;根据服务器实体证书寻找完整证书链的方法很简单，浏览器从服务器实体证书中获取CA密钥标识符（Authority Key Identifier），进而获取上一级中间证书文件，然后通过中间证书中的CA密钥标识符不断迭代直到获取根证书。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;服务器发送完整证书链的好处在于提高握手速度，浏览器无须额外再去寻找其他中间证书，能够加速HTTPS握手过程。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;校验过程：&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;浏览器从服务器实体证书的上一级证书（比如B证书）获取公钥，用来校验服务器实体证书的签名，校验成功则继续，否则证书校验失败。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;浏览器从B证书的上一级证书（比如C证书）获取公钥，用来校验B证书的签名，校验成功则继续，否则证书校验失败。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;该校验过程不断迭代，直到浏览器发现某张证书的签发者和使用者是同一个人，代表找到了根证书。校验根证书的签名和校验非根证书的签名不太一样，校验根证书签名使用的公钥就在根证书中，而校验其他非根证书签名使用的公钥来自上一级证书，根证书使用自己的公钥验证签名，如果校验成功就代表完整的证书链校验成功。&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;证书完整校验&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;X.509标准没有规定校验证书的标准，不同浏览器校验证书的规则也不一样，一般来说，校验主要包含四个方面：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;证书链的校验。主要是迭代校验每张证书的签名，最后会找到自签名的根证书，由于浏览器已经集成了根证书，可以充分信任根证书的公钥，完成最后的签名校验。但签名验证成功只能代表某张服务器证书确实是由某个根证书签发的，并不能表示身份验证成功。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;服务器实体证书的校验。主要校验如下内容：&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;（1）浏览器访问的域名是不是与证书使用者可选名称（SAN）扩展包含的域名匹配，如果不匹配，校验失败。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;（2）日期校验，证书包含有效期，生效时间位于{notBefore, notAfter}区间，如果证书过期，校验失败。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;（3）证书扩展校验（可选）。比如，如果扩展Critical被标识为True，客户端必须正确处理该扩展，否则校验失败。再比如，浏览器通常会校验密钥用法（Key Usage）扩展，该扩展对应的值如果不包含数字签名（Digital Signature）和密钥协商（Key Encipherment），校验失败。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;（1）日期校验，校验证书有效期。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;（2）证书扩展Critical如果标识为True，必须校验。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;（3）中间证书也包含一个公钥，需要校验该公钥的用途，校验方法就是判断密钥用法（Key Usage）扩展，该扩展对应的值如果不包含Digital Signature（数字签名）、Certificate Sign（签名证书）、CRL Sign（签署CRL），校验失败。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;（4）校验基础约束（basic constraints）扩展，校验中间证书是否能够签发证书，如果不允许签发，校验失败。&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;吊销状态校验。校验的逻辑非常复杂，有些浏览器可能会放弃吊销状态的检查。需要注意的是，服务器实体证书和中间证书都需要校验吊销状态，但具体如何校验取决于浏览器，这些并不是TLS/SSL协议的标准。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;小结&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;《写给开发人员的实用密码学》系列文章到这就告一段落，实际上有关网络安全、系统安全远不止加密解密、签名、证书等内容，只是密码学是网络安全的基础。在补充密码学知识的同时，我也对网络安全有了更多的认识，后面我还会围绕国密、网络安全、HTTPS、HTTP/2等内容进行研究，欢迎大家讨论交流。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.4&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibQ4mtgHYXv50C2zJtfH5icNbOicm63Mwia4EaZdIJtQDz9rJLxS6LBsVgWJXtbJIFBaAH2nzu7tBEic76fFUEphPjw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;900&quot;/&gt;&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>c6d1b0bd79a19e8ecd2a67aa72e8e675</guid>
-<title>Java 提取 EXIF 信息批量重命名</title>
-<link>https://toutiao.io/k/sp2k2z9</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entry-content&quot;&gt;&amp;#13;
+<guid>40dccb3f670b86be80ef4dbdcba6681a</guid>
+<title>重构项目</title>
+<link>https://toutiao.io/k/2hs8quz</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section class=&quot;post&quot;&gt;
+&lt;p&gt;最近这段时间工作重点是技术优化，包含代码圈复杂度、代码缺陷优化，项目重构等。重构的项目包括获取机构配置服务、离线对账脚本。获取机构配置每天 4000W+ 访问，对账脚本又涉及到大量资金。重构这些项目困难重重。&lt;/p&gt;
 
-&lt;p&gt;手机或照机拍摄的照片名称通常是”IMG_001.JPG”这种格式，这种文件名称是无意义的。使用照片拍摄时间命名可以让我们在多年以后查找照片时根据文件名就能快速筛选出某一时间段的照片。&lt;/p&gt;
+&lt;hr/&gt;
 
+&lt;h2 id=&quot;重构原因&quot;&gt;重构原因&lt;/h2&gt;
 
+&lt;p&gt;既然服务这么重要，出错容忍性这么低，为什么要进行重构？&lt;/p&gt;
 
-&lt;span id=&quot;more-393&quot;/&gt;
+&lt;p&gt;以获取机构配置服务为例，之前存储使用 MySQL， 保存了 5K+ 机构、1W+ 个性化配置信息。在业务高峰期 DB 物理机 CPU 接近满载。为了满足后续业务增长，需要将配置信息迁移到 KV 服务。KV 相比 MySQL 性能更好，同时支持多地容灾。重构之后收益较高。&lt;/p&gt;
 
+&lt;p&gt;再比如历史对账脚本使用了 Python、Shell，代码中硬编码了 MySQL 的 IP 端口。从安全和质量的角度来看存在很大问题。在部门的推进下，对这部分代码也需要做改造。&lt;/p&gt;
 
+&lt;p&gt;一般项目重构有这些原因：&lt;/p&gt;
 
-&lt;p&gt;原始照片或视频是带有EXIF信息的。这些信息是设备在拍摄时生成，记录了照片的拍摄时间，设备信息，拍摄GPS位置等信息，在文件属性中可以查看到：&lt;/p&gt;
+&lt;p&gt;1、系统容量无法满足业务增长，需要优化服务性能。系统不支持横向扩展，不能通过扩容解决。比如 MySQL 配置库读的是一组 DB，但 DB 的内存、CPU 会有上限。&lt;/p&gt;
 
+&lt;p&gt;2、系统架构满足不了新产品需求，需要重新设计增强扩展性。比如之前的业务逻辑是 hardcore，后面又需要针对不同的场景进行个性化，这样整个系统可能需要重新设计。&lt;/p&gt;
 
+&lt;p&gt;3、安全和质量原因，需要使用更规范的实现。很多项目在上线之初快速迭代，忽略了代码质量、安全风险。项目里大到架构设计，小到使用组件的方式、编码原则都可能都存在安全和质量问题。&lt;/p&gt;
 
+&lt;p&gt;4、旧组件下线和迁移，不可抗力，各种组织里反复造轮子屡见不鲜，旧轮子不维护，新轮子强制上线替换。&lt;/p&gt;
 
+&lt;hr/&gt;
 
+&lt;h2 id=&quot;重构原则&quot;&gt;重构原则&lt;/h2&gt;
 
+&lt;p&gt;在重构时，我们应该遵循什么原则来变更？下面对实践中遇到的问题和经验进行总结。&lt;/p&gt;
 
-&lt;p&gt;图片APP和网盘软件中图片时间线也是提取EXIF信息生成的。如果对照片进行处理，如美化操作，另存为时可能会丢失EXIF信息，或者EXIF信息被改写，会导致识别信息不准。&lt;/p&gt;
+&lt;p&gt;一、可验证性&lt;/p&gt;
 
+&lt;p&gt;a. 变动逻辑的关键日志、监控，执行流应符合预期。比如新增一个逻辑分支，上报的监控变化一定和改动一致。&lt;/p&gt;
 
+&lt;p&gt;b. 新旧逻辑的结果对比，结果应完全一致。&lt;/p&gt;
 
-&lt;p&gt;我以前备份的照片，大多是原始文件名，现在我想根据拍摄日期批量重命名。&lt;/p&gt;
+&lt;p&gt;业务代码里需要针对这种验证场景写对比逻辑，第一步双读加入监控进行对比，第二步等线上跑一段时间数据完全一致，再切换为新的读分支上线。&lt;/p&gt;
 
+&lt;p&gt;&lt;img src=&quot;/assets/images/20200810-1.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
 
+&lt;p&gt;二、最小改动原则&lt;/p&gt;
 
-&lt;p&gt;找了一圈，发现老牌看图软件ADSee带有这个功能：&lt;/p&gt;
+&lt;p&gt;如果改动过大，在排查问题时都无法用控制变量法筛选。&lt;/p&gt;
 
+&lt;p&gt;a. 另起炉灶，使用新的函数、文件重构。比如重构获取实名的函数 GetRealName，有多处地方调用。可以新写一个 GetRealNameV2 放到 GetRealName 函数中进行替换。&lt;/p&gt;
 
+&lt;p&gt;b. 现在的方案是否是最好的，能否废弃掉用更简单的方案。当项目越来越臃肿，可能背离了之前的初衷。回顾一下也许已经有了更简单的方案，使用这种方案也许是更小的改动方案。比如之前使用脚本和机构进行对账、退款，现在已经有了 API 的方式，机构直接使用 API 退款即可。&lt;/p&gt;
 
+&lt;p&gt;三、可回退原则&lt;/p&gt;
 
+&lt;p&gt;a. 重构服务上线后出现异常，应能较快切换到之前的版本。这种机制由变更工具/框架/业务幂等逻辑保证&lt;/p&gt;
 
+&lt;p&gt;b. 回退期间的异常脏数据修复。重构服务上线回退时可能出现脏数据，需要提前想好回退后的修复方案。修复方案设计不合理也可能出现问题，需要针对修复方案再修复，套娃开始…&lt;/p&gt;
 
+&lt;hr/&gt;
 
-&lt;p&gt;但是存在几个问题：&lt;/p&gt;
+&lt;h2 id=&quot;上线-check-事项&quot;&gt;上线 check 事项&lt;/h2&gt;
 
+&lt;ul&gt;
+  &lt;li&gt;机器负载（CPU、内存、IO）性能变化&lt;/li&gt;
+  &lt;li&gt;现网服务监控曲线变化&lt;/li&gt;
+  &lt;li&gt;热更新 or 冷更新，能否直接替换（执行中的脚本不能直接替换）&lt;/li&gt;
+  &lt;li&gt;脚本文件替换后，是否有执行权限&lt;/li&gt;
+&lt;/ul&gt;
+                          
+&lt;/section&gt;
 
 
-&lt;ol&gt;&lt;li&gt;不能排除已丢失EXIF的文件，这类的文件无法重命名&lt;/li&gt;&lt;li&gt;官方ADSee免费版下载安装后，要注册账号才能使用&lt;/li&gt;&lt;/ol&gt;
 
-
-
-&lt;p&gt;于是动动手，用JAVA代码实现这个小功能。&lt;/p&gt;
-
-
-
-&lt;p&gt;提取EXIF信息使用的是开源项目 metadata extractor ，它支持市面上常见的媒体文件格式和设备：&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;metadata extractor 官网：&lt;a href=&quot;https://drewnoakes.com/code/exif/&quot; target=&quot;_blank&quot; rel=&quot;noreferrer noopener&quot;&gt;https://drewnoakes.com/code/exif/&lt;/a&gt;&lt;/p&gt;
-
-
-
-&lt;p&gt;引入依赖：&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;wp-block-code&quot;&gt;&lt;code&gt;&amp;lt;dependency&amp;gt;
-  &amp;lt;groupId&amp;gt;com.drewnoakes&amp;lt;/groupId&amp;gt;
-  &amp;lt;artifactId&amp;gt;metadata-extractor&amp;lt;/artifactId&amp;gt;
-  &amp;lt;version&amp;gt;2.15.0&amp;lt;/version&amp;gt;
-&amp;lt;/dependency&amp;gt;&lt;/code&gt;&lt;/pre&gt;
-
-
-
-&lt;p&gt;官方读取示例代码：&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;wp-block-code&quot;&gt;&lt;code&gt;Metadata metadata = ImageMetadataReader.readMetadata(file);
-
-for (Directory directory : metadata.getDirectories()) {
-    for (Tag tag : directory.getTags()) {
-        System.out.format(&quot;[%s] - %s = %s \n&quot;,
-            directory.getName(), tag.getTagName(), tag.getDescription());
-    }
-    if (directory.hasErrors()) {
-        for (String error : directory.getErrors()) {
-            System.err.format(&quot;ERROR: %s&quot;, error);
-        }
-    }
-}&lt;/code&gt;&lt;/pre&gt;
-
-
-
-&lt;p&gt;以下是我使用示例代码读取一张图片输出的部分结果：&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;其中 Date/Time Original 就是我要取的摄像日期。&lt;/p&gt;
-
-
-
-&lt;p&gt;代码如下：&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;wp-block-code&quot;&gt;&lt;code&gt;&lt;em&gt;/**
- * 如果是目录则递归查找
- * @param file 文件或目录
- */&lt;/em&gt;
-public static void recursion(File file) {
-    if (file.isDirectory()) {
-        &lt;em&gt;// 目录&lt;/em&gt;
-        File[] fileList = file.listFiles();
-        for (File f : fileList) {
-            recursion(f);
-        }
-
-    } else {
-        &lt;em&gt;// 文件&lt;/em&gt;
-        if (file.isFile()) {
-            &lt;em&gt;// 格式：2019:06:27 11:23:55 或 2019:07:13 19:07:42下午&lt;/em&gt;
-            String originDateTime = getOriginDateTime(file);
-            if (null != originDateTime) {
-                int lastDoc = file.getPath().lastIndexOf(&quot;.&quot;);
-                String suffix = file.getPath().substring(lastDoc);
-                String fileName = originDateTime.replace(&quot;下午&quot;, &quot;&quot;).replaceAll(&quot;:&quot;, &quot;-&quot;) + suffix;
-                File newFile = new File(file.getParentFile(), fileName);
-                if (newFile.exists()) {
-                    System.out.format(&quot;文件【%s】已存在 \n&quot;, newFile.getPath());
-                } else {
-                    System.out.format(&quot;重命名【%s】 -&amp;gt; 【%s】 \n&quot;, file.getPath(), newFile.getPath());
-                    file.renameTo(newFile);
-                }
-            } else {
-                System.out.format(&quot;文件【%s】中未找到 Origin DateTime 信息  \n&quot;, file.getPath());
-            }
-        }
-    }
-}
-
-&lt;em&gt;/**
- * 提取拍摄日期
- * @param file
- * @return
- */&lt;/em&gt;
-public static String getOriginDateTime(File file) {
-
-    String originDateTime = null;
-    try {
-        Metadata metadata = ImageMetadataReader.readMetadata(file);
-
-        for (Directory directory : metadata.getDirectories()) {
-            for (Tag tag : directory.getTags()) {
-                if (&quot;Date/Time Original&quot;.equals(tag.getTagName())) {
-&lt;em&gt;//                        System.out.format(&quot;[%s] - %s = %s \n&quot;,&lt;/em&gt;
-&lt;em&gt;//                                directory.getName(), tag.getTagName(), tag.getDescription());&lt;/em&gt;
-                    originDateTime = tag.getDescription();
-                }
-            }
-            if (directory.hasErrors()) {
-                for (String error : directory.getErrors()) {
-                    System.err.format(&quot;ERROR: %s %s \n&quot;, error, file.getPath());
-                }
-            }
-        }
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
-
-    return originDateTime;
-}&lt;/code&gt;&lt;/pre&gt;
-
-
-
-&lt;p&gt;Main方法测试：&lt;/p&gt;
-
-
-
-&lt;pre class=&quot;wp-block-code&quot;&gt;&lt;code&gt;public static void main(String[] args) throws ImageProcessingException, IOException {
-
-    recursion(new File(&quot;图片目录&quot;));
-}&lt;/code&gt;&lt;/pre&gt;
-
-
-
-&lt;p&gt;执行结果：&lt;/p&gt;
-
-
-
-
-
-
-
-&lt;p&gt;可以根据自己需求重写重命名方法。比如在拍摄日期相同时加上一个自增数。&lt;/p&gt;
-&lt;hr/&gt;&lt;/div&gt;&amp;#13;
-&amp;#13;
 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
