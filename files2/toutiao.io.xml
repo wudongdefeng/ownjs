@@ -5,28 +5,6 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>fa8459e7397c9d9e62b61d932eff174f</guid>
-<title>低代码核心：代码生成还是模型解释？</title>
-<link>https://toutiao.io/k/8fsz3uu</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
-
-                    
-                    
-                    
-                    &lt;p&gt;2020年第一届低代码研讨会上， Jordi Cabot发表了一篇文章（或者说观点），对比了低代码和模型驱动开发的关系，认为低代码等于模型驱动开发。但实际上，不少“低代码”系统并不是使用模型驱动的，而是采用另一个策略，即代码生成。那这两者区别是什么，各有什么优势， 我们来看Mendix CTO Johan Den Haan对这个问题的思考。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;关于Johan Den Haan&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;Den Haan是Mendix公司的CTO，2005年公司成立时即作为程序员加入Mendix。2011年开始担任CTO。可以说，Mendix的核心设计基本都来自于Den Haan之手。2010年， Den在参加 Code Generation 2010  大会时，写了一篇对比代码生成和模型解释的文章，就是本文，有助于大家了解这两种方式之间的区别。这是从产业而不是学术角度的对比，更具有实战价值。Mendix具有高可扩展性，能够构建像特斯拉ERP系统这样高度复杂的系统，与选择模型驱动的架构有直接的影响。&lt;/p&gt;&lt;p&gt;英文原文：http://www.theenterprisearchitect.eu/blog/2010/06/28/model-driven-development-code-generation-or-model-interpretation/&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;在代码生成2010会议期间，我参加了关于代码生成与模型解释的一次同好（BoF，物以类聚）会议。这是与 Walter Almeida, Peter Bell, Angelo Hulshout and Pedro Molina. 的一次有趣的非正式讨论。我们讨论了代码生成相对于模型解释的优势，反之亦然。&lt;/p&gt;&lt;p&gt;&lt;img data-height=&quot;267&quot; data-ratio=&quot;0.6675&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z8ExnwlWwvJ8ANgcPeab45BFOsAUn3DVav6nx98aJRWJIX6We1JsBbibqPF9Khnl4gSuYhfsRaCFeLrAETUgDDg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;400&quot; data-width=&quot;400&quot;/&gt;&lt;/p&gt;&lt;p&gt;有必要介绍下其中的2位大牛。&lt;/p&gt;&lt;blockquote&gt;Walter Almeida&lt;/blockquote&gt;&lt;blockquote&gt;法国人， 低代码领域的名宿，Code for Food公司创始人，低代码开源软件 Generative Objects 的发起人。&lt;/blockquote&gt;&lt;blockquote&gt;Peter Bell&lt;/blockquote&gt;&lt;blockquote&gt;美国人， 左一那位，CTO Connections 公司创始人， 投资人。O&#x27;Reilly的《 Introducing GitHub》的作者。&lt;/blockquote&gt;&lt;blockquote&gt;Angelo Hulshout&lt;/blockquote&gt;&lt;blockquote&gt;&lt;span&gt;荷兰的Delphino Consultancy B.V.&lt;/span&gt;&lt;span&gt; 公司CEO和架构师&lt;/span&gt;&lt;/blockquote&gt;&lt;p&gt;这里对讨论中提出的观点做一个概述。我们没有对所有问题进行最终的比较或提炼。因此，你应该把这篇文章作为讨论的起点。通过在评论中添加你自己的观点来加入讨论！&lt;/p&gt;&lt;h3&gt;&lt;br/&gt;&lt;/h3&gt;&lt;h3&gt;&lt;span&gt;关于代码生成和模型解释&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;在模型驱动开发中，代码生成用于从更高级别的模型生成代码，以创建可运行的应用程序。让我们考虑下面这个使用领域特定语言（Domain-Specific Language， DSL）创建的领域模型：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;css&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__selector-tag&quot;&gt;Customer&lt;/span&gt; {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attribute&quot;&gt;Name&lt;/span&gt;: String;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attribute&quot;&gt;Address&lt;/span&gt;: String;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;如果我们想为这个小模型生成Java代码，我们可以使用模板引擎。模板包含Java代码和一些Token，这些Token将根据模型来“填充”。例如，我们可以为域模型中的每个实体使用模板。模板代表一个Java类，实体的名称作为类名（例如客户）。对于每个属性，将生成一个私有字段。有关创建DSL及其相关代码生成器的详细概述/教程，请参阅 &quot;Getting started with Code Generation with Xpand&quot;。&lt;/p&gt;&lt;p&gt;在模型解释的情况下，我们不会通过生成代码的方式来从模型中创建一个可运行软件应用程序。在模型解释中，我们会使用一个（比如）Java实现的通用引擎用，模型直接由这个引擎来解释。例如，这个通用的Java程序中包含一个带有属性“name”的类Entity和一个包含该实体属性（name-value对）的hashmap。在这种情况下，客户实体不是由Java类表示的，而是由一个带有属性名称的Entity对象表示的，该属性name的值是“Customer”。这些实体对象是根据模型中的信息创建的。&lt;/p&gt;&lt;p&gt;代码生成和模型解释都在实践中使用。让我们来看看这些方法相互比较的优势。阅读 15 reasons to start using Model-Driven Development， 了解模型驱动方法的总体优势。&lt;/p&gt;&lt;h3&gt;&lt;span&gt;代码生成的优势&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;与模型解释相比，代码生成具有以下优点：&lt;/p&gt;&lt;h3&gt;&lt;br/&gt;&lt;/h3&gt;&lt;h3&gt;&lt;span&gt;模型解释的优点&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;与代码生成相比，模型解释具有以下优点：&lt;/p&gt;&lt;h3&gt;&lt;br/&gt;&lt;/h3&gt;&lt;h3&gt;&lt;strong&gt;&lt;span&gt;结论&lt;/span&gt;&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;比较这两种方法的优势，我们可以得出结论，最终这完全取决于构建和/或使用模型驱动软件工厂的人员的领域、用例和技能集（或舒适性）。&lt;/p&gt;&lt;p&gt;当我们讨论代码生成和模型解释之间的区别时，很快就会带来更多的问题：代码生成和模型解释之间有什么区别？这两种方法之间的界限是什么？如果我们在生成代码时有一个内存文件系统呢？如果我们通过编译模型的一部分来优化我们的解释器呢？如果解释器为浏览器生成数据库结构和网络内容呢？&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;了解协同办公和低代码相关技术、产品设计和咨询，请扫码关注公众号“可可链” &lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;1&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/Z8ExnwlWwvJ8ANgcPeab45BFOsAUn3DVb0c8vJQLic5Ytk1RKlMia3YibnnyIMbQEtW4Auxw4tcxBX5WS8fMGI2nA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;258&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;
-                &lt;/div&gt;
-
-                
-
-                
-
-
-
-                
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
 <guid>e339891c7c4d2040eaa3b84238ee1579</guid>
 <title>Plan9 assembly 完全解析</title>
 <link>https://toutiao.io/k/73pqk57</link>
@@ -1016,6 +994,28 @@ func main() {
 &lt;p&gt;&lt;img src=&quot;https://img.toutiao.io/attachment/58fe37022f87485fa23b1bc9f048f3cc/w600&quot; alt=&quot;file&quot;/&gt;&lt;/p&gt;
 &lt;/div&gt;
   &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>fa8459e7397c9d9e62b61d932eff174f</guid>
+<title>低代码核心：代码生成还是模型解释？</title>
+<link>https://toutiao.io/k/8fsz3uu</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
+
+                    
+                    
+                    
+                    &lt;p&gt;2020年第一届低代码研讨会上， Jordi Cabot发表了一篇文章（或者说观点），对比了低代码和模型驱动开发的关系，认为低代码等于模型驱动开发。但实际上，不少“低代码”系统并不是使用模型驱动的，而是采用另一个策略，即代码生成。那这两者区别是什么，各有什么优势， 我们来看Mendix CTO Johan Den Haan对这个问题的思考。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;关于Johan Den Haan&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;Den Haan是Mendix公司的CTO，2005年公司成立时即作为程序员加入Mendix。2011年开始担任CTO。可以说，Mendix的核心设计基本都来自于Den Haan之手。2010年， Den在参加 Code Generation 2010  大会时，写了一篇对比代码生成和模型解释的文章，就是本文，有助于大家了解这两种方式之间的区别。这是从产业而不是学术角度的对比，更具有实战价值。Mendix具有高可扩展性，能够构建像特斯拉ERP系统这样高度复杂的系统，与选择模型驱动的架构有直接的影响。&lt;/p&gt;&lt;p&gt;英文原文：http://www.theenterprisearchitect.eu/blog/2010/06/28/model-driven-development-code-generation-or-model-interpretation/&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;在代码生成2010会议期间，我参加了关于代码生成与模型解释的一次同好（BoF，物以类聚）会议。这是与 Walter Almeida, Peter Bell, Angelo Hulshout and Pedro Molina. 的一次有趣的非正式讨论。我们讨论了代码生成相对于模型解释的优势，反之亦然。&lt;/p&gt;&lt;p&gt;&lt;img data-height=&quot;267&quot; data-ratio=&quot;0.6675&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z8ExnwlWwvJ8ANgcPeab45BFOsAUn3DVav6nx98aJRWJIX6We1JsBbibqPF9Khnl4gSuYhfsRaCFeLrAETUgDDg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;400&quot; data-width=&quot;400&quot;/&gt;&lt;/p&gt;&lt;p&gt;有必要介绍下其中的2位大牛。&lt;/p&gt;&lt;blockquote&gt;Walter Almeida&lt;/blockquote&gt;&lt;blockquote&gt;法国人， 低代码领域的名宿，Code for Food公司创始人，低代码开源软件 Generative Objects 的发起人。&lt;/blockquote&gt;&lt;blockquote&gt;Peter Bell&lt;/blockquote&gt;&lt;blockquote&gt;美国人， 左一那位，CTO Connections 公司创始人， 投资人。O&#x27;Reilly的《 Introducing GitHub》的作者。&lt;/blockquote&gt;&lt;blockquote&gt;Angelo Hulshout&lt;/blockquote&gt;&lt;blockquote&gt;&lt;span&gt;荷兰的Delphino Consultancy B.V.&lt;/span&gt;&lt;span&gt; 公司CEO和架构师&lt;/span&gt;&lt;/blockquote&gt;&lt;p&gt;这里对讨论中提出的观点做一个概述。我们没有对所有问题进行最终的比较或提炼。因此，你应该把这篇文章作为讨论的起点。通过在评论中添加你自己的观点来加入讨论！&lt;/p&gt;&lt;h3&gt;&lt;br/&gt;&lt;/h3&gt;&lt;h3&gt;&lt;span&gt;关于代码生成和模型解释&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;在模型驱动开发中，代码生成用于从更高级别的模型生成代码，以创建可运行的应用程序。让我们考虑下面这个使用领域特定语言（Domain-Specific Language， DSL）创建的领域模型：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;css&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__selector-tag&quot;&gt;Customer&lt;/span&gt; {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attribute&quot;&gt;Name&lt;/span&gt;: String;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attribute&quot;&gt;Address&lt;/span&gt;: String;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;如果我们想为这个小模型生成Java代码，我们可以使用模板引擎。模板包含Java代码和一些Token，这些Token将根据模型来“填充”。例如，我们可以为域模型中的每个实体使用模板。模板代表一个Java类，实体的名称作为类名（例如客户）。对于每个属性，将生成一个私有字段。有关创建DSL及其相关代码生成器的详细概述/教程，请参阅 &quot;Getting started with Code Generation with Xpand&quot;。&lt;/p&gt;&lt;p&gt;在模型解释的情况下，我们不会通过生成代码的方式来从模型中创建一个可运行软件应用程序。在模型解释中，我们会使用一个（比如）Java实现的通用引擎用，模型直接由这个引擎来解释。例如，这个通用的Java程序中包含一个带有属性“name”的类Entity和一个包含该实体属性（name-value对）的hashmap。在这种情况下，客户实体不是由Java类表示的，而是由一个带有属性名称的Entity对象表示的，该属性name的值是“Customer”。这些实体对象是根据模型中的信息创建的。&lt;/p&gt;&lt;p&gt;代码生成和模型解释都在实践中使用。让我们来看看这些方法相互比较的优势。阅读 15 reasons to start using Model-Driven Development， 了解模型驱动方法的总体优势。&lt;/p&gt;&lt;h3&gt;&lt;span&gt;代码生成的优势&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;与模型解释相比，代码生成具有以下优点：&lt;/p&gt;&lt;h3&gt;&lt;br/&gt;&lt;/h3&gt;&lt;h3&gt;&lt;span&gt;模型解释的优点&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;与代码生成相比，模型解释具有以下优点：&lt;/p&gt;&lt;h3&gt;&lt;br/&gt;&lt;/h3&gt;&lt;h3&gt;&lt;strong&gt;&lt;span&gt;结论&lt;/span&gt;&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;比较这两种方法的优势，我们可以得出结论，最终这完全取决于构建和/或使用模型驱动软件工厂的人员的领域、用例和技能集（或舒适性）。&lt;/p&gt;&lt;p&gt;当我们讨论代码生成和模型解释之间的区别时，很快就会带来更多的问题：代码生成和模型解释之间有什么区别？这两种方法之间的界限是什么？如果我们在生成代码时有一个内存文件系统呢？如果我们通过编译模型的一部分来优化我们的解释器呢？如果解释器为浏览器生成数据库结构和网络内容呢？&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;了解协同办公和低代码相关技术、产品设计和咨询，请扫码关注公众号“可可链” &lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;1&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/Z8ExnwlWwvJ8ANgcPeab45BFOsAUn3DVb0c8vJQLic5Ytk1RKlMia3YibnnyIMbQEtW4Auxw4tcxBX5WS8fMGI2nA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;258&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;
+                &lt;/div&gt;
+
+                
+
+                
+
+
+
+                
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
 <guid>73c9d254db3bc16e1c204c71ed87e868</guid>
