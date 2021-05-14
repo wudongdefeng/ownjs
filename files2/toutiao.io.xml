@@ -5,1007 +5,99 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>e339891c7c4d2040eaa3b84238ee1579</guid>
-<title>Plan9 assembly 完全解析</title>
-<link>https://toutiao.io/k/73pqk57</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;p&gt;众所周知，Go 使用了 Unix 老古董(误 们发明的 plan9 汇编。就算你对 x86 汇编有所了解，在 plan9 里还是有些许区别。说不定你在看代码的时候，偶然发现代码里的 SP 看起来是 SP，但它实际上不是 SP 的时候就抓狂了哈哈哈。&lt;/p&gt;
+<guid>5798dc82b254bce596cd2bac5ac6b40b</guid>
+<title>这个 GitHub 项目能克隆你的声音</title>
+<link>https://toutiao.io/k/3byclqk</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
 
-&lt;p&gt;本文将对 plan9 汇编进行全面的介绍，同时解答你在接触 plan9 汇编时可能遇到的大部分问题。&lt;/p&gt;
+                    
+                    
+                    
+                    &lt;p data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;span&gt;今天推荐一个黑科技开源项目，&lt;/span&gt;&lt;span&gt;只需要你 5 秒钟的声音对话，就能克隆出你的声音，而且能够实时的生成你任意语音。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;是不是很顶？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我觉个例子，如果我这里有 300 条你说话的语音，我把你的语音数据用这个开源项目去训练，训练完成后，我就可以使用这个训练好的模型生成任何你说的语音了。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;你会听到一个声音和你一模一样的人说你没说过的话，那种感觉真的细思极恐。&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这个黑科技就是：Real-Time-Voice-Cloning，现在已经开源，GitHub 24K 的 Star，最重要的是，这个项目提供了 GUI 界面，交互傻瓜式操作，语音采集、训练、生成都可以交互完成，很方便。&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.5607476635514018&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/ePw3ZeGRruyVTaH3a5FaqfEPiatjfbZDZmWO4Sll1dygEvr4VmJCnGvEic9tBMTicmiaXCD9XBiaG9MHEUjsw4E100w/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1926&quot;/&gt;&lt;/figure&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;地址：https://github.com/CorentinJ/Real-Time-Voice-Cloning&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;环境配置&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;首先你需要 Python 3.6 的环境、安装 PyTorch（要求版本 &amp;gt; = 1.0.1）。Pytorch 是深度学习框架，你可以通过这个站点来安装这个库。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;https://pytorch.org/get-started/locally/&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;紧接着需要安装 ffmpeg：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;地址 https://ffmpeg.org/download.html#get-packages。除此之外，你还需要安装其他的依赖包。将项目下载下来，在包含 requirements.tx 目录下运行命令 pip install -r requirements.txt 就行了。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;下载预训练的模型&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;把开源作者训练好的模型下载下来，我们不用自己训练，直接拿来用就行了：https://github.com/CorentinJ/Real-Time-Voice-Cloning/wiki/Pretrained-models，&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;下载完毕要放到如下的文件夹里面。&lt;/span&gt;&lt;/p&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-preserve=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;encoder\saved_models\pretrained.&lt;span&gt;pt&lt;/span&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;synthesizer\saved_models\pretrained\pretrained.&lt;span&gt;pt&lt;/span&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;vocoder\saved_models\pretrained\pretrained.&lt;span&gt;pt&lt;/span&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;Details about model training &lt;span&gt;and&lt;/span&gt; audio samples can &lt;span&gt;be&lt;/span&gt; found here: http&lt;span&gt;s:&lt;/span&gt;//blue-fish.github.io/experiments/RTVC-&lt;span&gt;7&lt;/span&gt;.html&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;启动&lt;/strong&gt;&lt;/span&gt;&lt;strong&gt;&lt;br/&gt;&lt;/strong&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;当你配完了环境，就可以尝试使用这个黑科技了。&lt;/span&gt;&lt;span&gt;运行命令 python demo_toolbox.py 就能启动这个黑科技啦！&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;下面是比较详细的使用教程，遇到问题可以查看帮助：&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;https://www.bilibili.com/video/av79481223?zw&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;https://blog.csdn.net/weixin_41010198/article/details/113186232&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;最后结尾说一下，我用这个模型试了一下，因为这个模型是老外开源的，所以训练的数据是英语的语音，我试了一下说中文，简直就是不会说中文的老外讲中文一个味道，现在我怀疑世界的真实性了。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;开源地址：https://github.com/CorentinJ/Real-Time-Voice-Cloning&lt;/span&gt;&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.488245931283906&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/ePw3ZeGRruyVTaH3a5FaqfEPiatjfbZDZY5rRImWfIQmfAUzGKDfbEOC4H68oavQUbGZsIib0HpCEThz7Efyk1Ow/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;2212&quot;/&gt;&lt;/figure&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;br/&gt;最后，防止找不到本篇文章，可以收藏点赞，方便翻阅查找。&lt;/strong&gt;欢迎关注公众号 逛逛GitHub（ggGithub）。&lt;/span&gt;&lt;br/&gt;&lt;/section&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-paragraph-type=&quot;ignored&quot;&gt;&lt;hr/&gt;&lt;/section&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;推荐阅读&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;em&gt;&lt;span&gt;1. &lt;/span&gt;&lt;/em&gt;&lt;/strong&gt;&lt;span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUxNjg4NDEzNA==&amp;amp;mid=2247498236&amp;amp;idx=1&amp;amp;sn=040b1a27686a89690be4f7678802a1f7&amp;amp;chksm=f9a22a35ced5a32314fff0002a2ce31854fbe33d20a42b27381a9c34966aafec49749df60a87&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;图灵的一生&lt;/a&gt;&lt;/span&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;em&gt;&lt;strong&gt;2. &lt;/strong&gt;&lt;/em&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUxNjg4NDEzNA==&amp;amp;mid=2247498204&amp;amp;idx=1&amp;amp;sn=fbcd9dcedc3ffd82169650f46a1dec53&amp;amp;chksm=f9a22a15ced5a30307dcfb4e606ff29eff91e274d3810d73c71409b1dc648c1824864c0f226e&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;阿里开源的 Java 诊断工具&lt;/a&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;em&gt;&lt;strong&gt;&lt;span&gt;3. &lt;/span&gt;&lt;/strong&gt;&lt;/em&gt;&lt;span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUxNjg4NDEzNA==&amp;amp;mid=2247497827&amp;amp;idx=1&amp;amp;sn=ba59a1acda4978b8a007dc57e1a31ec7&amp;amp;chksm=f9a22baaced5a2bc1a32ca9d7354aafe880f8a6ca211119869c8ec68e554bef9776de8fe9081&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; hasload=&quot;1&quot;&gt;这俩 AI 项目贼有意思&lt;/a&gt;&lt;/span&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;em&gt;&lt;strong&gt;&lt;span&gt;4. &lt;/span&gt;&lt;/strong&gt;&lt;/em&gt;&lt;span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUxNjg4NDEzNA==&amp;amp;mid=2247497642&amp;amp;idx=2&amp;amp;sn=ec8f2d7a4f03a40d3186e23dadfb5da3&amp;amp;chksm=f9a22463ced5ad753dc826e9eb975a5585068c8275293cd2c7835f56cbd619cb7622c849749f&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; hasload=&quot;1&quot;&gt;GitHub 上的摸鱼神器&lt;/a&gt;&lt;/span&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages&quot; data-cropselx1=&quot;0&quot; data-cropselx2=&quot;172&quot; data-cropsely1=&quot;0&quot; data-cropsely2=&quot;172&quot; data-ratio=&quot;1.005449591280654&quot; data-s=&quot;300,640&quot; data-type=&quot;png&quot; data-w=&quot;734&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ePw3ZeGRruxW7LMX2Iz5DfjRIbFTS7UROhxibBmicicT0HpjIh1yniaJJibSnLFuicMHRx5NEdiaOh2OOACfr6MvR38ibQ/640?wx_fmt=png&quot;/&gt;&lt;/section&gt;
+                &lt;/div&gt;
 
-&lt;p&gt;本文所使用的平台是 linux amd64，因为不同的平台指令集和寄存器都不一样，所以没有办法共同探讨。这也是由汇编本身的性质决定的。&lt;/p&gt;
+                
 
-&lt;h2&gt;基本指令&lt;/h2&gt;
+                
 
-&lt;h3&gt;栈调整&lt;/h3&gt;
 
-&lt;p&gt;intel 或 AT&amp;amp;T 汇编提供了 push 和 pop 指令族，&lt;del&gt;plan9 中没有 push 和 pop&lt;/del&gt;，plan9 中虽然有 push 和 pop 指令，但一般生成的代码中是没有的，我们看到的栈的调整大多是通过对硬件 SP 寄存器进行运算来实现的，例如:&lt;/p&gt;
 
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;SUBQ $0x18, SP // 对 SP 做减法，为函数分配函数栈帧
-...               // 省略无用代码
-ADDQ $0x18, SP // 对 SP 做加法，清除函数栈帧
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;通用的指令和 X64 平台差不多，下面分节详述。&lt;/p&gt;
-
-&lt;h3&gt;数据搬运&lt;/h3&gt;
-
-&lt;p&gt;常数在 plan9 汇编用 $num 表示，可以为负数，默认情况下为十进制。可以用 $0x123 的形式来表示十六进制数。&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;MOVB $1, DI      // 1 byte
-MOVW $0x10, BX   // 2 bytes
-MOVD $1, DX      // 4 bytes
-MOVQ $-10, AX     // 8 bytes
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;可以看到，搬运的长度是由 MOV 的后缀决定的，这一点与 intel 汇编稍有不同，看看类似的 X64 汇编:&lt;/p&gt;
-
-&lt;pre lang=&quot;asm&quot;&gt;&lt;code&gt;mov rax, 0x1   // 8 bytes
-mov eax, 0x100 // 4 bytes
-mov ax, 0x22   // 2 bytes
-mov ah, 0x33   // 1 byte
-mov al, 0x44   // 1 byte
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;plan9 的汇编的操作数的方向是和 intel 汇编相反的，与 AT&amp;amp;T 类似。&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;MOVQ $0x10, AX ===== mov rax, 0x10
-       |    |------------|      |
-       |------------------------|
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;不过凡事总有例外，如果想了解这种意外，可以参见参考资料中的 [1]。&lt;/p&gt;
-
-&lt;h3&gt;常见计算指令&lt;/h3&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;ADDQ  AX, BX   // BX += AX
-SUBQ  AX, BX   // BX -= AX
-IMULQ AX, BX   // BX *= AX
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;类似数据搬运指令，同样可以通过修改指令的后缀来对应不同长度的操作数。例如 ADDQ/ADDW/ADDL/ADDB。&lt;/p&gt;
-
-&lt;h3&gt;条件跳转/无条件跳转&lt;/h3&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;// 无条件跳转
-JMP addr   // 跳转到地址，地址可为代码中的地址，不过实际上手写不会出现这种东西
-JMP label  // 跳转到标签，可以跳转到同一函数内的标签位置
-JMP 2(PC)  // 以当前指令为基础，向前/后跳转 x 行
-JMP -2(PC) // 同上
-
-// 有条件跳转
-JZ target // 如果 zero flag 被 set 过，则跳转
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;指令集&lt;/h3&gt;
-
-&lt;p&gt;可以参考源代码的 &lt;a href=&quot;https://github.com/golang/arch/blob/master/x86/x86.csv&quot;&gt;arch&lt;/a&gt; 部分。&lt;/p&gt;
-
-&lt;p&gt;额外提一句，Go 1.10 添加了大量的 SIMD 指令支持，所以在该版本以上的话，不像之前写那样痛苦了，也就是不用人肉填 byte 了。&lt;/p&gt;
-
-&lt;h2&gt;寄存器&lt;/h2&gt;
-
-&lt;h3&gt;通用寄存器&lt;/h3&gt;
-
-&lt;p&gt;amd64 的通用寄存器:&lt;/p&gt;
-
-&lt;pre lang=&quot;gdb&quot;&gt;&lt;code&gt;(lldb) reg read
-General Purpose Registers:
-       rax = 0x0000000000000005
-       rbx = 0x000000c420088000
-       rcx = 0x0000000000000000
-       rdx = 0x0000000000000000
-       rdi = 0x000000c420088008
-       rsi = 0x0000000000000000
-       rbp = 0x000000c420047f78
-       rsp = 0x000000c420047ed8
-        r8 = 0x0000000000000004
-        r9 = 0x0000000000000000
-       r10 = 0x000000c420020001
-       r11 = 0x0000000000000202
-       r12 = 0x0000000000000000
-       r13 = 0x00000000000000f1
-       r14 = 0x0000000000000011
-       r15 = 0x0000000000000001
-       rip = 0x000000000108ef85  int`main.main + 213 at int.go:19
-    rflags = 0x0000000000000212
-        cs = 0x000000000000002b
-        fs = 0x0000000000000000
-        gs = 0x0000000000000000
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;在 plan9 汇编里都是可以使用的，应用代码层面会用到的通用寄存器主要是: rax, rbx, rcx, rdx, rdi, rsi, r8~r15 这 14 个寄存器，虽然 rbp 和 rsp 也可以用，不过 bp 和 sp 会被用来管理栈顶和栈底，最好不要拿来进行运算。&lt;/p&gt;
-
-&lt;p&gt;plan9 中使用寄存器不需要带 r 或 e 的前缀，例如 rax，只要写 AX 即可:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;MOVQ $101, AX = mov rax, 101
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;下面是通用通用寄存器的名字在 X64 和 plan9 中的对应关系:&lt;/p&gt;
-
-&lt;p&gt;| X64 | rax | rbx| rcx | rdx | rdi | rsi | rbp | rsp | r8 | r9 | r10 | r11 | r12 | r13 | r14 | rip|
-|--|--|--|--| --| --|--| --|--|--|--|--|--|--|--|--|--|
-| Plan9 | AX | BX | CX | DX | DI | SI | BP | SP | R8 | R9 | R10 | R11 | R12 | R13 | R14 | PC |&lt;/p&gt;
-
-&lt;h3&gt;伪寄存器&lt;/h3&gt;
-
-&lt;p&gt;Go 的汇编还引入了 4 个伪寄存器，援引官方文档的描述:&lt;/p&gt;
-
+                
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>3850576518efd1a157aa9f89517938c5</guid>
+<title>独立开发变现周刊（第 1 期）: Notion 也能做博客？</title>
+<link>https://toutiao.io/k/cf864l7</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;article class=&quot;markdown-body entry-content container-lg&quot; itemprop=&quot;text&quot;&gt;&lt;h1&gt;&lt;a id=&quot;user-content-独立开发变现周刊第-1-期-notion也能做博客&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#独立开发变现周刊第-1-期-notion也能做博客&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;独立开发变现周刊（第 1 期）: Notion也能做博客？&lt;/h1&gt;
+&lt;p&gt;自己一直有收集整理【独立开发变现】相关的产品、工具、开源项目、案例、资料等的习惯，最近看到阮一峰老师的【科技爱好者周刊】，很受益。自己也想以周刊的形式，把有独立产品开发相关的，有价值的东西整理出来，每周五发布。一是对自己这一周知识的整理，二是希望通过我的整理能让对别人有一点点帮助。&lt;/p&gt;
+&lt;p&gt;今天是2021年5月7日，开启&lt;strong&gt;独立开发变现周刊（第 1 期）&lt;/strong&gt;&lt;/p&gt;
+&lt;h2&gt;&lt;a id=&quot;user-content-1bytemd一个轻量的markdown编辑器&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#1bytemd一个轻量的markdown编辑器&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;1、ByteMD：一个轻量的Markdown编辑器&lt;/h2&gt;
+&lt;p&gt;ByteMD是字节跳动开源的Markdown编辑器，基于Svelte实现的。可以和很多框架React, Vue, Angular集成。内置了一些可以选择的插件，页尾、页头、数学公式、流程图等。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;FP&lt;/code&gt;: Frame pointer: arguments and locals.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;PC&lt;/code&gt;: Program counter: jumps and branches.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;SB&lt;/code&gt;: Static base pointer: global symbols.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;SP&lt;/code&gt;: Stack pointer: top of stack.&lt;/li&gt;
-&lt;/ul&gt;
+&lt;p&gt;一个 Svelte 组件编译了以后，所有需要的运行时代码都包含在里面了，除了引入这个组件本身，你不需要再额外引入一个所谓的框架运行时！&lt;/p&gt;
 &lt;/blockquote&gt;
-
-&lt;p&gt;官方的描述稍微有一些问题，我们对这些说明进行一点扩充:&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;FP:  使用形如 &lt;code&gt;symbol+offset(FP)&lt;/code&gt; 的方式，引用函数的输入参数。例如 &lt;code&gt;arg0+0(FP)&lt;/code&gt;，&lt;code&gt;arg1+8(FP)&lt;/code&gt;，使用 FP 不加 symbol 时，无法通过编译，在汇编层面来讲，symbol 并没有什么用，加 symbol 主要是为了提升代码可读性。另外，官方文档虽然将伪寄存器 FP 称之为 frame pointer，实际上它根本不是 frame pointer，按照传统的 x86 的习惯来讲，frame pointer 是指向整个 stack frame 底部的 BP 寄存器。假如当前的 callee 函数是 add，在 add 的代码中引用 FP，该 FP 指向的位置不在 callee 的 stack frame 之内，而是在 caller 的 stack frame 上。具体可参见之后的 &lt;strong&gt;栈结构&lt;/strong&gt; 一章。&lt;/li&gt;
-&lt;li&gt;PC: 实际上就是在体系结构的知识中常见的 pc 寄存器，在 x86 平台下对应 ip 寄存器，amd64 上则是 rip。除了个别跳转之外，手写 plan9 代码与 PC 寄存器打交道的情况较少。&lt;/li&gt;
-&lt;li&gt;SB: 全局静态基指针，一般用来声明函数或全局变量，在之后的函数知识和示例部分会看到具体用法。&lt;/li&gt;
-&lt;li&gt;SP: plan9 的这个 SP 寄存器指向当前栈帧的局部变量的开始位置，使用形如 &lt;code&gt;symbol+offset(SP)&lt;/code&gt; 的方式，引用函数的局部变量。offset 的合法取值是 [-framesize, 0)，注意是个左闭右开的区间。假如局部变量都是 8 字节，那么第一个局部变量就可以用 &lt;code&gt;localvar0-8(SP)&lt;/code&gt; 来表示。这也是一个词不表意的寄存器。与硬件寄存器 SP 是两个不同的东西，在栈帧 size 为 0 的情况下，伪寄存器 SP 和硬件寄存器 SP 指向同一位置。手写汇编代码时，如果是 &lt;code&gt;symbol+offset(SP)&lt;/code&gt; 形式，则表示伪寄存器 SP。如果是 &lt;code&gt;offset(SP)&lt;/code&gt; 则表示硬件寄存器 SP。务必注意。对于编译输出(go tool compile -S / go tool objdump)的代码来讲，目前所有的 SP 都是硬件寄存器 SP，无论是否带 symbol。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;我们这里对容易混淆的几点简单进行说明：&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;伪 SP 和硬件 SP 不是一回事，在手写代码时，伪 SP 和硬件 SP 的区分方法是看该 SP 前是否有 symbol。如果有 symbol，那么即为伪寄存器，如果没有，那么说明是硬件 SP 寄存器。&lt;/li&gt;
-&lt;li&gt;SP 和 FP 的相对位置是会变的，所以不应该尝试用伪 SP 寄存器去找那些用 FP + offset 来引用的值，例如函数的入参和返回值。&lt;/li&gt;
-&lt;li&gt;官方文档中说的伪 SP 指向 stack 的 top，是有问题的。其指向的局部变量位置实际上是整个栈的栈底(除 caller BP 之外)，所以说 bottom 更合适一些。&lt;/li&gt;
-&lt;li&gt;在 go tool objdump/go tool compile -S 输出的代码中，是没有伪 SP 和 FP 寄存器的，我们上面说的区分伪 SP 和硬件 SP 寄存器的方法，对于上述两个命令的输出结果是没法使用的。在编译和反汇编的结果中，只有真实的 SP 寄存器。&lt;/li&gt;
-&lt;li&gt;FP 和 Go 的官方源代码里的 framepointer 不是一回事，源代码里的 framepointer 指的是 caller BP 寄存器的值，在这里和 caller 的伪 SP 是值是相等的。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;以上说明看不懂也没关系，在熟悉了函数的栈结构之后再反复回来查看应该就可以明白了。个人意见，这些是 Go 官方挖的坑。。&lt;/p&gt;
-
-&lt;h2&gt;变量声明&lt;/h2&gt;
-
-&lt;p&gt;在汇编里所谓的变量，一般是存储在 .rodata 或者 .data 段中的只读值。对应到应用层的话，就是已初始化过的全局的 const、var、static 变量/常量。&lt;/p&gt;
-
-&lt;p&gt;使用 DATA 结合 GLOBL 来定义一个变量。DATA 的用法为:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;DATA    symbol+offset(SB)/width, value
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;大多数参数都是字面意思，不过这个 offset 需要稍微注意。其含义是该值相对于符号 symbol 的偏移，而不是相对于全局某个地址的偏移。&lt;/p&gt;
-
-&lt;p&gt;使用 GLOBL 指令将变量声明为 global，额外接收两个参数，一个是 flag，另一个是变量的总大小。&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;GLOBL divtab(SB), RODATA, $64
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;GLOBL 必须跟在 DATA 指令之后，下面是一个定义了多个 readonly 的全局变量的完整例子:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;DATA age+0x00(SB)/4, $18  // forever 18
-GLOBL age(SB), RODATA, $4
-
-DATA pi+0(SB)/8, $3.1415926
-GLOBL pi(SB), RODATA, $8
-
-DATA birthYear+0(SB)/4, $1988
-GLOBL birthYear(SB), RODATA, $4
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;正如之前所说，所有符号在声明时，其 offset 一般都是 0。&lt;/p&gt;
-
-&lt;p&gt;有时也可能会想在全局变量中定义数组，或字符串，这时候就需要用上非 0 的 offset 了，例如:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;DATA bio&amp;lt;&amp;gt;+0(SB)/8, $&quot;oh yes i&quot;
-DATA bio&amp;lt;&amp;gt;+8(SB)/8, $&quot;am here &quot;
-GLOBL bio&amp;lt;&amp;gt;(SB), RODATA, $16
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;大部分都比较好理解，不过这里我们又引入了新的标记 &lt;code&gt;&amp;lt;&amp;gt;&lt;/code&gt;，这个跟在符号名之后，表示该全局变量只在当前文件中生效，类似于 C 语言中的 static。如果在另外文件中引用该变量的话，会报 &lt;code&gt;relocation target not found&lt;/code&gt; 的错误。&lt;/p&gt;
-
-&lt;p&gt;本小节中提到的 flag，还可以有其它的取值:&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;ul&gt;
-&lt;li&gt;  &lt;code&gt;NOPROF&lt;/code&gt;  = 1&lt;br/&gt;
-(For  &lt;code&gt;TEXT&lt;/code&gt;  items.) Don&#x27;t profile the marked function. This flag is deprecated.&lt;/li&gt;
-&lt;li&gt;  &lt;code&gt;DUPOK&lt;/code&gt;  = 2&lt;br/&gt;
-It is legal to have multiple instances of this symbol in a single binary. The linker will choose one of the duplicates to use.&lt;/li&gt;
-&lt;li&gt;  &lt;code&gt;NOSPLIT&lt;/code&gt;  = 4&lt;br/&gt;
-(For  &lt;code&gt;TEXT&lt;/code&gt;  items.) Don&#x27;t insert the preamble to check if the stack must be split. The frame for the routine, plus anything it calls, must fit in the spare space at the top of the stack segment. Used to protect routines such as the stack splitting code itself.&lt;/li&gt;
-&lt;li&gt;  &lt;code&gt;RODATA&lt;/code&gt;  = 8&lt;br/&gt;
-(For  &lt;code&gt;DATA&lt;/code&gt;  and  &lt;code&gt;GLOBL&lt;/code&gt;  items.) Put this data in a read-only section.&lt;/li&gt;
-&lt;li&gt;  &lt;code&gt;NOPTR&lt;/code&gt;  = 16&lt;br/&gt;
-(For  &lt;code&gt;DATA&lt;/code&gt;  and  &lt;code&gt;GLOBL&lt;/code&gt;  items.) This data contains no pointers and therefore does not need to be scanned by the garbage collector.&lt;/li&gt;
-&lt;li&gt;  &lt;code&gt;WRAPPER&lt;/code&gt;  = 32&lt;br/&gt;
-(For  &lt;code&gt;TEXT&lt;/code&gt;  items.) This is a wrapper function and should not count as disabling  &lt;code&gt;recover&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;  &lt;code&gt;NEEDCTXT&lt;/code&gt;  = 64&lt;br/&gt;
-(For  &lt;code&gt;TEXT&lt;/code&gt;  items.) This function is a closure so it uses its incoming context register.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;当使用这些 flag 的字面量时，需要在汇编文件中 &lt;code&gt;#include &quot;textflag.h&quot;&lt;/code&gt;。&lt;/p&gt;
-
-&lt;h2&gt;.s 和 .go 文件的全局变量互通&lt;/h2&gt;
-
-&lt;p&gt;在 &lt;code&gt;.s&lt;/code&gt; 文件中是可以直接使用 &lt;code&gt;.go&lt;/code&gt; 中定义的全局变量的，看看下面这个简单的例子:&lt;/p&gt;
-
-&lt;p&gt;refer.go:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;package main
-
-var a = 999
-func get() int
-
-func main() {
-    println(get())
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;refer.s:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;#include &quot;textflag.h&quot;
-
-TEXT ·get(SB), NOSPLIT, $0-8
-    MOVQ ·a(SB), AX
-    MOVQ AX, ret+0(FP)
-    RET
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;·a(SB)，表示该符号需要链接器来帮我们进行重定向(relocation)，如果找不到该符号，会输出 &lt;code&gt;relocation target not found&lt;/code&gt; 的错误。&lt;/p&gt;
-
-&lt;p&gt;例子比较简单，大家可以自行尝试。&lt;/p&gt;
-
-&lt;h2&gt;函数声明&lt;/h2&gt;
-
-&lt;p&gt;我们来看看一个典型的 plan9 的汇编函数的定义：&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;// func add(a, b int) int
-//   =&amp;gt; 该声明定义在同一个 package 下的任意 .go 文件中
-//   =&amp;gt; 只有函数头，没有实现
-TEXT pkgname·add(SB), NOSPLIT, $0-8
-    MOVQ a+0(FP), AX
-    MOVQ a+8(FP), BX
-    ADDQ AX, BX
-    MOVQ BX, ret+16(FP)
-    RET
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;为什么要叫 TEXT ？如果对程序数据在文件中和内存中的分段稍有了解的同学应该知道，我们的代码在二进制文件中，是存储在 .text 段中的，这里也就是一种约定俗成的起名方式。实际上在 plan9 中 TEXT 是一个指令，用来定义一个函数。除了 TEXT 之外还有前面变量声明说到的 DATA/GLOBL。&lt;/p&gt;
-
-&lt;p&gt;定义中的 pkgname 部分是可以省略的，非想写也可以写上。不过写上 pkgname 的话，在重命名 package 之后还需要改代码，所以推荐最好还是不要写。&lt;/p&gt;
-
-&lt;p&gt;中点 &lt;code&gt;·&lt;/code&gt; 比较特殊，是一个 unicode 的中点，该点在 mac 下的输入方法是 &lt;code&gt;option+shift+9&lt;/code&gt;。在程序被链接之后，所有的中点&lt;code&gt;·&lt;/code&gt; 都会被替换为句号&lt;code&gt;.&lt;/code&gt;，比如你的方法是 &lt;code&gt;runtime·main&lt;/code&gt;，在编译之后的程序里的符号则是 &lt;code&gt;runtime.main&lt;/code&gt;。嗯，看起来很变态。简单总结一下:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;
-                              参数及返回值大小
-                                  | 
- TEXT pkgname·add(SB),NOSPLIT,$32-32
-       |        |               |
-      包名     函数名         栈帧大小(局部变量+可能需要的额外调用函数的参数空间的总大小，但不包括调用其它函数时的 ret address 的大小)
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2&gt;栈结构&lt;/h2&gt;
-
-&lt;p&gt;下面是一个典型的函数的栈结构图:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;
-                       -----------------                                           
-                       current func arg0                                           
-                       ----------------- &amp;lt;----------- FP(pseudo FP)                
-                        caller ret addr                                            
-                       +---------------+                                           
-                       | caller BP(*)  |                                           
-                       ----------------- &amp;lt;----------- SP(pseudo SP，实际上是当前栈帧的 BP 位置)
-                       |   Local Var0  |                                           
-                       -----------------                                           
-                       |   Local Var1  |                                           
-                       -----------------                                           
-                       |   Local Var2  |                                           
-                       -----------------                -                          
-                       |   ........    |                                           
-                       -----------------                                           
-                       |   Local VarN  |                                           
-                       -----------------                                           
-                       |               |                                           
-                       |               |                                           
-                       |  temporarily  |                                           
-                       |  unused space |                                           
-                       |               |                                           
-                       |               |                                           
-                       -----------------                                           
-                       |  call retn    |                                           
-                       -----------------                                           
-                       |  call ret(n-1)|                                           
-                       -----------------                                           
-                       |  ..........   |                                           
-                       -----------------                                           
-                       |  call ret1    |                                           
-                       -----------------                                           
-                       |  call argn    |                                           
-                       -----------------                                           
-                       |   .....       |                                           
-                       -----------------                                           
-                       |  call arg3    |                                           
-                       -----------------                                           
-                       |  call arg2    |                                           
-                       |---------------|                                           
-                       |  call arg1    |                                           
-                       -----------------   &amp;lt;------------  hardware SP 位置           
-                         return addr                                               
-                       +---------------+                                           
-
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;从原理上来讲，如果当前函数调用了其它函数，那么 return addr 也是在 caller 的栈上的，不过往栈上插 return addr 的过程是由 CALL 指令完成的，在 RET 时，SP 又会恢复到图上位置。我们在计算 SP 和参数相对位置时，可以认为硬件 SP 指向的就是图上的位置。&lt;/p&gt;
-
-&lt;p&gt;图上的 caller BP，指的是 caller 的 BP 寄存器值，有些人把 caller BP 叫作 caller 的 frame pointer，实际上这个习惯是从 x86 架构沿袭来的。Go 的 asm 文档中把伪寄存器 FP 也称为 frame pointer，但是这两个 frame pointer 根本不是一回事。&lt;/p&gt;
-
-&lt;p&gt;此外需要注意的是，caller BP 是在编译期由编译器插入的，用户手写代码时，计算 frame size 时是不包括这个 caller BP 部分的。是否插入 caller BP 的主要判断依据是:&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;函数的栈帧大小大于 0&lt;/li&gt;
-&lt;li&gt;下述函数返回 true&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;func Framepointer_enabled(goos, goarch string) bool {
-    return framepointer_enabled != 0 &amp;amp;&amp;amp; goarch == &quot;amd64&quot; &amp;amp;&amp;amp; goos != &quot;nacl&quot;
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;如果编译器在最终的汇编结果中没有插入 caller BP(源代码中所称的 frame pointer)的情况下，伪 SP 和伪 FP 之间只有 8 个字节的 caller 的 return address，而插入了 BP 的话，就会多出额外的 8 字节。也就说伪 SP 和伪 FP 的相对位置是不固定的，有可能是间隔 8 个字节，也有可能间隔 16 个字节。并且判断依据会根据平台和 Go 的版本有所不同。&lt;/p&gt;
-
-&lt;p&gt;图上可以看到，FP 伪寄存器指向函数的传入参数的开始位置，因为栈是朝低地址方向增长，为了通过寄存器引用参数时方便，所以参数的摆放方向和栈的增长方向是相反的，即：&lt;/p&gt;
-
-&lt;pre lang=&quot;shell&quot;&gt;&lt;code&gt;                              FP
-high ----------------------&amp;gt; low
-argN, ... arg3, arg2, arg1, arg0
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;假设所有参数均为 8 字节，这样我们就可以用 symname+0(FP) 访问第一个 参数，symname+8(FP) 访问第二个参数，以此类推。用伪 SP 来引用局部变量，原理上来讲差不多，不过因为伪 SP 指向的是局部变量的底部，所以 symname-8(SP) 表示的是第一个局部变量，symname-16(SP)表示第二个，以此类推。当然，这里假设局部变量都占用 8 个字节。&lt;/p&gt;
-
-&lt;p&gt;图的最上部的 caller return address 和 current func arg0 都是由 caller 来分配空间的。不算在当前的栈帧内。&lt;/p&gt;
-
-&lt;p&gt;因为官方文档本身较模糊，我们来一个函数调用的全景图，来看一下这些真假 SP/FP/BP 到底是个什么关系:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;
-                                       caller                                                                                 
-                                 +------------------+                                                                         
-                                 |                  |                                                                         
-       +----------------------&amp;gt;  --------------------                                                                         
-       |                         |                  |                                                                         
-       |                         | caller parent BP |                                                                         
-       |           BP(pseudo SP) --------------------                                                                         
-       |                         |                  |                                                                         
-       |                         |   Local Var0     |                                                                         
-       |                         --------------------                                                                         
-       |                         |                  |                                                                         
-       |                         |   .......        |                                                                         
-       |                         --------------------                                                                         
-       |                         |                  |                                                                         
-       |                         |   Local VarN     |                                                                         
-                                 --------------------                                                                         
- caller stack frame              |                  |                                                                         
-                                 |   callee arg2    |                                                                         
-       |                         |------------------|                                                                         
-       |                         |                  |                                                                         
-       |                         |   callee arg1    |                                                                         
-       |                         |------------------|                                                                         
-       |                         |                  |                                                                         
-       |                         |   callee arg0    |                                                                         
-       |                         ----------------------------------------------+   FP(virtual register)                       
-       |                         |                  |                          |                                              
-       |                         |   return addr    |  parent return address   |                                              
-       +----------------------&amp;gt;  +------------------+---------------------------    &amp;lt;-------------------------------+         
-                                                    |  caller BP               |                                    |         
-                                                    |  (caller frame pointer)  |                                    |         
-                                     BP(pseudo SP)  ----------------------------                                    |         
-                                                    |                          |                                    |         
-                                                    |     Local Var0           |                                    |         
-                                                    ----------------------------                                    |         
-                                                    |                          |                                              
-                                                    |     Local Var1           |                                              
-                                                    ----------------------------                            callee stack frame
-                                                    |                          |                                              
-                                                    |       .....              |                                              
-                                                    ----------------------------                                    |         
-                                                    |                          |                                    |         
-                                                    |     Local VarN           |                                    |         
-                                  SP(Real Register) ----------------------------                                    |         
-                                                    |                          |                                    |         
-                                                    |                          |                                    |         
-                                                    |                          |                                    |         
-                                                    |                          |                                    |         
-                                                    |                          |                                    |         
-                                                    +--------------------------+    &amp;lt;-------------------------------+         
-
-                                                              callee
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2&gt;argsize 和 framesize 计算规则&lt;/h2&gt;
-
-&lt;h3&gt;argsize&lt;/h3&gt;
-
-&lt;p&gt;在函数声明中:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt; TEXT pkgname·add(SB),NOSPLIT,$16-32
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;前面已经说过 $16-32 表示 $framesize-argsize。Go 在函数调用时，参数和返回值都需要由 caller 在其栈帧上备好空间。callee 在声明时仍然需要知道这个 argsize。argsize 的计算方法是，参数大小求和+返回值大小求和，例如入参是 3 个 int64 类型，返回值是 1 个 int64 类型，那么这里的 argsize =  sizeof(int64) * 4。&lt;/p&gt;
-
-&lt;p&gt;不过真实世界永远没有我们假设的这么美好，函数参数往往混合了多种类型，还需要考虑内存对齐问题。&lt;/p&gt;
-
-&lt;p&gt;如果不确定自己的函数签名需要多大的 argsize，可以通过简单实现一个相同签名的空函数，然后 go tool objdump 来逆向查找应该分配多少空间。&lt;/p&gt;
-
-&lt;h3&gt;framesize&lt;/h3&gt;
-
-&lt;p&gt;函数的 framesize 就稍微复杂一些了，手写代码的 framesize 不需要考虑由编译器插入的 caller BP，要考虑：&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;局部变量，及其每个变量的 size。&lt;/li&gt;
-&lt;li&gt;在函数中是否有对其它函数调用时，如果有的话，调用时需要将 callee 的参数、返回值考虑在内。虽然 return address(rip)的值也是存储在 caller 的 stack frame 上的，但是这个过程是由 CALL 指令和 RET 指令完成 PC 寄存器的保存和恢复的，在手写汇编时，同样也是不需要考虑这个 PC 寄存器在栈上所需占用的 8 个字节的。&lt;/li&gt;
-&lt;li&gt;原则上来说，调用函数时只要不把局部变量覆盖掉就可以了。稍微多分配几个字节的 framesize 也不会死。&lt;/li&gt;
-&lt;li&gt;在确保逻辑没有问题的前提下，你愿意覆盖局部变量也没有问题。只要保证进入和退出汇编函数时的 caller 和 callee 能正确拿到返回值就可以。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2&gt;地址运算&lt;/h2&gt;
-
-&lt;p&gt;地址运算也是用 lea 指令，英文原意为 &lt;code&gt;Load Effective Address&lt;/code&gt;，amd64 平台地址都是 8 个字节，所以直接就用 LEAQ 就好:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;LEAQ (BX)(AX*8), CX
-// 上面代码中的 8 代表 scale
-// scale 只能是 0、2、4、8
-// 如果写成其它值:
-// LEAQ (BX)(AX*3), CX
-// ./a.s:6: bad scale: 3
-
-// 用 LEAQ 的话，即使是两个寄存器值直接相加，也必须提供 scale
-// 下面这样是不行的
-// LEAQ (BX)(AX), CX
-// asm: asmidx: bad address 0/2064/2067
-// 正确的写法是
-LEAQ (BX)(AX*1), CX
-
-
-// 在寄存器运算的基础上，可以加上额外的 offset
-LEAQ 16(BX)(AX*1), CX
-
-// 三个寄存器做运算，还是别想了
-// LEAQ DX(BX)(AX*8), CX
-// ./a.s:13: expected end of operand, found (
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;使用 LEAQ 的好处也比较明显，可以节省指令数。如果用基本算术指令来实现 LEAQ 的功能，需要两~三条以上的计算指令才能实现 LEAQ 的完整功能。&lt;/p&gt;
-
-&lt;h2&gt;示例&lt;/h2&gt;
-
-&lt;h3&gt;add/sub/mul&lt;/h3&gt;
-
-&lt;p&gt;math.go:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;package main
-
-import &quot;fmt&quot;
-
-func add(a, b int) int // 汇编函数声明
-
-func sub(a, b int) int // 汇编函数声明
-
-func mul(a, b int) int // 汇编函数声明
-
-func main() {
-    fmt.Println(add(10, 11))
-    fmt.Println(sub(99, 15))
-    fmt.Println(mul(11, 12))
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;math.s:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;#include &quot;textflag.h&quot; // 因为我们声明函数用到了 NOSPLIT 这样的 flag，所以需要将 textflag.h 包含进来
-
-// func add(a, b int) int
-TEXT ·add(SB), NOSPLIT, $0-24
-    MOVQ a+0(FP), AX // 参数 a
-    MOVQ b+8(FP), BX // 参数 b
-    ADDQ BX, AX    // AX += BX
-    MOVQ AX, ret+16(FP) // 返回
-    RET
-
-// func sub(a, b int) int
-TEXT ·sub(SB), NOSPLIT, $0-24
-    MOVQ a+0(FP), AX
-    MOVQ b+8(FP), BX
-    SUBQ BX, AX    // AX -= BX
-    MOVQ AX, ret+16(FP)
-    RET
-
-// func mul(a, b int) int
-TEXT ·mul(SB), NOSPLIT, $0-24
-    MOVQ  a+0(FP), AX
-    MOVQ  b+8(FP), BX
-    IMULQ BX, AX    // AX *= BX
-    MOVQ  AX, ret+16(FP)
-    RET
-    // 最后一行的空行是必须的，否则可能报 unexpected EOF
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;把这两个文件放在任意目录下，执行 &lt;code&gt;go build&lt;/code&gt; 并运行就可以看到效果了。&lt;/p&gt;
-
-&lt;h3&gt;伪寄存器 SP 、伪寄存器 FP 和硬件寄存器 SP&lt;/h3&gt;
-
-&lt;p&gt;来写一段简单的代码证明伪 SP、伪 FP 和硬件 SP 的位置关系。
-spspfp.s:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;#include &quot;textflag.h&quot;
-
-// func output(int) (int, int, int)
-TEXT ·output(SB), $8-48
-    MOVQ 24(SP), DX // 不带 symbol，这里的 SP 是硬件寄存器 SP
-    MOVQ DX, ret3+24(FP) // 第三个返回值
-    MOVQ perhapsArg1+16(SP), BX // 当前函数栈大小 &amp;gt; 0，所以 FP 在 SP 的上方 16 字节处
-    MOVQ BX, ret2+16(FP) // 第二个返回值
-    MOVQ arg1+0(FP), AX
-    MOVQ AX, ret1+8(FP)  // 第一个返回值
-    RET
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;spspfp.go:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;package main
-
-import (
-    &quot;fmt&quot;
-)
-
-func output(int) (int, int, int) // 汇编函数声明
-
-func main() {
-    a, b, c := output(987654321)
-    fmt.Println(a, b, c)
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;执行上面的代码，可以得到输出:&lt;/p&gt;
-
-&lt;pre lang=&quot;shell&quot;&gt;&lt;code&gt;987654321 987654321 987654321
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;和代码结合思考，可以知道我们当前的栈结构是这样的:&lt;/p&gt;
-
-&lt;pre lang=&quot;shell&quot;&gt;&lt;code&gt;------
-ret2 (8 bytes)
-------
-ret1 (8 bytes)
-------
-ret0 (8 bytes)
-------
-arg0 (8 bytes)
------- FP
-ret addr (8 bytes)
-------
-caller BP (8 bytes)
------- pseudo SP
-frame content (8 bytes)
------- hardware SP
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;本小节例子的 framesize 是大于 0 的，读者可以尝试修改 framesize 为 0，然后调整代码中引用伪 SP 和硬件 SP 时的 offset，来研究 framesize 为 0 时，伪 FP，伪 SP 和硬件 SP 三者之间的相对位置。&lt;/p&gt;
-
-&lt;p&gt;本小节的例子是为了告诉大家，伪 SP 和伪 FP 的相对位置是会变化的，手写时不应该用伪 SP 和 &amp;gt;0 的 offset 来引用数据，否则结果可能会出乎你的预料。&lt;/p&gt;
-
-&lt;h3&gt;汇编调用非汇编函数&lt;/h3&gt;
-
-&lt;p&gt;output.s:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;#include &quot;textflag.h&quot;
-
-// func output(a,b int) int
-TEXT ·output(SB), NOSPLIT, $24-24
-    MOVQ a+0(FP), DX // arg a
-    MOVQ DX, 0(SP) // arg x
-    MOVQ b+8(FP), CX // arg b
-    MOVQ CX, 8(SP) // arg y
-    CALL ·add(SB) // 在调用 add 之前，已经把参数都通过物理寄存器 SP 搬到了函数的栈顶
-    MOVQ 16(SP), AX // add 函数会把返回值放在这个位置
-    MOVQ AX, ret+16(FP) // return result
-    RET
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;output.go:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;package main
-
-import &quot;fmt&quot;
-
-func add(x, y int) int {
-    return x + y
-}
-
-func output(a, b int) int
-
-func main() {
-    s := output(10, 13)
-    fmt.Println(s)
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;汇编中的循环&lt;/h3&gt;
-
-&lt;p&gt;通过 DECQ 和 JZ 结合，可以实现高级语言里的循环逻辑:&lt;/p&gt;
-
-&lt;p&gt;sum.s:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;#include &quot;textflag.h&quot;
-
-// func sum(sl []int64) int64
-TEXT ·sum(SB), NOSPLIT, $0-32
-    MOVQ $0, SI
-    MOVQ sl+0(FP), BX // &amp;amp;sl[0], addr of the first elem
-    MOVQ sl+8(FP), CX // len(sl)
-    INCQ CX           // CX++, 因为要循环 len 次
-
-start:
-    DECQ CX       // CX--
-    JZ   done
-    ADDQ (BX), SI // SI += *BX
-    ADDQ $8, BX   // 指针移动
-    JMP  start
-
-done:
-    // 返回地址是 24 是怎么得来的呢？
-    // 可以通过 go tool compile -S math.go 得知
-    // 在调用 sum 函数时，会传入三个值，分别为:
-    // slice 的首地址、slice 的 len， slice 的 cap
-    // 不过我们这里的求和只需要 len，但 cap 依然会占用参数的空间
-    // 就是 16(FP)
-    MOVQ SI, ret+24(FP)
-    RET
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;sum.go:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;package main
-
-func sum([]int64) int64
-
-func main() {
-    println(sum([]int64{1, 2, 3, 4, 5}))
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2&gt;扩展话题&lt;/h2&gt;
-
-&lt;h3&gt;标准库中的一些数据结构&lt;/h3&gt;
-
-&lt;h4&gt;数值类型&lt;/h4&gt;
-
-&lt;p&gt;标准库中的数值类型很多:&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;int/int8/int16/int32/int64&lt;/li&gt;
-&lt;li&gt;uint/uint8/uint16/uint32/uint64&lt;/li&gt;
-&lt;li&gt;float32/float64&lt;/li&gt;
-&lt;li&gt;byte/rune&lt;/li&gt;
-&lt;li&gt;uintptr&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;这些类型在汇编中就是一段存储着数据的连续内存，只是内存长度不一样，操作的时候看好数据长度就行。&lt;/p&gt;
-
-&lt;h4&gt;slice&lt;/h4&gt;
-
-&lt;p&gt;前面的例子已经说过了，slice 在传递给函数的时候，实际上会展开成三个参数:&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;首元素地址&lt;/li&gt;
-&lt;li&gt;slice 的 len&lt;/li&gt;
-&lt;li&gt;slice 的 cap&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;在汇编中处理时，只要知道这个原则那就很好办了，按顺序还是按索引操作随你开心。&lt;/p&gt;
-
-&lt;h4&gt;string&lt;/h4&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;package main
-
-//go:noinline
-func stringParam(s string) {}
-
-func main() {
-    var x = &quot;abcc&quot;
-    stringParam(x)
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;用 &lt;code&gt;go tool compile -S&lt;/code&gt; 输出其汇编:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;0x001d 00029 (stringParam.go:11)    LEAQ    go.string.&quot;abcc&quot;(SB), AX  // 获取 RODATA 段中的字符串地址
-0x0024 00036 (stringParam.go:11)    MOVQ    AX, (SP) // 将获取到的地址放在栈顶，作为第一个参数
-0x0028 00040 (stringParam.go:11)    MOVQ    $4, 8(SP) // 字符串长度作为第二个参数
-0x0031 00049 (stringParam.go:11)    PCDATA  $0, $0 // gc 相关
-0x0031 00049 (stringParam.go:11)    CALL    &quot;&quot;.stringParam(SB) // 调用 stringParam 函数
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;在汇编层面 string 就是地址 + 字符串长度。&lt;/p&gt;
-
-&lt;h4&gt;struct&lt;/h4&gt;
-
-&lt;p&gt;struct 在汇编层面实际上就是一段连续内存，在作为参数传给函数时，会将其展开在 caller 的栈上传给对应的 callee:&lt;/p&gt;
-
-&lt;p&gt;struct.go&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;package main
-
-type address struct {
-    lng int
-    lat int
-}
-
-type person struct {
-    age    int
-    height int
-    addr   address
-}
-
-func readStruct(p person) (int, int, int, int)
-
-func main() {
-    var p = person{
-        age:    99,
-        height: 88,
-        addr: address{
-            lng: 77,
-            lat: 66,
-        },
-    }
-    a, b, c, d := readStruct(p)
-    println(a, b, c, d)
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;struct.s&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;#include &quot;textflag.h&quot;
-
-TEXT ·readStruct(SB), NOSPLIT, $0-64
-    MOVQ arg0+0(FP), AX
-    MOVQ AX, ret0+32(FP)
-    MOVQ arg1+8(FP), AX
-    MOVQ AX, ret1+40(FP)
-    MOVQ arg2+16(FP), AX
-    MOVQ AX, ret2+48(FP)
-    MOVQ arg3+24(FP), AX
-    MOVQ AX, ret3+56(FP)
-    RET
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;上述的程序会输出 99, 88, 77, 66，这表明即使是内嵌结构体，在内存分布上依然是连续的。&lt;/p&gt;
-
-&lt;h4&gt;map&lt;/h4&gt;
-
-&lt;p&gt;通过对下述文件进行汇编(go tool compile -S)，我们可以得到一个 map 在对某个 key 赋值时所需要做的操作:&lt;/p&gt;
-
-&lt;p&gt;m.go:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;package main
-
-func main() {
-    var m = map[int]int{}
-    m[43] = 1
-    var n = map[string]int{}
-    n[&quot;abc&quot;] = 1
-    println(m, n)
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;看一看第七行的输出:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;0x0085 00133 (m.go:7)   LEAQ    type.map[int]int(SB), AX
-0x008c 00140 (m.go:7)   MOVQ    AX, (SP)
-0x0090 00144 (m.go:7)   LEAQ    &quot;&quot;..autotmp_2+232(SP), AX
-0x0098 00152 (m.go:7)   MOVQ    AX, 8(SP)
-0x009d 00157 (m.go:7)   MOVQ    $43, 16(SP)
-0x00a6 00166 (m.go:7)   PCDATA  $0, $1
-0x00a6 00166 (m.go:7)   CALL    runtime.mapassign_fast64(SB)
-0x00ab 00171 (m.go:7)   MOVQ    24(SP), AX
-0x00b0 00176 (m.go:7)   MOVQ    $1, (AX)
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;前面我们已经分析过调用函数的过程，这里前几行都是在准备 runtime.mapassign_fast64(SB) 的参数。去 runtime 里看看这个函数的签名:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;func mapassign_fast64(t *maptype, h *hmap, key uint64) unsafe.Pointer {
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;不用看函数的实现我们也大概能推测出函数输入参数和输出参数的关系了，把入参和汇编指令对应的话:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;t *maptype
-=&amp;gt;
-LEAQ    type.map[int]int(SB), AX
-MOVQ    AX, (SP)
-
-h *hmap
-=&amp;gt;
-LEAQ    &quot;&quot;..autotmp_2+232(SP), AX
-MOVQ    AX, 8(SP)
-
-key uint64
-=&amp;gt;
-MOVQ    $43, 16(SP)
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;返回参数就是 key 对应的可以写值的内存地址，拿到该地址后我们把想要写的值写进去就可以了:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;MOVQ    24(SP), AX
-MOVQ    $1, (AX)
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;整个过程还挺复杂的，我们手抄一遍倒也可以实现。不过还要考虑，不同类型的 map，实际上需要执行的 runtime 中的 assign 函数是不同的，感兴趣的同学可以汇编本节的示例自行尝试。&lt;/p&gt;
-
-&lt;p&gt;整体来讲，用汇编来操作 map 并不是一个明智的选择。&lt;/p&gt;
-
-&lt;h4&gt;channel&lt;/h4&gt;
-
-&lt;p&gt;channel 在 runtime 也是比较复杂的数据结构，如果在汇编层面操作，实际上也是调用 runtime 中 chan.go 中的函数，和 map 比较类似，这里就不展开说了。&lt;/p&gt;
-
-&lt;h3&gt;获取 goroutine id&lt;/h3&gt;
-
-&lt;p&gt;Go 的 goroutine 是一个叫 g 的结构体，内部有自己的唯一 id，不过 runtime 没有把这个 id 暴露出来，但不知道为什么有很多人就是想把这个 id 得到。于是就有了各种或其 goroutine id 的库。&lt;/p&gt;
-
-&lt;p&gt;在 struct 一小节我们已经提到，结构体本身就是一段连续的内存，我们知道起始地址和字段的偏移量的话，很容易就可以把这段数据搬运出来:&lt;/p&gt;
-
-&lt;p&gt;go_tls.h:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;#ifdef GOARCH_arm
-#define LR R14
-#endif
-
-#ifdef GOARCH_amd64
-#define    get_tls(r)    MOVQ TLS, r
-#define    g(r)    0(r)(TLS*1)
-#endif
-
-#ifdef GOARCH_amd64p32
-#define    get_tls(r)    MOVL TLS, r
-#define    g(r)    0(r)(TLS*1)
-#endif
-
-#ifdef GOARCH_386
-#define    get_tls(r)    MOVL TLS, r
-#define    g(r)    0(r)(TLS*1)
-#endif
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;goid.go:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;package goroutineid
-import &quot;runtime&quot;
-var offsetDict = map[string]int64{
-    // ... 省略一些行
-    &quot;go1.7&quot;:    192,
-    &quot;go1.7.1&quot;:  192,
-    &quot;go1.7.2&quot;:  192,
-    &quot;go1.7.3&quot;:  192,
-    &quot;go1.7.4&quot;:  192,
-    &quot;go1.7.5&quot;:  192,
-    &quot;go1.7.6&quot;:  192,
-    // ... 省略一些行
-}
-
-var offset = offsetDict[runtime.Version()]
-
-// GetGoID returns the goroutine id
-func GetGoID() int64 {
-    return getGoID(offset)
-}
-
-func getGoID(off int64) int64
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;goid.s:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;#include &quot;textflag.h&quot;
-#include &quot;go_tls.h&quot;
-
-// func getGoID() int64
-TEXT ·getGoID(SB), NOSPLIT, $0-16
-    get_tls(CX)
-    MOVQ g(CX), AX
-    MOVQ offset(FP), BX
-    LEAQ 0(AX)(BX*1), DX
-    MOVQ (DX), AX
-    MOVQ AX, ret+8(FP)
-    RET
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;这样就实现了一个简单的获取 struct g 中的 goid 字段的小 library，作为玩具放在这里:&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;&lt;a href=&quot;https://github.com/cch123/goroutineid&quot;&gt;https://github.com/cch123/goroutineid&lt;/a&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h3&gt;SIMD&lt;/h3&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://cch123.gitbooks.io/duplicate/content/part3/performance/simd-instruction-class.html&quot;&gt;SIMD&lt;/a&gt; 是 Single Instruction, Multiple Data 的缩写，在 Intel 平台上的 SIMD 指令集先后为 SSE，AVX，AVX2，AVX512，这些指令集引入了标准以外的指令，和宽度更大的寄存器，例如:&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;128 位的 XMM0~XMM31 寄存器。&lt;/li&gt;
-&lt;li&gt;256 位的 YMM0~YMM31 寄存器。&lt;/li&gt;
-&lt;li&gt;512 位的 ZMM0~ZMM31 寄存器。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;这些寄存器的关系，类似 RAX，EAX，AX 之间的关系。指令方面可以同时对多组数据进行移动或者计算，例如:&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;movups : 把4个不对准的单精度值传送到xmm寄存器或者内存&lt;/li&gt;
-&lt;li&gt;movaps : 把4个对准的单精度值传送到xmm寄存器或者内存&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;上述指令，当我们将数组作为函数的入参时有很大概率会看到，例如:&lt;/p&gt;
-
-&lt;p&gt;arr_par.go:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;package main
-
-import &quot;fmt&quot;
-
-func pr(input [3]int) {
-    fmt.Println(input)
-}
-
-func main() {
-    pr([3]int{1, 2, 3})
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;go compile -S:&lt;/p&gt;
-
-&lt;pre lang=&quot;go&quot;&gt;&lt;code&gt;0x001d 00029 (arr_par.go:10)    MOVQ    &quot;&quot;.statictmp_0(SB), AX
-0x0024 00036 (arr_par.go:10)    MOVQ    AX, (SP)
-0x0028 00040 (arr_par.go:10)    MOVUPS  &quot;&quot;.statictmp_0+8(SB), X0
-0x002f 00047 (arr_par.go:10)    MOVUPS  X0, 8(SP)
-0x0034 00052 (arr_par.go:10)    CALL    &quot;&quot;.pr(SB)
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;可见，编译器在某些情况下已经考虑到了性能问题，帮助我们使用 SIMD 指令集来对数据搬运进行了优化。&lt;/p&gt;
-
-&lt;p&gt;因为 SIMD 这个话题本身比较广，这里就不展开细说了。&lt;/p&gt;
-
-&lt;h2&gt;特别感谢&lt;/h2&gt;
-
-&lt;p&gt;研究过程基本碰到不太明白的都去骚扰卓巨巨了，就是这位 &lt;a href=&quot;https://mzh.io/&quot;&gt;https://mzh.io/&lt;/a&gt; 大大。特别感谢他，给了不少线索和提示。&lt;/p&gt;
-
-&lt;h2&gt;参考资料&lt;/h2&gt;
-
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&quot;https://quasilyte.github.io/blog/post/go-asm-complementary-reference/#external-resources&quot;&gt;https://quasilyte.github.io/blog/post/go-asm-complementary-reference/#external-resources&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;http://davidwong.fr/goasm&quot;&gt;http://davidwong.fr/goasm&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://www.doxsey.net/blog/go-and-assembly&quot;&gt;https://www.doxsey.net/blog/go-and-assembly&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://github.com/golang/go/files/447163/GoFunctionsInAssembly.pdf&quot;&gt;https://github.com/golang/go/files/447163/GoFunctionsInAssembly.pdf&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://golang.org/doc/asm&quot;&gt;https://golang.org/doc/asm&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;参考资料[4]需要特别注意，在该 slide 中给出的 callee stack frame 中把 caller 的 return address 也包含进去了，个人认为不是很合适。&lt;/p&gt;
-
-&lt;p&gt;欢迎关注公众号 TechPaper&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://img.toutiao.io/attachment/58fe37022f87485fa23b1bc9f048f3cc/w600&quot; alt=&quot;file&quot;/&gt;&lt;/p&gt;
-&lt;/div&gt;
+&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/4664d30d876d07c1fd2e7817c7fb6123f9bffd064488a3c4f1fc31c42b2889b6/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c65642e706e673f696d61676556696577322f322f772f363030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/4664d30d876d07c1fd2e7817c7fb6123f9bffd064488a3c4f1fc31c42b2889b6/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c65642e706e673f696d61676556696577322f322f772f363030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2021-05-06-Untitled.png?imageView2/2/w/600&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;ByteMD开源库地址：&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://github.com/bytedance/bytemd&quot;&gt;https://github.com/bytedance/bytemd&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;一个基于ByteMD实现的转微信公众号文章样式的工具：&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://devtool.tech/markdown&quot; rel=&quot;nofollow&quot;&gt;https://devtool.tech/markdown&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;&lt;a id=&quot;user-content-2winbox一个基于html5的窗口实现&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#2winbox一个基于html5的窗口实现&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;2、winbox:一个基于HTML5的窗口实现&lt;/h2&gt;
+&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/f9d698d5ec6b2812813a25666820c6720def7077b6ce8a8faa8585ffd8c91285/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230312e706e673f696d61676556696577322f322f772f363030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/f9d698d5ec6b2812813a25666820c6720def7077b6ce8a8faa8585ffd8c91285/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230312e706e673f696d61676556696577322f322f772f363030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2021-05-06-Untitled%201.png?imageView2/2/w/600&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;一个web端实现的窗口风格管理的插件库，轻量，开源，功能丰富的调用。像拖拽、全屏、最小化等，如果想实现类似窗口风格的管理工具，这个插件可以很方便的集成使用。&lt;/p&gt;
+&lt;p&gt;在线演示地址：&lt;a href=&quot;https://nextapps-de.github.io/winbox/&quot; rel=&quot;nofollow&quot;&gt;https://nextapps-de.github.io/winbox/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;github地址：&lt;a href=&quot;https://github.com/nextapps-de/winbox&quot;&gt;https://github.com/nextapps-de/winbox&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;&lt;a id=&quot;user-content-3nobelium-nextjsnotion的静态博客系统&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#3nobelium-nextjsnotion的静态博客系统&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;3、nobelium: Next.js+Notion的静态博客系统&lt;/h2&gt;
+&lt;p&gt;Nobelium 是一个使用 Next.js + Notion API 实现的，部署在 Vercel 上的静态博客系统。相当于用Notion做数据库，文档内容写完就能及时的展示在网站上。还可以搭配上翻页、评论、RSS等。&lt;/p&gt;
+&lt;p&gt;Notion已经不仅仅是一个文档编辑器，还可以做数据存储，是基于Electron开发的，我个人的文档都转到了Notion下来管理，是一个非常方便的工具。还提供Private的API接口，后面可能会开放公共API接口。&lt;/p&gt;
+&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/673a5811560988d50b71b06667862a5d1df4dbcb8ea0189cafc87f3ffbbc6f6e/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230322e706e673f696d61676556696577322f322f772f363030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/673a5811560988d50b71b06667862a5d1df4dbcb8ea0189cafc87f3ffbbc6f6e/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230322e706e673f696d61676556696577322f322f772f363030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2021-05-06-Untitled%202.png?imageView2/2/w/600&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Github: &lt;a href=&quot;https://github.com/craigary/nobelium&quot;&gt;https://github.com/craigary/nobelium&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;扩展介绍搭建步骤的文章：&lt;a href=&quot;https://blog.spencerwoo.com/2021/02/nextjs-blog-notion&quot; rel=&quot;nofollow&quot;&gt;https://blog.spencerwoo.com/2021/02/nextjs-blog-notion&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;&lt;a id=&quot;user-content-4卡片设计的7个小技巧&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#4卡片设计的7个小技巧&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;4、卡片设计的7个小技巧&lt;/h2&gt;
+&lt;p&gt;7个卡片设计时的小技巧，可以显著提升设计和用户体验。&lt;/p&gt;
+&lt;p&gt;1、调整圆角：内外避免一样的圆角，一个原则是内部组件圆角是外部圆角的一半大小。&lt;/p&gt;
+&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/f30cf5dd046236f52077db91500816a474f0d29317b1c0defa4726ed75ffb8d6/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230332e706e673f696d61676556696577322f322f772f363030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/f30cf5dd046236f52077db91500816a474f0d29317b1c0defa4726ed75ffb8d6/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230332e706e673f696d61676556696577322f322f772f363030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2021-05-06-Untitled%203.png?imageView2/2/w/600&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;2、高亮主要按钮：强调突出主要按钮事件&lt;/p&gt;
+&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/76b9b4b1a9428c3cb73327a843529c78a338a2d9ada046c0964219d1753643b0/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230342e706e673f696d61676556696577322f322f772f363030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/76b9b4b1a9428c3cb73327a843529c78a338a2d9ada046c0964219d1753643b0/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230342e706e673f696d61676556696577322f322f772f363030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2021-05-06-Untitled%204.png?imageView2/2/w/600&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;3、平滑阴影效果：避免使用太重的阴影效果&lt;/p&gt;
+&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/f8582e0fdc3eb9b7feae4f0b0d9a843fd70d97f90a53fa675aa3320bb5dc7b11/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230352e706e673f696d61676556696577322f322f772f363030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/f8582e0fdc3eb9b7feae4f0b0d9a843fd70d97f90a53fa675aa3320bb5dc7b11/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230352e706e673f696d61676556696577322f322f772f363030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2021-05-06-Untitled%205.png?imageView2/2/w/600&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;4、避免太长的内容显示&lt;/p&gt;
+&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/240f12772fe3cb0e63a1ecff3da5d587d6132f8b4ed92a5aeeffb6c6ab594407/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230362e706e673f696d61676556696577322f322f772f363030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/240f12772fe3cb0e63a1ecff3da5d587d6132f8b4ed92a5aeeffb6c6ab594407/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230362e706e673f696d61676556696577322f322f772f363030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2021-05-06-Untitled%206.png?imageView2/2/w/600&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;5、内容文本左对齐更加具有可读性&lt;/p&gt;
+&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/0959c8339e6cf3338ac31638e83ec36f53b8eafc23e7f3d54680c56b15393daf/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230372e706e673f696d61676556696577322f322f772f363030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/0959c8339e6cf3338ac31638e83ec36f53b8eafc23e7f3d54680c56b15393daf/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230372e706e673f696d61676556696577322f322f772f363030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2021-05-06-Untitled%207.png?imageView2/2/w/600&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;6、适当留白更舒服，留白的间隔比例要一致&lt;/p&gt;
+&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/d3a6ea6213f6b753ecc0479b321b7ee5dfdef7702eb56de328b4fbd2f8789d48/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230382e706e673f696d61676556696577322f322f772f363030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/d3a6ea6213f6b753ecc0479b321b7ee5dfdef7702eb56de328b4fbd2f8789d48/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230382e706e673f696d61676556696577322f322f772f363030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2021-05-06-Untitled%208.png?imageView2/2/w/600&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;7、建议上层用大一些的阴影效果，底层的卡片用小的阴影效果。&lt;/p&gt;
+&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/a2113d517dac018462e95aa8027ff2158df76dc065dc043c44cf8e8c4e848872/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230392e706e673f696d61676556696577322f322f772f363030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/a2113d517dac018462e95aa8027ff2158df76dc065dc043c44cf8e8c4e848872/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230392e706e673f696d61676556696577322f322f772f363030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2021-05-06-Untitled%209.png?imageView2/2/w/600&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Twitter原文链接：&lt;a href=&quot;https://twitter.com/d__raptis/status/1385572926200688641?s=20&quot; rel=&quot;nofollow&quot;&gt;https://twitter.com/d__raptis/status/1385572926200688641?s=20&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;&lt;a id=&quot;user-content-5landing-page检查列表&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#5landing-page检查列表&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;5、Landing Page检查列表&lt;/h2&gt;
+&lt;p&gt;罗列了100+个工具，涵盖了构建Landing Page的16个步骤介绍，每一个步骤有相应的工具推荐，从域名注册、页面构建、Logo设计、文案编写等等。有很多知道的，也有很多不知道的，有的工具还是非常有意思，可以拓展下知识领域。&lt;/p&gt;
+&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/4c6686c742cc2510523415a8b50a566aadda6d1ed67ead33afe584bc7c5f5243/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c656425323031302e706e673f696d61676556696577322f322f772f363030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/4c6686c742cc2510523415a8b50a566aadda6d1ed67ead33afe584bc7c5f5243/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c656425323031302e706e673f696d61676556696577322f322f772f363030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2021-05-06-Untitled%2010.png?imageView2/2/w/600&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;100+工具官网：&lt;a href=&quot;https://landingpage.fyi/landing-page-checklist.html&quot; rel=&quot;nofollow&quot;&gt;https://landingpage.fyi/landing-page-checklist.html&lt;/a&gt;&lt;/p&gt;
+&lt;hr/&gt;
+
+以上内容会同步更新在：
+&lt;p&gt;Indie Maker Start: &lt;a href=&quot;http://www.indiemakerstart.com/&quot; rel=&quot;nofollow&quot;&gt;http://www.indiemakerstart.com/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Github: &lt;a href=&quot;https://github.com/ljinkai/weekly&quot;&gt;https://github.com/ljinkai/weekly&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;微信公众号：凯凯而谈&lt;/p&gt;
+&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/f6d1874f2b76aaf2afdd63728c45c3e8f3e9cedfe89e60143a1bf01c68969f7f/687474703a2f2f71696e69752e6761666174612e636f6d2f323031392d30332d31372d7765622d626561722e6a70673f696d61676556696577322f322f772f323030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/f6d1874f2b76aaf2afdd63728c45c3e8f3e9cedfe89e60143a1bf01c68969f7f/687474703a2f2f71696e69752e6761666174612e636f6d2f323031392d30332d31372d7765622d626561722e6a70673f696d61676556696577322f322f772f323030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2019-03-17-web-bear.jpg?imageView2/2/w/200&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;扫码订阅&lt;/p&gt;
+
+&lt;/article&gt;
   &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>fa8459e7397c9d9e62b61d932eff174f</guid>
-<title>低代码核心：代码生成还是模型解释？</title>
-<link>https://toutiao.io/k/8fsz3uu</link>
+<guid>6008172363d32d3c7a1951e4398fe494</guid>
+<title>可观测性理念篇：结构化日志的重要性</title>
+<link>https://toutiao.io/k/a140pj2</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
                     
 
                     
                     
                     
-                    &lt;p&gt;2020年第一届低代码研讨会上， Jordi Cabot发表了一篇文章（或者说观点），对比了低代码和模型驱动开发的关系，认为低代码等于模型驱动开发。但实际上，不少“低代码”系统并不是使用模型驱动的，而是采用另一个策略，即代码生成。那这两者区别是什么，各有什么优势， 我们来看Mendix CTO Johan Den Haan对这个问题的思考。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;关于Johan Den Haan&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;Den Haan是Mendix公司的CTO，2005年公司成立时即作为程序员加入Mendix。2011年开始担任CTO。可以说，Mendix的核心设计基本都来自于Den Haan之手。2010年， Den在参加 Code Generation 2010  大会时，写了一篇对比代码生成和模型解释的文章，就是本文，有助于大家了解这两种方式之间的区别。这是从产业而不是学术角度的对比，更具有实战价值。Mendix具有高可扩展性，能够构建像特斯拉ERP系统这样高度复杂的系统，与选择模型驱动的架构有直接的影响。&lt;/p&gt;&lt;p&gt;英文原文：http://www.theenterprisearchitect.eu/blog/2010/06/28/model-driven-development-code-generation-or-model-interpretation/&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;在代码生成2010会议期间，我参加了关于代码生成与模型解释的一次同好（BoF，物以类聚）会议。这是与 Walter Almeida, Peter Bell, Angelo Hulshout and Pedro Molina. 的一次有趣的非正式讨论。我们讨论了代码生成相对于模型解释的优势，反之亦然。&lt;/p&gt;&lt;p&gt;&lt;img data-height=&quot;267&quot; data-ratio=&quot;0.6675&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z8ExnwlWwvJ8ANgcPeab45BFOsAUn3DVav6nx98aJRWJIX6We1JsBbibqPF9Khnl4gSuYhfsRaCFeLrAETUgDDg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;400&quot; data-width=&quot;400&quot;/&gt;&lt;/p&gt;&lt;p&gt;有必要介绍下其中的2位大牛。&lt;/p&gt;&lt;blockquote&gt;Walter Almeida&lt;/blockquote&gt;&lt;blockquote&gt;法国人， 低代码领域的名宿，Code for Food公司创始人，低代码开源软件 Generative Objects 的发起人。&lt;/blockquote&gt;&lt;blockquote&gt;Peter Bell&lt;/blockquote&gt;&lt;blockquote&gt;美国人， 左一那位，CTO Connections 公司创始人， 投资人。O&#x27;Reilly的《 Introducing GitHub》的作者。&lt;/blockquote&gt;&lt;blockquote&gt;Angelo Hulshout&lt;/blockquote&gt;&lt;blockquote&gt;&lt;span&gt;荷兰的Delphino Consultancy B.V.&lt;/span&gt;&lt;span&gt; 公司CEO和架构师&lt;/span&gt;&lt;/blockquote&gt;&lt;p&gt;这里对讨论中提出的观点做一个概述。我们没有对所有问题进行最终的比较或提炼。因此，你应该把这篇文章作为讨论的起点。通过在评论中添加你自己的观点来加入讨论！&lt;/p&gt;&lt;h3&gt;&lt;br/&gt;&lt;/h3&gt;&lt;h3&gt;&lt;span&gt;关于代码生成和模型解释&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;在模型驱动开发中，代码生成用于从更高级别的模型生成代码，以创建可运行的应用程序。让我们考虑下面这个使用领域特定语言（Domain-Specific Language， DSL）创建的领域模型：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;css&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__selector-tag&quot;&gt;Customer&lt;/span&gt; {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attribute&quot;&gt;Name&lt;/span&gt;: String;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attribute&quot;&gt;Address&lt;/span&gt;: String;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;如果我们想为这个小模型生成Java代码，我们可以使用模板引擎。模板包含Java代码和一些Token，这些Token将根据模型来“填充”。例如，我们可以为域模型中的每个实体使用模板。模板代表一个Java类，实体的名称作为类名（例如客户）。对于每个属性，将生成一个私有字段。有关创建DSL及其相关代码生成器的详细概述/教程，请参阅 &quot;Getting started with Code Generation with Xpand&quot;。&lt;/p&gt;&lt;p&gt;在模型解释的情况下，我们不会通过生成代码的方式来从模型中创建一个可运行软件应用程序。在模型解释中，我们会使用一个（比如）Java实现的通用引擎用，模型直接由这个引擎来解释。例如，这个通用的Java程序中包含一个带有属性“name”的类Entity和一个包含该实体属性（name-value对）的hashmap。在这种情况下，客户实体不是由Java类表示的，而是由一个带有属性名称的Entity对象表示的，该属性name的值是“Customer”。这些实体对象是根据模型中的信息创建的。&lt;/p&gt;&lt;p&gt;代码生成和模型解释都在实践中使用。让我们来看看这些方法相互比较的优势。阅读 15 reasons to start using Model-Driven Development， 了解模型驱动方法的总体优势。&lt;/p&gt;&lt;h3&gt;&lt;span&gt;代码生成的优势&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;与模型解释相比，代码生成具有以下优点：&lt;/p&gt;&lt;h3&gt;&lt;br/&gt;&lt;/h3&gt;&lt;h3&gt;&lt;span&gt;模型解释的优点&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;与代码生成相比，模型解释具有以下优点：&lt;/p&gt;&lt;h3&gt;&lt;br/&gt;&lt;/h3&gt;&lt;h3&gt;&lt;strong&gt;&lt;span&gt;结论&lt;/span&gt;&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;比较这两种方法的优势，我们可以得出结论，最终这完全取决于构建和/或使用模型驱动软件工厂的人员的领域、用例和技能集（或舒适性）。&lt;/p&gt;&lt;p&gt;当我们讨论代码生成和模型解释之间的区别时，很快就会带来更多的问题：代码生成和模型解释之间有什么区别？这两种方法之间的界限是什么？如果我们在生成代码时有一个内存文件系统呢？如果我们通过编译模型的一部分来优化我们的解释器呢？如果解释器为浏览器生成数据库结构和网络内容呢？&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;了解协同办公和低代码相关技术、产品设计和咨询，请扫码关注公众号“可可链” &lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;1&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/Z8ExnwlWwvJ8ANgcPeab45BFOsAUn3DVb0c8vJQLic5Ytk1RKlMia3YibnnyIMbQEtW4Auxw4tcxBX5WS8fMGI2nA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;258&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;
+                    &lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.6671875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/FBPFm28kpSxicPKp3vDhZ5NJmGviaxobiaA1wogHEicqicTxZKXE86BQk2kGAMnGZKua0h0CnoMicr1W8HdHKDwibz75A/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;640&quot;/&gt;&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzU1Njk2NjkxNA==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/FBPFm28kpSylnVQR07iciae4vSLoFOz9MZFeicgVPZOAHAroeCXOc1J0UQOuBVuUcChJ8TBAePia5SWE2unpwoa09Q/0?wx_fmt=png&quot; data-nickname=&quot;老翟杂谈&quot; data-alias=&quot;&quot; data-signature=&quot;分享持续交付的实践经验、软件工程感悟&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;日志是软件系统的可观测性数据的最常见的媒介之一。通过日志，我们可以做很多事情：查问题、业务数据统计分析、告警监控等。这类系统，通常被称为日志平台或日志分析系统。它们的流程通常是：日志接入/采集 —&amp;gt; 日志清洗 —&amp;gt; 日志分析聚合（option） —&amp;gt; 日志存储 —&amp;gt; 日志查询。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;其中，日志清洗的定义：指通过切分、静态 Join 等操作，将日志数据转化为标准 Key-Value（KV）格式的过程。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;笔者看完这个定义后，大脑就浮现一个想法：如果日志一开始就是标准的KV格式，那么，是不是就可以把日志清洗流程省下来了？&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;事实上，过去2个月，我们的确这么干了。我们把所有的SpringBoot应用的日志都改成了JSON格式。而且对JSON中的Key进行了规范。将来，我们还会制定一个日志规范，以规范其它语言的应用的日志。这样进一步扩大日志结构化所带来的好处。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;通过这种方式，我们节约了以下成本：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;1. 日志清洗的程序的开发、运行、维护费用。&lt;/p&gt;&lt;p&gt;2. 日志的解析成本：程序员随意打日志，数据工程师只能被动的分析。&lt;/p&gt;&lt;p&gt;3. 查询日志的认知成本：过去是通过grep命令进行查询，现在通过SQL的方式查询。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;当然，结构化日志本身也有成本：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;1. 对历史日志的改造。这部分笔者认为可以看场景而定。&lt;/p&gt;&lt;p&gt;2. 开发人员的打日志习惯的改变成本，比如培训成本。&lt;/p&gt;&lt;p&gt;3. 日志框架本身的实现成本。我们就基于logback-stash实现了自己的日志框架（只是进行了很轻的封装）。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;结构化日志本身的成本，比起日志清洗成本，根本不算什么。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;本文只是简单介绍了日志非结构化与结构化之间的成本差异。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;下一篇介绍基于SpringBoot的实践经验。请关注的我的公众号：&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzU1Njk2NjkxNA==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/FBPFm28kpSylnVQR07iciae4vSLoFOz9MZFeicgVPZOAHAroeCXOc1J0UQOuBVuUcChJ8TBAePia5SWE2unpwoa09Q/0?wx_fmt=png&quot; data-nickname=&quot;老翟杂谈&quot; data-alias=&quot;&quot; data-signature=&quot;分享持续交付的实践经验、软件工程感悟&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;p&gt;本文插图：https://pixabay.com/zh/photos/woman-camera-photographer-tool-5584377/&lt;/p&gt;
                 &lt;/div&gt;
 
                 
@@ -1018,159 +110,52 @@ func main() {
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>73c9d254db3bc16e1c204c71ed87e868</guid>
-<title>优化技术专题（一）：Java 虚拟机优化案例系列</title>
-<link>https://toutiao.io/k/qaw4y76</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;content&quot;&gt;
-                                                                                                                                                                                        &lt;h1&gt;问题总结&lt;/h1&gt; 
-&lt;ol&gt; 
- &lt;li&gt;&lt;strong&gt;内存多占1G左右，CPU利用率没有明显变化，但随着CMS收集抖动，最高达40%，CPU load平均高出1.0左右&lt;/strong&gt;。&lt;/li&gt; 
- &lt;li&gt;&lt;strong&gt;几乎0停顿，相比于之前每隔5分钟应用停顿3-4s，调优后的应用几乎没有停顿时间，每次”stop the world” 由 youngGC 引起，最高也不过200+ms&lt;/strong&gt;。&lt;/li&gt; 
- &lt;li&gt;&lt;strong&gt;GC总时间开销显著减小20%多，吞吐量显著提升&lt;/strong&gt;。&lt;/li&gt; 
- &lt;li&gt;&lt;strong&gt;应用超过500ms的请求响应时间减少3%&lt;/strong&gt;&lt;/li&gt; 
-&lt;/ol&gt; 
-&lt;h1&gt;参数对比&lt;/h1&gt; 
-&lt;h2&gt;调优前&lt;/h2&gt; 
-&lt;pre&gt;&lt;code&gt;-Dfile.encoding=UTF-8 -server -Xms8000M -Xmx8000M -Xmn5000M -Xss256K - 
-XX:ThreadStackSize=256 -XX:StackShadowPages=8  -verbose:gc -XX:+PrintGCDetails 
--XX:+PrintGCTimeStamps -XX:PermSize=128m -XX:MaxPermSize=128m -XX:+UseParallelGC
-&lt;/code&gt;&lt;/pre&gt; 
-&lt;h2&gt;调优后&lt;/h2&gt; 
-&lt;pre&gt;&lt;code&gt;-Dfile.encoding=UTF-8 -server -Xms10000M -Xmx10000M -Xmn5000M -
-XX:MaxTenuringThreshold=1 -XX:SurvivorRatio=30 -XX:TargetSurvivorRatio=50 
--Xnoclassgc -Xss256K -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:PermSize=256m -
-XX:MaxPermSize=256m  -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -
-XX:CMSInitiatingOccupancyFraction=80  -XX:ParallelGCThreads=24  -XX:ConcGCThreads=24 
--XX:+CMSParallelRemarkEnabled -XX:+CMSScavengeBeforeRemark 
--XX:+ExplicitGCInvokesConcurrent -XX:+UseTLAB  -XX:TLABSize=64K
-&lt;/code&gt;&lt;/pre&gt; 
-&lt;h2&gt;经验分享&lt;/h2&gt; 
-&lt;p&gt;在开始前，我们需要一些数据，因为jvm调优没有一个标准的答案，根据实际应用不同而不同，但也不是完全没有章法可言，从一个实际的应用，我们也可以找出一些规律来，找出一些比较公用的，比如下面三条：&lt;/p&gt; 
-&lt;ol&gt; 
- &lt;li&gt;&lt;strong&gt;应用平均和最大暂停时间（stop the world）&lt;/strong&gt;。&lt;/li&gt; 
- &lt;li&gt;&lt;strong&gt;吞吐量，真正运行时间/（GC时间+真正运行时间），而相对的GC开销为：GC时间/（GC时间+真正运行时间）&lt;/strong&gt;。&lt;/li&gt; 
- &lt;li&gt;&lt;strong&gt;URL的请求响应时间&lt;/strong&gt;&lt;/li&gt; 
-&lt;/ol&gt; 
-&lt;h3&gt;查看可以设置的所有参数&lt;/h3&gt; 
-&lt;p&gt;使用 &lt;code&gt;-XX:+PrintFlagsFinal&lt;/code&gt; 参数：可以查看当前版本的虚拟机所能设置的所有参数，还可以看到其默认值。&lt;strong&gt;我使用6u26版本的java虚拟机&lt;/strong&gt;，一共有663个参数，很多参数不必完全搞懂什么意思，而且很多优化项在JDK6版本中已经默认开启，所以我们只需要了解一些常用的即可。&lt;/p&gt; 
-&lt;h3&gt;最大堆的设置&lt;/h3&gt; 
-&lt;ul&gt; 
- &lt;li&gt; &lt;p&gt;&lt;strong&gt;在单机web server的情况下，最大堆的设置建议在物理内存的1/2到2/3之间，如果是16G的物理内存的话，最大堆的设置应该在8000M-10000M之间&lt;/strong&gt;。&lt;/p&gt; &lt;/li&gt; 
- &lt;li&gt; &lt;p&gt;Java进程消耗的总内存肯定大于最大堆设置的内存：&lt;strong&gt;堆内存（Xmx）+ 方法区内存（MaxPermSize）+ 栈内存（Xss,包括虚拟机栈和本地方法栈）线程数 + NIO direct memory + socket 缓存区（receive37KB，send25KB）+ JNI代码 + 虚拟机和GC本身&lt;/strong&gt; = java的内存。&lt;/p&gt; &lt;/li&gt; 
- &lt;li&gt; &lt;p&gt;我们经常碰到内存巨高的线上问题，留更多的内存给“意外情况”是一件好事也是一件坏事，好事是更多的内存可以给“错误”提供扩展空间，&lt;strong&gt;提升“容错性”，不至于马上宕机&lt;/strong&gt;，但另一方面来说技术人员不会第一时间收到“&lt;strong&gt;吃swap&lt;/strong&gt;”这个告警信息。&lt;/p&gt; &lt;/li&gt; 
-&lt;/ul&gt; 
-&lt;h3&gt;GC策略的选择&lt;/h3&gt; 
-&lt;ul&gt; 
- &lt;li&gt; &lt;p&gt;GC调优是JVM调优很重要的一步，当前比较成熟的GC基本上有三种选择，&lt;strong&gt;serial、Parallel和CMS&lt;/strong&gt;，大型互联网应用基本上选择后两种，&lt;strong&gt;但Parallel的暂停时间实在太长&lt;/strong&gt;，以 &lt;strong&gt;-Xmx 8000M -Xmn5000M&lt;/strong&gt; 为例，&lt;strong&gt;平均一次youngGC需要100ms-200ms，而FullGC最长需要6s，平均也要4s&lt;/strong&gt;，虽然当前没有哪种GC策略能完全做到没有暂停时间，&lt;strong&gt;但太长的“stop the world”时间也让人无法忍受&lt;/strong&gt;。&lt;/p&gt; &lt;/li&gt; 
- &lt;li&gt; &lt;p&gt;&lt;strong&gt;serial 和ParallelGC都是完全stop the world的GC，而CMS分为六步骤&lt;/strong&gt;：&lt;/p&gt; &lt;/li&gt; 
-&lt;/ul&gt; 
-&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-6e56b0601a4a52cc95bb44f5efaaf4999e1.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt; 
-&lt;h6&gt;初始标记（stop the world）&lt;/h6&gt; 
-&lt;pre&gt;&lt;code&gt;1093.220: [GC [1 CMS-initial-mark: 4113308K(5120000K)] 4180786K(10080000K), 0.0732930 
-secs] [Times: user=0.07 sys=0.00, real=0.07 secs]
-&lt;/code&gt;&lt;/pre&gt; 
-&lt;h6&gt;运行时标记（并发）&lt;/h6&gt; 
-&lt;pre&gt;&lt;code&gt;1094.275: [CMS-concurrent-mark: 0.980/0.980 secs]
-[Times: user=19.95 sys=0.51, real=0.98 secs]
-&lt;/code&gt;&lt;/pre&gt; 
-&lt;h6&gt;运行时清理（并发）&lt;/h6&gt; 
-&lt;pre&gt;&lt;code&gt;1094.305: [CMS-concurrent-preclean: 0.028/0.029 secs] 
-[Times: user=0.10 sys=0.02, real=0.03 secs]
+<guid>3c69f83df155cfa0d70942de9525c78c</guid>
+<title>Chromium 90, 给前端用的 devtools 的前端写得有性能问题</title>
+<link>https://toutiao.io/k/i888g51</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;post__content e-content&quot;&gt;&lt;p&gt;以此拗口又搞笑的标题纪念一下人生第一次给 Chromium 项目提的 &lt;a href=&quot;https://bugs.chromium.org/p/chromium/issues/detail?id=1201609&quot;&gt;issue&lt;/a&gt;。&lt;/p&gt;
+&lt;h1 id=&quot;缘起&quot;&gt;&lt;a href=&quot;#%E7%BC%98%E8%B5%B7&quot; aria-label=&quot;缘起 permalink&quot; class=&quot;anchor before&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; focusable=&quot;false&quot; version=&quot;1.1&quot; viewbox=&quot;0 0 16 16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;缘起&lt;/h1&gt;
+&lt;p&gt;4月中旬后的一周里，感觉使用 Chrome Devtools 调试非常的卡，尤其是在刚打开 Devtools 的时候卡上七八秒。严重影响了工作效率，心情烦躁，提升了社会不稳定因素（大雾）。&lt;/p&gt;
+&lt;h1 id=&quot;定位问题&quot;&gt;&lt;a href=&quot;#%E5%AE%9A%E4%BD%8D%E9%97%AE%E9%A2%98&quot; aria-label=&quot;定位问题 permalink&quot; class=&quot;anchor before&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; focusable=&quot;false&quot; version=&quot;1.1&quot; viewbox=&quot;0 0 16 16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;定位问题&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;打开 Mac 的 Activity Monitor，明显发现打开 Devtools 时 Renderer 进程 CPU 飚上 100。&lt;/li&gt;
+&lt;li&gt;以上情形只发生在 Devtools 打开 Console tab 的时候，如果一开始并没有打开 Console，就没有卡顿。&lt;/li&gt;
+&lt;li&gt;仅在 Console tab 有大量 log 的情况下出现此问题，log 较少时正常。&lt;/li&gt;
+&lt;li&gt;使用 Vivaldi 浏览器没有问题，当时它基于 Chromium 89。Chrome 90 和同样基于 90 的 Edge 稳定版出现问题，因此把定位范围缩小到了 Chromium 90 的 Devtools 。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Devtools 本身就是用于前端调试和发现潜在性能问题的工具，那么我们用什么来调试它呢？&lt;/p&gt;
+&lt;h2 id=&quot;使用-chrometracing&quot;&gt;&lt;a href=&quot;#%E4%BD%BF%E7%94%A8-chrometracing&quot; aria-label=&quot;使用 chrometracing permalink&quot; class=&quot;anchor before&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; focusable=&quot;false&quot; version=&quot;1.1&quot; viewbox=&quot;0 0 16 16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;使用 chrome://tracing&lt;/h2&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;Chromium 的 [Tracing 工具](https://www.chromium.org/developers/how-tos/trace-event-profiling-tool) 可以详细录制 Chromium 各个进程的运行时方法调用和占时，包括 C++ 和 Javascript。&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;chrome://tracing 除了录制以外，也是一个比较好用的 trace-viewer，可用来查看和分析由其他工具（例如 Android systrace, Electron 等）录制的 &lt;a href=&quot;https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview&quot;&gt;trace 数据&lt;/a&gt;。特别说一句，它也可以用来查看 Chrome Devtools Performance 录制的数据，但感觉 Viewer 的侧重不在 Web 开发的角度，没有 Devtools Performance 本身的查看器好用。&lt;/p&gt;
+&lt;p&gt;一些参考教程如下:&lt;/p&gt;
 
-CMS: abort preclean due to time 1099.643:
-[CMS-concurrent-abortable-preclean: 5.288/5.337 secs] 
-[Times: user=12.64 sys=1.19, real=5.34 secs]
-
-&lt;/code&gt;&lt;/pre&gt; 
-&lt;h6&gt;重新标记（stop the world，这个例子remark前执行了一次youngGC）&lt;/h6&gt; 
-&lt;pre&gt;&lt;code&gt;1099.647: [GC [YG occupancy: 3308479 K (4960000 K)]
-1099.648: [GC 1099.649: [ParNew: 3308479K-&amp;gt;42384K(4960000K), 0.1420310 secs]
-7421787K-&amp;gt;4180693K(10080000K), 0.1447160 secs] [Times: user=2.69 sys=0.03, real=0.15 secs]
-
-1099.793: [Rescan (parallel) , 0.0121000 secs]1099.805: [weak refs processing, 0.0664790 secs] 
-[1 CMS-remark: 4138308K(5120000K)] 4180693K(10080000K), 0.2254870 secs] 
-[Times: user=3.00 sys=0.05, real=0.23 secs]
-
-&lt;/code&gt;&lt;/pre&gt; 
-&lt;h6&gt;运行时清理（并发）&lt;/h6&gt; 
-&lt;pre&gt;&lt;code&gt;1104.895: [CMS-concurrent-sweep: 4.970/5.020 secs] 
-[Times: user=12.43 sys=1.05, real=5.02 secs]
-&lt;/code&gt;&lt;/pre&gt; 
-&lt;h6&gt;复原（并发）&lt;/h6&gt; 
-&lt;pre&gt;&lt;code&gt;
-1104.908: [CMS-concurrent-reset: 0.012/0.012 secs]
-[Times: user=0.03 sys=0.01, real=0.01 secs]
-
-&lt;/code&gt;&lt;/pre&gt; 
-&lt;p&gt;要想知道应用真正的停顿时间，可以使用&lt;code&gt;PrintGCApplicationStoppedTime&lt;/code&gt; 参数：&lt;/p&gt; 
-&lt;pre&gt;&lt;code&gt;63043.344: [GC [PSYoungGen: 5009217K-&amp;gt;34119K(5049600K)] 
-5985479K-&amp;gt;1034614K(8121600K), 0.1721890 secs] [Times: user=2.62 sys=0.01, real=0.18 secs]
-&lt;/code&gt;&lt;/pre&gt; 
-&lt;ul&gt; 
- &lt;li&gt;Total time for which application threads were stopped: 0.1806210 seconds&lt;/li&gt; 
- &lt;li&gt;Total time for which application threads were stopped: 0.0074870 seconds&lt;/li&gt; 
-&lt;/ul&gt; 
-&lt;p&gt;这样看来，真正应用暂停的时间要比stop the world时间还要稍长一点点。&lt;/p&gt; 
-&lt;blockquote&gt; 
- &lt;ul&gt; 
-  &lt;li&gt;本次调优我基本上放弃了ParallelGC而选择了CMS，CMS在old区很大的时候绝对是个利器，它不仅能大幅降低应用“stop the world”时间，而且还能增加应用的响应时间和小部分吞吐量。&lt;/li&gt; 
-  &lt;li&gt;CMS还有一种增量模式：iCMS，适用于单CPU模式，会将回收动作分作小块进行，但会增加回收时间，降低吞吐量，对于多CPU来说，可以不用考虑这种模式。&lt;/li&gt; 
- &lt;/ul&gt; 
-&lt;/blockquote&gt; 
-&lt;hr/&gt; 
- 
-&lt;blockquote&gt; 
- &lt;p&gt;年轻代（eden和Survivor）、年老代的设置选择了GC策略之后，年轻代和年老代的设置就很重要了，&lt;strong&gt;如果一味的追求响应时间，可以尽量把年轻代调大一点，youngGC的回收频率减小了，但回收时间也增大了，5000M的年轻代，平均回收时间在150+ms，3000M的年轻代平均回收时间在90+ms&lt;/strong&gt;。&lt;/p&gt; 
-&lt;/blockquote&gt; 
-&lt;p&gt;&lt;strong&gt;如果一味的增大年轻代，CMS前提下的年老代的威力也发挥不出来，更容易出现promotion failed&lt;/strong&gt;，&lt;strong&gt;导致一次FullGC&lt;/strong&gt;。&lt;/p&gt; 
-&lt;blockquote&gt; 
- &lt;p&gt;&lt;strong&gt;但如果一味的调小年轻代，虽然单次回收时间减小，但回收频率会陡增，应用STW时间也会增加，总体年轻代回收的时间也可能会增大，所以调整年轻代和年老代的比例就是一个找平衡的过程&lt;/strong&gt;。&lt;/p&gt; 
-&lt;/blockquote&gt; 
-&lt;p&gt;我的经验是年轻代的比例在&lt;strong&gt;2/8到4/8&lt;/strong&gt;之间，具体情况要看实际应用情况而定。&lt;/p&gt; 
-&lt;p&gt;我们都知道年轻代采用的是“copy”算法，有两个survivor空间，每次回收总有一个是空的，另一个存放的是前几次youngGC存留下来而且还不够提升到old资格的对象，所以有三个参数很重要：&lt;/p&gt; 
-&lt;ul&gt; 
- &lt;li&gt; &lt;p&gt;&lt;strong&gt;-XX:MaxTenuringThreshold=15&lt;/strong&gt;：对象晋升到old的年龄，&lt;strong&gt;parallelGC和Serial默认是15，CMS默认是4&lt;/strong&gt;，&lt;strong&gt;设置的越大，对象就越难进入到old区，youngGC反复copy的时间就会增大&lt;/strong&gt;。&lt;/p&gt; &lt;/li&gt; 
- &lt;li&gt; &lt;p&gt;&lt;strong&gt;-XX:SurvivorRatio=8，eden和survivor的比例，默认是8&lt;/strong&gt;，也就是说如果eden为2400M，&lt;strong&gt;那么两个survivor都为300M，如果MaxTenuringThreshold设置的很小，那么survivor区的使用率就会降低，反之，survivor的使用率就会增大&lt;/strong&gt;。&lt;/p&gt; &lt;/li&gt; 
- &lt;li&gt; &lt;p&gt;&lt;strong&gt;-XX:TargetSurvivorRatio=80，survivor空间的利用率，默认是50&lt;/strong&gt;。&lt;/p&gt; &lt;/li&gt; 
-&lt;/ul&gt; 
-&lt;blockquote&gt; 
- &lt;p&gt;&lt;strong&gt;如果设置SurvivorRatio为65536，MaxTenuringThreshold为0就表示禁止使用survivor空间&lt;/strong&gt;，在这种模式下，对象直接进入old区，而且我发现在这种模式下，photo的resin启动时间大大减少，以前170s在这种模式下只需要90+s，足足降低了一半，因为这个，我顿时对这种模式产生的兴趣，&lt;strong&gt;但CMS的压力就增大了，威力根本发挥不出来了，GC的时间没有减少反而增加，remark的时间也增大到3s，最后不得不忍痛割爱放弃了这种模式&lt;/strong&gt;。&lt;/p&gt; 
-&lt;/blockquote&gt; 
-&lt;p&gt;&lt;strong&gt;-XX:+CMSScavengeBeforeRemark：这个参数还蛮重要的，它的意思是在执行CMS remark之前进行一次youngGC&lt;/strong&gt;，&lt;strong&gt;这样能有效降低remark的时间，之前我没有加这个参数，remark时间最大能达到3s，加上这个参数之后remark时间减少到1s之内&lt;/strong&gt;。&lt;/p&gt; 
-&lt;p&gt;&lt;strong&gt;-XX:+UseCMSCompactAtFullCollection&lt;/strong&gt;，用于指定在Full GC之后进行内存整理，内存整理会使得垃圾收集停顿时间变长，CMS提供了另外一个参数。&lt;/p&gt; 
-&lt;p&gt;&lt;strong&gt;-XX:CMSFullGCsBeforeCompaction&lt;/strong&gt;，用于设置在执行多少次不压缩的Full GC之后，跟着再来一次内存整理。&lt;/p&gt; 
-&lt;blockquote&gt; 
- &lt;p&gt;另外，我发现survivor空间并没有像预期的那样大（eden的1/8），通过跟踪JVM的启动过程中发现，JVM在一定的条件下（&lt;strong&gt;可能跟parallelGC和默认SurvivorRatio有关&lt;/strong&gt;）&lt;strong&gt;会动态调整survivor的大小&lt;/strong&gt;，避免内存浪费。&lt;/p&gt; 
-&lt;/blockquote&gt;
-                                        &lt;/div&gt;
-                                    &lt;/div&gt;&lt;/div&gt;</content:encoded>
+&lt;h2 id=&quot;开始录制&quot;&gt;&lt;a href=&quot;#%E5%BC%80%E5%A7%8B%E5%BD%95%E5%88%B6&quot; aria-label=&quot;开始录制 permalink&quot; class=&quot;anchor before&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; focusable=&quot;false&quot; version=&quot;1.1&quot; viewbox=&quot;0 0 16 16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;开始录制&lt;/h2&gt;
+&lt;p&gt;点开 chrome://tracing 页面左上角的 &lt;code&gt;Record&lt;/code&gt; 按钮，然后&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;选择 &lt;code&gt;Manually select settings&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;在 &lt;code&gt;Record Categories&lt;/code&gt; 的几十个选项里，勾上 &lt;code&gt;devtools&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;点击 &lt;code&gt;Record&lt;/code&gt; 开始录制&lt;/li&gt;
+&lt;li&gt;操作复现出 Console tab 的卡顿&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;下面是我随便找来的一张截图，展示一下 &lt;code&gt;Record Categories&lt;/code&gt; 里的茫茫选项。里面的 v8/cc/blink 等，是前端工程师日常可以看一看的，可以了解一下 Chromium 一些运行时候的执行过程概略。当然这是建立在你对 Chromium 感兴趣和略有了解的基础上的，前端开发还是主要面向 Web 标准，日常还是应该使用没那么艰深的 Devtools，而不是一头扎入浏览器实现的细节中。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://d34u8crftukxnk.cloudfront.net/slackpress/prod/sites/7/1_b0nzVLLW3IujyAkrB5vr-w.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;h2 id=&quot;定位到问题&quot;&gt;&lt;a href=&quot;#%E5%AE%9A%E4%BD%8D%E5%88%B0%E9%97%AE%E9%A2%98&quot; aria-label=&quot;定位到问题 permalink&quot; class=&quot;anchor before&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; focusable=&quot;false&quot; version=&quot;1.1&quot; viewbox=&quot;0 0 16 16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;定位到问题&lt;/h2&gt;
+&lt;p&gt;Devtools 的渲染主线程有触目惊心的近 6 秒卡顿，此时 V8 在执行 JS，看起来就🧐... 是前端的锅。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.loli.net/2021/05/06/XecCki83ajl9bun.jpg&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;h1 id=&quot;提-issue&quot;&gt;&lt;a href=&quot;#%E6%8F%90-issue&quot; aria-label=&quot;提 issue permalink&quot; class=&quot;anchor before&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; focusable=&quot;false&quot; version=&quot;1.1&quot; viewbox=&quot;0 0 16 16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;提 issue&lt;/h1&gt;
+&lt;p&gt;去 &lt;a href=&quot;https://bugs.chromium.org/p/chromium/issues/list&quot;&gt;Issues - chromium&lt;/a&gt; 提一个 issue，贴上截图、可重现问题的 html 文件、tracing 录制压缩包。&lt;/p&gt;
+&lt;p&gt;Chromium 缺陷追踪工具界面好难用，里里外外散发着 G 家工程向产品一贯的简陋风格。&lt;/p&gt;
+&lt;h1 id=&quot;后续&quot;&gt;&lt;a href=&quot;#%E5%90%8E%E7%BB%AD&quot; aria-label=&quot;后续 permalink&quot; class=&quot;anchor before&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; focusable=&quot;false&quot; version=&quot;1.1&quot; viewbox=&quot;0 0 16 16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;后续&lt;/h1&gt;
+&lt;h2 id=&quot;发现-chromium-91-已修复此问题&quot;&gt;&lt;a href=&quot;#%E5%8F%91%E7%8E%B0-chromium-91-%E5%B7%B2%E4%BF%AE%E5%A4%8D%E6%AD%A4%E9%97%AE%E9%A2%98&quot; aria-label=&quot;发现 chromium 91 已修复此问题 permalink&quot; class=&quot;anchor before&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; focusable=&quot;false&quot; version=&quot;1.1&quot; viewbox=&quot;0 0 16 16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;发现 chromium 91 已修复此问题&lt;/h2&gt;
+&lt;p&gt;Devtools 的前端项目有一个自己的 repo，&lt;a href=&quot;https://chromium.googlesource.com/devtools/devtools-frontend&quot;&gt;devtools/devtools-frontend - Git at Google&lt;/a&gt;，翻了一下发现&lt;a href=&quot;https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/2813962&quot;&gt;这个 Gerrit Change&lt;/a&gt; 修复了此性能问题。&lt;/p&gt;
+&lt;h1 id=&quot;更多阅读&quot;&gt;&lt;a href=&quot;#%E6%9B%B4%E5%A4%9A%E9%98%85%E8%AF%BB&quot; aria-label=&quot;更多阅读 permalink&quot; class=&quot;anchor before&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; focusable=&quot;false&quot; version=&quot;1.1&quot; viewbox=&quot;0 0 16 16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;更多阅读&lt;/h1&gt;
+&lt;p&gt;对 Devtools 项目有兴趣的，可以看一下他们的 engineering 博客和贡献指南。&lt;/p&gt;
+&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>b10059c8c6c85749a900e847e4af5002</guid>
-<title>大促突围：京东到家基于 Canal 的数据异构设计</title>
-<link>https://toutiao.io/k/uqgr3dg</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.11849710982658959&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ufWcjcomw8b6Lib0A0eic09h7UM0oewibib4JBPLkw1Mvb2p6sOzeHRtSHexOpy15TTJxdbibwBu97iamYXeGnEAfibOw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1038&quot;/&gt;&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzkwOTIxNDQ3OA==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/ufWcjcomw8YRIaicYx5pzj5Cxwick8DamnOgbTJu96QTibKyHEDZt1815yOV1r27oZ6HgoYTEYWYLRz4jIV4iasHgg/0?wx_fmt=png&quot; data-nickname=&quot;dbaplus社群&quot; data-alias=&quot;dbaplus&quot; data-signature=&quot;围绕Database、BigData、AIOps的企业级专业社群。资深大咖、技术干货，每天精品原创文章推送，每周线上技术分享，每月线下技术沙龙，每季度Gdevops&amp;amp;DAMS行业大会.&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;section data-id=&quot;7&quot; data-tools=&quot;135编辑器&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;本文根据张磊老师在〖deeplus直播第267期〗线上分享演讲内容整理而成。&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;&lt;strong&gt;（文末有获取本期PPT&amp;amp;回放的方式，不要错过）&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;img data-ratio=&quot;0.9955423&quot; data-type=&quot;png&quot; data-w=&quot;673&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ufWcjcomw8YQ4TP9WcNR09wlZsNyIVWqA0Z4zRkaO4mDJAZQs2e3CAhG1FR4alspfD9R2kg50cPAAea5kSzjhg/640?wx_fmt=png&quot;/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;strong&gt;张磊&lt;/strong&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;京东到家 高级研发工程师&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;span&gt;今天的内容分享将主要包含以下四个方面：&lt;/span&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-role=&quot;list&quot;/&gt;&lt;section data-role=&quot;list&quot;/&gt;&lt;section data-role=&quot;list&quot;/&gt;&lt;section data-role=&quot;list&quot;/&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;简单来看，面向复杂度的架构设计方法论与上面3个部分没有直接关系，把这部分内容放到文章中来讲，主要是因为数据异构本质上也是解决了软件的写入复杂度问题。在这个基础上，我们向上抽象一层，来讨论一下面向复杂度的架构设计方法论。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;86122&quot; data-custom=&quot;#138bde&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;p data-brushtype=&quot;text&quot;&gt;&lt;span&gt;&lt;strong&gt;一、京东到家订单履约业务背景&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;322&quot; data-backw=&quot;568&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5662337662337662&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ufWcjcomw8ZdWez7149YsDPASGwlGZOzLvwwFtsLw0UaiawaqhHZ2WsxaPFB2B26mLiaRibdV3DuDdufvTwO2RYoQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;770&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;从用户提交订单到服务履约系统，我们大致经历了支付、下发商家、商家确认、订单打印、拣货、下发物流、配送、妥投等环节。这是一个基本的新零售履约流程。这里，我标蓝了一些流程。比如：下发商家、订单打印等环节。主要是因为这些环节是我们要和商家交互的功能点，当我们把订单下发给商家时，首当其冲的环节是商家要确认这个订单，并且开始履约流程。但是，在我们的实际业务中，商家在大促期间往往会出现履约瓶颈，忙到看不到我们下发的订单，甚至不忙的时候也会看不到我们的订单已经下发到他们的系统中，商家需要一个提示功能。这也就是我们的提示音需求。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;提示音需求需要不断的查询底层存储ES，并提示给商家有订单到达了，需要他们去履约，如果商家没有看到，就不断查询，不断提示。就是这样的一个循环查询量级，在大促期间，订单量级增大，查询量级增大。基本上每次大促都会把我们的ES查到CPU飙高，甚至出现不可用的情况。为了保护履约系统，我们做的临时方案是做一个功能开关，在大促期间对提示音功能降级。可是这样的降级并不是我们想要的。因为最终商家还是收不到提示。导致履约质量下降。于是我们就面临一个问题“存储组件无法支撑大促时提示音业务的查询请求量。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;86122&quot; data-custom=&quot;#138bde&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;p data-brushtype=&quot;text&quot;&gt;&lt;span&gt;&lt;strong&gt;二、底层数据源的职责分工&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;314&quot; data-backw=&quot;568&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5535248041775457&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ufWcjcomw8ZdWez7149YsDPASGwlGZOzFDws9kzC6GVTpFf62P91TSQzkXxBqG11fEBiapxWX8q1X1nLuj1chOg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;766&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;要解决我们面临的查询量级问题，就必须首先分析一下底层的存储方案。以上，是我对到家订单履约系统底层存储的一个整体概括。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;86152&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;span data-bgopacity=&quot;40%&quot;/&gt; &lt;span data-bgopacity=&quot;25%&quot;/&gt; &lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;section data-brushtype=&quot;text&quot;&gt;&lt;span&gt;&lt;strong&gt;1.Redis&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;Redis在履约系统中主要承载的一个职责是worker跑批任务的存储和查询。因我们在系统中大量运用了跑批任务来实现最终一致性的一个设计，而Redis的Zset结构正好满足了这样的需求，将时间作为分值，不断的提供近期任务的查询是Redis充当的根本职能。这里解释一下Redis为什么没有承载过多的查询职能。Redis虽然性能更好一些，但是，在数据量和查询复杂度上，没有ES支持的好，关键点是我们的查询条件复杂度是比较高的，所以，Redis没有承载过多的查询职能。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;86152&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;span data-bgopacity=&quot;40%&quot;/&gt; &lt;span data-bgopacity=&quot;25%&quot;/&gt; &lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;section data-brushtype=&quot;text&quot;&gt;&lt;span&gt;&lt;strong&gt;2.MySQL&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;MySQL在履约系统存储中的职能是持久化存储订单数据，这里主要还是使用其强大的事务机制，以保障我们的数据是正确写入的。这是其他的两个组件所不支持的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;从履约流程上来看，我们将数据做了冷热分离，热点数据是我们在履约中的订单(也就是未完成的订单)，而完成的订单，由于其使用率不会太高，所以，我们称之为冷数据。这样的一个拆分也就是上图中对应的业务库和历史库。业务库是热库，而历史库则是冷库。这样的一个冷热分离思想，使我们的单库单表数据量级维持在千万级别。从而避免了对应的分库分表复杂度。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;从部署架构上看，我们对业务库进行了大量的主从分割。其中biz slave是我们的业务库从库，它也会承载一些履约中的订单查询职能。接下来的big data slave集群则是大数据抽数据用做统计分析。最后的delay slave设置延迟一定时间消费binlog则是为了防止master被误操作而兜底的。比如有人错误执行了删除db的命令，这样的一个延迟消费的机制就可以利用binlog进行兜底回滚。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;86152&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;span data-bgopacity=&quot;40%&quot;/&gt; &lt;span data-bgopacity=&quot;25%&quot;/&gt; &lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;section data-brushtype=&quot;text&quot;&gt;&lt;span&gt;&lt;strong&gt;3.Elasticsearch&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;ES在数据存储中承担了几乎所有的查询职责，这主要取决于它支持复杂查询，并有天然分布式的特点。在数据量复杂度解决方案上，避免了MySQL分库分表的复杂度。这里我们一共有3个ES集群。其中HOT ES和Full ES也是进行了冷热分离，这样对我们的查询流量进行拆分。有助于保证履约系统的稳定性。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;而第三套集群Remind Elastic Cluster则是为了解决我们上述提示音的问题。在有提示音集群之前，我们所有的提示音查询流量都是打到热集群的。也正是这样的一个访问量需求，导致了我们的热集群时有发生CPU飙高，接口响应缓慢，卡顿业务线程。所以，我们对热集群进行了进一步的拆分，于是就正式提出了提示音单独集群的方案。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;86122&quot; data-custom=&quot;#138bde&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;p data-brushtype=&quot;text&quot;&gt;&lt;span&gt;&lt;strong&gt;三、写入复杂度问题&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;312&quot; data-backw=&quot;568&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5486381322957199&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ufWcjcomw8ZdWez7149YsDPASGwlGZOzk8ZViaGGVL6bOEsXwXEjCPaFsN4xCKjr3VFUbRSrTaab45ezXWRxBXg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;771&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;当确定冗余一套提示音集群以后，我们面临的问题就是上述这样的一个写入复杂度问题，从图上来看，我们在拆分这套集群之前，订单中心每次操作一次订单写入。面临的是3个数据源的写入工作，这对研发人员是非常不友好的，维护难度过大。于是，我们就开始考虑用异构中间件的方式来去写入这套ES数据。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;异构中间件的优势是屏蔽了数据同步的复杂度，但是随之而来的是数据写入链路可靠性、及时性等问题。而且，数据传输本身一般都具有高可用的需求，之前高可用在业务应用上，因为业务应用的集群方式本身是计算高可用的。但异构中间件则要在这高可用、可靠性、及时性三个维度上满足我们的要求。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;86122&quot; data-custom=&quot;#138bde&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;四、数据异构产品选型&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;315&quot; data-backw=&quot;568&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5551181102362205&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ufWcjcomw8ZdWez7149YsDPASGwlGZOzicmJiacBhOlLgROtWPu35TCCrHsKvmsehlqWT8zPvU9QicicF9WgzP3UKQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;762&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在上述分析之后，我们也陆续调研了一些异构产品，在数据类型支撑上没有太大差别，常用的存储组件，这些异构中间件都是支持的。所以，我们更在意以上3个指标。社区活跃度代表了后续的维护性以及开源产品快速的问题响应，可用性方面的需求是非常强烈的，最终采用Canal的根本原因还是在学习成本和熟练度上。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;86122&quot; data-custom=&quot;#138bde&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;五、Canal简介&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;p&gt;&lt;span&gt;这里简单说一下我对于Canal的理解，以便于后续有意向应用Canal的同学有一个简单的了解。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;317&quot; data-backw=&quot;568&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5577172503242542&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ufWcjcomw8ZdWez7149YsDPASGwlGZOz7jUzquNY1H3RUxahmcQHNicm7WWeMORMnDIo6cuTUk2bAibicAoexL0mw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;771&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;Step1 Load&amp;amp;Store：&lt;/span&gt;&lt;/strong&gt;&lt;span&gt; Connection从Zookeeper 获取到当前消费的binlog filename和position信息。随后将该信息附带到dump协议里，mysql master开始推送binlog数据。Binlog经过Parser解析投递到Sink，Sink则承载了过滤消息的作用，过滤掉没有订阅的binlog事件，最终把消息存储到Store中。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;Step2：Send&amp;amp;Ack：&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;用任务worker的方式，不断扫描store，最终将store中的数据发送到目的地，目的地可以是具体的存储，也可以是mq产品。图中，我用了kafka也主要是因为我们的实践方案。投递消息完成之后将消息ACK给Store组件。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;Step3：Update MetaInfo：&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;这个时候数据虽然发送了。但是，我们的元信息binlog的filename和position仍然没有更新，在这个操作上，Canal仍然采取了异步的方式去同步该信息。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;Canal这种异步通信的设计要求你的系统必须具备可回溯、重试、幂等、延迟特点。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;以上，是我对整个Canal的一个理解，图中的两个HA，后续将会和大家说到。这里，我讲Canal的工作的角色、运作规则都是从一个4R视角来说明的，这是为了后续来讲复杂度方法论的时候大家也好理解一些。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;86122&quot; data-custom=&quot;#138bde&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;p data-brushtype=&quot;text&quot;&gt;&lt;span&gt;&lt;strong&gt;六、提示音功能基于Canal数据异构实践&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;315&quot; data-backw=&quot;568&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5543905635648755&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ufWcjcomw8ZdWez7149YsDPASGwlGZOzW2wS3fVuAgtqsQwOSHwoL4y21uZ8yZeedJKx1ibVia5J3kq9nXslrG3w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;763&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;p&gt;&lt;span&gt;提示音异构生产部署方式如上图。我们部署了两台Deployer用于数据传输的高可用。同时把消息投递到了kafka，利用adapter的集群部署进行批量消费，插入到提示音集群的ES中。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在顺序性保障上采用了订单id hash的策略，保证在partition上是有序的。这样也就保证了在业务操作上是整体有序的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在链路上采用kafka来传输，主要还是应对大促期间binlog数据量级的特点，保证插入到ES之前有缓冲buffer的一个作用。这也是直连方式的弱点，直连方式在大数据量短时间写入时，对目的地存储组件有可能会造成瞬间的大量插入，从而损耗目的地存储组件的资源，可能影响到业务使用。但是，长链路也有数据延迟的缺点，如果对数据时效要求比较高的业务。还是建议用直连方式来搭建对应的异构方案。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在META Manager上使用Zookeeper来存储，与Deployer的HA形成有效配合。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;86152&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;span data-bgopacity=&quot;40%&quot;/&gt; &lt;span data-bgopacity=&quot;25%&quot;/&gt; &lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;section data-brushtype=&quot;text&quot;&gt;&lt;span&gt;&lt;strong&gt;问题一：（网络环境问题）kafka不可用&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;318&quot; data-backw=&quot;568&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5594771241830065&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ufWcjcomw8ZdWez7149YsDPASGwlGZOz7oXzqsdxD0R7OpbrfoH4PibRo41MI8iaMpgTaWGmkj3NCQQRbo0Ax5eg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;765&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在实践中，我们遇到第一个比较有代表性的问题是kafka集群不可用，直接导致ES数据断层，从而影响到商家的履约体验。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;首先，kafka集群所在的网络环境和机器主机发生问题，deployer的store数据存满，直接导致delay了8个小时。提示音没有提示，也会有电脑端的管理系统同步订单，但是需要人工刷新，所以，过了很久我们才发现这样一个问题。紧急把访问切到之前的ES热集群，之后，我们重新把kafka服务部署到可用状态，数据虽然慢慢追上了，但是原来在kafka中没有被adapter消费的一部分数据却丢掉了，这主要还是因为设置的kafka落盘频率问题。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;312&quot; data-backw=&quot;568&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5494791666666666&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ufWcjcomw8ZdWez7149YsDPASGwlGZOzdPhJKxicVM2HEViaxWm5hTgOic0U0WKYRibnnbCKqeKNzjOoBmQ8p6AY5w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;768&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;丢数据在数据异构的需求中是不可容忍的事情，索性这次事故基本上锁定了丢数据的原因，所以，我们将Zookeeper中的jouralName和position设置到对应的事故之前的位置，将数据重新跑到ES中，至此问题解决。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-role=&quot;list&quot;/&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;321&quot; data-backw=&quot;568&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5645371577574967&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ufWcjcomw8ZdWez7149YsDPASGwlGZOzf0X405gLehOt8c7e1VRGBtrHPg5MHzOwCbSgNjffGjIGAibhdNz4rNQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;767&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-role=&quot;list&quot;/&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;314&quot; data-backw=&quot;568&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5523560209424084&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ufWcjcomw8ZdWez7149YsDPASGwlGZOzmicxX0NFflnfcCibD526RUqPttoJicWQANKmicH5x1ibf8RL8G8EBadwlkw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;764&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;至此，总结以上两点，数据异构的实践在问题监控、报警、及时降级方面是非常重要的。希望这样的总结经验能够让大家少走弯路。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;86152&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;span data-bgopacity=&quot;40%&quot;/&gt; &lt;span data-bgopacity=&quot;25%&quot;/&gt; &lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;section data-brushtype=&quot;text&quot;&gt;&lt;span&gt;&lt;strong&gt;问题二：Deployer故障，自动HA&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;310&quot; data-backw=&quot;568&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5461638491547465&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ufWcjcomw8ZdWez7149YsDPASGwlGZOzhUjq2U2x1o2b3CWZibXUnyr561od3yobibFHZrGYWgIQfkRpvj6uibo7w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;769&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;Deployer机器发生故障，系统自动HA到备机，任务得以继续消费。总起来说，问题二并没有给我们的业务带来任何的损耗，但是，还是比较经典的一个案例。这主要反应出来，对于数据异构这样一个需求。它的链路上所有环节，基本上都是有高可用的要求的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;313&quot; data-backw=&quot;568&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5517693315858454&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ufWcjcomw8ZdWez7149YsDPASGwlGZOzW6icPF5RFicCOic7FjaPV6vYrRuMSB5wtHbibjv66AsUSfFhJZibMTicicjCA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;763&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;Canal一共提供两种HA，其中Deployer的HA是靠Zookeeper的临时节点和重试机制实现的，而Mysql的HA则是靠一个单独的线程不断的Detect来实现的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;但是MySQL的HA，只能用GTID的模式，这是因为Mysql master和slave的binlogfile name、position是不一样的。如果用master的binlogfilename和position去slave发送dump协议，这会出现无法匹配的问题。但是GTID是全局有序的，这也就保证了Mysql的HA只在GTID模式下才可用。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;310&quot; data-backw=&quot;568&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5449804432855281&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ufWcjcomw8ZdWez7149YsDPASGwlGZOzq5Ddlxw6lNuiaXWpGOSm9lK97v7L7X7owHPmmqMibuGQJNvQNnpbHhVg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;767&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;谈到高可用，提出上述总结。这里我与大家互动了一个问题：“单机器部署两台Canal实例是否算是高可用？”答案是：“不算高可用，原因是单机部署了两台Deployer，但是机器如果故障，两台Deployer均不可用。”&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;问题比较有代表性，也有一些同学掉进了坑里。这里我与大家一起回顾一下高可用的范围：多机器、多机房、多地区、多国家。范围越大，高可用自然越是稳定。但是带来的成本和数据传输要求也越高，一般都是根据业务量级和重要程序进行取舍的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-role=&quot;list&quot;/&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;313&quot; data-backw=&quot;568&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5519053876478318&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ufWcjcomw8ZdWez7149YsDPASGwlGZOzUyYU1mibu4SeNV1H8sWNVJxWzvqoN4WxVzic4cHSCA6HLicDGicZWsrLPw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;761&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;以上就是我在数据异构中的一些经验教训。下面我们将问题向上抽象，聊一聊面向复杂度的架构设计方法论。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;86122&quot; data-custom=&quot;#138bde&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;p data-brushtype=&quot;text&quot;&gt;&lt;span&gt;&lt;strong&gt;七、面向复杂度的架构设计方法论&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;86152&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;span data-bgopacity=&quot;40%&quot;/&gt; &lt;span data-bgopacity=&quot;25%&quot;/&gt; &lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;section data-brushtype=&quot;text&quot;&gt;&lt;span&gt;&lt;strong&gt;1.4R模型&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;309&quot; data-backw=&quot;568&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5442708333333334&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ufWcjcomw8ZdWez7149YsDPASGwlGZOzPoMJDVLJu3hRKpHHd9Ma0DhJ6wz6lvY14T3rycxxk53CSibtibhIRAfg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;768&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;大家是否发现，我在和大家聊Canal或是到家的数据异构方案时，更多的都是以角色、关系、规则这种描述方法。相信大家也不是第一次碰到这种描述方式，在很多的架构中，都是这样的一种描述方法。就像上图中，说到的Parser、Sink、Store。这些角色的职责是什么？他们是如何配合完成Canal这样的一个产品功能的呢？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;4R模型本质上就是一个视角，它是Rank、Role、Relation、Rule这4个单词的首字母构成，它强调了描述方法、也强调了我们要用这样的视角来看待我们的系统。这样整体来看，系统会更加清晰和简洁。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;86152&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;span data-bgopacity=&quot;40%&quot;/&gt; &lt;span data-bgopacity=&quot;25%&quot;/&gt; &lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;section data-brushtype=&quot;text&quot;&gt;&lt;span&gt;&lt;strong&gt;2.区分复杂度&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;312&quot; data-backw=&quot;568&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5488126649076517&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ufWcjcomw8ZdWez7149YsDPASGwlGZOz1gZ1T9UDPiawhfxZBRzss2AVAiaqmbFQPOhQ7ePM1IQqHbmjuqSqluHw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;758&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;如上图，将复杂度问题分为技术方向和业务方向两个部分，其中灰色的部分，一般都有一些开源软件来帮我们解决，比如Dubbo、Spring、Canal等。而红色的部门正是我们日常工作中所不能避免的复杂度。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这些复杂度问题，如果平时不加以重视，忽视掉的复杂度问题最终则会演变成为不可维护的技术债务，最终打掉系统的可维护性，只能重新推倒重来了。很多重构行为都是因为复杂度的忽视累积而成的后果。所以，学会如何区分复杂度就是比较重要的点了。比如这次Canal的数据异构，同时面临了数量级复杂度和写入复杂度两个。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;86152&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;span data-bgopacity=&quot;40%&quot;/&gt; &lt;span data-bgopacity=&quot;25%&quot;/&gt; &lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;section data-brushtype=&quot;text&quot;&gt;&lt;span&gt;&lt;strong&gt;3.复杂度的架构设计环&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;314&quot; data-backw=&quot;568&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5520421607378129&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ufWcjcomw8ZdWez7149YsDPASGwlGZOz2mk6MAcYBfM8HdloHVuc123lbFBd0EgtX01M0ldkE6hAY3V18A7Qjg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;759&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;同样，面向复杂度的架构设计方法论，最终会归结到业务实现上。下面描述一下具体的步骤含义：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-role=&quot;list&quot;/&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-role=&quot;list&quot;/&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-role=&quot;list&quot;/&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-role=&quot;list&quot;/&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-role=&quot;list&quot;/&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-role=&quot;list&quot;/&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-role=&quot;list&quot;/&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;312&quot; data-backw=&quot;568&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.549407114624506&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ufWcjcomw8ZdWez7149YsDPASGwlGZOzNmjRJQibFGKOpqIAskjWsd0EEdHW3QttCK285wRMaGR9rDHN9AfiaHvQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;759&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;同样，将本需求的一个架构设计环案例呈现给大家。(由于部分设计有保密性，4R此处用Canal4R代替)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;以上，就是我和大家分享的全部内容啦，谢谢大家!&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;&amp;gt;&lt;/span&gt;&lt;span&gt;&amp;gt;&lt;/span&gt;&lt;span&gt;&amp;gt;&lt;/span&gt;&lt;span&gt;&amp;gt;&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;p data-brushtype=&quot;text&quot;&gt;&lt;span&gt;&lt;strong&gt;Q&amp;amp;A&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Q1：订单表中，如果有一些商品id，那么同步到ES中也是id吗，不会关联出name打成宽表存到ES吗?&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;A1：&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;span&gt;具体的映射字段需要在Adapter中配置映射即可，存入到ES中的情况也与配置的映射是直接且唯一关系。是否宽表要在实际应用中把控字段的个数。&lt;/span&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Q2：Canal部署deploy主从和canal-adapter有没有遇到官方的bug？有，改动了哪些？&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;A2：&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;遇到过Column not match的异常.具体看Canal的TSDB来解决。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Q3：这套复杂度方法论如何落地到实际应用？&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;A3：&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;需要对系统进行4R视角拆分、识别复杂度类型并按照架构设计环的方式来评定需求。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Q4：平时的Canal有消息延迟吗？&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;A4：&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;有一定延迟的，binlog的数量、网络等因素，都会造成一定的延迟，所以，建议异构还是要建立在业务数据可延迟的基础上的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Q5：我主要用canal-adapter读取Kafka中的binlog日志然后写到数据库中，Kafka中有多个表的日志，我rdb目录下的yml文件只配置了一个表的为什么其他的表也会同步？&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;A5:&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;Yml的作用是配置映射关系，具体的过滤职能在Deployer的Sink配置。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Q6：异构数据是直接同步原表吗，还是做了关联？&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;A6: &lt;/span&gt;&lt;/strong&gt;&lt;span&gt;做了关联，直接在Adapter中配置对应映射关系即可。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Q7：请问为什么不直接增加热集群的节点和分片，而是重新建一套ES集群呢?&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;A7: &lt;/span&gt;&lt;/strong&gt;&lt;span&gt;这里主要还是一个数据拆分的思想，如果通过提高配置来解决访问量问题，那么，随着业务量级增加，流量混在一起，对应的ES集群流程会呈现不可评估的情况。本质上还是一个数据存储职责的问题。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Q8：如何保证Zookeeper的高可用？&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;A8: &lt;/span&gt;&lt;/strong&gt;&lt;span&gt;Zookeeper本身就是高可用的，如果想在机房或异地方面做高可用，建议做主备同步、多集群部署等手段。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Q9：新集群的查询请求峰值是多少?&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;A9: &lt;/span&gt;&lt;/strong&gt;&lt;span&gt;大约2000-4000 QPS。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Q10：怎么把握冗余尺度呢？&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;A10: &lt;/span&gt;&lt;/strong&gt;&lt;span&gt;冗余的维度在机器、机房、地区、国家是不断增加的。维度越大，对应的高可用方案越可靠，但是，对应的费用以及实现复杂度也会变高。因为这种冗余方案肯定会有数据copy。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;section data-role=&quot;list&quot;&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-backh=&quot;260&quot; data-backw=&quot;568&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.4575&quot; data-s=&quot;300,640&quot; data-type=&quot;jpeg&quot; data-w=&quot;1200&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/ufWcjcomw8YXmuiaGPzGT7dt4yIKeNv5frW8jAIdQ6x22g10omxdWVghoWK8bnrzE93YQwEibfdO6iaBUadxFnDeA/640?wx_fmt=jpeg&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;&lt;strong&gt;&lt;strong&gt;&lt;span&gt;&lt;span&gt;获取&lt;/span&gt;&lt;span&gt;本期分享P&lt;strong&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;&lt;strong&gt;&lt;strong&gt;&lt;span&gt;&lt;span&gt;PT，&lt;/span&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/strong&gt;请添加群秘微信号：dbachen&lt;/span&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;&lt;strong&gt;&lt;strong&gt;&lt;span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;↓点这里&lt;strong&gt;&lt;span&gt;&lt;strong&gt;可&lt;strong&gt;&lt;span&gt;回看本期直播&lt;/span&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;section data-role=&quot;paragraph&quot;&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.07734375&quot; data-s=&quot;300,640&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ufWcjcomw8Zf2jiaBBH3vdgfP4A2rem5YEAHYH074dc4GibhojA5B3lLZrXLDRciaVnficveaHcAUCiaIPoDsTkAduA/640?wx_fmt=png&quot; data-backw=&quot;568&quot; data-backh=&quot;44&quot;/&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>44d27ba3d148d09bd9040279ad0326a3</guid>
-<title>附近的人？你 zao 吗？</title>
-<link>https://toutiao.io/k/uce1j3m</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
-
-                    
-                    
-                    
-                    &lt;p&gt;前几天收到一个新的需求，需要实现类似“附近的人”的功能：根据自己当前的定位，获取距离范围内的所有任务地点。刚看到这个需求时有点懵逼，第一想到的就是要利用地球的半径公式去计算距离，也就是把地球想成一个球体，去计算球上两点之间的距离。可想而知，这样的方法效率会比较低，每条数据都要来与本人的坐标做计算，太过繁琐。经过大佬的指点，想到了用redis自带的GEO来实现此功能。&lt;/p&gt;&lt;h3&gt;一、实战演习&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;以下是给大家准备的sql脚本&lt;/strong&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;sql&quot;&gt;&lt;code&gt;&lt;span&gt;SET&lt;/span&gt; &lt;span&gt;NAMES&lt;/span&gt; utf8mb4;&lt;br/&gt;&lt;span&gt;SET&lt;/span&gt; FOREIGN_KEY_CHECKS = &lt;span&gt;0&lt;/span&gt;;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;-- ----------------------------&lt;/span&gt;&lt;br/&gt;-- Table structure &lt;span&gt;for&lt;/span&gt; job_base_info&lt;br/&gt;&lt;span&gt;-- ----------------------------&lt;/span&gt;&lt;br/&gt;&lt;span&gt;DROP&lt;/span&gt; &lt;span&gt;TABLE&lt;/span&gt; &lt;span&gt;IF&lt;/span&gt; &lt;span&gt;EXISTS&lt;/span&gt; &lt;span&gt;`job_base_info`&lt;/span&gt;;&lt;br/&gt;&lt;span&gt;CREATE&lt;/span&gt; &lt;span&gt;TABLE&lt;/span&gt; &lt;span&gt;`job_base_info`&lt;/span&gt;  (&lt;br/&gt;  `&lt;span&gt;job_id&lt;/span&gt;` bigint(&lt;span&gt;20&lt;/span&gt;) NOT NULL AUTO_INCREMENT COMMENT &lt;span&gt;&#x27;任务ID&#x27;&lt;/span&gt;,&lt;br/&gt;  `job_name` varchar(50) CHARACTER &lt;span&gt;SET&lt;/span&gt; utf8 &lt;span&gt;COLLATE&lt;/span&gt; utf8_general_ci &lt;span&gt;NOT&lt;/span&gt; &lt;span&gt;NULL&lt;/span&gt; &lt;span&gt;COMMENT&lt;/span&gt; &lt;span&gt;&#x27;任务名称&#x27;&lt;/span&gt;,&lt;br/&gt;  `job_location` varchar(50) CHARACTER &lt;span&gt;SET&lt;/span&gt; utf8 &lt;span&gt;COLLATE&lt;/span&gt; utf8_general_ci &lt;span&gt;NULL&lt;/span&gt; &lt;span&gt;DEFAULT&lt;/span&gt; &lt;span&gt;&#x27;&#x27;&lt;/span&gt; &lt;span&gt;COMMENT&lt;/span&gt; &lt;span&gt;&#x27;任务地点位置经纬度-逗号隔开&#x27;&lt;/span&gt;,&lt;br/&gt;  `job_detail_address` varchar(255) CHARACTER &lt;span&gt;SET&lt;/span&gt; utf8 &lt;span&gt;COLLATE&lt;/span&gt; utf8_general_ci &lt;span&gt;NOT&lt;/span&gt; &lt;span&gt;NULL&lt;/span&gt; &lt;span&gt;COMMENT&lt;/span&gt; &lt;span&gt;&#x27;任务详细地点位置&#x27;&lt;/span&gt;,&lt;br/&gt;  PRIMARY KEY (`&lt;span&gt;job_id&lt;/span&gt;`) USING BTREE&lt;br/&gt;) ENGINE = InnoDB AUTO_INCREMENT = 24 CHARACTER &lt;span&gt;SET&lt;/span&gt; = utf8 &lt;span&gt;COLLATE&lt;/span&gt; = utf8_general_ci &lt;span&gt;COMMENT&lt;/span&gt; = &lt;span&gt;&#x27;工作任务详情基础信息表&#x27;&lt;/span&gt; ROW_FORMAT = DYNAMIC;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;-- ----------------------------&lt;/span&gt;&lt;br/&gt;-- Records &lt;span&gt;of&lt;/span&gt; job_base_info&lt;br/&gt;&lt;span&gt;-- ----------------------------&lt;/span&gt;&lt;br/&gt;&lt;span&gt;INSERT&lt;/span&gt; &lt;span&gt;INTO&lt;/span&gt; &lt;span&gt;`job_base_info`&lt;/span&gt; &lt;span&gt;VALUES&lt;/span&gt; (&lt;span&gt;1&lt;/span&gt;, &lt;span&gt;&#x27;软件开发&#x27;&lt;/span&gt;, &lt;span&gt;&#x27;120.433576,36.139697&#x27;&lt;/span&gt;, &lt;span&gt;&#x27;青岛市崂山区海尔路1号&#x27;&lt;/span&gt;);&lt;br/&gt;&lt;span&gt;INSERT&lt;/span&gt; &lt;span&gt;INTO&lt;/span&gt; &lt;span&gt;`job_base_info`&lt;/span&gt; &lt;span&gt;VALUES&lt;/span&gt; (&lt;span&gt;2&lt;/span&gt;, &lt;span&gt;&#x27;儿童摄影&#x27;&lt;/span&gt;, &lt;span&gt;&#x27;120.420297,36.156589&#x27;&lt;/span&gt;, &lt;span&gt;&#x27;山东省青岛市李沧区书院路188号&#x27;&lt;/span&gt;);&lt;br/&gt;&lt;span&gt;INSERT&lt;/span&gt; &lt;span&gt;INTO&lt;/span&gt; &lt;span&gt;`job_base_info`&lt;/span&gt; &lt;span&gt;VALUES&lt;/span&gt; (&lt;span&gt;3&lt;/span&gt;, &lt;span&gt;&#x27;清洁家用电器&#x27;&lt;/span&gt;, &lt;span&gt;&#x27;120.025706,36.281478&#x27;&lt;/span&gt;, &lt;span&gt;&#x27;山东省青岛市胶州市福州支路232号东60米&#x27;&lt;/span&gt;);&lt;br/&gt;&lt;span&gt;INSERT&lt;/span&gt; &lt;span&gt;INTO&lt;/span&gt; &lt;span&gt;`job_base_info`&lt;/span&gt; &lt;span&gt;VALUES&lt;/span&gt; (&lt;span&gt;4&lt;/span&gt;, &lt;span&gt;&#x27;辩论学习&#x27;&lt;/span&gt;, &lt;span&gt;&#x27;120.505042,36.171247&#x27;&lt;/span&gt;, &lt;span&gt;&#x27;松岭路238号中国海洋大学内&#x27;&lt;/span&gt;);&lt;br/&gt;&lt;br/&gt;&lt;span&gt;SET&lt;/span&gt; FOREIGN_KEY_CHECKS = &lt;span&gt;1&lt;/span&gt;;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;strong&gt;废话不多说，让我们来看看具体的实现&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;（1）我们要在程序启动时，将数据库中的任务数据的坐标信息初始化到redis中（此处暂且忽略任务的增删改查对redis中数据的影响）&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;java&quot;&gt;&lt;code&gt;@PostConstruct&lt;br/&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;init&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;//首先要删除该key的所有值&lt;/span&gt;&lt;br/&gt;    redisTemplate.&lt;span&gt;delete&lt;/span&gt;(&lt;span&gt;&quot;company-task&quot;&lt;/span&gt;);&lt;br/&gt;    List&lt;span&gt;&amp;lt;&lt;span&gt;JobBaseInfo&lt;/span&gt;&amp;gt;&lt;/span&gt; jobBaseInfoList = jobBaseInfoMapper.selectList(Wrappers.emptyWrapper());&lt;br/&gt;    &lt;span&gt;jobBaseInfoList&lt;/span&gt;&lt;span&gt;.stream&lt;/span&gt;()&lt;span&gt;.forEach&lt;/span&gt;(&lt;span&gt;item-&lt;/span&gt;&amp;gt;{&lt;br/&gt;        &lt;span&gt;String&lt;/span&gt; jobLocation = item.getJobLocation();&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt;(StrUtil.isNotEmpty(jobLocation)){&lt;br/&gt;            String[] &lt;span&gt;split&lt;/span&gt; = jobLocation.&lt;span&gt;split&lt;/span&gt;(&lt;span&gt;&quot;,&quot;&lt;/span&gt;);comp&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt;(&lt;span&gt;split&lt;/span&gt;.&lt;span&gt;length&lt;/span&gt;==&lt;span&gt;2&lt;/span&gt;){&lt;br/&gt;                &lt;span&gt;//Point(经度, 纬度) &lt;/span&gt;&lt;br/&gt;                Point point = new Point(Double.parseDouble(&lt;span&gt;split&lt;/span&gt;[&lt;span&gt;0&lt;/span&gt;]),Double.parseDouble(&lt;span&gt;split&lt;/span&gt;[&lt;span&gt;1&lt;/span&gt;]));&lt;br/&gt;                &lt;span&gt;//将经纬度数据及其id存到key为“company-task”中&lt;/span&gt;&lt;br/&gt;                &lt;span&gt;redisTemplate&lt;/span&gt;&lt;span&gt;.opsForGeo&lt;/span&gt;()&lt;span&gt;.add&lt;/span&gt;(&quot;&lt;span&gt;company-task&lt;/span&gt;&quot;,&lt;span&gt;point&lt;/span&gt;,&lt;span&gt;item&lt;/span&gt;&lt;span&gt;.getJobId&lt;/span&gt;());&lt;br/&gt;            }&lt;br/&gt;        }&lt;br/&gt;    });&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;（2）查询当前坐标下3km范围内的任务地点（外加根据任务名搜索的联合查询）&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;java&quot;&gt;&lt;code&gt;@Override&lt;br/&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; List&amp;lt;JobBaseInfo&amp;gt; &lt;span&gt;selectJobList&lt;/span&gt;(&lt;span&gt;JobBaseInfoDTO jobBaseInfoDTO&lt;/span&gt;) &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;String&lt;/span&gt; jobLocation = jobBaseInfoDTO.getJobLocation();&lt;br/&gt;    &lt;span&gt;//距离&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;Double&lt;/span&gt; distance = jobBaseInfoDTO.getDistance();&lt;br/&gt;    List&lt;span&gt;&amp;lt;&lt;span&gt;Integer&lt;/span&gt;&amp;gt;&lt;/span&gt; idList = new ArrayList&lt;span&gt;&amp;lt;&amp;gt;&lt;/span&gt;();&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt;(&lt;span&gt;StringUtils&lt;/span&gt;&lt;span&gt;.isNotNull&lt;/span&gt;(&lt;span&gt;jobLocation&lt;/span&gt;) &amp;amp;&amp;amp; &lt;span&gt;StringUtils&lt;/span&gt;&lt;span&gt;.isNotNull&lt;/span&gt;(&lt;span&gt;distance&lt;/span&gt;)){&lt;br/&gt;        String[] &lt;span&gt;split&lt;/span&gt; = jobLocation.&lt;span&gt;split&lt;/span&gt;(&lt;span&gt;&quot;,&quot;&lt;/span&gt;);&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt;(&lt;span&gt;split&lt;/span&gt;.&lt;span&gt;length&lt;/span&gt;==&lt;span&gt;2&lt;/span&gt;){&lt;br/&gt;            &lt;span&gt;//Point(经度, 纬度) Distance(距离量, 距离单位)&lt;/span&gt;&lt;br/&gt;            Circle circle = &lt;span&gt;new&lt;/span&gt; Circle(&lt;span&gt;new&lt;/span&gt; Point(Double.parseDouble(split[&lt;span&gt;0&lt;/span&gt;]),Double.parseDouble(split[&lt;span&gt;1&lt;/span&gt;])),&lt;br/&gt;                                       &lt;span&gt;new&lt;/span&gt; Distance(distance, Metrics.KILOMETERS));&lt;br/&gt;            &lt;span&gt;//params: key, Circle 获取存储到redis中的distance范围内的所有任务地点数据&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;GeoResults&lt;/span&gt; radius = redisTemplate.opsForGeo().radius(&lt;span&gt;&quot;company-task&quot;&lt;/span&gt;, circle);&lt;br/&gt;            List&lt;span&gt;&amp;lt;&lt;span&gt;GeoResult&lt;/span&gt;&amp;gt;&lt;/span&gt; contentList = radius.getContent();&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt;(contentList.size()&amp;gt;0){&lt;br/&gt;                &lt;span&gt;contentList&lt;/span&gt;&lt;span&gt;.stream&lt;/span&gt;()&lt;span&gt;.forEach&lt;/span&gt;(&lt;span&gt;item-&lt;/span&gt;&amp;gt;{&lt;br/&gt;                    RedisGeoCommands.GeoLocation content = (RedisGeoCommands.GeoLocation) item.getContent();&lt;br/&gt;                    &lt;span&gt;idList&lt;/span&gt;&lt;span&gt;.add&lt;/span&gt;((&lt;span&gt;Integer&lt;/span&gt;) &lt;span&gt;content&lt;/span&gt;&lt;span&gt;.getName&lt;/span&gt;());&lt;br/&gt;                });&lt;br/&gt;            }&lt;br/&gt;        }&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;jobBaseInfoDTO&lt;/span&gt;&lt;span&gt;.setIdList&lt;/span&gt;(&lt;span&gt;idList&lt;/span&gt;);&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; jobBaseInfoMapper.&lt;span&gt;select&lt;/span&gt;JobList(jobBaseInfoDTO);&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;selectJobList(jobBaseInfoDTO)&lt;/code&gt;方法的sql如下&lt;/strong&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;sql&quot;&gt;&lt;code&gt;&amp;lt;&lt;span&gt;select&lt;/span&gt; id=&lt;span&gt;&quot;selectJobList&quot;&lt;/span&gt; resultType=&lt;span&gt;&quot;com.itzyq.redislikes.model.entity.JobBaseInfo&quot;&lt;/span&gt;&amp;gt;&lt;br/&gt;    &lt;span&gt;select&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;include&lt;/span&gt; &lt;span&gt;refid&lt;/span&gt;=&lt;span&gt;&quot;Base_Column_List&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;span&gt;&amp;lt;/&lt;span&gt;include&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;from&lt;/span&gt; job_base_info&lt;br/&gt;    &lt;span&gt;&amp;lt;where&amp;gt;&lt;/span&gt;&lt;br/&gt;        &amp;lt;&lt;span&gt;if&lt;/span&gt; &lt;span&gt;test&lt;/span&gt;=&lt;span&gt;&quot;jobName!=null and jobName!=&#x27;&#x27;&quot;&lt;/span&gt;&amp;gt;&lt;br/&gt;            and job_name like CON&lt;span&gt;CAT&lt;/span&gt;(&lt;span&gt;&quot;%&quot;&lt;/span&gt;,&lt;span&gt;#{jobName},&lt;span&gt;&quot;%&quot;&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;/if&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;        &amp;lt;&lt;span&gt;if&lt;/span&gt; &lt;span&gt;test&lt;/span&gt;=&lt;span&gt;&quot;idList!=null and idList.size &amp;gt; 0 &quot;&lt;/span&gt;&amp;gt;&lt;br/&gt;            &lt;span&gt;and&lt;/span&gt; job_id &lt;span&gt;in&lt;/span&gt;&lt;br/&gt;            &amp;lt;&lt;span&gt;foreach&lt;/span&gt; collection=&lt;span&gt;&quot;idList&quot;&lt;/span&gt; item=&lt;span&gt;&quot;id&quot;&lt;/span&gt; &lt;span&gt;open&lt;/span&gt;=&lt;span&gt;&quot;(&quot;&lt;/span&gt; &lt;span&gt;close&lt;/span&gt;=&lt;span&gt;&quot;)&quot;&lt;/span&gt; separator=&lt;span&gt;&quot;,&quot;&lt;/span&gt;&amp;gt;&lt;br/&gt;                &lt;span&gt;#{id}&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;&amp;lt;/foreach&amp;gt;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;/if&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;/where&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;/select&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;到这儿我们就已经实现了“附近的人”的功能了，接下来就让我们具体的了解一下Redis中的GEO都有哪些骚操作吧。&lt;strong&gt;微信公众号回复“pSearch”获取源码呦！&lt;/strong&gt;&lt;/p&gt;&lt;h3&gt;二、GEO操作&lt;/h3&gt;&lt;p&gt;Redis GEO 主要用于存储地理位置信息，并对存储的信息进行操作，该功能在 Redis 3.2 版本新增，GEO 是基于zset的一种扩展数据格式。Redis GEO 操作方法有：&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;geoadd：添加地理位置的坐标。&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;geopos：获取地理位置的坐标。&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;geodist：计算两个位置之间的距离。&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;georadius：根据用户给定的经纬度坐标来获取指定范围内的地理位置集合。&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;georadiusbymember：根据储存在位置集合里面的某个地点获取指定范围内的地理位置集合。&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;geohash：返回一个或多个位置对象的 geohash 值。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;1、geoadd&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;geoadd 用于存储指定的地理空间位置，可以将一个或多个经度(longitude)、纬度(latitude)、位置名称(member)添加到指定的 key 中。&lt;/p&gt;&lt;p&gt;geoadd 语法格式如下：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;redis&quot;&gt;&lt;code&gt;&lt;span&gt;GEOADD&lt;/span&gt; key longitude latitude member&lt;span&gt; [longitude latitude member ...]&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;以下实例中 key 为 Sicily，Palermo 和 Catania 为位置名称 ：&lt;/p&gt;&lt;p&gt;&lt;strong&gt;实例&lt;/strong&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;java&quot;&gt;&lt;code&gt;&lt;span&gt;redis&lt;/span&gt;&amp;gt; &lt;span&gt;GEOADD&lt;/span&gt; &lt;span&gt;Sicily&lt;/span&gt; 13&lt;span&gt;.361389&lt;/span&gt; 38&lt;span&gt;.115556&lt;/span&gt; &quot;&lt;span&gt;Palermo&lt;/span&gt;&quot; 15&lt;span&gt;.087269&lt;/span&gt; 37&lt;span&gt;.502669&lt;/span&gt; &quot;&lt;span&gt;Catania&lt;/span&gt;&quot;&lt;br/&gt;(&lt;span&gt;integer&lt;/span&gt;) 2&lt;br/&gt;redis&amp;gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;图片如下&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.14037854889589904&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/55HPQyguvpNlYDgKHDKtLwLexEG26SmcVo6cibGngbkK3vLpx3pGiaZBITKv3ibUpRuyQGc9vS3EOicFOPUTeBu5hw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1268&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;2、geopos&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;geopos 用于从给定的 key 里返回所有指定名称(member)的位置（经度和纬度），不存在的返回 nil。&lt;/p&gt;&lt;p&gt;geopos 语法格式如下：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;redis&quot;&gt;&lt;code&gt;&lt;span&gt;GEOPOS&lt;/span&gt; key member&lt;span&gt; [member ...]&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;实例&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;java&quot;&gt;&lt;code&gt;redis&amp;gt; GEOPOS Sicily Palermo Catania NonExisting&lt;br/&gt;&lt;span&gt;1&lt;/span&gt;) 1) &lt;span&gt;&quot;13.36138933897018433&quot;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;2&lt;/span&gt;) &lt;span&gt;&quot;38.11555639549629859&quot;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;2&lt;/span&gt;) 1) &lt;span&gt;&quot;15.08726745843887329&quot;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;2&lt;/span&gt;) &lt;span&gt;&quot;37.50266842333162032&quot;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;3&lt;/span&gt;) (&lt;span&gt;nil&lt;/span&gt;)&lt;br/&gt;redis&amp;gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;注：也可以使用zrange返回所有的位置元素而不带经纬度信息&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;java&quot;&gt;&lt;code&gt;redis&amp;gt; ZRANGE Sicily 0 -1&lt;br/&gt;&lt;span&gt;1&lt;/span&gt;)  &lt;span&gt;&quot;Palermo&quot;&lt;/span&gt;&lt;br/&gt; &lt;span&gt;2&lt;/span&gt;)  &lt;span&gt;&quot;Catania&quot;&lt;/span&gt;&lt;br/&gt;redis&amp;gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;strong&gt;3、geodist&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;geodist 用于返回两个给定位置之间的距离。&lt;/p&gt;&lt;p&gt;geodist 语法格式如下：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;redis&quot;&gt;&lt;code&gt;&lt;span&gt;GEODIST&lt;/span&gt; key member1 member2&lt;span&gt; [m|km|ft|mi]&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;member1 member2 为两个地理位置。&lt;/p&gt;&lt;p&gt;最后一个距离单位参数说明：&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;m ：米，默认单位。&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;km ：千米。&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;mi ：英里。&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;ft ：英尺。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;实例: 计算 Palermo 与 Catania 之间的距离&lt;/strong&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;java&quot;&gt;&lt;code&gt;redis&amp;gt; GEODIST Sicily Palermo Catania&lt;br/&gt;&lt;span&gt;&quot;166274.1516&quot;&lt;/span&gt;&lt;br/&gt;redis&amp;gt; GEODIST Sicily Palermo Catania km&lt;br/&gt;&lt;span&gt;&quot;166.2742&quot;&lt;/span&gt;&lt;br/&gt;redis&amp;gt; GEODIST Sicily Palermo Catania mi&lt;br/&gt;&lt;span&gt;&quot;103.3182&quot;&lt;/span&gt;&lt;br/&gt;redis&amp;gt; GEODIST Sicily Foo Bar&lt;br/&gt;(&lt;span&gt;nil&lt;/span&gt;)&lt;br/&gt;redis&amp;gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;strong&gt;4、georadius、georadiusbymember&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;georadius 以给定的经纬度为中心， 返回键包含的位置元素当中， 与中心的距离不超过给定最大距离的所有位置元素。&lt;/p&gt;&lt;p&gt;georadiusbymember 和 GEORADIUS 命令一样， 都可以找出位于指定范围内的元素， 但是 georadiusbymember 的中心点是由给定的位置元素决定的， 而不是使用经度和纬度来决定中心点。&lt;/p&gt;&lt;p&gt;georadius 与 georadiusbymember 语法格式如下：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;redis&quot;&gt;&lt;code&gt;&lt;span&gt;GEORADIUS&lt;/span&gt; key longitude latitude radius m|km|ft|mi&lt;span&gt; [WITHCOORD] [WITHDIST] [WITHHASH] [COUNT count] [ASC|DESC] [STORE key] [STOREDIST key]&lt;/span&gt;&lt;br/&gt;&lt;span&gt;GEORADIUSBYMEMBER&lt;/span&gt; key member radius m|km|ft|mi&lt;span&gt; [WITHCOORD] [WITHDIST] [WITHHASH] [COUNT count] [ASC|DESC] [STORE key] [STOREDIST key]&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;参数说明：&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;m ：米，默认单位。&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;km ：千米。&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;mi ：英里。&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;ft ：英尺。&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;WITHDIST: 在返回位置元素的同时， 将位置元素与中心之间的距离也一并返回。&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;WITHCOORD: 将位置元素的经度和维度也一并返回。&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;WITHHASH: 以 52 位有符号整数的形式， 返回位置元素经过原始 geohash 编码的有序集合分值。这个选项主要用于底层应用或者调试， 实际中的作用并不大。&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;COUNT 限定返回的记录数。&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;ASC: 查找结果根据距离从近到远排序。&lt;/span&gt;&lt;span&gt;&lt;span&gt;•&lt;/span&gt;DESC: 查找结果根据从远到近排序。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;georadius 实例&lt;/strong&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;java&quot;&gt;&lt;code&gt;redis&amp;gt; GEORADIUS Sicily 15 37 200 km WITHDIST&lt;br/&gt;&lt;span&gt;1&lt;/span&gt;) 1) &lt;span&gt;&quot;Palermo&quot;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;2&lt;/span&gt;) &lt;span&gt;&quot;190.4424&quot;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;2&lt;/span&gt;) 1) &lt;span&gt;&quot;Catania&quot;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;2&lt;/span&gt;) &lt;span&gt;&quot;56.4413&quot;&lt;/span&gt;&lt;br/&gt;redis&amp;gt; GEORADIUS Sicily 15 37 200 km WITHCOORD&lt;br/&gt;&lt;span&gt;1&lt;/span&gt;) 1) &lt;span&gt;&quot;Palermo&quot;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;2&lt;/span&gt;) 1) &lt;span&gt;&quot;13.36138933897018433&quot;&lt;/span&gt;&lt;br/&gt;   &lt;span&gt;2&lt;/span&gt;) &lt;span&gt;&quot;38.11555639549629859&quot;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;2&lt;/span&gt;) 1) &lt;span&gt;&quot;Catania&quot;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;2&lt;/span&gt;) 1) &lt;span&gt;&quot;15.08726745843887329&quot;&lt;/span&gt;&lt;br/&gt;   &lt;span&gt;2&lt;/span&gt;) &lt;span&gt;&quot;37.50266842333162032&quot;&lt;/span&gt;&lt;br/&gt;redis&amp;gt; GEORADIUS Sicily 15 37 200 km WITHDIST WITHCOORD&lt;br/&gt;&lt;span&gt;1&lt;/span&gt;) 1) &lt;span&gt;&quot;Palermo&quot;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;2&lt;/span&gt;) &lt;span&gt;&quot;190.4424&quot;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;3&lt;/span&gt;) 1) &lt;span&gt;&quot;13.36138933897018433&quot;&lt;/span&gt;&lt;br/&gt;   &lt;span&gt;2&lt;/span&gt;) &lt;span&gt;&quot;38.11555639549629859&quot;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;2&lt;/span&gt;) 1) &lt;span&gt;&quot;Catania&quot;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;2&lt;/span&gt;) &lt;span&gt;&quot;56.4413&quot;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;3&lt;/span&gt;) 1) &lt;span&gt;&quot;15.08726745843887329&quot;&lt;/span&gt;&lt;br/&gt;   &lt;span&gt;2&lt;/span&gt;) &lt;span&gt;&quot;37.50266842333162032&quot;&lt;/span&gt;&lt;br/&gt;redis&amp;gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;strong&gt;georadiusbymember 实例：&lt;/strong&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;java&quot;&gt;&lt;code&gt;&lt;span&gt;redis&lt;/span&gt;&amp;gt; &lt;span&gt;GEOADD&lt;/span&gt; &lt;span&gt;Sicily&lt;/span&gt; 13&lt;span&gt;.583333&lt;/span&gt; 37&lt;span&gt;.316667&lt;/span&gt; &quot;&lt;span&gt;Agrigento&lt;/span&gt;&quot;&lt;br/&gt;(&lt;span&gt;integer&lt;/span&gt;) 1&lt;br/&gt;redis&amp;gt; GEORADIUSBYMEMBER Sicily Agrigento 100 km&lt;br/&gt;&lt;span&gt;1&lt;/span&gt;) &lt;span&gt;&quot;Agrigento&quot;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;2&lt;/span&gt;) &lt;span&gt;&quot;Palermo&quot;&lt;/span&gt;&lt;br/&gt;redis&amp;gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;strong&gt;5、geohash&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;Redis GEO 使用 geohash 来保存地理位置的坐标。geohash 用于获取一个或多个位置元素的 geohash 值。&lt;/p&gt;&lt;p&gt;geohash 语法格式如下：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;redis&quot;&gt;&lt;code&gt;&lt;span&gt;GEOHASH&lt;/span&gt; key member&lt;span&gt; [member ...]&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;实例：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;java&quot;&gt;&lt;code&gt;redis&amp;gt; GEOHASH Sicily Palermo Catania&lt;br/&gt;&lt;span&gt;1&lt;/span&gt;) &lt;span&gt;&quot;sqc8b49rny0&quot;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;2&lt;/span&gt;) &lt;span&gt;&quot;sqdtr74hyu0&quot;&lt;/span&gt;&lt;br/&gt;redis&amp;gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;geo并没有提供删除指令，但根据其底层是zset实现，我们可以使用zrem对数据进行删除&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;java&quot;&gt;&lt;code&gt;redis&amp;gt; ZREM Sicily Agrigento&lt;br/&gt;&lt;span&gt;&quot;1&quot;&lt;/span&gt;&lt;br/&gt;redis&amp;gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;h3&gt;三、Redis GEO JAVA API&lt;/h3&gt;&lt;p&gt;有了以上GEO的操作，我们可以在java中找到对应的api&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;java&quot;&gt;&lt;code&gt;/**&lt;br/&gt; *  将指定的地理空间位置（纬度、经度、名称）添加到指定的key中。&lt;br/&gt; */&lt;br/&gt;&lt;span&gt;//params: key, Point(经度, 纬度), 地方名称&lt;/span&gt;&lt;br/&gt;Long addedNum = redisTemplate.opsForGeo().add(&lt;span&gt;&quot;Sicily&quot;&lt;/span&gt;, &lt;span&gt;new&lt;/span&gt; Point(&lt;span&gt;13.361389&lt;/span&gt;,&lt;span&gt;38.115556&lt;/span&gt;), &lt;span&gt;&quot;Palermo&quot;&lt;/span&gt;);&lt;br/&gt;&lt;br/&gt;/**&lt;br/&gt; *  从key里返回所有给定位置元素的位置（经度和纬度）。&lt;br/&gt; */&lt;br/&gt;&lt;span&gt;//params: key, 地方名称...&lt;/span&gt;&lt;br/&gt;&lt;span&gt;List&lt;/span&gt;&amp;lt;Point&amp;gt; points = redisTemplate.opsForGeo().position(&lt;span&gt;&quot;Sicily&quot;&lt;/span&gt;,&lt;span&gt;&quot;Palermo&quot;&lt;/span&gt;,&lt;span&gt;&quot;Catania&quot;&lt;/span&gt;);&lt;br/&gt;&lt;br/&gt;/**&lt;br/&gt; *  返回两个给定位置之间的距离。&lt;br/&gt; */&lt;br/&gt;&lt;span&gt;//params: key, 地方名称1, 地方名称2, 距离单位&lt;/span&gt;&lt;br/&gt;&lt;span&gt;Distance&lt;/span&gt; distance = redisTemplate.opsForGeo()&lt;br/&gt;                .distance(&lt;span&gt;&quot;Sicily&quot;&lt;/span&gt;,&lt;span&gt;&quot;Palermo&quot;&lt;/span&gt;,&lt;span&gt;&quot;Catania&quot;&lt;/span&gt;, RedisGeoCommands.DistanceUnit.KILOMETERS);&lt;br/&gt;&lt;br/&gt;/**&lt;br/&gt; * 以给定的经纬度为中心， 返回键包含的位置元素当中， 与中心的距离不超过给定最大距离的所有位置元素，并给出所有位置元素与中心的平均距离。&lt;br/&gt; */&lt;br/&gt;&lt;span&gt;//Point(经度, 纬度) Distance(距离量, 距离单位)&lt;/span&gt;&lt;br/&gt;Circle circle = &lt;span&gt;new&lt;/span&gt; Circle(&lt;span&gt;new&lt;/span&gt; Point(&lt;span&gt;13.361389&lt;/span&gt;,&lt;span&gt;38.115556&lt;/span&gt;), &lt;span&gt;new&lt;/span&gt; Distance(&lt;span&gt;200&lt;/span&gt;, Metrics.KILOMETERS));&lt;br/&gt;RedisGeoCommands.GeoRadiusCommandArgs args = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs().&lt;br/&gt;    &lt;span&gt;//包含距离，包含经纬度，升序前五个&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;includeDistance&lt;/span&gt;()&lt;span&gt;.includeCoordinates&lt;/span&gt;()&lt;span&gt;.sortAscending&lt;/span&gt;()&lt;span&gt;.limit&lt;/span&gt;(5);&lt;br/&gt;&lt;span&gt;//params: key, Circle, GeoRadiusCommandArgs&lt;/span&gt;&lt;br/&gt;GeoResults&amp;lt;RedisGeoCommands.GeoLocation&amp;lt;String&lt;span&gt;&amp;gt;&amp;gt; &lt;/span&gt;results = redisTemplate.opsForGeo()&lt;br/&gt;                .radius(&lt;span&gt;&quot;Sicily&quot;&lt;/span&gt;,circle,args);&lt;br/&gt;&lt;br/&gt;/**&lt;br/&gt; *  以给定的城市为中心， 返回键包含的位置元素当中， 与中心的距离不超过给定最大距离的所有位置元素，并给出所有位置元素与中心的平均距离。&lt;br/&gt; */&lt;br/&gt;&lt;span&gt;//params: 距离量, 距离单位&lt;/span&gt;&lt;br/&gt;Distance distance = &lt;span&gt;new&lt;/span&gt; Distance(&lt;span&gt;200&lt;/span&gt;,Metrics.KILOMETERS);&lt;br/&gt;RedisGeoCommands.GeoRadiusCommandArgs args = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs()&lt;br/&gt;    &lt;span&gt;.includeDistance&lt;/span&gt;()&lt;span&gt;.includeCoordinates&lt;/span&gt;()&lt;span&gt;.sortAscending&lt;/span&gt;()&lt;span&gt;.limit&lt;/span&gt;(5);&lt;br/&gt;&lt;span&gt;//params: key, 地方名称, Circle, GeoRadiusCommandArgs&lt;/span&gt;&lt;br/&gt;GeoResults&amp;lt;RedisGeoCommands.GeoLocation&amp;lt;String&lt;span&gt;&amp;gt;&amp;gt;  &lt;/span&gt;results = redisTemplate.opsForGeo()&lt;br/&gt;    .radius(&lt;span&gt;&quot;Sicily&quot;&lt;/span&gt;,&lt;span&gt;&quot;Palermo&quot;&lt;/span&gt;,distance,args);&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;/**&lt;br/&gt; *  返回一个或多个位置元素的 Geohash 表示&lt;br/&gt; */&lt;br/&gt;&lt;span&gt;//params: key, 地方名称...&lt;/span&gt;&lt;br/&gt;List&amp;lt;&lt;span&gt;String&lt;/span&gt;&amp;gt; results = redisTemplate.opsForGeo()&lt;br/&gt;                .hash(&lt;span&gt;&quot;Sicily&quot;&lt;/span&gt;,&lt;span&gt;&quot;Palermo&quot;&lt;/span&gt;,&lt;span&gt;&quot;Catania&quot;&lt;/span&gt;);&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;看到这里，“附近的人”功能你一定掌握了吧！如果你觉得这篇文章对你有所帮助，请关注微信公众号“阿Q说代码”，或添加微信qingqing-4132！&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.36484375&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/55HPQyguvpOel5MlXBfmqbjzfdGUETbwNC7yD30ToGqjw8u9ibyiciar7kEW2KiccjACZqgUr4ezWtbdVo9CCicoFUw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.28378378378378377&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/55HPQyguvpPemMrwoZDQhppSzibf2w5T6SGouuxED4ic7LJsia4OVib1WwO9ZSic1prvDicfYEz7VGeibpEaicXMQNOJOA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;222&quot;/&gt;&lt;/p&gt;
-                &lt;/div&gt;
-
-                
-
-                
-
-
-
-                
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>493d124bf0d555858ca0f51846de8d69</guid>
+<title>消息队列把消息弄丢了怎么办？</title>
+<link>https://toutiao.io/k/w8wyj2e</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;消息队列会丢失消息吗？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;答案是肯定的，所以对于业务严谨的数据，我们要确保其在消息队列中的安全，不能丢。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;要想解决不丢的问题，首先要弄清楚 &lt;strong&gt;消息是怎么丢的呢？&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;丢消息的关键点有3个：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;Producer 发送消息的过程&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;消息队列的消息存储&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Consumer 消费消息的过程&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;下面挨个看看都是怎么丢的，以及解决方案。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;会以 RabbitMQ 和 Kafka 这两个常用的消息系统来说明。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;1. Producer 弄丢消息&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Producer 向 MQ 发消息，很简单，发过去就完事儿了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但是，在发送图中是存在危险的，例如网络问题等等，导致 MQ 没有正常收到。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.22686025408348456&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/wv3K6j4ibl91WsPa1scdJOfKMWc9GOZugyEoByknO5tEicuWbjL9iaY4ZmTbv1TO5czbHqsOVFibpXjXKq7IFJAiamg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1102&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;怎么解决呢？&lt;/strong&gt; 思路很简单，让 MQ 发一个 &lt;strong&gt;接受确认声明（ack）&lt;/strong&gt; 就行了，就像快递需要签收一样。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;例如 &lt;strong&gt;RabbitMQ&lt;/strong&gt;，有两种方式可以确保发送消息的安全。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;1）事务消息&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Producer 发送消息之前，先开启事务，然后再发送。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果 RabbitMQ 没有正常收到消息，Producer 会收到异常信息，回滚事务。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果正常接收了，Producer 就提交事务。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;很可靠，但效率低，因为这个事务模式是同步的，会产生阻塞。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;2）confirm 确认模式&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Producer 开启 confirm 模式，发送消息的时候，RabbitMQ 会给这个消息分配一个唯一的 ID。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;成功写入队列之后，RabbitMQ 会向 Producer 发送一个 ack 消息，说明此 ID 的消息已经成功发送。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;confirm 模式还有一个回调机制，Producer 可以准备一个失败的接口，供 RabbitMQ 在接收失败时调用。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Producer 收到失败通知，或者超时了，可以执行相应的处理逻辑，例如重发。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;confirm 模式是异步的，比事务消息更高效，使用更为广泛。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;Kafka&lt;/strong&gt; 也是使用的 ack 方式，使用方式很简单，只要配置：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;ack=all&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;确保 Kafka 在完全接收成功后才发送确认通知，这样就一定不会发丢了。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;2. MQ 在存储期间弄丢消息&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;MQ 成功接收消息之后，需要保存起来，等着 Consumer 消费。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在这个保存期间，也可以能丢失消息。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这通常是由 &lt;strong&gt;MQ 故障&lt;/strong&gt;引起的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;RabbitMQ&lt;/strong&gt; 想要保障消息不丢，需要开启&lt;strong&gt;持久化&lt;/strong&gt;，消息就会写入磁盘。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;即使 RabbitMQ 宕机了，只要磁盘没事儿，重启之后还可以重新把消息加载进来。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果想进一步的保障消息安全，就需要配置 RabbitMQ 的镜像集群了，来确保高可用。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;Kafka&lt;/strong&gt; 是天然的分布式系统，Topic 分为多个 Partition，每个 Partition 又有多个副本。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.6761006289308176&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/wv3K6j4ibl91WsPa1scdJOfKMWc9GOZugR2icwpqwEBqYdsmCHAEic3bk1hGKwYyncpADdBCppPgkKO5f7tj2QwwQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1272&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Partition 的多个副本，分为 Leader 和 Follower。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Leader 负责处理消息的读写，Follower 负责备份。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;前面说的 Kafka 配置 &lt;code&gt;ack=all&lt;/code&gt;，就是告诉Kafka，Leader 和所有 Follower 全都接收到了，才算发送 ack 确认，只有 Leader 自己接收成功是不算的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;否则的话，如果 Leader 接收完成就告诉 Producer OK 了，在 Leader 同步给 Follower 之前，Leader 宕机了，Kafka 会从 Follower 中选举出新的 Leader。那么，老 Leader 在临终前没有同步的消息就丢失了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;为了保障消息的安全，这 4 个参数要设置好：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;replication.factor&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;用于指定 Partition 副本的数量，必须大于 1，就是至少要有 2 个副本，一个 Leader 一个 Follower。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;min.insync.replicas&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;用于指定几个副本成功写入才&lt;strong&gt;提交消息&lt;/strong&gt;，只有提交之后的消息才能被 Consumer 消费。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;此值至少大于 1，这样就保障 Leader 之外至少有一个副本同步到了这条消息，不怕 Leader 宕掉了。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;acks=all&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;用于指定几个副本接收到消息之后向 Producer 发送 ack。例如值为 1，表示 Leader 收到就可以了，“all” 表示 “所有副本”，也可以写 “-1”，等同于 “all”。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;retries=999&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;用于指定 Producer 发送失败后的重试次数，可以设为一个很大的数，表示失败了就重试，提升发送成功几率。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;3. Consumer 弄丢消息&lt;span/&gt;&lt;/h4&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.40145985401459855&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/wv3K6j4ibl91WsPa1scdJOfKMWc9GOZugPx5hlyic5y1XmeZNN4WVXxiajPRJV3JflgyEysAb1iaXib4LbNLIvibUD4Q/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1096&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;例如 Consumer 成功接收到了消息 “123”，MQ 就会移除这条消息。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但在 Consumer 处理完这条消息之前，宕机了。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.30127041742286753&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/wv3K6j4ibl91WsPa1scdJOfKMWc9GOZugQypzrOFddiciboSBA7k1FjsoPWgc4sXpZN5Pz5B9RfVQAC1vM0BDel7g/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1102&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Consumer 重启之后继续从 MQ 拿消息，这次拿到的就是下一条消息 “124”，那么 “123” 就丢了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;所以，Consumer 只是接收到消息是不够的，&lt;strong&gt;成功处理完成&lt;/strong&gt;才行。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这就和 MQ 的消费确认机制有关了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;RabbitMQ&lt;/strong&gt; 默认是 Consumer 成功接收消息之后就发送 ack 确认，RabbitMQ 就认为消费成功了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;关闭自动的 Consumer ack 就行，改为手动发送确认通知。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;Kafka&lt;/strong&gt; 的 Consumer 发送的不是 ack 确认，而是 offset，告诉 Kafka 已经消费到哪个位置了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;默认是 Consumer 接收后自动提交 offset，所以也需要关闭，改为手动提交。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;小结一下&lt;/strong&gt;，要想消息不丢，需要发消息的时候确认发送成功了，MQ 存储的时候要是高可靠的，Consumer 消费的时候，不能接收之后就确认，真正处理完成才行。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;推荐阅读&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzA4Nzc4MjI4MQ==&amp;amp;mid=2652403576&amp;amp;idx=1&amp;amp;sn=00b6cc6110cbfc191d4efdcefd6432da&amp;amp;chksm=8bd8f19ebcaf7888b30a7491523de976154e0bcdd41df2167f10fd22c8526a392e9f7870cc75&amp;amp;token=456207156&amp;amp;lang=zh_CN&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;OAuth2 图解&lt;/a&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzA4Nzc4MjI4MQ==&amp;amp;mid=2652403396&amp;amp;idx=1&amp;amp;sn=53ac0376b271abab985de793a9a66bb0&amp;amp;chksm=8bd8f022bcaf7934051078105e66fa8f2986e4daaa067a0c6ea3668eb04b728762ba241547cc&amp;amp;token=456207156&amp;amp;lang=zh_CN&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;轻松理解 Kubernetes 的核心概念&lt;/a&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzA4Nzc4MjI4MQ==&amp;amp;mid=2652403407&amp;amp;idx=1&amp;amp;sn=69489b882cfafb77607a80e150d47b19&amp;amp;chksm=8bd8f029bcaf793fc8435b45f4bd2058200406e7a5f38665ef79acdb382feabacc8c5e5ac904&amp;amp;token=456207156&amp;amp;lang=zh_CN&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;开发者必须要了解的架构技术趋势：Service Mesh&lt;/a&gt;&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
