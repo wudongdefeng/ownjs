@@ -5,16 +5,16 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>5798dc82b254bce596cd2bac5ac6b40b</guid>
-<title>这个 GitHub 项目能克隆你的声音</title>
-<link>https://toutiao.io/k/3byclqk</link>
+<guid>4ac48de0b9c9963a279123cf15380dbe</guid>
+<title>我把这个软件，推荐给了总监</title>
+<link>https://toutiao.io/k/9yex08q</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
                     
 
                     
                     
                     
-                    &lt;p data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;span&gt;今天推荐一个黑科技开源项目，&lt;/span&gt;&lt;span&gt;只需要你 5 秒钟的声音对话，就能克隆出你的声音，而且能够实时的生成你任意语音。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;是不是很顶？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我觉个例子，如果我这里有 300 条你说话的语音，我把你的语音数据用这个开源项目去训练，训练完成后，我就可以使用这个训练好的模型生成任何你说的语音了。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;你会听到一个声音和你一模一样的人说你没说过的话，那种感觉真的细思极恐。&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这个黑科技就是：Real-Time-Voice-Cloning，现在已经开源，GitHub 24K 的 Star，最重要的是，这个项目提供了 GUI 界面，交互傻瓜式操作，语音采集、训练、生成都可以交互完成，很方便。&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.5607476635514018&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/ePw3ZeGRruyVTaH3a5FaqfEPiatjfbZDZmWO4Sll1dygEvr4VmJCnGvEic9tBMTicmiaXCD9XBiaG9MHEUjsw4E100w/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1926&quot;/&gt;&lt;/figure&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;地址：https://github.com/CorentinJ/Real-Time-Voice-Cloning&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;环境配置&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;首先你需要 Python 3.6 的环境、安装 PyTorch（要求版本 &amp;gt; = 1.0.1）。Pytorch 是深度学习框架，你可以通过这个站点来安装这个库。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;https://pytorch.org/get-started/locally/&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;紧接着需要安装 ffmpeg：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;地址 https://ffmpeg.org/download.html#get-packages。除此之外，你还需要安装其他的依赖包。将项目下载下来，在包含 requirements.tx 目录下运行命令 pip install -r requirements.txt 就行了。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;下载预训练的模型&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;把开源作者训练好的模型下载下来，我们不用自己训练，直接拿来用就行了：https://github.com/CorentinJ/Real-Time-Voice-Cloning/wiki/Pretrained-models，&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;下载完毕要放到如下的文件夹里面。&lt;/span&gt;&lt;/p&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-preserve=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;encoder\saved_models\pretrained.&lt;span&gt;pt&lt;/span&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;synthesizer\saved_models\pretrained\pretrained.&lt;span&gt;pt&lt;/span&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;vocoder\saved_models\pretrained\pretrained.&lt;span&gt;pt&lt;/span&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;Details about model training &lt;span&gt;and&lt;/span&gt; audio samples can &lt;span&gt;be&lt;/span&gt; found here: http&lt;span&gt;s:&lt;/span&gt;//blue-fish.github.io/experiments/RTVC-&lt;span&gt;7&lt;/span&gt;.html&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;启动&lt;/strong&gt;&lt;/span&gt;&lt;strong&gt;&lt;br/&gt;&lt;/strong&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;当你配完了环境，就可以尝试使用这个黑科技了。&lt;/span&gt;&lt;span&gt;运行命令 python demo_toolbox.py 就能启动这个黑科技啦！&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;下面是比较详细的使用教程，遇到问题可以查看帮助：&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;https://www.bilibili.com/video/av79481223?zw&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;https://blog.csdn.net/weixin_41010198/article/details/113186232&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;最后结尾说一下，我用这个模型试了一下，因为这个模型是老外开源的，所以训练的数据是英语的语音，我试了一下说中文，简直就是不会说中文的老外讲中文一个味道，现在我怀疑世界的真实性了。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;开源地址：https://github.com/CorentinJ/Real-Time-Voice-Cloning&lt;/span&gt;&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.488245931283906&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/ePw3ZeGRruyVTaH3a5FaqfEPiatjfbZDZY5rRImWfIQmfAUzGKDfbEOC4H68oavQUbGZsIib0HpCEThz7Efyk1Ow/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;2212&quot;/&gt;&lt;/figure&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;br/&gt;最后，防止找不到本篇文章，可以收藏点赞，方便翻阅查找。&lt;/strong&gt;欢迎关注公众号 逛逛GitHub（ggGithub）。&lt;/span&gt;&lt;br/&gt;&lt;/section&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-paragraph-type=&quot;ignored&quot;&gt;&lt;hr/&gt;&lt;/section&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;推荐阅读&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;em&gt;&lt;span&gt;1. &lt;/span&gt;&lt;/em&gt;&lt;/strong&gt;&lt;span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUxNjg4NDEzNA==&amp;amp;mid=2247498236&amp;amp;idx=1&amp;amp;sn=040b1a27686a89690be4f7678802a1f7&amp;amp;chksm=f9a22a35ced5a32314fff0002a2ce31854fbe33d20a42b27381a9c34966aafec49749df60a87&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;图灵的一生&lt;/a&gt;&lt;/span&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;em&gt;&lt;strong&gt;2. &lt;/strong&gt;&lt;/em&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUxNjg4NDEzNA==&amp;amp;mid=2247498204&amp;amp;idx=1&amp;amp;sn=fbcd9dcedc3ffd82169650f46a1dec53&amp;amp;chksm=f9a22a15ced5a30307dcfb4e606ff29eff91e274d3810d73c71409b1dc648c1824864c0f226e&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;阿里开源的 Java 诊断工具&lt;/a&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;em&gt;&lt;strong&gt;&lt;span&gt;3. &lt;/span&gt;&lt;/strong&gt;&lt;/em&gt;&lt;span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUxNjg4NDEzNA==&amp;amp;mid=2247497827&amp;amp;idx=1&amp;amp;sn=ba59a1acda4978b8a007dc57e1a31ec7&amp;amp;chksm=f9a22baaced5a2bc1a32ca9d7354aafe880f8a6ca211119869c8ec68e554bef9776de8fe9081&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; hasload=&quot;1&quot;&gt;这俩 AI 项目贼有意思&lt;/a&gt;&lt;/span&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;em&gt;&lt;strong&gt;&lt;span&gt;4. &lt;/span&gt;&lt;/strong&gt;&lt;/em&gt;&lt;span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUxNjg4NDEzNA==&amp;amp;mid=2247497642&amp;amp;idx=2&amp;amp;sn=ec8f2d7a4f03a40d3186e23dadfb5da3&amp;amp;chksm=f9a22463ced5ad753dc826e9eb975a5585068c8275293cd2c7835f56cbd619cb7622c849749f&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; hasload=&quot;1&quot;&gt;GitHub 上的摸鱼神器&lt;/a&gt;&lt;/span&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages&quot; data-cropselx1=&quot;0&quot; data-cropselx2=&quot;172&quot; data-cropsely1=&quot;0&quot; data-cropsely2=&quot;172&quot; data-ratio=&quot;1.005449591280654&quot; data-s=&quot;300,640&quot; data-type=&quot;png&quot; data-w=&quot;734&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ePw3ZeGRruxW7LMX2Iz5DfjRIbFTS7UROhxibBmicicT0HpjIh1yniaJJibSnLFuicMHRx5NEdiaOh2OOACfr6MvR38ibQ/640?wx_fmt=png&quot;/&gt;&lt;/section&gt;
+                    &lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;你好，我是 yes。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;今天要来安利一款神器！「&lt;span&gt;uTools&lt;/span&gt;」。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;对于我个人而言，它的用处在于：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;快速翻译&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;备忘录快贴&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;快速查找和打开文件&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Json 解析&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;时间戳转换&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;todo记录&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;等等等等，还有太多太多了，它有 100 多个插件！&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其实，这些功能别的软件或者网站也能提供，但是它一个就全有了！而且它简单、高效、跨平台！&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.26713947990543735&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nF6UIhGEVSf14dXaoibPG4iaUoicIRQYBUQib245Ocmv2PX6VVbup3TAibNFmwnSnguYJK7CTibFa0LOScA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;846&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;安装了之后，通过 「&lt;span&gt;alt+空格&lt;/span&gt;」就可以唤出它，然后可以往输入框内粘贴文本、图片、截图、文件、文件夹等等。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;比如我想打开 Chrome，直接alt+空格唤出，再输入 chrome 即可。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.13216957605985039&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nF6UIhGEVSf14dXaoibPG4iaUFBZriavxPJwxJOYOq8TdXuRbc0mdhO4icLnUf6UiaCiciaZqx54RoqBug7w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;802&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果想听歌，那就网易云~&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.13216957605985039&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nF6UIhGEVSf14dXaoibPG4iaUZEKmfEfOpicPlu0qHKu4bHpupH4iaGorIqk9nuUhGMDVQe9FFoSnzO2g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;802&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;比如我现在截了个图，可以直接复制输入，然后可以查看 base64编码、另存为图片、也可以把这个图记录下来！&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.2518703241895262&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nF6UIhGEVSf14dXaoibPG4iaUfsRiaMSAYT0c13RiaOJNSzf84AqxBwcQfMGP1OTo4FaPFQiboc7ruhLew/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;802&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;假设今天看了 yes 的技术文章，里面有一段话说的很好，我就截图，然后点击添加到「备忘快贴」，图片还能备注（图中的yes6666就是备注），这样就临时记录下来了！&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.7506234413965087&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nF6UIhGEVSf14dXaoibPG4iaUCzGUoCibM97IibzUOMIQhPxgWXjShMLzr7HseQRWYWlGYb1aA66O2ZibA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;802&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;然后等晚上回去再整理成笔记就 OK 了！&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;再比如我现在看英文 pdf，我想翻译一下，那非常简单，我&lt;span&gt;划词长按鼠标右键&lt;/span&gt;(默认是鼠标中键)就好了：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.7343234323432343&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nF6UIhGEVSf14dXaoibPG4iaUDiamEwOFZPPxLtBzZMLN7HnoHViaMh1C6Fl60aZxeswoYLhJduBemYyg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;606&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;还可以点出上图的&lt;span&gt;翻译&lt;/span&gt;，这样可以看多个网站的翻译结果！&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.5859375&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nF6UIhGEVSf14dXaoibPG4iaUkpoSuxgAtJm6GXTorVJShic0633DJTrgNfqsgSf3y3CkfDJq0PFz7XA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1024&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;太方便了！&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果要记录 todo 的事情，也很简单！直接 &lt;code&gt;alt+空格&lt;/code&gt; 唤出再输入 &lt;code&gt;todo&lt;/code&gt; 敲个回车即可！&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.7506234413965087&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nF6UIhGEVSf14dXaoibPG4iaURPvXKBabibPUq0mOukOMgO9Y6WILU42vPnTvkW4ZrDa7nnRDVib7GpXA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;802&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;再比如现在要对接一个接口，接口返回了一个 Json 字符串，那直接复制然后 &lt;code&gt;alt+空格&lt;/code&gt; 唤出，此时的界面就是这样的。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.3117206982543641&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nF6UIhGEVSf14dXaoibPG4iaUxUUQmHCLk9oxCxMcsAecgShJ6gFyDQQHWPUz8MkBqdOiaH8tKUaNNibQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;802&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;然后敲个回车，就搞定啦！就是这么 easy！&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.7506234413965087&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nF6UIhGEVSf14dXaoibPG4iaUT3zqMbjj3gPasHc9p8gCnLx8iaGYYTt4ic31HhNibypnYCbSCickyFeFjw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;802&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;再比如现在从数据库拿到了个时间戳，想看看到底是什么时候，那么直接复制然后 &lt;code&gt;alt+空格&lt;/code&gt; 唤出。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.371571072319202&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nF6UIhGEVSf14dXaoibPG4iaUviaKGydrEVgfKa7WyeXmWIfdUqCJzSNMibGy4M0FoKNIDXAeL7oh7bFg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;802&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;再敲个回车！&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.7506234413965087&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nF6UIhGEVSf14dXaoibPG4iaUVyfmCa5IGajqXguJp3LwBuWBPlFnCn1hRSCia758pg4efN7DmBeh6KA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;802&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果想从现在一个时间倒推一下时间戳，那也简单，&lt;span&gt;直接输入时间&lt;/span&gt;就行：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.7506234413965087&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nF6UIhGEVSf14dXaoibPG4iaU7lZrsBzIwdBgibNBkN4SeXe1dBXvdIMNPgpF1jUL8q0zxYPM6zskrvw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;802&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;然后它有很多插件，可以直接输入插件(拼音也ok)来搜：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.19201995012468828&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nF6UIhGEVSf14dXaoibPG4iaUR5xpztrYCbB8UFw6HNQdiaTKtRkI5850gjMLPycPENCOkUZkZBibxbHQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;802&quot;/&gt;&lt;/figure&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.7506234413965087&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nF6UIhGEVSf14dXaoibPG4iaUVTzRjtGObtMfJPibwnztz8iaTvWqsXMWNghibWEWRydddHLuISKUpWJ8A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;802&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;还有一些文档插件：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.3929712460063898&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nF6UIhGEVSf14dXaoibPG4iaUhFtkRUcJBhWibmAWu7M3O4IcWCuQ6IVoCdDrA0OtqOrZakLh0zVTTXA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;626&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;比如我要查 Linux 的 ps 命令：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.7905236907730673&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nF6UIhGEVSf14dXaoibPG4iaUVA21wtUIG8U4ibfrJ3zyqzicJayxJUWe5ZesdjNqq3xubEb275OmUgxw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;802&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;怎么说，这波是不是很完美！&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;还有&lt;span&gt;渣男语录&lt;/span&gt;，啧啧好骚啊！&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.6708229426433915&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nF6UIhGEVSf14dXaoibPG4iaUAPChPEtVzicnjyibEfCLlzcF3r4sHQr5QmgJIKtsiaejSziakHlc9yApPg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;802&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;我还看到了啥&lt;/span&gt;？？&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.7506234413965087&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nF6UIhGEVSf14dXaoibPG4iaUd8X20ODD700icIULUIUW50UeDf01TNT2BAabsOL9OlPJrCacFO6ib3Xw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;802&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;像我这么正直的人，我是不会下载的！&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.9816849816849816&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nF6UIhGEVSf14dXaoibPG4iaUwtibObnscf80AJYXibDN8zrSgnOzDazMObDP6dkz9vewBWvDE1x2mYNw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;273&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但是我总监......&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;插件太多了，你们就自己看吧！&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;官网：https://u.tools/&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我也打包好了，windows、mac都有，后台直接回复「&lt;span&gt;uTools&lt;/span&gt;」即可下载！&lt;/p&gt;&lt;hr data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;我是yes，我们下篇见~&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;
                 &lt;/div&gt;
 
                 
@@ -27,94 +27,691 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>493d124bf0d555858ca0f51846de8d69</guid>
-<title>消息队列把消息弄丢了怎么办？</title>
-<link>https://toutiao.io/k/w8wyj2e</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;消息队列会丢失消息吗？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;答案是肯定的，所以对于业务严谨的数据，我们要确保其在消息队列中的安全，不能丢。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;要想解决不丢的问题，首先要弄清楚 &lt;strong&gt;消息是怎么丢的呢？&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;丢消息的关键点有3个：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;Producer 发送消息的过程&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;消息队列的消息存储&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Consumer 消费消息的过程&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;下面挨个看看都是怎么丢的，以及解决方案。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;会以 RabbitMQ 和 Kafka 这两个常用的消息系统来说明。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;1. Producer 弄丢消息&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Producer 向 MQ 发消息，很简单，发过去就完事儿了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但是，在发送图中是存在危险的，例如网络问题等等，导致 MQ 没有正常收到。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.22686025408348456&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/wv3K6j4ibl91WsPa1scdJOfKMWc9GOZugyEoByknO5tEicuWbjL9iaY4ZmTbv1TO5czbHqsOVFibpXjXKq7IFJAiamg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1102&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;怎么解决呢？&lt;/strong&gt; 思路很简单，让 MQ 发一个 &lt;strong&gt;接受确认声明（ack）&lt;/strong&gt; 就行了，就像快递需要签收一样。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;例如 &lt;strong&gt;RabbitMQ&lt;/strong&gt;，有两种方式可以确保发送消息的安全。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;1）事务消息&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Producer 发送消息之前，先开启事务，然后再发送。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果 RabbitMQ 没有正常收到消息，Producer 会收到异常信息，回滚事务。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果正常接收了，Producer 就提交事务。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;很可靠，但效率低，因为这个事务模式是同步的，会产生阻塞。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;2）confirm 确认模式&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Producer 开启 confirm 模式，发送消息的时候，RabbitMQ 会给这个消息分配一个唯一的 ID。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;成功写入队列之后，RabbitMQ 会向 Producer 发送一个 ack 消息，说明此 ID 的消息已经成功发送。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;confirm 模式还有一个回调机制，Producer 可以准备一个失败的接口，供 RabbitMQ 在接收失败时调用。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Producer 收到失败通知，或者超时了，可以执行相应的处理逻辑，例如重发。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;confirm 模式是异步的，比事务消息更高效，使用更为广泛。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;Kafka&lt;/strong&gt; 也是使用的 ack 方式，使用方式很简单，只要配置：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;ack=all&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;确保 Kafka 在完全接收成功后才发送确认通知，这样就一定不会发丢了。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;2. MQ 在存储期间弄丢消息&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;MQ 成功接收消息之后，需要保存起来，等着 Consumer 消费。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在这个保存期间，也可以能丢失消息。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这通常是由 &lt;strong&gt;MQ 故障&lt;/strong&gt;引起的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;RabbitMQ&lt;/strong&gt; 想要保障消息不丢，需要开启&lt;strong&gt;持久化&lt;/strong&gt;，消息就会写入磁盘。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;即使 RabbitMQ 宕机了，只要磁盘没事儿，重启之后还可以重新把消息加载进来。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果想进一步的保障消息安全，就需要配置 RabbitMQ 的镜像集群了，来确保高可用。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;Kafka&lt;/strong&gt; 是天然的分布式系统，Topic 分为多个 Partition，每个 Partition 又有多个副本。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.6761006289308176&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/wv3K6j4ibl91WsPa1scdJOfKMWc9GOZugR2icwpqwEBqYdsmCHAEic3bk1hGKwYyncpADdBCppPgkKO5f7tj2QwwQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1272&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Partition 的多个副本，分为 Leader 和 Follower。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Leader 负责处理消息的读写，Follower 负责备份。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;前面说的 Kafka 配置 &lt;code&gt;ack=all&lt;/code&gt;，就是告诉Kafka，Leader 和所有 Follower 全都接收到了，才算发送 ack 确认，只有 Leader 自己接收成功是不算的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;否则的话，如果 Leader 接收完成就告诉 Producer OK 了，在 Leader 同步给 Follower 之前，Leader 宕机了，Kafka 会从 Follower 中选举出新的 Leader。那么，老 Leader 在临终前没有同步的消息就丢失了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;为了保障消息的安全，这 4 个参数要设置好：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;replication.factor&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;用于指定 Partition 副本的数量，必须大于 1，就是至少要有 2 个副本，一个 Leader 一个 Follower。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;min.insync.replicas&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;用于指定几个副本成功写入才&lt;strong&gt;提交消息&lt;/strong&gt;，只有提交之后的消息才能被 Consumer 消费。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;此值至少大于 1，这样就保障 Leader 之外至少有一个副本同步到了这条消息，不怕 Leader 宕掉了。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;acks=all&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;用于指定几个副本接收到消息之后向 Producer 发送 ack。例如值为 1，表示 Leader 收到就可以了，“all” 表示 “所有副本”，也可以写 “-1”，等同于 “all”。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;retries=999&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;用于指定 Producer 发送失败后的重试次数，可以设为一个很大的数，表示失败了就重试，提升发送成功几率。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;3. Consumer 弄丢消息&lt;span/&gt;&lt;/h4&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.40145985401459855&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/wv3K6j4ibl91WsPa1scdJOfKMWc9GOZugPx5hlyic5y1XmeZNN4WVXxiajPRJV3JflgyEysAb1iaXib4LbNLIvibUD4Q/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1096&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;例如 Consumer 成功接收到了消息 “123”，MQ 就会移除这条消息。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但在 Consumer 处理完这条消息之前，宕机了。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.30127041742286753&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/wv3K6j4ibl91WsPa1scdJOfKMWc9GOZugQypzrOFddiciboSBA7k1FjsoPWgc4sXpZN5Pz5B9RfVQAC1vM0BDel7g/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1102&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Consumer 重启之后继续从 MQ 拿消息，这次拿到的就是下一条消息 “124”，那么 “123” 就丢了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;所以，Consumer 只是接收到消息是不够的，&lt;strong&gt;成功处理完成&lt;/strong&gt;才行。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这就和 MQ 的消费确认机制有关了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;RabbitMQ&lt;/strong&gt; 默认是 Consumer 成功接收消息之后就发送 ack 确认，RabbitMQ 就认为消费成功了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;关闭自动的 Consumer ack 就行，改为手动发送确认通知。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;Kafka&lt;/strong&gt; 的 Consumer 发送的不是 ack 确认，而是 offset，告诉 Kafka 已经消费到哪个位置了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;默认是 Consumer 接收后自动提交 offset，所以也需要关闭，改为手动提交。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;小结一下&lt;/strong&gt;，要想消息不丢，需要发消息的时候确认发送成功了，MQ 存储的时候要是高可靠的，Consumer 消费的时候，不能接收之后就确认，真正处理完成才行。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;推荐阅读&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzA4Nzc4MjI4MQ==&amp;amp;mid=2652403576&amp;amp;idx=1&amp;amp;sn=00b6cc6110cbfc191d4efdcefd6432da&amp;amp;chksm=8bd8f19ebcaf7888b30a7491523de976154e0bcdd41df2167f10fd22c8526a392e9f7870cc75&amp;amp;token=456207156&amp;amp;lang=zh_CN&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;OAuth2 图解&lt;/a&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzA4Nzc4MjI4MQ==&amp;amp;mid=2652403396&amp;amp;idx=1&amp;amp;sn=53ac0376b271abab985de793a9a66bb0&amp;amp;chksm=8bd8f022bcaf7934051078105e66fa8f2986e4daaa067a0c6ea3668eb04b728762ba241547cc&amp;amp;token=456207156&amp;amp;lang=zh_CN&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;轻松理解 Kubernetes 的核心概念&lt;/a&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzA4Nzc4MjI4MQ==&amp;amp;mid=2652403407&amp;amp;idx=1&amp;amp;sn=69489b882cfafb77607a80e150d47b19&amp;amp;chksm=8bd8f029bcaf793fc8435b45f4bd2058200406e7a5f38665ef79acdb382feabacc8c5e5ac904&amp;amp;token=456207156&amp;amp;lang=zh_CN&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;开发者必须要了解的架构技术趋势：Service Mesh&lt;/a&gt;&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>3850576518efd1a157aa9f89517938c5</guid>
-<title>独立开发变现周刊（第 1 期）: Notion 也能做博客？</title>
-<link>https://toutiao.io/k/cf864l7</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;article class=&quot;markdown-body entry-content container-lg&quot; itemprop=&quot;text&quot;&gt;&lt;h1&gt;&lt;a id=&quot;user-content-独立开发变现周刊第-1-期-notion也能做博客&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#独立开发变现周刊第-1-期-notion也能做博客&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;独立开发变现周刊（第 1 期）: Notion也能做博客？&lt;/h1&gt;
-&lt;p&gt;自己一直有收集整理【独立开发变现】相关的产品、工具、开源项目、案例、资料等的习惯，最近看到阮一峰老师的【科技爱好者周刊】，很受益。自己也想以周刊的形式，把有独立产品开发相关的，有价值的东西整理出来，每周五发布。一是对自己这一周知识的整理，二是希望通过我的整理能让对别人有一点点帮助。&lt;/p&gt;
-&lt;p&gt;今天是2021年5月7日，开启&lt;strong&gt;独立开发变现周刊（第 1 期）&lt;/strong&gt;&lt;/p&gt;
-&lt;h2&gt;&lt;a id=&quot;user-content-1bytemd一个轻量的markdown编辑器&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#1bytemd一个轻量的markdown编辑器&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;1、ByteMD：一个轻量的Markdown编辑器&lt;/h2&gt;
-&lt;p&gt;ByteMD是字节跳动开源的Markdown编辑器，基于Svelte实现的。可以和很多框架React, Vue, Angular集成。内置了一些可以选择的插件，页尾、页头、数学公式、流程图等。&lt;/p&gt;
+<guid>3ef3eb82d42795ef2acf59e8d3d7eb5c</guid>
+<title>用 Go 实现配置中心（一）</title>
+<link>https://toutiao.io/k/5ga4hr7</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;post-content&quot;&gt;
+&lt;h1 id=&quot;引言&quot;&gt;引言&lt;/h1&gt;
+&lt;p&gt;源码见 &lt;a href=&quot;https://github.com/GotaX/go-config-server/tree/v0.1.0&quot;&gt;https://github.com/GotaX/go-config-server/tree/v0.1.0&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;只要接触过微服务的同学都知道, 配置管理不好, 运维真的压力山大. 过去呢, 我一直都首选 &lt;code&gt;spring-cloud-config-server&lt;/code&gt; 做配置服务器, 主要是因为:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;遗留了不少 Java 服务, 改造起来很费事&lt;/li&gt;
+&lt;li&gt;它提供了 HTTP API, 不需要 SDK 也能接入其他服务&lt;/li&gt;
+&lt;li&gt;自带多 Profile 组合的功能&lt;/li&gt;
+&lt;li&gt;可以使用 Git 做存储, 方便版本管理&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;不过随着配置文件越写越多, 还是逐渐暴露出不少问题:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;对 YAML 文件的解析有 &lt;a href=&quot;https://github.com/spring-cloud/spring-cloud-config/issues/935&quot;&gt;BUG&lt;/a&gt;, 写 Kubernetes 配置的时候很头疼&lt;/li&gt;
+&lt;li&gt;包含不少 spring 约定俗成的用法, 比如 &lt;code&gt;application.yml&lt;/code&gt; 下的配置会被全部导入, 无法只导入部分&lt;/li&gt;
+&lt;li&gt;写 YAML 时, 字符串和数字有时无法很好区分. 写 JSON 时又太冗长.&lt;/li&gt;
+&lt;li&gt;Java 服务的启动时间和内存占用都偏高 (相较于 Go).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;之后也有持续关注这方面, 有几个人气较高的项目:&lt;/p&gt;
+
+&lt;p&gt;这三个配置中心都是由大厂开发, 质量肯定有保证, 功能也很强大. 不过对于小团队来说还是太重量级了, 用起来会有不少运维压力.&lt;/p&gt;
+&lt;p&gt;长期观望无果, 所以最终还是决定自己实现一个. 先总结一下最核心的需求点:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;配置一定要有版本管理, 能追溯历史 (Git)&lt;/li&gt;
+&lt;li&gt;分布式存储, 避免单点故障 (Git)&lt;/li&gt;
+&lt;li&gt;能很方便地复用公共配置 (比如数据库 DataSource)&lt;/li&gt;
+&lt;li&gt;简洁的配置语法, 适当的校验 (JSON 太冗长, YAML 容易出错)&lt;/li&gt;
+&lt;li&gt;多环境支持 (生产/测试环境)&lt;/li&gt;
+&lt;li&gt;轻量级 (最小化运维压力)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;1~2 条由于 Git 本身就是一个分布式版本管理工具, 所以就不用自己实现了.&lt;/p&gt;
+&lt;p&gt;3~5 条自己从头搞有点麻烦, 不过我很幸运地找到一个配置专用语言 &lt;a href=&quot;https://jsonnet.org/&quot;&gt;Jsonnet&lt;/a&gt;, 所以就直接拿来用咯.&lt;/p&gt;
+&lt;p&gt;好了, 背景介绍完毕, 下面正式开始吧.&lt;/p&gt;
+&lt;h1 id=&quot;接口定义&quot;&gt;接口定义&lt;/h1&gt;
+&lt;p&gt;首先我们来定义 HTTP API, 这里采用和 &lt;code&gt;spring-cloud-config-server&lt;/code&gt;差不多的格式.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;code&gt;GET /:namespace/:filepath&lt;/code&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;参数&lt;/th&gt;
+&lt;th&gt;说明&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;namespace&lt;/td&gt;
+&lt;td&gt;命名空间, Git 中就是分支&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;filepath&lt;/td&gt;
+&lt;td&gt;配置文件路径, 相对于 Git 仓库根目录. 后缀代表返回内容格式, 比如 (&lt;code&gt;.json&lt;/code&gt; 和 &lt;code&gt;.yaml&lt;/code&gt;).&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;接着我们来梳理下最小工作流程:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;从底层存储读取读取配置文件模板&lt;/li&gt;
+&lt;li&gt;将配置文件模板渲染为目标格式&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;从上面的流程中我们可以抽象出两个接口:&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// pkg/storage/storage.go
+&lt;/span&gt;&lt;span&gt;// 底层存储接口
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;type&lt;/span&gt; &lt;span&gt;Storage&lt;/span&gt; &lt;span&gt;interface&lt;/span&gt; {
+    &lt;span&gt;// 切换命名空间, 类似于 MySQL 中的 use
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;Use&lt;/span&gt;(&lt;span&gt;ctx&lt;/span&gt; &lt;span&gt;context&lt;/span&gt;.&lt;span&gt;Context&lt;/span&gt;, &lt;span&gt;namespace&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;) (&lt;span&gt;err&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;)
+    &lt;span&gt;// 读取文件内容
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;Read&lt;/span&gt;(&lt;span&gt;path&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;) (&lt;span&gt;content&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;)
+}
+
+&lt;span&gt;// pkg/storage/render.go
+&lt;/span&gt;&lt;span&gt;// 模板渲染接口
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;type&lt;/span&gt; &lt;span&gt;Renderer&lt;/span&gt; &lt;span&gt;interface&lt;/span&gt; {
+    &lt;span&gt;// 执行渲染, entry 为入口文件, outputType 为目标格式
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;Render&lt;/span&gt;(&lt;span&gt;entry&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;, &lt;span&gt;outputType&lt;/span&gt; &lt;span&gt;ContentType&lt;/span&gt;) (&lt;span&gt;doc&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;)
+}
+
+&lt;span&gt;// ContentType 的定义
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;type&lt;/span&gt; &lt;span&gt;ContentType&lt;/span&gt; &lt;span&gt;int&lt;/span&gt;
+&lt;span&gt;const&lt;/span&gt; (
+&lt;span&gt;Unknown&lt;/span&gt; &lt;span&gt;ContentType&lt;/span&gt; = &lt;span&gt;iota&lt;/span&gt;
+&lt;span&gt;JSON&lt;/span&gt;
+&lt;span&gt;YAML&lt;/span&gt;
+)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;不过第一版是最小可用版本, 我们先把多格式输出放一边, 一律输出为 JSON. 下面来逐个实现这两个接口吧.&lt;/p&gt;
+&lt;h1 id=&quot;接口实现&quot;&gt;接口实现&lt;/h1&gt;
+&lt;h2 id=&quot;jsonnet-渲染器&quot;&gt;Jsonnet 渲染器&lt;/h2&gt;
+&lt;p&gt;先简单介绍下 Jsonnet. 上面之所以称其为配置语言, 是因为它并不是一个简单的静态配置, 而是一个实打实的函数式语言. 并且它是 JSON 的超集, 所以任何合法的 JSON 都是合法的 Jsonnet.&lt;/p&gt;
+&lt;p/&gt;
+&lt;p&gt;下面摘录一段&lt;a href=&quot;https://jsonnet.org/ref/language.html&quot;&gt;官网介绍&lt;/a&gt;.&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;一个 Svelte 组件编译了以后，所有需要的运行时代码都包含在里面了，除了引入这个组件本身，你不需要再额外引入一个所谓的框架运行时！&lt;/p&gt;
+&lt;p&gt;Jsonnet 被设计用于处理复杂系统的配置. 标准用例是用于集成多个相互独立的服务. 独立的编写每个配置将会导致大量的重复, 并且极有可能变得难以维护. Jsonnet 使您可以根据自己的条件指定配置, 并以编程的方式配置所有独立的服务.&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/4664d30d876d07c1fd2e7817c7fb6123f9bffd064488a3c4f1fc31c42b2889b6/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c65642e706e673f696d61676556696577322f322f772f363030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/4664d30d876d07c1fd2e7817c7fb6123f9bffd064488a3c4f1fc31c42b2889b6/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c65642e706e673f696d61676556696577322f322f772f363030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2021-05-06-Untitled.png?imageView2/2/w/600&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;ByteMD开源库地址：&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://github.com/bytedance/bytemd&quot;&gt;https://github.com/bytedance/bytemd&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;一个基于ByteMD实现的转微信公众号文章样式的工具：&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://devtool.tech/markdown&quot; rel=&quot;nofollow&quot;&gt;https://devtool.tech/markdown&lt;/a&gt;&lt;/p&gt;
-&lt;h2&gt;&lt;a id=&quot;user-content-2winbox一个基于html5的窗口实现&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#2winbox一个基于html5的窗口实现&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;2、winbox:一个基于HTML5的窗口实现&lt;/h2&gt;
-&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/f9d698d5ec6b2812813a25666820c6720def7077b6ce8a8faa8585ffd8c91285/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230312e706e673f696d61676556696577322f322f772f363030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/f9d698d5ec6b2812813a25666820c6720def7077b6ce8a8faa8585ffd8c91285/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230312e706e673f696d61676556696577322f322f772f363030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2021-05-06-Untitled%201.png?imageView2/2/w/600&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;一个web端实现的窗口风格管理的插件库，轻量，开源，功能丰富的调用。像拖拽、全屏、最小化等，如果想实现类似窗口风格的管理工具，这个插件可以很方便的集成使用。&lt;/p&gt;
-&lt;p&gt;在线演示地址：&lt;a href=&quot;https://nextapps-de.github.io/winbox/&quot; rel=&quot;nofollow&quot;&gt;https://nextapps-de.github.io/winbox/&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;github地址：&lt;a href=&quot;https://github.com/nextapps-de/winbox&quot;&gt;https://github.com/nextapps-de/winbox&lt;/a&gt;&lt;/p&gt;
-&lt;h2&gt;&lt;a id=&quot;user-content-3nobelium-nextjsnotion的静态博客系统&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#3nobelium-nextjsnotion的静态博客系统&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;3、nobelium: Next.js+Notion的静态博客系统&lt;/h2&gt;
-&lt;p&gt;Nobelium 是一个使用 Next.js + Notion API 实现的，部署在 Vercel 上的静态博客系统。相当于用Notion做数据库，文档内容写完就能及时的展示在网站上。还可以搭配上翻页、评论、RSS等。&lt;/p&gt;
-&lt;p&gt;Notion已经不仅仅是一个文档编辑器，还可以做数据存储，是基于Electron开发的，我个人的文档都转到了Notion下来管理，是一个非常方便的工具。还提供Private的API接口，后面可能会开放公共API接口。&lt;/p&gt;
-&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/673a5811560988d50b71b06667862a5d1df4dbcb8ea0189cafc87f3ffbbc6f6e/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230322e706e673f696d61676556696577322f322f772f363030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/673a5811560988d50b71b06667862a5d1df4dbcb8ea0189cafc87f3ffbbc6f6e/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230322e706e673f696d61676556696577322f322f772f363030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2021-05-06-Untitled%202.png?imageView2/2/w/600&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Github: &lt;a href=&quot;https://github.com/craigary/nobelium&quot;&gt;https://github.com/craigary/nobelium&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;扩展介绍搭建步骤的文章：&lt;a href=&quot;https://blog.spencerwoo.com/2021/02/nextjs-blog-notion&quot; rel=&quot;nofollow&quot;&gt;https://blog.spencerwoo.com/2021/02/nextjs-blog-notion&lt;/a&gt;&lt;/p&gt;
-&lt;h2&gt;&lt;a id=&quot;user-content-4卡片设计的7个小技巧&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#4卡片设计的7个小技巧&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;4、卡片设计的7个小技巧&lt;/h2&gt;
-&lt;p&gt;7个卡片设计时的小技巧，可以显著提升设计和用户体验。&lt;/p&gt;
-&lt;p&gt;1、调整圆角：内外避免一样的圆角，一个原则是内部组件圆角是外部圆角的一半大小。&lt;/p&gt;
-&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/f30cf5dd046236f52077db91500816a474f0d29317b1c0defa4726ed75ffb8d6/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230332e706e673f696d61676556696577322f322f772f363030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/f30cf5dd046236f52077db91500816a474f0d29317b1c0defa4726ed75ffb8d6/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230332e706e673f696d61676556696577322f322f772f363030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2021-05-06-Untitled%203.png?imageView2/2/w/600&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;2、高亮主要按钮：强调突出主要按钮事件&lt;/p&gt;
-&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/76b9b4b1a9428c3cb73327a843529c78a338a2d9ada046c0964219d1753643b0/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230342e706e673f696d61676556696577322f322f772f363030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/76b9b4b1a9428c3cb73327a843529c78a338a2d9ada046c0964219d1753643b0/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230342e706e673f696d61676556696577322f322f772f363030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2021-05-06-Untitled%204.png?imageView2/2/w/600&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;3、平滑阴影效果：避免使用太重的阴影效果&lt;/p&gt;
-&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/f8582e0fdc3eb9b7feae4f0b0d9a843fd70d97f90a53fa675aa3320bb5dc7b11/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230352e706e673f696d61676556696577322f322f772f363030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/f8582e0fdc3eb9b7feae4f0b0d9a843fd70d97f90a53fa675aa3320bb5dc7b11/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230352e706e673f696d61676556696577322f322f772f363030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2021-05-06-Untitled%205.png?imageView2/2/w/600&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;4、避免太长的内容显示&lt;/p&gt;
-&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/240f12772fe3cb0e63a1ecff3da5d587d6132f8b4ed92a5aeeffb6c6ab594407/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230362e706e673f696d61676556696577322f322f772f363030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/240f12772fe3cb0e63a1ecff3da5d587d6132f8b4ed92a5aeeffb6c6ab594407/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230362e706e673f696d61676556696577322f322f772f363030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2021-05-06-Untitled%206.png?imageView2/2/w/600&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;5、内容文本左对齐更加具有可读性&lt;/p&gt;
-&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/0959c8339e6cf3338ac31638e83ec36f53b8eafc23e7f3d54680c56b15393daf/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230372e706e673f696d61676556696577322f322f772f363030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/0959c8339e6cf3338ac31638e83ec36f53b8eafc23e7f3d54680c56b15393daf/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230372e706e673f696d61676556696577322f322f772f363030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2021-05-06-Untitled%207.png?imageView2/2/w/600&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;6、适当留白更舒服，留白的间隔比例要一致&lt;/p&gt;
-&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/d3a6ea6213f6b753ecc0479b321b7ee5dfdef7702eb56de328b4fbd2f8789d48/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230382e706e673f696d61676556696577322f322f772f363030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/d3a6ea6213f6b753ecc0479b321b7ee5dfdef7702eb56de328b4fbd2f8789d48/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230382e706e673f696d61676556696577322f322f772f363030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2021-05-06-Untitled%208.png?imageView2/2/w/600&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;7、建议上层用大一些的阴影效果，底层的卡片用小的阴影效果。&lt;/p&gt;
-&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/a2113d517dac018462e95aa8027ff2158df76dc065dc043c44cf8e8c4e848872/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230392e706e673f696d61676556696577322f322f772f363030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/a2113d517dac018462e95aa8027ff2158df76dc065dc043c44cf8e8c4e848872/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c6564253230392e706e673f696d61676556696577322f322f772f363030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2021-05-06-Untitled%209.png?imageView2/2/w/600&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Twitter原文链接：&lt;a href=&quot;https://twitter.com/d__raptis/status/1385572926200688641?s=20&quot; rel=&quot;nofollow&quot;&gt;https://twitter.com/d__raptis/status/1385572926200688641?s=20&lt;/a&gt;&lt;/p&gt;
-&lt;h2&gt;&lt;a id=&quot;user-content-5landing-page检查列表&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#5landing-page检查列表&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;5、Landing Page检查列表&lt;/h2&gt;
-&lt;p&gt;罗列了100+个工具，涵盖了构建Landing Page的16个步骤介绍，每一个步骤有相应的工具推荐，从域名注册、页面构建、Logo设计、文案编写等等。有很多知道的，也有很多不知道的，有的工具还是非常有意思，可以拓展下知识领域。&lt;/p&gt;
-&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/4c6686c742cc2510523415a8b50a566aadda6d1ed67ead33afe584bc7c5f5243/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c656425323031302e706e673f696d61676556696577322f322f772f363030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/4c6686c742cc2510523415a8b50a566aadda6d1ed67ead33afe584bc7c5f5243/687474703a2f2f71696e69752e6761666174612e636f6d2f323032312d30352d30362d556e7469746c656425323031302e706e673f696d61676556696577322f322f772f363030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2021-05-06-Untitled%2010.png?imageView2/2/w/600&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;100+工具官网：&lt;a href=&quot;https://landingpage.fyi/landing-page-checklist.html&quot; rel=&quot;nofollow&quot;&gt;https://landingpage.fyi/landing-page-checklist.html&lt;/a&gt;&lt;/p&gt;
-&lt;hr/&gt;
+&lt;p&gt;再看一个示例:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-jsonnet&quot; data-lang=&quot;jsonnet&quot;&gt;// Edit me!
+{
+  person1: {
+    name: &quot;Alice&quot;,
+    welcome: &quot;Hello &quot; + self.name + &quot;!&quot;,
+  },
+  person2: self.person1 { name: &quot;Bob&quot; },
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;上面配置可以渲染为如下 JSON:&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-json&quot; data-lang=&quot;json&quot;&gt;{
+  &lt;span&gt;&quot;person1&quot;&lt;/span&gt;: {
+    &lt;span&gt;&quot;name&quot;&lt;/span&gt;: &lt;span&gt;&quot;Alice&quot;&lt;/span&gt;,
+    &lt;span&gt;&quot;welcome&quot;&lt;/span&gt;: &lt;span&gt;&quot;Hello Alice!&quot;&lt;/span&gt;
+  },
+  &lt;span&gt;&quot;person2&quot;&lt;/span&gt;: {
+    &lt;span&gt;&quot;name&quot;&lt;/span&gt;: &lt;span&gt;&quot;Bob&quot;&lt;/span&gt;,
+    &lt;span&gt;&quot;welcome&quot;&lt;/span&gt;: &lt;span&gt;&quot;Hello Bob!&quot;&lt;/span&gt;
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;现在我们已经对 Jsonnet 有了基本的认知, 就不继续深入了. 如果想详细了解, 可以看官网教程, 或者等我之后再写一些介绍文章.&lt;/p&gt;
+&lt;p&gt;下面开始动手写实现, 这里我们使用 &lt;a href=&quot;https://github.com/google/go-jsonnet&quot;&gt;go-jsonnet&lt;/a&gt; 这个库来运行 Jsonnet 代码.&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// pkg/render/jsonnet.go
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;import&lt;/span&gt; (
+. &lt;span&gt;&quot;github.com/google/go-jsonnet&quot;&lt;/span&gt;
+)
 
-以上内容会同步更新在：
-&lt;p&gt;Indie Maker Start: &lt;a href=&quot;http://www.indiemakerstart.com/&quot; rel=&quot;nofollow&quot;&gt;http://www.indiemakerstart.com/&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Github: &lt;a href=&quot;https://github.com/ljinkai/weekly&quot;&gt;https://github.com/ljinkai/weekly&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;微信公众号：凯凯而谈&lt;/p&gt;
-&lt;p&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/f6d1874f2b76aaf2afdd63728c45c3e8f3e9cedfe89e60143a1bf01c68969f7f/687474703a2f2f71696e69752e6761666174612e636f6d2f323031392d30332d31372d7765622d626561722e6a70673f696d61676556696577322f322f772f323030&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/f6d1874f2b76aaf2afdd63728c45c3e8f3e9cedfe89e60143a1bf01c68969f7f/687474703a2f2f71696e69752e6761666174612e636f6d2f323031392d30332d31372d7765622d626561722e6a70673f696d61676556696577322f322f772f323030&quot; alt=&quot;&quot; data-canonical-src=&quot;http://qiniu.gafata.com/2019-03-17-web-bear.jpg?imageView2/2/w/200&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;扫码订阅&lt;/p&gt;
+&lt;span&gt;type&lt;/span&gt; &lt;span&gt;Jsonnet&lt;/span&gt; &lt;span&gt;struct&lt;/span&gt; {
+&lt;span&gt;Importer&lt;/span&gt; &lt;span&gt;Importer&lt;/span&gt;
+}
 
-&lt;/article&gt;
-  &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>478092643e30a56c9ead52e447d5b43b</guid>
-<title>如何开发 VR 实时视频聊天应用程序</title>
-<link>https://toutiao.io/k/5hjz6vy</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;
+&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;r&lt;/span&gt; &lt;span&gt;Jsonnet&lt;/span&gt;) &lt;span&gt;Render&lt;/span&gt;(&lt;span&gt;entry&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;, &lt;span&gt;outputType&lt;/span&gt; &lt;span&gt;ContentType&lt;/span&gt;) (&lt;span&gt;doc&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;) {
+&lt;span&gt;vm&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;MakeVM&lt;/span&gt;()          &lt;span&gt;// 新建虚拟机
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;vm&lt;/span&gt;.&lt;span&gt;Importer&lt;/span&gt;(&lt;span&gt;r&lt;/span&gt;.&lt;span&gt;Importer&lt;/span&gt;) &lt;span&gt;// 替换默认的文件存储, 之后会把 Git 挂载进来
+&lt;/span&gt;&lt;span/&gt;
+&lt;span&gt;doc&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; = &lt;span&gt;vm&lt;/span&gt;.&lt;span&gt;EvaluateFile&lt;/span&gt;(&lt;span&gt;entry&lt;/span&gt;) &lt;span&gt;// 指定入口文件, 执行渲染
+&lt;/span&gt;&lt;span/&gt;    
+    &lt;span&gt;// TODO: 之后在这里实现多格式输出
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;return&lt;/span&gt;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;大部分的事情都由 &lt;code&gt;go-jsonnet&lt;/code&gt; 替我们做了, 所以代码很简洁. 后面支持多格式输出的时候会再增加一些代码.&lt;/p&gt;
+&lt;p&gt;接着写个测试来验证下. 先定义测试用例.&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// pkg/render/render_test.go
+&lt;/span&gt;&lt;span&gt;// ...
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;type&lt;/span&gt; &lt;span&gt;TestCase&lt;/span&gt; &lt;span&gt;struct&lt;/span&gt; {
+&lt;span&gt;Entry&lt;/span&gt;      &lt;span&gt;string&lt;/span&gt;
+&lt;span&gt;Files&lt;/span&gt;      &lt;span&gt;map&lt;/span&gt;[&lt;span&gt;string&lt;/span&gt;]&lt;span&gt;string&lt;/span&gt;
+&lt;span&gt;OutputType&lt;/span&gt; &lt;span&gt;ContentType&lt;/span&gt;
+&lt;span&gt;OutputDoc&lt;/span&gt;  &lt;span&gt;string&lt;/span&gt;
+}
 
-                
+&lt;span&gt;var&lt;/span&gt; &lt;span&gt;cases&lt;/span&gt; = []&lt;span&gt;TestCase&lt;/span&gt;{
+{
+&lt;span&gt;OutputType&lt;/span&gt;: &lt;span&gt;JSON&lt;/span&gt;,
+&lt;span&gt;Entry&lt;/span&gt;:      &lt;span&gt;&quot;example1.jsonnet&quot;&lt;/span&gt;,
+&lt;span&gt;OutputDoc&lt;/span&gt;:  &lt;span&gt;`{&quot;person1&quot;:{&quot;name&quot;:&quot;Alice&quot;,&quot;welcome&quot;:&quot;Hello Alice!&quot;},&quot;person2&quot;:{&quot;name&quot;:&quot;Bob&quot;,&quot;welcome&quot;:&quot;Hello Bob!&quot;}}`&lt;/span&gt;,
+&lt;span&gt;Files&lt;/span&gt;:      &lt;span&gt;map&lt;/span&gt;[&lt;span&gt;string&lt;/span&gt;]&lt;span&gt;string&lt;/span&gt;{&lt;span&gt;&quot;example1.jsonnet&quot;&lt;/span&gt;: &lt;span&gt;`/* Edit me! */ {person1:{name:&quot;Alice&quot;,welcome:&quot;Hello &quot;+self.name+&quot;!&quot;,},person2:self.person1{name:&quot;Bob&quot;},}`&lt;/span&gt;},
+},
+}
+&lt;span&gt;// ...
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;定义两个工具函数&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// pkg/render/render_test.go
+&lt;/span&gt;&lt;span&gt;// ...
+&lt;/span&gt;&lt;span/&gt;
+&lt;span&gt;// 用 map[string]string 模拟文件存储, key 为文件名, value 为文件内容
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;makeImporter&lt;/span&gt;(&lt;span&gt;files&lt;/span&gt; &lt;span&gt;map&lt;/span&gt;[&lt;span&gt;string&lt;/span&gt;]&lt;span&gt;string&lt;/span&gt;) &lt;span&gt;jsonnet&lt;/span&gt;.&lt;span&gt;Importer&lt;/span&gt; {
+&lt;span&gt;data&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; make(&lt;span&gt;map&lt;/span&gt;[&lt;span&gt;string&lt;/span&gt;]&lt;span&gt;jsonnet&lt;/span&gt;.&lt;span&gt;Contents&lt;/span&gt;, len(&lt;span&gt;files&lt;/span&gt;))
+&lt;span&gt;for&lt;/span&gt; &lt;span&gt;name&lt;/span&gt;, &lt;span&gt;content&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;range&lt;/span&gt; &lt;span&gt;files&lt;/span&gt; {
+&lt;span&gt;data&lt;/span&gt;[&lt;span&gt;name&lt;/span&gt;] = &lt;span&gt;jsonnet&lt;/span&gt;.&lt;span&gt;MakeContents&lt;/span&gt;(&lt;span&gt;content&lt;/span&gt;)
+}
+&lt;span&gt;return&lt;/span&gt; &lt;span&gt;&amp;amp;&lt;/span&gt;&lt;span&gt;jsonnet&lt;/span&gt;.&lt;span&gt;MemoryImporter&lt;/span&gt;{&lt;span&gt;Data&lt;/span&gt;: &lt;span&gt;data&lt;/span&gt;}
+}
 
-                
+&lt;span&gt;// 将默认输出的多行 JSON 格式化为单行 JSON
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;compactJson&lt;/span&gt;(&lt;span&gt;input&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;) &lt;span&gt;string&lt;/span&gt; {
+&lt;span&gt;var&lt;/span&gt; &lt;span&gt;buf&lt;/span&gt; &lt;span&gt;bytes&lt;/span&gt;.&lt;span&gt;Buffer&lt;/span&gt;
+&lt;span&gt;if&lt;/span&gt; &lt;span&gt;err&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;json&lt;/span&gt;.&lt;span&gt;Compact&lt;/span&gt;(&lt;span&gt;&amp;amp;&lt;/span&gt;&lt;span&gt;buf&lt;/span&gt;, []byte(&lt;span&gt;input&lt;/span&gt;)); &lt;span&gt;err&lt;/span&gt; &lt;span&gt;!=&lt;/span&gt; &lt;span&gt;nil&lt;/span&gt; {
+panic(&lt;span&gt;err&lt;/span&gt;)
+}
+&lt;span&gt;return&lt;/span&gt; &lt;span&gt;buf&lt;/span&gt;.&lt;span&gt;String&lt;/span&gt;()
+}
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;定义测试&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// pkg/render/render_test.go
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;package&lt;/span&gt; &lt;span&gt;render&lt;/span&gt;
+
+&lt;span&gt;import&lt;/span&gt; (
+&lt;span&gt;&quot;bytes&quot;&lt;/span&gt;
+&lt;span&gt;&quot;encoding/json&quot;&lt;/span&gt;
+&lt;span&gt;&quot;testing&quot;&lt;/span&gt;
+
+&lt;span&gt;&quot;github.com/google/go-jsonnet&quot;&lt;/span&gt;
+&lt;span&gt;&quot;github.com/stretchr/testify/assert&quot;&lt;/span&gt;
+)
+
+&lt;span&gt;func&lt;/span&gt; &lt;span&gt;TestJsonnet&lt;/span&gt;(&lt;span&gt;t&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;testing&lt;/span&gt;.&lt;span&gt;T&lt;/span&gt;) {
+&lt;span&gt;for&lt;/span&gt; &lt;span&gt;_&lt;/span&gt;, &lt;span&gt;c&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;range&lt;/span&gt; &lt;span&gt;cases&lt;/span&gt; {
+&lt;span&gt;r&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;Jsonnet&lt;/span&gt;{&lt;span&gt;Importer&lt;/span&gt;: &lt;span&gt;makeImporter&lt;/span&gt;(&lt;span&gt;c&lt;/span&gt;.&lt;span&gt;Files&lt;/span&gt;)}
+&lt;span&gt;doc&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;r&lt;/span&gt;.&lt;span&gt;Render&lt;/span&gt;(&lt;span&gt;c&lt;/span&gt;.&lt;span&gt;Entry&lt;/span&gt;, &lt;span&gt;c&lt;/span&gt;.&lt;span&gt;OutputType&lt;/span&gt;)
+&lt;span&gt;if&lt;/span&gt; &lt;span&gt;assert&lt;/span&gt;.&lt;span&gt;NoError&lt;/span&gt;(&lt;span&gt;t&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt;) {
+&lt;span&gt;assert&lt;/span&gt;.&lt;span&gt;Equal&lt;/span&gt;(&lt;span&gt;t&lt;/span&gt;, &lt;span&gt;c&lt;/span&gt;.&lt;span&gt;OutputDoc&lt;/span&gt;, &lt;span&gt;compactJson&lt;/span&gt;(&lt;span&gt;doc&lt;/span&gt;))
+}
+}
+}
+&lt;span&gt;// ...
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;运行下&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;$ go test github.com/GotaX/go-config-server/pkg/render
+&lt;span&gt;# ok      github.com/GotaX/go-config-server/pkg/render    0.205s&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;看起来没问题, 渲染器已经 OK 了.&lt;/p&gt;
+&lt;h2 id=&quot;git-存储&quot;&gt;Git 存储&lt;/h2&gt;
+&lt;p&gt;因为要操作 Git 仓库, 这里我们使用 &lt;a href=&quot;https://github.com/go-git/go-git/&quot;&gt;go-git&lt;/a&gt; 作为 Git 客户端. 首先定义结构体.&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// pkg/storage/git.go
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;type&lt;/span&gt; &lt;span&gt;Git&lt;/span&gt; &lt;span&gt;struct&lt;/span&gt; {
+&lt;span&gt;URL&lt;/span&gt;  &lt;span&gt;string&lt;/span&gt;                &lt;span&gt;// 存配置的源码仓库地址, 先支持 HTTPS 端点
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;Auth&lt;/span&gt; &lt;span&gt;transport&lt;/span&gt;.&lt;span&gt;AuthMethod&lt;/span&gt;  &lt;span&gt;// 身份认证信息, 公开仓库该字段为 nil
+&lt;/span&gt;&lt;span/&gt;
+&lt;span&gt;namespace&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;           &lt;span&gt;// 记录当前的命名空间, 第一次访问前该字段为空
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;repo&lt;/span&gt;      &lt;span&gt;*&lt;/span&gt;&lt;span&gt;Repository&lt;/span&gt;      &lt;span&gt;// 记录当前的仓库对象, 第一次访问前该字段为空
+&lt;/span&gt;&lt;span/&gt;}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;接着实现 Use 函数, 第一版先不支持分支切换, 在检出时只检出当前命名空间的分支.&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// pkg/storage/git.go
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;g&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;Git&lt;/span&gt;) &lt;span&gt;Use&lt;/span&gt;(&lt;span&gt;ctx&lt;/span&gt; &lt;span&gt;context&lt;/span&gt;.&lt;span&gt;Context&lt;/span&gt;, &lt;span&gt;namespace&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;) (&lt;span&gt;err&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;) {
+    &lt;span&gt;// 第一次访问时 clone 当前命名空间对应的分支
+&lt;/span&gt;&lt;span/&gt;    &lt;span&gt;if&lt;/span&gt; &lt;span&gt;g&lt;/span&gt;.&lt;span&gt;namespace&lt;/span&gt; &lt;span&gt;==&lt;/span&gt; &lt;span&gt;&quot;&quot;&lt;/span&gt; {
+&lt;span&gt;if&lt;/span&gt; &lt;span&gt;g&lt;/span&gt;.&lt;span&gt;repo&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; = &lt;span&gt;g&lt;/span&gt;.&lt;span&gt;clone&lt;/span&gt;(&lt;span&gt;ctx&lt;/span&gt;, &lt;span&gt;namespace&lt;/span&gt;); &lt;span&gt;err&lt;/span&gt; &lt;span&gt;==&lt;/span&gt; &lt;span&gt;nil&lt;/span&gt; {
+&lt;span&gt;g&lt;/span&gt;.&lt;span&gt;namespace&lt;/span&gt; = &lt;span&gt;namespace&lt;/span&gt;
+}
+&lt;span&gt;return&lt;/span&gt;
+}
+    
+    &lt;span&gt;// TODO: 之后在这里实现分支切换, 从而支持多命名空间
+&lt;/span&gt;&lt;span/&gt;    &lt;span&gt;return&lt;/span&gt;
+}
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;还有 Read 函数.&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// pkg/storage/git.go
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;g&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;Git&lt;/span&gt;) &lt;span&gt;Read&lt;/span&gt;(&lt;span&gt;path&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;) (&lt;span&gt;content&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;) {
+&lt;span&gt;var&lt;/span&gt; (
+&lt;span&gt;wt&lt;/span&gt;   &lt;span&gt;*&lt;/span&gt;&lt;span&gt;Worktree&lt;/span&gt;
+&lt;span&gt;fd&lt;/span&gt;   &lt;span&gt;billy&lt;/span&gt;.&lt;span&gt;File&lt;/span&gt;
+&lt;span&gt;data&lt;/span&gt; []&lt;span&gt;byte&lt;/span&gt;
+)
+&lt;span&gt;if&lt;/span&gt; &lt;span&gt;wt&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; = &lt;span&gt;g&lt;/span&gt;.&lt;span&gt;repo&lt;/span&gt;.&lt;span&gt;Worktree&lt;/span&gt;(); &lt;span&gt;err&lt;/span&gt; &lt;span&gt;!=&lt;/span&gt; &lt;span&gt;nil&lt;/span&gt; {
+&lt;span&gt;return&lt;/span&gt;
+}
+&lt;span&gt;if&lt;/span&gt; &lt;span&gt;fd&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; = &lt;span&gt;wt&lt;/span&gt;.&lt;span&gt;Filesystem&lt;/span&gt;.&lt;span&gt;Open&lt;/span&gt;(&lt;span&gt;path&lt;/span&gt;); &lt;span&gt;err&lt;/span&gt; &lt;span&gt;!=&lt;/span&gt; &lt;span&gt;nil&lt;/span&gt; {
+&lt;span&gt;return&lt;/span&gt;
+}
+&lt;span&gt;if&lt;/span&gt; &lt;span&gt;data&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; = &lt;span&gt;ioutil&lt;/span&gt;.&lt;span&gt;ReadAll&lt;/span&gt;(&lt;span&gt;fd&lt;/span&gt;); &lt;span&gt;err&lt;/span&gt; &lt;span&gt;!=&lt;/span&gt; &lt;span&gt;nil&lt;/span&gt; {
+&lt;span&gt;return&lt;/span&gt;
+}
+&lt;span&gt;return&lt;/span&gt; string(&lt;span&gt;data&lt;/span&gt;), &lt;span&gt;nil&lt;/span&gt;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;上面用到的两个工具函数:&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// pkg/storage/git.go
+&lt;/span&gt;&lt;span&gt;// git clone 函数, 使用内存文件系统, 所以不会在硬盘上留下文件.
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;g&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;Git&lt;/span&gt;) &lt;span&gt;clone&lt;/span&gt;(&lt;span&gt;ctx&lt;/span&gt; &lt;span&gt;context&lt;/span&gt;.&lt;span&gt;Context&lt;/span&gt;, &lt;span&gt;namespace&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;) (&lt;span&gt;repo&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;Repository&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;) {
+&lt;span&gt;opts&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;&amp;amp;&lt;/span&gt;&lt;span&gt;CloneOptions&lt;/span&gt;{
+&lt;span&gt;URL&lt;/span&gt;:          &lt;span&gt;g&lt;/span&gt;.&lt;span&gt;URL&lt;/span&gt;,
+&lt;span&gt;Auth&lt;/span&gt;:         &lt;span&gt;g&lt;/span&gt;.&lt;span&gt;Auth&lt;/span&gt;,
+&lt;span&gt;SingleBranch&lt;/span&gt;: &lt;span&gt;true&lt;/span&gt;,
+&lt;span&gt;Depth&lt;/span&gt;:        &lt;span&gt;1&lt;/span&gt;,
+&lt;span&gt;Progress&lt;/span&gt;:     &lt;span&gt;os&lt;/span&gt;.&lt;span&gt;Stdout&lt;/span&gt;,
+}
+&lt;span&gt;if&lt;/span&gt; &lt;span&gt;opts&lt;/span&gt;.&lt;span&gt;ReferenceName&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; = &lt;span&gt;g&lt;/span&gt;.&lt;span&gt;branchRef&lt;/span&gt;(&lt;span&gt;namespace&lt;/span&gt;); &lt;span&gt;err&lt;/span&gt; &lt;span&gt;!=&lt;/span&gt; &lt;span&gt;nil&lt;/span&gt; {
+&lt;span&gt;return&lt;/span&gt;
+}
+
+&lt;span&gt;return&lt;/span&gt; &lt;span&gt;CloneContext&lt;/span&gt;(&lt;span&gt;ctx&lt;/span&gt;, &lt;span&gt;memory&lt;/span&gt;.&lt;span&gt;NewStorage&lt;/span&gt;(), &lt;span&gt;memfs&lt;/span&gt;.&lt;span&gt;New&lt;/span&gt;(), &lt;span&gt;opts&lt;/span&gt;)
+}
+
+&lt;span&gt;// 根据传入的命名空间返回对应的分支引用名称, 并且命名空间不能为空
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;g&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;Git&lt;/span&gt;) &lt;span&gt;branchRef&lt;/span&gt;(&lt;span&gt;namespace&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;) (&lt;span&gt;ref&lt;/span&gt; &lt;span&gt;plumbing&lt;/span&gt;.&lt;span&gt;ReferenceName&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;) {
+&lt;span&gt;if&lt;/span&gt; &lt;span&gt;namespace&lt;/span&gt; &lt;span&gt;==&lt;/span&gt; &lt;span&gt;&quot;&quot;&lt;/span&gt; {
+&lt;span&gt;err&lt;/span&gt; = &lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Errorf&lt;/span&gt;(&lt;span&gt;&quot;namespace is required&quot;&lt;/span&gt;)
+&lt;span&gt;return&lt;/span&gt;
+}
+
+&lt;span&gt;ref&lt;/span&gt; = &lt;span&gt;plumbing&lt;/span&gt;.&lt;span&gt;ReferenceName&lt;/span&gt;(&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Sprintf&lt;/span&gt;(&lt;span&gt;&quot;refs/heads/%s&quot;&lt;/span&gt;, &lt;span&gt;namespace&lt;/span&gt;))
+&lt;span&gt;return&lt;/span&gt;
+}
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;最后写个测试验证一下:&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// pkg/storage/storage_test.go
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;package&lt;/span&gt; &lt;span&gt;storage&lt;/span&gt;
+
+&lt;span&gt;import&lt;/span&gt; (
+&lt;span&gt;&quot;context&quot;&lt;/span&gt;
+&lt;span&gt;&quot;path/filepath&quot;&lt;/span&gt;
+&lt;span&gt;&quot;runtime&quot;&lt;/span&gt;
+&lt;span&gt;&quot;testing&quot;&lt;/span&gt;
+
+&lt;span&gt;&quot;github.com/stretchr/testify/assert&quot;&lt;/span&gt;
+)
+
+&lt;span&gt;// 如果可以正常读取 go.mod 内容则实现有效
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;TestGit&lt;/span&gt;(&lt;span&gt;t&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;testing&lt;/span&gt;.&lt;span&gt;T&lt;/span&gt;) {
+&lt;span&gt;g&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;&amp;amp;&lt;/span&gt;&lt;span&gt;Git&lt;/span&gt;{&lt;span&gt;URL&lt;/span&gt;: &lt;span&gt;localRepo&lt;/span&gt;()}
+
+&lt;span&gt;if&lt;/span&gt; &lt;span&gt;err&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;g&lt;/span&gt;.&lt;span&gt;Use&lt;/span&gt;(&lt;span&gt;context&lt;/span&gt;.&lt;span&gt;TODO&lt;/span&gt;(), &lt;span&gt;&quot;master&quot;&lt;/span&gt;); !&lt;span&gt;assert&lt;/span&gt;.&lt;span&gt;NoError&lt;/span&gt;(&lt;span&gt;t&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt;) {
+&lt;span&gt;return&lt;/span&gt;
+}
+
+&lt;span&gt;if&lt;/span&gt; &lt;span&gt;content&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;g&lt;/span&gt;.&lt;span&gt;Read&lt;/span&gt;(&lt;span&gt;&quot;go.mod&quot;&lt;/span&gt;); &lt;span&gt;assert&lt;/span&gt;.&lt;span&gt;NoError&lt;/span&gt;(&lt;span&gt;t&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt;) {
+&lt;span&gt;assert&lt;/span&gt;.&lt;span&gt;NotEmpty&lt;/span&gt;(&lt;span&gt;t&lt;/span&gt;, &lt;span&gt;content&lt;/span&gt;)
+}
+}
+
+&lt;span&gt;// 用当前的项目作为测试库
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;localRepo&lt;/span&gt;() &lt;span&gt;string&lt;/span&gt; {
+&lt;span&gt;_&lt;/span&gt;, &lt;span&gt;filename&lt;/span&gt;, &lt;span&gt;_&lt;/span&gt;, &lt;span&gt;_&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;runtime&lt;/span&gt;.&lt;span&gt;Caller&lt;/span&gt;(&lt;span&gt;0&lt;/span&gt;)
+&lt;span&gt;return&lt;/span&gt; &lt;span&gt;filepath&lt;/span&gt;.&lt;span&gt;Join&lt;/span&gt;(&lt;span&gt;filename&lt;/span&gt;, &lt;span&gt;&quot;../../..&quot;&lt;/span&gt;)
+}
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;运行…&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;$ go test github.com/GotaX/go-config-server/pkg/storage
+&lt;span&gt;# ok      github.com/GotaX/go-config-server/pkg/storage   0.390s&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;OK 完全没有问题.&lt;/p&gt;
+&lt;h2 id=&quot;组装-app&quot;&gt;组装 App&lt;/h2&gt;
+&lt;p&gt;接下来, 我们在 app 中将上面两个组件组装起来.&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// pkg/handler/app.go
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;package&lt;/span&gt; &lt;span&gt;handler&lt;/span&gt;
+
+&lt;span&gt;import&lt;/span&gt; (
+&lt;span&gt;&quot;context&quot;&lt;/span&gt;
+
+&lt;span&gt;&quot;github.com/GotaX/go-config-server/pkg/render&quot;&lt;/span&gt;
+&lt;span&gt;&quot;github.com/GotaX/go-config-server/pkg/storage&quot;&lt;/span&gt;
+)
+
+&lt;span&gt;type&lt;/span&gt; &lt;span&gt;App&lt;/span&gt; &lt;span&gt;struct&lt;/span&gt; {
+&lt;span&gt;Storage&lt;/span&gt;  &lt;span&gt;storage&lt;/span&gt;.&lt;span&gt;Storage&lt;/span&gt;
+&lt;span&gt;Renderer&lt;/span&gt; &lt;span&gt;render&lt;/span&gt;.&lt;span&gt;Renderer&lt;/span&gt;
+}
+
+&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;a&lt;/span&gt; &lt;span&gt;App&lt;/span&gt;) &lt;span&gt;Handle&lt;/span&gt;(&lt;span&gt;ctx&lt;/span&gt; &lt;span&gt;context&lt;/span&gt;.&lt;span&gt;Context&lt;/span&gt;, &lt;span&gt;namespace&lt;/span&gt;, &lt;span&gt;name&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;) (&lt;span&gt;doc&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;) {
+    &lt;span&gt;// 切换到指定命名空间
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;if&lt;/span&gt; &lt;span&gt;err&lt;/span&gt; = &lt;span&gt;a&lt;/span&gt;.&lt;span&gt;Storage&lt;/span&gt;.&lt;span&gt;Use&lt;/span&gt;(&lt;span&gt;ctx&lt;/span&gt;, &lt;span&gt;namespace&lt;/span&gt;); &lt;span&gt;err&lt;/span&gt; &lt;span&gt;!=&lt;/span&gt; &lt;span&gt;nil&lt;/span&gt; {
+&lt;span&gt;return&lt;/span&gt;
+}
+    &lt;span&gt;// 执行渲染
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;return&lt;/span&gt; &lt;span&gt;a&lt;/span&gt;.&lt;span&gt;Renderer&lt;/span&gt;.&lt;span&gt;Render&lt;/span&gt;(&lt;span&gt;name&lt;/span&gt;, &lt;span&gt;render&lt;/span&gt;.&lt;span&gt;JSON&lt;/span&gt;)
+}
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;测试可不能少.&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// pkg/handler/handler_test.go
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;package&lt;/span&gt; &lt;span&gt;handler&lt;/span&gt;
+
+&lt;span&gt;import&lt;/span&gt; (
+&lt;span&gt;&quot;context&quot;&lt;/span&gt;
+&lt;span&gt;&quot;testing&quot;&lt;/span&gt;
+
+&lt;span&gt;&quot;github.com/GotaX/go-config-server/pkg/render&quot;&lt;/span&gt;
+&lt;span&gt;&quot;github.com/stretchr/testify/assert&quot;&lt;/span&gt;
+)
+
+&lt;span&gt;func&lt;/span&gt; &lt;span&gt;TestApp&lt;/span&gt;(&lt;span&gt;t&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;testing&lt;/span&gt;.&lt;span&gt;T&lt;/span&gt;) {
+&lt;span&gt;s&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;&amp;amp;&lt;/span&gt;&lt;span&gt;MockStorage&lt;/span&gt;{}
+&lt;span&gt;r&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;&amp;amp;&lt;/span&gt;&lt;span&gt;MockRender&lt;/span&gt;{}
+&lt;span&gt;app&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;App&lt;/span&gt;{&lt;span&gt;Storage&lt;/span&gt;: &lt;span&gt;s&lt;/span&gt;, &lt;span&gt;Renderer&lt;/span&gt;: &lt;span&gt;r&lt;/span&gt;}
+
+&lt;span&gt;_&lt;/span&gt;, &lt;span&gt;_&lt;/span&gt; = &lt;span&gt;app&lt;/span&gt;.&lt;span&gt;Handle&lt;/span&gt;(&lt;span&gt;context&lt;/span&gt;.&lt;span&gt;TODO&lt;/span&gt;(), &lt;span&gt;&quot;&quot;&lt;/span&gt;, &lt;span&gt;&quot;&quot;&lt;/span&gt;)
+    
+    &lt;span&gt;// 确保 Storage.Use 和 Renderer.Render 有被调用到
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;assert&lt;/span&gt;.&lt;span&gt;True&lt;/span&gt;(&lt;span&gt;t&lt;/span&gt;, &lt;span&gt;s&lt;/span&gt;.&lt;span&gt;useInvoked&lt;/span&gt;)
+&lt;span&gt;assert&lt;/span&gt;.&lt;span&gt;True&lt;/span&gt;(&lt;span&gt;t&lt;/span&gt;, &lt;span&gt;r&lt;/span&gt;.&lt;span&gt;renderInvoked&lt;/span&gt;)
+}
+
+&lt;span&gt;type&lt;/span&gt; &lt;span&gt;MockStorage&lt;/span&gt; &lt;span&gt;struct&lt;/span&gt; { &lt;span&gt;useInvoked&lt;/span&gt; &lt;span&gt;bool&lt;/span&gt; }
+&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;m&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;MockStorage&lt;/span&gt;) &lt;span&gt;Use&lt;/span&gt;(&lt;span&gt;ctx&lt;/span&gt; &lt;span&gt;context&lt;/span&gt;.&lt;span&gt;Context&lt;/span&gt;, &lt;span&gt;namespace&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;) (&lt;span&gt;err&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;) { &lt;span&gt;m&lt;/span&gt;.&lt;span&gt;useInvoked&lt;/span&gt; = &lt;span&gt;true&lt;/span&gt;;&lt;span&gt;return&lt;/span&gt; }
+&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;m&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;MockStorage&lt;/span&gt;) &lt;span&gt;Read&lt;/span&gt;(&lt;span&gt;path&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;) (&lt;span&gt;content&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;) { &lt;span&gt;return&lt;/span&gt; }
+
+&lt;span&gt;type&lt;/span&gt; &lt;span&gt;MockRender&lt;/span&gt; &lt;span&gt;struct&lt;/span&gt; { &lt;span&gt;renderInvoked&lt;/span&gt; &lt;span&gt;bool&lt;/span&gt; }
+&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;m&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;MockRender&lt;/span&gt;) &lt;span&gt;Render&lt;/span&gt;(&lt;span&gt;entry&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;, &lt;span&gt;outputType&lt;/span&gt; &lt;span&gt;render&lt;/span&gt;.&lt;span&gt;ContentType&lt;/span&gt;) (&lt;span&gt;doc&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;) { &lt;span&gt;m&lt;/span&gt;.&lt;span&gt;renderInvoked&lt;/span&gt; = &lt;span&gt;true&lt;/span&gt;; &lt;span&gt;return&lt;/span&gt; }
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;运行一下:&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;$ go test github.com/GotaX/go-config-server/pkg/handler
+&lt;span&gt;# ok      github.com/GotaX/go-config-server/pkg/handler   0.191s&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;好, 到目前为止所有的核心组件就都实现完了. 是不是很轻松呀? 下面就是一些与 API 相关的外围工作了.&lt;/p&gt;
+&lt;h1 id=&quot;用户接口适配&quot;&gt;用户接口适配&lt;/h1&gt;
+&lt;p&gt;稍微偷下懒, 外围接口就不写测试了 😝.&lt;/p&gt;
+&lt;h2 id=&quot;服务器&quot;&gt;服务器&lt;/h2&gt;
+&lt;p&gt;这里我们使用 &lt;a href=&quot;https://github.com/gofiber/fiber&quot;&gt;Fiber&lt;/a&gt; 做应用服务器, 如果要追求极致性能也可以选用 &lt;a href=&quot;https://github.com/valyala/fasthttp&quot;&gt;Fasthttp&lt;/a&gt;, 不过区别其实很小很小, 为了轻松实现功能, 我就用 Fiber 了.&lt;/p&gt;
+&lt;p&gt;先定义一下启动参数.&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// pkg/service/service.go
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;type&lt;/span&gt; &lt;span&gt;Options&lt;/span&gt; &lt;span&gt;struct&lt;/span&gt; {
+    &lt;span&gt;HttpAddr&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;  &lt;span&gt;// HTTP 监听地址, 默认为 :8080
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;URL&lt;/span&gt;      &lt;span&gt;string&lt;/span&gt;  &lt;span&gt;// Git 仓库地址, 目前仅支持 HTTPS
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;Username&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;  &lt;span&gt;// Git 用户名, 访问公共仓库留空, 使用 AccessToken 访问随便填一个
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;Password&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;  &lt;span&gt;// Git 密码, 访问公共仓库留空, 使用 AccessToken 访问填 AccessToken
+&lt;/span&gt;&lt;span/&gt;}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;初始化 Service 对象&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// pkg/service/service.go
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;type&lt;/span&gt; &lt;span&gt;Service&lt;/span&gt; &lt;span&gt;struct&lt;/span&gt; {
+&lt;span&gt;httpAddr&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;
+&lt;span&gt;app&lt;/span&gt;      &lt;span&gt;handler&lt;/span&gt;.&lt;span&gt;App&lt;/span&gt;
+}
+
+&lt;span&gt;func&lt;/span&gt; &lt;span&gt;New&lt;/span&gt;(&lt;span&gt;opts&lt;/span&gt; &lt;span&gt;Options&lt;/span&gt;) &lt;span&gt;*&lt;/span&gt;&lt;span&gt;Service&lt;/span&gt; {
+&lt;span&gt;store&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;&amp;amp;&lt;/span&gt;&lt;span&gt;storage&lt;/span&gt;.&lt;span&gt;Git&lt;/span&gt;{
+&lt;span&gt;URL&lt;/span&gt;: &lt;span&gt;opts&lt;/span&gt;.&lt;span&gt;URL&lt;/span&gt;,
+}
+&lt;span&gt;if&lt;/span&gt; &lt;span&gt;opts&lt;/span&gt;.&lt;span&gt;Username&lt;/span&gt; &lt;span&gt;!=&lt;/span&gt; &lt;span&gt;&quot;&quot;&lt;/span&gt; {
+&lt;span&gt;store&lt;/span&gt;.&lt;span&gt;Auth&lt;/span&gt; = &lt;span&gt;&amp;amp;&lt;/span&gt;&lt;span&gt;http&lt;/span&gt;.&lt;span&gt;BasicAuth&lt;/span&gt;{
+&lt;span&gt;Username&lt;/span&gt;: &lt;span&gt;opts&lt;/span&gt;.&lt;span&gt;Username&lt;/span&gt;,
+&lt;span&gt;Password&lt;/span&gt;: &lt;span&gt;opts&lt;/span&gt;.&lt;span&gt;Password&lt;/span&gt;,
+}
+}
+&lt;span&gt;renderer&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;render&lt;/span&gt;.&lt;span&gt;Jsonnet&lt;/span&gt;{
+         &lt;span&gt;// 见下面说明
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;Importer&lt;/span&gt;: &lt;span&gt;render&lt;/span&gt;.&lt;span&gt;StorageImporter&lt;/span&gt;{
+&lt;span&gt;Storage&lt;/span&gt;: &lt;span&gt;store&lt;/span&gt;,
+},
+}
+&lt;span&gt;return&lt;/span&gt; &lt;span&gt;&amp;amp;&lt;/span&gt;&lt;span&gt;Service&lt;/span&gt;{
+&lt;span&gt;httpAddr&lt;/span&gt;: &lt;span&gt;opts&lt;/span&gt;.&lt;span&gt;HttpAddr&lt;/span&gt;,
+&lt;span&gt;app&lt;/span&gt;: &lt;span&gt;handler&lt;/span&gt;.&lt;span&gt;App&lt;/span&gt;{
+&lt;span&gt;Storage&lt;/span&gt;:  &lt;span&gt;store&lt;/span&gt;,
+&lt;span&gt;Renderer&lt;/span&gt;: &lt;span&gt;renderer&lt;/span&gt;,
+},
+}
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里解释下 &lt;code&gt;render.StorageImporter &lt;/code&gt; , Importer 是 Jsonnet VM 使用的接口, 和我们的 Storage 接口有一点差异, 所以定义了这个适配器.&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// pkg/render/jsonnet.go
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;type&lt;/span&gt; &lt;span&gt;StorageImporter&lt;/span&gt; &lt;span&gt;struct&lt;/span&gt; {
+&lt;span&gt;Storage&lt;/span&gt; &lt;span&gt;storage&lt;/span&gt;.&lt;span&gt;Storage&lt;/span&gt;
+}
+
+&lt;span&gt;// importFrom 为使用 import 的源文件, 绝对路径
+&lt;/span&gt;&lt;span&gt;// importedPath 为 import 的目标文件, 相对路径, 相对于源文件
+&lt;/span&gt;&lt;span&gt;// contents 为文件内容
+&lt;/span&gt;&lt;span&gt;// foundAt 为 import 目标文件的绝对路径
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;s&lt;/span&gt; &lt;span&gt;StorageImporter&lt;/span&gt;) &lt;span&gt;Import&lt;/span&gt;(&lt;span&gt;importedFrom&lt;/span&gt;, &lt;span&gt;importedPath&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;) (&lt;span&gt;contents&lt;/span&gt; &lt;span&gt;Contents&lt;/span&gt;, &lt;span&gt;foundAt&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;) {
+&lt;span&gt;dir&lt;/span&gt;, &lt;span&gt;_&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;filepath&lt;/span&gt;.&lt;span&gt;Split&lt;/span&gt;(&lt;span&gt;importedFrom&lt;/span&gt;)
+&lt;span&gt;path&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;filepath&lt;/span&gt;.&lt;span&gt;Join&lt;/span&gt;(&lt;span&gt;dir&lt;/span&gt;, &lt;span&gt;importedPath&lt;/span&gt;)
+&lt;span&gt;data&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;s&lt;/span&gt;.&lt;span&gt;Storage&lt;/span&gt;.&lt;span&gt;Read&lt;/span&gt;(&lt;span&gt;path&lt;/span&gt;)
+
+&lt;span&gt;if&lt;/span&gt; &lt;span&gt;err&lt;/span&gt; &lt;span&gt;==&lt;/span&gt; &lt;span&gt;nil&lt;/span&gt; {
+&lt;span&gt;contents&lt;/span&gt; = &lt;span&gt;MakeContents&lt;/span&gt;(&lt;span&gt;data&lt;/span&gt;)
+&lt;span&gt;foundAt&lt;/span&gt; = &lt;span&gt;path&lt;/span&gt;
+}
+&lt;span&gt;return&lt;/span&gt;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;接着继续定义路由的 Handler:&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// pkg/service/service.go
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;srv&lt;/span&gt; &lt;span&gt;Service&lt;/span&gt;) &lt;span&gt;Handle&lt;/span&gt;(&lt;span&gt;c&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;fiber&lt;/span&gt;.&lt;span&gt;Ctx&lt;/span&gt;) (&lt;span&gt;err&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;) {
+&lt;span&gt;var&lt;/span&gt; (
+&lt;span&gt;ctx&lt;/span&gt;       = &lt;span&gt;c&lt;/span&gt;.&lt;span&gt;Context&lt;/span&gt;()
+&lt;span&gt;name&lt;/span&gt;      = &lt;span&gt;c&lt;/span&gt;.&lt;span&gt;Params&lt;/span&gt;(&lt;span&gt;&quot;+&quot;&lt;/span&gt;)          &lt;span&gt;// fiber 的 wildcard 语法, 等下解释
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;namespace&lt;/span&gt; = &lt;span&gt;c&lt;/span&gt;.&lt;span&gt;Params&lt;/span&gt;(&lt;span&gt;&quot;namespace&quot;&lt;/span&gt;)
+)
+&lt;span&gt;doc&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;srv&lt;/span&gt;.&lt;span&gt;app&lt;/span&gt;.&lt;span&gt;Handle&lt;/span&gt;(&lt;span&gt;ctx&lt;/span&gt;, &lt;span&gt;namespace&lt;/span&gt;, &lt;span&gt;name&lt;/span&gt;)
+&lt;span&gt;if&lt;/span&gt; &lt;span&gt;err&lt;/span&gt; &lt;span&gt;!=&lt;/span&gt; &lt;span&gt;nil&lt;/span&gt; {
+&lt;span&gt;return&lt;/span&gt;
+}
+
+&lt;span&gt;c&lt;/span&gt;.&lt;span&gt;Set&lt;/span&gt;(&lt;span&gt;&quot;Content-Type&quot;&lt;/span&gt;, &lt;span&gt;&quot;application/json&quot;&lt;/span&gt;)
+&lt;span&gt;return&lt;/span&gt; &lt;span&gt;c&lt;/span&gt;.&lt;span&gt;SendString&lt;/span&gt;(&lt;span&gt;doc&lt;/span&gt;)
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;继续定义路由:&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// pkg/service/service.go
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;const&lt;/span&gt; (
+&lt;span&gt;readTimeout&lt;/span&gt;    = &lt;span&gt;10&lt;/span&gt; &lt;span&gt;*&lt;/span&gt; &lt;span&gt;time&lt;/span&gt;.&lt;span&gt;Second&lt;/span&gt;  &lt;span&gt;// 读请求超时时间
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;writeTimeout&lt;/span&gt;   = &lt;span&gt;10&lt;/span&gt; &lt;span&gt;*&lt;/span&gt; &lt;span&gt;time&lt;/span&gt;.&lt;span&gt;Second&lt;/span&gt;  &lt;span&gt;// 写响应超时时间
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;endpointHealth&lt;/span&gt; = &lt;span&gt;&quot;/healthz&quot;&lt;/span&gt;        &lt;span&gt;// 健康检查端点
+&lt;/span&gt;&lt;span/&gt;)
+
+&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;srv&lt;/span&gt; &lt;span&gt;Service&lt;/span&gt;) &lt;span&gt;Run&lt;/span&gt;(&lt;span&gt;ctx&lt;/span&gt; &lt;span&gt;context&lt;/span&gt;.&lt;span&gt;Context&lt;/span&gt;) (&lt;span&gt;err&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;) {
+&lt;span&gt;server&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;fiber&lt;/span&gt;.&lt;span&gt;New&lt;/span&gt;(&lt;span&gt;fiber&lt;/span&gt;.&lt;span&gt;Config&lt;/span&gt;{
+&lt;span&gt;ReadTimeout&lt;/span&gt;:  &lt;span&gt;readTimeout&lt;/span&gt;,
+&lt;span&gt;WriteTimeout&lt;/span&gt;: &lt;span&gt;writeTimeout&lt;/span&gt;,
+})
+
+&lt;span&gt;registerAccessLogger&lt;/span&gt;(&lt;span&gt;server&lt;/span&gt;)    &lt;span&gt;// 访问日志中间件
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;registerHealthHandler&lt;/span&gt;(&lt;span&gt;server&lt;/span&gt;)   &lt;span&gt;// 健康检查中间件
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;srv&lt;/span&gt;.&lt;span&gt;registerAppHandler&lt;/span&gt;(&lt;span&gt;server&lt;/span&gt;)  &lt;span&gt;// 注册路由
+&lt;/span&gt;&lt;span/&gt;
+&lt;span&gt;chErr&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; make(&lt;span&gt;chan&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;, &lt;span&gt;1&lt;/span&gt;)
+
+&lt;span&gt;go&lt;/span&gt; &lt;span&gt;func&lt;/span&gt;() {
+        &lt;span&gt;// 开始监听端口
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;if&lt;/span&gt; &lt;span&gt;err&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;server&lt;/span&gt;.&lt;span&gt;Listen&lt;/span&gt;(&lt;span&gt;srv&lt;/span&gt;.&lt;span&gt;httpAddr&lt;/span&gt;); &lt;span&gt;err&lt;/span&gt; &lt;span&gt;!=&lt;/span&gt; &lt;span&gt;nil&lt;/span&gt; {
+&lt;span&gt;chErr&lt;/span&gt; &lt;span&gt;&amp;lt;-&lt;/span&gt; &lt;span&gt;err&lt;/span&gt;
+}
+}()
+
+    &lt;span&gt;// 实现 Graceful shutdown, 进程结束前会先取消掉 Context
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;select&lt;/span&gt; {
+&lt;span&gt;case&lt;/span&gt; &lt;span&gt;err&lt;/span&gt; = &lt;span&gt;&amp;lt;-&lt;/span&gt;&lt;span&gt;chErr&lt;/span&gt;:
+&lt;span&gt;case&lt;/span&gt; &lt;span&gt;&amp;lt;-&lt;/span&gt;&lt;span&gt;ctx&lt;/span&gt;.&lt;span&gt;Done&lt;/span&gt;():
+&lt;span&gt;err&lt;/span&gt; = &lt;span&gt;server&lt;/span&gt;.&lt;span&gt;Shutdown&lt;/span&gt;()
+}
+&lt;span&gt;return&lt;/span&gt;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;上面用到的几个工具函数:&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// pkg/service/service.go
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;srv&lt;/span&gt; &lt;span&gt;Service&lt;/span&gt;) &lt;span&gt;registerAppHandler&lt;/span&gt;(&lt;span&gt;server&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;fiber&lt;/span&gt;.&lt;span&gt;App&lt;/span&gt;) {
+    &lt;span&gt;// 定义 path params, namespace 为第一个参数, 后面所有字符包括 &#x27;/&#x27; 为第二个参数
+&lt;/span&gt;&lt;span/&gt;    &lt;span&gt;// 例如: /master/example/arith.jsonnet
+&lt;/span&gt;&lt;span/&gt;    &lt;span&gt;// 参数一: namespace = master
+&lt;/span&gt;&lt;span/&gt;    &lt;span&gt;// 参数二: + = example/arith.jsonnet
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;server&lt;/span&gt;.&lt;span&gt;Get&lt;/span&gt;(&lt;span&gt;&quot;/:namespace/+&quot;&lt;/span&gt;, &lt;span&gt;srv&lt;/span&gt;.&lt;span&gt;Handle&lt;/span&gt;)
+}
+
+&lt;span&gt;// 访问日志
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;registerAccessLogger&lt;/span&gt;(&lt;span&gt;server&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;fiber&lt;/span&gt;.&lt;span&gt;App&lt;/span&gt;) {
+&lt;span&gt;server&lt;/span&gt;.&lt;span&gt;Use&lt;/span&gt;(&lt;span&gt;logger&lt;/span&gt;.&lt;span&gt;New&lt;/span&gt;(&lt;span&gt;logger&lt;/span&gt;.&lt;span&gt;Config&lt;/span&gt;{
+&lt;span&gt;Next&lt;/span&gt;: &lt;span&gt;func&lt;/span&gt;(&lt;span&gt;c&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;fiber&lt;/span&gt;.&lt;span&gt;Ctx&lt;/span&gt;) &lt;span&gt;bool&lt;/span&gt; { &lt;span&gt;return&lt;/span&gt; &lt;span&gt;c&lt;/span&gt;.&lt;span&gt;Path&lt;/span&gt;() &lt;span&gt;==&lt;/span&gt; &lt;span&gt;endpointHealth&lt;/span&gt; },
+}))
+}
+
+&lt;span&gt;// 健康检查
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;registerHealthHandler&lt;/span&gt;(&lt;span&gt;server&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;fiber&lt;/span&gt;.&lt;span&gt;App&lt;/span&gt;) {
+&lt;span&gt;server&lt;/span&gt;.&lt;span&gt;All&lt;/span&gt;(&lt;span&gt;endpointHealth&lt;/span&gt;, &lt;span&gt;func&lt;/span&gt;(&lt;span&gt;ctx&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;fiber&lt;/span&gt;.&lt;span&gt;Ctx&lt;/span&gt;) &lt;span&gt;error&lt;/span&gt; {
+&lt;span&gt;return&lt;/span&gt; &lt;span&gt;ctx&lt;/span&gt;.&lt;span&gt;SendStatus&lt;/span&gt;(&lt;span&gt;fiber&lt;/span&gt;.&lt;span&gt;StatusOK&lt;/span&gt;)
+})
+}
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&quot;命令行&quot;&gt;命令行&lt;/h2&gt;
+&lt;p&gt;最后我们来做启动程序的命令行界面, 顺便解释一下优雅退出怎么实现.&lt;/p&gt;
+&lt;p&gt;这里我们使用 &lt;a href=&quot;urfave/cli&quot;&gt;urfave/cli&lt;/a&gt; 这个库. 首先, 定义一些命令行参数, 环境变量等之后做 Docker 镜像的时候再支持.&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// internal/web.go
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;package&lt;/span&gt; &lt;span&gt;internal&lt;/span&gt;
+
+&lt;span&gt;import&lt;/span&gt; (
+&lt;span&gt;&quot;github.com/GotaX/go-config-server/pkg/service&quot;&lt;/span&gt;
+. &lt;span&gt;&quot;github.com/urfave/cli/v2&quot;&lt;/span&gt;
+)
+
+&lt;span&gt;const&lt;/span&gt; (
+&lt;span&gt;flagHttp&lt;/span&gt;       = &lt;span&gt;&quot;http&quot;&lt;/span&gt;        &lt;span&gt;// HTTP 监听地址, 默认为 :8080
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;flagRepository&lt;/span&gt; = &lt;span&gt;&quot;repository&quot;&lt;/span&gt;  &lt;span&gt;// Git 仓库地址, 目前仅支持 HTTPS
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;flagUsername&lt;/span&gt;   = &lt;span&gt;&quot;username&quot;&lt;/span&gt;    &lt;span&gt;// Git 用户名, 访问公共仓库留空, 使用 AccessToken 访问随便填一个
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;flagPassword&lt;/span&gt;   = &lt;span&gt;&quot;password&quot;&lt;/span&gt;    &lt;span&gt;// Git 密码, 访问公共仓库留空, 使用 AccessToken 访问填 AccessToken
+&lt;/span&gt;&lt;span/&gt;)
+
+&lt;span&gt;var&lt;/span&gt; &lt;span&gt;CmdWeb&lt;/span&gt; = &lt;span&gt;&amp;amp;&lt;/span&gt;&lt;span&gt;Command&lt;/span&gt;{
+&lt;span&gt;Name&lt;/span&gt;:   &lt;span&gt;&quot;web&quot;&lt;/span&gt;,
+&lt;span&gt;Usage&lt;/span&gt;:  &lt;span&gt;&quot;Start config server&quot;&lt;/span&gt;,
+&lt;span&gt;Action&lt;/span&gt;: &lt;span&gt;runWeb&lt;/span&gt;,
+&lt;span&gt;Flags&lt;/span&gt;: []&lt;span&gt;Flag&lt;/span&gt;{
+&lt;span&gt;&amp;amp;&lt;/span&gt;&lt;span&gt;StringFlag&lt;/span&gt;{
+&lt;span&gt;Name&lt;/span&gt;:  &lt;span&gt;flagHttp&lt;/span&gt;,
+&lt;span&gt;Value&lt;/span&gt;: &lt;span&gt;&quot;:8080&quot;&lt;/span&gt;,
+},
+&lt;span&gt;&amp;amp;&lt;/span&gt;&lt;span&gt;StringFlag&lt;/span&gt;{
+&lt;span&gt;Name&lt;/span&gt;:     &lt;span&gt;flagRepository&lt;/span&gt;,
+&lt;span&gt;Required&lt;/span&gt;: &lt;span&gt;true&lt;/span&gt;,
+&lt;span&gt;Aliases&lt;/span&gt;:  []&lt;span&gt;string&lt;/span&gt;{&lt;span&gt;&quot;repo&quot;&lt;/span&gt;},
+},
+&lt;span&gt;&amp;amp;&lt;/span&gt;&lt;span&gt;StringFlag&lt;/span&gt;{
+&lt;span&gt;Name&lt;/span&gt;:    &lt;span&gt;flagUsername&lt;/span&gt;,
+&lt;span&gt;Aliases&lt;/span&gt;: []&lt;span&gt;string&lt;/span&gt;{&lt;span&gt;&quot;user&quot;&lt;/span&gt;},
+},
+&lt;span&gt;&amp;amp;&lt;/span&gt;&lt;span&gt;StringFlag&lt;/span&gt;{
+&lt;span&gt;Name&lt;/span&gt;:    &lt;span&gt;flagPassword&lt;/span&gt;,
+&lt;span&gt;Aliases&lt;/span&gt;: []&lt;span&gt;string&lt;/span&gt;{&lt;span&gt;&quot;pass&quot;&lt;/span&gt;},
+},
+},
+}
+
+&lt;span&gt;func&lt;/span&gt; &lt;span&gt;runWeb&lt;/span&gt;(&lt;span&gt;ctx&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;Context&lt;/span&gt;) (&lt;span&gt;err&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;) {
+&lt;span&gt;srv&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;service&lt;/span&gt;.&lt;span&gt;New&lt;/span&gt;(&lt;span&gt;service&lt;/span&gt;.&lt;span&gt;Options&lt;/span&gt;{
+&lt;span&gt;HttpAddr&lt;/span&gt;: &lt;span&gt;ctx&lt;/span&gt;.&lt;span&gt;String&lt;/span&gt;(&lt;span&gt;flagHttp&lt;/span&gt;),
+&lt;span&gt;URL&lt;/span&gt;:      &lt;span&gt;ctx&lt;/span&gt;.&lt;span&gt;String&lt;/span&gt;(&lt;span&gt;flagRepository&lt;/span&gt;),
+&lt;span&gt;Username&lt;/span&gt;: &lt;span&gt;ctx&lt;/span&gt;.&lt;span&gt;String&lt;/span&gt;(&lt;span&gt;flagUsername&lt;/span&gt;),
+&lt;span&gt;Password&lt;/span&gt;: &lt;span&gt;ctx&lt;/span&gt;.&lt;span&gt;String&lt;/span&gt;(&lt;span&gt;flagPassword&lt;/span&gt;),
+})
+&lt;span&gt;return&lt;/span&gt; &lt;span&gt;srv&lt;/span&gt;.&lt;span&gt;Run&lt;/span&gt;(&lt;span&gt;ctx&lt;/span&gt;.&lt;span&gt;Context&lt;/span&gt;)
+}
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;定义用于优雅退出的 Context:&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// internal/context.go
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;package&lt;/span&gt; &lt;span&gt;internal&lt;/span&gt;
+
+&lt;span&gt;import&lt;/span&gt; (
+&lt;span&gt;&quot;context&quot;&lt;/span&gt;
+&lt;span&gt;&quot;fmt&quot;&lt;/span&gt;
+&lt;span&gt;&quot;os&quot;&lt;/span&gt;
+&lt;span&gt;&quot;os/signal&quot;&lt;/span&gt;
+&lt;span&gt;&quot;syscall&quot;&lt;/span&gt;
+)
+
+&lt;span&gt;// 该函数返回的 context 会在第一次收到 SIGINT 或者 SIGTERM 信号时取消,
+&lt;/span&gt;&lt;span&gt;// 如果在关闭过程中再次收到信号, 则会强制结束进程
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;NewAppContext&lt;/span&gt;() (&lt;span&gt;ctx&lt;/span&gt; &lt;span&gt;context&lt;/span&gt;.&lt;span&gt;Context&lt;/span&gt;, &lt;span&gt;cancel&lt;/span&gt; &lt;span&gt;func&lt;/span&gt;()) {
+&lt;span&gt;ctx&lt;/span&gt;, &lt;span&gt;cancel&lt;/span&gt; = &lt;span&gt;context&lt;/span&gt;.&lt;span&gt;WithCancel&lt;/span&gt;(&lt;span&gt;context&lt;/span&gt;.&lt;span&gt;Background&lt;/span&gt;())
+
+&lt;span&gt;c&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; make(&lt;span&gt;chan&lt;/span&gt; &lt;span&gt;os&lt;/span&gt;.&lt;span&gt;Signal&lt;/span&gt;, &lt;span&gt;2&lt;/span&gt;)
+&lt;span&gt;signal&lt;/span&gt;.&lt;span&gt;Notify&lt;/span&gt;(&lt;span&gt;c&lt;/span&gt;, &lt;span&gt;syscall&lt;/span&gt;.&lt;span&gt;SIGINT&lt;/span&gt;, &lt;span&gt;syscall&lt;/span&gt;.&lt;span&gt;SIGTERM&lt;/span&gt;)
+&lt;span&gt;go&lt;/span&gt; &lt;span&gt;func&lt;/span&gt;() {
+&lt;span&gt;&amp;lt;-&lt;/span&gt;&lt;span&gt;c&lt;/span&gt;
+&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;&quot;Try exit...&quot;&lt;/span&gt;)
+&lt;span&gt;cancel&lt;/span&gt;()
+
+&lt;span&gt;&amp;lt;-&lt;/span&gt;&lt;span&gt;c&lt;/span&gt;
+&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;&quot;Force exit&quot;&lt;/span&gt;)
+&lt;span&gt;os&lt;/span&gt;.&lt;span&gt;Exit&lt;/span&gt;(&lt;span&gt;0&lt;/span&gt;)
+}()
+&lt;span&gt;return&lt;/span&gt;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&quot;main&quot;&gt;Main&lt;/h2&gt;
+&lt;p&gt;终于到了最后, 写 main 函数的时候尽量保持简洁就行了:&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// main.go
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;package&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;
+
+&lt;span&gt;import&lt;/span&gt; (
+&lt;span&gt;&quot;log&quot;&lt;/span&gt;
+&lt;span&gt;&quot;os&quot;&lt;/span&gt;
+
+&lt;span&gt;&quot;github.com/GotaX/go-config-server/internal&quot;&lt;/span&gt;
+&lt;span&gt;&quot;github.com/urfave/cli/v2&quot;&lt;/span&gt;
+)
+
+&lt;span&gt;func&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;() {
+&lt;span&gt;ctx&lt;/span&gt;, &lt;span&gt;cancel&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;internal&lt;/span&gt;.&lt;span&gt;NewAppContext&lt;/span&gt;()
+&lt;span&gt;defer&lt;/span&gt; &lt;span&gt;cancel&lt;/span&gt;()
+
+&lt;span&gt;app&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;cli&lt;/span&gt;.&lt;span&gt;App&lt;/span&gt;{
+&lt;span&gt;Name&lt;/span&gt;:     &lt;span&gt;&quot;config-server&quot;&lt;/span&gt;,
+&lt;span&gt;Commands&lt;/span&gt;: []&lt;span&gt;*&lt;/span&gt;&lt;span&gt;cli&lt;/span&gt;.&lt;span&gt;Command&lt;/span&gt;{&lt;span&gt;internal&lt;/span&gt;.&lt;span&gt;CmdWeb&lt;/span&gt;},
+}
+
+&lt;span&gt;if&lt;/span&gt; &lt;span&gt;err&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;app&lt;/span&gt;.&lt;span&gt;RunContext&lt;/span&gt;(&lt;span&gt;ctx&lt;/span&gt;, &lt;span&gt;os&lt;/span&gt;.&lt;span&gt;Args&lt;/span&gt;); &lt;span&gt;err&lt;/span&gt; &lt;span&gt;!=&lt;/span&gt; &lt;span&gt;nil&lt;/span&gt; {
+&lt;span&gt;log&lt;/span&gt;.&lt;span&gt;Fatal&lt;/span&gt;(&lt;span&gt;&quot;Error: &quot;&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt;.&lt;span&gt;Error&lt;/span&gt;())
+}
+}
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h1 id=&quot;实际运行&quot;&gt;实际运行&lt;/h1&gt;
+&lt;p&gt;最小可用的实现完成啦! 来实际运行下吧. 就用 Jsonnet 库中的例子来看看效果.&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span&gt;# 在第一个命令行中启动服务器&lt;/span&gt;
+$ go build main.go &lt;span&gt;&amp;amp;&amp;amp;&lt;/span&gt; main web -repo&lt;span&gt;=&lt;/span&gt;https://github.com/google/jsonnet.git 
+
+&lt;span&gt;# 在第二个命令行中查配置, 由于要访问 GitHub 第一次可能很慢&lt;/span&gt;
+$ curl http://localhost:8080/master/examples/arith.jsonnet
+
+&lt;span&gt;# 查询到的结果&lt;/span&gt;
+&lt;span&gt;{&lt;/span&gt;
+   &lt;span&gt;&quot;concat_array&quot;&lt;/span&gt;: &lt;span&gt;[&lt;/span&gt;
+      1,
+      2,
+      3,
+      &lt;span&gt;4&lt;/span&gt;
+   &lt;span&gt;]&lt;/span&gt;,
+   &lt;span&gt;&quot;concat_string&quot;&lt;/span&gt;: &lt;span&gt;&quot;1234&quot;&lt;/span&gt;,
+   &lt;span&gt;&quot;equality1&quot;&lt;/span&gt;: false,
+   &lt;span&gt;&quot;equality2&quot;&lt;/span&gt;: true,
+   &lt;span&gt;&quot;ex1&quot;&lt;/span&gt;: 1.6666666666666665,
+   &lt;span&gt;&quot;ex2&quot;&lt;/span&gt;: 3,
+   &lt;span&gt;&quot;ex3&quot;&lt;/span&gt;: 1.6666666666666665,
+   &lt;span&gt;&quot;ex4&quot;&lt;/span&gt;: true,
+   &lt;span&gt;&quot;obj&quot;&lt;/span&gt;: &lt;span&gt;{&lt;/span&gt;
+      &lt;span&gt;&quot;a&quot;&lt;/span&gt;: 1,
+      &lt;span&gt;&quot;b&quot;&lt;/span&gt;: 3,
+      &lt;span&gt;&quot;c&quot;&lt;/span&gt;: &lt;span&gt;4&lt;/span&gt;
+   &lt;span&gt;}&lt;/span&gt;,
+   &lt;span&gt;&quot;obj_member&quot;&lt;/span&gt;: true,
+   &lt;span&gt;&quot;str1&quot;&lt;/span&gt;: &lt;span&gt;&quot;The value of self.ex2 is 3.&quot;&lt;/span&gt;,
+   &lt;span&gt;&quot;str2&quot;&lt;/span&gt;: &lt;span&gt;&quot;The value of self.ex2 is 3.&quot;&lt;/span&gt;,
+   &lt;span&gt;&quot;str3&quot;&lt;/span&gt;: &lt;span&gt;&quot;ex1=1.67, ex2=3.00&quot;&lt;/span&gt;,
+   &lt;span&gt;&quot;str4&quot;&lt;/span&gt;: &lt;span&gt;&quot;ex1=1.67, ex2=3.00&quot;&lt;/span&gt;,
+   &lt;span&gt;&quot;str5&quot;&lt;/span&gt;: &lt;span&gt;&quot;ex1=1.67\nex2=3.00\n&quot;&lt;/span&gt;
+&lt;span&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h1 id=&quot;接下来&quot;&gt;接下来&lt;/h1&gt;
+&lt;p&gt;以上就是第一部分的内容了.&lt;/p&gt;
+&lt;p&gt;我们已经实现了一个最小可用的配置中心, 没有任何外部依赖, 只要一个命令就能启动, 看起来还是不错的.&lt;/p&gt;
+&lt;p&gt;不过这个实现其实比较粗糙, 还要不少改善才能用于生产环境. 简单列举一下:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;支持多分支切换&lt;/li&gt;
+&lt;li&gt;支持多格式输出&lt;/li&gt;
+&lt;li&gt;并发访问安全&lt;/li&gt;
+&lt;li&gt;打包 Docker 镜像&lt;/li&gt;
+&lt;li&gt;环境变量支持&lt;/li&gt;
+&lt;li&gt;…&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这些就等后面的文章里实现咯, 毕竟篇幅已经很长了.&lt;/p&gt;
+&lt;p&gt;最后, 谢谢阅读! 觉得有收获欢迎点赞!&lt;/p&gt;
+&lt;p&gt;源码仓库地址写在开头了, 觉得有疑问可以在文章下面留言.&lt;/p&gt;
+&lt;/div&gt;
 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>6008172363d32d3c7a1951e4398fe494</guid>
-<title>可观测性理念篇：结构化日志的重要性</title>
-<link>https://toutiao.io/k/a140pj2</link>
+<guid>d5dc4fbe0fa321befd9176351ab06242</guid>
+<title>nocode 和 lowcode</title>
+<link>https://toutiao.io/k/38r8iaa</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
                     
 
                     
                     
                     
-                    &lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.6671875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/FBPFm28kpSxicPKp3vDhZ5NJmGviaxobiaA1wogHEicqicTxZKXE86BQk2kGAMnGZKua0h0CnoMicr1W8HdHKDwibz75A/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;640&quot;/&gt;&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzU1Njk2NjkxNA==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/FBPFm28kpSylnVQR07iciae4vSLoFOz9MZFeicgVPZOAHAroeCXOc1J0UQOuBVuUcChJ8TBAePia5SWE2unpwoa09Q/0?wx_fmt=png&quot; data-nickname=&quot;老翟杂谈&quot; data-alias=&quot;&quot; data-signature=&quot;分享持续交付的实践经验、软件工程感悟&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;日志是软件系统的可观测性数据的最常见的媒介之一。通过日志，我们可以做很多事情：查问题、业务数据统计分析、告警监控等。这类系统，通常被称为日志平台或日志分析系统。它们的流程通常是：日志接入/采集 —&amp;gt; 日志清洗 —&amp;gt; 日志分析聚合（option） —&amp;gt; 日志存储 —&amp;gt; 日志查询。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;其中，日志清洗的定义：指通过切分、静态 Join 等操作，将日志数据转化为标准 Key-Value（KV）格式的过程。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;笔者看完这个定义后，大脑就浮现一个想法：如果日志一开始就是标准的KV格式，那么，是不是就可以把日志清洗流程省下来了？&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;事实上，过去2个月，我们的确这么干了。我们把所有的SpringBoot应用的日志都改成了JSON格式。而且对JSON中的Key进行了规范。将来，我们还会制定一个日志规范，以规范其它语言的应用的日志。这样进一步扩大日志结构化所带来的好处。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;通过这种方式，我们节约了以下成本：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;1. 日志清洗的程序的开发、运行、维护费用。&lt;/p&gt;&lt;p&gt;2. 日志的解析成本：程序员随意打日志，数据工程师只能被动的分析。&lt;/p&gt;&lt;p&gt;3. 查询日志的认知成本：过去是通过grep命令进行查询，现在通过SQL的方式查询。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;当然，结构化日志本身也有成本：&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;1. 对历史日志的改造。这部分笔者认为可以看场景而定。&lt;/p&gt;&lt;p&gt;2. 开发人员的打日志习惯的改变成本，比如培训成本。&lt;/p&gt;&lt;p&gt;3. 日志框架本身的实现成本。我们就基于logback-stash实现了自己的日志框架（只是进行了很轻的封装）。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;结构化日志本身的成本，比起日志清洗成本，根本不算什么。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;本文只是简单介绍了日志非结构化与结构化之间的成本差异。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;下一篇介绍基于SpringBoot的实践经验。请关注的我的公众号：&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzU1Njk2NjkxNA==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/FBPFm28kpSylnVQR07iciae4vSLoFOz9MZFeicgVPZOAHAroeCXOc1J0UQOuBVuUcChJ8TBAePia5SWE2unpwoa09Q/0?wx_fmt=png&quot; data-nickname=&quot;老翟杂谈&quot; data-alias=&quot;&quot; data-signature=&quot;分享持续交付的实践经验、软件工程感悟&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;p&gt;本文插图：https://pixabay.com/zh/photos/woman-camera-photographer-tool-5584377/&lt;/p&gt;
+                    &lt;p data-mpa-powered-by=&quot;yiban.io&quot;&gt;今年不少业务开发像突然被开了光一样开始讲 nocode 和 lowcode，可以看出现今的互联网可能真的是编不出什么好故事了。&lt;/p&gt;&lt;p&gt;在之前的文章里，我们已经讲过自动化、平台化和中台化了，不管业务模式怎么变，企业内总还是有一些局部系统最终能够把开发模式沉淀下来，变成拖拖拽拽就可以进行变更的“网页制作大师”系统。&lt;/p&gt;&lt;p&gt;像阿里这样的公司，中台落地并迭代多年以后，核心业务的流程变化  并不会有太多的编码任务，从内部资料来看，套用以往的业务模式，改改配置或者上上活动，基本不需要程序员去做开发了。&lt;/p&gt;&lt;p&gt;不管我们在哪个公司，只要我们按照《在业务系统中寻找技术含量》这篇文章的思路去做系统，最终一定能够将大部分繁琐的重复劳动做到自动化。二八定律，就是可以将那 80% 的重复劳动用界面化、系统化、流程化的手段完全消灭掉。剩下的 20% 需求手动开发，然后再逐渐将通用的逻辑和功能沉淀进来。&lt;/p&gt;&lt;p&gt;如果你在企业内经历过完整的中台迭代流程，也应该知道中台本身会有很多问题，之前我在《中台的末路》里已经写过一些，lowcode 和 nocode 所面临的问题很多和中台也是一样的。&lt;/p&gt;&lt;p&gt;我们可以简单地把抽象和封装分为多个层次：&lt;/p&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.5493333333333333&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Lq0XA1b7xbfercxH0RhlKVhC02TZWkbQgEXB4A935tkL1iaoumoYla2o0EcrMRwtBWALPUicEKXmQyahF6qCN1RA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;750&quot;/&gt;&lt;figcaption&gt;lowcode_level_dilemma&lt;/figcaption&gt;&lt;/figure&gt;&lt;p&gt;对于声称 nocode 的系统，基本上一定是位于最上层的，需要已经针对领域做了很多积累和建模，这样才能套用以往的商业能力(别想太复杂，实际上可能就是一个支付接口，只不过里面一堆代码)。而对于 lowcode，除了要考虑能用界面化的方式搭建流程，还要考虑在需要扩展的时候，把下面那层也暴露出来，能让程序员去写代码给系统功能打补丁。同时你还得能让这部分代码最终转成可以看的界面元素，哪怕只显示成为一个“定制流程”。&lt;/p&gt;&lt;p&gt;仔细看看，这些也并不是什么新东西，很多 lowcode/nocode 的实现无非是 dreamweaver + serverless 的后端描述 + bpm 的杂糅系统，互联网公司的程序员有啥可骄傲的呢？&lt;/p&gt;&lt;p&gt;人家游戏圈早就有这些东西了，我给你们举几个例子：&lt;/p&gt;&lt;h2&gt;super mario maker&lt;/h2&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5629017447199265&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/Lq0XA1b7xbfercxH0RhlKVhC02TZWkbQ4Q3zUJ4A6t3gIFEvqCibps4Jv14Mjmv1S4fMOjPAdU8ODeFawYX0pBQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1089&quot;/&gt;&lt;/p&gt;&lt;figure&gt;&lt;figcaption&gt;超级马里奥制造2&lt;/figcaption&gt;&lt;/figure&gt;&lt;p&gt;从本质上来讲，超级马里奥制造就是一个非常非常简单的游戏引擎，操作方式和物理效果已经内置好了，用户自己简单拖拖拽拽就可以设计自己的关卡。在 super mario maker 2 里，有很多官方关卡是完全可以复制出来的，比如&lt;span&gt;这个例子&lt;/span&gt;&lt;span&gt;[1]&lt;/span&gt;。&lt;/p&gt;&lt;p&gt;当然用直觉也可以推测出来，这个工具肯定不能把所有代码能干的事情都干了，毕竟直接上手写代码几乎是万能的。但这不妨碍玩家在这个游戏里发挥自己的创意，做出那些连官方制作者都拍案叫绝的创意。&lt;/p&gt;&lt;h2&gt;附带导航&lt;/h2&gt;&lt;p&gt;&lt;span&gt;附带导航&lt;/span&gt;&lt;span&gt;[2]&lt;/span&gt; 是任天堂最近要发售的一个游戏(误)，其实也是一个游戏引擎，只不过这次你能用他来制作更多类型游戏了。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.56171875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/Lq0XA1b7xbfercxH0RhlKVhC02TZWkbQYP3OXkEnW09dfbH8c1KKkJeVInApYB8gwia21CEibGdoiaTC0xibDgnquQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;figure&gt;&lt;figcaption&gt;附带导航&lt;br/&gt;&lt;/figcaption&gt;&lt;/figure&gt;&lt;p&gt;这也是将游戏引擎本身大幅简化，降低门槛，让没有编程基础的人能去做软件项目的一种尝试，嘿，你是不是感觉有种既视感？&lt;/p&gt;&lt;h2&gt;RPG Maker MV&lt;/h2&gt;&lt;p&gt;&lt;span&gt;rpg maker mv&lt;/span&gt;&lt;span&gt;[3]&lt;/span&gt; 是专门给 rpg 类游戏准备的软件。也不需要用户有编程基础，就可以制作自己的 rpg 游戏，之前在这套系统上也衍生出了不少优秀作品。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.296875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/Lq0XA1b7xbfercxH0RhlKVhC02TZWkbQTO4ib1npumtHAWicPB9iaXicb3XZTG7SnrL14jzboUXwT5KFJ2DCGzMMWg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;理念一直都有，只不过人家游戏圈的人也没怎么宣传，不知道互联网圈的人激动个什么劲。可能真的是投资人的钱没处花了吧。&lt;/p&gt;&lt;section&gt;&lt;span&gt;&lt;span&gt;[1]&lt;/span&gt;&lt;p&gt;这个例子: &lt;em&gt;https://www.youtube.com/watch?v=sZguQ9zxqJg&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[2]&lt;/span&gt;&lt;p&gt;附带导航: &lt;em&gt;https://b23.tv/T2xqtA&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[3]&lt;/span&gt;&lt;p&gt;rpg maker mv: &lt;em&gt;https://www.bilibili.com/video/BV18T4y1L7V9&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;
                 &lt;/div&gt;
 
                 
@@ -125,5 +722,93 @@
 
                 
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>75a79b43b7df26ef193c2a40341238e1</guid>
+<title>实现无限缓存的 channel</title>
+<link>https://toutiao.io/k/jggpayh</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;article-entry&quot; itemprop=&quot;articleBody&quot;&gt;
+      
+      
+      
+      &lt;p&gt;Go语言的channel又两种类型，一种是无缓存的channel，一种是有缓存的buffer，这两种类型的channel大家都比较熟悉了，但是对于有缓存的channel,它的缓存长度在创建channel的时候就已经确定了，中间不能扩缩容，这导致在一些场景下使用有问题，或者说不太适合特定的场景。&lt;/p&gt;
+&lt;a id=&quot;more&quot;/&gt;
+&lt;p&gt;我为什么突然谈起这个无限缓存的channel呢？第一，它是对我的极客专栏&lt;a href=&quot;https://time.geekbang.org/column/intro/355&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Go并发编程实战课&lt;/a&gt;的补充，另外主要是我最近在review公司一位同事的代码时，我的某种设计思路出现了一个问题，如果使用无限缓存的channel的话，这个问题就会迎刃而解了。&lt;/p&gt;
+&lt;p&gt;这位同事的设计大概是这样子的：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;一个dispatcher包含一个channel, 里面存放待处理的url&lt;/li&gt;
+&lt;li&gt;一堆worker从channel中读取任务，下载解析网页，并提取其中链接，再把链接放入到dispatcher.channel中&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;这位同时使用了比较复杂的sync.Mutex和sync.Cond，并且定义了一堆并发的方法处理逻辑，这里我们不谈论这位同事的设计，只谈谈我的错误想法。&lt;/p&gt;
+&lt;p&gt;我review这段代码的时候想，如果每个 worker启动一个goroutine,处理url，然后把链接再放入到channel中即可，不用复杂的 Mutex+Cond等，但是我犯了一个错误，那就是如果当前channel已经满了，那么这些worker都不能把解析的结果放入到channel中，都被&quot;阻塞&quot;住了，并且也没有可用的worker从channel中消费url。&lt;/p&gt;
+&lt;p&gt;当然，你可以说可以创建一个buffer非常大的channel，避免被塞满，但是,第一,buffer非常大的channel占用的内存也非常大，第二，多大合适？关键你不能保证channel不会满。&lt;/p&gt;
+&lt;p&gt;如果有一个无限缓存长度的buffer就好了。&lt;/p&gt;
+&lt;p&gt;2017年，有同学像Go官方提出这么一个需求(&lt;a href=&quot;https://github.com/golang/go/issues/20352&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;#20352&lt;/a&gt;),希望能够提供一个无限容量的buffer，经过冗长的讨论，Go不会为这个&quot;稀有&quot;的场景提供一种实现，并且建议大家实现这样的一个库，通过第三库的方式处理这种场景，而且Griesemer提供了一个思路，通过ringbuffer实现缓存来实现这样的channel。&lt;/p&gt;
+&lt;p&gt;往网上有两种实现&lt;a href=&quot;https://stackoverflow.com/questions/41906146/why-go-channels-limit-the-buffer-size&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Why Go channels limit the buffer size&lt;/a&gt;和&lt;a href=&quot;https://medium.com/capital-one-tech/building-an-unbounded-channel-in-go-789e175cd2cd&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Building an Unbounded Channel in Go&lt;/a&gt;,这两种实现也比较类似，我在第一种实现的基础上，封装了一个库: &lt;a href=&quot;https://github.com/smallnest/chanx&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;chanx&lt;/a&gt;,来提供通用的无限缓存的channel。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://github.com/smallnest/chanx&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;chanx&lt;/a&gt;, 你可以star这个库，放入到你的代码库中，说不定哪一天它就可能帮你解燃眉之急。并且我已经准备好了泛型的设计，一旦Go泛型可用，我就会把它改成泛型的实现。&lt;/p&gt;
+&lt;p&gt;缓存无限的channel拥有下面的特性：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;不会阻塞write&lt;/strong&gt;。 它总是能处理write的数据，或者放入到待读取的channel中，或者放入到缓存中&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;无数据时read会被阻塞&lt;/strong&gt;。当没有可读的数据时，从channel中读取的goroutine会被阻塞&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;读写都是通过channel操作&lt;/strong&gt;。 内部的缓存不会暴露出来&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;能够查询当前待读取的数据数量&lt;/strong&gt;。因为缓存中可能也有待处理的数据，所以需要返回len(buffer)+len(chan)&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;关闭channel后，还未读取的channel还是能够被读取，读取完之后才能发现channel已经完毕&lt;/strong&gt;。这和正常的channel的逻辑是一样的，这种情况叫&quot;drain&quot;未读的数据&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;因为我们不能修改内部的channel结构，也不能重载 chan &amp;lt;- 和 &amp;lt;- chan 操作符,所以我们只能通过两个channel的方式封装一个数据结构,来提供读写。&lt;/p&gt;
+&lt;p&gt;这个数据结构为:&lt;/p&gt;
+&lt;figure class=&quot;highlight go&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;p class=&quot;line&quot;&gt;1&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;2&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;3&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;4&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;5&lt;/p&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;type&lt;/span&gt; UnboundedChan &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; {&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;In     &lt;span class=&quot;keyword&quot;&gt;chan&lt;/span&gt;&amp;lt;- T &lt;span class=&quot;comment&quot;&gt;// channel for write&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;Out    &amp;lt;-&lt;span class=&quot;keyword&quot;&gt;chan&lt;/span&gt; T &lt;span class=&quot;comment&quot;&gt;// channel for read&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;buffer []T      &lt;span class=&quot;comment&quot;&gt;// buffer&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;}&lt;/p&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+
+&lt;p&gt;其中&lt;code&gt;In&lt;/code&gt;这个channel用来写入数据，而&lt;code&gt;Out&lt;/code&gt;这个channel用来读取数据。你可以close In这个channel,等所有的数据都读取完后，Out channel也会被自动关闭。 用户是不能自己关闭&lt;code&gt;Out&lt;/code&gt;这个channel的，你也关闭不了，因为它是&lt;code&gt;&amp;lt;-chan&lt;/code&gt;类型的。&lt;/p&gt;
+&lt;p&gt;你可以通过&lt;code&gt;Len&lt;/code&gt;方法得到所有待读取的数据的长度，也可以通过&lt;code&gt;BufLen&lt;/code&gt;只获取缓存中的数据的长度，不包含外发&lt;code&gt;Out&lt;/code&gt; channel中数据的长度。&lt;/p&gt;
+&lt;figure class=&quot;highlight go&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;p class=&quot;line&quot;&gt;1&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;2&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;3&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;4&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;5&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;6&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;7&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;8&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;9&lt;/p&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// Len returns len of Out plus len of buffer.&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;func&lt;/span&gt; (c UnboundedChan) Len() &lt;span class=&quot;typename&quot;&gt;int&lt;/span&gt; {&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;built_in&quot;&gt;len&lt;/span&gt;(c.buffer) + &lt;span class=&quot;built_in&quot;&gt;len&lt;/span&gt;(c.Out)&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;}&lt;/p&gt;&lt;p class=&quot;line&quot;/&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// BufLen returns len of the buffer.&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;func&lt;/span&gt; (c UnboundedChan) BufLen() &lt;span class=&quot;typename&quot;&gt;int&lt;/span&gt; {&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;built_in&quot;&gt;len&lt;/span&gt;(c.buffer)&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;}&lt;/p&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+
+&lt;p&gt;那么重点来了，主要的逻辑的实现如下，我在代码中加了注释，通过注释和代码你就可以很好的理解整个的实现逻辑:&lt;/p&gt;
+&lt;figure class=&quot;highlight go&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;p class=&quot;line&quot;&gt;1&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;2&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;3&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;4&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;5&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;6&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;7&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;8&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;9&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;10&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;11&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;12&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;13&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;14&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;15&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;16&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;17&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;18&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;19&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;20&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;21&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;22&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;23&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;24&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;25&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;26&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;27&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;28&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;29&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;30&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;31&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;32&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;33&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;34&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;35&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;36&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;37&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;38&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;39&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;40&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;41&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;42&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;43&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;44&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;45&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;46&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;47&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;48&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;49&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;50&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;51&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;52&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;53&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;54&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;55&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;56&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;57&lt;/p&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;func&lt;/span&gt; NewUnboundedChan(initCapacity &lt;span class=&quot;typename&quot;&gt;int&lt;/span&gt;) UnboundedChan {&lt;/p&gt;&lt;p class=&quot;line&quot;/&gt;&lt;p class=&quot;line&quot;&gt;    &lt;span class=&quot;comment&quot;&gt;// 创建三个字段和无限缓存的chan类型&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;in := &lt;span class=&quot;built_in&quot;&gt;make&lt;/span&gt;(&lt;span class=&quot;keyword&quot;&gt;chan&lt;/span&gt; T, initCapacity)&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;out := &lt;span class=&quot;built_in&quot;&gt;make&lt;/span&gt;(&lt;span class=&quot;keyword&quot;&gt;chan&lt;/span&gt; T, initCapacity)&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;ch := UnboundedChan{In: in, Out: out, buffer: &lt;span class=&quot;built_in&quot;&gt;make&lt;/span&gt;([]T,&lt;span class=&quot;number&quot;&gt; 0&lt;/span&gt;, initCapacity)}&lt;/p&gt;&lt;p class=&quot;line&quot;/&gt;&lt;p class=&quot;line&quot;&gt;    &lt;span class=&quot;comment&quot;&gt;// 通过一个goroutine,不断地从in中读取出来数据，放入到out或者buffer中&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;func&lt;/span&gt;() {&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;defer&lt;/span&gt; &lt;span class=&quot;built_in&quot;&gt;close&lt;/span&gt;(out) &lt;span class=&quot;comment&quot;&gt;// in关闭，数据读取完后也把out关闭&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;loop:&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;for&lt;/span&gt; {&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;val, ok := &amp;lt;-in &lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt; !ok { &lt;span class=&quot;comment&quot;&gt;// 如果in已经被closed, 退出loop&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;break&lt;/span&gt; loop&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;}&lt;/p&gt;&lt;p class=&quot;line&quot;/&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// 否则尝试把从in中读取出来的数据放入到out中&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;select&lt;/span&gt; {&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;case&lt;/span&gt; out &amp;lt;- val: &lt;span class=&quot;comment&quot;&gt;//放入成功，说明out刚才还没有满，buffer中也没有额外的数据待处理，所以回到loop开始&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;continue&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;default&lt;/span&gt;:&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;}&lt;/p&gt;&lt;p class=&quot;line&quot;/&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// 如果out已经满了，需要把数据放入到缓存中&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;ch.buffer = &lt;span class=&quot;built_in&quot;&gt;append&lt;/span&gt;(ch.buffer, val)&lt;/p&gt;&lt;p class=&quot;line&quot;/&gt;&lt;p class=&quot;line&quot;&gt;            &lt;span class=&quot;comment&quot;&gt;// 处理缓存，一直尝试把缓存中的数据放入到out,直到缓存中没有数据了,&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;            &lt;span class=&quot;comment&quot;&gt;// 为了避免阻塞住in channel,还要尝试从in中读取数据，因为这个时候out是满的，所以就直接把数据放入到缓存中&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;built_in&quot;&gt;len&lt;/span&gt;(ch.buffer) &amp;gt;&lt;span class=&quot;number&quot;&gt; 0&lt;/span&gt; {&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;select&lt;/span&gt; {&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;case&lt;/span&gt; val, ok := &amp;lt;-in: &lt;span class=&quot;comment&quot;&gt;// 从in读取数据，放入到缓存中，如果in被closed, 退出loop&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt; !ok { &lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;break&lt;/span&gt; loop&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;}&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;ch.buffer = &lt;span class=&quot;built_in&quot;&gt;append&lt;/span&gt;(ch.buffer, val)&lt;/p&gt;&lt;p class=&quot;line&quot;/&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;case&lt;/span&gt; out &amp;lt;- ch.buffer&lt;span class=&quot;number&quot;&gt;[0&lt;/span&gt;]: &lt;span class=&quot;comment&quot;&gt;// 把缓存中最老的数据放入到out中，并移出第一个元素&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;ch.buffer = ch.buffer&lt;span class=&quot;number&quot;&gt;[1&lt;/span&gt;:]&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;built_in&quot;&gt;len&lt;/span&gt;(ch.buffer) ==&lt;span class=&quot;number&quot;&gt; 0&lt;/span&gt; { &lt;span class=&quot;comment&quot;&gt;// 避免内存泄露. 如果缓存处理完了，恢复成原始的状态&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;ch.buffer = &lt;span class=&quot;built_in&quot;&gt;make&lt;/span&gt;([]T,&lt;span class=&quot;number&quot;&gt; 0&lt;/span&gt;, initCapacity)&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;}&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;}&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;}&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;}&lt;/p&gt;&lt;p class=&quot;line&quot;/&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// in被关闭，退出loop后，buffer中可能还有未处理的数据，需要把它们塞入到out中&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;        &lt;span class=&quot;comment&quot;&gt;// 这个逻辑叫做&quot;drain&quot;。&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;        &lt;span class=&quot;comment&quot;&gt;// 这一段逻辑处理完后，就可以把out关闭掉了&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;built_in&quot;&gt;len&lt;/span&gt;(ch.buffer) &amp;gt;&lt;span class=&quot;number&quot;&gt; 0&lt;/span&gt; {&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;out &amp;lt;- ch.buffer&lt;span class=&quot;number&quot;&gt;[0&lt;/span&gt;]&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;ch.buffer = ch.buffer&lt;span class=&quot;number&quot;&gt;[1&lt;/span&gt;:]&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;}&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;}()&lt;/p&gt;&lt;p class=&quot;line&quot;/&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt; ch&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;}&lt;/p&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+
+&lt;p&gt;这一段的逻辑还是很清晰的，就是细节需要注意，它也是学习channel使用的一个很好的素材。&lt;/p&gt;
+&lt;h2 id=&quot;5月13日更新&quot;&gt;5月13日更新&lt;/h2&gt;
+&lt;p&gt;今天正好出差，在高铁上漫长的5个多小时没有事情做，所以我拿起笔记本干了两件事情，其中之一就是对这个无限缓存的channel做了优化。&lt;/p&gt;
+&lt;p&gt;本身这个无限缓存的channel的设计非常简洁，唯一有一点我不太满意的是它的buffer不能重用, 这和&lt;code&gt;ch.buffer = ch.buffer[1:]&lt;/code&gt;的处理有关系,有时候明明底层的数组很大，但是还不得不重新生成新的数据，导致堆分配频次比较多。&lt;/p&gt;
+&lt;p&gt;依照Go三巨头之一的设计，底层buffer最好采用ringbuffer的实现方式，如果buffer满了应该能&lt;a href=&quot;https://github.com/golang/go/issues/20352#issuecomment-365494616&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;自动扩容&lt;/a&gt;:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Such a library should do well in cases of very fast, &quot;bursty&quot; messages. A large enough buffered channel should be able to absorb bursts while a fast dedicated goroutine drains the channel into a ring buffer from which the messages are delivered at a slower pace to the final consumer of the messages. That ring buffer will need to be efficiently implemented, and will need to be able to grow efficiently (irrespective of size) and that will require some careful engineering. Better to leave that code to a library that can be tuned as needed than baking it into the runtime (and then possibly being at the mercy of release cycles).&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;所以我又实现了一个&lt;a href=&quot;https://github.com/smallnest/chanx/blob/main/ringbuffer.go&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;ringbuffer&lt;/a&gt;,这个ringbuffer比较简单，原因在这里我们不需要考虑并发的问题，这个ringbuffer只会在一个goroutine使用，所以它的实现就非常的简单了，需要注意&quot;读追上写&quot;，以及&quot;写满&quot;这两个边界问题就好了。通过使用ringbuffer，上面的实现就可以更改为下面的代码，可以进一步减少写爆发(burst)的时候分配过多的问题：&lt;/p&gt;
+&lt;figure class=&quot;highlight go&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;p class=&quot;line&quot;&gt;1&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;2&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;3&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;4&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;5&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;6&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;7&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;8&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;9&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;10&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;11&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;12&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;13&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;14&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;15&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;16&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;17&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;18&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;19&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;20&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;21&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;22&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;23&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;24&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;25&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;26&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;27&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;28&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;29&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;30&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;31&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;32&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;33&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;34&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;35&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;36&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;37&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;38&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;39&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;40&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;41&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;42&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;43&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;44&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;45&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;46&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;47&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;48&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;49&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;50&lt;/p&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;func&lt;/span&gt; NewUnboundedChan(initCapacity &lt;span class=&quot;typename&quot;&gt;int&lt;/span&gt;) UnboundedChan {&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;in := &lt;span class=&quot;built_in&quot;&gt;make&lt;/span&gt;(&lt;span class=&quot;keyword&quot;&gt;chan&lt;/span&gt; T, initCapacity)&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;out := &lt;span class=&quot;built_in&quot;&gt;make&lt;/span&gt;(&lt;span class=&quot;keyword&quot;&gt;chan&lt;/span&gt; T, initCapacity)&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;ch := UnboundedChan{In: in, Out: out, buffer: NewRingBuffer(initCapacity)}&lt;/p&gt;&lt;p class=&quot;line&quot;/&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;func&lt;/span&gt;() {&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;defer&lt;/span&gt; &lt;span class=&quot;built_in&quot;&gt;close&lt;/span&gt;(out)&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;loop:&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;for&lt;/span&gt; {&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;val, ok := &amp;lt;-in&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt; !ok { &lt;span class=&quot;comment&quot;&gt;// in is closed&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;break&lt;/span&gt; loop&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;}&lt;/p&gt;&lt;p class=&quot;line&quot;/&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// out is not full&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;select&lt;/span&gt; {&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;case&lt;/span&gt; out &amp;lt;- val:&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;continue&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;default&lt;/span&gt;:&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;}&lt;/p&gt;&lt;p class=&quot;line&quot;/&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// out is full&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;ch.buffer.Write(val)&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;for&lt;/span&gt; !ch.buffer.IsEmpty() {&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;select&lt;/span&gt; {&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;case&lt;/span&gt; val, ok := &amp;lt;-in:&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt; !ok { &lt;span class=&quot;comment&quot;&gt;// in is closed&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;break&lt;/span&gt; loop&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;}&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;ch.buffer.Write(val)&lt;/p&gt;&lt;p class=&quot;line&quot;/&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;case&lt;/span&gt; out &amp;lt;- ch.buffer.Peek():&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;ch.buffer.Pop()&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt; ch.buffer.IsEmpty() &amp;amp;&amp;amp; ch.buffer.size &amp;gt; ch.buffer.initialSize { &lt;span class=&quot;comment&quot;&gt;// after burst&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;ch.buffer.Reset()&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;}&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;}&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;}&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;}&lt;/p&gt;&lt;p class=&quot;line&quot;/&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// drain&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;for&lt;/span&gt; !ch.buffer.IsEmpty() {&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;out &amp;lt;- ch.buffer.Pop()&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;}&lt;/p&gt;&lt;p class=&quot;line&quot;/&gt;&lt;p class=&quot;line&quot;&gt;ch.buffer.Reset()&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;}()&lt;/p&gt;&lt;p class=&quot;line&quot;/&gt;&lt;p class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt; ch&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;}&lt;/p&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+
+
+      
+    &lt;/div&gt;
+    &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>373d1803e2963ed7e961c262964b06ba</guid>
+<title>在 RecyclerView 中使用 ListAdapter</title>
+<link>https://toutiao.io/k/22qf866</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;RichText ztext Post-RichText&quot;&gt;&lt;p&gt;本文是介绍 RecyclerView 入门 &lt;b&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//mp.weixin.qq.com/mp/appmsgalbum%3F__biz%3DMzk0NDIwMTExNw%3D%3D%26action%3Dgetalbum%26album_id%3D1866978093609893891%23wechat_redirect&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;系列文章&lt;/a&gt;&lt;/b&gt; 的第二篇。如果您已经对创建 RecyclerView 有了一定的认识，请继续阅读本文。如果尚未熟悉，建议您首先阅读本系列中的 &lt;b&gt;&lt;a href=&quot;https://zhuanlan.zhihu.com/p/363343211&quot; class=&quot;internal&quot;&gt;第一篇文章&lt;/a&gt;&lt;/b&gt;。&lt;/p&gt;&lt;p&gt;RecyclerView 可以很高效地显示列表数据。对于静态的列表数据，默认的 adapter 足矣。然而，在多数情况下，RecyclerView 的数据是动态变化的。拿&lt;b&gt;备忘工作&lt;/b&gt;的应用举例: 主要操作是添加新的工作事项，删除已经完成的工作事项。notifyItemInserted() 可以将新任务添加到指定位置，但是需要删除元素的时候问题就来了，notifyItemRemoved() 只有在您已知待删任务的位置时才有效果。虽然可以写代码来确定待删任务的位置，然后调用 notifyItemRemoved()，但是代码会变得非常繁杂。调用 notifyDataSetChanged() 也是一个办法，但是它会重绘整个视图，包括数据未发生变化的部分，使得该操作的代价变大。而 ListAdapter 可以处理元素的添加和删除而无需重绘视图，甚至可以为变化添加动画效果。&lt;/p&gt;&lt;p&gt;使用 ListAdapter 的另一个好处是: 当添加或删除元素的时候，还可以添加动画。这样用户可以很直观地看到列表数据的变化。虽然没有 ListAdapter 也可以实现动画效果，但是这就需要开发者自行实现，并且由于带有动画的视图需要重绘，所以无法达到同样的性能表现。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-571c26aeec909985e2efa56f3f93d491_b.gif&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;318&quot; data-rawheight=&quot;712&quot; data-thumbnail=&quot;https://pic2.zhimg.com/v2-571c26aeec909985e2efa56f3f93d491_b.jpg&quot; class=&quot;content_image&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;318&quot; data-rawheight=&quot;712&quot; data-thumbnail=&quot;https://pic2.zhimg.com/v2-571c26aeec909985e2efa56f3f93d491_b.jpg&quot; class=&quot;content_image lazy&quot; data-actualsrc=&quot;https://pic2.zhimg.com/v2-571c26aeec909985e2efa56f3f93d491_b.gif&quot;/&gt;&lt;figcaption&gt;添加元素的动画效果&lt;/figcaption&gt;&lt;/figure&gt;&lt;h2&gt;&lt;b&gt;处理差异比较&lt;/b&gt;&lt;/h2&gt;&lt;p&gt;DiffUtil 是 ListAdapter 能够高效改变元素的奥秘所在。DiffUtil 会比较新旧列表中增加、移动、删除了哪些元素，然后输出更新操作的列表将原列表中的元素高效地转换为新的元素。&lt;/p&gt;&lt;p&gt;为了能够识别新的数据，DiffUtil 需要您重写 areItemsTheSame() 和 areContentsTheSame()。areItemsTheSame() 检查两个元素是否为同一元素。areContentsTheSame() 检查两个元素是否包含相同的数据。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic4.zhimg.com/v2-94f7d618987d2f8fce6ed40d1a607a77_b.jpg&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1400&quot; data-rawheight=&quot;531&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic4.zhimg.com/v2-94f7d618987d2f8fce6ed40d1a607a77_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1400&quot; data-rawheight=&quot;531&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic4.zhimg.com/v2-94f7d618987d2f8fce6ed40d1a607a77_r.jpg&quot; data-actualsrc=&quot;https://pic4.zhimg.com/v2-94f7d618987d2f8fce6ed40d1a607a77_b.jpg&quot;/&gt;&lt;figcaption&gt;areItemsTheSame() 比较元素的示意图&lt;/figcaption&gt;&lt;/figure&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-40a0e529be7f234c6145bc5dad3d0685_b.jpg&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1386&quot; data-rawheight=&quot;512&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic2.zhimg.com/v2-40a0e529be7f234c6145bc5dad3d0685_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1386&quot; data-rawheight=&quot;512&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic2.zhimg.com/v2-40a0e529be7f234c6145bc5dad3d0685_r.jpg&quot; data-actualsrc=&quot;https://pic2.zhimg.com/v2-40a0e529be7f234c6145bc5dad3d0685_b.jpg&quot;/&gt;&lt;figcaption&gt;areContentsTheSame() 比较元素的示意图&lt;/figcaption&gt;&lt;/figure&gt;&lt;p&gt;在 &lt;code&gt;Adapter&lt;/code&gt; 类中添加 &lt;code&gt;DiffUtil&lt;/code&gt; 对象，并且复写 &lt;code&gt;areItemsTheSame()&lt;/code&gt; 和 &lt;code&gt;areContentsTheSame()&lt;/code&gt;。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-kotlin&quot;&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;!--&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Copyright&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;2019&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Google&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;LLC&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt; 
+   &lt;span class=&quot;n&quot;&gt;SPDX&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;License&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Identifier&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Apache&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;2.0&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;--&amp;gt;&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;object&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;FlowerDiffCallback&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DiffUtil&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ItemCallback&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Flower&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+   &lt;span class=&quot;k&quot;&gt;override&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;fun&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;areItemsTheSame&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;oldItem&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Flower&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;newItem&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Flower&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Boolean&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;oldItem&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;newItem&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;id&lt;/span&gt;
+   &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+   &lt;span class=&quot;k&quot;&gt;override&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;fun&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;areContentsTheSame&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;oldItem&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Flower&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;newItem&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Flower&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Boolean&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;oldItem&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;newItem&lt;/span&gt;
+   &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;将 &lt;code&gt;Adapter&lt;/code&gt; 的父类由 &lt;code&gt;RecyclerView.Adapter&lt;/code&gt; 改为 &lt;code&gt;ListAdapter&lt;/code&gt;，并传入 &lt;code&gt;DiffCallback&lt;/code&gt;。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-kotlin&quot;&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;!--&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Copyright&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;2019&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Google&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;LLC&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt; 
+   &lt;span class=&quot;n&quot;&gt;SPDX&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;License&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Identifier&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Apache&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;2.0&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;--&amp;gt;&lt;/span&gt;
+   
+&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;FlowerAdapter&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ListAdapter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;FlowerAdapter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;FlowerViewHolder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;FlowerDiffCallback&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2&gt;&lt;b&gt;更新列表&lt;/b&gt;&lt;/h2&gt;&lt;p&gt;&lt;b&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//developer.android.google.cn/reference/androidx/recyclerview/widget/ListAdapter&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;ListAdapter&lt;/a&gt;&lt;/b&gt; 通过 &lt;b&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//developer.android.google.cn/reference/androidx/recyclerview/widget/ListAdapter%23submitList%28java.util.List%253CT%253E%29&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;submitList()&lt;/a&gt;&lt;/b&gt; 方法获取数据，该方法提交了一个列表来与当前列表进行对比并显示。也就是说您无需再重写 &lt;code&gt;getItemCount()&lt;/code&gt;，因为 &lt;code&gt;ListAdapter&lt;/code&gt; 会负责管理列表。&lt;/p&gt;&lt;p&gt;在 &lt;code&gt;Activity&lt;/code&gt; 类中，调用 &lt;code&gt;Adapter&lt;/code&gt; 的 &lt;code&gt;submitList()&lt;/code&gt; 方法并传入数据列表。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-kotlin&quot;&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;!--&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Copyright&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;2019&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Google&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;LLC&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt; 
+   &lt;span class=&quot;n&quot;&gt;SPDX&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;License&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Identifier&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Apache&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;2.0&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;--&amp;gt;&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;py&quot;&gt;flowerList&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;resources&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;getStringArray&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;R&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;array&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;flower_array&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;toMutableList&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;py&quot;&gt;flowerAdapter&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;FlowerAdapter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;flowerAdapter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;submitList&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;flowerList&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在 &lt;code&gt;Adapter&lt;/code&gt; 类中，&lt;code&gt;onBindViewHolder()&lt;/code&gt; 现在可以使用 &lt;b&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//developer.android.google.cn/reference/androidx/recyclerview/widget/ListAdapter%23getItem%28int%29&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;getItem()&lt;/a&gt;&lt;/b&gt; 从数据列表中获取指定位置的元素了。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-kotlin&quot;&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;!--&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Copyright&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;2019&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Google&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;LLC&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt; 
+   &lt;span class=&quot;n&quot;&gt;SPDX&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;License&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Identifier&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Apache&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;2.0&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;--&amp;gt;&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;override&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;fun&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;onBindViewHolder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;holder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;FlowerViewHolder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;position&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;holder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bind&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;getItem&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;position&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;就这么简单。仅需几步简单操作就可以在您的 &lt;code&gt;RecyclerView&lt;/code&gt; 中使用 &lt;code&gt;ListAdapter&lt;/code&gt;。现在您的应用可以通过使用 &lt;code&gt;ListAdapter&lt;/code&gt; 来更新那些发生变化的元素以获得更好的性能和用户体验了。&lt;/p&gt;&lt;h2&gt;&lt;b&gt;下一步&lt;/b&gt;&lt;/h2&gt;&lt;p&gt;关于 &lt;code&gt;ListAdapter&lt;/code&gt; 的 &lt;b&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//github.com/android/views-widgets-samples/tree/main/RecyclerViewKotlin&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;完整示例代码&lt;/a&gt;&lt;/b&gt; 都在这里。&lt;/p&gt;&lt;p&gt;感谢阅读 &lt;b&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//mp.weixin.qq.com/mp/appmsgalbum%3F__biz%3DMzk0NDIwMTExNw%3D%3D%26action%3Dgetalbum%26album_id%3D1866978093609893891%23wechat_redirect&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;RecyclerView 系列&lt;/a&gt;&lt;/b&gt; 的第二篇文章。请继续关注未来更多关于 &lt;code&gt;RecyclerView&lt;/code&gt; 的内容。&lt;/p&gt;&lt;p&gt;如果您想了解更多关于 &lt;code&gt;ListAdapter&lt;/code&gt; 的内容，请参考 &lt;b&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//developer.android.google.cn/reference/androidx/recyclerview/widget/ListAdapter&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;官方文档&lt;/a&gt;&lt;/b&gt;&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
