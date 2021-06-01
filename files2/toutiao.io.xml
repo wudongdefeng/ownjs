@@ -5,330 +5,6 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>f225165eb4281236baddef64a03ab3e2</guid>
-<title>Redis 集群 JedisCluster 的 pipeline 自定义实现</title>
-<link>https://toutiao.io/k/y3b2owg</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;h1&gt;前言&lt;/h1&gt;
-
-&lt;p&gt;2020年4月30日，Redis 6.0.0正式发布，标志着redis从此告别单线程。在此之前，在大数据生产环境中使用的是一个30个节点的Codis集群，SparkStreaming以此作为缓存，QPS高峰大概在2000w/s。&lt;/p&gt;
-
-&lt;p&gt;因为Codis不再更新迭代，于是在Redis 6.0.6版本发布的时候搭建了Redis Cluster，新的应用将不再使用Codis。之前连接Codis使用的Java客户端是Jedis，通过Pipeline方式批次执行命令，以此来提高效率。而Redis Cluster的客户端JedisCluster没有提供Pipeline方式，只能单条执行命令，于是开始考虑其他的Java客户端。&lt;/p&gt;
-
-&lt;p&gt;这里备选了两个客户端：&lt;strong&gt;lettuce&lt;/strong&gt;和&lt;strong&gt;Redisson&lt;/strong&gt;&lt;/p&gt;
-
-&lt;h2&gt;pipeline原理&lt;/h2&gt;
-
-&lt;p&gt;这里先说一下Jedis的pipeline的原理。通过pipeline对redis的所有操作命令，都会先放到一个List中，当pipeline直接执行或者通过jedis.close()调用sync()的时候，所有的命令都会一次性地发送到客户端，并且每个操作命令返回一个response，通过get来获取操作结果。&lt;/p&gt;
-
-&lt;h1&gt;lettuce&lt;/h1&gt;
-
-&lt;p&gt;lettuce提供了async异步方式来实现pipeline的功能，来测试一下是否可按批次处理命令。&lt;/p&gt;
-
-&lt;p&gt;测试代码：&lt;/p&gt;
-
-&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;public static void main(String[] args) throws Exception {
-        RedisURI uri = RedisURI.builder()
-                .withHost(&quot;47.102.xxx.xxx&quot;)
-                .withPassword(&quot;Redis6.0.6&quot;.toCharArray())
-                .withPort(10001)
-                .build();
-        RedisClusterClient client = RedisClusterClient.create(uri);
-        StatefulRedisClusterConnection&amp;lt;String, String&amp;gt; connect = client.connect();
-        RedisAdvancedClusterAsyncCommands&amp;lt;String, String&amp;gt; async = connect.async();
-        // 断点1
-        async.set(&quot;key1&quot;, &quot;v1&quot;);
-        Thread.sleep(1000 * 3);
-        // 断点2
-        async.set(&quot;key2&quot;, &quot;v2&quot;);
-        // 断点3
-        async.flushCommands();
-        Thread.sleep(1000 * 3);
-        connect.close();
-        client.shutdown();
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;在程序中设置三个断点。如果是pipeline的话，只有执行完断点3，两条set命令才会执行。
-运行结果：
-&lt;img src=&quot;https://img-blog.csdnimg.cn/20201214092218858.png&quot; alt=&quot;运行结果&quot;/&gt;
-结果表明还未到flushCommands()，第一个set命令已经执行。到这你可能就会以为lettuce其实还是逐条命令执行，只是开启了异步请求模式。其实不然，在lettuce异步操作中，默认开启了&lt;strong&gt;命令自动刷新&lt;/strong&gt;功能，所以给你的假象还是逐条执行，在此需要&lt;strong&gt;禁用自动刷新&lt;/strong&gt;来开启pipeline功能。&lt;/p&gt;
-
-&lt;p&gt;在set()之前加上一行代码：&lt;/p&gt;
-
-&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;async.setAutoFlushCommands(false);
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;运行结果：
-&lt;img src=&quot;https://img-blog.csdnimg.cn/20201214094221395.png&quot; alt=&quot;运行结果&quot;/&gt;&lt;/p&gt;
-
-&lt;h1&gt;Redisson&lt;/h1&gt;
-
-&lt;p&gt;redisson提供了batch来实现pipeline的功能。&lt;/p&gt;
-
-&lt;p&gt;测试代码:&lt;/p&gt;
-
-&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt; Config config = new Config();
- config.useClusterServers()
-       .addNodeAddress(&quot;redis://47.102.219.86:10001&quot;)
-       .setPassword(&quot;Redis@6.0.6&quot;);
- RedissonClient redisson = Redisson.create(config);
- RBatch batch = redisson.createBatch();
- String key = &quot;test&quot;;
- for (int i = 1; i &amp;lt; 3; i++) {
-      batch.getMap(key + i).putAsync(String.valueOf(i), String.valueOf(i));
-    }
- // 打上断点
- batch.execute();
- redisson.shutdown();
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;这里我们在execute()处打上断点，debug运行程序。
-运行结果：
-&lt;img src=&quot;https://img-blog.csdnimg.cn/202012140047268.png&quot; alt=&quot;执行结果&quot;/&gt;
-结果表明Redisson会将命令放在一个batch中，当执行execute()时，会将命令一次性发送到redis执行。虽然Redisson实现了pipeline的功能，但是我最后还是放弃了它。原因很简单，它的方法不像jedis和lettuce一样简单明了，和redis的操作命令相差太多，导致使用起来比较繁琐。&lt;/p&gt;
-
-&lt;h1&gt;Jedis Cluster Pipeline&lt;/h1&gt;
-
-&lt;h2&gt;原因&lt;/h2&gt;
-
-&lt;p&gt;开头也提到了，Jedis对Redis Cluster提供了JedisCluster客户端，但是没有Pipeline模式，那么JedisCluster为什么不支持Pipeline？&lt;/p&gt;
-
-&lt;p&gt;在redis中一共有16384个Slot，每个节点负责一部分Slot，当对Key进行操作时，redis会通过&lt;em&gt;CRC16&lt;/em&gt;计算出key对应的Slot，将Key映射到Slot所在节点上执行操作。&lt;/p&gt;
-
-&lt;p&gt;因为不同Key映射的节点不同，所以JedisCluster需要持有Redis Cluster每个节点的连接才能执行操作，而Pipeline是面向于一个redis连接的执行模式，所以JedisCluster无法支持Pipeline。&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;那么我们自己有没有办法利用JedisCluster去封装一个具有Pipeline模式的客户端？&lt;/em&gt;&lt;/p&gt;
-
-&lt;h2&gt;思路&lt;/h2&gt;
-
-&lt;p&gt;&lt;strong&gt;刚刚提到，JedisCluster会持有Redis Cluster所有节点的连接&lt;/strong&gt;。那么，如果我们可以获取到所有节点的连接，对每个节点的连接都开启Pipeline。首先计算出每个Key所在的Slot，再找到Slot对应节点，就可以将Key放到对应节点连接的Pipeline上，这样不就实现了集群版的Pipeline了么！&lt;/p&gt;
-
-&lt;p&gt;我们要做的工作就是找到对应关系，将每个Key分配到对应的节点连接中。&lt;/p&gt;
-
-&lt;p&gt;秉着不重复造轮子的观点，我们先看看JedisCluster是如何执行命令的？&lt;/p&gt;
-
-&lt;h2&gt;JedisCluster&lt;/h2&gt;
-
-&lt;p&gt;先写样例，并在get()处打断点。
-&lt;img src=&quot;https://img-blog.csdnimg.cn/2020121509471542.png&quot; alt=&quot;JedisCluster&quot;/&gt;
- &lt;img src=&quot;https://img-blog.csdnimg.cn/2020121510133387.png&quot; alt=&quot;run()&quot;/&gt;&lt;/p&gt;
-
-&lt;h3&gt;CRC16&lt;/h3&gt;
-
-&lt;p&gt;进入run()，可以看到JedisClusterCRC16提供了getSlot()方法，&lt;strong&gt;可以计算出Key所在的Slot&lt;/strong&gt;。
-&lt;img src=&quot;https://img-blog.csdnimg.cn/20201215102154264.png&quot; alt=&quot;run()&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;run()里面调用了runWithRetries()，这是核心方法之一，Step into&lt;/p&gt;
-
-&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;// 据方法调用参数删除了部分代码
-private T runWithRetries(final int slot, int attempts, boolean tryRandomNode, JedisRedirectionException redirect) {
-    Jedis connection = null;
-    try {
-        // false
-        if (tryRandomNode) {
-            connection = connectionHandler.getConnection();
-        } else {
-            // 重点：从方法名看，是根据slot来获取jedis连接！！
-            connection = connectionHandler.getConnectionFromSlot(slot);
-        }
-        return execute(connection);
-    } catch (JedisNoReachableClusterNodeException jnrcne) {
-      throw jnrcne;
-    } catch (JedisConnectionException jce) {
-      // 释放连接
-      releaseConnection(connection);
-      connection = null;
-      if (attempts &amp;lt;= 1) {
-        // 刷新slots
-        this.connectionHandler.renewSlotCache();
-      }
-      return runWithRetries(slot, attempts - 1, tryRandomNode, redirect);
-    } 
-  }
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;从runWithRetries()可以看到，JedisCluster通过调用getConnectionFromSlot(slot)来获取jedis连接，这里&lt;strong&gt;实现了Slot和Jedis的关系&lt;/strong&gt;。&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;那么connectionHandler为什么可以提供redis连接？&lt;/em&gt;&lt;/p&gt;
-
-&lt;h3&gt;connectionHandler&lt;/h3&gt;
-
-&lt;p&gt;&lt;strong&gt;查看connectionHandler变量信息&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://img-blog.csdnimg.cn/20201215145801307.png&quot; alt=&quot;connectionHandler&quot;/&gt;
-可以看到它有一个JedisClusterInfoCache类型的成员变量cache，cache有两个HashMap类型的成员变量nodes和slots，nodes保存节点和JedisPool的映射关系，slots保存16384个slot和JedisPool的映射关系，这里&lt;strong&gt;slot和节点实现了映射关系&lt;/strong&gt;。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;接着看一下getConnectionFromSlot()&lt;/strong&gt;：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://img-blog.csdnimg.cn/20201215155826851.png&quot; alt=&quot;getConnectionFromSlot()&quot;/&gt;
-&lt;img src=&quot;https://img-blog.csdnimg.cn/20201215162754242.png&quot; alt=&quot;getSlotPool()&quot;/&gt;
-可以看出，cache调用getSlotPool()，从成员变量slots中通过slot取到了相应节点的JedisPool。&lt;/p&gt;
-
-&lt;p&gt;简单的画一下流程图：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://img-blog.csdnimg.cn/202012151706329.png&quot; alt=&quot;流程图&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;至此，所有轮子都已经具备，开始造车。
-&lt;img src=&quot;https://img-blog.csdnimg.cn/20201216160632824.jpg&quot; alt=&quot;Pipeline&quot;/&gt;&lt;/p&gt;
-
-&lt;h1&gt;实现Pipeline&lt;/h1&gt;
-
-&lt;p&gt;我们只要获取到connectionHandler变量，就可以使用它的成员变量cache来获取Jedis。&lt;/p&gt;
-
-&lt;p&gt;connectionHandler是JedisCluster的成员变量，在其父类BinaryJedisCluster中找到了此变量。
-&lt;img src=&quot;https://img-blog.csdnimg.cn/20201215174630762.png&quot; alt=&quot;BinaryJedisCluster&quot;/&gt;
-cache是connectionHandler的成员变量，在其父类JedisClusterConnectionHandler找到了此变量。
-&lt;img src=&quot;https://img-blog.csdnimg.cn/20201215175345852.png&quot; alt=&quot;JedisClusterConnectionHandler&quot;/&gt;
-connectionHandler和cache都是protected变量，外部类无法直接访问，所以需要定义子类访问变量。&lt;/p&gt;
-
-&lt;h2&gt;自定义ConnectionHandler&lt;/h2&gt;
-
-&lt;p&gt;目的：使用cache保存的Cluster信息，用其来获取JedisPool。&lt;/p&gt;
-
-&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;public class JedisSlotConnectionHandlerImp extends JedisSlotBasedConnectionHandler implements Serializable {
-    public JedisSlotConnectionHandlerImp(Set&amp;lt;HostAndPort&amp;gt; nodes, GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password) {
-        super(nodes, poolConfig, connectionTimeout, soTimeout, password);
-    }
-
-    // 自定义通过slot获取JedisPool的方法
-    // 为了保证后面一个JedisPool只取一个Jedis
-    public JedisPool getJedisPoolFromSlot(int slot) {
-        JedisPool jedisPool = cache.getSlotPool(slot);
-        if (jedisPool != null) {
-            return jedisPool;
-        } else {
-            renewSlotCache();
-            jedisPool = cache.getSlotPool(slot);
-            if (jedisPool != null) {
-                return jedisPool;
-            } else {
-                throw new JedisNoReachableClusterNodeException(&quot;No reachable node in cluster for slot &quot; + slot);
-            }
-        }
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2&gt;自定义ClusterPipeline&lt;/h2&gt;
-
-&lt;p&gt;目的：使用connectionHandler来建立key、slot以及JedisPool之间关系映射&lt;/p&gt;
-
-&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;public class JedisClusterPipeline extends JedisCluster implements Serializable {
-    // 覆盖父类中的connectionHandler
-    protected JedisSlotConnectionHandlerImp connectionHandler;
-    public JedisClusterPipeline(HashSet node, int connectionTimeout, int soTimeout, int maxAttempts, String password, GenericObjectPoolConfig poolConfig) {
-        super(node, connectionTimeout, soTimeout, maxAttempts, password, poolConfig);
-        connectionHandler = new JedisSlotConnectionHandlerImp(node, poolConfig, connectionTimeout, soTimeout, password);
-    }
-    // 通过key转换成slot，再获取JedisPool
-    public JedisPool getJedisPoolFromSlot(String key) {
-        return connectionHandler.getJedisPoolFromSlot(JedisClusterCRC16.getSlot(key));
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2&gt;使用&lt;/h2&gt;
-
-&lt;p&gt;使用自定义的JedisClusterPipeline，需要自己实现set、get、hget等方法来覆盖父类JedisCluster对应的方法。最初的目的是应用于Spark将维度信息存入Redis Cluster，当时是用scala面向RDD的partition实现了集群版的hmset()方法。&lt;/p&gt;
-
-&lt;p&gt;这里临时用Java实现一下Pipeline的set()方法。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;实现set()&lt;/strong&gt;&lt;/p&gt;
-
-&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;public class JedisClusterPipelineCommand {
-    /**
-     * 自定义的pipeline模式set方法
-     * @param key 存放的key
-     * @param value 存放的value
-     * @param clusterPipeline 用来获取JedisPool
-     * @param pipelines 建立JedisPool和pipeline映射，保证一个JedisPool只开启一个pipeline
-     * @param jedisMap 建立pipeline和Jedis映射，用来释放Jedis
-     * @param nums 记录每个pipeline放入key的条数
-     * @param threshold pipeline进行sync的阈值
-     */
-    public static void setByPipeline(String key, String value, JedisClusterPipeline clusterPipeline, ConcurrentHashMap&amp;lt;JedisPool, Pipeline&amp;gt; pipelines, ConcurrentHashMap&amp;lt;Pipeline, Jedis&amp;gt; jedisMap,  ConcurrentHashMap&amp;lt;Pipeline, Integer&amp;gt; nums, int threshold) {
-        JedisPool jedisPool = clusterPipeline.getJedisPoolFromSlot(key);
-        // 查看对应节点是否已经开启了pipeline
-        Pipeline pipeline = pipelines.get(jedisPool);
-        if (pipeline == null) {
-            Jedis jedis = jedisPool.getResource();
-            pipeline = jedis.pipelined();
-            // 构建映射关系，保证每个节点只有一个jedis来开启pipeline
-            jedisMap.put(pipeline, jedis);
-            pipelines.put(jedisPool, pipeline);
-            nums.put(pipeline, 0);
-        }else {
-            int num = nums.get(pipeline);
-            nums.put(pipeline, num + 1);
-            if (num % threshold == 0) {
-                pipeline.sync();
-            }
-        }
-        pipeline.set(key, value);
-    }
-
-    /**
-     * 释放jedis并强制pipeline sync
-     */
-    public static void releaseConnection(ConcurrentHashMap&amp;lt;Pipeline, Jedis&amp;gt; jedisMap) {
-        for (Jedis jedis : jedisMap.values()) {
-            jedis.close();
-        }
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;strong&gt;执行类&lt;/strong&gt;&lt;/p&gt;
-
-&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;    public static void main(String[] args) throws Exception {
-        JedisPoolConfig config = new JedisPoolConfig();
-        HashSet jedisClusterNodes = new java.util.HashSet&amp;lt;HostAndPort&amp;gt;();
-        jedisClusterNodes.add(new HostAndPort(&quot;47.102.xxx.xx&quot;, 10001));
-        JedisClusterPipeline jedisClusterPipeline = new JedisClusterPipeline(jedisClusterNodes, 1000, 1000, 10, &quot;Redis6&quot;, config);
-        ConcurrentHashMap&amp;lt;JedisPool, Pipeline&amp;gt; pipelines = new ConcurrentHashMap&amp;lt;&amp;gt;();
-        ConcurrentHashMap&amp;lt;Pipeline, Jedis&amp;gt; jedisMap = new ConcurrentHashMap&amp;lt;&amp;gt;();
-        ConcurrentHashMap&amp;lt;Pipeline, Integer&amp;gt; nums = new ConcurrentHashMap&amp;lt;&amp;gt;();
-        for (int i = 0; i &amp;lt; 1000; i++) {
-            JedisClusterPipelineCommand.setByPipeline(&quot;k&quot; + i, &quot;v&quot; + i, jedisClusterPipeline, pipelines, jedisMap, nums, 100 );
-        }
-        JedisClusterPipelineCommand.releaseConnection(jedisMap);
-    }
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;strong&gt;执行结果&lt;/strong&gt;
-&lt;img src=&quot;https://img-blog.csdnimg.cn/20201216182558100.png&quot; alt=&quot;执行结果&quot;/&gt;&lt;/p&gt;
-
-&lt;h2&gt;性能测试&lt;/h2&gt;
-
-&lt;p&gt;&lt;strong&gt;本机环境1000条数据&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;pipeline模式：2.32s&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;JedisCluster：68.6s&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;strong&gt;Spark on Yarn 128w条 Hash&lt;/strong&gt;&lt;/p&gt;
-
-
-
-&lt;p&gt;本机环境测试结果受限于网络和主机配置，仅供比较参考。&lt;/p&gt;
-
-&lt;h1&gt;结语&lt;/h1&gt;
-
-&lt;p&gt;最后选择自己实现pipeline，首先是因为比较了解pipeline的原理，说白了就是用习惯了。其次是在本机测试letttuce时，出现了一些意料之外的问题，目前还在探索中。下一步的工作就是慢慢的将Pipeline其他的方法实现，逐步优化，用于生产。&lt;/p&gt;
-
-&lt;p/&gt;
-
-&lt;hr/&gt;
-
-&lt;p&gt;95后小程序员，写的都是日常工作中的亲身实践，置身于初学者的角度从0写到1，保证能够真正让大家看懂。&lt;/p&gt;
-
-&lt;p&gt;文章会在公众号 [&lt;strong&gt;入门到放弃之路&lt;/strong&gt;] 首发，期待你的关注。
-&lt;img src=&quot;https://img-blog.csdnimg.cn/20210519233121183.png&quot; alt=&quot;感谢每一份关注&quot;/&gt;&lt;/p&gt;
-&lt;/div&gt;
-  &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
 <guid>4b733524765af2795ccd4bad932c62a5</guid>
 <title>架构师图谱（上篇）</title>
 <link>https://toutiao.io/k/xha1t37</link>
@@ -665,6 +341,330 @@ Rabbitmq和Rocketmq可以保证写入同一topic的顺序性，但是在多个�
 &lt;/div&gt;
 
 &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>f225165eb4281236baddef64a03ab3e2</guid>
+<title>Redis 集群 JedisCluster 的 pipeline 自定义实现</title>
+<link>https://toutiao.io/k/y3b2owg</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;h1&gt;前言&lt;/h1&gt;
+
+&lt;p&gt;2020年4月30日，Redis 6.0.0正式发布，标志着redis从此告别单线程。在此之前，在大数据生产环境中使用的是一个30个节点的Codis集群，SparkStreaming以此作为缓存，QPS高峰大概在2000w/s。&lt;/p&gt;
+
+&lt;p&gt;因为Codis不再更新迭代，于是在Redis 6.0.6版本发布的时候搭建了Redis Cluster，新的应用将不再使用Codis。之前连接Codis使用的Java客户端是Jedis，通过Pipeline方式批次执行命令，以此来提高效率。而Redis Cluster的客户端JedisCluster没有提供Pipeline方式，只能单条执行命令，于是开始考虑其他的Java客户端。&lt;/p&gt;
+
+&lt;p&gt;这里备选了两个客户端：&lt;strong&gt;lettuce&lt;/strong&gt;和&lt;strong&gt;Redisson&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h2&gt;pipeline原理&lt;/h2&gt;
+
+&lt;p&gt;这里先说一下Jedis的pipeline的原理。通过pipeline对redis的所有操作命令，都会先放到一个List中，当pipeline直接执行或者通过jedis.close()调用sync()的时候，所有的命令都会一次性地发送到客户端，并且每个操作命令返回一个response，通过get来获取操作结果。&lt;/p&gt;
+
+&lt;h1&gt;lettuce&lt;/h1&gt;
+
+&lt;p&gt;lettuce提供了async异步方式来实现pipeline的功能，来测试一下是否可按批次处理命令。&lt;/p&gt;
+
+&lt;p&gt;测试代码：&lt;/p&gt;
+
+&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;public static void main(String[] args) throws Exception {
+        RedisURI uri = RedisURI.builder()
+                .withHost(&quot;47.102.xxx.xxx&quot;)
+                .withPassword(&quot;Redis6.0.6&quot;.toCharArray())
+                .withPort(10001)
+                .build();
+        RedisClusterClient client = RedisClusterClient.create(uri);
+        StatefulRedisClusterConnection&amp;lt;String, String&amp;gt; connect = client.connect();
+        RedisAdvancedClusterAsyncCommands&amp;lt;String, String&amp;gt; async = connect.async();
+        // 断点1
+        async.set(&quot;key1&quot;, &quot;v1&quot;);
+        Thread.sleep(1000 * 3);
+        // 断点2
+        async.set(&quot;key2&quot;, &quot;v2&quot;);
+        // 断点3
+        async.flushCommands();
+        Thread.sleep(1000 * 3);
+        connect.close();
+        client.shutdown();
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在程序中设置三个断点。如果是pipeline的话，只有执行完断点3，两条set命令才会执行。
+运行结果：
+&lt;img src=&quot;https://img-blog.csdnimg.cn/20201214092218858.png&quot; alt=&quot;运行结果&quot;/&gt;
+结果表明还未到flushCommands()，第一个set命令已经执行。到这你可能就会以为lettuce其实还是逐条命令执行，只是开启了异步请求模式。其实不然，在lettuce异步操作中，默认开启了&lt;strong&gt;命令自动刷新&lt;/strong&gt;功能，所以给你的假象还是逐条执行，在此需要&lt;strong&gt;禁用自动刷新&lt;/strong&gt;来开启pipeline功能。&lt;/p&gt;
+
+&lt;p&gt;在set()之前加上一行代码：&lt;/p&gt;
+
+&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;async.setAutoFlushCommands(false);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;运行结果：
+&lt;img src=&quot;https://img-blog.csdnimg.cn/20201214094221395.png&quot; alt=&quot;运行结果&quot;/&gt;&lt;/p&gt;
+
+&lt;h1&gt;Redisson&lt;/h1&gt;
+
+&lt;p&gt;redisson提供了batch来实现pipeline的功能。&lt;/p&gt;
+
+&lt;p&gt;测试代码:&lt;/p&gt;
+
+&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt; Config config = new Config();
+ config.useClusterServers()
+       .addNodeAddress(&quot;redis://47.102.219.86:10001&quot;)
+       .setPassword(&quot;Redis@6.0.6&quot;);
+ RedissonClient redisson = Redisson.create(config);
+ RBatch batch = redisson.createBatch();
+ String key = &quot;test&quot;;
+ for (int i = 1; i &amp;lt; 3; i++) {
+      batch.getMap(key + i).putAsync(String.valueOf(i), String.valueOf(i));
+    }
+ // 打上断点
+ batch.execute();
+ redisson.shutdown();
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这里我们在execute()处打上断点，debug运行程序。
+运行结果：
+&lt;img src=&quot;https://img-blog.csdnimg.cn/202012140047268.png&quot; alt=&quot;执行结果&quot;/&gt;
+结果表明Redisson会将命令放在一个batch中，当执行execute()时，会将命令一次性发送到redis执行。虽然Redisson实现了pipeline的功能，但是我最后还是放弃了它。原因很简单，它的方法不像jedis和lettuce一样简单明了，和redis的操作命令相差太多，导致使用起来比较繁琐。&lt;/p&gt;
+
+&lt;h1&gt;Jedis Cluster Pipeline&lt;/h1&gt;
+
+&lt;h2&gt;原因&lt;/h2&gt;
+
+&lt;p&gt;开头也提到了，Jedis对Redis Cluster提供了JedisCluster客户端，但是没有Pipeline模式，那么JedisCluster为什么不支持Pipeline？&lt;/p&gt;
+
+&lt;p&gt;在redis中一共有16384个Slot，每个节点负责一部分Slot，当对Key进行操作时，redis会通过&lt;em&gt;CRC16&lt;/em&gt;计算出key对应的Slot，将Key映射到Slot所在节点上执行操作。&lt;/p&gt;
+
+&lt;p&gt;因为不同Key映射的节点不同，所以JedisCluster需要持有Redis Cluster每个节点的连接才能执行操作，而Pipeline是面向于一个redis连接的执行模式，所以JedisCluster无法支持Pipeline。&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;那么我们自己有没有办法利用JedisCluster去封装一个具有Pipeline模式的客户端？&lt;/em&gt;&lt;/p&gt;
+
+&lt;h2&gt;思路&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;刚刚提到，JedisCluster会持有Redis Cluster所有节点的连接&lt;/strong&gt;。那么，如果我们可以获取到所有节点的连接，对每个节点的连接都开启Pipeline。首先计算出每个Key所在的Slot，再找到Slot对应节点，就可以将Key放到对应节点连接的Pipeline上，这样不就实现了集群版的Pipeline了么！&lt;/p&gt;
+
+&lt;p&gt;我们要做的工作就是找到对应关系，将每个Key分配到对应的节点连接中。&lt;/p&gt;
+
+&lt;p&gt;秉着不重复造轮子的观点，我们先看看JedisCluster是如何执行命令的？&lt;/p&gt;
+
+&lt;h2&gt;JedisCluster&lt;/h2&gt;
+
+&lt;p&gt;先写样例，并在get()处打断点。
+&lt;img src=&quot;https://img-blog.csdnimg.cn/2020121509471542.png&quot; alt=&quot;JedisCluster&quot;/&gt;
+ &lt;img src=&quot;https://img-blog.csdnimg.cn/2020121510133387.png&quot; alt=&quot;run()&quot;/&gt;&lt;/p&gt;
+
+&lt;h3&gt;CRC16&lt;/h3&gt;
+
+&lt;p&gt;进入run()，可以看到JedisClusterCRC16提供了getSlot()方法，&lt;strong&gt;可以计算出Key所在的Slot&lt;/strong&gt;。
+&lt;img src=&quot;https://img-blog.csdnimg.cn/20201215102154264.png&quot; alt=&quot;run()&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;run()里面调用了runWithRetries()，这是核心方法之一，Step into&lt;/p&gt;
+
+&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;// 据方法调用参数删除了部分代码
+private T runWithRetries(final int slot, int attempts, boolean tryRandomNode, JedisRedirectionException redirect) {
+    Jedis connection = null;
+    try {
+        // false
+        if (tryRandomNode) {
+            connection = connectionHandler.getConnection();
+        } else {
+            // 重点：从方法名看，是根据slot来获取jedis连接！！
+            connection = connectionHandler.getConnectionFromSlot(slot);
+        }
+        return execute(connection);
+    } catch (JedisNoReachableClusterNodeException jnrcne) {
+      throw jnrcne;
+    } catch (JedisConnectionException jce) {
+      // 释放连接
+      releaseConnection(connection);
+      connection = null;
+      if (attempts &amp;lt;= 1) {
+        // 刷新slots
+        this.connectionHandler.renewSlotCache();
+      }
+      return runWithRetries(slot, attempts - 1, tryRandomNode, redirect);
+    } 
+  }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;从runWithRetries()可以看到，JedisCluster通过调用getConnectionFromSlot(slot)来获取jedis连接，这里&lt;strong&gt;实现了Slot和Jedis的关系&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;那么connectionHandler为什么可以提供redis连接？&lt;/em&gt;&lt;/p&gt;
+
+&lt;h3&gt;connectionHandler&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;查看connectionHandler变量信息&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://img-blog.csdnimg.cn/20201215145801307.png&quot; alt=&quot;connectionHandler&quot;/&gt;
+可以看到它有一个JedisClusterInfoCache类型的成员变量cache，cache有两个HashMap类型的成员变量nodes和slots，nodes保存节点和JedisPool的映射关系，slots保存16384个slot和JedisPool的映射关系，这里&lt;strong&gt;slot和节点实现了映射关系&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;接着看一下getConnectionFromSlot()&lt;/strong&gt;：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://img-blog.csdnimg.cn/20201215155826851.png&quot; alt=&quot;getConnectionFromSlot()&quot;/&gt;
+&lt;img src=&quot;https://img-blog.csdnimg.cn/20201215162754242.png&quot; alt=&quot;getSlotPool()&quot;/&gt;
+可以看出，cache调用getSlotPool()，从成员变量slots中通过slot取到了相应节点的JedisPool。&lt;/p&gt;
+
+&lt;p&gt;简单的画一下流程图：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://img-blog.csdnimg.cn/202012151706329.png&quot; alt=&quot;流程图&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;至此，所有轮子都已经具备，开始造车。
+&lt;img src=&quot;https://img-blog.csdnimg.cn/20201216160632824.jpg&quot; alt=&quot;Pipeline&quot;/&gt;&lt;/p&gt;
+
+&lt;h1&gt;实现Pipeline&lt;/h1&gt;
+
+&lt;p&gt;我们只要获取到connectionHandler变量，就可以使用它的成员变量cache来获取Jedis。&lt;/p&gt;
+
+&lt;p&gt;connectionHandler是JedisCluster的成员变量，在其父类BinaryJedisCluster中找到了此变量。
+&lt;img src=&quot;https://img-blog.csdnimg.cn/20201215174630762.png&quot; alt=&quot;BinaryJedisCluster&quot;/&gt;
+cache是connectionHandler的成员变量，在其父类JedisClusterConnectionHandler找到了此变量。
+&lt;img src=&quot;https://img-blog.csdnimg.cn/20201215175345852.png&quot; alt=&quot;JedisClusterConnectionHandler&quot;/&gt;
+connectionHandler和cache都是protected变量，外部类无法直接访问，所以需要定义子类访问变量。&lt;/p&gt;
+
+&lt;h2&gt;自定义ConnectionHandler&lt;/h2&gt;
+
+&lt;p&gt;目的：使用cache保存的Cluster信息，用其来获取JedisPool。&lt;/p&gt;
+
+&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;public class JedisSlotConnectionHandlerImp extends JedisSlotBasedConnectionHandler implements Serializable {
+    public JedisSlotConnectionHandlerImp(Set&amp;lt;HostAndPort&amp;gt; nodes, GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password) {
+        super(nodes, poolConfig, connectionTimeout, soTimeout, password);
+    }
+
+    // 自定义通过slot获取JedisPool的方法
+    // 为了保证后面一个JedisPool只取一个Jedis
+    public JedisPool getJedisPoolFromSlot(int slot) {
+        JedisPool jedisPool = cache.getSlotPool(slot);
+        if (jedisPool != null) {
+            return jedisPool;
+        } else {
+            renewSlotCache();
+            jedisPool = cache.getSlotPool(slot);
+            if (jedisPool != null) {
+                return jedisPool;
+            } else {
+                throw new JedisNoReachableClusterNodeException(&quot;No reachable node in cluster for slot &quot; + slot);
+            }
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2&gt;自定义ClusterPipeline&lt;/h2&gt;
+
+&lt;p&gt;目的：使用connectionHandler来建立key、slot以及JedisPool之间关系映射&lt;/p&gt;
+
+&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;public class JedisClusterPipeline extends JedisCluster implements Serializable {
+    // 覆盖父类中的connectionHandler
+    protected JedisSlotConnectionHandlerImp connectionHandler;
+    public JedisClusterPipeline(HashSet node, int connectionTimeout, int soTimeout, int maxAttempts, String password, GenericObjectPoolConfig poolConfig) {
+        super(node, connectionTimeout, soTimeout, maxAttempts, password, poolConfig);
+        connectionHandler = new JedisSlotConnectionHandlerImp(node, poolConfig, connectionTimeout, soTimeout, password);
+    }
+    // 通过key转换成slot，再获取JedisPool
+    public JedisPool getJedisPoolFromSlot(String key) {
+        return connectionHandler.getJedisPoolFromSlot(JedisClusterCRC16.getSlot(key));
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2&gt;使用&lt;/h2&gt;
+
+&lt;p&gt;使用自定义的JedisClusterPipeline，需要自己实现set、get、hget等方法来覆盖父类JedisCluster对应的方法。最初的目的是应用于Spark将维度信息存入Redis Cluster，当时是用scala面向RDD的partition实现了集群版的hmset()方法。&lt;/p&gt;
+
+&lt;p&gt;这里临时用Java实现一下Pipeline的set()方法。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;实现set()&lt;/strong&gt;&lt;/p&gt;
+
+&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;public class JedisClusterPipelineCommand {
+    /**
+     * 自定义的pipeline模式set方法
+     * @param key 存放的key
+     * @param value 存放的value
+     * @param clusterPipeline 用来获取JedisPool
+     * @param pipelines 建立JedisPool和pipeline映射，保证一个JedisPool只开启一个pipeline
+     * @param jedisMap 建立pipeline和Jedis映射，用来释放Jedis
+     * @param nums 记录每个pipeline放入key的条数
+     * @param threshold pipeline进行sync的阈值
+     */
+    public static void setByPipeline(String key, String value, JedisClusterPipeline clusterPipeline, ConcurrentHashMap&amp;lt;JedisPool, Pipeline&amp;gt; pipelines, ConcurrentHashMap&amp;lt;Pipeline, Jedis&amp;gt; jedisMap,  ConcurrentHashMap&amp;lt;Pipeline, Integer&amp;gt; nums, int threshold) {
+        JedisPool jedisPool = clusterPipeline.getJedisPoolFromSlot(key);
+        // 查看对应节点是否已经开启了pipeline
+        Pipeline pipeline = pipelines.get(jedisPool);
+        if (pipeline == null) {
+            Jedis jedis = jedisPool.getResource();
+            pipeline = jedis.pipelined();
+            // 构建映射关系，保证每个节点只有一个jedis来开启pipeline
+            jedisMap.put(pipeline, jedis);
+            pipelines.put(jedisPool, pipeline);
+            nums.put(pipeline, 0);
+        }else {
+            int num = nums.get(pipeline);
+            nums.put(pipeline, num + 1);
+            if (num % threshold == 0) {
+                pipeline.sync();
+            }
+        }
+        pipeline.set(key, value);
+    }
+
+    /**
+     * 释放jedis并强制pipeline sync
+     */
+    public static void releaseConnection(ConcurrentHashMap&amp;lt;Pipeline, Jedis&amp;gt; jedisMap) {
+        for (Jedis jedis : jedisMap.values()) {
+            jedis.close();
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;执行类&lt;/strong&gt;&lt;/p&gt;
+
+&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;    public static void main(String[] args) throws Exception {
+        JedisPoolConfig config = new JedisPoolConfig();
+        HashSet jedisClusterNodes = new java.util.HashSet&amp;lt;HostAndPort&amp;gt;();
+        jedisClusterNodes.add(new HostAndPort(&quot;47.102.xxx.xx&quot;, 10001));
+        JedisClusterPipeline jedisClusterPipeline = new JedisClusterPipeline(jedisClusterNodes, 1000, 1000, 10, &quot;Redis6&quot;, config);
+        ConcurrentHashMap&amp;lt;JedisPool, Pipeline&amp;gt; pipelines = new ConcurrentHashMap&amp;lt;&amp;gt;();
+        ConcurrentHashMap&amp;lt;Pipeline, Jedis&amp;gt; jedisMap = new ConcurrentHashMap&amp;lt;&amp;gt;();
+        ConcurrentHashMap&amp;lt;Pipeline, Integer&amp;gt; nums = new ConcurrentHashMap&amp;lt;&amp;gt;();
+        for (int i = 0; i &amp;lt; 1000; i++) {
+            JedisClusterPipelineCommand.setByPipeline(&quot;k&quot; + i, &quot;v&quot; + i, jedisClusterPipeline, pipelines, jedisMap, nums, 100 );
+        }
+        JedisClusterPipelineCommand.releaseConnection(jedisMap);
+    }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;执行结果&lt;/strong&gt;
+&lt;img src=&quot;https://img-blog.csdnimg.cn/20201216182558100.png&quot; alt=&quot;执行结果&quot;/&gt;&lt;/p&gt;
+
+&lt;h2&gt;性能测试&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;本机环境1000条数据&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;pipeline模式：2.32s&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;JedisCluster：68.6s&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Spark on Yarn 128w条 Hash&lt;/strong&gt;&lt;/p&gt;
+
+
+
+&lt;p&gt;本机环境测试结果受限于网络和主机配置，仅供比较参考。&lt;/p&gt;
+
+&lt;h1&gt;结语&lt;/h1&gt;
+
+&lt;p&gt;最后选择自己实现pipeline，首先是因为比较了解pipeline的原理，说白了就是用习惯了。其次是在本机测试letttuce时，出现了一些意料之外的问题，目前还在探索中。下一步的工作就是慢慢的将Pipeline其他的方法实现，逐步优化，用于生产。&lt;/p&gt;
+
+&lt;p/&gt;
+
+&lt;hr/&gt;
+
+&lt;p&gt;95后小程序员，写的都是日常工作中的亲身实践，置身于初学者的角度从0写到1，保证能够真正让大家看懂。&lt;/p&gt;
+
+&lt;p&gt;文章会在公众号 [&lt;strong&gt;入门到放弃之路&lt;/strong&gt;] 首发，期待你的关注。
+&lt;img src=&quot;https://img-blog.csdnimg.cn/20210519233121183.png&quot; alt=&quot;感谢每一份关注&quot;/&gt;&lt;/p&gt;
+&lt;/div&gt;
+  &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
 <guid>5f9fdc0ffcb46679d9f498d16d1fb322</guid>
