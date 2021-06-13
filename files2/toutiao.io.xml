@@ -5,125 +5,324 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>424f9e9a8776e7b436b58717582b7806</guid>
-<title>Flutter 电商项目最佳实践</title>
-<link>https://toutiao.io/k/aldjzoo</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entryContent&quot;&gt;&amp;#13;
-        &lt;p&gt;该项目为Github开源项目，地址：&lt;a href=&quot;https://github.com/simplezhli/flutter_deer&quot;&gt;https://github.com/simplezhli/flutter_deer&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;该项目非常适合作为个人学习Flutter的练习项目。&lt;/p&gt;
-&lt;p&gt;通过设置、修改、组合自带部件以及自定义来实现具体的设计效果，满足日常开发的需求。&lt;/p&gt;
-&lt;p&gt;&lt;img class=&quot;size-full wp-image-180 aligncenter&quot; src=&quot;http://wiki.i-fanr.com/wp-content/uploads/2021/06/Screenshot_15.png&quot; alt=&quot;&quot; srcset=&quot;http://wiki.i-fanr.com/wp-content/uploads/2021/06/Screenshot_15.png 844w, http://wiki.i-fanr.com/wp-content/uploads/2021/06/Screenshot_15-300x275.png 300w, http://wiki.i-fanr.com/wp-content/uploads/2021/06/Screenshot_15-768x704.png 768w&quot; sizes=&quot;(max-width: 844px) 100vw, 844px&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;基本功能涵盖：&lt;/p&gt;
+<guid>62d56bf908b707331fe0e0aafc0d3b32</guid>
+<title>有赞 TCP 网络编程最佳实践</title>
+<link>https://toutiao.io/k/a7bxrhs</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section class=&quot;post-content&quot;&gt;
+&lt;h1 id=&quot;&quot;&gt;概述&lt;/h1&gt;
+
+&lt;p&gt;本文是根据有赞中间件团队多年的TCP网络编程实践经验总结而来，目的是为了避免应用因各种网络异常而出现各种非预期行为，从而造成非预期的影响，影响系统稳定性与可靠性。&lt;/p&gt;
+
+&lt;p&gt;本文不会涉及TCP的各个基础知识点，主要是总结一些TCP网络编程实践中可能碰到的一些问题，以及相应的经过实践验证的解决方案等。虽然本文档很多细节主要是针对于Linux系统，不过，大部分建议适合于所有系统。&lt;/p&gt;
+
+&lt;p&gt;本文共总结了&lt;strong&gt;16&lt;/strong&gt;项建议，下面逐一进行介绍。&lt;/p&gt;
+
+&lt;h1 id=&quot;1so_reuseaddr&quot;&gt;1. 服务端监听设置SO_REUSEADDR选项&lt;/h1&gt;
+
+&lt;p&gt;当我们重启服务端程序的时候可能会碰到“address already in use”这样的报错信息，即地址已被使用，导致程序无法快速成功重启。老的进程关闭退出了，为什么还会报地址已被使用呢？&lt;/p&gt;
+
+&lt;p&gt;我们先来理解如下两点：  &lt;/p&gt;
+
 &lt;ul&gt;
-&lt;li&gt;mvp模式&lt;/li&gt;
-&lt;li&gt;使用&lt;code&gt;provider&lt;/code&gt; (5.x 版本)做状态管理&lt;/li&gt;
-&lt;li&gt;基于&lt;code&gt;dio&lt;/code&gt; （4.x 版本）的网络请求封装&lt;/li&gt;
-&lt;li&gt;完整的集成测试、可访问性测试。&lt;/li&gt;
-&lt;li&gt;支持深色模式&lt;/li&gt;
-&lt;li&gt;本地化（感谢 @ghedwards）&lt;/li&gt;
-&lt;li&gt;使用&lt;code&gt;Sliver&lt;/code&gt; 系列组件实现复杂滚动效果&lt;/li&gt;
-&lt;li&gt;使用高德地图定位选择地址（支持Web）&lt;/li&gt;
-&lt;li&gt;通用Widget的处理封装&lt;/li&gt;
-&lt;li&gt;下拉刷新 + 上拉加载更多&lt;/li&gt;
-&lt;li&gt;应用检查更新&lt;/li&gt;
-&lt;li&gt;PopupWindow&lt;/li&gt;
-&lt;li&gt;扫码功能（qr_code_scanner插件）&lt;/li&gt;
-&lt;li&gt;菜单切换动画（圆形扩散、3D翻转）&lt;/li&gt;
-&lt;li&gt;侧滑删除&lt;/li&gt;
-&lt;li&gt;城市选择&lt;/li&gt;
-&lt;li&gt;类似京东选择城市的三级联动&lt;/li&gt;
-&lt;li&gt;各种自定义Dialog&lt;/li&gt;
-&lt;li&gt;列表头部吸顶&lt;/li&gt;
-&lt;li&gt;密码输入键盘&lt;/li&gt;
-&lt;li&gt;验证码输入框&lt;/li&gt;
-&lt;li&gt;自定义简易日历&lt;/li&gt;
-&lt;li&gt;曲线图及&lt;a href=&quot;https://dartpad.cn/d06f8f737d6eb2d87978eb2d14b87864&quot; rel=&quot;nofollow&quot;&gt;饼状图&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;模块化路由管理&lt;/li&gt;
-&lt;li&gt;更多Demo（水波纹动画、刮刮卡、lottie）&lt;/li&gt;
-&lt;li&gt;更多的细节优化&lt;/li&gt;
+&lt;li&gt;TCP连接主动关闭方存在持续2MSL的&lt;code&gt;TIME_WAIT&lt;/code&gt;状态；  &lt;/li&gt;
+&lt;li&gt;TCP连接由是由四元组&amp;lt;本地地址，本地端口，远程地址，远程端口&amp;gt;来确定的。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;具体可以下载体验：&lt;/p&gt;
-&lt;p&gt;Android版安装包：&lt;a href=&quot;https://www.pgyer.com/gYXj&quot; rel=&quot;nofollow&quot;&gt;点击下载&lt;/a&gt;，下载密码：&lt;code&gt;111111&lt;/code&gt;。&lt;/p&gt;
-&lt;p&gt;iOS需要自行下载代码运行。&lt;/p&gt;
-&lt;p&gt;Web体验地址：&lt;a href=&quot;https://simplezhli.github.io/flutter_deer/&quot; rel=&quot;nofollow&quot;&gt;https://simplezhli.github.io/flutter_deer/&lt;/a&gt;&lt;/p&gt;
-&lt;h3&gt;项目运行环境&lt;/h3&gt;
-&lt;pre&gt;&lt;code&gt;1. Flutter version 2.2.1&amp;#13;
- &amp;#13;
-2. Dart version 2.13.1&lt;/code&gt;&lt;/pre&gt;
-&lt;h3&gt;注意事项&lt;/h3&gt;
+
+&lt;p&gt;我们先简单回顾一下TCP连接关闭过程中的&lt;code&gt;TIME_WAIT&lt;/code&gt;状态，如下所示：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/content/images/2021/05/tcp_close.png&quot; align=&quot;center&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;（图片来源：&lt;a href=&quot;https://en.wikipedia.org/wiki/Transmission_Control_Protocol&quot;&gt;Wikipedia&lt;/a&gt;）&lt;/p&gt;
+
+&lt;p&gt;TIME_WAIT存在的意义主要有两点：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;维护连接状态，使TCP连接能够可靠地关闭。如果连接主动关闭端发送的最后一条ACK丢失，连接被动关闭端会重传FIN报文。因此，主动关闭方必须维持连接状态，以支持收到重传的FIN后再次发送ACK。如果没有&lt;code&gt;TIME_WAIT&lt;/code&gt;，并且最后一个ACK丢失，那么此时被动关闭端还会处于&lt;code&gt;LAST_ACK&lt;/code&gt;一段时间，并等待重传；如果此时主动关闭方又立即创建新TCP连接且恰好使用了相同的四元组，连接会创建失败，会被对端重置。  &lt;/li&gt;
+&lt;li&gt;等待网络中所有此连接老的重复的、走失的报文消亡，避免此类报文对新的相同四元组的TCP连接造成干扰，因为这些报文的序号可能恰好落在新连接的接收窗口内。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;因为每个TCP报文最大存活时间为MSL，一个往返最大是2*MSL，所以&lt;code&gt;TIME_WAIT&lt;/code&gt;需要等待2MSL。&lt;/p&gt;
+
+&lt;p&gt;当进程关闭时，进程会发起连接的主动关闭，连接最后会进入&lt;code&gt;TIME_WAIT&lt;/code&gt;状态。当新进程bind监听端口时，就会报错，因为有对应本地端口的连接还处于&lt;code&gt;TIME_WAIT&lt;/code&gt;状态。&lt;/p&gt;
+
+&lt;p&gt;实际上，只有当新的TCP连接和老的TCP连接四元组完全一致，且老的迷走的报文序号落在新连接的接收窗口内时，才会造成干扰。为了使用&lt;code&gt;TIME_WAIT&lt;/code&gt;状态的端口，现在大部分系统的实现都做了相关改进与扩展：&lt;/p&gt;
+
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;debug&lt;/code&gt;模式下会有部分卡顿现象，这属于正常现象。良好的体验需要打&lt;code&gt;release&lt;/code&gt; 包。 iOS可以执行命令&lt;code&gt;flutter build ios&lt;/code&gt; 以创建&lt;code&gt;release&lt;/code&gt;版本。 Android可以执行命令&lt;code&gt;flutter build apk&lt;/code&gt; 以创建&lt;code&gt;release&lt;/code&gt;版本。&lt;/li&gt;
-&lt;li&gt;项目运行有问题可以在&lt;a href=&quot;https://github.com/simplezhli/flutter_deer/blob/master/docs/iOS%E9%97%AE%E9%A2%98%E6%B1%87%E6%80%BB.md&quot;&gt;iOS问题汇总&lt;/a&gt;、&lt;a href=&quot;https://github.com/simplezhli/flutter_deer/blob/master/docs/Android%E9%97%AE%E9%A2%98%E6%B1%87%E6%80%BB.md&quot;&gt;Android问题汇总&lt;/a&gt;中尝试寻找解决办法。&lt;/li&gt;
-&lt;li&gt;由于部分插件的原因，本项目在Windows、macOS仅做预览（主要为原生功能方面，UI问题不大）。有兴趣的可自行运行体验。&lt;/li&gt;
-&lt;li&gt;可以执行集成测试命令&lt;code&gt;flutter drive --target=test_driver/driver.dart&lt;/code&gt; 查看功能演示。&lt;/li&gt;
-&lt;li&gt;因为页面有点多，一开始可能会导致页面无法与设计图对应上。我在代码注释中有添加设计图的相对路径，可以搜索或查找到对应页面，希望对你有帮助。&lt;/li&gt;
-&lt;li&gt;本项目使用&lt;a href=&quot;https://github.com/zhangruiyu/FlutterJsonBeanFactory&quot;&gt;FlutterJsonBeanFactory&lt;/a&gt;插件来生成Bean。&lt;/li&gt;
-&lt;li&gt;Web受制于js等资源过大和部署在Github上，访问会慢一些。&lt;/li&gt;
+&lt;li&gt;新连接SYN告知的初始序列号，要求一定要比&lt;code&gt;TIME_WAIT&lt;/code&gt;状态老连接的序列号大，可以一定程度保证不会与老连接的报文序列号重叠。&lt;/li&gt;
+&lt;li&gt;开启TCP &lt;a href=&quot;https://datatracker.ietf.org/doc/html/rfc6191&quot;&gt;timestamps扩展选项&lt;/a&gt;后，新连接的时间戳要求一定要比&lt;code&gt;TIME_WAIT&lt;/code&gt;状态老连接的时间戳大，可以保证老连接的报文不会影响新连接。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt; &lt;/p&gt;
-&lt;p&gt;&lt;img class=&quot;size-full wp-image-83 aligncenter&quot; src=&quot;http://wiki.i-fanr.com/wp-content/uploads/2021/02/1614247105-wechat-end.png&quot; alt=&quot;&quot; srcset=&quot;http://wiki.i-fanr.com/wp-content/uploads/2021/02/1614247105-wechat-end.png 546w, http://wiki.i-fanr.com/wp-content/uploads/2021/02/1614247105-wechat-end-300x180.png 300w&quot; sizes=&quot;(max-width: 546px) 100vw, 546px&quot;/&gt;&lt;/p&gt;
-    &lt;/div&gt;&amp;#13;
-&amp;#13;
-    &lt;/div&gt;&lt;/div&gt;</content:encoded>
+
+&lt;p&gt;因此，在开启了TCP timestamps扩展选项的情况下（&lt;code&gt;net.ipv4.tcp_timestamps = 1&lt;/code&gt;），可以放心的设置&lt;code&gt;SO_REUSEADDR&lt;/code&gt;选项，支持程序快速重启。&lt;/p&gt;
+
+&lt;p&gt;注意不要与&lt;code&gt;net.ipv4.tcp_tw_reuse&lt;/code&gt;系统参数混淆，该参数仅在客户端调用connect创建连接时才生效，可以使用&lt;code&gt;TIME_WAIT&lt;/code&gt;状态超过1秒的端口（防止最后一个ACK丢失）；而&lt;code&gt;SO_REUSEADDR&lt;/code&gt;是在bind端口时生效，一般用于服务端监听时，可以使用本地非&lt;code&gt;LISTEN&lt;/code&gt;状态的端口（另一个端口也必须设置&lt;code&gt;SO_REUSEADDR&lt;/code&gt;），不仅仅是&lt;code&gt;TIME_WAIT&lt;/code&gt;状态端口。&lt;/p&gt;
+
+&lt;h1 id=&quot;2&quot;&gt;2. 建立并遵守应用监听端口规范&lt;/h1&gt;
+
+&lt;p&gt;每个应用、每个通信协议要有固定统一的监听端口，便于在公司内部形成共识，降低协作成本，提升运维效率。如对于一些网络ACL控制，规范统一的端口会给运维带来极大的便利。&lt;/p&gt;
+
+&lt;p&gt;应用监听端口不能在&lt;code&gt;net.ipv4.ip_local_port_range&lt;/code&gt;区间内，这个区间是操作系统用于本地端口号自动分配的（bind或connect时没有指定端口号），Linux系统默认值为[32768, 60999]。现在一个应用服务器实例（无论是VM还是K8S Pod等），本地不仅仅会包含应用进程自身，还可能会包括监控采集、sidecar代理等进程。如果选了&lt;code&gt;net.ipv4.ip_local_port_range&lt;/code&gt;这个范围内的端口作为监听端口，你的应用进程启动前，对应的端口很可能已经被自动分配给其他进程的TCP连接，就会导致监听端口绑定失败，从而导致进程启动失败；当然，如果已经分配的端口设置了&lt;code&gt;SO_REUSEADDR&lt;/code&gt;也不会导致你的应用监听端口绑定失败，但这些临时端口一般都不会设置&lt;code&gt;SO_REUSEADDR&lt;/code&gt;。如果确实有需求监听&lt;code&gt;net.ipv4.ip_local_port_range&lt;/code&gt;区间内的端口（如保留三方系统的默认端口），可以设置&lt;code&gt;net.ipv4.ip_local_reserved_ports&lt;/code&gt;系统参数进行预留，预留的端口不会被自动分配出去；但这样会给运维增加系统的交付难度，所以，一般不建议这样做。&lt;/p&gt;
+
+&lt;p&gt;有赞的&lt;code&gt;net.ipv4.ip_local_port_range&lt;/code&gt;系统值设置为[9000, 65535]，并且对所有类型的应用、通信协议监听端口都进行了统一规范，监听端口都小于9000。&lt;/p&gt;
+
+&lt;h1 id=&quot;3&quot;&gt;3. 应用服务端口与管理端口分离&lt;/h1&gt;
+
+&lt;p&gt;服务端口即业务请求的处理端口，管理端口为框架或应用的管理请求处理端口（如服务注册上线、下线）。以Spring Boot为例，应用端口对应&lt;code&gt;server.port&lt;/code&gt;，管理端口对应&lt;code&gt;management.port&lt;/code&gt;。&lt;/p&gt;
+
+&lt;p&gt;应用的服务端口与管理端口分离有如下意义：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;避免业务请求与管理请求互相影响，如线程池等。&lt;/li&gt;
+&lt;li&gt;更好地进行权限管理、ACL控制等。管理端口一般可以控制应用的核心行为，需要进行严格的权限管理、ACL控制，比如通过防火墙仅允许特定IP访问管理端口等。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;有赞线上曾经碰到过一个问题：一个Dubbo业务应用提供HTTP服务和Dubbo服务，HTTP服务端口与HTTP管理端口是同一个，该应用的一个实例因内部逻辑问题发生了死锁，造成请求阻塞超时，但这时服务注册的健康保活线程仍然正常，所以该异常服务实例还是在线的，客户端仍在发送请求到该实例。这时想将该实例进行服务注册下线操作但保留进程以便排查问题，但由于业务线程阻塞导致HTTP线程池所有线程阻塞，进而导致管理模块无线程可处理HTTP服务注册下线请求，最终无法正常下线。有赞Dubbo框架已经对应用服务端口与管理端口进行了分离，并进行了线程池隔离，避免再出现类似的问题。当然，熔断等其他机制也有助于应对个别实例异常问题，这里我们主要关注端口分离问题。&lt;/p&gt;
+
+&lt;h1 id=&quot;4&quot;&gt;4. 建立连接设置超时时间&lt;/h1&gt;
+
+&lt;p&gt;网络拥塞、IP不可达、握手队列满时，都可能会导致建立连接阻塞与超时，为了避免不可控的阻塞时间对应用造成难以预知的影响，建议在建立连接时设置超时时间，进行超时控制。如果没有主动进行设置，超时时间是由系统默认行为进行控制的，而系统的默认行为肯定是无法满足所有应用场景的。（注：握手队列满时，如果设置了系统参数&lt;code&gt;net.ipv4tcp_abort_on_overflow&lt;/code&gt;，连接会立刻被重置）&lt;/p&gt;
+
+&lt;p&gt;我们看一下系统默认是如何控制连接建立超时时间的？&lt;/p&gt;
+
+&lt;p&gt;TCP三次握手的第一个SYN报文没有收到ACK，系统会自动对SYN报文进行重试，最大重试次数由系统参数&lt;code&gt;net.ipv4.tcp_syn_retries&lt;/code&gt;控制，默认值为6。初始RTO为1s，如果一直收不到SYN ACK，依次等待1s、2s、4s、8s、16s、32s发起重传，最后一次重传等待64s后放弃，最终在127s后才会返回ETIMEOUT超时错误。&lt;/p&gt;
+
+&lt;p&gt;建议根据整个公司的业务场景，调整&lt;code&gt;net.ipv4.tcp_syn_retries&lt;/code&gt;系统参数进行兜底。有赞将该参数设为3，即最大15s左右可返回超时错误。&lt;/p&gt;
+
+&lt;h1 id=&quot;5&quot;&gt;5. 使用应用层心跳对连接进行健康检查&lt;/h1&gt;
+
+&lt;p&gt;当TCP连接有异常时，我们需要尽快感知到，然后进行相应的异常处理与恢复。对于FIN或RST这种连接关闭、重置场景，应用层是可以快速感知到的。但是对于对端机器掉电、网线脱落、网络设备异常等造成的假连接，如果没有特殊措施，应用层很长时间都感知不到。&lt;/p&gt;
+
+&lt;p&gt;提到网络异常检测，大家可能首先想到的是TCP Keepalive。系统TCP Keepalive相关的三个参数为&lt;code&gt;net.ipv4.tcp_keepalive_time&lt;/code&gt;、&lt;code&gt;net.ipv4.tcp_keepalive_intvl&lt;/code&gt;、&lt;code&gt;net.ipv4.tcp_keepalive_probes&lt;/code&gt;，默认值分别为7200s、75s、9，即如果7200s没有收到对端的数据，就开始发送TCP Keepalive报文，如果75s内，没有收到响应，会继续重试，直到重试9次都失败后，返回应用层错误信息。&lt;/p&gt;
+
+&lt;p&gt;为什么需要实现应用层的心跳检查呢？系统的TCP Keepalive满足不了需求吗？是的，系统的TCP Keepalive只能作为一个最基本的防御方案，而满足不了高稳定性、高可靠性场景的需求。原因有如下几点：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;TCP Keepalive是扩展选项，不一定所有的设备都支持；&lt;/li&gt;
+&lt;li&gt;TCP Keepalive报文可能被设备特意过滤或屏蔽，如运营商设备；&lt;/li&gt;
+&lt;li&gt;TCP Keepalive无法检测应用层状态，如进程阻塞、死锁、TCP缓冲区满等情况；&lt;/li&gt;
+&lt;li&gt;TCP Keepalive容易与TCP重传控制冲突，从而导致失效。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;对于TCP状态无法反应应用层状态问题，这里稍微介绍几个场景。第一个是TCP连接成功建立，不代表对端应用感知到了该连接，因为TCP三次握手是内核中完成的，虽然连接已建立完成，但对端可能根本没有Accept；因此，一些场景仅通过TCP连接能否建立成功来判断对端应用的健康状况是不准确的，这种方案仅能探测进程是否存活。另一个是，本地TCP写操作成功，但数据可能还在本地写缓冲区中、网络链路设备中、对端读缓冲区中，并不代表对端应用读取到了数据。&lt;/p&gt;
+
+&lt;p&gt;这里重点解释一下TCP KeepAlive与TCP重传的冲突问题。Linux系统通过&lt;code&gt;net.ipv4.tcp_retries2&lt;/code&gt;参数控制TCP的超时重传次数，即影响TCP超时时间。初始RTO为&lt;code&gt;TCP_RTO_MIN&lt;/code&gt;（200ms），RTO进行指数退让，最大RTO为&lt;code&gt;TCP_RTO_MAX&lt;/code&gt;（2min），&lt;code&gt;net.ipv4.tcp_retries2&lt;/code&gt;默认为15，大概924.6s超时。详细重传次数、RTO、超时时间关系，如下表所示。&lt;/p&gt;
+
+&lt;table border=&quot;1&quot;&gt;  
+&lt;tr&gt;  
+&lt;th&gt;重传次数&lt;/th&gt;  
+&lt;th&gt;RTO（毫秒）&lt;/th&gt;  
+&lt;th colspan=&quot;2&quot;&gt;总超时时间&lt;/th&gt;  
+&lt;/tr&gt;  
+&lt;tr&gt; &lt;td&gt; 1&lt;/td&gt; &lt;td&gt;   200&lt;/td&gt; &lt;td&gt;  0.2 秒&lt;/td&gt; &lt;td&gt;0.0 分钟&lt;/td&gt;  
+&lt;/tr&gt;&lt;tr&gt; &lt;td&gt; 2&lt;/td&gt; &lt;td&gt;   400&lt;/td&gt; &lt;td&gt;  0.6 秒&lt;/td&gt; &lt;td&gt;0.0 分钟&lt;/td&gt;  
+&lt;/tr&gt;&lt;tr&gt; &lt;td&gt; 3&lt;/td&gt; &lt;td&gt;   800&lt;/td&gt; &lt;td&gt;  1.4 秒&lt;/td&gt; &lt;td&gt;0.0 分钟&lt;/td&gt;  
+&lt;/tr&gt;&lt;tr&gt; &lt;td&gt; 4&lt;/td&gt; &lt;td&gt;  1600&lt;/td&gt; &lt;td&gt;  3.0 秒&lt;/td&gt; &lt;td&gt;0.1 分钟&lt;/td&gt;  
+&lt;/tr&gt;&lt;tr&gt; &lt;td&gt; 5&lt;/td&gt; &lt;td&gt;  3200&lt;/td&gt; &lt;td&gt;  6.2 秒&lt;/td&gt; &lt;td&gt;0.1 分钟&lt;/td&gt;  
+&lt;/tr&gt;&lt;tr&gt; &lt;td&gt; 6&lt;/td&gt; &lt;td&gt;  6400&lt;/td&gt; &lt;td&gt; 12.6 秒&lt;/td&gt; &lt;td&gt;0.2 分钟&lt;/td&gt;  
+&lt;/tr&gt;&lt;tr&gt; &lt;td&gt; 7&lt;/td&gt; &lt;td&gt; 12800&lt;/td&gt; &lt;td&gt; 25.4 秒&lt;/td&gt; &lt;td&gt;0.4 分钟&lt;/td&gt;  
+&lt;/tr&gt;&lt;tr&gt; &lt;td&gt; 8&lt;/td&gt; &lt;td&gt; 25600&lt;/td&gt; &lt;td&gt; 51.0 秒&lt;/td&gt; &lt;td&gt;0.9 分钟&lt;/td&gt;  
+&lt;/tr&gt;&lt;tr&gt; &lt;td&gt; 9&lt;/td&gt; &lt;td&gt; 51200&lt;/td&gt; &lt;td&gt;102.2 秒&lt;/td&gt; &lt;td&gt;1.7 分钟&lt;/td&gt;  
+&lt;/tr&gt;&lt;tr&gt; &lt;td&gt;10&lt;/td&gt; &lt;td&gt;102400&lt;/td&gt; &lt;td&gt;204.6 秒&lt;/td&gt; &lt;td&gt;3.4 分钟&lt;/td&gt;  
+&lt;/tr&gt;&lt;tr&gt; &lt;td&gt;11&lt;/td&gt; &lt;td&gt;120000&lt;/td&gt; &lt;td&gt;324.6 秒&lt;/td&gt; &lt;td&gt;5.4 分钟&lt;/td&gt;  
+&lt;/tr&gt;&lt;tr&gt; &lt;td&gt;12&lt;/td&gt; &lt;td&gt;120000&lt;/td&gt; &lt;td&gt;444.6 秒&lt;/td&gt; &lt;td&gt;7.4 分钟&lt;/td&gt;  
+&lt;/tr&gt;&lt;tr&gt; &lt;td&gt;13&lt;/td&gt; &lt;td&gt;120000&lt;/td&gt; &lt;td&gt;564.6 秒&lt;/td&gt; &lt;td&gt;9.4 分钟&lt;/td&gt;  
+&lt;/tr&gt;&lt;tr&gt; &lt;td&gt;14&lt;/td&gt; &lt;td&gt;120000&lt;/td&gt; &lt;td&gt;684.6 秒&lt;/td&gt; &lt;td&gt;11.4 分钟&lt;/td&gt;  
+&lt;/tr&gt;&lt;tr&gt; &lt;td&gt;15&lt;/td&gt; &lt;td&gt;120000&lt;/td&gt; &lt;td&gt;804.6 秒&lt;/td&gt; &lt;td&gt;13.4 分钟&lt;/td&gt;  
+&lt;/tr&gt;&lt;tr&gt; &lt;td&gt;16&lt;/td&gt; &lt;td&gt;120000&lt;/td&gt; &lt;td&gt;924.6 秒&lt;/td&gt; &lt;td&gt;15.4 分钟&lt;/td&gt;  
+&lt;/tr&gt;  
+&lt;/table&gt;
+
+&lt;p&gt;如果TCP发送缓冲区中有数据未发送成功，TCP会进行超时重传，而不会触发TCP Keepalive。也就是说，即使应用设置了很小的TCP Keepalive参数，如time=10s、interval=10s、probes=3，在&lt;code&gt;net.ipv4.tcp_retries2&lt;/code&gt;默认配置下，可能还是一直等到15min左右才能感知到网络异常。可能有的人不理解为什么Keepalive会被重传干扰，其实这里就是个优先级的问题。TCP最大重传次数的作用高于Keepalive参数的作用，未达到最大重传次数，不会向应用层报告网络错误信息。如果Keepalive不受重传影响，同样也会对关注重传的人造成干扰，比如为什么还没达到最大重传次数就放弃重传并关闭连接了？我们可以通过&lt;code&gt;netstat -ot&lt;/code&gt;或&lt;code&gt;ss -ot&lt;/code&gt;命令查看当前连接的计时器信息。&lt;/p&gt;
+
+&lt;p&gt;建议根据实际情况调低&lt;code&gt;net.ipv4.tcp_retries2&lt;/code&gt;参数。RFC 1122建议对应的超时时间不低于100s，即至少为8，有赞系统该参数默认为10。&lt;/p&gt;
+
+&lt;p&gt;因此，想实现一个网络健壮的应用，应用层心跳必不可少。对于&lt;a href=&quot;https://datatracker.ietf.org/doc/html/rfc7540#section-6.7&quot;&gt;HTTP2&lt;/a&gt;、&lt;a href=&quot;https://github.com/grpc/grpc/blob/master/doc/keepalive.md&quot;&gt;gRPC&lt;/a&gt;、&lt;a href=&quot;https://dubbo.apache.org/zh/docs/v2.7/dev/implementation/#%E5%8D%8F%E8%AE%AE%E5%A4%B4%E7%BA%A6%E5%AE%9A&quot;&gt;Dubbo&lt;/a&gt;等协议都支持心跳，如果是基于这些协议开发的应用，可以直接使用这些协议的特性来实现应用层心跳。&lt;/p&gt;
+
+&lt;p&gt;实现应用层心跳需要考虑如下点：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;心跳间隔不能太小也不能太大。间隔太小心可能会对轻微抖动过于敏感，造成过度反应，反而会影响稳定性，同时也有一定的性能开销；间隔太大会导致异常检测延迟比较高。可以严格地定期发送心跳，也可以一段时间内没有收到对端数据才发起心跳。建议心跳间隔为5s~20s。&lt;/li&gt;
+&lt;li&gt;设置连续失败阈值，避免瞬间抖动造成误判等。建议连续失败阈值为2~5。&lt;/li&gt;
+&lt;li&gt;不要使用独立的TCP连接进行心跳检查，因为不同连接的网络路径、TCP缓冲区等都不同，无法真实反映业务通信连接的真实状态。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;6&quot;&gt;6. 连接重连需要增加退让与窗口抖动&lt;/h1&gt;
+
+&lt;p&gt;当网络异常恢复后，大量客户端可能会同时发起TCP重连及进行应用层请求，可能会造成服务端过载、网络带宽耗尽等问题，从而导致客户端连接与请求处理失败，进而客户端触发新的重试。如果没有退让与窗口抖动机制，该状况可能会一直持续下去，很难快速收敛。&lt;/p&gt;
+
+&lt;p&gt;建议增加指数退让，如1s、2s、4s、8s...，同时必须限制最大退让时间（如64s），否则重试等待时间可能越来越大，同样导致无法快速收敛。同时，为了降低大量客户端同时建连并请求，也需要增加窗口抖动，窗口大小可以与退让等待时间保持一致，如:
+nextRetryWaitTime = backOffWaitTime + rand(0.0, 1.0) * backOffWaitTime。&lt;/p&gt;
+
+&lt;p&gt;在进行网络异常测试或演练时，需要把网络异常时间变量考虑进来，因为不同的时长，给应用带来的影响可能会完全不同。&lt;/p&gt;
+
+&lt;h1 id=&quot;7&quot;&gt;7. 服务端需要限制最大连接数&lt;/h1&gt;
+
+&lt;p&gt;一个服务端口，理论上能接收的最大TCP连接数是多少呢？TCP四元组中的服务端IP、服务端端口已经固定了，理论上的上限就是客户端可用IP数量*客户端可用端口数量。去除一些IP分类、端口保留等细节，理论上限就是2^32 * 2 ^16 = 2^48。&lt;/p&gt;
+
+&lt;p&gt;当然，目前现实中肯定达不到理论上限的瓶颈。一个TCP socket所关联的主要资源有内存缓冲区、文件描述符等，因此，实际限制主要取决于系统内存大小与文件描述符数量限制。&lt;/p&gt;
+
+&lt;p&gt;服务端限制最大连接数，主要有两个目的：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;避免服务过载导致CPU、内存耗尽；&lt;/li&gt;
+&lt;li&gt;避免文件描述符耗尽。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;每个TCP连接的socket都占用一个FD，每个进程以及整个系统的FD数量都是有限制的。Linux系统下，通过&lt;code&gt;ulimit -n&lt;/code&gt;可以查看单个用户的进程运行打开的FD最大数量，通过&lt;code&gt;cat /proc/sys/fs/file-max&lt;/code&gt;可以查看所有进程运行打开的最大FD数量，如果不符合应用的需求，那就需要进行相应的调整。&lt;/p&gt;
+
+&lt;p&gt;达到FD上限会有什么影响呢？首先，肯定是无法接收新TCP连接了；其次，除了TCP连接占用的FD外，你的应用肯定还有内部场景占用或需要分配新的FD，比如日志文件发生轮转创建新日志文件时，如果日志文件创建失败，对于依赖本地存储的应用（如KV、MQ等存储型应用），就导致服务不可用了。所以，要在系统限制的基础上，根据应用的特性预留一定数量的FD，而不能把所有的FD都给客户端TCP连接使用。&lt;/p&gt;
+
+&lt;p&gt;有赞在线上压测时，一个应用就碰到过类似的一个问题。压测期间，压力比较高，导致磁盘IO压力增高，请求处理延迟增高，导致客户端超时。客户端发现超时关闭连接，创建新连接重试，但此时服务端由于IO阻塞带来的延迟并未能够及时回收连接关闭（CLOSE_WAIT）的socket以及FD，导致FD消耗越来越多，最终导致FD耗尽，新日志文件创建失败，而该应用又是存储类型应用，强依赖于日志落盘，最终导致服务不可用。&lt;/p&gt;
+
+&lt;p&gt;除了服务端限制最大连接数外，如果应用有对应的客户端SDK，最好也在客户端SDK也做一层保护。&lt;/p&gt;
+
+&lt;h1 id=&quot;8&quot;&gt;8. 尽量不要依赖中心化四层负载均衡器&lt;/h1&gt;
+
+&lt;p&gt;LVS是一个经典的中心化四层负载均衡解决方案，也有各种云厂商提供的类似LVS的产品，原理大多是一致的。它们的优点这里我们就不谈了。使用该类方案可能会面临如下问题：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;每次应用伸缩容，需要变更后端实例列表配置，运维成本高、风险高；&lt;/li&gt;
+&lt;li&gt;中心化的组件可伸缩性较差，容易触达瓶颈，如网络带宽瓶颈等；&lt;/li&gt;
+&lt;li&gt;中心化的组件可用性较差，一旦负载均衡器出问题，整个服务受影响；&lt;/li&gt;
+&lt;li&gt;四层健康检查对后端实例异常不敏感，无法进行应用层健康检查；&lt;/li&gt;
+&lt;li&gt;负载均衡器的拆分、迁移对应用影响较大，需要应用配合更新配置、发布等，使用成本较高；&lt;/li&gt;
+&lt;li&gt;负载均衡器会可能丢弃一段时间内没有通信的空闲连接，给应用带来非预期的影响；&lt;/li&gt;
+&lt;li&gt;客户端访问服务端需经过负载均衡器中转，可能对RT有一定影响。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;建议通过分布式的动态服务注册与发现以及客户端负载均衡来替代中心化负载均衡方案，如微服务架构中的服务注册、服务发现、负载均衡等解决方案。&lt;/p&gt;
+
+&lt;p&gt;在不得不使用中心化负载均衡器的场景下，也需要注意以下问题：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;注意选择合适的负载均衡算法，避免长连接分布不均衡。比如，如果选择了轮询负载均衡算法，正常情况下各个后端实例的连接数是均衡的，但当某个实例重启后，该实例的连接断开后，客户端会发起重连，重连就大概率转移其他实例上，导致最近启动的实例连接数较少，最早启动的实例连接数较多。可以考虑最少连接数负载均衡，长连接增加TTL限制等。&lt;/li&gt;
+&lt;li&gt;注意空闲超时，超时后负载均衡器可能不会给两端发送Close或Reset信号，从而导致无法通信的假连接，如果客户端与服务端双方都没有心跳、空闲超时等，假连接会一直存在，占用系统资源；应用层或TCP层的健康检查周期需要小于负载均衡器的空闲超时。&lt;/li&gt;
+&lt;li&gt;注意摘除后端实例时保证平滑，如果直接移除后端实例，可能不会给两端发送Close或Reset信号，从而导致无法通信的假连接，且客户端和服务端无法及时感知到。一般先将实例权重调整为0，保证新连接不再分配到该实例，然后等待已有的连接释放，最后再完全移除后端实例。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;有赞线上环境曾多次碰到过LVS引起的相关问题，也正在研发分布式的四层代理。&lt;/p&gt;
+
+&lt;h1 id=&quot;9close_wait&quot;&gt;9. 警惕大量CLOSE_WAIT&lt;/h1&gt;
+
+&lt;p&gt;先介绍曾经碰到的一个问题。线上环境告警提示有服务器发生较高的TCP重传，经抓包分析重传包都是FIN包，且目标IP已不存在。查看连接状态发现大量&lt;code&gt;CLOSE_WAIT&lt;/code&gt;状态连接。该问题并不是一直持续，时有时无。经过对应用日志与应用代码分析，发现某个场景应用读取到EOF时，未关闭本地socket。进一步分析，原因是客户端应用是K8S部署的，发布后，旧实例下线，作为客户端发起主动关闭连接，并且旧实例的IP很快会被回收；服务端未关闭的socket，在几分钟后GC时（Go语言应用）才会进行socket回收关闭操作，但此时，客户端IP已不存在，因此，最后一个FIN报文不断重传，一直到超过最大重传次数，从而问题恢复。等到再次有客户端应用发布时，又会出现。该问题对于没有GC机制的编程语言开发的应用，可能会造成更严重的后果，socket不断泄露，导致FD耗尽、内存耗尽等问题。&lt;/p&gt;
+
+&lt;p&gt;因此，一定要警惕大量CLOSE_WAIT状态连接的出现，这种情况出现时，首先要排除一些相关代码。同时，开发过程中，一定要注意正确关闭socket，通过一些语言特性进行兜底处理，如Go语言的&lt;code&gt;defer&lt;/code&gt;，Java语言的&lt;code&gt;try...catch...finally&lt;/code&gt;，C++语言的&lt;code&gt;RAII&lt;/code&gt;机制等。&lt;/p&gt;
+
+&lt;h1 id=&quot;10ttl&quot;&gt;10. 合理设置长连接TTL&lt;/h1&gt;
+
+&lt;p&gt;长连接减少了像短连接频繁建立连接的开销，包括三次握手开销、慢启动开销等。但也有一定的弊端：长连接的持续时间过长，可能会导致一些负载均衡问题，以及其他一些长时间难以收敛的问题。比如LVS场景，随着后端应用实例的重启，对于一些负载均衡算法（如轮询），会导致最新启动的实例连接数最少，最早启动的实例连接数最多。对于一些客户端负载均衡方案，当只需要连接后端集群中的一个节点时，长连接也会出现类似的问题，比如类似Etcd watch的场景。有赞内部有很多使用Etcd的场景，早期运维每次变更Etcd集群的时候都特别谨慎，避免连接的不均衡。&lt;/p&gt;
+
+&lt;p&gt;有赞中间件团队规定任何应用的TCP长连接TTL不能超过2小时。当然，这已经是一个很保守的时长了，建议根据应用场景，合理设置TTL。&lt;/p&gt;
+
+&lt;h1 id=&quot;11dns&quot;&gt;11. 通过域名访问服务需定期解析DNS&lt;/h1&gt;
+
+&lt;p&gt;DNS是一种服务发现机制，应用通过配置DNS访问其他服务，本意是为了解决其他服务实例IP变动带来的影响，但如果处理不当还是会有问题。通过域名访问其他服务时，需要定时更新域名解析，如果解析有更新，则需要重新建立连接，避免后端实例迁移（IP有变化）时导致难以收敛。千万不要只在应用启动的时候进行一次域名解析，这种情况在DNS变更后想实现快速收敛，只能重启或发布所有相关应用了。一些语言内置了DNS相关的实现，需要注意对应的一些参数以及行为是否符合预期。&lt;/p&gt;
+
+&lt;p&gt;另外，某些应用提供了获取最新集群成员列表的接口，如Etcd、Redis，这样即使客户端启动的时候只进行一次域名解析，只要定期从服务端同步服务集群的成员列表也能支持服务端集群成员的动态变化。&lt;/p&gt;
+
+&lt;h1 id=&quot;12&quot;&gt;12. 降低网络读写系统调用次数&lt;/h1&gt;
+
+&lt;p&gt;当我们调用read/write系统函数从socket读写数据时，每次调用都至少进行两次用户态与内核态的上下文切换，成本比较高。针对该问题，一般有两种优化思路：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;使用读写缓冲区；读数据时，先一次性从socket读入缓冲区，然后再按需要分次从缓冲区读取；写数据时，先分次写入缓冲区，缓冲区满时或所有写操作完成时，一次性写入socket。&lt;/li&gt;
+&lt;li&gt;当不方便将数据合并到连续内存时，使用readv/writev一次性读取/写入多段内存数据。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;对于批量写操作还有一个优点，就是可以避免&lt;a href=&quot;https://en.wikipedia.org/wiki/Nagle%27s_algorithm&quot;&gt;Nagle算法&lt;/a&gt;带来的延迟（一般也不建议开启Nagle算法）。假如当前写缓冲区中没有数据，我们先通过write写4个字节，这时TCP协议栈将其发送出去，然后再通过write写96个字节，这时，由于前面发送了一个报文，还没有收到ACK，并且当前可发送数据未达到MSS，Nagle算法不允许继续发送报文，必须等到前一个报文的ACK回来才能继续发送数据，大大降低了吞吐量并且提高了延迟。如果接收端开启了&lt;a href=&quot;https://en.wikipedia.org/wiki/TCP_delayed_acknowledgment&quot;&gt;延迟ACK&lt;/a&gt;，影响更大。&lt;/p&gt;
+
+&lt;p&gt;因此，应该尽量批量读写网络数据，以提升性能。&lt;/p&gt;
+
+&lt;h1 id=&quot;13tcp&quot;&gt;13. 谨慎设置TCP缓冲区大小&lt;/h1&gt;
+
+&lt;p&gt;一般来说我们不需要更改TCP默认缓冲区大小，如果我们确实有需求设置，也需要谨慎考虑与评估。&lt;/p&gt;
+
+&lt;p&gt;TCP缓冲区大小设置为多少合适呢？我们知道，TCP 的传输速度，受制于发送窗口与接收窗口大小，以及网络传输能力。其中，两个窗口由缓冲区大小决定，如果缓冲区大小与网络传输能力匹配，那么缓冲区的利用率就是最高的。&lt;/p&gt;
+
+&lt;p&gt;带宽时延积（缩写为 BDP，&lt;a href=&quot;https://en.wikipedia.org/wiki/Bandwidth-delay_product&quot;&gt;Bandwidth-delay Product&lt;/a&gt;）是用来描述网络传输能力的。如最大带宽是 100MB/s、网络时延是 10ms 时，客户端到服务端之间的网络一共可以存放 100MB/s * 0.01s = 1MB 的字节，这个 1MB 是带宽与时延的乘积，也就是带宽时延积。这 1MB 字节存在于飞行中的 TCP 报文，它们就在网络线路、路由器等网络设备上。如果飞行报文超过了 1MB，就一定会让网络过载，最终导致丢包。&lt;/p&gt;
+
+&lt;p&gt;由于发送缓冲区决定了发送窗口的上限，而发送窗口又决定了已发送但未确认的飞行报文的上限，因此，发送缓冲区不能超过带宽时延积，因为超出的部分没有办法用于有效的网络传输，且飞行字节大于带宽时延积还会导致丢包，从而触发网络拥塞避免；而且，缓冲区也不能小于带宽时延积，否则无法发挥出高速网络的价值。&lt;/p&gt;
+
+&lt;p&gt;总结而言：缓冲区太小，会降低TCP吞吐量，无法高效利用网络带宽，导致通信延迟升高；缓冲区太大，会导致TCP连接内存占用高以及受限于带宽时延积的瓶颈，从而造成内存浪费。如果缓冲区过小，如2K，还可能会导致&lt;a href=&quot;https://en.wikipedia.org/wiki/TCP_congestion_control#Fast_retransmit&quot;&gt;快速重传&lt;/a&gt;无法生效，因为未确认的报文可能最多只有2个，不会出现3个重复的ACK。&lt;/p&gt;
+
+&lt;p&gt;Linux系统是可以根据系统状态自动调节缓冲区大小的，相关参数由&lt;code&gt;net.ipv4.tcp_wmem&lt;/code&gt;和&lt;code&gt;net.ipv4.tcp_rmem&lt;/code&gt;控制，参数是一个3元组&lt;min default=&quot;&quot; max=&quot;&quot;&gt;，即最大值、初始默认值、最大值。但如果在 socket 上直接设置 SO&lt;em&gt;SNDBUF 或者 SO&lt;/em&gt;RCVBUF，这样会关闭缓冲区的系统动态调整功能，这样操作前务必要进行充分的评估。 &lt;br/&gt;
+因此，除非非常明确自己的需求，以及进行充分的评估与验证，否则，不要轻易设置TCP缓冲区大小。&lt;/min&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;14&quot;&gt;14. 网络相关参数支持灵活配置&lt;/h1&gt;
+
+&lt;p&gt;当应用可能有多种部署环境、部署场景时，需要根据使用场景、网络环境等因素，调整合适的网络相关参数。LAN和WAN的网络状况差别很大，会涉及到诸多参数的调整。&lt;/p&gt;
+
+&lt;p&gt;比如对于有赞的服务代理组件&lt;a href=&quot;https://tech.youzan.com/service-meshzai-you-zan-de-shi-jian-yu-fa-zhan/&quot;&gt;Tether&lt;/a&gt;，既有数据中心内的sidecar部署场景，又有跨公网的网关部署场景，这时就需要按需调整对应的参数，否则难以适应不同的网络环境。如连接超时、读写超时、健康检查超时、健康检查失败阈值等都应该支持灵活配置。&lt;/p&gt;
+
+&lt;h1 id=&quot;15&quot;&gt;15. 合理设置连接池大小&lt;/h1&gt;
+
+&lt;p&gt;对于不同类型的协议，连接池的设计也不同。我们将协议是否支持连接多路复用划分为两类：非多路复用协议和多路复用协议。非多路复用协议，一个连接发送请求后，必须等待响应返回后，该连接才能发送新的请求，如HTTP1.1、Redis等；多路复用协议，支持同一个连接同时发送多个请求，如HTTP2、gRPC、Dubbo等。&lt;/p&gt;
+
+&lt;p&gt;我们先看一下非多路复用协议如何设置连接池大小。连接池涉及到的参数一般有：最小连接数、最大连接数、最大空闲时间、连接获取超时时间、连接获取超时重试次数等。应用与连接池主要交互逻辑如下所示：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/content/images/2021/05/conn_pool-1.png&quot; align=&quot;center&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;我们主要讨论最小连接数和最大连接数。之所以不是固定连接数，是因为流量有高峰、有低谷；固定连接数太小，流量高峰期容易导致请求等待时间过长；固定连接数太大，流量低谷期容易造成资源浪费。因此，最小连接数对应的就是流量低谷期连接数多少为合适，最大连接数对应的就是流量高峰期连接数多少为合适，也就是连接数与流量大小是相关的。除了流量大小，还需要考虑请求RT，即每个请求占用连接的时间。所需要的连接数其实就是请求并发数，这里我们可以利用著名的利特尔法则（&lt;a href=&quot;https://en.wikipedia.org/wiki/Little%27s_law&quot;&gt;Little&#x27;s law&lt;/a&gt;）来计算，&lt;em&gt;L=λW&lt;/em&gt;，在该场景即：并发数 = 请求QPS * 请求RT。比如流量低谷期请求QPS为100，请求RT为0.05s，则并发数为5，所需连接数为5；流量高峰期请求QPS为500，请求RT为0.1s，则并发数为50，所需连接数为50。这类问题其实与&lt;a href=&quot;https://en.wikipedia.org/wiki/Queueing_theory&quot;&gt;排队论&lt;/a&gt;相关，不过我们这里不做过多讨论，如果有更复杂的需求场景，可以参考更多排队论相关资料。&lt;/p&gt;
+
+&lt;p&gt;接下来我们继续看一下多路复用协议如何设置连接池大小。连接池涉及到的参数一般有：最小连接数、最大连接数、单连接并发请求数高水位、单连接并发请求数低水位。当单连接并发请求数高于高水位时，如果连接池未达到最大连接数，进行连接池扩容，创建连接；当单连接并发请求数低于低水位时，如果连接池未达到最小连接数，进行连接池缩容，释放连接（释放过程需要做到平滑）。由于每个请求不独占连接，请求是可以选择任意连接的，所以这里也面临负载均衡的问题，需要尽可能的确保每个连接上的处理中的请求数接近平均值。一般使用最少请求数负载均衡，但最少请求数负载均衡时间复杂度可能比较高，最简单的实现需要扫描整个连接池。我们可以使用其近似的优化实现，随机选择两个连接，选择Pending请求数少的连接；为了更加近似最少请求，可以选择3个、5个，甚至更多个连接，取其中Pending请求数最少的连接。&lt;/p&gt;
+
+&lt;h1 id=&quot;16&quot;&gt;16. 完善网络指标监控&lt;/h1&gt;
+
+&lt;p&gt;需要对各个关键网络指标进行监控与告警，包括但不限于：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;TCP连接建立失败数&lt;/li&gt;
+&lt;li&gt;TCP报文重传率&lt;/li&gt;
+&lt;li&gt;TCP各个状态连接数（尤其是&lt;code&gt;ESTABLISHED&lt;/code&gt;、&lt;code&gt;TIME_WAIT&lt;/code&gt;、&lt;code&gt;CLOSE_WAIT&lt;/code&gt;）&lt;/li&gt;
+&lt;li&gt;TCP主动关闭连接数&lt;/li&gt;
+&lt;li&gt;TCP被动关闭连接数&lt;/li&gt;
+&lt;li&gt;连接健康检查失败数&lt;/li&gt;
+&lt;li&gt;系统及进程FD使用数&lt;/li&gt;
+&lt;li&gt;连接池大小 &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;如果能尽早发现这些指标的异常，那么就可以尽快发现问题，从而降低问题影响面。&lt;/p&gt;
+
+&lt;h1 id=&quot;&quot;&gt;总结&lt;/h1&gt;
+
+&lt;p&gt;本文根据有赞TCP网络编程实践经验总结了&lt;strong&gt;16&lt;/strong&gt;项建议，希望能够在TCP网络编程方面帮助大家提升应用的健壮性、可靠性，减少线上问题与故障。&lt;/p&gt;
+
+&lt;h1 id=&quot;&quot;&gt;参考资料&lt;/h1&gt;
+
+
+
+&lt;p&gt;`&lt;/p&gt;
+                    &lt;p class=&quot;break-line&quot;&gt;欢迎关注我们的公众号&lt;/p&gt;
+                    &lt;img src=&quot;https://tech.youzan.com/static_image/coder_qrcode.png&quot;/&gt;
+&lt;/section&gt;
+
+&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>e478acdf9fcdc2b2dc72f32933f941b4</guid>
-<title>快速进行服务接口监控</title>
-<link>https://toutiao.io/k/ndgl5lb</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;content&quot;&gt;
-                                                                                                                    
-                                                                                                    &lt;h2&gt;1. 背景&lt;/h2&gt; 
-&lt;p&gt;在一些业务中，可能会出现以下几种情况：&lt;/p&gt; 
-&lt;pre&gt;&lt;code&gt;1.接口的不稳定导致APP/WEB端上的超时、抛错，而资源级监控不能达到业务健康状况监控的目的。
-2.接口众多，服务部署后不知道是否每个接口都正常。
-3.不同服务同一接口的响应时间。
-5.依赖的其他接口异常导致不可用。
-6.重要的接口不能等用户触发异常，需要在用户请求前就发现异常并处理掉
-&lt;/code&gt;&lt;/pre&gt; 
-&lt;p&gt;为了保证线上服务的稳定运行，除了线上关键服务的资源类监控外，各服务接口也非常重要。对于接口异常这类问题的排查往往比服务异常更耗时费力，那么如何对线上关键接口进行监控呢？&lt;/p&gt; 
-&lt;h2&gt;2. 解决思路&lt;/h2&gt; 
-&lt;p&gt;获取到服务的所有接口定时对这些进行模拟请求，检测接口返回状态以及返回数据。&lt;/p&gt; 
-&lt;h2&gt;3. JPower是什么&lt;/h2&gt; 
-&lt;p&gt;&lt;a href=&quot;https://gitee.com/gdzWork/JPower&quot; title=&quot;JPower&quot;&gt;JPower&lt;/a&gt;是一个完全开源的微服务快速开发框架，包含用户管理、系统管理、统一授权等基础模块。用户在此框架上可快速进入业务开发。&lt;/p&gt; 
-&lt;p&gt;这里给大家推荐一款JPower里的小工具&lt;a href=&quot;https://gitee.com/gdzWork/JPower/tree/master/jpower-op-server/jpower-log&quot; title=&quot;JPower&quot;&gt;jpower-log&lt;/a&gt;，jpower-log模块就对此实现了对各类接口的健康状态监控。&lt;/p&gt; 
-&lt;p&gt;&lt;strong&gt;实现功能：&lt;/strong&gt;&lt;/p&gt; 
-&lt;ul&gt; 
- &lt;li&gt;支持单个服务的所有API检测。&lt;/li&gt; 
- &lt;li&gt;自动回滚接口请求产生的数据，不会在数据库保留下任何垃圾数据；&lt;/li&gt; 
- &lt;li&gt;支持HTTP，请求类型可以是GET，POST，HEADER，PUT，DELETE等所有类型&lt;/li&gt; 
- &lt;li&gt;支持任何形式的HTTP接口鉴权配置，只需要简单的配置登录接口以及登录参数&lt;/li&gt; 
- &lt;li&gt;调用API可以设置请求头部，请求参数，并针对单个接口进行定制化配置&lt;/li&gt; 
- &lt;li&gt;可以自定义检测结果判定，比如接口返回状态码为200，返回内容包括/不包括exception等；&lt;/li&gt; 
- &lt;li&gt;可以自定义监控频率，比如30分钟/次，1小时/次等&lt;/li&gt; 
- &lt;li&gt;监控日志汇总，导出&lt;/li&gt; 
- &lt;li&gt;虽然这块小工具是基于JPower开发，但是检测对象不局限于JPower，任何第三方服务的HTTP接口都可进行配置监控&lt;/li&gt; 
-&lt;/ul&gt; 
-&lt;p&gt;&lt;strong&gt;使用文档：&lt;/strong&gt;&lt;/p&gt; 
-&lt;p&gt;&lt;a href=&quot;https://www.oschina.net/action/GoToLink?url=https%3A%2F%2Fwww.kancloud.cn%2Fguodingzhi%2Fjpower%2F2251824&quot; target=&quot;_blank&quot;&gt;https://www.kancloud.cn/guodingzhi/jpower/2251824&lt;/a&gt;&lt;/p&gt; 
-&lt;p&gt;&lt;strong&gt;使用技术：&lt;/strong&gt;&lt;/p&gt; 
-&lt;ul&gt; 
- &lt;li&gt;技术框架：maven、Spring Boot、Mybatis、SpringMVC&lt;/li&gt; 
- &lt;li&gt;技术组件：OKHttp、fastjson&lt;/li&gt; 
- &lt;li&gt;UI技术：vue、Echarts&lt;/li&gt; 
-&lt;/ul&gt; 
-&lt;p&gt;&lt;strong&gt;运行环境&lt;/strong&gt;&lt;/p&gt; 
- 
-&lt;p&gt;&lt;strong&gt;截图预览：&lt;/strong&gt;&lt;/p&gt; 
-&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-65a5ab191a24f89cb36444e68dd6be4a232.png&quot; alt=&quot;&quot;/&gt; &lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-e7d7400cc97916628191af0fdca211466eb.png&quot; alt=&quot;&quot;/&gt; &lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-6fcab56f0b762c9dbef17bc7c145ea875b8.png&quot; alt=&quot;&quot;/&gt; &lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-ec2c8d89fe3007161c4602a2a37eb626b02.png&quot; alt=&quot;&quot;/&gt; &lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-8378ee9c1b135b25ef0ed2a030a96190ba3.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-                                        &lt;/div&gt;
-                                    &lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>e2586e331331cbe96dd5c877e0c4d200</guid>
+<title>多年老 C++ 程序员在静态数组这里翻船了</title>
+<link>https://toutiao.io/k/xrkhat1</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;Mzg5ODI2MTEwNg==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/RNfZGZNpL1ApdamSCLJUhObeTmib5J7icNXWMw4fdEgv9HqGu5kc787JKMyVEJB65TFNO7l5b1UTKeMZHnao2T8A/0?wx_fmt=png&quot; data-nickname=&quot;cpp加油站&quot; data-alias=&quot;xy13640954449&quot; data-signature=&quot;专注分享linux下c/c++开发经验，做有质量和温度的公众号&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;h4&gt;&lt;span&gt;事情的起因&lt;/span&gt;&lt;br/&gt;&lt;/h4&gt;&lt;p&gt;事情是这样子滴，有一次我在代码评审的时候，发现有同事想使用运行时才能够获取到的值，去改变一个静态数组的元素个数，我当时就很诧异，因为我心里知道这样是不可行的，静态数组的元素个数在编译时就需要是固定不变的，一般只能是常量或者宏定义，否则编译就不能通过。&lt;/p&gt;&lt;p&gt;但是当时我提出来以后，把原因说了，包括写出这个代码的人和另外一位同事都没理解，弄得我有点怀疑自己了，难道是我搞错了？&lt;/p&gt;&lt;p&gt;我左思右想，最后我写了下面的代码来证实一下：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;#&lt;span&gt;include&lt;/span&gt; &lt;span&gt;&amp;lt;iostream&amp;gt;&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;using&lt;/span&gt; &lt;span&gt;namespace&lt;/span&gt; &lt;span&gt;std&lt;/span&gt;;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;int&lt;/span&gt; &lt;span&gt;get&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;br/&gt;&lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;int&lt;/span&gt; size = &lt;span&gt;0&lt;/span&gt;;&lt;br/&gt;    &lt;span&gt;cout&lt;/span&gt; &amp;lt;&amp;lt; &lt;span&gt;&quot;please input a num:&quot;&lt;/span&gt;;&lt;br/&gt;    &lt;span&gt;cin&lt;/span&gt; &amp;gt;&amp;gt; size;&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; size;&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;int&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;br/&gt;&lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;int&lt;/span&gt; size = &lt;span&gt;1000&lt;/span&gt;;&lt;br/&gt;    size = get();&lt;br/&gt;    &lt;span&gt;int&lt;/span&gt; arr[size] = {&lt;span&gt;0&lt;/span&gt;};&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;cout&lt;/span&gt; &amp;lt;&amp;lt; &lt;span&gt;&quot;arr&#x27;s size is &quot;&lt;/span&gt; &amp;lt;&amp;lt; &lt;span&gt;sizeof&lt;/span&gt;(arr)/&lt;span&gt;sizeof&lt;/span&gt;(arr[&lt;span&gt;0&lt;/span&gt;]) &amp;lt;&amp;lt; &lt;span&gt;endl&lt;/span&gt;;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; &lt;span&gt;0&lt;/span&gt;;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;我打心底认为，这段程序肯定是编译不通过的，但是结果打脸了。编译后执行显示如下：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;please&lt;/span&gt; input a num:&lt;span&gt;10000&lt;/span&gt;&lt;br/&gt;arr&lt;span&gt;&#x27;s size is 10000&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;不仅编译通过了，而且数组大小还在运行时修改了，可是我明明定义的是一个静态数组呀，而且就算我这里不给size赋初始值1000，结果也还是一样的。&lt;/p&gt;&lt;h4&gt;&lt;span&gt;探索的过程&lt;/span&gt;&lt;/h4&gt;&lt;p&gt;简直是见了鬼了，我把代码看了又看，认为是我代码写错了，但是这么简单的一段代码，我不可能写错呀。后来我突然想到，会不会是有了新的语法？&lt;/p&gt;&lt;p&gt;因为我现在的gcc编译器，大家都知道是7.1.0的版本，基本上连c++17都能支持了，我就试了一下之前保留的gcc4.1.2的版本，结果报错啦，如下：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;test.cpp: In function ‘int main()’:&lt;br/&gt;test.cpp:15: 错误：可变大小的对象 ‘arr’ 不能被初始化&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;所以很显然，我的记忆没有错误，之前静态数组的元素个数它就必须是个不可变的，否则编译就会出错。&lt;/p&gt;&lt;p&gt;然后我又看了下生产上用的编译器，是gcc4.8.5的版本，它也是支持c++11的，难道这个新的特性是c++11支持的吗？然后我去cppreference把c++11的新特性从头到尾翻了一遍，并没有对这个修改有说明，并且网上搜索，所有的文章都在说c和c++想使用变长数组，就必须要使用动态数组，我一度陷入了僵局，但是我并没有死心，继续探索。&lt;/p&gt;&lt;p&gt;后来我忽然想到，假如不是c++的新特性，那是不是c语言的新特性呢，想到这里，我把代码做了如下修改：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;#&lt;span&gt;include&lt;/span&gt; &lt;span&gt;&amp;lt;stdio.h&amp;gt;&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;int&lt;/span&gt; &lt;span&gt;get&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;br/&gt;&lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;int&lt;/span&gt; size = &lt;span&gt;0&lt;/span&gt;;&lt;br/&gt;    &lt;span&gt;printf&lt;/span&gt;(&lt;span&gt;&quot;please input a num:&quot;&lt;/span&gt;);&lt;br/&gt;    &lt;span&gt;scanf&lt;/span&gt;(&lt;span&gt;&quot;%d&quot;&lt;/span&gt;, &amp;amp;size);&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; size;&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;int&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;br/&gt;&lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;int&lt;/span&gt; size = &lt;span&gt;1000&lt;/span&gt;;&lt;br/&gt;    size = get();&lt;br/&gt;    &lt;span&gt;int&lt;/span&gt; arr[size] = {&lt;span&gt;0&lt;/span&gt;};&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;printf&lt;/span&gt;(&lt;span&gt;&quot;arr&#x27;s size is %d\n&quot;&lt;/span&gt;, &lt;span&gt;sizeof&lt;/span&gt;(arr)/&lt;span&gt;sizeof&lt;/span&gt;(arr[&lt;span&gt;0&lt;/span&gt;]));&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; &lt;span&gt;0&lt;/span&gt;;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;然后直接使用gcc命令编译，而没有使用g++，结果跟上面那段代码是一模一样的，到这里我大致上就明白了，这就是c语言里面的新特性。&lt;/p&gt;&lt;h4&gt;&lt;span&gt;欣喜的找到了结果&lt;/span&gt;&lt;/h4&gt;&lt;p&gt;最后我在cppreference这个链接里面看到了对于c99的说明：&lt;/p&gt;&lt;blockquote&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;新特性：&lt;em&gt;Bool 、 long long 、 stdint.h 、 inttypes.h 、 restrict 、复合字面量、&lt;strong&gt;变长度数组&lt;/strong&gt;、伸缩数组成员、指派初始化器、 fenv.h 、变参数宏、复数、 &lt;strong&gt;func&lt;/strong&gt; 、十六进制浮点格式（ %a ）、 lconv 的货币格式化、 isblank 、窄与宽字符串字面量的连接、枚举的尾逗号、类函数宏的空参数、 STDC&lt;/em&gt;* pragma 、 va_copy 、 tmpnam 的空返回、 setvbuf 中的空指针、 printf 的 hh 与 ll 长度指定符、 snprintf 、 _Exit 、 tgmath.h 、仿 POSIX strftime 说明符&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;来自 C++ ：inline 、声明与代码混合、 for 循环的 init 子句中的声明、 &lt;code&gt;&lt;strong&gt;//&lt;/strong&gt;&lt;/code&gt; 注释、源代码中的通用字符名&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;移除隐式函数声明和隐式 int&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;/blockquote&gt;&lt;p&gt;看看，是不是明确说明了新特性是变长度数组，并且是c语言99年的标准，有点灯下黑了，以后如果再看到有人说c语言和c++的静态数组都只支持固定长度，要想变长就必须要使用malloc和new，就可以唾弃一下啦。&lt;/p&gt;&lt;p&gt;另外有一点需要注意的是，如果我们的场景真的是需要使用固定大小的数组，那么最好使用常量和宏定义，再不然，就使用c++11里面新增加的array。&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;Mzg5ODI2MTEwNg==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/RNfZGZNpL1ApdamSCLJUhObeTmib5J7icNXWMw4fdEgv9HqGu5kc787JKMyVEJB65TFNO7l5b1UTKeMZHnao2T8A/0?wx_fmt=png&quot; data-nickname=&quot;cpp加油站&quot; data-alias=&quot;xy13640954449&quot; data-signature=&quot;专注分享linux下c/c++开发经验，做有质量和温度的公众号&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;strong&gt;好了，有关我和静态数组的故事就介绍到这里了，因为没有留言功能，如果有问题需要咨询的，可以通过公众号菜单【联系作者】获取作者联系方式进行咨询哈。&lt;/strong&gt;&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>162df887526cfc3478f33aa6c8916798</guid>
-<title>数智时代，运维的出路在哪里？</title>
-<link>https://toutiao.io/k/l2o49j6</link>
+<guid>54ffd743b3c8368d91e1fa853d9a2473</guid>
+<title>比特币白皮书：价值的组合与分割</title>
+<link>https://toutiao.io/k/5a35q81</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
                     
 
                     
                     
                     
-                    &lt;blockquote&gt;&lt;p&gt;&lt;span&gt;在运维工作中，经常被贴上这样的标签：背锅侠？电脑修理工？救火队员？35岁被退休？996/007等等，作为运维我们也经常这样自嘲。面对云计算、云原生等新生技术的快速发展，自动化和智能化趋势，逐渐替代传统运维，我们该如何破冰当下的窘况，如何在企业中，凸显运维的价值和不断突破个人职业发展的天花板。　&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;h3&gt;以下是6月2日IT东方会组织T-Chat: &lt;span&gt;互联网职业大揭秘之运维电脑修理师？&lt;/span&gt;&lt;/h3&gt;&lt;h3&gt;&lt;span&gt;&lt;span&gt;时间：&lt;/span&gt;2021年6月2日 19：00-20：30&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;主持人：&lt;/span&gt;&lt;span&gt;Geekwolf(前iPayLinks运维和安全负责人)&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;嘉宾：&lt;/span&gt;&lt;span&gt;陈兵（轻享科技运维负责人）、樊富春（夜神NOX运维负责人）、肖金光（梦网视讯的运维负责人）、邹轶（在线途游运维总监）&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;嘉宾们进行了精彩的分享：&lt;/span&gt;&lt;br/&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;01 运维日常工作的一天是怎么样的？真的很苦逼吗？&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;  工作经常被各种杂事打断，无法专注&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;半夜爬起来处理故障&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;帮业务妹子装系统、教软件&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;帮研发解决环境问题&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;最重要的，干完这些活还要做好监控、搞好发版、弄好自动化还要撸代码&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;span&gt;琐碎的工作，无终止的问题，既是挑战更是机会。换一种思路，自我驱动，提升个人认知高度和团队影响力，也许就是一种享受。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;02 工作中印象最深刻的一次故障？从中获取了哪些经验？如何锤炼团队的？&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;轻享出行陈总：&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;有一次下雨天，大量用户反馈无法叫车问题&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;      首先，要站在用户的角度去思考，如何快速最大限度的让平台或者部分核心功能先可用。当时是做了服务降级，先确保了用户能够经常下单派单。在回头深挖问题原因，从根本上解决问题&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;夜神NOX樊总：&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;生产环境被大流量攻击打满带宽，导致系统不可用&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;     经多次定位才找到根因，源站响应慢、请求量大，大量请求被pending，导致的连锁反应。通过提高CDN缓存命中率，降低源站压力；兼顾稳定性和成本，部分流量走专线、部分流量不走专线，降低专线负载；优化源站性能。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;    &lt;/span&gt;&lt;span&gt; 遇到紧急事件和故障并不可怕，关键是我们要有预案和能力去应对。同时，也给运维工作带来了更高的要求：熟悉业务、结合预案自动化处理的能力、发现问题并从根本上解决问题的能力。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;     作为运维管理者，要多给团队锻炼解决问题的机会，不断的锤炼团队从惊慌失措到独立快速定位解决问题的过程，要有这样的魄力和担当。俗话说事不过三，面对故障，既要立规矩，也要讲人情。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;03 电脑不离身，昼夜午休，如何保持身体健康？&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;    这个话题隐藏了一个潜在的问题，我们如何确保生产稳定，都通过什么样的技术和管理手段来实现？混沌工程？找到稳定性的最大约束点或瓶颈彻底解决？持续改进？还是人肉顶，24*7被动处理解决问题？管理上有什么样的方式方法带来团队冲出重围？）&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;    &lt;strong&gt;梦网视讯肖总：&lt;/strong&gt;通集群部署，完善监控，和一些自动化的工具来快速定位和保障生产稳定性。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;  &lt;strong&gt;  轻享出行陈总：&lt;/strong&gt;通过将关键服务拆分，实现弹性伸缩，在服务宕机或服务异常时，自动拉起相关的服务，再配合自动化的预按工具人工介入处理。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;    系统稳定性是一个工程问题，需要从业务、研发、测试、运维共同保障，通过混沌工程方法来发现稳定性瓶颈，持续不断改进。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;    各位嘉宾，也表示工作之余要多加锻炼，”身体好才是真的好“。保持好的心态，才能更好的处理日常繁琐的事物。冥想、五公里跑、和团队一起乒乓球比赛、徒步怕啥等都是不错的锻炼身心健康和培养团队凝聚力的好方法。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;04 各个层级的运维工作重点是否有所不同？作为一线运维掌握哪些软硬技能能够快速走向人生巅峰？&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;夜神NOX樊总：&lt;/strong&gt;初中级要求很强的执行力和学习能力，能够把一件事做到闭环管理；高级就需要有比较强的运维架构和编程能力及发现问题、解决问题的能力；作为运维的leader更要要学会如何思考，帮助团队建立影响力。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;梦网视讯肖总：&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;作为一个运维，心态要随和，知识面广，学习能力强，具备很强的责任心；成长为运维leader之后更多要学会如何管理团队和跨部门协调沟通的能力。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;轻享出行陈总：&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;从一个小白运维成长为一个运维负责人，最大的变化就是技术思维的转变，善于和其他团队建立盟友关系，找到管理抓手，适当为团队争取利益。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;05 如何看待AIOps？如何提升运维作为支持部门的价值？&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        AIOps是未来的发展趋势，从当前的技术成熟度来看，AIOps能够帮助我们在异常检测、告警收敛、日志分析、故障自愈等方面取得一定的效果，但真正将故障自愈应用于生产还需要谨慎。各位嘉宾也表示，当前工作重心还是放在如何提升工作效率，通过自动化的方式来最终解决业务问题。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        提起运维作为支持部门如何提升在企业中的影响力，是每一个运维负责人一直在思索的问题。    &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;       &lt;strong&gt; 轻享出行陈总：&lt;/strong&gt;提到运维或者技术，我们思考的本质是什么？技术其实就是一个实现手段，随着业务变化而变化。无论是技术驱动业务，还是业务驱动技术，最终要解决的还是业务问题。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;        夜神NOX樊总：&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;运维组织是一个技术服务的性质，应该多与业务相结合，把运维的能力可视化出来，通过业务数据体现出来。 &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        无论是可视化运维工作，还是突破部门边界，承载更多业务属性，还是将运维能力通过像云市场增值价值，我们需要找到一个突破口。&lt;/span&gt;&lt;strong&gt;&lt;span&gt;在线徒游的邹总&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;，也分享了他的宝贵经验：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;       影响力的输出：&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;对外：通过演讲交流输出、通过工具产品(开源，商业化)输出&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;对内：输出方法论、思维模式、通过产品工具去封装运维业务能力和三方服务能力，赋能给项目组&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;对内输出两个关键点：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;1、立场要站在公司全局，不要站在运维角度&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2、要选用杠杆率最大的内容，要能严重影响到其他部门，影响到公司的内容&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;外部输出和内部输出相结合，相辅相成，比如内部产品工具做的好对外赋能，通过外部的打磨又反过来影响内部的工具产品的品质提升，这样进入一个正向循环。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;06 最后，各位嘉宾也分享了对自己影响非常大的几本好书：&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;《金字塔思维》&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;《OKR工作法》&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;《刻意练习》&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;《高效能人士的七个习惯》&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;《亿级流量网站架构核心技术》&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;《进化-运维技术变革与实践探索》&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;《认知：所谓成长就是认知升级》&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;把问题当作机会，自我驱动，敢于尝试新事物，跳出职业圈子，努力提升认知思维，未来或许更加一帆风顺。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section data-role=&quot;outer&quot; label=&quot;Powered by 135editor.com&quot;&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;93040&quot;&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;85956&quot;&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;长按二维码加群一起聊聊~&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;img data-ratio=&quot;1&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/Jmj2LkhPUr6LEqwB0nz4zXsZylfgHu8HFCkDiaKELp0uoGcQCA69Q1OvviaQTppkRSXHELND6j2MBdCW5pGD5Gicg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;258&quot;/&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section data-role=&quot;outer&quot; label=&quot;Powered by 135editor.com&quot;&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;93040&quot;&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;85956&quot;&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;长按二维码关注公众号&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;img data-ratio=&quot;0.5555555555555556&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/Jmj2LkhPUr6h3CrSreKn5SViatk7B0AL5liayVdRYmSxBdcfYd82p9BSK5DIKfJoTeyA8lE0hoOIibn3Hd1YFcGXQ/640?wx_fmt=gif&quot; data-type=&quot;gif&quot; data-w=&quot;900&quot;/&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;*本公众号所发布内容仅代表作者观点，不代表社区立场&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;
+                    &lt;section data-class=&quot;_mbEditor&quot; data-id=&quot;136101&quot;&gt;&lt;section data-style-type=&quot;1&quot; data-tools=&quot;新媒体排版&quot; data-id=&quot;8359&quot;&gt;&lt;section data-css=&quot;background-color:#fcf8e3;border-color:#faebcc;border-radius: 4px;color:#8a6d3b;margin:10px auto;padding: 15px&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;上一章，我们讨论了白皮书中的&lt;a target=&quot;_blank&quot; href=&quot;https://mp.weixin.qq.com/s?__biz=MzIxNzM2NDY1MQ==&amp;amp;mid=2247483966&amp;amp;idx=1&amp;amp;sn=2d17a757dda67c8df09561a7ef1f4079&amp;amp;chksm=97fba3faa08c2aec5c4160040d6936a0aedef7cc5a67b642f5f253e2c6846e419f183cc3fc7c&amp;amp;token=246838499&amp;amp;lang=zh_CN&amp;amp;scene=21#wechat_redirect&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;简化的支付确认(Simplified Payment Verification)&lt;/a&gt;，这一章，我们来介绍比特币白皮书中的价值的组合与分割(Combining and Splitting Value)。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;
+&lt;/section&gt;&lt;p&gt;&lt;span&gt; &lt;span&gt;原文：&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;section data-class=&quot;_mbEditor&quot; data-id=&quot;136101&quot;&gt;&lt;section data-style-type=&quot;1&quot; data-tools=&quot;新媒体排版&quot; data-id=&quot;8359&quot;&gt;&lt;section data-css=&quot;background-color:#fcf8e3;border-color:#faebcc;border-radius: 4px;color:#8a6d3b;margin:10px auto;padding: 15px&quot;&gt;&lt;p&gt;&lt;span&gt;Although it would be possible to handle coins individually, it would be unwieldy to make a
+separate transaction for every cent in a transfer. To allow value to be split and combined,
+transactions contain multiple inputs and outputs. Normally there will be either a single input
+from a larger previous transaction or multiple inputs combining smaller amounts, and at most two
+outputs: one for the payment, and one returning the change, if any, back to the sender. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.6210191082802548&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/z0afv6EauTPibibpfB754ZwPd3iabF8UGBfO3O3uaWMEXZRjKYpc7GfTq7wicEQYGDiaTuNX0My6c5uiaDred6agicEaQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;628&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;It should be noted that fan-out, where a transaction depends on several transactions, and those
+transactions depend on many more, is not a problem here. There is never the need to extract a
+complete standalone copy of a transaction&#x27;s history.&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;
+&lt;/section&gt;&lt;p&gt;&lt;span&gt; 翻译：&lt;/span&gt;&lt;/p&gt;&lt;section data-class=&quot;_mbEditor&quot; data-id=&quot;136101&quot;&gt;&lt;section data-style-type=&quot;1&quot; data-tools=&quot;新媒体排版&quot; data-id=&quot;8359&quot;&gt;&lt;section data-css=&quot;background-color:#fcf8e3;border-color:#faebcc;border-radius: 4px;color:#8a6d3b;margin:10px auto;padding: 15px&quot;&gt;&lt;p&gt;&lt;span&gt;虽然可以单个单个地对电子货币进行处理，但是对于每一枚电子货币单独发起一次交易将是一种笨拙的办法。为了使得价值易于组合与分割，交易被设计为可以纳入多个输入和输出。一般而言是某次价值较大的前次交易构成的单一输入，或者由某几个价值较小的前次交易共同构成的并行输入，但是输出最多只有两个：一个用于支付，另一个用于找零（如有）。 &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.8986928104575164&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/z0afv6EauTPibibpfB754ZwPd3iabF8UGBfKW31gicTOcKickg88ZKm5eGJBJvib8DKTjpKLc4QtENicY4QRepP507lOQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;612&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;需要指出的是，当一笔交易依赖于之前的多笔交易时，这些交易又各自依赖于多笔交易，但这并不存在任何问题。因为这个工作机制并不需要展开检验之前发生的所有交易历史。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;在这一部分中描述文字不多，也比较好理解，它其实是讲述了比特币网络中UTXO模型&lt;/span&gt;&lt;span&gt;。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section data-class=&quot;_mbEditor&quot; data-id=&quot;148422&quot;&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;&lt;strong&gt; 01 &lt;/strong&gt;&lt;/span&gt;&lt;span&gt;&lt;strong&gt;  &lt;/strong&gt;&lt;/span&gt;&lt;span&gt;&lt;strong&gt;绕不开的UTXO&lt;/strong&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;UTXO(UnspentTransactionOutput)，指的是未花费的交易输出，我们可以理解成未被花费的状态。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在传统的交易中，账户余额是由中心化机构记录在数据库中，数据库中记录着不同的账户的余额，而在&lt;strong&gt;&lt;span&gt;UTXO&lt;/span&gt;模型&lt;/strong&gt;中记录的则是&lt;strong&gt;交易的过程&lt;/strong&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;比如在银行，A账户有10元，B账户有20元，A转给B 3元，A还剩下7元，B还剩下23元，这里显示的是结果。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.3092436974789916&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/z0afv6EauTNiagicCt2AXFoib1GX2mzEcxYvGvTStTnJ3zsNjWkXNCHgDnnCGMcmufWV6Z4JRgibbI2ozT2M2xnEcA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1190&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;而在UTXO模型中是怎样体现交易过程的呢？&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;比如A有10个BTC，B有20个BTC，A要转给B 3个BTC，过程是这样的：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;1）A会转3个BTC给B&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2）A会&lt;span&gt;转&lt;/span&gt;7个BTC给A&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;是的，&lt;/span&gt;&lt;span&gt;&lt;strong&gt;我没有写错&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;，A不但给B转了，A也给自己转了一次。其中，A最开始的10个BTC，就是&lt;span&gt;未花费的交易输出(因为他未花费，所以才能向B转账)。&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.9781021897810219&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/z0afv6EauTNiagicCt2AXFoib1GX2mzEcxYk9ibXrgbn9H6SDSFFnCIe2JEwDLZcUZvl01gS4ea6pm0pfZY8bxAjXA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;274&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;因为UTXO是比特币交易里&lt;strong&gt;不可拆分的基本单元结构(转账时必须全部花费，多余的转给自己)&lt;/strong&gt;，一个交易中可以有多个输入，代表比特币来源，是前序交易的输出UTXO；可以有多个输出，代表比特币去向，&lt;span&gt;是后序交易的输入UTXO&lt;/span&gt;。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.56&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/z0afv6EauTNiagicCt2AXFoib1GX2mzEcxYISfHGicTSLUOMLJXxFCtrZahm17af2VDibzQGtXhuViacOPcibEpZDsqbw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1000&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们在&lt;/span&gt;&lt;a target=&quot;_blank&quot; href=&quot;https://mp.weixin.qq.com/s?__biz=MzIxNzM2NDY1MQ==&amp;amp;mid=2247483928&amp;amp;idx=1&amp;amp;sn=e9052211a73bd821bb0d26017d5cbf2b&amp;amp;chksm=97fba3dca08c2aca7c4f93f4b159ce0a86ec11aa1f1f6815a6dfd503c204d7a7ba854c3de44b&amp;amp;token=246838499&amp;amp;lang=zh_CN&amp;amp;scene=21#wechat_redirect&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;span&gt;《比特币白皮书-激励》&lt;/span&gt;&lt;/a&gt;&lt;span&gt;一章中得知，比特币来源于&lt;strong&gt;币基交易&lt;/strong&gt;，币基交易就像铸币厂一样生产着比特币，并将比特币流入市场。可以说币基交易是所有比特币最初的&lt;span&gt;“未花费输出”UTXO&lt;/span&gt;，每笔交易的输入都是来自于上笔关联交易中所得到的“未花费输出”UTXO，而交易输出则意味着比特币的新的所有者拥有了这笔比特币，并且没有花费。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;相关的交易形成了一个链条，&lt;strong&gt;&lt;span&gt;链头&lt;/span&gt;是币基交易&lt;/strong&gt;，所有的比特币都来源于前N笔交易的UTXO，它们就像接龙一样，一个接着一个，完成了比特币的流转，而&lt;strong&gt;链尾一定是当前未花费的交易输出UTXO&lt;/strong&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.1967821782178218&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/z0afv6EauTNiagicCt2AXFoib1GX2mzEcxYq3hJSLxEw3zvxY1iaguicr0K7vF7EkfrnXrwjYiayXIbEAVVSMsIbGqdQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1616&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;section data-class=&quot;_mbEditor&quot; data-id=&quot;148422&quot;&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;&lt;strong&gt; 02 &lt;/strong&gt;&lt;/span&gt;&lt;span&gt;&lt;strong&gt;  继续挖坑&lt;/strong&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;
+&lt;/section&gt;&lt;p&gt;&lt;span&gt;我相信，一定有人和我有着同样的疑问：UTXO模型设计的如此反人类，中本聪为什么要把简单的账户体系设计的这么复杂？ &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我曾在某论坛上看到，有人怀疑中本聪不是地球人，因为他的很多设计不符合人类的可读性，可能在他自己的星球这样做是合情合理的。不过，比特币网络从运行之初到现在，没有出现任何问题，说明，UTXO模型在比特币网络上是成功的。&lt;br/&gt;由于这一部分在白皮书中没有过多的描述UTXO，因此我会在后面的章节详细的讲解UTXO，敬请期待。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;期待您的点评、分享、关注、在看，您的鼓励是我写作的最大动力！&lt;/strong&gt;&lt;strong/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section data-class=&quot;_mbEditor&quot; data-id=&quot;136101&quot;&gt;&lt;section data-style-type=&quot;1&quot; data-tools=&quot;新媒体排版&quot; data-id=&quot;8359&quot;&gt;&lt;section data-css=&quot;background-color:#fcf8e3;border-color:#faebcc;border-radius: 4px;color:#8a6d3b;margin:10px auto;padding: 15px&quot;&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;这一章&lt;/span&gt;，我们讨论了白皮书中的&lt;span&gt;价值的组合与分割(Combining and Splitting Value)&lt;/span&gt;，下一章，我们来介绍比特币白皮书中的隐私(&lt;span&gt;Privacy&lt;/span&gt;)。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;参考文献：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;《Bitcoin: A Peer-to-Peer Electronic Cash System》 &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;https://bitcoin.org/bitcoin.pdf&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;《比特币白皮书：一种点对点的电子现金系统》&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;https://www.8btc.com/wiki/bitcoin-a-peer-to-peer-electronic-cash-system&lt;/span&gt;&lt;/p&gt;
                 &lt;/div&gt;
 
                 
@@ -136,603 +335,16 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>6e752c92a1364dc2f2ee55d79bd56a16</guid>
-<title>重新思考错误处理（二）</title>
-<link>https://toutiao.io/k/0ruh5co</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;post-content&quot;&gt;
-&lt;h2 id=&quot;引言&quot;&gt;引言&lt;/h2&gt;
-&lt;p&gt;文中的源码在这里: &lt;a href=&quot;https://github.com/gota33/errors&quot;&gt;https://github.com/gota33/errors&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;在 &lt;a href=&quot;../20210529&quot;&gt;Part 1&lt;/a&gt; 中我们重新认识了什么是错误. 这次我们就以 Go 语言为例, 看看如何处理下面的问题:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;如何告诉机器有没有错误?&lt;/li&gt;
-&lt;li&gt;如何告诉机器怎么处理错误: 重试? 返回上层? …&lt;/li&gt;
-&lt;li&gt;如何告诉人类错误信息: 操作路径, 上下文信息, …&lt;/li&gt;
-&lt;li&gt;如何在语言无关的前提下实现上面两点 (微服务环境)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;另外我们应该尽量复用现有方案, 除非:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;太过复杂: 增加认知成本&lt;/li&gt;
-&lt;li&gt;侵入性过强: 增加耦合度&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;go-中的-error&quot;&gt;Go 中的 error&lt;/h2&gt;
-&lt;p&gt;既然具体到 Go 语言这个环境, 我就就先看看语言本身对错误的支持.&lt;/p&gt;
-&lt;p&gt;早期版本中 Go 只对 error 下了个定义&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// The error built-in interface type is the conventional interface for
-&lt;/span&gt;&lt;span&gt;// representing an error condition, with the nil value representing no error.
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;type&lt;/span&gt; &lt;span&gt;error&lt;/span&gt; &lt;span&gt;interface&lt;/span&gt; {
-&lt;span&gt;Error&lt;/span&gt;() &lt;span&gt;string&lt;/span&gt;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后给了一个基础实现&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// New returns an error that formats as the given text.
-&lt;/span&gt;&lt;span&gt;// Each call to New returns a distinct error value even if the text is identical.
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;New&lt;/span&gt;(&lt;span&gt;text&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;) &lt;span&gt;error&lt;/span&gt; { &lt;span&gt;return&lt;/span&gt; &lt;span&gt;&amp;amp;&lt;/span&gt;&lt;span&gt;errorString&lt;/span&gt;{&lt;span&gt;text&lt;/span&gt;} }
-
-&lt;span&gt;// errorString is a trivial implementation of error.
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;type&lt;/span&gt; &lt;span&gt;errorString&lt;/span&gt; &lt;span&gt;struct&lt;/span&gt; { &lt;span&gt;string&lt;/span&gt; }
-
-&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;e&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;errorString&lt;/span&gt;) &lt;span&gt;Error&lt;/span&gt;() &lt;span&gt;string&lt;/span&gt; { &lt;span&gt;return&lt;/span&gt; &lt;span&gt;e&lt;/span&gt;.&lt;span&gt;s&lt;/span&gt; }
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;其实, 这个接口虽然简单, 但已经处理了上面四个问题中的两个:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;如何告诉机器有没有错误? &lt;code&gt;nil&lt;/code&gt; 代表没有错误, 否则有.&lt;/li&gt;
-&lt;li&gt;如何告诉人类错误信息? 通过 &lt;code&gt;Error()&lt;/code&gt; 接口返回.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;不过第二点非常依赖于具体的实现:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;如果破坏了约定, 没有在向外层传递时加前缀, 就没有完整的操作路径, 只能看到根错误&lt;/li&gt;
-&lt;li&gt;如果没有实现 &lt;code&gt;fmt.Formatter &lt;/code&gt; 接口, 就无法看到详细且工整的错误信息&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;后来 Go 1.13 通过 &lt;code&gt;wrapper&lt;/code&gt; 进一步完善了错误处理:&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// Unwrap returns the result of calling the Unwrap method on err, if err&#x27;s
-&lt;/span&gt;&lt;span&gt;// type contains an Unwrap method returning error.
-&lt;/span&gt;&lt;span&gt;// Otherwise, Unwrap returns nil.
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;Unwrap&lt;/span&gt;(&lt;span&gt;err&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;) &lt;span&gt;error&lt;/span&gt; 
-
-&lt;span&gt;// Is reports whether any error in err&#x27;s chain matches target.
-&lt;/span&gt;&lt;span&gt;// ...
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;Is&lt;/span&gt;(&lt;span&gt;err&lt;/span&gt;, &lt;span&gt;target&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;) &lt;span&gt;bool&lt;/span&gt;
-
-&lt;span&gt;// As finds the first error in err&#x27;s chain that matches target, and if so, sets
-&lt;/span&gt;&lt;span&gt;// target to that error value and returns true. Otherwise, it returns false.
-&lt;/span&gt;&lt;span&gt;// ...
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;As&lt;/span&gt;(&lt;span&gt;err&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;, &lt;span&gt;target&lt;/span&gt; &lt;span&gt;interface&lt;/span&gt;{}) &lt;span&gt;bool&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;于是错误内部的上下文信息就可以跨层传递了.&lt;/p&gt;
-&lt;p&gt;然而标准库并没有对如何处理错误给出任何信息, 因为这几乎取决于业务场景. 但我们还是能从标准库内部看到一些痕迹. 比如 &lt;code&gt;net&lt;/code&gt; 包中有个内部使用的 &lt;code&gt;temporary&lt;/code&gt; 接口&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;type&lt;/span&gt; &lt;span&gt;temporary&lt;/span&gt; &lt;span&gt;interface&lt;/span&gt; {
-&lt;span&gt;Temporary&lt;/span&gt;() &lt;span&gt;bool&lt;/span&gt;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这也是 &lt;code&gt;net.Error&lt;/code&gt; 接口的一部分&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// An Error represents a network error.
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;type&lt;/span&gt; &lt;span&gt;Error&lt;/span&gt; &lt;span&gt;interface&lt;/span&gt; {
-&lt;span&gt;error&lt;/span&gt;
-&lt;span&gt;Timeout&lt;/span&gt;() &lt;span&gt;bool&lt;/span&gt;   &lt;span&gt;// Is the error a timeout?
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;Temporary&lt;/span&gt;() &lt;span&gt;bool&lt;/span&gt; &lt;span&gt;// Is the error temporary?
-&lt;/span&gt;&lt;span/&gt;}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;它还出现在了 &lt;code&gt;context&lt;/code&gt; 包中&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// DeadlineExceeded is the error returned by Context.Err when the context&#x27;s
-&lt;/span&gt;&lt;span&gt;// deadline passes.
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;var&lt;/span&gt; &lt;span&gt;DeadlineExceeded&lt;/span&gt; &lt;span&gt;error&lt;/span&gt; = &lt;span&gt;deadlineExceededError&lt;/span&gt;{}
-
-&lt;span&gt;type&lt;/span&gt; &lt;span&gt;deadlineExceededError&lt;/span&gt; &lt;span&gt;struct&lt;/span&gt;{}
-
-&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;deadlineExceededError&lt;/span&gt;) &lt;span&gt;Error&lt;/span&gt;() &lt;span&gt;string&lt;/span&gt;   { &lt;span&gt;return&lt;/span&gt; &lt;span&gt;&quot;context deadline exceeded&quot;&lt;/span&gt; }
-&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;deadlineExceededError&lt;/span&gt;) &lt;span&gt;Timeout&lt;/span&gt;() &lt;span&gt;bool&lt;/span&gt;   { &lt;span&gt;return&lt;/span&gt; &lt;span&gt;true&lt;/span&gt; }
-&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;deadlineExceededError&lt;/span&gt;) &lt;span&gt;Temporary&lt;/span&gt;() &lt;span&gt;bool&lt;/span&gt; { &lt;span&gt;return&lt;/span&gt; &lt;span&gt;true&lt;/span&gt; }
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;不过 &lt;code&gt;Temporary()&lt;/code&gt; 目前也存在一些争议: &lt;a href=&quot;https://github.com/golang/go/issues/45729&quot;&gt;issue#45729&lt;/a&gt;, 但这个方法的用意正是想提示机器该如何处理这个错误: 重试.&lt;/p&gt;
-&lt;h2 id=&quot;微服务中的-error&quot;&gt;微服务中的 error&lt;/h2&gt;
-&lt;p&gt;想让错误跨服务传递, 就得有一套独立于语言的标准. 并且最好满足以下三点:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;轻量级: 降低跨语言难度&lt;/li&gt;
-&lt;li&gt;易于理解: 降低认知负担&lt;/li&gt;
-&lt;li&gt;扩展性: 适配不同场景&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;所以这里我选择直接使用 gRPC 的错误标准, 这套标准在 Google 服务中有着广泛的应用, 可以说是比较靠谱了.&lt;/p&gt;
-&lt;p&gt;不过序列化还是使用 JSON, 毕竟通用性强, 方便调试. 并且由于格式与 &lt;code&gt;protobuf&lt;/code&gt; 的版本相同, 所以要兼容也很容易.&lt;/p&gt;
-&lt;p&gt;详细的文档可以参考 &lt;a href=&quot;https://cloud.google.com/apis/design/errors&quot;&gt;Google API design&lt;/a&gt;, 这里简单总结下.&lt;/p&gt;
-&lt;h3 id=&quot;错误模型&quot;&gt;错误模型&lt;/h3&gt;
-&lt;p&gt;模型由三部分组成: code 错误码, message 错误信息, details 错误详情.&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-protobuf&quot; data-lang=&quot;protobuf&quot;&gt;&lt;span&gt;package&lt;/span&gt; google&lt;span&gt;.&lt;/span&gt;&lt;span&gt;rpc&lt;/span&gt;;&lt;span&gt;
-&lt;/span&gt;&lt;span&gt;
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;// The `Status` type defines a logical error model that is suitable for
-&lt;/span&gt;&lt;span&gt;// different programming environments, including REST APIs and RPC APIs.
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;message&lt;/span&gt; &lt;span&gt;Status&lt;/span&gt; {&lt;span&gt;
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;// A simple error code that can be easily handled by the client. The
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;// actual error code is defined by `google.rpc.Code`.
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;int32&lt;/span&gt; code &lt;span&gt;=&lt;/span&gt; &lt;span&gt;1&lt;/span&gt;;&lt;span&gt;
-&lt;/span&gt;&lt;span&gt;
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;// A developer-facing human-readable error message in English. It should
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;// both explain the error and offer an actionable resolution to it.
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;string&lt;/span&gt; &lt;span&gt;message&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;2&lt;/span&gt;;&lt;span&gt;
-&lt;/span&gt;&lt;span&gt;
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;// Additional error information that the client code can use to handle
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;// the error, such as retry info or a help link.
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;repeated&lt;/span&gt; google.protobuf.Any details &lt;span&gt;=&lt;/span&gt; &lt;span&gt;3&lt;/span&gt;;&lt;span&gt;
-&lt;/span&gt;&lt;span/&gt;}&lt;span&gt;
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;JSON 格式:&lt;/p&gt;
-&lt;p&gt;和上面很像, 但是多了一个 status 字段, 并在外面包了一层 wrapper.&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-protobuf&quot; data-lang=&quot;protobuf&quot;&gt;&lt;span&gt;// The error format v2 for Google JSON REST APIs.
-&lt;/span&gt;&lt;span&gt;//
-&lt;/span&gt;&lt;span&gt;// NOTE: This schema is not used for other wire protocols.
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;message&lt;/span&gt; &lt;span&gt;Error&lt;/span&gt; {&lt;span&gt;
-&lt;/span&gt;&lt;span&gt;
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;// This message has the same semantics as `google.rpc.Status`. It uses HTTP
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;// status code instead of gRPC status code. It has an extra field `status`
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;// for backward compatibility with Google API Client Libraries.
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;message&lt;/span&gt; &lt;span&gt;Status&lt;/span&gt; {&lt;span&gt;
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;
-&lt;/span&gt;&lt;span/&gt;    &lt;span&gt;// The HTTP status code that corresponds to `google.rpc.Status.code`.
-&lt;/span&gt;&lt;span/&gt;    &lt;span&gt;int32&lt;/span&gt; code &lt;span&gt;=&lt;/span&gt; &lt;span&gt;1&lt;/span&gt;;&lt;span&gt;
-&lt;/span&gt;&lt;span/&gt;    &lt;span&gt;
-&lt;/span&gt;&lt;span/&gt;    &lt;span&gt;// This corresponds to `google.rpc.Status.message`.
-&lt;/span&gt;&lt;span/&gt;    &lt;span&gt;string&lt;/span&gt; &lt;span&gt;message&lt;/span&gt; &lt;span&gt;=&lt;/span&gt; &lt;span&gt;2&lt;/span&gt;;&lt;span&gt;
-&lt;/span&gt;&lt;span/&gt;    &lt;span&gt;
-&lt;/span&gt;&lt;span/&gt;    &lt;span&gt;// This is the enum version for `google.rpc.Status.code`.
-&lt;/span&gt;&lt;span/&gt;    google.rpc.Code status &lt;span&gt;=&lt;/span&gt; &lt;span&gt;4&lt;/span&gt;;&lt;span&gt;
-&lt;/span&gt;&lt;span/&gt;    &lt;span&gt;
-&lt;/span&gt;&lt;span/&gt;    &lt;span&gt;// This corresponds to `google.rpc.Status.details`.
-&lt;/span&gt;&lt;span/&gt;    &lt;span&gt;repeated&lt;/span&gt; google.protobuf.Any details &lt;span&gt;=&lt;/span&gt; &lt;span&gt;5&lt;/span&gt;;&lt;span&gt;
-&lt;/span&gt;&lt;span/&gt;  }&lt;span&gt;
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;// The actual error payload. The nested message structure is for backward
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;// compatibility with Google API client libraries. It also makes the error
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;// more readable to developers.
-&lt;/span&gt;&lt;span/&gt;  Status error &lt;span&gt;=&lt;/span&gt; &lt;span&gt;1&lt;/span&gt;;&lt;span&gt;
-&lt;/span&gt;&lt;span/&gt;}&lt;span&gt;
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;JSON 示例:&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-json&quot; data-lang=&quot;json&quot;&gt;{
-  &lt;span&gt;&quot;error&quot;&lt;/span&gt;: {
-    &lt;span&gt;&quot;code&quot;&lt;/span&gt;: &lt;span&gt;400&lt;/span&gt;,
-    &lt;span&gt;&quot;message&quot;&lt;/span&gt;: &lt;span&gt;&quot;API key not valid. Please pass a valid API key.&quot;&lt;/span&gt;,
-    &lt;span&gt;&quot;status&quot;&lt;/span&gt;: &lt;span&gt;&quot;INVALID_ARGUMENT&quot;&lt;/span&gt;,
-    &lt;span&gt;&quot;details&quot;&lt;/span&gt;: [
-      {
-        &lt;span&gt;&quot;@type&quot;&lt;/span&gt;: &lt;span&gt;&quot;type.googleapis.com/google.rpc.ErrorInfo&quot;&lt;/span&gt;,
-        &lt;span&gt;&quot;reason&quot;&lt;/span&gt;: &lt;span&gt;&quot;API_KEY_INVALID&quot;&lt;/span&gt;,
-        &lt;span&gt;&quot;domain&quot;&lt;/span&gt;: &lt;span&gt;&quot;googleapis.com&quot;&lt;/span&gt;,
-        &lt;span&gt;&quot;metadata&quot;&lt;/span&gt;: {
-          &lt;span&gt;&quot;service&quot;&lt;/span&gt;: &lt;span&gt;&quot;translate.googleapis.com&quot;&lt;/span&gt;
-        }
-      }
-    ]
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&quot;错误类型&quot;&gt;错误类型&lt;/h3&gt;
-&lt;p&gt;&lt;img src=&quot;./image-20210529195147166.png&quot; alt=&quot;image-20210529195147166&quot;/&gt;&lt;/p&gt;
-&lt;h3 id=&quot;错误消息&quot;&gt;错误消息&lt;/h3&gt;
-&lt;p&gt;&lt;img src=&quot;./image-20210529194548842.png&quot; alt=&quot;message&quot;/&gt;&lt;/p&gt;
-&lt;h3 id=&quot;错误详情&quot;&gt;错误详情&lt;/h3&gt;
-&lt;p&gt;&lt;img src=&quot;./image-20210529194616203.png&quot; alt=&quot;image-20210529194616203&quot;/&gt;&lt;/p&gt;
-&lt;h3 id=&quot;备注&quot;&gt;备注&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;所有的 5xx 错误都是服务端错误, 其对应的 DebugInfo 是仅限于系统内部记录用的, 错误往系统外传递错误消息时一定记得把 DebugInfo 过滤掉.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;有两个错误是可重试的, 重试前要确保幂等性:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;503 UNAVAILABLE &lt;/code&gt; : 默认行为应该为 1s 后重试 1 次&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;429 RESOURCE_EXHAUSTED&lt;/code&gt;: 由客户端重试, 间隔至少 30s, 并且只用于耗时的后台任务&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;不应该盲目将其他系统的错误传递给自己的用户, 比如其他系统返回的 &lt;code&gt;INVALID_ARGUMENT&lt;/code&gt; 应该内部处理后返回 &lt;code&gt;INTERNAL&lt;/code&gt; 或其他错误&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;实现详情和机密信息应在传播前隐藏&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;虽然表格中的错误消息示例是中文, 但规范中错误消息应该是英文, i18n 的提示信息应该放在 &lt;code&gt;LocalizedMessage&lt;/code&gt; 详情中.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;有三个 400 的错误很容易混淆:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;400 INVALID_ARGUMENT&lt;/code&gt;: 客户端传了无效的参数, 并且校验规则和服务端状态无关, 比如: Email 地址无效&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;400 FAILED_PRECONDITION&lt;/code&gt;: 服务器当前状态下无效的参数, 但服务器状态改变后重试可能成功, 比如: 用户申请的资源在初始化中.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;400 OUT_OF_RANGE&lt;/code&gt;: 和上面一条很像, 但用于范围, 比如: 日期范围, 数量范围, ….&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;几个可以重试的错误也需要区别:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;503 UNAVAILABLE&lt;/code&gt;: 因为请求实际上未到达服务器, 客户端可以立即重试&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;409 ABORTED&lt;/code&gt;: 进行中的事务被终止, 客户端需要从该事务阶段的起点重试.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;400 FAILED_PRECONDITION&lt;/code&gt;: 服务器状态不满足, 客户端需要等待服务器准备完毕后再重试.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;接口设计&quot;&gt;接口设计&lt;/h2&gt;
-&lt;p&gt;首先回顾下需要包含在错误中的必要信息:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;错误码 (标识符, 一定程度上指导如何处理)&lt;/li&gt;
-&lt;li&gt;执行路径 (快速定位错误)&lt;/li&gt;
-&lt;li&gt;错误详情 (提供上下文信息, 关联其他外部信息)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;再回顾下错误处理策略:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;底层错误应当尽量重试&lt;/li&gt;
-&lt;li&gt;应当尽量集中处理错误 (程序中处理错误的位置尽量少)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;执行路径&quot;&gt;执行路径&lt;/h3&gt;
-&lt;p&gt;在谈错误码之前, 我们先谈谈如何记录错误的执行路径.&lt;/p&gt;
-&lt;p&gt;我做 Go 开发之前是做 Java 的, 由于 Java 的 Exception 有内置的 StackTrace, 所以那时并没有意识到其中的问题. 有时望着如山般的错误信息, 也只能叹口气慢慢消化. 但现在回想下, 其实里面 80% 的信息对定位问题并没有帮助. 比如下面这样:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;javax.servlet.ServletException: Something bad happened
-    at com.example.myproject.OpenSessionInViewFilter.doFilter(OpenSessionInViewFilter.java:60)
-    at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1157)
-    at com.example.myproject.ExceptionHandlerFilter.doFilter(ExceptionHandlerFilter.java:28)
-    at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1157)
-    at com.example.myproject.OutputBufferFilter.doFilter(OutputBufferFilter.java:33)
-    at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1157)
-    at org.mortbay.jetty.servlet.ServletHandler.handle(ServletHandler.java:388)
-    at org.mortbay.jetty.security.SecurityHandler.handle(SecurityHandler.java:216)
-    at org.mortbay.jetty.servlet.SessionHandler.handle(SessionHandler.java:182)
-    at org.mortbay.jetty.handler.ContextHandler.handle(ContextHandler.java:765)
-    at org.mortbay.jetty.webapp.WebAppContext.handle(WebAppContext.java:418)
-    at org.mortbay.jetty.handler.HandlerWrapper.handle(HandlerWrapper.java:152)
-    at org.mortbay.jetty.Server.handle(Server.java:326)
-    at org.mortbay.jetty.HttpConnection.handleRequest(HttpConnection.java:542)
-    at org.mortbay.jetty.HttpConnection$RequestHandler.content(HttpConnection.java:943)
-    at org.mortbay.jetty.HttpParser.parseNext(HttpParser.java:756)
-    at org.mortbay.jetty.HttpParser.parseAvailable(HttpParser.java:218)
-    at org.mortbay.jetty.HttpConnection.handle(HttpConnection.java:404)
-    at org.mortbay.jetty.bio.SocketConnector$Connection.run(SocketConnector.java:228)
-    at org.mortbay.thread.QueuedThreadPool$PoolThread.run(QueuedThreadPool.java:582)
-Caused by: com.example.myproject.MyProjectServletException
-    at com.example.myproject.MyServlet.doPost(MyServlet.java:169)
-    at javax.servlet.http.HttpServlet.service(HttpServlet.java:727)
-    at javax.servlet.http.HttpServlet.service(HttpServlet.java:820)
-    at org.mortbay.jetty.servlet.ServletHolder.handle(ServletHolder.java:511)
-    at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1166)
-    at com.example.myproject.OpenSessionInViewFilter.doFilter(OpenSessionInViewFilter.java:30)
-    ... 27 more
-Caused by: org.hibernate.exception.ConstraintViolationException: could not insert: [com.example.myproject.MyEntity]
-    at org.hibernate.exception.SQLStateConverter.convert(SQLStateConverter.java:96)
-    at org.hibernate.exception.JDBCExceptionHelper.convert(JDBCExceptionHelper.java:66)
-    at org.hibernate.id.insert.AbstractSelectingDelegate.performInsert(AbstractSelectingDelegate.java:64)
-    at org.hibernate.persister.entity.AbstractEntityPersister.insert(AbstractEntityPersister.java:2329)
-    at org.hibernate.persister.entity.AbstractEntityPersister.insert(AbstractEntityPersister.java:2822)
-    at org.hibernate.action.EntityIdentityInsertAction.execute(EntityIdentityInsertAction.java:71)
-    at org.hibernate.engine.ActionQueue.execute(ActionQueue.java:268)
-    at org.hibernate.event.def.AbstractSaveEventListener.performSaveOrReplicate(AbstractSaveEventListener.java:321)
-    at org.hibernate.event.def.AbstractSaveEventListener.performSave(AbstractSaveEventListener.java:204)
-    at org.hibernate.event.def.AbstractSaveEventListener.saveWithGeneratedId(AbstractSaveEventListener.java:130)
-    at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.saveWithGeneratedOrRequestedId(DefaultSaveOrUpdateEventListener.java:210)
-    at org.hibernate.event.def.DefaultSaveEventListener.saveWithGeneratedOrRequestedId(DefaultSaveEventListener.java:56)
-    at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.entityIsTransient(DefaultSaveOrUpdateEventListener.java:195)
-    at org.hibernate.event.def.DefaultSaveEventListener.performSaveOrUpdate(DefaultSaveEventListener.java:50)
-    at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.onSaveOrUpdate(DefaultSaveOrUpdateEventListener.java:93)
-    at org.hibernate.impl.SessionImpl.fireSave(SessionImpl.java:705)
-    at org.hibernate.impl.SessionImpl.save(SessionImpl.java:693)
-    at org.hibernate.impl.SessionImpl.save(SessionImpl.java:689)
-    at sun.reflect.GeneratedMethodAccessor5.invoke(Unknown Source)
-    at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
-    at java.lang.reflect.Method.invoke(Method.java:597)
-    at org.hibernate.context.ThreadLocalSessionContext$TransactionProtectionWrapper.invoke(ThreadLocalSessionContext.java:344)
-    at $Proxy19.save(Unknown Source)
-    at com.example.myproject.MyEntityService.save(MyEntityService.java:59) &amp;lt;-- relevant call (see notes below)
-    at com.example.myproject.MyServlet.doPost(MyServlet.java:164)
-    ... 32 more
-Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1: duplicate value(s) for column(s) MY_COLUMN in statement [...]
-    at org.hsqldb.jdbc.Util.throwError(Unknown Source)
-    at org.hsqldb.jdbc.jdbcPreparedStatement.executeUpdate(Unknown Source)
-    at com.mchange.v2.c3p0.impl.NewProxyPreparedStatement.executeUpdate(NewProxyPreparedStatement.java:105)
-    at org.hibernate.id.insert.AbstractSelectingDelegate.performInsert(AbstractSelectingDelegate.java:57)
-    ... 54 more
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;上面这个例子算是比较直观的, 越复杂的系统这个堆栈信息就越长. 如果内部使用了响应式或者函数式的框架, 那绝对头大, 可能盯着看上半小时也看不出个所以然来.&lt;/p&gt;
-&lt;p&gt;除非系统特别复杂, 不然大部分时候简单的执行路径足以帮助我们定位问题. 比如我们写个简单的接口:&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;// 用户对象
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;type&lt;/span&gt; &lt;span&gt;User&lt;/span&gt; &lt;span&gt;struct&lt;/span&gt; {
-&lt;span&gt;ID&lt;/span&gt;   &lt;span&gt;string&lt;/span&gt; &lt;span&gt;`json:&quot;id&quot;`&lt;/span&gt;
-&lt;span&gt;Name&lt;/span&gt; &lt;span&gt;string&lt;/span&gt; &lt;span&gt;`json:&quot;name&quot;`&lt;/span&gt;
-}
-
-&lt;span&gt;// HTTP 接口
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;type&lt;/span&gt; &lt;span&gt;rest&lt;/span&gt; &lt;span&gt;struct&lt;/span&gt; { &lt;span&gt;srv&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;business&lt;/span&gt; }
-
-&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;h&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;rest&lt;/span&gt;) &lt;span&gt;Welcome&lt;/span&gt;(&lt;span&gt;w&lt;/span&gt; &lt;span&gt;http&lt;/span&gt;.&lt;span&gt;ResponseWriter&lt;/span&gt;, &lt;span&gt;r&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;http&lt;/span&gt;.&lt;span&gt;Request&lt;/span&gt;) {
-&lt;span&gt;name&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;r&lt;/span&gt;.&lt;span&gt;URL&lt;/span&gt;.&lt;span&gt;Query&lt;/span&gt;().&lt;span&gt;Get&lt;/span&gt;(&lt;span&gt;&quot;name&quot;&lt;/span&gt;)
-&lt;span&gt;user&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;h&lt;/span&gt;.&lt;span&gt;srv&lt;/span&gt;.&lt;span&gt;WelcomeByName&lt;/span&gt;(&lt;span&gt;r&lt;/span&gt;.&lt;span&gt;Context&lt;/span&gt;(), &lt;span&gt;name&lt;/span&gt;)
-&lt;span&gt;if&lt;/span&gt; &lt;span&gt;err&lt;/span&gt; &lt;span&gt;!=&lt;/span&gt; &lt;span&gt;nil&lt;/span&gt; {
-&lt;span&gt;err&lt;/span&gt; = &lt;span&gt;&amp;amp;&lt;/span&gt;&lt;span&gt;url&lt;/span&gt;.&lt;span&gt;Error&lt;/span&gt;{
-&lt;span&gt;Op&lt;/span&gt;:  &lt;span&gt;r&lt;/span&gt;.&lt;span&gt;Method&lt;/span&gt;,
-&lt;span&gt;URL&lt;/span&gt;: &lt;span&gt;r&lt;/span&gt;.&lt;span&gt;URL&lt;/span&gt;.&lt;span&gt;String&lt;/span&gt;(),
-&lt;span&gt;Err&lt;/span&gt;: &lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Errorf&lt;/span&gt;(&lt;span&gt;&quot;rest.Welcome: %w&quot;&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt;),
-}
-&lt;span&gt;log&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;err&lt;/span&gt;)
-&lt;span&gt;http&lt;/span&gt;.&lt;span&gt;NotFound&lt;/span&gt;(&lt;span&gt;w&lt;/span&gt;, &lt;span&gt;r&lt;/span&gt;)
-} &lt;span&gt;else&lt;/span&gt; {
-&lt;span&gt;message&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Sprintf&lt;/span&gt;(&lt;span&gt;&quot;Hello, %s!&quot;&lt;/span&gt;, &lt;span&gt;user&lt;/span&gt;.&lt;span&gt;Name&lt;/span&gt;)
-&lt;span&gt;_&lt;/span&gt;, &lt;span&gt;_&lt;/span&gt; = &lt;span&gt;io&lt;/span&gt;.&lt;span&gt;WriteString&lt;/span&gt;(&lt;span&gt;w&lt;/span&gt;, &lt;span&gt;message&lt;/span&gt;)
-}
-}
-
-&lt;span&gt;// 业务层
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;type&lt;/span&gt; &lt;span&gt;business&lt;/span&gt; &lt;span&gt;struct&lt;/span&gt; { &lt;span&gt;d&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;dao&lt;/span&gt; }
-
-&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;s&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;business&lt;/span&gt;) &lt;span&gt;WelcomeByName&lt;/span&gt;(&lt;span&gt;ctx&lt;/span&gt; &lt;span&gt;context&lt;/span&gt;.&lt;span&gt;Context&lt;/span&gt;, &lt;span&gt;name&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;) (&lt;span&gt;user&lt;/span&gt; &lt;span&gt;User&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;) {
-&lt;span&gt;if&lt;/span&gt; &lt;span&gt;user&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; = &lt;span&gt;s&lt;/span&gt;.&lt;span&gt;d&lt;/span&gt;.&lt;span&gt;GetUserByName&lt;/span&gt;(&lt;span&gt;ctx&lt;/span&gt;, &lt;span&gt;name&lt;/span&gt;); &lt;span&gt;err&lt;/span&gt; &lt;span&gt;!=&lt;/span&gt; &lt;span&gt;nil&lt;/span&gt; {
-&lt;span&gt;err&lt;/span&gt; = &lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Errorf&lt;/span&gt;(&lt;span&gt;&quot;business.WelcomeByName: %w&quot;&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt;) &lt;span&gt;// 记录错误路径
-&lt;/span&gt;&lt;span/&gt;}
-&lt;span&gt;return&lt;/span&gt;
-}
-
-&lt;span&gt;// DAO 层
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;type&lt;/span&gt; &lt;span&gt;dao&lt;/span&gt; &lt;span&gt;struct&lt;/span&gt;{}
-
-&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;d&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;dao&lt;/span&gt;) &lt;span&gt;GetUserByName&lt;/span&gt;(&lt;span&gt;ctx&lt;/span&gt; &lt;span&gt;context&lt;/span&gt;.&lt;span&gt;Context&lt;/span&gt;, &lt;span&gt;name&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;) (&lt;span&gt;user&lt;/span&gt; &lt;span&gt;User&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;) {
-&lt;span&gt;err&lt;/span&gt; = &lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Errorf&lt;/span&gt;(&lt;span&gt;&quot;dao.GetUserByName: %w&quot;&lt;/span&gt;, &lt;span&gt;err&lt;/span&gt;) &lt;span&gt;// 记录错误路径
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;return&lt;/span&gt;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;客户端收到的错误信息:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;404 page not found
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;服务端记录的日志:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;2021/05/29 22:24:41 GET &quot;http://api.demo.com/welcome?name=Bob&quot;: rest.Welcome: business.WelcomeByName: dao.GetUserByName: sql: no rows in result set
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;看起来是不是很清爽呢? 再看下记录全堆栈的版本.&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;2021/05/29 22:32:10 goroutine 1 [running]:
-runtime/debug.Stack(0x9ac15f, 0x15, 0xc00011dd98)
-C:/code/go/src/runtime/debug/stack.go:24 +0xa5
-main.(*dao).GetUserByName(0xc00011df47, 0x9e3a10, 0xc000014040, 0xc00000e367, 0x3, 0xc00000e362, 0x9a74ba, 0x4, 0x92f701, 0xc00007ad80, ...)
-C:/Users/a/AppData/Roaming/JetBrains/GoLand2021.1/scratches/scratch_8.go:69 +0xa5
-main.(*business).WelcomeByName(0xc00011df50, 0x9e3a10, 0xc000014040, 0xc00000e367, 0x3, 0xc000024240, 0xc0000524e0, 0x38, 0x157fbdd0108, 0xc00014a000, ...)
-C:/Users/a/AppData/Roaming/JetBrains/GoLand2021.1/scratches/scratch_8.go:59 +0x7e
-main.(*rest).Welcome(0xc00011df58, 0x9e3930, 0xc00005e200, 0xc000152000)
-C:/Users/a/AppData/Roaming/JetBrains/GoLand2021.1/scratches/scratch_8.go:39 +0xa5
-main.main()
-C:/Users/a/AppData/Roaming/JetBrains/GoLand2021.1/scratches/scratch_8.go:24 +0x113
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;一般人可能要个反应个 10 秒才能提取出执行路径吧? 如果是较复杂的调用路径, 可能就是上面 Java 版的那个样子了.&lt;/p&gt;
-&lt;p&gt;另外, 简单的信息有助于我们解决另一个难题: 如何跨服务传播错误? 堆栈信息其实不太容易传播, 特别是跨语言时更难. 但是只包含业务执行路径的错误消息却十分容易传播. 看起来就像这样:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;2021/05/29 22:24:41 
-GET &quot;http://api.demo.com/welcome?name=Bob&quot;: rest.Welcome: business.Welcome: api.getUser:
-GET &quot;http://api.demo.com/users?name=Bob&quot;: rest.getUser: dao.GetUser: sql: no rows in result set
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;所以, 我建议只在错误中记录业务相关的执行路径. 只在必要的时候才记录完整的堆栈信息: 通过开关的方式, 或者记录在 DebugInfo 这样的详情中.&lt;/p&gt;
-&lt;p&gt;虽说由于我们对微服务可观测性的要求越来越高, 有越来越多的工具可以帮助我们整理凌乱的错误信息. 比如 jaeger, sentry, …&lt;/p&gt;
-&lt;p&gt;但是, 这些外部依赖也在无形中提高我们的使用和运维成本. 处理不好的话, 甚至可能出现脱离了特定环境就两眼一抹黑, 或者根本启动不了的情况.&lt;/p&gt;
-&lt;p&gt;所以还是应当先处理好核心的东西, 再去享受这些运维工具带来的便利.&lt;/p&gt;
-&lt;p&gt;最后, 这部分其实很容易实现, 使用 &lt;code&gt;fmt.Errorf()&lt;/code&gt; 就已经完全足够了.&lt;/p&gt;
-&lt;h3 id=&quot;错误码&quot;&gt;错误码&lt;/h3&gt;
-&lt;p&gt;错误码算是对错误的一种分类, 我们之前的分类方式粒度太粗, 易于理解但不便于使用.&lt;/p&gt;
-&lt;p&gt;回顾一下: (可重试, 不可重试) x (内部, 外部). 一共四个分类.&lt;/p&gt;
-&lt;p&gt;所以我们还是使用 gRPC 中久经考验的状态码规范.&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;type&lt;/span&gt; &lt;span&gt;StatusCode&lt;/span&gt; &lt;span&gt;int&lt;/span&gt;
-
-&lt;span&gt;// 错误码枚举
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;const&lt;/span&gt; (
-    &lt;span&gt;// 200 OK 为默认值
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;OK&lt;/span&gt; &lt;span&gt;StatusCode&lt;/span&gt; = &lt;span&gt;iota&lt;/span&gt;
-&lt;span&gt;//...
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;Unauthenticated&lt;/span&gt;
-
-    &lt;span&gt;// 错误码总数, 总放在最后
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;totalStatus&lt;/span&gt;
-)
-&lt;span&gt;var&lt;/span&gt; (
-    &lt;span&gt;// 错误码名称列表
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;statusList&lt;/span&gt; = [&lt;span&gt;totalStatus&lt;/span&gt;]&lt;span&gt;string&lt;/span&gt;{
-&lt;span&gt;&quot;OK&quot;&lt;/span&gt;,
-&lt;span&gt;// ...
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;&quot;UNAUTHENTICATED&quot;&lt;/span&gt;,
-}
-    &lt;span&gt;// 错误码对应的 HttpStatusCode 列表
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;httpList&lt;/span&gt; = [&lt;span&gt;totalStatus&lt;/span&gt;]&lt;span&gt;int&lt;/span&gt;{
-&lt;span&gt;http&lt;/span&gt;.&lt;span&gt;StatusOK&lt;/span&gt;,
-&lt;span&gt;// ...
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;http&lt;/span&gt;.&lt;span&gt;StatusUnauthorized&lt;/span&gt;,
-}
-)
-
-&lt;span&gt;// 错误码可以直接作为 Root Cause 使用
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;c&lt;/span&gt; &lt;span&gt;StatusCode&lt;/span&gt;) &lt;span&gt;Error&lt;/span&gt;() &lt;span&gt;string&lt;/span&gt; {
-&lt;span&gt;return&lt;/span&gt; &lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Sprintf&lt;/span&gt;(&lt;span&gt;&quot;%d %s&quot;&lt;/span&gt;, &lt;span&gt;c&lt;/span&gt;.&lt;span&gt;Http&lt;/span&gt;(), &lt;span&gt;c&lt;/span&gt;.&lt;span&gt;String&lt;/span&gt;())
-}
-
-&lt;span&gt;// 返回错误码名称, 非法错误码如 -1 返回 Code(-1)
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;c&lt;/span&gt; &lt;span&gt;StatusCode&lt;/span&gt;) &lt;span&gt;String&lt;/span&gt;() &lt;span&gt;string&lt;/span&gt; {
-&lt;span&gt;if&lt;/span&gt; &lt;span&gt;c&lt;/span&gt;.&lt;span&gt;Valid&lt;/span&gt;() {
-&lt;span&gt;return&lt;/span&gt; &lt;span&gt;statusList&lt;/span&gt;[&lt;span&gt;c&lt;/span&gt;]
-}
-&lt;span&gt;return&lt;/span&gt; &lt;span&gt;&quot;Code(&quot;&lt;/span&gt; &lt;span&gt;+&lt;/span&gt; &lt;span&gt;strconv&lt;/span&gt;.&lt;span&gt;FormatInt&lt;/span&gt;(int64(&lt;span&gt;c&lt;/span&gt;), &lt;span&gt;10&lt;/span&gt;) &lt;span&gt;+&lt;/span&gt; &lt;span&gt;&quot;)&quot;&lt;/span&gt;
-}
-
-&lt;span&gt;// 返回错误码对应的 HttpStatusCode, 未知错误返回 500
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;c&lt;/span&gt; &lt;span&gt;StatusCode&lt;/span&gt;) &lt;span&gt;Http&lt;/span&gt;() &lt;span&gt;int&lt;/span&gt; {
-&lt;span&gt;if&lt;/span&gt;  &lt;span&gt;c&lt;/span&gt;.&lt;span&gt;Valid&lt;/span&gt;() {
-&lt;span&gt;return&lt;/span&gt; &lt;span&gt;httpList&lt;/span&gt;[&lt;span&gt;c&lt;/span&gt;]
-}
-&lt;span&gt;return&lt;/span&gt; &lt;span&gt;http&lt;/span&gt;.&lt;span&gt;StatusInternalServerError&lt;/span&gt;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;以 &lt;code&gt;Internal&lt;/code&gt; 为例:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Http() =&amp;gt; 500&lt;/li&gt;
-&lt;li&gt;String() =&amp;gt; INTERNAL&lt;/li&gt;
-&lt;li&gt;Error() =&amp;gt; 500 INTERNAL&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;接下来, 我们需要一个方便的机制来标记我们的错误类型, 就像 &lt;code&gt;fmt.Errorf()&lt;/code&gt; 那样. 这里我们定义一个 &lt;code&gt;Annotate()&lt;/code&gt; 函数.&lt;/p&gt;
-&lt;p&gt;这个函数使用起来应该像这样:&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;err&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;Annotate&lt;/span&gt;(&lt;span&gt;sql&lt;/span&gt;.&lt;span&gt;ErrNoRows&lt;/span&gt;, &lt;span&gt;NotFound&lt;/span&gt;)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Annotation 方法和 annotated 自定义错误:&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;type&lt;/span&gt; &lt;span&gt;annotated&lt;/span&gt; &lt;span&gt;struct&lt;/span&gt; {
-&lt;span&gt;cause&lt;/span&gt;   &lt;span&gt;error&lt;/span&gt;
-&lt;span&gt;code&lt;/span&gt;    &lt;span&gt;StatusCode&lt;/span&gt;
-}
-
-&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;e&lt;/span&gt; &lt;span&gt;annotated&lt;/span&gt;) &lt;span&gt;Unwrap&lt;/span&gt;() &lt;span&gt;error&lt;/span&gt; { &lt;span&gt;return&lt;/span&gt; &lt;span&gt;e&lt;/span&gt;.&lt;span&gt;cause&lt;/span&gt; }
-&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;e&lt;/span&gt; &lt;span&gt;annotated&lt;/span&gt;) &lt;span&gt;Error&lt;/span&gt;() &lt;span&gt;string&lt;/span&gt; { &lt;span&gt;return&lt;/span&gt; &lt;span&gt;e&lt;/span&gt;.&lt;span&gt;cause&lt;/span&gt;.&lt;span&gt;Error&lt;/span&gt;() }
-
-&lt;span&gt;type&lt;/span&gt; &lt;span&gt;Annotation&lt;/span&gt; &lt;span&gt;interface&lt;/span&gt; {
-    &lt;span&gt;Annotate&lt;/span&gt;(&lt;span&gt;a&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;annotated&lt;/span&gt;)
-}
-
-&lt;span&gt;func&lt;/span&gt; &lt;span&gt;Annotate&lt;/span&gt;(&lt;span&gt;cause&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;, &lt;span&gt;annotations&lt;/span&gt; &lt;span&gt;...&lt;/span&gt;&lt;span&gt;Annotation&lt;/span&gt;) &lt;span&gt;error&lt;/span&gt; {
-    &lt;span&gt;if&lt;/span&gt; &lt;span&gt;cause&lt;/span&gt; &lt;span&gt;==&lt;/span&gt; &lt;span&gt;nil&lt;/span&gt; &lt;span&gt;||&lt;/span&gt; len(&lt;span&gt;annotations&lt;/span&gt;) &lt;span&gt;==&lt;/span&gt; &lt;span&gt;0&lt;/span&gt; {
-        &lt;span&gt;return&lt;/span&gt; &lt;span&gt;cause&lt;/span&gt;
-    }
-    
-    &lt;span&gt;a&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;&amp;amp;&lt;/span&gt;&lt;span&gt;annotated&lt;/span&gt;{ &lt;span&gt;cause&lt;/span&gt;: &lt;span&gt;cause&lt;/span&gt; }
-    &lt;span&gt;for&lt;/span&gt; &lt;span&gt;_&lt;/span&gt;, &lt;span&gt;annotation&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;range&lt;/span&gt; &lt;span&gt;annotations&lt;/span&gt; {
-        &lt;span&gt;annotation&lt;/span&gt;.&lt;span&gt;Annotate&lt;/span&gt;(&lt;span&gt;a&lt;/span&gt;)
-    }
-    &lt;span&gt;return&lt;/span&gt; &lt;span&gt;a&lt;/span&gt;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;让 &lt;code&gt;StatusCode&lt;/code&gt; 实现 &lt;code&gt;Annotation&lt;/code&gt; 接口&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;c&lt;/span&gt; &lt;span&gt;StatusCode&lt;/span&gt;) &lt;span&gt;Annotate&lt;/span&gt;(&lt;span&gt;a&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;annotated&lt;/span&gt;) { &lt;span&gt;a&lt;/span&gt;.&lt;span&gt;code&lt;/span&gt; = &lt;span&gt;c&lt;/span&gt; }
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;还需要一个 Code() 函数获取当前的错误码:&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;code&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;Code&lt;/span&gt;(&lt;span&gt;err&lt;/span&gt;)  &lt;span&gt;// 404 NotFound
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;Code()&lt;/code&gt; 方法&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;Code&lt;/span&gt;(&lt;span&gt;err&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;) (&lt;span&gt;out&lt;/span&gt; &lt;span&gt;StatusCode&lt;/span&gt;) {
-    &lt;span&gt;if&lt;/span&gt; &lt;span&gt;err&lt;/span&gt; &lt;span&gt;==&lt;/span&gt; &lt;span&gt;nil&lt;/span&gt; {
-&lt;span&gt;return&lt;/span&gt; &lt;span&gt;OK&lt;/span&gt;
-}
-&lt;span&gt;var&lt;/span&gt; &lt;span&gt;a&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;annotated&lt;/span&gt;
-&lt;span&gt;if&lt;/span&gt; &lt;span&gt;errors&lt;/span&gt;.&lt;span&gt;As&lt;/span&gt;(&lt;span&gt;err&lt;/span&gt;, &lt;span&gt;&amp;amp;&lt;/span&gt;&lt;span&gt;a&lt;/span&gt;) {
-&lt;span&gt;return&lt;/span&gt; &lt;span&gt;a&lt;/span&gt;.&lt;span&gt;code&lt;/span&gt;
-}
-&lt;span&gt;return&lt;/span&gt; &lt;span&gt;Unknown&lt;/span&gt;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;很好, 现在我们就可以为任何错误附加错误码了, 并且可以用新的错误码覆盖原有的.&lt;/p&gt;
-&lt;h3 id=&quot;错误详情-1&quot;&gt;错误详情&lt;/h3&gt;
-&lt;p&gt;在之前的表格中, 每个错误码都是有对应的详情的. 现在来实现这部分, 就以 DebugInfo 为例.&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;type&lt;/span&gt; &lt;span&gt;Any&lt;/span&gt; &lt;span&gt;interface&lt;/span&gt; {
-    &lt;span&gt;Annotation&lt;/span&gt;
-    &lt;span&gt;TypeUrl&lt;/span&gt;() &lt;span&gt;string&lt;/span&gt;  &lt;span&gt;// 序列化时的 @type 字段需要
-&lt;/span&gt;&lt;span/&gt;}
-
-&lt;span&gt;type&lt;/span&gt; &lt;span&gt;DebugInfo&lt;/span&gt; &lt;span&gt;struct&lt;/span&gt; {
-&lt;span&gt;StackEntries&lt;/span&gt; []&lt;span&gt;string&lt;/span&gt; &lt;span&gt;`json:&quot;stackEntries,omitempty&quot;`&lt;/span&gt;
-&lt;span&gt;Detail&lt;/span&gt;       &lt;span&gt;string&lt;/span&gt;   &lt;span&gt;`json:&quot;detail,omitempty&quot;`&lt;/span&gt;
-}
-
-&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;d&lt;/span&gt; &lt;span&gt;DebugInfo&lt;/span&gt;) &lt;span&gt;TypeUrl&lt;/span&gt;() &lt;span&gt;string&lt;/span&gt;       { &lt;span&gt;return&lt;/span&gt; &lt;span&gt;&quot;type.googleapis.com/google.rpc.DebugInfo&quot;&lt;/span&gt; }
-&lt;span&gt;func&lt;/span&gt; (&lt;span&gt;d&lt;/span&gt; &lt;span&gt;DebugInfo&lt;/span&gt;) &lt;span&gt;Annotate&lt;/span&gt;(&lt;span&gt;a&lt;/span&gt; &lt;span&gt;*&lt;/span&gt;&lt;span&gt;annotated&lt;/span&gt;) { &lt;span&gt;a&lt;/span&gt;.&lt;span&gt;details&lt;/span&gt; = append(&lt;span&gt;a&lt;/span&gt;.&lt;span&gt;details&lt;/span&gt;, &lt;span&gt;d&lt;/span&gt;) }
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;给自定义错误加上 &lt;code&gt;details&lt;/code&gt; 字段&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;type&lt;/span&gt; &lt;span&gt;annotated&lt;/span&gt; &lt;span&gt;struct&lt;/span&gt; {
-&lt;span&gt;cause&lt;/span&gt;   &lt;span&gt;error&lt;/span&gt;
-&lt;span&gt;code&lt;/span&gt;    &lt;span&gt;StatusCode&lt;/span&gt;
-    &lt;span&gt;details&lt;/span&gt; []&lt;span&gt;Any&lt;/span&gt;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;使用方式和设置状态码一摸一样&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;info&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;DebugInfo&lt;/span&gt;{[]&lt;span&gt;string&lt;/span&gt;{&lt;span&gt;&quot;step1&quot;&lt;/span&gt;, &lt;span&gt;&quot;step2&quot;&lt;/span&gt;}, &lt;span&gt;&quot;some message&quot;&lt;/span&gt;}
-&lt;span&gt;err&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;Annotate&lt;/span&gt;(&lt;span&gt;sql&lt;/span&gt;.&lt;span&gt;ErrNoRows&lt;/span&gt;, &lt;span&gt;NotFound&lt;/span&gt;, &lt;span&gt;info&lt;/span&gt;)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;别忘了详情获取的函数&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;Details&lt;/span&gt;(&lt;span&gt;err&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;) (&lt;span&gt;details&lt;/span&gt; []&lt;span&gt;Any&lt;/span&gt;) {
-    &lt;span&gt;next&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;err&lt;/span&gt;
-&lt;span&gt;for&lt;/span&gt; &lt;span&gt;next&lt;/span&gt; &lt;span&gt;!=&lt;/span&gt; &lt;span&gt;nil&lt;/span&gt; {
-&lt;span&gt;if&lt;/span&gt; &lt;span&gt;a&lt;/span&gt;, &lt;span&gt;ok&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;next&lt;/span&gt;.(&lt;span&gt;*&lt;/span&gt;&lt;span&gt;annotated&lt;/span&gt;); &lt;span&gt;ok&lt;/span&gt; {
-&lt;span&gt;details&lt;/span&gt; = append(&lt;span&gt;details&lt;/span&gt;, &lt;span&gt;a&lt;/span&gt;.&lt;span&gt;details&lt;/span&gt;&lt;span&gt;...&lt;/span&gt;)
-}
-&lt;span&gt;next&lt;/span&gt; = &lt;span&gt;errors&lt;/span&gt;.&lt;span&gt;Unwrap&lt;/span&gt;(&lt;span&gt;next&lt;/span&gt;)
-}
-&lt;span&gt;return&lt;/span&gt;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;使用示例:&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;details&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;Details&lt;/span&gt;(&lt;span&gt;err&lt;/span&gt;)  &lt;span&gt;// [{[&quot;step1&quot;, &quot;step2&quot;], &quot;some message&quot;}]
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&quot;错误处理行为&quot;&gt;错误处理行为&lt;/h3&gt;
-&lt;p&gt;顺带支持一下 &lt;code&gt;Temporary()&lt;/code&gt;&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;Temporary&lt;/span&gt;(&lt;span&gt;err&lt;/span&gt; &lt;span&gt;error&lt;/span&gt;) &lt;span&gt;bool&lt;/span&gt; {
-    &lt;span&gt;return&lt;/span&gt; &lt;span&gt;Code&lt;/span&gt;(&lt;span&gt;err&lt;/span&gt;) &lt;span&gt;==&lt;/span&gt; &lt;span&gt;Unavailable&lt;/span&gt;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;只有 &lt;code&gt;503 Unavailable&lt;/code&gt; 是可以 100% 重试的, 因为请求还未到达服务器, 其他错误则要看具体业务才能确认幂等性.&lt;/p&gt;
-&lt;h3 id=&quot;encode--decode--formatter&quot;&gt;Encode &amp;amp; Decode &amp;amp; Formatter&lt;/h3&gt;
-&lt;p&gt;这部分涉及到格式化, 代码展开占的篇幅就太长了, 可以到 GitHub 上看源码, 简单提下要点.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;解码 Detail 时要根据不同的 &lt;code&gt;@type&lt;/code&gt; 选择不同的 Detail 实现&lt;/li&gt;
-&lt;li&gt;需要有一个 &lt;code&gt;Register()&lt;/code&gt; 函数注册自定义的 Detail 实现&lt;/li&gt;
-&lt;li&gt;需要有一个 &lt;code&gt;Filter&lt;/code&gt; 支持只编码部分 Detail (向外传播时要隐藏内部信息)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;再看两个例子, 先是格式化:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;status: &quot;504 DEADLINE_EXCEEDED&quot;
-message: &quot;context deadline exceeded&quot;
-detail[0]:
-type: &quot;type.googleapis.com/google.rpc.DebugInfo&quot;
-detail: &quot;heavy job&quot;
-stack:
-goroutine 1 [running]:
-runtime/debug.Stack(0xc00005e980, 0x40, 0x40)
-/home/user/go/src/runtime/debug/stack.go:24 +0xa5
-github.com/gota33/errors.StackTrace.Annotate(0xfe36af, 0x9, 0x1056490, 0xc00005e980)
-/home/user/github/gota33/errors/detail.go:368 +0x2d
-github.com/gota33/errors.Annotate(0x1051780, 0x1257e60, 0xc00010fc00, 0x5, 0x5, 0xc00010fba8, 0x10)
-/home/user/github/gota33/errors/errors.go:79 +0x97
-github.com/gota33/errors.ExampleAnnotate()
-/home/user/github/gota33/errors/example_test.go:10 +0x251
-testing.runExample(0xfe589a, 0xf, 0xfff6c0, 0xfead08, 0x1a, 0x0, 0x0)
-/home/user/go/src/testing/run_example.go:63 +0x222
-testing.runExamples(0xc00010fed0, 0x120aee0, 0x3, 0x3, 0x0)
-/home/user/go/src/testing/example.go:44 +0x185
-testing.(*M).Run(0xc000114100, 0x0)
-/home/user/go/src/testing/testing.go:1419 +0x27d
-main.main()
-_testmain.go:71 +0x145
-detail[1]:
-type: &quot;type.googleapis.com/google.rpc.RequestInfo&quot;
-request_id: &quot;&amp;lt;uuid&amp;gt;&quot;
-serving_data: &quot;&quot;
-detail[2]:
-type: &quot;type.googleapis.com/google.rpc.LocalizedMessage&quot;
-local: &quot;en-US&quot;
-message: &quot;Background task timeout&quot;
-detail[3]:
-type: &quot;type.googleapis.com/google.rpc.LocalizedMessage&quot;
-local: &quot;zh-CN&quot;
-message: &quot;后台任务超时&quot;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;还有 JSON 序列化:&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-json&quot; data-lang=&quot;json&quot;&gt;{
-  &lt;span&gt;&quot;error&quot;&lt;/span&gt;: {
-    &lt;span&gt;&quot;code&quot;&lt;/span&gt;: &lt;span&gt;504&lt;/span&gt;,
-    &lt;span&gt;&quot;message&quot;&lt;/span&gt;: &lt;span&gt;&quot;context deadline exceeded&quot;&lt;/span&gt;,
-    &lt;span&gt;&quot;status&quot;&lt;/span&gt;: &lt;span&gt;&quot;DEADLINE_EXCEEDED&quot;&lt;/span&gt;,
-    &lt;span&gt;&quot;details&quot;&lt;/span&gt;: [
-      {
-        &lt;span&gt;&quot;@type&quot;&lt;/span&gt;: &lt;span&gt;&quot;type.googleapis.com/google.rpc.RequestInfo&quot;&lt;/span&gt;,
-        &lt;span&gt;&quot;requestId&quot;&lt;/span&gt;: &lt;span&gt;&quot;&amp;lt;uuid&amp;gt;&quot;&lt;/span&gt;
-      },
-      {
-        &lt;span&gt;&quot;@type&quot;&lt;/span&gt;: &lt;span&gt;&quot;type.googleapis.com/google.rpc.LocalizedMessage&quot;&lt;/span&gt;,
-        &lt;span&gt;&quot;local&quot;&lt;/span&gt;: &lt;span&gt;&quot;en-US&quot;&lt;/span&gt;,
-        &lt;span&gt;&quot;message&quot;&lt;/span&gt;: &lt;span&gt;&quot;Background task timeout&quot;&lt;/span&gt;
-      },
-      {
-        &lt;span&gt;&quot;@type&quot;&lt;/span&gt;: &lt;span&gt;&quot;type.googleapis.com/google.rpc.LocalizedMessage&quot;&lt;/span&gt;,
-        &lt;span&gt;&quot;local&quot;&lt;/span&gt;: &lt;span&gt;&quot;zh-CN&quot;&lt;/span&gt;,
-        &lt;span&gt;&quot;message&quot;&lt;/span&gt;: &lt;span&gt;&quot;后台任务超时&quot;&lt;/span&gt;
-      }
-    ]
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
-&lt;p&gt;写到这里篇幅已经很长了, 不过依然有很多方面没有提到. 比如:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;如何用 &lt;code&gt;http.RoundTripper&lt;/code&gt; 让 &lt;code&gt;http.Client&lt;/code&gt; 实现自动错误解码?&lt;/li&gt;
-&lt;li&gt;如何用 &lt;code&gt;middleware&lt;/code&gt; 让服务器实现自动错误编码?&lt;/li&gt;
-&lt;li&gt;如何用 &lt;a href=&quot;https://github.com/go-playground/validator&quot;&gt;validator&lt;/a&gt; 集中处理错误, 生成 BadRequest 详情?&lt;/li&gt;
-&lt;li&gt;…&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;再写点 Memo:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;错误一般集中在服务边界, 80% 的错误出现在入口 Handler 和对外部服务的调用&lt;/li&gt;
-&lt;li&gt;底层错误能重试的应该尽量重试, 比如: 503 错误&lt;/li&gt;
-&lt;li&gt;事务级别的重试一般在业务层, 比如: 数据库锁超时要重试事务&lt;/li&gt;
-&lt;li&gt;重试一定要记得设置最大超时, 避免无限重试&lt;/li&gt;
-&lt;li&gt;处理错误最好的方法: 修改定义, 使原本出错的情景不再是错误.&lt;/li&gt;
-&lt;li&gt;任何情况下都不该隐藏错误, 即便是崩溃也好于隐藏.&lt;/li&gt;
-&lt;li&gt;机器更关注如何处理错误, 人类更关注错误信息.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;还有本文的灵感来源：&lt;/p&gt;
-
-&lt;p&gt;最后是本文中错误处理库的源码:&lt;/p&gt;
-
-&lt;p&gt;感谢阅读, 评论可以到 &lt;a href=&quot;https://www.v2ex.com/t/779942&quot;&gt;V2ex&lt;/a&gt;&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>547148c62a3bc2ca62f0bc5b96ca3d34</guid>
-<title>如何确定图 (Graph) 里有没有环 (Cycle)？</title>
-<link>https://toutiao.io/k/97ce002</link>
+<guid>f0a7902417f53f109740723f92409604</guid>
+<title>Go 凭什么不支持三元运算符？</title>
+<link>https://toutiao.io/k/pt0q5vx</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
                     
 
                     
                     
                     
-                    &lt;p&gt;&lt;strong&gt;&lt;span&gt;“判断图中是否有&lt;/span&gt;&lt;/strong&gt;&lt;strong&gt;&lt;span&gt;环&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;”是一道经常出现在面试中经典的算法题，我们今天就来讲讲这道题的含义和解法，包含Python编码全过程。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;题目中的概念&lt;br/&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;判断图中是否有环这道题目首先涉及到两个概念：图和环。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这里的图就是计算机数据结构中说的图结构（Graph），它包括两个要素：顶点和边，前者又称为节点。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;节点表示事物的抽象，而边则表示事物之间两两的联系。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.6378947368421053&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/zxQkPcwCBCEUQkIiaz7qkE5BsUZNUdzSfrJth6XOo3LLXXNib6Aar2IpMGXYC4mfPEe8uVqZQPiaws9VeK9fAglLQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;475&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;边可以分为有方向和无方向两种。有方向的边表示两个节点之间单向的连通，而无方向的边则表示双向连通。边有方向的图叫做有向图，反之叫做无向图。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.4090909090909091&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/zxQkPcwCBCEUQkIiaz7qkE5BsUZNUdzSfxWdGaedmaZTPgBMuU2lUibIjmY3h4iaozFwhiaStb22dbGnVAGjxRWia7A/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;704&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;环则是指在途中一条由边组成的路径，从一个节点出发，可以回到这个节点自身。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.4659090909090909&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/zxQkPcwCBCEUQkIiaz7qkE5BsUZNUdzSfemFI0wHtWLQgoJU5Qk3giabbq2c1zicb3NCKfyd3oSic245ubLaI7kk0g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;440&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;判断无向图中是否有环&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;通过上面的定义可知，无论有向图还是无向图中都存在环，但有向图的环涉及到边的方向，要比无向图复杂。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;因此，如果你在面试中被要求写一个算法“判断图中是否有环”，首先就应该和面试官确认，要判断的是有向图还是无向图。本文我们讲解的是无向图中是否有环的判断！&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;比如下面这两个无向图，很显然图一里面有环，而图二没有。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/zxQkPcwCBCEUQkIiaz7qkE5BsUZNUdzSfzya2ic5JXcMBtQeDzwwEyZJACrbZ7lbFDlztGdF9iaG20YmHB0IwDf0A/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;从算法的原理开始&lt;br/&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;用眼睛看起来很简单的事情，如何用程序来实现呢？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在动手编程之前，我们首先要想清楚如何做，也就是说我们先要能够找到一个用自然语言可以描述的办法，来确定无向图中是否有环。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;其实很多算法最难的一点实在这里，平白的给你一张无向图，你能找出一个切实可行的办法，把它描述出来，别人只要按照指示去做，就一定能正确地确认任何一个无向图里面有没有环吗？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.7643742953776775&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/zxQkPcwCBCEUQkIiaz7qkE5BsUZNUdzSfRc8VoxcWBQdVj5MUIovicnWI7TuqjpMbFxsnryOA1gGTHngGiboRSPaA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;887&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;如果你从来没有学过相关的知识，自己拍脑袋就想出这样的一个办法来了！那么恭喜，你已经具备了创造算法的能力！不过对于大多数人来说，我们还是需要寻求前人的帮助。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;最简单的方法：在互联网上查找一下。我们在搜索引擎中输入“判断无向图有没有环”这个查询语句，然后看到很多相关的搜索结果。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.9546875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/zxQkPcwCBCEUQkIiaz7qkE5BsUZNUdzSfYicaibVd8MaAdibvmEo8wJ7otXuWcdznz3mzMYOz2DZ4hxGabJF2ZtAlQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们直接点击第一个。看到了下面这个文章。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.80546875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/zxQkPcwCBCEUQkIiaz7qkE5BsUZNUdzSfX823FJMYn7Uicic8vXg5CqqiaT7mz1h6Dt4YfYsfrQCiamt7nY97BG2ZOg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;本文中讲的内容比较多，介绍了三种方法：拓扑排序，DFS和Union-Find Set，每一种方法都可以判断无向图或者有向图。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;拓扑排序法判断一个无向图中是否有环&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;“判断一个无向图有没有环”的方法本文中就有三个。这里，我们先取第一种方法：拓扑排序判断无向图是否有环。这种方法的描述如下：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;使用拓扑排序可以判断一个无向图中是否存在环，具体步骤如下：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;blockquote class=&quot;js_blockquote_wrap&quot; data-type=&quot;2&quot; data-url=&quot;&quot; data-author-name=&quot;&quot; data-content-utf8-length=&quot;155&quot; data-source-title=&quot;&quot;&gt;&lt;section class=&quot;js_blockquote_digest&quot;&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;    1. 求出图中所有节点的度。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;    2. 将所有度 &amp;lt;= 1 的节点入队。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;    3. 当队列不空时进入循环，弹出队首元素，把与队首元素相邻节点的度减一。如果相邻节点的度变为1，则将相邻节点入队。队列为空则退出循环。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;    4. 循环结束时判断已经访问过（进入过队列）的节点数是否等于 n。等于 n 说明全部节点都被访问过，无环；反之，则有环。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/blockquote&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们将算法改写成控制流程图是下面这样：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.798469387755102&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/zxQkPcwCBCEUQkIiaz7qkE5BsUZNUdzSfUEpyzMQ2wlp4Wb7dOS9DX3aeM9FUd7HQZ6hWWWh5QZewQKtJzFqCxw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;784&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这里面又涉及到了一个概念——节点的度。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;什么叫做节点的度呢？其实很简单，节点的度是指和该节点相关联的边的条数。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;如果是有向图，还要分入度和出度，不过我们现在要处理的是无向图，所以，每条边都是平等的，统一都记作度数。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.35609103078982596&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/zxQkPcwCBCEUQkIiaz7qkE5BsUZNUdzSfcrWCahRvZcK9zHj8W86Wfp6iborYYoJHrvxysN5TsYmdIicojibapJCLw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;747&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;人肉模拟运行算法&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们来找两个例子，按照算法模拟运行一下。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;第一个例子&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;先看图一，图一中节点1，2，3的度是2，节点4和5的度是3，而节点6和7的度是1。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/zxQkPcwCBCEUQkIiaz7qkE5BsUZNUdzSfLLCrEtAtID0au6Nfz4RETbgqkyKsXicLmdfZOibsIcfjkfdlcCAGib85w/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;那首先，我们要把节点6和7放到队列里。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;然后将节点6弹出，把和节点6相邻的节点5的度减一。从图上，就相当于擦掉了节点5和节点6之间的边。按理说此时节点6的度也应该减掉1，但是因为节点6我们已经处理过，它以后不会再进入队列，我们也不不会再关心它的度，因此也不用去处理它的度了。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;此时队列还没有空，所以我们继续弹出队首并处理。弹出节点7，将和它相邻的节点4的度减一，相当于删除了它们之间的边。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;现在队列已经弹空，退出了循环。我们再看进入过队列的节点只有2个，而节点一共有7个，2 不等于 7， 所以有环。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;第二个例子&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;现在再来看图二，一共5个节点，相应的度分别是1，2，2，2，1。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.6002386634844868&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/zxQkPcwCBCEUQkIiaz7qkE5BsUZNUdzSfjZrZkfrSK8Pc1HokNYliadRj6cfpm9yHdk60ia47xaMjFLrKAr4PWDww/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;838&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;此第一拨入队列的是&lt;/span&gt;&lt;span&gt;度&lt;/span&gt;&lt;span&gt;为1的节点1和节点5。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;节点1出队列后和它相邻的节点2度数减一，也变成了度为1的节点，因此节点2入队列。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;再度进入循环，弹出节点5，和它相邻的节点4度数减一后入队列。继续循环弹出节点2，节点3入队列。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;循环弹出节点4，节点3的度变成0，不用再度入栈。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;最后一次循环弹出节点3，和它相邻的再无度为1的节点，循环结束。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;至此，所有节点都已经入过队列，因此可知，无环。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;直观来看，算法是有效的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;确定数据结构&lt;br/&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;那么下面是不是就该编程实现了？稍等，别忘了，&lt;strong&gt;程序 = 算法 + 数据结构&lt;/strong&gt;。我们现在只有算法，还没有描述无向图的数据结构。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;图的表示方法不止一种，此处我们采用邻接矩阵表示无向图。很多时候，当面试官出题要求判断图中是否有环时，会特意指出要用邻接矩阵。如果没指出，就是让你自选。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.608&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/zxQkPcwCBCEUQkIiaz7qkE5BsUZNUdzSfic7HKyiaN5tzjKFl1s6ZoGib4kIvSn4JRl6icjvXLxVjLlNw6SqYWQA5vQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;750&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;邻接矩阵是一个 n 阶的方阵，n 为图中顶点个数。方阵中每个元素的值只有两种可能，要么 0 ，要么 1。若第 i 行第 j 列的元素为 1，则说明 i 节点和 j 节点相邻，也就是有一条无向边存在于二者之间，若为 0，则说明节点 i 和 j 不相邻。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;由此图一和图二对应的矩阵分别是这样：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.41753171856978083&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/zxQkPcwCBCEUQkIiaz7qkE5BsUZNUdzSf4MO9KJcMP8DoicDBev0ZckXm7m2MIAwtP7TctFYYqZcUHZ0LtGWne3Q/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;867&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;邻接矩阵也可以用在有向图上。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;不过对无向图而言：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;    i) 邻接矩阵一定是对称的，而且主对角线一定为零（自己不可能和自己相邻）。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;    ii) 在无向图中，节点 i 的度是矩阵第 i 行（或第 i 列）所有非零元素的个数。因为非零元素的取值只能是 1，因此节点 i 的度也是邻接矩阵第 i 行所有值的和。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;另一方面，方阵就是一个二维表，在程序内部，正好用一个二位数组或列表（List）来表示。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;很好，既然如此，我们就可以开始编程了。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;编程实现算法&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们用Python来编。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在正式实现算法之前，我们先要进行数据处理，也就是我们需要将表达无向图的矩阵读取到内存中。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这里又涉及到该数据在磁盘存储的问题。我们就用最简单的方式，将邻接矩阵直接存储为 csv 文件，就像这样：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5328125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/zxQkPcwCBCEUQkIiaz7qkE5BsUZNUdzSfk5qMuYX9daWgR9WJRsKMv7Z5KicLteT4WicBy8LPicL2ibmNlNtqctpqJQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们专门定义一个函数（如下图）做数据处理，那么在读取的时候，我们就可以用 Python的csv library，用csv.reader() 读取 csv文件，然后再转化为列表。&lt;span&gt;这个列表就是算法的输入。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.2947761194029851&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/zxQkPcwCBCEUQkIiaz7qkE5BsUZNUdzSfc00ic9ib46antk3WoWZAmmqkiahfAceCDIxK5Hgcn4oXDIiaxdT3hOwvIg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;536&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;现在来看算法本身。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们定义一个函数，名为 is_undirected_graph_circled，它接受一个输入参数：adj_matrix，这个adj_matrix 是一个二维表。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;要处理二维表，也就是输入的邻接方阵，我们首先要知道方阵的阶数，那么很好办，我们只要用 len 函数，就可以。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;然后我们要计算所有节点的度，并且将度  &amp;lt;=1 的节点压入队列。这里要用到队列，我们就用Python自带的queue library，先import，然后直接创建一个队列。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;接着计算每个节点的度，将它们存储在degrees列表里，用一个循环，每个循环对用矩阵的一行，然后 sum函数将该行中所有的元素相加。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这里有一点要注意，我们直接用csv.reader读取出来的数据是字符串，我们要对其进行数据转换，将其转化为整数型，这样才能有效地计算度。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;算出一个节点的度后直接判断是否小于等于 1，若是则入队列。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这里还要注意一件事情，我们的算法最终要判断有多少节点入过队，但是队列本身要不断地压入弹出，里面不可能保留所有入过队的节点。所以要用一个专门的列表存储每个入队的元素。就是这个visited。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.3853459972862958&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/zxQkPcwCBCEUQkIiaz7qkE5BsUZNUdzSfReuvcNHu29ecIeebSuHdUcoXG8W8puklgcia6lq29zF53wZsamcVv0Q/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;737&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;做完这些就该进入到最核心的循环部分了。循环中的&lt;strong&gt;关键&lt;/strong&gt;则是：把与队首元素相邻节点的度减 1。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们该怎么找到与队首节点相邻的节点呢？比如节点 i，在邻接方阵里，第 i 行和第 i 列的所有元素都记录了它的邻居，那么我们可以选取第 i 行作为线索，找到所有值为 1 的元素，该元素所在的列数 j 所对应的 j 节点，就是与 i 相邻的节点。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;那么我们需要将degrees里对应 j 元素的值减去 1。然后看看它减掉 1 后的值是否为 1，若是则入队，否则不管。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;当队中元素全部弹出后，循环结束，我们看看 visited 列表中的元素个数是否已经达到了 n 个，若是则说明无环，否则有环。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5359565807327001&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/zxQkPcwCBCEUQkIiaz7qkE5BsUZNUdzSfpw0Kd8bCwv6yDtKTrItYb6CEDYlN6xsU6EU9yUiaWM72aUcibKO51Aew/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;737&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;算法函数定义好之后，可以在数据处理函数中调用，然后把结果打印出来。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;完整代码和数据请见： &lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;https://github.com/juliali/ClassicAlgorithms/tree/main/undirected_graph&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;section data-id=&quot;90150&quot; data-tools=&quot;135编辑器&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;strong&gt;“众智汇”&lt;/strong&gt;&lt;span&gt;&lt;strong&gt;愿景&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;尽职尽才，允公允能 &lt;/span&gt;—— &lt;/strong&gt;本社群不定期举行线上分享，组织群友分享知识、经验、资源，以达到&lt;strong&gt;让我们每个人的职业生涯得到最大程度的发展&lt;/strong&gt;的目的&lt;/span&gt;&lt;strong&gt;。&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;欢迎扫面下列二维码关注“悦思悦读”公众微信号&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img data-copyright=&quot;0&quot; data-ratio=&quot;1&quot; data-s=&quot;300,640&quot; data-type=&quot;jpeg&quot; data-w=&quot;258&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/zxQkPcwCBCEmlJImTeETa35r88nRpT8dFLhcEjFmYqBg8picmuaCZUbtXY2EEx9FLNCkNUy1nBEibHicqUfJZ9yeg/640?wx_fmt=jpeg&quot;/&gt;&lt;/p&gt;
+                    &lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;大家好，我是煎鱼。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这是一个很多其他语言工程师转 Go 语言的时间节点，这就难免不论一番比较。其中一个经典的运算上的就是 “三元运算符”：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.4231578947368421&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/KVl0giak5ib4iaLoqX7Cp17TQxQoFTpy8O00pcccIsAX9egvSvp65icA1gKpNLsYsT6z7ic7JjEWm5Uvib9gnEux4YFA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;950&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;为什么 Go 语言不支持三元运算符，Go 不支持三元运算符就是设计的不好，是历史在开倒车吗？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;今天就由煎鱼来和大家一起摸索为什么。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;三元运算符是什么&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;三元运算符，在典型的数学意义上，或者从解析器的角度来看，是一个需要三个参数的运算符。而我们日常中，最常见的是二元运算符：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;x + y&lt;br/&gt;x / y&lt;br/&gt;x * y&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;还有一元运算符：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;-a&lt;br/&gt;~b&lt;br/&gt;!c&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;以及今天的男主角 “三元运算符”。在 C/C++ 等多种语言中，我们可以根据条件声明和初始化变量的习惯来选择性使用三元条件运算符：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;int&lt;/span&gt; index = val &amp;gt; &lt;span&gt;0&lt;/span&gt; ? val : -val&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;Go 使用三元运算符&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;想在 Go 语言里也使用三元运算符时，发现居然没有...想要实现与上面相同的代码段的方式似乎只能：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;var&lt;/span&gt; index &lt;span&gt;int&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;if&lt;/span&gt; val &amp;gt; &lt;span&gt;0&lt;/span&gt; {&lt;br/&gt;    index = val&lt;br/&gt;} &lt;span&gt;else&lt;/span&gt; {&lt;br/&gt;    index = -val&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;看上去十分的冗余，不够简洁。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;为什么 Go 没有三元运算符&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;为什么 Go 没有 &lt;code&gt;?:&lt;/code&gt; 操作符，没有的话，官方推荐的方式是怎么样的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;通过 Go FAQ 我们可以得知：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.3413566739606127&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/KVl0giak5ib4iaLoqX7Cp17TQxQoFTpy8O0gNQ6eO8iawGYcficfzEIfMTZeYexzAxicr0lSxTmx2dapOKjS0iashcmiaw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1828&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Go 官方就是推荐我们使用前面提到的方式来替代，并且明确了如下态度：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;Go 中没有 &lt;code&gt;?:&lt;/code&gt; 的原因是语言的设计者看到这个操作经常被用来创建难以理解的复杂表达式。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;在替代方案上，if-else 形式虽然较长，但无疑是更清晰的。一门语言只需要一个条件控制流结构。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;整体来讲，Go 语言的设计者是为了考虑&lt;strong&gt;可读性&lt;/strong&gt;拒绝了实现三元运算符，&quot;less is more.&quot; 也是标榜台词了。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;社区争议&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Go 语言的一些点与众不同，基本是大家皆知的。无论是 if err != nil，又或是本次的三元运算符，要大家用 if-else 替代：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;if&lt;/span&gt; expr {&lt;br/&gt;    n = trueVal&lt;br/&gt;} &lt;span&gt;else&lt;/span&gt; {&lt;br/&gt;    n = falseVal&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;反对和同意&lt;span/&gt;&lt;/h3&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;反对&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因此有社区小伙伴给出了反对，基本分为如下几类：&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;认为 if-else 也有以类似情况能被滥用，设计者的理由不够充分，认为是 “借口”。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;认为三元运算符的 “丑陋” 问题，是开发者的编码问题，而不是语言问题。三元在各种语言中很常见，它们是正常的，Go 语言也应该要有。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;认为用 if-else 替代三元运算符也很麻烦，让开发者多读了 3-4 行和额外的缩进级别。&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;同意&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;认可这个决策的也有不少，为此给出了大量的真实工程案例。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;一般来讲，我们用三元运算符是希望这么用：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;cond ? true_value : false_value&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;你可能见过这么用：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;cond ? value_a + value_b : value_c * value_d&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;还见过这样：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;(((cond_a ? val_one) : cond_b) ? val_two) : val_three&lt;br/&gt;&lt;br/&gt;cond_a ? (val_one : (cond_b ? (val_two : val_three)))&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;还能嵌套三元运算符：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;int a = cond_a ? val_one :&lt;br/&gt;    cond_b ? val_two :&lt;br/&gt;    cond_c ? val_three : val_four;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;也能出现可读性更差的：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;void rgb_to_lightness_(&lt;br/&gt;  const double re, const double gr, const double bl, double &amp;amp;li)&lt;br/&gt;{&lt;br/&gt;  li=((re &amp;lt; gr) ? ((gr &amp;lt; bl) ? bl : gr) : ((re &amp;lt; bl) ? bl : re) +&lt;br/&gt;                            (gr &amp;lt; re)&lt;br/&gt;                          ? ((bl &amp;lt; gr) ? bl : gr)&lt;br/&gt;                          : ((bl &amp;lt; re) ? bl : re)) / 2.0;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;说白了就是真实的代码工程中，大家见到过大量三元运算符滥用的场景，纷纷给出了大量的难理解的例子，让大家困扰不堪。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;总结&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在这篇文章中，首先针对 “三元运算符” 做了基本的介绍。紧接着根据 Go 语言不支持三元的态度进行了说明，且面向社区的争议我们分为了正反方面的基本诠释。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;实际上一个简单的 &lt;code&gt;?:&lt;/code&gt; 既整洁又实用，但是没有很好又高效的办法方法可以防止丑陋的嵌套，也就是排除可读性的问题。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在真实的业务工程中，常常能看到一个三元运算符，&lt;strong&gt;一开始只是很简单。后面嵌套越加越深，逻辑越写越复杂，从而带来了许多维护上的问题&lt;/strong&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;给大家抛出如下问题：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;你认为 Go 语言是否要有三元运算符呢？&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如果要有，复杂嵌套的三元运算符又如何考虑呢？&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;欢迎大家在评论区留言和交流 ：）&lt;/strong&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;参考&lt;/h2&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;What is the idiomatic Go equivalent of C&#x27;s ternary operator?&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;What is the reasoning behind Go not having a ternary conditional operator?&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Should Go have a Ternary Operator? Or was it left out intentionally?&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;We don&#x27;t need a ternary operator&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzUxMDI4MDc1NA==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/KVl0giak5ib4iac2xQZIq5icSiaTepuae8zLIUMiaxibbUM8ic735ewo6e89GRtjGbUBlgNYibwCjAicglQcvz6dCQ6yTKOw/0?wx_fmt=png&quot; data-nickname=&quot;脑子进煎鱼了&quot; data-alias=&quot;eddycjy&quot; data-signature=&quot;分享计算机基础、Go 语言、微服务架构和系统设计；著有图书《Go 语言编程之旅》。&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;关注煎鱼，吸取他的知识 👆&lt;/span&gt;&lt;span/&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;img data-ratio=&quot;0.07106598984771574&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/486RHs1WbcgGib6o96dHbvGUGGwPicd8wusUGH1cXR29tM4bO0lNzialzkQhvU6m5ZUdaKibmcF2OQayjMe9Bia6iaXQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;394&quot;/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;你好，我是煎鱼。高一折腾过前端，参加过国赛拿了奖，大学搞过 PHP。现在整 Go，在公司负责微服务架构等相关工作推进和研发。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;span&gt;从大学开始靠自己赚生活费和学费，到出版 Go 畅销书《Go 语言编程之旅》，再到获得 GOP（Go 领域最有观点专家）荣誉，&lt;/span&gt;&lt;strong&gt;&lt;span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUxMDI4MDc1NA==&amp;amp;mid=2247483854&amp;amp;idx=1&amp;amp;sn=ec422fbf4d846975f2930ddeb5e81373&amp;amp;chksm=f9041493ce739d85a4b987eece14da627206cdad798f645cc770868312e4a22b6df24804f186&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;点击蓝字查看我的出书之路&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;点击蓝字查看我的出书之路&lt;/a&gt;&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;日常分享高质量文章，输出 Go 面试、工作经验、架构设计，&lt;span&gt;加微信拉读者交流群，记得点赞！&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;
                 &lt;/div&gt;
 
                 
@@ -742,6 +354,13 @@ message: &quot;后台任务超时&quot;
 
 
                 
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>97ef15b62e7bb34b05a16e20fdb12f84</guid>
+<title>要将 RocketMQ 中台化，有点小激动</title>
+<link>https://toutiao.io/k/wxygtif</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-tools=&quot;新媒体排版&quot; data-id=&quot;3529480&quot; data-style-type=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-tools=&quot;新媒体排版&quot; data-id=&quot;3356876&quot; data-style-type=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzIwMDY0Nzk2Mw==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/WRLYshvT39ykfC4Jy6mnxuibX6vJOmVCNF49BAQXbX3dKVmHVjpF89LmQhvdd6GbaQAbwrKSeaMu3Q41SnmOpxA/0?wx_fmt=png&quot; data-nickname=&quot;猿天地&quot; data-alias=&quot;cxytiandi&quot; data-signature=&quot;猿天地由《Spring Cloud微服务-全栈技术与案例解析》, 《Spring Cloud微服务 入门 实战与进阶》作者尹吉欢创建。 资深Java技术专家和微服务技术专家，在Spring Cloud和微服务方面有丰富的经验。&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-tools=&quot;新媒体排版&quot; data-id=&quot;3335002&quot; data-style-type=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section powered-by=&quot;xiumi.us&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section powered-by=&quot;xiumi.us&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;p&gt;&lt;span&gt;本文字数：&lt;span&gt;&lt;strong mpa-from-tpl=&quot;t&quot;&gt;4223&lt;/strong&gt;&lt;/span&gt;字&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;预计阅读时间：&lt;span&gt;&lt;strong mpa-from-tpl=&quot;t&quot;&gt;13&lt;/strong&gt;&lt;/span&gt;分钟&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;一、RocketMQ简介&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;RocketMQ是一个高可用、高性能、高可靠的分布式消息队列，相对于kafka更适合处理业务系统之间的消息。&lt;/span&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;它具有很多特性，例如：&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;发布订阅&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;顺序、事务、定时消息&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;消息堆积、重试，回溯等等&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;它通过&lt;strong&gt;同步刷盘&lt;/strong&gt;和&lt;strong&gt;同步双写&lt;/strong&gt;等技术手段来实现高可靠，保证如下情况消息不丢：&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;可恢复性故障：broker或OS crash等&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;不可恢复性故障：磁盘损坏等&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;它采用多项技术优化来满足性能要求：&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;顺序IO&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;PageCache和mmap&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;内存预热和锁定&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;异步提交和刷盘&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;堆外内存缓冲等等&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;所以，它的本质决定的其架构一定是复杂的，参考RocketMQ官方架构图：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.415158371040724&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/qMicvibdvl7p0SJow0NBbJD1dCJibMdeGHzTPlvHG9a4687r8XBAvff8vwRfBSdM7Hr1liawGaHFIxz9hmlHlfzPnQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;884&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;这里不再介绍各个组件的含义，可以参考RocketMQ架构设计。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;RocketMQ经过阿里多年双十一的检验，其稳定性不言而喻。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;可作为搜狐视频的消息中台，还需要很长一段路要走，为什么这么说呢？&lt;/span&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;二、运维之痛&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;早在2014年我们就引入了RocketMQ作为消息中间件，其附带了基本的命令行工具。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;但是命令行运维此等庞然大物会让人感到力不从心，好在社区提供了一个web控制台：RocketMQ-Console。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;在初期，简单的控制台已经能满足基本的需求。但是随着各个业务逐渐接入，需求也纷至沓来。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;我们在RocketMQ-Console的修修补补已经无法满足了，主要体现在如下几点：&lt;/span&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;从业务方的角度：&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;偏重运维，一般业务用户不关心集群的数据和状态，无法聚焦。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;使用起来繁琐，且直接操作集群，易误操作。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;没有监控预警功能。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;无法满足业务用户的需求，包括但不限于：&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;一些隐性问题无法解决。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;从管理员维度：&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;无用户概念，任何人都能直接操作集群，易误操作且比较危险。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;无集群管理功能，日常更新或机器替换需要手动部署，非常耗时、麻烦且易出错。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;无相关数据统计，监控，预警等，往往有问题不能及时发现。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;另外，RocketMQ有一些潜在约定、使用规范、最佳实践、bug或优化等等，用文档说明也无济于事。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;所以与其写文档不如将经验和实践转换为产品，能够更好的服务于业务及运维集群，于是MQCloud应运而生。&lt;/span&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;三、MQCloud诞生&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;先看一下MQCloud的定位：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.8294930875576036&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/qMicvibdvl7p0SJow0NBbJD1dCJibMdeGHzJFlGqCxk4nQ1cKeibhNibdFyG8wa51nu3m5qQPJE5Ac7K6ZocroiaiaIow/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;434&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;它是集客户端SDK，监控预警，集群运维于一体的一站式服务平台。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;MQCloud的系统架构如下：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5965417867435159&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/qMicvibdvl7p0SJow0NBbJD1dCJibMdeGHz2lib5kWiaGRYoU20pZ9GR609a6TmEpTNOBicP0By7zfKjjNib1R6mfjNyA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;694&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;下面来分别说明一下MQCloud如何解决上面提到的痛点。&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;业务端和运维端分离，使业务用户只聚焦于业务数据。&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;为了实现这个目的，引入了用户，资源两大维度。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;针对用户和资源加以控制，使不同的用户只聚焦于自己的数据。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.4650145772594752&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/qMicvibdvl7p0SJow0NBbJD1dCJibMdeGHzC6kfL8emhO1Q2bPd2PQK5YMIJIUInftribaIDYUyuJpFORdEMVz6woQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;686&quot;/&gt;&lt;/section&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;/&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;对于生产者来说，他关心的是topic配置，消息的发送数据，谁在消费等等问题，这样只对他展示相应的数据即可；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;对于消费者来说，只关心消费状况，有没有堆积，消费失败等情况；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;对于管理员来说，可以进行部署，监控，统一配置，审批等日常运维；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;清晰明了的操作&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;通过对不同角色展示不同的视图，使用户可以进行的操作一目了然。&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;规范和安全&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;为了保障集群操作的安全性和规范性，所有的操作都会以申请单的形式进入后台审批系统，管理员来进行相关审批，安全性大大提升。&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;多维的数据统计和监控预警&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;MQCloud核心功能之一就是&lt;strong&gt;监控&lt;/strong&gt;，要想做监控，必须先做统计，为了更好的知道RocketMQ集群的运行状况，MQCloud做了大量的统计工作，主要包括如下几项：&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;每分钟topic的生产流量：用于绘制topic生产流量图及监控预警。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;每分钟消费者流量：用于绘制消费流量图及监控预警。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;每10分钟topic生产流量：用于按照流量展示topic排序。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;每分钟broker生产、消费流量：用于绘制broker生产消费流量图。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;每分钟broker集群生产、消费流量：用于绘制broker集群的生产流量图。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;每分钟生产者百分位耗时、异常统计：以ip维度绘制每个生产者的耗时流量图及监控预警。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;机器的cpu，内存，io，网络流量，网络连接等统计：用于服务器的状况图和监控预警。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;/ol&gt;&lt;section&gt;&lt;span&gt;下面来分别介绍每项统计是如何收集的：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;每分钟topic的生产流量&lt;/span&gt;&lt;span&gt;&lt;strong/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;此数据来自于RocketMQ broker端BrokerStatsManager，其提供了统计功能，统计项如下：&lt;/span&gt;&lt;/section&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;TOPIC_PUT_NUMS：某topic消息生产条数，向某个topic写入消息成功才算&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;em&gt;写入成功包括四种状态：PUT_OK，FLUSH_DISK_TIMEOUT，FLUSH_SLAVE_TIMEOUT，SLAVE_NOT_AVAILABLE&lt;/em&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;TOPIC_PUT_SIZE：某topic消息生产大小，向某个topic写入消息成功才算&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;section&gt;&lt;span&gt;RocketMQ实现的统计逻辑较为精巧，这里做简单描述，首先介绍几个对象：&lt;/span&gt;&lt;/section&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;StatsItemSet主要字段及方法如下：&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;p&gt;&lt;span&gt;ConcurrentMap&amp;lt;String/* statsKey */, StatsItem&amp;gt; statsItemTable; // statsKey&amp;lt;-&amp;gt;StatsItem&lt;br/&gt;// 针对某个数据项进行记录&lt;br/&gt;public void addValue(final String statsKey, final int incValue, final int incTimes) {&lt;br/&gt;    StatsItem statsItem = this.getAndCreateStatsItem(statsKey);&lt;br/&gt;    statsItem.getValue().addAndGet(incValue);&lt;br/&gt;    statsItem.getTimes().addAndGet(incTimes);&lt;br/&gt;}&lt;br/&gt;// 获取并创建StatsItem&lt;br/&gt;public StatsItem getAndCreateStatsItem(final String statsKey) {&lt;br/&gt;    StatsItem statsItem = this.statsItemTable.get(statsKey);&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; (null == statsItem) {&lt;br/&gt;        statsItem = new StatsItem(this.statsName, statsKey);&lt;br/&gt;        this.statsItemTable.put(statsKey, statsItem);&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; statsItem;&lt;br/&gt;}&lt;/span&gt;&lt;/p&gt;&lt;/pre&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;StatsItem主要字段及方法如下：&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;p&gt;&lt;span&gt;AtomicLong value; // 统计数据：比如消息条数，消息大小&lt;br/&gt;AtomicLong &lt;span&gt;times&lt;/span&gt;; // 次数&lt;br/&gt;LinkedList&amp;lt;CallSnapshot&amp;gt; csListMinute; // 每分钟快照数据&lt;br/&gt;LinkedList&amp;lt;CallSnapshot&amp;gt; csListHour; // 每小时快照数据&lt;br/&gt;LinkedList&amp;lt;CallSnapshot&amp;gt; csListDay; // 每天快照数据&lt;br/&gt;// 分钟采样&lt;br/&gt;public void &lt;span&gt;samplingInSeconds&lt;/span&gt;() {&lt;br/&gt;    synchronized (csListMinute) {&lt;br/&gt;        csListMinute.add(new CallSnapshot(System.currentTimeMillis(), times.get(), value.get()));&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; (csListMinute.size() &amp;gt; 7) {&lt;br/&gt;            csListMinute.removeFirst();&lt;br/&gt;        }&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;// 小时采样&lt;br/&gt;public void &lt;span&gt;samplingInMinutes&lt;/span&gt;() {&lt;br/&gt;  // ...代码省略&lt;br/&gt;}&lt;br/&gt;// 天采样&lt;br/&gt;public void &lt;span&gt;samplingInHour&lt;/span&gt;() {&lt;br/&gt;  // ...代码省略&lt;br/&gt;}&lt;/span&gt;&lt;/p&gt;&lt;/pre&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;CallSnapshot主要字段如下：&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;p&gt;&lt;span&gt;long &lt;span&gt;times&lt;/span&gt;; // 次数快照&lt;br/&gt;long value; // 统计数据快照&lt;br/&gt;long timestamp; //快照时间戳&lt;/span&gt;&lt;/p&gt;&lt;/pre&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;section&gt;&lt;span&gt;上面三个对象如何配合进行数据统计呢？举个例子，比如统计topic名字为test_topic的消息生产大小：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;只要进行类似如下调用即可：&lt;/span&gt;&lt;/section&gt;&lt;pre&gt;&lt;p&gt;&lt;span&gt;StatsItemSet.addValue(&lt;span&gt;&quot;test_topic&quot;&lt;/span&gt;, 123125123, 1)&lt;/span&gt;&lt;/p&gt;&lt;/pre&gt;&lt;section&gt;&lt;span&gt;即表示发送了1次消息到test_topic，消息大小为123125123。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;那如何进行数据采样呢？StatsItemSet内置了定时任务，比如其每10秒调用一次StatsItem.samplingInSeconds()。这样StatsItem就会持有60秒的数据，类似如下结构：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.8214285714285714&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/qMicvibdvl7p0SJow0NBbJD1dCJibMdeGHzKRIOibrLJDo0L1qNArl0KgnQcfZojMwb4fwFIP6qG4nlNZN7joqIyuA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;224&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;那么，最后一个10秒的快照 - 第一个10秒的快照 = 当前60秒的数据，根据时间戳差值可以得到耗时。&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;类似，小时数据每10分钟进行一次快照，类似如下结构：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.8340807174887892&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/qMicvibdvl7p0SJow0NBbJD1dCJibMdeGHza5XeafpKbYK8mH17tOnMv9I2WQqfGOleEbDwI9KBwHUCkwa1m15Sjg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;223&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;天数据每1小时进行一次快照，类似如下结构：&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.88&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/qMicvibdvl7p0SJow0NBbJD1dCJibMdeGHzzdT5MZQBR202tBZ3IoIJteFPo7ibGfiaeSrDH4d5eYgzwbzicNFicOXcIQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;225&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;MQCloud每分钟遍历查询集群下所有broker来查询RocketMQ统计好的分钟数据，然后进行存储。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;每分钟消费者流量&lt;/span&gt;&lt;span&gt;&lt;strong/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;与每分钟topic的生产流量一样，也采用RocketMQ统计好的数据。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;每10分钟topic生产流量&lt;/span&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;采用数据库已经统计好的每分钟topic流量进行累加，统计出10分钟流量。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;每分钟broker生产、消费流量&lt;/span&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;由于统计1.每分钟topic的生产流量和2.每分钟消费者流量时是跟broker交互获取的，所以知道broker ip，故直接按照broker维度存储一份数据即可。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;每分钟broker集群生产、消费流量&lt;/span&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;采用4.每分钟broker生产、消费流量数据，按照集群求和即可。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;每分钟生产者百分位耗时、异常统计&lt;/span&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;由于RocketMQ并没有提供生产者的流量统计（&lt;em&gt;只提供了topic，但是并不知道每个生产者的情况&lt;/em&gt;），所以MQCloud实现了对生产者数据进行统计（&lt;em&gt;通过RocketMQ的回调钩子实现&lt;/em&gt;）:&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5135135135135135&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/qMicvibdvl7p0SJow0NBbJD1dCJibMdeGHzUQGQOffrRmSxvz3a0CibTRph80dg4Rz6J7TjVuBrRY3l9h4HD95DuFw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;370&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;主要统计如下信息：&lt;/span&gt;&lt;/section&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;客户端ip-&amp;gt;broker ip&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;发送消息耗时&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;消息数量&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;发送异常&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;/ol&gt;&lt;section&gt;&lt;span&gt;统计完成后，定时发送到MQCloud进行存储，并做实时监控和展示。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;关于统计部分有一点说明，一般耗时统计有最大，最小和平均值，而通常99%(即99%的请求耗时都低于此数值)的请求的耗时情况才能反映真实响应情况。99%请求耗时统计最大的问题是如何控制内存占用，因为需要对某段时间内所有的耗时做排序后才能统计出这段时间的99%的耗时状况。而对于流式数据做这样的统计是有一些算法和数据结构的，例如t-digest，但是MQCloud采用了非精确的但是较为简单的分段统计的方法，具体如下：&lt;/span&gt;&lt;/section&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;创建一个按照最大耗时预哈希的时间跨度不同的&lt;strong&gt;耗时分段数组&lt;/strong&gt;：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;em&gt;优点：此种分段方法占用内存是固定的，比如最大耗时如果为3500ms，那么只需要空间大小为96的数组即可&lt;/em&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;em&gt;缺点：分段精度需要提前设定好，且不可更改&lt;/em&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;第一段：耗时范围0ms~10ms，时间跨度为1ms。&lt;/span&gt;&lt;/p&gt;&lt;figure/&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.3888888888888889&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/qMicvibdvl7p0SJow0NBbJD1dCJibMdeGHzZcatctS2UfVONfOOEfUf797wnDcEiaVLjds8Rh9WxsAZ6xXPvNFhaiaQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;288&quot;/&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;第二组：耗时范围11ms~100ms，时间跨度5ms。&lt;/span&gt;&lt;/p&gt;&lt;figure/&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.1958762886597938&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/qMicvibdvl7p0SJow0NBbJD1dCJibMdeGHzR2yvhwWUW16ZpS9S5icMM4RKM8yNnIia95u1eoR51YnBwW7027tsYeDg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;582&quot;/&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;第三组：耗时范围101ms~3500ms，时间跨度50ms。&lt;/span&gt;&lt;/p&gt;&lt;figure/&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.19420783645655879&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/qMicvibdvl7p0SJow0NBbJD1dCJibMdeGHzhHyAA22ZQp7XvSyMa084hrsYt4QdjXpiaMDG9962mot1HFSkvlicXxmg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;587&quot;/&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;span&gt;&lt;em&gt;优点：此种分段方法占用内存是固定的，比如最大耗时如果为3500ms，那么只需要空间大小为96的数组即可&lt;/em&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;em&gt;缺点：分段精度需要提前设定好，且不可更&lt;/em&gt;&lt;/span&gt;&lt;/p&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;针对上面的分段数组，创建一个大小对应的AtomicLong的&lt;strong&gt;计数数组&lt;/strong&gt;，支持并发统计：&lt;/span&gt;&lt;/p&gt;&lt;figure/&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.1035031847133758&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/qMicvibdvl7p0SJow0NBbJD1dCJibMdeGHzl9OjoRB8w3YrqzEMUC6ZxBQVCvcdRYVWVo0kfFaJu37WDflvqHZE9Q/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;628&quot;/&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;耗时统计时，计算耗时对应的&lt;strong&gt;耗时分段数组&lt;/strong&gt;下标，然后调用&lt;strong&gt;计数数组&lt;/strong&gt;进行统计即可，参考下图：&lt;/span&gt;&lt;/p&gt;&lt;figure/&gt;&lt;p&gt;&lt;span&gt;这样，从&lt;strong&gt;计数数组&lt;/strong&gt;就可以得到实时耗时统计，类似如下：&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.47393364928909953&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/qMicvibdvl7p0SJow0NBbJD1dCJibMdeGHzOehickUaVOONbZwAicVNUQibxfqo9gwnCMRvJswPIJWfdkjxCQxibaibzfQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;633&quot;/&gt;&lt;/p&gt;&lt;/li&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;例如某次耗时为18ms，首先找到它所属的区间，即归属于[16~20]ms之间，对应的数组下标为12。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;根据第一步找到的数组下标12，获取对应的计数数组下标12。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;获取对应的计数器进行+1操作，即表示18ms发生了一次调用。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;span&gt;这样，从&lt;strong&gt;计数数组&lt;/strong&gt;就可以得到实时耗时统计，类似如下：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.22869955156950672&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/qMicvibdvl7p0SJow0NBbJD1dCJibMdeGHzRvSS8OscNM7zQ5ZW4piciavazNhmP2APqEBaUmw1jicSia5ToxqicNibO1Kg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;669&quot;/&gt;&lt;/p&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;然后定时采样任务会每分钟对&lt;strong&gt;计数数组&lt;/strong&gt;进行快照，产生如下&lt;strong&gt;耗时数据&lt;/strong&gt;：&lt;/span&gt;&lt;/p&gt;&lt;figure/&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.15970149253731344&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/qMicvibdvl7p0SJow0NBbJD1dCJibMdeGHzLfbnGbKAmfMlDaNwmiayz8SVfbqNtb5OicN9icYY3lhKHkEodia7v2AWzQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;670&quot;/&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;由于上面的&lt;strong&gt;耗时数据&lt;/strong&gt;天然就是排好序的，可以很容易计算99%、90%、平均耗时等数据了。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;section&gt;&lt;span&gt;&lt;em&gt;另外提一点，由于RocketMQ 4.4.0新增的trace功能也使用hook来实现，与MQCloud的统计有冲突，MQCloud已经做了兼容。&lt;/em&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;em&gt;&lt;em&gt;Trace和统计是两种维度，trace反映的是消息从生产-&amp;gt;存储-&amp;gt;消费的流程，而MQCloud做的是针对生产者状况的统计，有了这些统计数据，才可以做到生产耗时情况展示，生产异常情况预警等功能。&lt;/em&gt;&lt;/em&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;机器统计&lt;/span&gt;&lt;span&gt;&lt;strong/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;关于集群状况收集主要采用了将nmon自动放置到/tmp目录，定时采用ssh连接到机器执行nmon命令，解析返回的数据，然后进行存储。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;上面这些工作就为监控和预警奠定了坚实的数据基础。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;单独定制的客户端&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.7945205479452054&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/qMicvibdvl7p0ciasIFmiba0qb9GMVqy7UJjbqd2KYtPpWAOeZdeExszsCe7EqkTRMH3TvToplbTuAwFxJoT3oyXxQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;365&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;针对客户端的一些需求，mq-client在rocketmq-client的基础上进行了开发定制：&lt;/span&gt;&lt;/section&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;多集群支持&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;MQCloud储存了生产者、消费者和集群的关系，通过路由适配，客户端可以自动路由到目标集群上，使客户端对多集群透明。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;trace&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;通过搭建单独的trace集群和定制客户端，使trace数据能够发往独立的集群，防止影响主集群。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;序列化&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;通过集成不同的序列化机制，配合MQCloud，客户端无需关心序列化问题。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;目前支持的序列化为protobuf和json，并且通过类型检测支持在线修改序列化方式。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;流控&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;通过提供令牌桶和漏桶限流机制，自动开启流控机制，防止消息洪峰冲垮业务端。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;隔离降级&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;使用hystrix提供隔离降级策略，使业务端在broker故障时可以避免拖累。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;埋点监控&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;通过对客户端数据进行统计，收集，在MQCloud里进行监控，使客户端任何风吹草动都能及时得知。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;规范问题&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;通过编码保障，使某些约定，规范和最佳实践得以实现。包括但不限于：&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;命名规范&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;消费组全局唯一，防止重复导致消费问题&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;重试消息跳过&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;安全关闭等等&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;更完善的重试机制&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;自动化运维&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;部署&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;手动部署一台broker实例没什么问题，但是当实例变多时，手动部署极易出错且耗时耗力。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;MQCloud提供了一套自动化部署机制，并支持配置模板功能，支持一键部署。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;机器运维&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;MQCloud提供了一整套机器的运维机制，包括上下线，机器状况收集、监控、预警等等，大大提升了生产力。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;/ol&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;安全性加固&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;一、开启管理员权限&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;RocketMQ从4.4.0开始支持ACL，但是默认没有开启，也就是&lt;strong&gt;任何人使用管理工具或API就可以直接操纵线上集群&lt;/strong&gt;。但是开启ACL对现有业务影响太大，针对这种情况MQCloud进行专门定制。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;借鉴RocketMQ ACL机制，只针对RocketMQ管理员操作加固权限校验：&lt;/span&gt;&lt;/p&gt;&lt;figure/&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;2.4474885844748857&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/qMicvibdvl7p0ciasIFmiba0qb9GMVqy7UJjC9CzOuQMEu46jn26NgMCaptAEmmZzcgqaG3Dn5k3UW2j19mth7MgCw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;219&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;并且支持自定义和热加载管理员请求码，使得非法操作RocketMQ集群成为不可能，安全性大大提升。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;二、broker通信加固&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;section&gt;&lt;span&gt;broker同步数据代码由于没有校验，存在安全隐患，只要连接master监听的slave通信端口，发送数据大于8个字节，就可能导致同步偏移量错误，代码如下：&lt;/span&gt;&lt;/section&gt;&lt;pre&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;if&lt;/span&gt; ((this.byteBufferRead.position() - this.processPostion) &amp;gt;= 8) {&lt;br/&gt;  int pos = this.byteBufferRead.position() - (this.byteBufferRead.position() % 8);&lt;br/&gt;  long readOffset = this.byteBufferRead.getLong(pos - 8);&lt;br/&gt;  this.processPostion = pos;&lt;br/&gt;  HAConnection.this.slaveAckOffset = readOffset;&lt;br/&gt;  &lt;span&gt;if&lt;/span&gt; (HAConnection.this.slaveRequestOffset &amp;lt; 0) {&lt;br/&gt;      HAConnection.this.slaveRequestOffset = readOffset;&lt;br/&gt;      log.info(&lt;span&gt;&quot;slave[&quot;&lt;/span&gt; + HAConnection.this.clientAddr + &lt;span&gt;&quot;] request offset &quot;&lt;/span&gt; + readOffset);&lt;br/&gt;  }&lt;br/&gt;  HAConnection.this.haService.notifyTransferSome(HAConnection.this.slaveAckOffset);&lt;br/&gt;}&lt;/span&gt;&lt;/p&gt;&lt;/pre&gt;&lt;section&gt;&lt;span&gt;MQCloud通过验证数据首包的策略，保障了通信的安全性。&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;目前MQCloud运维规模如下：&lt;/span&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;服务器：50台+&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;集群：5个+&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;topic：700个+&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;生产消费消息量/日：4亿条+&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;生产消费消息大小/日：400G+&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;span&gt;MQCloud在充分考虑和吸收实际业务的需求后，以各个角色聚焦为核心，以全面监控为目标，&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;以满足各业务端需求为己任，在不断地发展和完善。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在MQCloud逐渐成熟之后，秉承着服务于社区和吸收更多经验的理念，我们开放了源代码。&lt;/span&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;四、开源之路&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;开放源代码说不难也不难，说难也难。为什么这么说？&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;不难就是因为代码已经有了，只是换个仓库而已。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;而难点就是需要进行抽象设计，剥离不能开源的代码（内部模块，代码，地址等等）。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;经过设计和拆分，MQCloud于18年开源了，从第一个版本release到现在已经过去两年了，&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;期间随着更新迭代大大小小一共release了20多个版本。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;其中不但包含功能更新、bug修复、wiki说明等，而且每个大版本都经过详细的测试和内部的运行。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;之后很多小伙伴跃跃欲试，来试用它，并提出一些建议和意见，我们根据反馈来进一步完善它。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;我们将一直遵循我们的目标，坚定的走自己的开源之路：&lt;/span&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;为业务提供可监控，可预警，可满足其各种需求的稳定的MQ服务。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;积累MQ领域经验，将经验转化为产品，更好的服务业务。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;pre&gt;&lt;p&gt;&lt;span&gt;后台回复 &lt;/span&gt;&lt;strong&gt;&lt;span&gt;学习资料&lt;/span&gt;&lt;/strong&gt;&lt;strong&gt; &lt;/strong&gt;&lt;span&gt;领取学习视频&lt;/span&gt;&lt;/p&gt;&lt;/pre&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section data-mpa-template-id=&quot;112&quot; data-mpa-category=&quot;quote&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-ratio=&quot;0.511002444987775&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/WRLYshvT39zWmaics1nAAwT4NCD77uDcf6vcXE1DAHybibTY0V3XDmf4YX1q9qYibIwz9xmRVTkEvTjP87gaKEZrQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;818&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;如有收获，点个在看，诚挚感谢&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
