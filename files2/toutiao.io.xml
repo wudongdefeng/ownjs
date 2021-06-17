@@ -128,181 +128,24 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>5adc93e510a6a746fc7b82694d2e2b9b</guid>
-<title>JavaScript 中数组 sort() 方法的基本使用</title>
-<link>https://toutiao.io/k/9issv3b</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;blockquote&gt;
-&lt;p&gt;在日常的代码开发中，关于数组排序的操作可不少，JavaScript 中可以调用 &lt;code&gt;sort&lt;/code&gt; 方法对数组进行快速排序。&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;今天，就数组的 &lt;code&gt;sort&lt;/code&gt; 方法来学习一下，避免日后踩坑的悲惨遭遇。&lt;/p&gt;
-
-&lt;h3&gt;概念&lt;/h3&gt;
-
-&lt;p&gt;sort 方法用于对数组的元素进行排序。&lt;/p&gt;
-
-&lt;h3&gt;语法&lt;/h3&gt;
-
-&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;arr.sort([compareFunction])
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h4&gt;参数解析&lt;/h4&gt;
-
-&lt;p&gt;&lt;strong&gt;compareFunction&lt;/strong&gt; (可选)&lt;/p&gt;
-
-&lt;p&gt;用来指定按某种顺序进行排列的函数。该函数有两个参数：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;firstEl&lt;/strong&gt;    第一个比较的元素&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;secondEl&lt;/strong&gt;    第二个比较的元素&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;该函数如果省略，元素按照转换为的字符串的各个字符的&lt;strong&gt;Unicode位点&lt;/strong&gt;进行排序。&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h4&gt;返回值&lt;/h4&gt;
-
-&lt;p&gt;排序后的数组。&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;请注意，数组已原地排序，并且不进行复制。&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h3&gt;坑&lt;/h3&gt;
-
-&lt;p&gt;犹记得当年第一次使用数组排序的场景：查到有个 sort 方法后，赶紧用起来， 结果……，如下：&lt;/p&gt;
-
-&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;const arr = [49, 5, 14, 89, 71, 3, 10];
-arr.sort();
-// 输出  [10, 14, 3, 49, 5, 71, 89]
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;看到结果的瞬间，整个人有点方了。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://gitee.com/yinyiwang/blogImages/raw/master/images/20210608%20/18-34-50-6RUn7b.jpg&quot; alt=&quot;查看源图像&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;这就有点不讲武德了，说好的排序呢？再三确认我的机器没毛病后，赶紧查文档，看看文档怎么说：&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;如果没有指明 &lt;code&gt;compareFunction&lt;/code&gt; ，那么元素会按照转换为的字符串的逐个字符的&lt;a href=&quot;https://baike.baidu.com/item/%E7%BB%9F%E4%B8%80%E7%A0%81/2985798?fromtitle=Unicode&amp;amp;fromid=750500&quot;&gt;&lt;strong&gt;Unicode位点&lt;/strong&gt;&lt;/a&gt;进行排序。&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;这么一解释的话，上面数组的排序可以作一下理解：&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;&lt;p&gt;首先，将数组里的数字逐个转换为字符串，得到 &lt;code&gt;[&#x27;49&#x27;, &#x27;5&#x27;, &#x27;14&#x27;, &#x27;89&#x27;, &#x27;71&#x27;, &#x27;3&#x27;, &#x27;10&#x27;]&lt;/code&gt; 。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;再按照首位的字符的 Unicode 位点来算的话：&lt;/p&gt;
-
-
-
-&lt;blockquote&gt;
-&lt;p&gt;如果首位字符的编码相同，则比较第二位字符的编码，比如 10 排在了 14之前（0 和 4 的比较结果）&lt;/p&gt;
-&lt;/blockquote&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;道理貌似是通了，但是这不是我想要的结果，看来还是得靠比较函数 &lt;code&gt;compareFunction&lt;/code&gt; ，我们来看看这个 &lt;code&gt;compareFunction&lt;/code&gt; 到底是何方神圣。&lt;/p&gt;
-
-&lt;h3&gt;用法&lt;/h3&gt;
-
-&lt;p&gt;基本用例如下：&lt;/p&gt;
-
-&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;const arr = [49, 5, 14, 89, 71, 3, 10];
-
-// 一般写法
-arr.sort(function (a, b) {
-    return a - b;   // 按照升序排列 
-});
-
-// 箭头函数
-arr.sort((a, b) =&amp;gt; a - b);
-
-// 结果  [3, 5, 10, 14, 49, 71, 89]
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;以上是按照&lt;strong&gt;升序排列&lt;/strong&gt;的写法，如果要按照降序排列，只需把比较函数中的 &lt;code&gt;return a - b;&lt;/code&gt; 改为 &lt;code&gt;return b - a;&lt;/code&gt;。&lt;/p&gt;
-
-&lt;h3&gt;对象数组排序&lt;/h3&gt;
-
-&lt;p&gt;&lt;code&gt;sort()&lt;/code&gt; 方法除了可以用于数字数组和字符数组的排序外，还可用于对象数组的排序：&lt;/p&gt;
-
-&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;var items = [
-    {name: &#x27;Edward&#x27;, value: 21},
-    {name: &#x27;Sharpe&#x27;, value: 37},
-    {name: &#x27;And&#x27;, value: 45},
-    {name: &#x27;The&#x27;, value: -12},
-    {name: &#x27;Magnetic&#x27;},
-    {name: &#x27;Zeros&#x27;, value: 37}
-];
-
-// sort by value
-items.sort(function (a, b) {
-    return (a.value - b.value)
-});
-
-// sort by name
-items.sort(function (a, b) {
-    var nameA = a.name.toUpperCase(); // ignore upper and lowercase
-    var nameB = b.name.toUpperCase(); // ignore upper and lowercase
-    if (nameA &amp;lt; nameB) {
-        return -1;
-    }
-    if (nameA &amp;gt; nameB) {
-        return 1;
-    }
-
-    // names must be equal
-    return 0;
-});
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;对非 ASCII 字符排序&lt;/h3&gt;
-
-&lt;p&gt;当排序非 ASCII 字符的字符串（如包含类似 e, é, è, a, ä 等字符的字符串）。一些非英语语言的字符串需要使用 &lt;code&gt;String.localeCompare&lt;/code&gt;。这个函数可以将函数排序到正确的顺序。&lt;/p&gt;
-
-&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;var items = [&#x27;réservé&#x27;, &#x27;premier&#x27;, &#x27;cliché&#x27;, &#x27;communiqué&#x27;, &#x27;café&#x27;, &#x27;adieu&#x27;];
-items.sort(function (a, b) {
-    return a.localeCompare(b);
-});
-
-// items is [&#x27;adieu&#x27;, &#x27;café&#x27;, &#x27;cliché&#x27;, &#x27;communiqué&#x27;, &#x27;premier&#x27;, &#x27;réservé&#x27;]
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;使用映射改善排序&lt;/h3&gt;
-
-&lt;p&gt;&lt;code&gt;compareFunction&lt;/code&gt; 可能需要对元素做多次映射以实现排序，尤其当 &lt;code&gt;compareFunction&lt;/code&gt; 较为复杂，且元素较多的时候，某些 &lt;code&gt;compareFunction&lt;/code&gt; 可能会导致很高的负载。使用 map 辅助排序将会是一个好主意。基本思想是首先将数组中的每个元素比较的实际值取出来，排序后再将数组恢复。&lt;/p&gt;
-
-&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;// 需要被排序的数组
-var list = [&#x27;Delta&#x27;, &#x27;alpha&#x27;, &#x27;CHARLIE&#x27;, &#x27;bravo&#x27;];
-
-// 对需要排序的数字和位置的临时存储
-var mapped = list.map(function(el, i) {
-    return { index: i, value: el.toLowerCase() };
-})
-
-// 按照多个值排序数组
-mapped.sort(function(a, b) {
-    return +(a.value &amp;gt; b.value) || +(a.value === b.value) - 1;
-});
-
-// 根据索引得到排序的结果
-var result = mapped.map(function(el){
-    return list[el.index];
-});
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;本文完，感谢阅读！&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;学习有趣的知识，结识有趣的朋友，塑造有趣的灵魂！&lt;/p&gt;
-
-&lt;p&gt;大家好！我是〖编程三昧〗的作者 &lt;strong&gt;隐逸王&lt;/strong&gt;，我的公众号是『编程三昧』，欢迎关注，希望大家多多指教！&lt;/p&gt;
-
-&lt;p&gt;知识与技能并重，内力和外功兼修，理论和实践两手都要抓、两手都要硬！&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;~&lt;/p&gt;
+<guid>603539fac6203649b2a691d6165b2a50</guid>
+<title>2021 阿里春招实习面经汇总</title>
+<link>https://toutiao.io/k/5o6y5g0</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;post-legend&quot;&gt;
+&lt;span class=&quot;post-time&quot;&gt;
+编辑于  2021-06-13 21:26:26
+&lt;/span&gt;
+&lt;span href=&quot;&quot; class=&quot;tag-label app-item-tag js-app-item&quot; data-url=&quot;https%3A%2F%2Fm.nowcoder.com%2Fapp%3Ftype%3Dscan%26source%3D1%26targetUrl%3Dhttps%253A%252F%252Fwww.nowcoder.com%252Fdiscuss%252F671888%26url%3Dhttps%253A%252F%252Fwww.nowcoder.com%252Fdiscuss%252F671888%26uuid%3D307d587988b54feeba23de03ae23bbf1&quot;&gt;APP内打开&lt;/span&gt;
+&lt;p class=&quot;feed-legend&quot;&gt;
+&lt;span class=&quot;js-post-like nc-req-auth&quot;&gt;赞 7&lt;/span&gt;
+&lt;span class=&quot;feed-legend-pipe&quot;&gt;|&lt;/span&gt;
+&lt;span class=&quot;js-post-follow nc-req-auth&quot;&gt;收藏 34&lt;/span&gt;
+&lt;span class=&quot;feed-legend-pipe&quot;&gt;|&lt;/span&gt;
+&lt;span class=&quot;nc-req-auth js-post-replay&quot;&gt;回复&lt;span class=&quot;feed-legend-num&quot;&gt;2&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;feed-legend-pipe&quot;&gt;|&lt;/span&gt;
+&lt;span&gt;浏览&lt;span class=&quot;feed-legend-num&quot;&gt;1358&lt;/span&gt;&lt;/span&gt;
+&lt;/p&gt;
 &lt;/div&gt;
-  &lt;/div&gt;&lt;/div&gt;</content:encoded>
+&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
