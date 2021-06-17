@@ -62,6 +62,206 @@
 &lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
+<guid>ba38c6e5fc6ec3a01b7c05c837633387</guid>
+<title>Spring Boot 2 参数管理实践，入参出参与校验</title>
+<link>https://toutiao.io/k/hhwhm3y</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
+
+                    
+                    
+                    
+                    &lt;h1&gt;&lt;span&gt;一、参数管理&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;在编程系统中，为了能写出良好的代码，会根据是各种设计模式、原则、约束等去规范代码，从而提高代码的可读性、复用性、可修改，实际上个人觉得，如果写出的代码很好，即别人修改也无法破坏原作者的思路和封装，这应该是非常高水准。&lt;/p&gt;&lt;p&gt;但是在日常开发中，碍于很多客观因素，很少有时间去不断思考和优化代码，所以只能从实际情况的角度去思考如何构建系统代码，保证以后自己还能读懂自己的代码，在自己的几年编程中，实际会考虑如下几个方面：代码层级管理，命名和注释统一，合理的设计业务数据库，明确参数风格。&lt;/p&gt;&lt;p&gt;这里就来聊一下参数管理，围绕：入参、校验、返参三个方面内容。&lt;/p&gt;&lt;p&gt;如何理解代码规范这个概念：即大多数开发认同，愿意遵守的约束，例如Spring框架和Mvc模式对于工程的管理，《Java开发手册》中对于业务开发的规定，其根本目的都是想避免随着业务发展，代码演变到无法维护的境界。&lt;/p&gt;&lt;h1&gt;&lt;span&gt;二、接收参数&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;p&gt;接收参数方式有很多种，List，Map，Object等等，但是为了明确参数的语义，通常都需要设计参数对象的结构并且遵守一定的规范，例如明确禁止Map接收参数：&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Rest风格接收单个ID参数：&lt;/strong&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;@GetMapping&lt;/span&gt;(&lt;span&gt;&quot;/param/single/{id}&quot;&lt;/span&gt;)&lt;br/&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; String &lt;span&gt;paramSingle&lt;/span&gt; &lt;span&gt;(@PathVariable Integer id)&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; &lt;span&gt;&quot;Resp:&quot;&lt;/span&gt;+id ;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;strong&gt;接收多个指定的参数：&lt;/strong&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;@GetMapping&lt;/span&gt;(&lt;span&gt;&quot;/param/multi&quot;&lt;/span&gt;)&lt;br/&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; String &lt;span&gt;paramMulti&lt;/span&gt; &lt;span&gt;(@RequestParam(&lt;span&gt;&quot;key&quot;&lt;/span&gt;)&lt;/span&gt; String key, @&lt;span&gt;RequestParam&lt;/span&gt;&lt;span&gt;(&lt;span&gt;&quot;var&quot;&lt;/span&gt;)&lt;/span&gt; String &lt;span&gt;var&lt;/span&gt;)&lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; &lt;span&gt;&quot;Resp:&quot;&lt;/span&gt;+key+&lt;span&gt;var&lt;/span&gt; ;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;strong&gt;基于Java包装对象入参：&lt;/strong&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;@PostMapping&lt;/span&gt;(&lt;span&gt;&quot;/param/wrap&quot;&lt;/span&gt;)&lt;br/&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; ParamIn &lt;span&gt;paramWrap&lt;/span&gt; &lt;span&gt;(@RequestBody ParamIn paramIn)&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; paramIn ;&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;-- 参数对象实体&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;ParamIn&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; Integer id ;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; String key ;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; String &lt;span&gt;var&lt;/span&gt; ;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; String name ;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;以上是在开发中常用的几种接参方式，这里通常会遵守下面几个习惯：&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;参数语义：明确接收参数的作用；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;个数限制：参数超过三个使用包装对象；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;避免多个接口使用单个包装对象入参；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;避免包装对象主体过于复杂；&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;参数接收并没有很复杂的约束，整体上也比较容易遵守，通常的问题在于处理较大主体对象时，容易产生一个包装对象被多处复用，进而导致对象字段属性很多，这种情况在复杂业务中尤其容易出现，这种对象并不利于web层接口使用，或者很多时候都会在业务层和接口层混用对象；&lt;/p&gt;&lt;p&gt;在业务层封装复杂的BO对象来降低业务管理的复杂度，这是合理常见的操作，可以在web接口层面根据接口功能各自管理入参主体，在业务实现的过程中，再传入BO对象中。&lt;/p&gt;&lt;p&gt;避免复杂的业务包装对象在各个层乱飘，如果多个接口入参都是同一个复杂的对象，很容易让开发人员迷茫。&lt;/p&gt;&lt;h1&gt;&lt;span&gt;三、响应参数&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;p&gt;与参数接收相对应的就是参数响应，参数响应通常具有明确的约束规范：响应主体数据，响应码，描述信息。通常来说就是这样三个核心要素。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;响应参数主体：&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;这里泛型的使用通常用来做主体数据的接收。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Resp&lt;/span&gt;&amp;lt;&lt;span&gt;T&lt;/span&gt;&amp;gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; &lt;span&gt;int&lt;/span&gt; code ;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; String msg ;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; T data ;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &amp;lt;T&amp;gt; &lt;span&gt;Resp&amp;lt;T&amp;gt; &lt;span&gt;ok&lt;/span&gt; &lt;span&gt;(T data)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        Resp&amp;lt;T&amp;gt; result = &lt;span&gt;new&lt;/span&gt; Resp&amp;lt;&amp;gt;(HttpStatus.OK);&lt;br/&gt;        result.setData(data);&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; result ;&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;Resp&lt;/span&gt; &lt;span&gt;(HttpStatus httpStatus)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;this&lt;/span&gt;.code = httpStatus.value();&lt;br/&gt;        &lt;span&gt;this&lt;/span&gt;.msg = httpStatus.getReasonPhrase();&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;Resp&lt;/span&gt;&lt;span&gt;(&lt;span&gt;int&lt;/span&gt; code, String msg, T data)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;this&lt;/span&gt;.code = code;&lt;br/&gt;        &lt;span&gt;this&lt;/span&gt;.msg = msg;&lt;br/&gt;        &lt;span&gt;this&lt;/span&gt;.data = data;&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;strong&gt;Code状态码&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;即接口状态，建议参照并遵守&lt;code&gt;HttpStatus&lt;/code&gt;中状态码的描述，这是开发普遍遵守的规范，如果不满足业务需求，在适当自定义部分编码，可以完全自定义一套响应码，但是没太多必要。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Msg描述&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;描述接口的响应的Msg可能就是：成功或失败，更多的时候是需要处理业务异常的提示信息，例如单号不存在，账号冻结等等，通常需要从业务异常中捕获提示信息，并响应页面，或者入参校验不通过的描述。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Data数据&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;接口响应的主体数据，不同的业务响应的对象肯定不同，所以这里基于泛型机制接收即可，再以JSON格式响应页面。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;参考案例&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;接口返参：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;@PostMapping&lt;/span&gt;(&lt;span&gt;&quot;/resp/wrap&quot;&lt;/span&gt;)&lt;br/&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; Resp&amp;lt;KeyValue&amp;gt; &lt;span&gt;respWrap&lt;/span&gt; &lt;span&gt;(@RequestBody KeyValue keyValue)&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; Resp.ok(keyValue) ;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;响应格式：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;{&lt;br/&gt;   &lt;span&gt;&quot;code&quot;&lt;/span&gt;: &lt;span&gt;200&lt;/span&gt;,&lt;br/&gt;   &lt;span&gt;&quot;msg&quot;&lt;/span&gt;: &lt;span&gt;&quot;OK&quot;&lt;/span&gt;,&lt;br/&gt;   &lt;span&gt;&quot;data&quot;&lt;/span&gt;: {&lt;br/&gt;       &lt;span&gt;&quot;key&quot;&lt;/span&gt;: &lt;span&gt;&quot;hello&quot;&lt;/span&gt;,&lt;br/&gt;       &lt;span&gt;&quot;value&quot;&lt;/span&gt;: &lt;span&gt;&quot;world&quot;&lt;/span&gt;&lt;br/&gt;   }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h1&gt;&lt;span&gt;四、参数校验&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;p&gt;参数接收和响应相对都不是复杂的，比较难处理的就是参数校验：入参约束校验，业务合法性校验，响应参数非空非null校验，等各种场景。&lt;/p&gt;&lt;p&gt;在系统运行过程中，任何参数都不是绝对可靠的，所以参数校验随处可见，不同场景下的参数校验，都有其必要性，但其根本目的都是为了给到请求端提示信息，快速打断流程，快速响应。&lt;/p&gt;&lt;h2&gt;&lt;span&gt;1、借鉴参考&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p&gt;很多封装思想，设计模式，或者这里说的参数校验，都可以参考现有Java源码或者优秀的框架，这是一个应该具备的基础意识。&lt;/p&gt;&lt;p&gt;Java原生方法之&lt;code&gt;java.lang.Thread&lt;/code&gt;线程:&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;interrupt&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; (&lt;span&gt;this&lt;/span&gt; != Thread.currentThread())&lt;br/&gt;        checkAccess();&lt;br/&gt;    &lt;span&gt;synchronized&lt;/span&gt; (blockerLock) {&lt;br/&gt;        Interruptible b = blocker;&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; (b != &lt;span&gt;null&lt;/span&gt;) {&lt;br/&gt;            interrupt0();   &lt;br/&gt;            b.interrupt(&lt;span&gt;this&lt;/span&gt;);&lt;br/&gt;            &lt;span&gt;return&lt;/span&gt;;&lt;br/&gt;        }&lt;br/&gt;    }&lt;br/&gt;    interrupt0();&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;在Java源码中，大部分都是采用原生的if判断方式，对参数执行校验&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Spring框架&lt;/strong&gt;之&lt;code&gt;org.springframework.util.ClassUtils&lt;/code&gt;工具类部分代码：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; Class&amp;lt;?&amp;gt; forName(String name, &lt;span&gt;@Nullable&lt;/span&gt; ClassLoader classLoader)&lt;br/&gt;   &lt;span&gt;throws&lt;/span&gt; ClassNotFoundException, LinkageError {&lt;br/&gt;  Assert.notNull(name, &lt;span&gt;&quot;Name must not be null&quot;&lt;/span&gt;);&lt;br/&gt;  Class&amp;lt;?&amp;gt; clazz = resolvePrimitiveClassName(name);&lt;br/&gt;  &lt;span&gt;if&lt;/span&gt; (clazz == &lt;span&gt;null&lt;/span&gt;) {&lt;br/&gt;   clazz = commonClassCache.get(name);&lt;br/&gt;  }&lt;br/&gt;  &lt;span&gt;if&lt;/span&gt; (clazz != &lt;span&gt;null&lt;/span&gt;) {&lt;br/&gt;   &lt;span&gt;return&lt;/span&gt; clazz;&lt;br/&gt;  }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;在Spring框架中除了基础的if判断之外，还封装一个&lt;code&gt;org.springframework.util.Assert&lt;/code&gt;断言工具类。&lt;/p&gt;&lt;h2&gt;&lt;span&gt;2、常用校验方式&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;If判断&lt;/strong&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;@GetMapping&lt;/span&gt;(&lt;span&gt;&quot;/check/base&quot;&lt;/span&gt;)&lt;br/&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; String &lt;span&gt;baseCheck&lt;/span&gt; &lt;span&gt;(@RequestParam(&lt;span&gt;&quot;var&quot;&lt;/span&gt;)&lt;/span&gt; String &lt;span&gt;var&lt;/span&gt;)&lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; (&lt;span&gt;var&lt;/span&gt; == &lt;span&gt;null&lt;/span&gt;) {&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; &lt;span&gt;var&lt;/span&gt;+&lt;span&gt;&quot; is null&quot;&lt;/span&gt; ;&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; (&lt;span&gt;&quot;&quot;&lt;/span&gt;.equals(&lt;span&gt;var&lt;/span&gt;)){&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; &lt;span&gt;var&lt;/span&gt;+&lt;span&gt;&quot; is empty&quot;&lt;/span&gt; ;&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; (&lt;span&gt;&quot;hello&quot;&lt;/span&gt;.equals(&lt;span&gt;var&lt;/span&gt;)){&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; &lt;span&gt;var&lt;/span&gt;+&lt;span&gt;&quot; sensitive word &quot;&lt;/span&gt; ;&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; &lt;span&gt;var&lt;/span&gt; + &lt;span&gt;&quot; through &quot;&lt;/span&gt; ;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;span&gt;这&lt;/span&gt;种&lt;span&gt;判断在代码中很常见，只是一旦遇到校验的主体对象很大，并且在分布式的环境中，需要重复写if判断的话，容易出错是一个方面，对开发人员的耐心考验是另一个方面。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Valid组件&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;在早几年的时候，比较流行的常用校验组件&lt;code&gt;Hibernate-Validator&lt;/code&gt;，后来兴起的&lt;code&gt;Validation-Api&lt;/code&gt;，据说是参考前者实现，不过这并不重要，二者都简化了对JavaBean的校验机制。&lt;/p&gt;&lt;p&gt;基于注解的方式，标记Java对象的字段属性，并设定如果校验失败的提示信息。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;JavaValid&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@NotNull&lt;/span&gt;(message=&lt;span&gt;&quot;ID不能为空&quot;&lt;/span&gt;)&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; Integer id ;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Email&lt;/span&gt;(message=&lt;span&gt;&quot;邮箱格式异常&quot;&lt;/span&gt;)&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; String email ;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@NotEmpty&lt;/span&gt;(message = &lt;span&gt;&quot;字段不能为空&quot;&lt;/span&gt;)&lt;br/&gt;    &lt;span&gt;@Size&lt;/span&gt;(min = &lt;span&gt;2&lt;/span&gt;,max = &lt;span&gt;10&lt;/span&gt;,message = &lt;span&gt;&quot;字段长度不合理&quot;&lt;/span&gt;)&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; String data ;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;校验结果打印：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;JavaValidTest&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; Validator validator ;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@BeforeClass&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;beforeBuild&lt;/span&gt; &lt;span&gt;()&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;        validator = Validation.buildDefaultValidatorFactory().getValidator();&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Test&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;checkValid&lt;/span&gt; &lt;span&gt;()&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;        JavaValid valid = &lt;span&gt;new&lt;/span&gt; JavaValid(&lt;span&gt;null&lt;/span&gt;,&lt;span&gt;&quot;email&quot;&lt;/span&gt;,&lt;span&gt;&quot;data&quot;&lt;/span&gt;) ;&lt;br/&gt;        Set&amp;lt;ConstraintViolation&amp;lt;JavaValid&amp;gt;&amp;gt; validateInfo = validator.validate(valid) ;&lt;br/&gt;        &lt;span&gt;// 打印校验结果&lt;/span&gt;&lt;br/&gt;        validateInfo.stream().forEach(validObj -&amp;gt; {&lt;br/&gt;            System.out.println(&lt;span&gt;&quot;validateInfo：&quot;&lt;/span&gt;+validObj.getMessage());&lt;br/&gt;        });&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;接口使用：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;@PostMapping&lt;/span&gt;(&lt;span&gt;&quot;/java/valid&quot;&lt;/span&gt;)&lt;br/&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; JavaValid &lt;span&gt;javaValid&lt;/span&gt; &lt;span&gt;(@RequestBody @Valid JavaValid javaValid,BindingResult errorMsg)&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; (errorMsg.hasErrors()){&lt;br/&gt;        List&amp;lt;ObjectError&amp;gt; objectErrors = errorMsg.getAllErrors() ;&lt;br/&gt;        objectErrors.stream().forEach(objectError -&amp;gt; {&lt;br/&gt;            logger.info(&lt;span&gt;&quot;CheckRes:{}&quot;&lt;/span&gt;,objectError.getDefaultMessage());&lt;br/&gt;        });&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; javaValid ;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这种校验机制基于注解方式，可以大幅度简化普通的入参校验，但是对业务参数的合法校验并不适应，例如常见的ID不存在，状态拦截等。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Assert断言&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;关于Assert断言方式，起初是在单元测试中常见，后来在各种优秀的框架中开始常见，例如Spring、Mybatis等，然后就开始出现在业务代码中：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;AssertTest&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; String varObject ;&lt;br/&gt;    &lt;span&gt;@Before&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;before&lt;/span&gt; &lt;span&gt;()&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;        varObject = RandomUtil.randomString(&lt;span&gt;6&lt;/span&gt;) ;&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Test&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;testEquals&lt;/span&gt; &lt;span&gt;()&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;        Assert.assertEquals(varObject+&lt;span&gt;&quot;不匹配&quot;&lt;/span&gt;,varObject,RandomUtil.randomString(&lt;span&gt;6&lt;/span&gt;));&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;@Test&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;testEmpty&lt;/span&gt; &lt;span&gt;()&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;        Assert.assertTrue(StrUtil.isNotEmpty(varObject));&lt;br/&gt;        Assert.assertFalse(varObject+&lt;span&gt;&quot; not empty&quot;&lt;/span&gt;,StrUtil.isNotEmpty(varObject));&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;@Test&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;testArray&lt;/span&gt; &lt;span&gt;()&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;/*&lt;br/&gt;            数组元素不相等: arrays first differed at element [1];&lt;br/&gt;            Expected :u08&lt;br/&gt;            Actual   :mwm&lt;br/&gt;         */&lt;/span&gt;&lt;br/&gt;        String &lt;span&gt;var&lt;/span&gt; = RandomUtil.randomString(&lt;span&gt;5&lt;/span&gt;) ;&lt;br/&gt;        String[] arrOne = &lt;span&gt;new&lt;/span&gt; String[]{&lt;span&gt;var&lt;/span&gt;,RandomUtil.randomString(&lt;span&gt;3&lt;/span&gt;)} ;&lt;br/&gt;        String[] arrTwo = &lt;span&gt;new&lt;/span&gt; String[]{&lt;span&gt;var&lt;/span&gt;,RandomUtil.randomString(&lt;span&gt;3&lt;/span&gt;)} ;&lt;br/&gt;        Assert.assertArrayEquals(&lt;span&gt;&quot;数组元素不相等&quot;&lt;/span&gt;,arrOne,arrTwo);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Assert断言，可以替换传统的if判断，大量减少参数校验的代码行数，提高程序的可读性，这种风格是目前比较流行的方式。&lt;/p&gt;&lt;h1&gt;&lt;span&gt;五、源代码地址&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;pre&gt;&lt;code&gt;GitHub·地址&lt;br/&gt;https://github.com/cicadasmile/middle-ware-parent&lt;br/&gt;GitEE·地址&lt;br/&gt;https://gitee.com/cicadasmile/middle-ware-parent&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzU4Njg0MzYwNw==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvBCuF3zfJnqPKpUia4wfn1FUtTHpxxkR5HvbicPgOjibPicX0goMOkny1NdkLAJvBaqrYh3UdwMjiaDQMA/0?wx_fmt=png&quot; data-nickname=&quot;知了一笑&quot; data-alias=&quot;cicada_smile&quot; data-signature=&quot;积累是一个孤独且枯燥的过程&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;
+                &lt;/div&gt;
+
+                
+
+                
+
+
+
+                
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>5adc93e510a6a746fc7b82694d2e2b9b</guid>
+<title>JavaScript 中数组 sort() 方法的基本使用</title>
+<link>https://toutiao.io/k/9issv3b</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;blockquote&gt;
+&lt;p&gt;在日常的代码开发中，关于数组排序的操作可不少，JavaScript 中可以调用 &lt;code&gt;sort&lt;/code&gt; 方法对数组进行快速排序。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;今天，就数组的 &lt;code&gt;sort&lt;/code&gt; 方法来学习一下，避免日后踩坑的悲惨遭遇。&lt;/p&gt;
+
+&lt;h3&gt;概念&lt;/h3&gt;
+
+&lt;p&gt;sort 方法用于对数组的元素进行排序。&lt;/p&gt;
+
+&lt;h3&gt;语法&lt;/h3&gt;
+
+&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;arr.sort([compareFunction])
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4&gt;参数解析&lt;/h4&gt;
+
+&lt;p&gt;&lt;strong&gt;compareFunction&lt;/strong&gt; (可选)&lt;/p&gt;
+
+&lt;p&gt;用来指定按某种顺序进行排列的函数。该函数有两个参数：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;firstEl&lt;/strong&gt;    第一个比较的元素&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;secondEl&lt;/strong&gt;    第二个比较的元素&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;该函数如果省略，元素按照转换为的字符串的各个字符的&lt;strong&gt;Unicode位点&lt;/strong&gt;进行排序。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h4&gt;返回值&lt;/h4&gt;
+
+&lt;p&gt;排序后的数组。&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;请注意，数组已原地排序，并且不进行复制。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3&gt;坑&lt;/h3&gt;
+
+&lt;p&gt;犹记得当年第一次使用数组排序的场景：查到有个 sort 方法后，赶紧用起来， 结果……，如下：&lt;/p&gt;
+
+&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;const arr = [49, 5, 14, 89, 71, 3, 10];
+arr.sort();
+// 输出  [10, 14, 3, 49, 5, 71, 89]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;看到结果的瞬间，整个人有点方了。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://gitee.com/yinyiwang/blogImages/raw/master/images/20210608%20/18-34-50-6RUn7b.jpg&quot; alt=&quot;查看源图像&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;这就有点不讲武德了，说好的排序呢？再三确认我的机器没毛病后，赶紧查文档，看看文档怎么说：&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;如果没有指明 &lt;code&gt;compareFunction&lt;/code&gt; ，那么元素会按照转换为的字符串的逐个字符的&lt;a href=&quot;https://baike.baidu.com/item/%E7%BB%9F%E4%B8%80%E7%A0%81/2985798?fromtitle=Unicode&amp;amp;fromid=750500&quot;&gt;&lt;strong&gt;Unicode位点&lt;/strong&gt;&lt;/a&gt;进行排序。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;这么一解释的话，上面数组的排序可以作一下理解：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;首先，将数组里的数字逐个转换为字符串，得到 &lt;code&gt;[&#x27;49&#x27;, &#x27;5&#x27;, &#x27;14&#x27;, &#x27;89&#x27;, &#x27;71&#x27;, &#x27;3&#x27;, &#x27;10&#x27;]&lt;/code&gt; 。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;再按照首位的字符的 Unicode 位点来算的话：&lt;/p&gt;
+
+
+
+&lt;blockquote&gt;
+&lt;p&gt;如果首位字符的编码相同，则比较第二位字符的编码，比如 10 排在了 14之前（0 和 4 的比较结果）&lt;/p&gt;
+&lt;/blockquote&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;道理貌似是通了，但是这不是我想要的结果，看来还是得靠比较函数 &lt;code&gt;compareFunction&lt;/code&gt; ，我们来看看这个 &lt;code&gt;compareFunction&lt;/code&gt; 到底是何方神圣。&lt;/p&gt;
+
+&lt;h3&gt;用法&lt;/h3&gt;
+
+&lt;p&gt;基本用例如下：&lt;/p&gt;
+
+&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;const arr = [49, 5, 14, 89, 71, 3, 10];
+
+// 一般写法
+arr.sort(function (a, b) {
+    return a - b;   // 按照升序排列 
+});
+
+// 箭头函数
+arr.sort((a, b) =&amp;gt; a - b);
+
+// 结果  [3, 5, 10, 14, 49, 71, 89]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;以上是按照&lt;strong&gt;升序排列&lt;/strong&gt;的写法，如果要按照降序排列，只需把比较函数中的 &lt;code&gt;return a - b;&lt;/code&gt; 改为 &lt;code&gt;return b - a;&lt;/code&gt;。&lt;/p&gt;
+
+&lt;h3&gt;对象数组排序&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;sort()&lt;/code&gt; 方法除了可以用于数字数组和字符数组的排序外，还可用于对象数组的排序：&lt;/p&gt;
+
+&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;var items = [
+    {name: &#x27;Edward&#x27;, value: 21},
+    {name: &#x27;Sharpe&#x27;, value: 37},
+    {name: &#x27;And&#x27;, value: 45},
+    {name: &#x27;The&#x27;, value: -12},
+    {name: &#x27;Magnetic&#x27;},
+    {name: &#x27;Zeros&#x27;, value: 37}
+];
+
+// sort by value
+items.sort(function (a, b) {
+    return (a.value - b.value)
+});
+
+// sort by name
+items.sort(function (a, b) {
+    var nameA = a.name.toUpperCase(); // ignore upper and lowercase
+    var nameB = b.name.toUpperCase(); // ignore upper and lowercase
+    if (nameA &amp;lt; nameB) {
+        return -1;
+    }
+    if (nameA &amp;gt; nameB) {
+        return 1;
+    }
+
+    // names must be equal
+    return 0;
+});
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;对非 ASCII 字符排序&lt;/h3&gt;
+
+&lt;p&gt;当排序非 ASCII 字符的字符串（如包含类似 e, é, è, a, ä 等字符的字符串）。一些非英语语言的字符串需要使用 &lt;code&gt;String.localeCompare&lt;/code&gt;。这个函数可以将函数排序到正确的顺序。&lt;/p&gt;
+
+&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;var items = [&#x27;réservé&#x27;, &#x27;premier&#x27;, &#x27;cliché&#x27;, &#x27;communiqué&#x27;, &#x27;café&#x27;, &#x27;adieu&#x27;];
+items.sort(function (a, b) {
+    return a.localeCompare(b);
+});
+
+// items is [&#x27;adieu&#x27;, &#x27;café&#x27;, &#x27;cliché&#x27;, &#x27;communiqué&#x27;, &#x27;premier&#x27;, &#x27;réservé&#x27;]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;使用映射改善排序&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;compareFunction&lt;/code&gt; 可能需要对元素做多次映射以实现排序，尤其当 &lt;code&gt;compareFunction&lt;/code&gt; 较为复杂，且元素较多的时候，某些 &lt;code&gt;compareFunction&lt;/code&gt; 可能会导致很高的负载。使用 map 辅助排序将会是一个好主意。基本思想是首先将数组中的每个元素比较的实际值取出来，排序后再将数组恢复。&lt;/p&gt;
+
+&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;// 需要被排序的数组
+var list = [&#x27;Delta&#x27;, &#x27;alpha&#x27;, &#x27;CHARLIE&#x27;, &#x27;bravo&#x27;];
+
+// 对需要排序的数字和位置的临时存储
+var mapped = list.map(function(el, i) {
+    return { index: i, value: el.toLowerCase() };
+})
+
+// 按照多个值排序数组
+mapped.sort(function(a, b) {
+    return +(a.value &amp;gt; b.value) || +(a.value === b.value) - 1;
+});
+
+// 根据索引得到排序的结果
+var result = mapped.map(function(el){
+    return list[el.index];
+});
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;本文完，感谢阅读！&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;学习有趣的知识，结识有趣的朋友，塑造有趣的灵魂！&lt;/p&gt;
+
+&lt;p&gt;大家好！我是〖编程三昧〗的作者 &lt;strong&gt;隐逸王&lt;/strong&gt;，我的公众号是『编程三昧』，欢迎关注，希望大家多多指教！&lt;/p&gt;
+
+&lt;p&gt;知识与技能并重，内力和外功兼修，理论和实践两手都要抓、两手都要硬！&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;~&lt;/p&gt;
+&lt;/div&gt;
+  &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
 <guid>2a830bfd8fbc9fd0106c7cecdab832ea</guid>
 <title>[推荐] Linux 调度系统全景指南（终结篇）</title>
 <link>https://toutiao.io/k/ow2rhiz</link>
@@ -88,85 +288,15 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>d46ce76e16e0d9530dbed664b3bfc079</guid>
-<title>[推荐] 一文理解 Java 中的 SPI 机制</title>
-<link>https://toutiao.io/k/3xscqep</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
-
-                    
-                    
-                    
-                    &lt;h2 data-source-line=&quot;1&quot;&gt;SPI机制简介&lt;/h2&gt;&lt;p data-source-line=&quot;2&quot;&gt;服务提供者接口（Service Provider Interface，简写为SPI）是JDK内置的一种服务提供发现机制。可以用来加载框架扩展和替换组件，主要是被框架的开发人员使用。在java.util.ServiceLoader的文档里有比较详细的介绍。&lt;/p&gt;&lt;p data-source-line=&quot;4&quot;&gt;系统里抽象的各个模块，往往有很多不同的实现方案，比如日志模块的方案、xml解析模块、jdbc模块的方案等。面向对象的设计推荐模块之间基于接口编程，模块之间不对实现类进行硬编码。一旦代码里涉及具体的实现类，就违反了可拔插的原则：如果需要替换组建的一种实现，就需要修改框架的代码。SPI机制正是解决这个问题。&lt;/p&gt;&lt;p data-source-line=&quot;6&quot;&gt;Java中SPI机制主要思想是将装配的控制权移到程序之外，是“基于接口的编程＋策略模式＋配置文件”组合实现的动态加载机制，有点类似Spring的IOC机制。在模块化设计中这个机制尤其重要，其核心思想就是解耦。&lt;/p&gt;&lt;p data-source-line=&quot;8&quot;&gt;&lt;img data-ratio=&quot;0.3325102880658436&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/OqTAl3WTC7FCcQCUsqaSExkBFHia0CdTFYjzqMgxlkGkLulWnWyZc05RVNgGhXADDtUqEOHnYexXgBPtYm53oLg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1215&quot;/&gt;&lt;/p&gt;&lt;p data-source-line=&quot;10&quot;&gt;SPI的接口是Java核心库的一部分，是由引导类加载器(Bootstrap Classloader)来加载的。SPI的实现类是由系统类加载器(System ClassLoader)来加载的。&lt;/p&gt;&lt;p data-source-line=&quot;12&quot;&gt;引导类加载器在加载时是无法找到SPI的实现类的，因为双亲委派模型中规定，引导类加载器BootstrapClassloader无法委派系统类加载器AppClassLoader来加载。该如何解决此问题？&lt;/p&gt;&lt;p data-source-line=&quot;14&quot;&gt;线程上下文类加载由此诞生，它的出现也破坏了类加载器的双亲委派模型，使得程序可以进行逆向类加载。有关这部分知识在最后补充说明。&lt;/p&gt;&lt;h2 data-source-line=&quot;16&quot;&gt;应用场景&lt;/h2&gt;&lt;p data-source-line=&quot;18&quot;&gt;Java提供了很多SPI，允许第三方为这些接口提供实现。&lt;/p&gt;&lt;p data-source-line=&quot;20&quot;&gt;常见的SPI使用场景：&lt;/p&gt;&lt;ol data-source-line=&quot;21&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;JDBC加载不同类型的数据库驱动。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;日志门面接口实现类加载，SLF4J加载不同提供商的日志实现类。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;Spring中大量使用了SPI。可以在spring.factories中加上我们自定义的自动配置类，事件监听器或初始化器等。&lt;br/&gt;3.1 对servlet3.0规范。&lt;br/&gt;3.2 对ServletContainerInitializer的实现。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;Dubbo里面有很多个组件，每个组件在框架中都是以接口的形成抽象出来。具体的实现又分很多种，在程序执行时根据用户的配置来按需取接口的实现。如果Dubbo的某个内置实现不符合业务需求，那么只需要利用其SPI机制将新的业务实现替换掉Dubbo的实现即可。&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-source-line=&quot;28&quot;&gt;这些SPI的接口是由Java核心库来提供，而SPI的实现则是作为Java应用所依赖的jar包被包含进类路径（CLASSPATH）中。例如：JDBC的实现mysql就是通过Maven被依赖进来。&lt;/p&gt;&lt;h2 data-source-line=&quot;30&quot;&gt;SPI具体约定&lt;/h2&gt;&lt;p data-source-line=&quot;32&quot;&gt;Java SPI的具体约定：当服务的提供者，提供了服务接口的某种实现之后，在jar包的META-INF/services/目录里同时创建一个以服务接口命名的文件。该文件里就是实现该服务接口的具体实现类。而当外部程序装配这个模块的时候，就能通过该jar包META-INF/services/里的配置文件找到具体的实现类名，并装载实例化，完成模块的注入。基于这样一个约定就能实现服务接口与实现的解耦。&lt;/p&gt;&lt;h2 data-source-line=&quot;34&quot;&gt;Java SPI机制的缺点&lt;/h2&gt;&lt;ol data-source-line=&quot;36&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;不能按需加载，需要遍历所有的实现，并实例化，然后在循环中才能找到我们需要的实现。如果不想用某些实现类，或者某些类实例化很耗时，它也被载入并实例化了，这就造成了浪费。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;多个并发多线程使用ServiceLoader类的实例是不安全的。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;扩展如果依赖其他的扩展，做不到自动注入和装配。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;不提供类似于Spring的IOC和AOP功能。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;扩展很难和其他的框架集成，比如扩展里面依赖了一个Spring bean，原生的Java SPI不支持。&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-source-line=&quot;42&quot;&gt;针对以上的不足点，在生产环境的SPI机制选择时，可以考虑使用dubbo实现的SPI机制。感兴趣的同学可以自行查看，或等博客的后续更新。&lt;/p&gt;&lt;h3 data-source-line=&quot;44&quot;&gt;SPI实例&lt;/h3&gt;&lt;p data-source-line=&quot;46&quot;&gt;下面用一个简单的代码实例，演示SPI的使用方法。&lt;/p&gt;&lt;ol data-source-line=&quot;48&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;代码编写&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-source-line=&quot;50&quot;&gt;定义需要的接口，然后编码接口的实现类。&lt;/p&gt;&lt;p data-source-line=&quot;52&quot;&gt;&lt;img data-ratio=&quot;0.4209714726291442&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/OqTAl3WTC7FCcQCUsqaSExkBFHia0CdTFyTgqQkEkeJc8TfUg3qS4RPYLRQjvDunfvgkxpzoREvoaAM9rWPQeyA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1297&quot;/&gt;&lt;/p&gt;&lt;p data-source-line=&quot;54&quot;&gt;&lt;img data-ratio=&quot;0.39067854694996573&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/OqTAl3WTC7FCcQCUsqaSExkBFHia0CdTFJ3uGYFpY8I4bvoepPX0OmJFwE10GV7liaYCdSia7xIoWgedANTtMwv5w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1459&quot;/&gt;&lt;/p&gt;&lt;p data-source-line=&quot;56&quot;&gt;&lt;img data-ratio=&quot;0.326875&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/OqTAl3WTC7FCcQCUsqaSExkBFHia0CdTFJUSprdkOANhHvM6GHxIyxZNbWAhGX1vzeWydHfFVJS8U7XEPniba3Rw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1600&quot;/&gt;&lt;/p&gt;&lt;ol start=&quot;2&quot; data-source-line=&quot;58&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;增加配置文件&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-source-line=&quot;60&quot;&gt;在项目的\src\main\resources\下创建\META-INF\services目录，并增加一个配置文件，这个文件必须以接口的全限定类名保持一致，例如：com.xiaohui.spi.HelloService。然后在配置文件中写入具体实现类的全限定类名，如有多个则换行写入。&lt;/p&gt;&lt;p data-source-line=&quot;62&quot;&gt;&lt;img data-ratio=&quot;0.45432497978981407&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/OqTAl3WTC7FCcQCUsqaSExkBFHia0CdTF4krriaTicibRCKZLk0CC88zAsbTeiaxwtXla2avwgPJw7KDCXK8PXplpww/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1237&quot;/&gt;&lt;/p&gt;&lt;ol start=&quot;3&quot; data-source-line=&quot;64&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;使用JDK来载入&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-source-line=&quot;66&quot;&gt;使用JDK提供的ServiceLoader.load()来加载配置文件中的描述信息，完成类加载操作。&lt;/p&gt;&lt;p data-source-line=&quot;68&quot;&gt;&lt;img data-ratio=&quot;0.5680044593088072&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/OqTAl3WTC7FCcQCUsqaSExkBFHia0CdTFwwbTtRiaQOoH74icoe6Q0P4XE1NiaUjiaVT0Wkkcb4VawoyFMkr0UZZCdA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1794&quot;/&gt;&lt;/p&gt;&lt;h2 data-source-line=&quot;70&quot;&gt;补充说明SPI加载&lt;/h2&gt;&lt;p data-source-line=&quot;72&quot;&gt;有关双亲委派的讲解，请查看博客《&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzUyNzgyNzAwNg==&amp;amp;mid=2247483853&amp;amp;idx=1&amp;amp;sn=e3c145cde37b4e08348a10de39682089&amp;amp;scene=21#wechat_redirect&quot; target=&quot;_blank&quot; data-linktype=&quot;2&quot;&gt;Java类加载及对象创建过程详解&lt;/a&gt;》&lt;/p&gt;&lt;h3 data-source-line=&quot;74&quot;&gt;为什么需要破坏双亲委派？&lt;/h3&gt;&lt;p data-source-line=&quot;76&quot;&gt;在某些情况下父类加载器需要委托子类加载器去加载class文件。受到双亲委派加载范围的限制，父类加载器无法加载到需要的文件。&lt;/p&gt;&lt;h3 data-source-line=&quot;78&quot;&gt;如何破坏双亲委派？&lt;/h3&gt;&lt;p data-source-line=&quot;80&quot;&gt;双亲委派模型并不是一个强制性的约束模型，而是java设计者推荐给开发者的类加载器实现方式，在java项目中大部分的类加载器都遵循这个模型，但也有例外，到目前为止，双亲委派模型主要出现过三次较大规模的“被破坏”情况。&lt;/p&gt;&lt;p data-source-line=&quot;82&quot;&gt;双亲委派模型的第一次“被破坏”其实发生在双亲委派模型出现之前——即JDK1.2发布之前。由于双亲委派模型是在JDK1.2之后才被引入的，而类加载器和抽象类java.lang.ClassLoader则是JDK1.0时候就已经存在，面对已经存在 的用户自定义类加载器的实现代码，Java设计者引入双亲委派模型时不得不做出一些妥协。为了向前兼容，JDK1.2之后的java.lang.ClassLoader添加了一个新的proceted方法findClass()，在此之前，用户去继承java.lang.ClassLoader的唯一目的就是重写loadClass()方法，因为虚拟在进行类加载的时候会调用加载器的私有方法loadClassInternal()，而这个方法的唯一逻辑就是去调用自己的loadClass()。JDK1.2之后已不再提倡用户再去覆盖loadClass()方法，应当把自己的类加载逻辑写到findClass()方法中，在loadClass()方法的逻辑里，如果父类加载器加载失败，则会调用自己的findClass()方法来完成加载，这样就可以保证新写出来的类加载器是符合双亲委派模型的。&lt;/p&gt;&lt;p data-source-line=&quot;84&quot;&gt;双亲委派模型的第二次“被破坏”是这个模型自身的缺陷所导致的，双亲委派模型很好地解决了各个类加载器的基础类统一问题(越基础的类由越上层的加载器进行加载)，基础类之所以被称为“基础”，是因为它们总是作为被调用代码调用的API。但是，如果基础类又要调用用户的代码，那该怎么办呢。&lt;/p&gt;&lt;p data-source-line=&quot;86&quot;&gt;为了解决这个困境，Java设计团队只好引入了一个不太优雅的设计：线程上下文件类加载器(Thread Context ClassLoader)。这个类加载器可以通过java.lang.Thread类的setContextClassLoader()方法进行设置，如果创建线程时还未设置，它将会从父线程中继承一个；如果在应用程序的全局范围内都没有设置过，那么这个类加载器默认就是应用程序类加载器。使用这个线程上下文类加载器去加载所需要的代码，也就是父类加载器请求子类加载器去完成类加载动作，这种行为实际上就是打通了双亲委派模型的层次结构来逆向使用类加载器，已经违背了双亲委派模型，但这也是无可奈何的事情。Java中所有涉及SPI的加载动作基本上都采用这种方式，例如JNDI,JDBC,JCE,JAXB和JBI等。&lt;/p&gt;&lt;p data-source-line=&quot;88&quot;&gt;双亲委派模型的第三次“被破坏”是由于用户对程序的动态性的追求导致的，例如OSGi的出现。在OSGi环境下，类加载器不再是双亲委派模型中的树状结构，而是进一步发展为网状结构。&lt;/p&gt;&lt;h3 data-source-line=&quot;90&quot;&gt;破坏双亲委派的举例&lt;/h3&gt;&lt;p data-source-line=&quot;92&quot;&gt;以tomcat为例，讲解如何破坏双亲委派，属于上述讲解的第二次破坏。&lt;/p&gt;&lt;p data-source-line=&quot;94&quot;&gt;&lt;img data-ratio=&quot;1.764525993883792&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/OqTAl3WTC7FCcQCUsqaSExkBFHia0CdTF9iaYgpiaMZlyVbdicSaWGwycbDkCXzXTdibNLPWIRb0hjPCcFLFxkeOiaLQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;327&quot;/&gt;&lt;/p&gt;&lt;p data-source-line=&quot;96&quot;&gt;如果有10个Web应用程序都用到了spring的话，可以把Spring的jar包放到common或shared目录下让这些程序共享。Spring的作用是管理每个web应用程序的bean，getBean时自然要能访问到应用程序的类，而用户的程序是放在/WebApp/WEB-INF目录中的（由WebAppClassLoader加载），那么在CommonClassLoader或SharedClassLoader中的Spring容器如何去加载并不在其加载范围的用户程序（/WebApp/WEB-INF/）中的Class呢？&lt;/p&gt;&lt;p data-source-line=&quot;98&quot;&gt;Spring统统使用线程上下文加载器(ContextClassLoade)来加载类，无需理会被放在哪里。ContextClassLoader默认存放了WebAppClassLoader的引用，由于它是在运行时被放在了线程中，所以不管当前程序处于何处（BootstrapClassLoader或是ExtClassLoader等），在任何需要的时候都可以用Thread.currentThread().getContextClassLoader()取出应用程序类加载器来完成需要的操作。&lt;/p&gt;&lt;p data-source-line=&quot;100&quot;&gt;参考：&lt;/p&gt;&lt;ol data-source-line=&quot;101&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;《深入理解java虚拟机》&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;/p&gt;
-                &lt;/div&gt;
-
-                
-
-                
-
-
-
-                
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>a5436073ffaaf6f7ac60381a52090cc4</guid>
-<title>[推荐] 网络连接存在大量 time_wait 和 close_wait 的原因以及解决方法</title>
-<link>https://toutiao.io/k/b9vlrcu</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
-
-                    
-                    
-                    
-                    &lt;p data-source-line=&quot;1&quot;&gt;如果对tcp中的握手挥手不了解的同学，请先看这篇博客：《&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzUyNzgyNzAwNg==&amp;amp;mid=2247483765&amp;amp;idx=1&amp;amp;sn=70179fa0e28aacd42d4c15dbd08bc6fc&amp;amp;scene=21#wechat_redirect&quot; target=&quot;_blank&quot; data-linktype=&quot;2&quot;&gt;关于三次握手与四次挥手你要知道这些&lt;/a&gt;》。&lt;/p&gt;&lt;p data-source-line=&quot;3&quot;&gt;&lt;img data-ratio=&quot;0.6995305164319249&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/OqTAl3WTC7Gzia45CTkHaZ3W8ewRXgOZ5ayNKNuHChs2vHVS9qBKiaxTnpb6vbcmkl9nCEGQich82xDS8wSBzx5zQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;426&quot;/&gt;&lt;/p&gt;&lt;p data-source-line=&quot;5&quot;&gt;四次挥手过程：&lt;/p&gt;&lt;p data-source-line=&quot;7&quot;&gt;第一次挥手：主机A（可以是客户端，也可以是服务器端），设置Sequence Number和Acknowledgment Number，向主机B发送一个FIN报文段；此时，主机A进入FIN_WAIT_1状态；这表示主机A没有数据要发送给主机B了。&lt;/p&gt;&lt;p data-source-line=&quot;9&quot;&gt;第二次挥手：主机B收到了主机A发送的FIN报文段，向主机A回一个ACK报文段，Acknowledgment Number为Sequence Number加1，主机A进入FIN_WAIT_2状态；主机B告诉主机A，我也没有数据要发送了，可以进行关闭连接了。&lt;/p&gt;&lt;p data-source-line=&quot;11&quot;&gt;第三次挥手：主机B向主机A发送FIN报文段，请求关闭连接，同时主机B进入CLOSE_WAIT状态。&lt;/p&gt;&lt;p data-source-line=&quot;13&quot;&gt;第四次挥手：主机A收到主机B发送的FIN报文段，向主机B发送ACK报文段，然后主机A进入TIME_WAIT状态；主机B收到主机A的ACK报文段以后，就关闭连接；此时，主机A等待2MSL后依然没有收到回复，则证明主机B已正常关闭，那好，主机A也可以关闭连接了。&lt;/p&gt;&lt;h2 data-source-line=&quot;15&quot;&gt;大量time_wait&lt;/h2&gt;&lt;h3 data-source-line=&quot;17&quot;&gt;问题原因&lt;/h3&gt;&lt;p data-source-line=&quot;19&quot;&gt;《&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzUyNzgyNzAwNg==&amp;amp;mid=2247483765&amp;amp;idx=1&amp;amp;sn=70179fa0e28aacd42d4c15dbd08bc6fc&amp;amp;scene=21#wechat_redirect&quot; target=&quot;_blank&quot; data-linktype=&quot;2&quot;&gt;关于三次握手与四次挥手你要知道这些&lt;/a&gt;》中有关于“四次挥手释放连接时，等待2MSL的意义”的解释。正因为有2ML的存在，所以可能会发生大量time_wait存在的现象，从而影响服务器性能，甚至导致套接字数量达到服务器上限。&lt;/p&gt;&lt;blockquote data-source-line=&quot;21&quot;&gt;&lt;p&gt;实际上，TIME_WAIT对于系统资源的消耗影响比较小，而真正需要考虑因为TIME_WAIT多而触碰到限制的是如下几个方面：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;源端口数量 (net.ipv4.ip_local_port_range)&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;TIME_WAIT bucket 数量 (net.ipv4.tcp_max_tw_buckets)&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;文件描述符数量 (max open files)&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;/blockquote&gt;&lt;h3 data-source-line=&quot;26&quot;&gt;解决方法&lt;/h3&gt;&lt;p data-source-line=&quot;28&quot;&gt;只需要优化服务器系统的网络配置，连接配置，使用socket重用或及时释放资源即可。（由于系统不断迭代，所以这里不给出具体参数修改）&lt;/p&gt;&lt;h2 data-source-line=&quot;30&quot;&gt;大量close_wait&lt;/h2&gt;&lt;h3 data-source-line=&quot;32&quot;&gt;问题原因&lt;/h3&gt;&lt;p data-source-line=&quot;34&quot;&gt;主机B一直没有进行第三次挥手，会导致主机B存在大量close_wait状态的连接。大量这种情况发生会影响服务器性能，同样可能导致套接字数量达到服务器上限。&lt;/p&gt;&lt;p data-source-line=&quot;36&quot;&gt;网络连接未及时释放，通常是服务端发生异常后未关闭连接或者close_wait的配置时间过长。如果是mysql数据库也可能存在事务开启后没有正确rollback或commit的可能。&lt;/p&gt;&lt;p data-source-line=&quot;38&quot;&gt;总之，都是大概率是服务端代码或配置的问题。&lt;/p&gt;&lt;h3 data-source-line=&quot;40&quot;&gt;解决方法&lt;/h3&gt;&lt;p data-source-line=&quot;42&quot;&gt;以下方法并不存在顺序，定位问题时也并不是一定同时需要。&lt;/p&gt;&lt;ul data-source-line=&quot;44&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;top查看cpu利用率和load情况（大量close_wait属于io密集型，会导致load相比cpu利用率高出很多）&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;netstat观察close_wait的数量变化。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;wireshark辅助查看网络包的发送情况。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;perf或者火焰图定位热点函数。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;java可以将服务器线程堆栈dump，查看大量线程在哪里blocked。&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;/p&gt;
-                &lt;/div&gt;
-
-                
-
-                
-
-
-
-                
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>8611c28ec86f3e7d7744721ceee9617c</guid>
-<title>[推荐] Redis 存储对象信息是用 Hash 还是 String</title>
-<link>https://toutiao.io/k/2rcud9q</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;RichText ztext Post-RichText&quot;&gt;&lt;p&gt;Redis 内部使用一个 RedisObject 对象来表示所有的 key 和 value，RedisObject 中的 type，则是代表一个 value 对象具体是何种数据类型，它包含字符串（String）、链表（List）、哈希结构（Hash）、集合（Set）、有序集合（Sorted set）。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic4.zhimg.com/v2-b188fc9df3bb28ffbbc456f00ee63233_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1240&quot; data-rawheight=&quot;671&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic4.zhimg.com/v2-b188fc9df3bb28ffbbc456f00ee63233_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1240&quot; data-rawheight=&quot;671&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic4.zhimg.com/v2-b188fc9df3bb28ffbbc456f00ee63233_r.jpg&quot; data-actualsrc=&quot;https://pic4.zhimg.com/v2-b188fc9df3bb28ffbbc456f00ee63233_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p&gt;日常工作中我们存储对象信息的时候，一般有两种做法，一种是用 Hash 存储，另一种是 String 存储。但好像并没有所谓的最佳实践，那么实际上到底用什么数据结构存储更好呢？&lt;/p&gt;&lt;p&gt;首先简单回顾下，Redis 的 Hash 和 String 结构。&lt;/p&gt;&lt;h2&gt;String&lt;/h2&gt;&lt;p&gt;String 数据结构是简单的 key-value 类型，value 其实不仅是 String，也可以是数字。Redis 中的 String 可以表示很多语义：&lt;/p&gt;&lt;p&gt;这三种类型，Redis 会根据具体的场景完成自动转换，并且根据需要选取底层的承载方式。String 在Redis 内部存储默认就是一个字符串，被 RedisObject 所引用，当遇到 incr、decr 等操作时会转成数值型进行计算，此时 RedisObject 的 encoding 字段为int。&lt;/p&gt;&lt;p&gt;在存储过程中，我们可以将用户信息使用 Json 序列化成字符串，然后将序列化后的字符串存入 Redis 进行缓存。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-27f8be534bfc97f96460328e94a72c8e_b.jpg&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;964&quot; data-rawheight=&quot;402&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic3.zhimg.com/v2-27f8be534bfc97f96460328e94a72c8e_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;964&quot; data-rawheight=&quot;402&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic3.zhimg.com/v2-27f8be534bfc97f96460328e94a72c8e_r.jpg&quot; data-actualsrc=&quot;https://pic3.zhimg.com/v2-27f8be534bfc97f96460328e94a72c8e_b.jpg&quot;/&gt;&lt;figcaption&gt;String 数据结构&lt;/figcaption&gt;&lt;/figure&gt;&lt;p&gt;由于 Redis 的字符串是动态字符串，可以修改，内部结构类似于 Java 的 ArrayList，采用预分配冗余空间的方式来减少内存的频繁分配。如上图所示，内部为当前字符串实际分配的空间 capacity，一般高于实际字符串长度 len。&lt;/p&gt;&lt;p&gt;假设我们要存储的结构是：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;1 {
-2   &quot;name&quot;: &quot;xiaowang&quot;,
-3   &quot;age&quot;: &quot;35&quot;
-4 }&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果此时将此用户信息的 name 改为“xiaoli”，再存到 Redis 中，Redis 是不需要重新分配空间的。而且我们在读取和存储数据的时候只需要对做 Json 序列化与反序列化，比较方便。&lt;/p&gt;&lt;h2&gt;Hash&lt;/h2&gt;&lt;p&gt;Hash 在很多编程语言中都有着很广泛的应用，而在 Redis 中也是如此。在 Redis 中，Hash 常常用来缓存一些对象信息，如用户信息、商品信息、配置信息等，因此也被称为字典（dictionary），Redis 的字典使用 Hash table 作为底层实现， 一个 Hash table 里面可以有多个哈希表节点，而每个哈希表节点保存了字典中的一个键值对。实际上，Redis 数据库底层也是采用 Hash table 来存储键值对的。&lt;/p&gt;&lt;p&gt;Redis 的 Hash 相当于 Java 的 HashMap，内部结构实现与 HashMap 一致，即数组+链表结构。只是 reHash 方式不一样。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-b4bc1aa71667b1b437671aad442daf0d_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;370&quot; data-rawheight=&quot;244&quot; class=&quot;content_image&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;370&quot; data-rawheight=&quot;244&quot; class=&quot;content_image lazy&quot; data-actualsrc=&quot;https://pic2.zhimg.com/v2-b4bc1aa71667b1b437671aad442daf0d_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p&gt;前面说到 String 适合存储用户信息，而 Hash 结构也可以存储用户信息，不过是对每个字段单独存储，因此可以在查询时获取部分字段的信息，节省网络流量。不过 Redis 的 Hash 的值只能是字符串，存储上面的那个例子还好，如果存储的用户信息变为：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;1 {
-2   &quot;name&quot;: &quot;xiaowang&quot;,
-3   &quot;age&quot;: 25,
-4   &quot;clothes&quot;: {
-5     &quot;shirt&quot;: &quot;gray&quot;,
-6     &quot;pants&quot;: &quot;read&quot;
-7   }
-8 }&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;那么该如何存储&quot;clothes&quot;属性又变成了该用 String 还是 Hash 的问题。&lt;/p&gt;&lt;h2&gt;String 和 Hash 占用内存的比较&lt;/h2&gt;&lt;p&gt;既然两种数据结构都可以存储结构体信息。到底哪种更加合适呢？&lt;/p&gt;&lt;p&gt;首先我们用代码先插入 10000 条数据，然后用可视化工具来看看内存的占用情况。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;1  const Redis = require(&quot;ioRedis&quot;);
-2  const Redis0 = new Redis({port: 6370});
-3  const Redis1 = new Redis({port: 6371});
-4
-5
-6  const user = {
-7   name: &#x27;name12345&#x27;,
-8   age: 16,
-9   avatar: &#x27;https://dss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=256767015,24101428&amp;amp;fm=26&amp;amp;gp=0.jpg&#x27;,
-10  phone: &#x27;13111111111&#x27;,
-11  email: &#x27;1111111@11.email&#x27;,
-12  lastLogon: &#x27;2021-04-28 10:00:00&#x27;,
-13 }
-14
-15
-16 async function main() {
-17  for (let i = 0; i &amp;lt; 10000; i++) {
-18     await Redis0.set(`String:user:${i}`, Json.Stringify(user));
-19     await Redis1.hmset(`Hash:user:${i}`, user);
-20   }
-21 }
-22
-23 main().then(process.exit);&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;先看 Redis0：&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-bb939848be9abcf4bd68095d4940f139_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;630&quot; data-rawheight=&quot;534&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic2.zhimg.com/v2-bb939848be9abcf4bd68095d4940f139_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;630&quot; data-rawheight=&quot;534&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic2.zhimg.com/v2-bb939848be9abcf4bd68095d4940f139_r.jpg&quot; data-actualsrc=&quot;https://pic2.zhimg.com/v2-bb939848be9abcf4bd68095d4940f139_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p&gt;再来看看 Redis1：&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic4.zhimg.com/v2-32e8929036b707955e9337668c57eaf3_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;652&quot; data-rawheight=&quot;554&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic4.zhimg.com/v2-32e8929036b707955e9337668c57eaf3_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;652&quot; data-rawheight=&quot;554&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic4.zhimg.com/v2-32e8929036b707955e9337668c57eaf3_r.jpg&quot; data-actualsrc=&quot;https://pic4.zhimg.com/v2-32e8929036b707955e9337668c57eaf3_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p&gt;可以看到还是有点差距的，但是差距并不明显。&lt;/p&gt;&lt;h2&gt;网友讨论&lt;/h2&gt;&lt;p&gt;网上的用户也有同样的疑问， 因为值的长度是不确定的，所以不知道采用 String 还是 Hash 存储更有效率。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-2ec5a5fc745eecba2893edb5a6572f9d_b.jpg&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1280&quot; data-rawheight=&quot;765&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic2.zhimg.com/v2-2ec5a5fc745eecba2893edb5a6572f9d_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1280&quot; data-rawheight=&quot;765&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic2.zhimg.com/v2-2ec5a5fc745eecba2893edb5a6572f9d_r.jpg&quot; data-actualsrc=&quot;https://pic2.zhimg.com/v2-2ec5a5fc745eecba2893edb5a6572f9d_b.jpg&quot;/&gt;&lt;figcaption&gt;△ 截图来源于 StackOverflow（Redis Strings vs Redis Hashes to represent Json: efficiency?）&lt;/figcaption&gt;&lt;/figure&gt;&lt;p&gt;这里我主要给大家翻译下该问题下优质的答案：&lt;/p&gt;&lt;p&gt;&lt;b&gt;适合用 String 存储的情况：&lt;/b&gt;&lt;/p&gt;&lt;ul&gt;&lt;li&gt;每次需要访问大量的字段&lt;/li&gt;&lt;li&gt;存储的结构具有多层嵌套的时候&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;b&gt;适合用 Hash 存储的情况：&lt;/b&gt;&lt;/p&gt;&lt;ul&gt;&lt;li&gt;在大多数情况中只需要访问少量字段&lt;/li&gt;&lt;li&gt;自己始终知道哪些字段可用，防止使用 mget 时获取不到想要的数据&lt;/li&gt;&lt;/ul&gt;&lt;h2&gt;总结&lt;/h2&gt;&lt;p&gt;本文主要介绍了Redis 存储对象信息是用 Hash 还是 String，我的建议是大部分情况下使用 String 存储就好，毕竟在存储具有多层嵌套的对象时方便很多，占用的空间也比 Hash 小。当我们需要存储一个特别大的对象时，而且在大多数情况中只需要访问该对象少量的字段时，可以考虑使用 Hash。&lt;/p&gt;&lt;p&gt;&lt;b&gt;推荐阅读：&lt;/b&gt;&lt;/p&gt;&lt;a target=&quot;_blank&quot; href=&quot;https://link.zhihu.com/?target=https%3A//www.upyun.com/tech/article/563/%25E4%25B8%2589%25E5%2588%2586%25E9%2592%259F%25E4%25BA%2586%25E8%25A7%25A3%2520Python3%2520%25E7%259A%2584%25E5%25BC%2582%25E6%25AD%25A5%2520Web%2520%25E6%25A1%2586%25E6%259E%25B6%2520FastAPI.html&quot; data-draft-node=&quot;block&quot; data-draft-type=&quot;link-card&quot; data-image=&quot;https://pic4.zhimg.com/v2-32db835da87060ffdd805ef17d07aec3_180x120.jpg&quot; data-image-width=&quot;957&quot; data-image-height=&quot;620&quot; class=&quot;LinkCard old LinkCard--hasImage&quot;&gt;&lt;span class=&quot;LinkCard-backdrop&quot;/&gt;&lt;span class=&quot;LinkCard-content&quot;&gt;&lt;span class=&quot;LinkCard-text&quot;&gt;&lt;span class=&quot;LinkCard-title&quot; data-text=&quot;true&quot;&gt;三分钟了解 Python3 的异步 Web 框架 FastAPI&lt;/span&gt;&lt;span class=&quot;LinkCard-meta&quot;&gt;&lt;span&gt;​&lt;svg class=&quot;Zi Zi--InsertLink&quot; fill=&quot;currentColor&quot; viewbox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M13.414 4.222a4.5 4.5 0 1 1 6.364 6.364l-3.005 3.005a.5.5 0 0 1-.707 0l-.707-.707a.5.5 0 0 1 0-.707l3.005-3.005a2.5 2.5 0 1 0-3.536-3.536l-3.005 3.005a.5.5 0 0 1-.707 0l-.707-.707a.5.5 0 0 1 0-.707l3.005-3.005zm-6.187 6.187a.5.5 0 0 1 .638-.058l.07.058.706.707a.5.5 0 0 1 .058.638l-.058.07-3.005 3.004a2.5 2.5 0 0 0 3.405 3.658l.13-.122 3.006-3.005a.5.5 0 0 1 .638-.058l.069.058.707.707a.5.5 0 0 1 .058.638l-.058.069-3.005 3.005a4.5 4.5 0 0 1-6.524-6.196l.16-.168 3.005-3.005zm8.132-3.182a.25.25 0 0 1 .353 0l1.061 1.06a.25.25 0 0 1 0 .354l-8.132 8.132a.25.25 0 0 1-.353 0l-1.061-1.06a.25.25 0 0 1 0-.354l8.132-8.132z&quot;/&gt;&lt;/svg&gt;&lt;/span&gt;www.upyun.com&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;LinkCard-imageCell&quot;&gt;&lt;img class=&quot;LinkCard-image LinkCard-image--horizontal&quot; alt=&quot;图标&quot; src=&quot;https://pic4.zhimg.com/v2-32db835da87060ffdd805ef17d07aec3_180x120.jpg&quot;/&gt;&lt;/span&gt;&lt;/span&gt;&lt;/a&gt;&lt;a target=&quot;_blank&quot; href=&quot;https://link.zhihu.com/?target=https%3A//www.upyun.com/tech/article/558/QUIC%252FHTTP3%2520%25E5%258D%258F%25E8%25AE%25AE%25E7%25AE%2580%25E6%259E%2590.html&quot; data-draft-node=&quot;block&quot; data-draft-type=&quot;link-card&quot; data-image=&quot;https://pic1.zhimg.com/v2-7a88939758f822892186586001fb0d2c_180x120.jpg&quot; data-image-width=&quot;1080&quot; data-image-height=&quot;608&quot; class=&quot;LinkCard old LinkCard--hasImage&quot;&gt;&lt;span class=&quot;LinkCard-backdrop&quot;/&gt;&lt;span class=&quot;LinkCard-content&quot;&gt;&lt;span class=&quot;LinkCard-text&quot;&gt;&lt;span class=&quot;LinkCard-title&quot; data-text=&quot;true&quot;&gt;QUIC/HTTP3 协议简析&lt;/span&gt;&lt;span class=&quot;LinkCard-meta&quot;&gt;&lt;span&gt;​&lt;svg class=&quot;Zi Zi--InsertLink&quot; fill=&quot;currentColor&quot; viewbox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M13.414 4.222a4.5 4.5 0 1 1 6.364 6.364l-3.005 3.005a.5.5 0 0 1-.707 0l-.707-.707a.5.5 0 0 1 0-.707l3.005-3.005a2.5 2.5 0 1 0-3.536-3.536l-3.005 3.005a.5.5 0 0 1-.707 0l-.707-.707a.5.5 0 0 1 0-.707l3.005-3.005zm-6.187 6.187a.5.5 0 0 1 .638-.058l.07.058.706.707a.5.5 0 0 1 .058.638l-.058.07-3.005 3.004a2.5 2.5 0 0 0 3.405 3.658l.13-.122 3.006-3.005a.5.5 0 0 1 .638-.058l.069.058.707.707a.5.5 0 0 1 .058.638l-.058.069-3.005 3.005a4.5 4.5 0 0 1-6.524-6.196l.16-.168 3.005-3.005zm8.132-3.182a.25.25 0 0 1 .353 0l1.061 1.06a.25.25 0 0 1 0 .354l-8.132 8.132a.25.25 0 0 1-.353 0l-1.061-1.06a.25.25 0 0 1 0-.354l8.132-8.132z&quot;/&gt;&lt;/svg&gt;&lt;/span&gt;www.upyun.com&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;LinkCard-imageCell&quot;&gt;&lt;img class=&quot;LinkCard-image LinkCard-image--horizontal&quot; alt=&quot;图标&quot; src=&quot;https://pic1.zhimg.com/v2-7a88939758f822892186586001fb0d2c_180x120.jpg&quot;/&gt;&lt;/span&gt;&lt;/span&gt;&lt;/a&gt;&lt;p/&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>ad2b662782ab67a64aab21899528b7cb</guid>
+<title>[推荐] 微服务拆分之道</title>
+<link>https://toutiao.io/k/mr1knwm</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;weui-dialog&quot;&gt;
+      &lt;p class=&quot;weui-dialog__hd&quot;&gt;&lt;strong class=&quot;weui-dialog__title&quot;&gt;&quot;Top Stories&quot; is disabled&lt;/strong&gt;&lt;/p&gt;
+      &lt;p class=&quot;weui-dialog__bd&quot;&gt;
+        Enable &quot;Top Stories&quot; in &quot;Settings&quot; &amp;gt; &quot;General&quot; &amp;gt; &quot;Manage Discover&quot;      &lt;/p&gt;
+      
+    &lt;/div&gt;
+  &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
