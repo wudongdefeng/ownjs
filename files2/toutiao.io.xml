@@ -85,17 +85,6 @@
             &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>65c9716f5112485d2dbb749cbfed662e</guid>
-<title>Ethers.js 非权威开发指南（下）</title>
-<link>https://toutiao.io/k/jqofcc1</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;container wrapper post&quot;&gt;&lt;div class=&quot;post-header&quot;&gt;&lt;h1 class=&quot;title&quot;&gt;Ethers.js 非权威开发指南（下）&lt;/h1&gt;&lt;p class=&quot;meta&quot;&gt;胡键 Posted at — Jun 20, 2021
-&lt;span class=&quot;meta&quot; id=&quot;busuanzi_container_page_pv&quot;&gt;阅读 &lt;span id=&quot;busuanzi_value_page_pv&quot;/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/div&gt;&lt;p class=&quot;share-component&quot; data-sites=&quot;qq,weibo,wechat,douban,twitter,facebook&quot; data-description=&quot;Share.js - 一键分享到微博，QQ空间，腾讯微博，人人，豆瓣&quot;/&gt;&lt;div class=&quot;markdown&quot;&gt;&lt;p&gt;本系列的&lt;a href=&quot;./ethersjs-indefinitive-guide-part1.html&quot;&gt;上篇&lt;/a&gt;已经展示了连接钱包，调用合约和确定交易状态的全过程，对于一般的 dapp 开发已经完全足够。但对于有格调的开发者来讲，这些还不足以满足他们的胃口。那么，在下篇，你们将看到一些更加高级和特别的东西：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;如何处理以太坊的事件？&lt;/li&gt;&lt;li&gt;如何监听特定合约的特定事件？&lt;/li&gt;&lt;li&gt;如何查询以太坊的过往历史？&lt;/li&gt;&lt;li&gt;如何获取导致交易产生的合约函数的输入参数？&lt;/li&gt;&lt;li&gt;对于高阶合约函数（即，接受另一个合约的函数为输入值），该如何调用？&lt;/li&gt;&lt;li&gt;如何实现签名（含 EIP712）？&lt;/li&gt;&lt;li&gt;如何获得某个账户的公钥？&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;相信以上这些重口味问题的答案应该不会让各位失望。&lt;/p&gt;&lt;h2 id=&quot;监听事件&quot;&gt;监听事件&lt;/h2&gt;&lt;p&gt;通常，事件监听的需求来自于朴素的诉求：及时得到状态更新的通知。这种需求不仅仅局限于异步方法的调用，对于稍微复杂的一些程序，事件机制的引入也会让整个应用的架构得到简化。&lt;/p&gt;&lt;p&gt;Ethers.js 在 Provider 和 Contract 层面都提供了事件的支持，并且方法名称也有重叠。其中用得较多的方法如下：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;code&gt;on&lt;/code&gt;，对特定事件添加监听器。&lt;/li&gt;&lt;li&gt;&lt;code&gt;off&lt;/code&gt;，移除某事件全部监听器。&lt;/li&gt;&lt;li&gt;&lt;code&gt;once&lt;/code&gt;，添加事件监听器，并且在事件处理完成后自动移除。它和 &lt;code&gt;on&lt;/code&gt; 的区别在于：&lt;ul&gt;&lt;li&gt;&lt;code&gt;on&lt;/code&gt; 没有移除事件监听器这一步骤，会继续监听后续事件；&lt;/li&gt;&lt;li&gt;&lt;code&gt;once&lt;/code&gt; 处理完当前事件之后，不再监听，对后续到来的事件不再处理；&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3 id=&quot;dapp-典型的监听事件架构&quot;&gt;dapp 典型的监听事件架构&lt;/h3&gt;&lt;p&gt;虽然 Provider 和 Contract 提供了监听以太坊事件的方法，但要是不加区分到处引用这两个对象来添加事件处理函数，整个应用的代码仍不可避免地会陷入混乱。通常的做法都会结合前端框架的状态管理来做，实现上层业务代码和底层合约代码的解耦，同时又能及时得到通知。&lt;/p&gt;&lt;p&gt;通常做法如下：&lt;/p&gt;&lt;ol&gt;&lt;li&gt;定义状态管理涉及的业务对象，此过程类似 db 或者 domain 的设计。&lt;/li&gt;&lt;li&gt;在事件处理函数内，基于所监听的事件，更新对应的状态对象。&lt;/li&gt;&lt;li&gt;在业务代码部分订阅业务对象的更新事件，在该事件处理函数内完成页面状态更新。&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;对于 Angular 来讲：&lt;/p&gt;&lt;ol&gt;&lt;li&gt;状态更新部分涉及对象&lt;/li&gt;&lt;/ol&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-fallback&quot; data-lang=&quot;fallback&quot;&gt;Provider / Contract EventListners &amp;gt; Akita Service
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol start=&quot;2&quot;&gt;&lt;li&gt;订阅状态更新涉及对象&lt;/li&gt;&lt;/ol&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-fallback&quot; data-lang=&quot;fallback&quot;&gt;Akita Query &amp;gt; Subscribers
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;对于 Svelte 来讲，更简单，整个过程简化为：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-fallback&quot; data-lang=&quot;fallback&quot;&gt;Provider / Contract EventListners &amp;gt; Store  &amp;gt; Reactive 语句 / 变量
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;因为对 React 和 Vue 不熟，这里就此略过，但机制应该都是一样的。&lt;/p&gt;&lt;h3 id=&quot;使用-provider-监听&quot;&gt;使用 Provider 监听&lt;/h3&gt;&lt;p&gt;Provider 适合粗放型事件监听，值得注意的几个事件：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;code&gt;block&lt;/code&gt;，新区块生成&lt;/li&gt;&lt;li&gt;&lt;code&gt;error&lt;/code&gt;，错误发生&lt;/li&gt;&lt;li&gt;&lt;code&gt;txHash 值&lt;/code&gt;，tx 被确认&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;其他事件请参见 Ethers.js 的文档。&lt;/p&gt;&lt;p&gt;一般来讲，你不会需要上面的第三个事件（即&lt;code&gt;txHash 值&lt;/code&gt;），采用&lt;a href=&quot;./ethersjs-indefinitive-guide-part1.html&quot;&gt;本系列上篇&lt;/a&gt;中介绍的方法要更简单一些。&lt;/p&gt;&lt;p&gt;&lt;code&gt;block&lt;/code&gt; 事件在你需要一口气跟踪多个状态时最为有效，比如一次交易的变化可能导致多个地方的状态发生变化：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;账户余额&lt;/li&gt;&lt;li&gt;交易对内部双边余额的变化&lt;/li&gt;&lt;li&gt;计价合约的参数变化&lt;/li&gt;&lt;li&gt;……&lt;/li&gt;&lt;/ul&gt;&lt;div class=&quot;note&quot;&gt;&lt;p&gt;&lt;strong&gt;本文是付费文章，剩余内容请访问以下链接支付之后继续阅读：&lt;/strong&gt;&lt;/p&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s/vwhXB3ZmHQD5r_y-3BfRkg&quot;&gt;付费链接&lt;/a&gt;&lt;p&gt;
-（已付费：1）&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
 <guid>e63eede9020243e8a06784ed26e9eccb</guid>
 <title>近期做的稳定性建设总结</title>
 <link>https://toutiao.io/k/ic0wg6u</link>
@@ -116,6 +105,17 @@
 
                 
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>65c9716f5112485d2dbb749cbfed662e</guid>
+<title>Ethers.js 非权威开发指南（下）</title>
+<link>https://toutiao.io/k/jqofcc1</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;container wrapper post&quot;&gt;&lt;div class=&quot;post-header&quot;&gt;&lt;h1 class=&quot;title&quot;&gt;Ethers.js 非权威开发指南（下）&lt;/h1&gt;&lt;p class=&quot;meta&quot;&gt;胡键 Posted at — Jun 20, 2021
+&lt;span class=&quot;meta&quot; id=&quot;busuanzi_container_page_pv&quot;&gt;阅读 &lt;span id=&quot;busuanzi_value_page_pv&quot;/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/div&gt;&lt;p class=&quot;share-component&quot; data-sites=&quot;qq,weibo,wechat,douban,twitter,facebook&quot; data-description=&quot;Share.js - 一键分享到微博，QQ空间，腾讯微博，人人，豆瓣&quot;/&gt;&lt;div class=&quot;markdown&quot;&gt;&lt;p&gt;本系列的&lt;a href=&quot;./ethersjs-indefinitive-guide-part1.html&quot;&gt;上篇&lt;/a&gt;已经展示了连接钱包，调用合约和确定交易状态的全过程，对于一般的 dapp 开发已经完全足够。但对于有格调的开发者来讲，这些还不足以满足他们的胃口。那么，在下篇，你们将看到一些更加高级和特别的东西：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;如何处理以太坊的事件？&lt;/li&gt;&lt;li&gt;如何监听特定合约的特定事件？&lt;/li&gt;&lt;li&gt;如何查询以太坊的过往历史？&lt;/li&gt;&lt;li&gt;如何获取导致交易产生的合约函数的输入参数？&lt;/li&gt;&lt;li&gt;对于高阶合约函数（即，接受另一个合约的函数为输入值），该如何调用？&lt;/li&gt;&lt;li&gt;如何实现签名（含 EIP712）？&lt;/li&gt;&lt;li&gt;如何获得某个账户的公钥？&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;相信以上这些重口味问题的答案应该不会让各位失望。&lt;/p&gt;&lt;h2 id=&quot;监听事件&quot;&gt;监听事件&lt;/h2&gt;&lt;p&gt;通常，事件监听的需求来自于朴素的诉求：及时得到状态更新的通知。这种需求不仅仅局限于异步方法的调用，对于稍微复杂的一些程序，事件机制的引入也会让整个应用的架构得到简化。&lt;/p&gt;&lt;p&gt;Ethers.js 在 Provider 和 Contract 层面都提供了事件的支持，并且方法名称也有重叠。其中用得较多的方法如下：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;code&gt;on&lt;/code&gt;，对特定事件添加监听器。&lt;/li&gt;&lt;li&gt;&lt;code&gt;off&lt;/code&gt;，移除某事件全部监听器。&lt;/li&gt;&lt;li&gt;&lt;code&gt;once&lt;/code&gt;，添加事件监听器，并且在事件处理完成后自动移除。它和 &lt;code&gt;on&lt;/code&gt; 的区别在于：&lt;ul&gt;&lt;li&gt;&lt;code&gt;on&lt;/code&gt; 没有移除事件监听器这一步骤，会继续监听后续事件；&lt;/li&gt;&lt;li&gt;&lt;code&gt;once&lt;/code&gt; 处理完当前事件之后，不再监听，对后续到来的事件不再处理；&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3 id=&quot;dapp-典型的监听事件架构&quot;&gt;dapp 典型的监听事件架构&lt;/h3&gt;&lt;p&gt;虽然 Provider 和 Contract 提供了监听以太坊事件的方法，但要是不加区分到处引用这两个对象来添加事件处理函数，整个应用的代码仍不可避免地会陷入混乱。通常的做法都会结合前端框架的状态管理来做，实现上层业务代码和底层合约代码的解耦，同时又能及时得到通知。&lt;/p&gt;&lt;p&gt;通常做法如下：&lt;/p&gt;&lt;ol&gt;&lt;li&gt;定义状态管理涉及的业务对象，此过程类似 db 或者 domain 的设计。&lt;/li&gt;&lt;li&gt;在事件处理函数内，基于所监听的事件，更新对应的状态对象。&lt;/li&gt;&lt;li&gt;在业务代码部分订阅业务对象的更新事件，在该事件处理函数内完成页面状态更新。&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;对于 Angular 来讲：&lt;/p&gt;&lt;ol&gt;&lt;li&gt;状态更新部分涉及对象&lt;/li&gt;&lt;/ol&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-fallback&quot; data-lang=&quot;fallback&quot;&gt;Provider / Contract EventListners &amp;gt; Akita Service
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol start=&quot;2&quot;&gt;&lt;li&gt;订阅状态更新涉及对象&lt;/li&gt;&lt;/ol&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-fallback&quot; data-lang=&quot;fallback&quot;&gt;Akita Query &amp;gt; Subscribers
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;对于 Svelte 来讲，更简单，整个过程简化为：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-fallback&quot; data-lang=&quot;fallback&quot;&gt;Provider / Contract EventListners &amp;gt; Store  &amp;gt; Reactive 语句 / 变量
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;因为对 React 和 Vue 不熟，这里就此略过，但机制应该都是一样的。&lt;/p&gt;&lt;h3 id=&quot;使用-provider-监听&quot;&gt;使用 Provider 监听&lt;/h3&gt;&lt;p&gt;Provider 适合粗放型事件监听，值得注意的几个事件：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;code&gt;block&lt;/code&gt;，新区块生成&lt;/li&gt;&lt;li&gt;&lt;code&gt;error&lt;/code&gt;，错误发生&lt;/li&gt;&lt;li&gt;&lt;code&gt;txHash 值&lt;/code&gt;，tx 被确认&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;其他事件请参见 Ethers.js 的文档。&lt;/p&gt;&lt;p&gt;一般来讲，你不会需要上面的第三个事件（即&lt;code&gt;txHash 值&lt;/code&gt;），采用&lt;a href=&quot;./ethersjs-indefinitive-guide-part1.html&quot;&gt;本系列上篇&lt;/a&gt;中介绍的方法要更简单一些。&lt;/p&gt;&lt;p&gt;&lt;code&gt;block&lt;/code&gt; 事件在你需要一口气跟踪多个状态时最为有效，比如一次交易的变化可能导致多个地方的状态发生变化：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;账户余额&lt;/li&gt;&lt;li&gt;交易对内部双边余额的变化&lt;/li&gt;&lt;li&gt;计价合约的参数变化&lt;/li&gt;&lt;li&gt;……&lt;/li&gt;&lt;/ul&gt;&lt;div class=&quot;note&quot;&gt;&lt;p&gt;&lt;strong&gt;本文是付费文章，剩余内容请访问以下链接支付之后继续阅读：&lt;/strong&gt;&lt;/p&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s/vwhXB3ZmHQD5r_y-3BfRkg&quot;&gt;付费链接&lt;/a&gt;&lt;p&gt;
+（已付费：1）&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
 <guid>77290d22c9ca90ece1309b39017f6af9</guid>
@@ -140,113 +140,25 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>470d7a8debca5f36bc82fa071462d7c8</guid>
-<title>一文带你深入理解 Serializable 隔离最新技术 SSI</title>
-<link>https://toutiao.io/k/akx3jo7</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entry-inner&quot;&gt;
-                                                    
-&lt;p&gt;我们已经在前文了解了数据库的弱隔离以及Serializable隔离的两种技术（串行执行和两阶段锁），每个人都想用Serializable隔离，毕竟它很好的处理了各种冲突。但很多时候又被逼无奈选择弱隔离，原因也很简单，Serializable隔离好虽然好，但是性能消耗太大了，选择它就意味着选择了低的性能。所以人们一直在感叹假如有一种方法能做到Serializable隔离，性能损耗又不大的话就好了。皇天终归不负有心人，一个新的算法横空出世，它就是Serializable Snapshot isolation，简称SSI，它的优点就是能够牺牲很小的性能达到Serializable隔离的效果，这个算法是2008才出现的，不过已经被运用在PostgreSQL的版本9.1和FoundationDB中了。本文就来详细介绍一下这一最新的技术。&lt;/p&gt;
+<guid>7a3acff39791502f1a954dcdaf4eeb2b</guid>
+<title>一文理解 MySQL 的锁机制与死锁排查</title>
+<link>https://toutiao.io/k/gnbgq3w</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
 
+                    
+                    
+                    
+                    &lt;p data-source-line=&quot;1&quot;&gt;MySQL的并发控制是在数据安全性和并发处理能力之间的权衡，通过不同的锁策略来决定对系统开销和性能的影响。&lt;/p&gt;&lt;h2 data-source-line=&quot;3&quot;&gt;基础知识&lt;/h2&gt;&lt;p data-source-line=&quot;5&quot;&gt;为了后续的解释更加容易理解，这里列举一些基本概念的解释。&lt;/p&gt;&lt;h3 data-source-line=&quot;7&quot;&gt;悲观锁&lt;/h3&gt;&lt;p data-source-line=&quot;9&quot;&gt;悲观锁指的是对数据被外界（包括本系统当前的其他事务，以及来自外部系统的事务处理）修改持保守态度，因此，在整个数据处理过程中，将数据处于锁定状态。&lt;/p&gt;&lt;p data-source-line=&quot;11&quot;&gt;select...for update是MySQL提供的实现悲观锁的方式。在悲观锁的情况下，为了保证事务的隔离性，其它事务无法修改这些数据。&lt;/p&gt;&lt;blockquote data-source-line=&quot;13&quot;&gt;&lt;p&gt;现在互联网高并发的架构中，受到fail-fast思路的影响，悲观锁已经比较少见了。&lt;/p&gt;&lt;/blockquote&gt;&lt;h3 data-source-line=&quot;15&quot;&gt;乐观锁&lt;/h3&gt;&lt;p data-source-line=&quot;17&quot;&gt;相对悲观锁而言，乐观锁机制采取了更加宽松的加锁机制。悲观锁依靠数据库的锁机制实现，以保证操作最大程度的独占性。但随之而来的就是数据库性能的大量开销，特别是对长事务而言，这样的开销往往无法承受。&lt;/p&gt;&lt;p data-source-line=&quot;19&quot;&gt;而乐观锁机制在一定程度上解决了这个问题。乐观锁，大多是基于数据版本（Version）记录机制实现：通过为数据库表增加一个数字类型的&lt;code&gt;version&lt;/code&gt;字段，当读取数据时，将&lt;code&gt;version&lt;/code&gt;字段的值一同读出，数据每更新一次，对此&lt;code&gt;version&lt;/code&gt;值+1。当我们提交更新的时候，判断数据库表对应记录的当前版本信息与第一次取出来的&lt;code&gt;version&lt;/code&gt;值进行比对，如果数据库表当前版本号与第一次取出来的&lt;code&gt;version&lt;/code&gt;值相等，则予以更新，否则认为是过期数据，返回更新失败。&lt;/p&gt;&lt;h2 data-source-line=&quot;21&quot;&gt;锁的粒度&lt;/h2&gt;&lt;p data-source-line=&quot;23&quot;&gt;MySQL定义了两种锁的粒度：表级、行级。&lt;/p&gt;&lt;h3 data-source-line=&quot;25&quot;&gt;表锁&lt;/h3&gt;&lt;p data-source-line=&quot;27&quot;&gt;由MySQL Server控制，分为读锁和写锁。优点是开销小，加锁快；不会出现死锁；缺点是锁定粒度大，发生锁冲突的概率最高，并发度最低。表锁适合查询多、更新少的场景。&lt;/p&gt;&lt;p data-source-line=&quot;29&quot;&gt;当对表加了读锁，则会话只能读取当前被加锁的表，其它会话仍然可以对表进行读取但不能写入。&lt;/p&gt;&lt;p data-source-line=&quot;31&quot;&gt;当对表加了写锁，则会话可以读取或写入被加锁的表，其它会话不能对加锁的表进行读取或写入。&lt;/p&gt;&lt;h3 data-source-line=&quot;33&quot;&gt;行锁&lt;/h3&gt;&lt;p data-source-line=&quot;35&quot;&gt;由存储引擎实现，InnoDB支持，而MyISAM不支持。优点是开销大，加锁慢；会出现死锁；缺点是锁定粒度最小，发生锁冲突的概率最低，并发度也最高。InnoDB引擎下默认使用行级锁。行级锁适合按索引更新频率高的场景。&lt;/p&gt;&lt;p data-source-line=&quot;37&quot;&gt;InnoDB是MySQL最常用的存储引擎，本文以此为角度讲解MySQL的锁机制。有关MySQL存储引擎和有关B-Tree的知识，可以查看博客《&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzUyNzgyNzAwNg==&amp;amp;mid=2247483969&amp;amp;idx=1&amp;amp;sn=03eef5982173baa0e8dba05c1549f401&amp;amp;scene=21#wechat_redirect&quot; target=&quot;_blank&quot; data-linktype=&quot;2&quot;&gt;彻底搞懂MySQL的索引&lt;/a&gt;》&lt;/p&gt;&lt;h2 data-source-line=&quot;40&quot;&gt;行锁的分类&lt;/h2&gt;&lt;h3 data-source-line=&quot;42&quot;&gt;1. 记录锁&lt;/h3&gt;&lt;p data-source-line=&quot;44&quot;&gt;记录锁（Record lock）在唯一索引列或主键列记录上加锁，且该值存在，否则加锁类型为间隙锁。例如&lt;code&gt;SELECT a FROM t WHERE a = 12 FOR UPDATE&lt;/code&gt;，对值为12的索引进行锁定，防止其它事务插入、删除、更新值为12的记录行。&lt;/p&gt;&lt;h3 data-source-line=&quot;46&quot;&gt;2. 间隙锁&lt;/h3&gt;&lt;p data-source-line=&quot;48&quot;&gt;间隙锁（Gap Lock），只有在可重复读、串行化隔离级别才有，在索引记录之间的间隙中加锁，或者是在某一条索引之前或者之后加锁，并不包括该索引本身。&lt;/p&gt;&lt;p data-source-line=&quot;50&quot;&gt;例如：&lt;code&gt;SELECT a FROM t WHERE a &amp;gt; 15 and a &amp;lt; 20 FOR UPDATE&lt;/code&gt;，且a存在的值为1、2、5、10、15、20，则将(15,20)的间隙锁住。&lt;/p&gt;&lt;p data-source-line=&quot;52&quot;&gt;间歇锁的范围：&lt;/p&gt;&lt;ol data-source-line=&quot;54&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;对主键或唯一索引当前读时，where条件全部精确命中(=或者in)，这种场景本身就不会出现幻读，所以只会加记录锁。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;没有索引的列当前读操作时，会加全表gap锁，生产环境要注意。（所有主键x锁，所有主键间隙gap锁）&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;非唯一索引列，如果where条件部分命中(&amp;gt;、&amp;lt;、like等)或者全未命中，则会加附近Gap间隙锁。例如，某表数据如下，非唯一索引2,6,9,9,11,15。&lt;code&gt;delete from table where another_id = 9&lt;/code&gt;要操作非唯一索引列9的数据，gap锁将会锁定的列是(6,11)，该区间内无法插入数据。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;更多情况看文末的图片总结。&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-source-line=&quot;59&quot;&gt;在使用范围条件检索并锁定记录时，间歇锁机制会阻塞符合条件范围内键值的并发插入，这往往会造成严重的锁等待。因此，在实际应用开发中，尤其是并发插入比较多的应用，要尽量优化业务逻辑，尽量使用相等条件来访问更新数据，避免使用范围条件。&lt;/p&gt;&lt;p data-source-line=&quot;61&quot;&gt;间隙锁和间隙锁之间是互不冲突的，间隙锁唯一的作用就是为了防止其他事务的插入，在RR（可重复读）级别下解决了幻读的问题。&lt;/p&gt;&lt;p data-source-line=&quot;63&quot;&gt;例如id有3,4,5，间隙锁锁定id&amp;gt;3的数据，是指的4及后面的数字都会被锁定。这样的话加入新的数据id=6，就会被阻塞，从而避免了幻读。&lt;/p&gt;&lt;blockquote data-source-line=&quot;65&quot;&gt;&lt;p&gt;快照读与当前读将在下一篇博客《一文理解MySQL的事务原则与事务隔离》进行详解&lt;/p&gt;&lt;/blockquote&gt;&lt;h3 data-source-line=&quot;67&quot;&gt;3. 临键锁&lt;/h3&gt;&lt;p data-source-line=&quot;69&quot;&gt;临键锁（Next-Key Lock）是记录锁和间隙锁的合集。只有在可重复读、串行化隔离级别才有。&lt;/p&gt;&lt;p data-source-line=&quot;71&quot;&gt;&lt;img data-ratio=&quot;0.4596774193548387&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OqTAl3WTC7EbEQBRzIuuyOlamgzFW5ewDH52amtOsbdOhLjJuPhnDG3iaTdXNib4VjGGQ4GERjceTx6guwh3GTYA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;620&quot;/&gt;&lt;/p&gt;&lt;p data-source-line=&quot;73&quot;&gt;例如一个索引有10,11,13,20这四个值。InnoDB可以根据需要使用记录锁将10，11，13，20四个索引锁住，也可以使用间隙锁将(-∞,10)，(10,11)，(11,13)，(13,20)，(20,+∞)五个范围区间锁住。而临键锁是记录锁和间隙锁的合集。&lt;/p&gt;&lt;h3 data-source-line=&quot;75&quot;&gt;4. 插入意向锁&lt;/h3&gt;&lt;p data-source-line=&quot;77&quot;&gt;插入意向锁（Insert Intention Locks），是一种特殊的间隙锁，只有在执行INSERT操作时才会加锁，插入意向锁之间不冲突，可以向一个间隙中同时插入多行数据，但插入意向锁与间隙锁是冲突的，当有间隙锁存在时，插入语句将被阻塞，正是这个特性解决了幻读的问题。&lt;/p&gt;&lt;blockquote data-source-line=&quot;80&quot;&gt;&lt;p&gt;假设有一个记录索引包含键值4和7，不同的事务分别插入5和6，每个事务都会产生一个加在4-7之间的插入意向锁，获取在插入行上的排它锁，但是不会被互相锁住，因为数据行并不冲突。&lt;/p&gt;&lt;/blockquote&gt;&lt;h3 data-source-line=&quot;82&quot;&gt;意向锁&lt;/h3&gt;&lt;p data-source-line=&quot;84&quot;&gt;innodb的意向锁主要用户多粒度的锁并存的情况。比如事务A要在一个表上加S锁，如果表中的一行已被事务B加了X锁，那么该锁的申请也应被阻塞。如果表中的数据很多，逐行检查锁标志的开销将很大，系统的性能将会受到影响。为了解决这个问题，可以在表级上引入新的锁类型来表示其所属行的加锁情况，这就引出了“意向锁”的概念。&lt;/p&gt;&lt;p data-source-line=&quot;86&quot;&gt;举个例子，如果表中记录1亿，事务A把其中有几条记录上了行锁了，这时事务B需要给这个表加表级锁，如果没有意向锁的话，那就要去表中查找这一亿条记录是否上锁了。如果存在意向锁，那么假如事务A在更新一条记录之前，先加意向锁，再加X锁，事务B先检查该表上是否存在意向锁，存在的意向锁是否与自己准备加的锁冲突，如果有冲突，则等待直到事务A释放，而无须逐条记录去检测。事务B更新表时，其实无须知道到底哪一行被锁了，它只要知道反正有一行被锁了就行了。&lt;/p&gt;&lt;p data-source-line=&quot;88&quot;&gt;意向锁的主要作用是处理行锁和表锁之间的矛盾，能够显示“某个事务正在某一行上持有了锁，或者准备去持有锁”。&lt;/p&gt;&lt;h2 data-source-line=&quot;90&quot;&gt;锁的模式&lt;/h2&gt;&lt;p data-source-line=&quot;92&quot;&gt;共享锁和排它锁都是行级锁。意向共享锁和意向排他锁是表级锁。意向共享锁和意向排他锁都是系统自动添加和自动释放的，整个过程无需人工干预。&lt;/p&gt;&lt;h3 data-source-line=&quot;94&quot;&gt;1. 共享锁&lt;/h3&gt;&lt;p data-source-line=&quot;96&quot;&gt;共享锁（S锁，Shared Lock）：又称读锁，允许一个事务去读数据集，阻止其他事务获得该数据集的排他锁。共享锁与共享锁可以同时使用。举例：若事务T对数据对象A加上S锁，则事务T可以读A但不能修改A，其他事务只能再对A加S锁，而不能加X锁，直到T释放A上的S锁。这保证了其他事务可以读A，但在T释放A上的S锁之前不能对A做任何修改。&lt;/p&gt;&lt;h3 data-source-line=&quot;98&quot;&gt;2. 排他锁&lt;/h3&gt;&lt;p data-source-line=&quot;100&quot;&gt;排他锁（X锁，Exclusive Lock）：又称写锁，允许获取排他锁的事务更新数据，阻止其他事务获得相同的数据集的共享锁和排他锁。排它锁与排它锁、共享锁都不兼容。举例：若事务T对数据对象A加上X锁，事务T可以读A也可以修改A，其他事务不能再对A加任何锁，直到T释放A上的锁。&lt;/p&gt;&lt;h3 data-source-line=&quot;102&quot;&gt;3. 意向共享锁&lt;/h3&gt;&lt;p data-source-line=&quot;104&quot;&gt;意向共享锁（IS锁，Intention Shared Lock）：事务打算给数据行共享锁，事务在给一个数据行加共享锁前必须先取得该表的IS锁。&lt;/p&gt;&lt;h3 data-source-line=&quot;106&quot;&gt;4. 意向排他锁&lt;/h3&gt;&lt;p data-source-line=&quot;108&quot;&gt;意向排他锁（IX锁，Intention Exclusive Lock）：事务打算给数据行加排他锁，事务在给一个数据行加排他锁前必须先取得该表的IX锁。&lt;/p&gt;&lt;p data-source-line=&quot;110&quot;&gt;IS锁和IX锁的提出仅仅为了在之后加表级别的S锁和X锁时可以快速判断表中的记录是否被上锁，以避免用遍历的方式来查看表中有没有上锁的记录，也就是说其实IS锁和IX锁是兼容的，IX锁和IX锁是兼容的。&lt;/p&gt;&lt;p data-source-line=&quot;112&quot;&gt;意向锁之间不会发生冲突，但共享锁、排它锁、意向锁之间会发生冲突，表级别各种锁的兼容性如下表所示。&lt;/p&gt;&lt;table data-source-line=&quot;113&quot;&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;兼容性&lt;/th&gt;&lt;th&gt;&lt;code&gt;X&lt;/code&gt;&lt;/th&gt;&lt;th&gt;&lt;code&gt;IX&lt;/code&gt;&lt;/th&gt;&lt;th&gt;&lt;code&gt;S&lt;/code&gt;&lt;/th&gt;&lt;th&gt;&lt;code&gt;IS&lt;/code&gt;&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;&lt;code&gt;X&lt;/code&gt;&lt;/td&gt;&lt;td&gt;不兼容&lt;/td&gt;&lt;td&gt;不兼容&lt;/td&gt;&lt;td&gt;不兼容&lt;/td&gt;&lt;td&gt;不兼容&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;code&gt;IX&lt;/code&gt;&lt;/td&gt;&lt;td&gt;不兼容&lt;/td&gt;&lt;td&gt;兼容&lt;/td&gt;&lt;td&gt;不兼容&lt;/td&gt;&lt;td&gt;兼容&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;code&gt;S&lt;/code&gt;&lt;/td&gt;&lt;td&gt;不兼容&lt;/td&gt;&lt;td&gt;不兼容&lt;/td&gt;&lt;td&gt;兼容&lt;/td&gt;&lt;td&gt;兼容&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;code&gt;IS&lt;/code&gt;&lt;/td&gt;&lt;td&gt;不兼容&lt;/td&gt;&lt;td&gt;兼容&lt;/td&gt;&lt;td&gt;兼容&lt;/td&gt;&lt;td&gt;兼容&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;h3 data-source-line=&quot;120&quot;&gt;5. 自增锁&lt;/h3&gt;&lt;p data-source-line=&quot;122&quot;&gt;AUTO-INC Locks，自增锁，是一种特殊的表锁。当表有设置自增&lt;code&gt;auto_increment&lt;/code&gt;列，在插入数据时会先获取自增锁，其它事务将会被阻塞插入操作，自增列+1后释放锁，如果事务回滚，自增值也不会回退，所以自增列并不一定是连续自增的。（MySQL 从 5.1.22 版本开始，引入了一种可选的轻量级锁（mutex）机制来代替AUTOINC锁。见于参考文档3）&lt;/p&gt;&lt;h3 data-source-line=&quot;124&quot;&gt;6. 元数据锁&lt;/h3&gt;&lt;p data-source-line=&quot;126&quot;&gt;元数据锁（metadata lock），MySQL Server控制，表级锁，是维护表元数据的数据一致性，保证在表上有活动事务（显式或隐式）的时候，不可以对元数据进行写入操作。从MySQL5.5版本开始引入了MDL锁，来保护表的元数据信息，用于解决或者保证DDL操作与DML操作之间的一致性。&lt;/p&gt;&lt;p data-source-line=&quot;128&quot;&gt;对于引入MDL，其主要解决了2个问题：&lt;/p&gt;&lt;ol data-source-line=&quot;130&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;事务隔离问题，比如在可重复隔离级别下，会话A在2次查询期间，会话B对表结构做了修改，两次查询结果就会不一致，无法满足可重复读的要求。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;数据复制的问题，比如会话A执行了多条更新语句期间，另外一个会话B做了表结构变更并且先提交，就会导致slave在重做时，先重做alter，再重做update时就会出现复制错误的现象。&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-source-line=&quot;133&quot;&gt;每执行一条DML、DDL语句时都会申请MDL锁，DML操作需要MDL读锁，DDL操作需要MDL写锁（MDL加锁过程是系统自动控制，无法直接干预，读读共享，读写互斥，写写互斥），申请MDL锁的操作会形成一个队列，队列中写锁获取优先级高于读锁。&lt;/p&gt;&lt;p data-source-line=&quot;135&quot;&gt;一旦出现MDL写锁等待，不但当前操作会被阻塞，同时还会阻塞后续该表的所有操作（不过在MySQL5.6的时候推出了online ddl机制，使得排队的MDL写锁进行降级，防止对MDL读锁的阻塞）。&lt;/p&gt;&lt;h3 data-source-line=&quot;137&quot;&gt;加锁时机&lt;/h3&gt;&lt;ul data-source-line=&quot;139&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;SELECT xxx 查询语句正常情况下为快照读，只加元数据读锁，直到事务结束。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;SELECT xxx LOCK IN SHARE MODE 语句为当前读，加S锁和元数据读锁，直到事务结束。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;SELECT xxx FOR UPDATE 语句为当前读，加X锁和元数据读锁，直到事务结束。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;DML语句（INSERT、DELETE、UPDATE）为当前读，加X锁和元数据读锁，直到事务结束。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;DDL语句（ALTER、CREATE等）加元数据写锁，且是隐式提交不能回滚，直到事务结束。&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;blockquote data-source-line=&quot;145&quot;&gt;&lt;p&gt;为什么DDL语句会隐式提交？因为DDL是数据定义语言，在数据库中承担着创建、删除和修改的重要的职责。一旦发生问题，带来的后果很可能是不可估量的。于是在每执行完一次后就进行提交，可以保证流畅性，数据不会发生阻塞，同时也会提高数据库的整体性能。&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-source-line=&quot;147&quot;&gt;线上踩坑举例：由于DDL语句存在隐式提交，所以如果会话A开始了事务，进行了DML操作，然后进行了DDL操作，然后会话A回滚事务。此时会话A回滚的事务是一个空事务，因为DDL操作执行的时候会进行一次隐式提交&lt;/p&gt;&lt;h3 data-source-line=&quot;149&quot;&gt;行锁锁住整表的场景&lt;/h3&gt;&lt;ol data-source-line=&quot;151&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;SQL语句没有使用索引会把整张表锁住。例如事务里进行整表update；用到前缀like；字段没有加索引；数据库优化将索引查询转全表扫描等等。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;Mysql在5.6版本之前，直接修改表结构的过程中会锁表。&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;blockquote data-source-line=&quot;154&quot;&gt;&lt;p&gt;“查询每个表索引，并使用最佳索引，除非优化程序认为使用表扫描更有效。一次使用扫描是基于最佳索引是否跨越了表的30％以上，但是固定百分比不再决定使用索引还是扫描。现在，优化器更加复杂，并且根据附加因素（如表大小，行数和I / O块大小）进行估计。”见于参考文档1。&lt;/p&gt;&lt;/blockquote&gt;&lt;h3 data-source-line=&quot;156&quot;&gt;实验操作下的加锁情况分析&lt;/h3&gt;&lt;p data-source-line=&quot;158&quot;&gt;以下结论基于MySQL5.6，以InnoDB默认的RR级别来实验，只用来方便理解本文提到的锁机制。恐有纰漏，敬请谅解。&lt;/p&gt;&lt;p data-source-line=&quot;160&quot;&gt;&lt;img data-ratio=&quot;0.8625254582484725&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/OqTAl3WTC7EbEQBRzIuuyOlamgzFW5ewNCBDeyhI7KgaXpDamDFb0m6aiaW9T7sc74ANWwUbaeVtZ5XQsvlicE7w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;982&quot;/&gt;&lt;/p&gt;&lt;h2 data-source-line=&quot;162&quot;&gt;死锁排查&lt;/h2&gt;&lt;p data-source-line=&quot;164&quot;&gt;INFORMATION_SCHEMA提供对数据库元数据的访问、关于MySQL服务器的信息，如数据库或表的名称、列的数据类型或访问权限。其中有一个关于InnoDB数据库引擎表的集合，里面有记录数据库事务和锁的相关表。&lt;/p&gt;&lt;p data-source-line=&quot;166&quot;&gt;MySQL有关事务和锁的四条命令：&lt;/p&gt;&lt;ol data-source-line=&quot;168&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;code&gt;SELECT * FROM information_schema.INNODB_TRX;&lt;/code&gt;命令是用来查看当前运行的所有事务。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;code&gt;SELECT * FROM information_schema.INNODB_LOCKs;&lt;/code&gt;命令是用来查看当前出现的锁。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;code&gt;SELECT * FROM information_schema.INNODB_LOCK_waits;&lt;/code&gt;命令是用来查看锁等待的对应关系。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;code&gt;show engine innodb status \G;&lt;/code&gt;命令是用来获取最近一次的死锁信息。&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;blockquote data-source-line=&quot;173&quot;&gt;&lt;p&gt;在查询结果中可以看到是否有表锁等待或者死锁。如果有死锁发生，可以通过&lt;code&gt;KILL trx_mysql_thread_id&lt;/code&gt;来杀掉当前运行的事务。&lt;/p&gt;&lt;/blockquote&gt;&lt;h3 data-source-line=&quot;175&quot;&gt;查询事务与锁的命令行&lt;/h3&gt;&lt;p data-source-line=&quot;177&quot;&gt;死锁是并发系统中常见的问题，同样也会出现在数据库MySQL的并发读写请求场景中。当两个及以上的事务，双方都在等待对方释放已经持有的锁或因为加锁顺序不一致造成循环等待锁资源，就会出现“死锁”。常见的报错信息为&quot;Deadlock found when trying to get lock...&quot;&lt;/p&gt;&lt;p data-source-line=&quot;179&quot;&gt;MySQL死锁问题排查的常见思路：&lt;/p&gt;&lt;ol data-source-line=&quot;180&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;通过多终端模拟并发事务，复现死锁。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;通过上面四条命令，查看事务与锁的信息。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;通过explain可以查看执行计划。&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-source-line=&quot;184&quot;&gt;发生死锁异常后，通过开启InnoDB的监控机制来获取实时的死锁信息，它会周期性（每隔 15 秒）打印 InnoDb 的运行状态到 mysqld服务的错误日志文件中。&lt;/p&gt;&lt;p data-source-line=&quot;186&quot;&gt;InnoDB的监控较为重要的有标准监控（Standard InnoDB Monitor）和锁监控（InnoDB Lock Monitor），通过对应的系统参数可以将其开启。&lt;/p&gt;&lt;pre data-source-line=&quot;187&quot;&gt;&lt;code&gt;&lt;span&gt;set&lt;/span&gt; &lt;span&gt;GLOBAL&lt;/span&gt; innodb_status_output=&lt;span&gt;ON&lt;/span&gt;;&lt;span&gt;开启标准监控&lt;/span&gt;&lt;br/&gt;&lt;span&gt;set&lt;/span&gt; &lt;span&gt;GLOBAL&lt;/span&gt; innodb_status_output_locks;&lt;span&gt;开启所监控&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-source-line=&quot;192&quot;&gt;另外，MySQL 提供了一个系统参数&lt;code&gt;innodb_print_all_deadlocks&lt;/code&gt;专门用于记录死锁日志，当发生死锁时，死锁日志会记录到 MySQL 的错误日志文件中。&lt;/p&gt;&lt;p data-source-line=&quot;194&quot;&gt;另外，MySQL 提供了一个系统参数&lt;code&gt;innodb_print_all_deadlocks&lt;/code&gt;专门用于记录死锁日志，当发生死锁时，死锁日志会记录到 MySQL 的错误日志文件中。&lt;/p&gt;&lt;h3 data-source-line=&quot;196&quot;&gt;如何尽可能避免死锁&lt;/h3&gt;&lt;ol data-source-line=&quot;198&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;合理的设计索引，区分度高的列放到组合索引前面，使业务SQL尽可能通过索引定位更少的行，减少锁竞争。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;尽量按主键/索引去查找记录，范围查找增加了锁冲突的可能性，也不要利用数据库做一些额外额度计算工作。比如有的程序会用到&lt;code&gt;select … where … order by rand();&lt;/code&gt;这样的语句，类似这样的语句用不到索引，因此将导致整个表的数据都被锁住。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;大事务拆小。大事务更倾向于死锁，如果业务允许，将大事务拆小。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;以固定的顺序访问表和行。比如两个更新数据的事务，事务A更新数据的顺序为1，2;事务B更新数据的顺序为2，1。这样更可能会造成死锁。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;降低隔离级别。如果业务允许，将隔离级别调低也是较好的选择，比如将隔离级别从RR调整为RC，可以避免掉很多因为gap锁造成的死锁。&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-source-line=&quot;205&quot;&gt;参考文档：&lt;/p&gt;&lt;ol data-source-line=&quot;206&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;http://www.searchdoc.cn/rdbms/mysql/dev.mysql.com/doc/refman/5.7/en/where-optimization.com.coder114.cn.html&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;https://dev.mysql.com/doc/refman/5.7/en/innodb-locking.html#innodb-record-locks&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;https://dev.mysql.com/doc/refman/5.7/en/innodb-auto-increment-handling.html&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;/p&gt;
+                &lt;/div&gt;
 
+                
 
-&lt;h2&gt;悲观和乐观的同步控制&lt;/h2&gt;
+                
 
 
 
-&lt;p&gt;我们在《&lt;a href=&quot;https://donggeitnote.com/2021/06/15/transaction-serializable-2pl/&quot;&gt;Transaction Serializable隔离之两阶段锁&lt;/a&gt;》中提到的两阶段锁其实就是一个悲观的同步控制策略：任何有可能出现冲突的数据，我们都加锁（不管是不是真的会有冲突），就有点类似多线程的编程。而《&lt;a href=&quot;https://donggeitnote.com/2021/06/13/transaction-serializable/&quot;&gt;Transaction Serializable隔离之串行执行&lt;/a&gt;》中提到的串行执行，更是把悲观做到了极致，直接变成串行的单线程编程了。&lt;/p&gt;
-
-
-
-&lt;p&gt;相比较上面两者来说，SSI则是一种乐观的同步控制：假设所有的同步都是不产生冲突的，每个Transaction都能够互不干扰地执行，只在提交之前进行检查，假如发现了冲突，阻止提交进行重试。只有符合serializable的transaction才能够提交。&lt;/p&gt;
-
-
-
-&lt;p&gt;其实使用悲观还是乐观的同步控制大家争论了很久，他们在不同的场景下各有其优缺点，比如说乐观的同步控制在一个经常发生冲突的系统中就会带来很糟糕的体验，毕竟你的假设不符合系统的实际情况，这样一来就会有很多重试的处理，从而加大系统的资源消耗，在一些系统资源本就解决极限的情况下反而不如悲观的同步控制，反之亦然。&lt;/p&gt;
-
-
-
-&lt;p&gt;既然乐观同步控制不是什么新鲜的概念，SSI又有什么优势呢，正如它名字所说的，它是基于Snapshot隔离的，也就是说所有的读是从一个一直的snapshot来获取的。这就和早期别的乐观控制不同，SSI正是基于此来开发了一个算法探测Serialization的冲突从而决定哪个Transaction去abort的。&lt;/p&gt;
-
-
-
-&lt;h2&gt;基于过时假设的决定&lt;/h2&gt;
-
-
-
-&lt;p&gt;我们在之前的《&lt;a href=&quot;https://donggeitnote.com/2021/06/10/transaction-write-skew/&quot;&gt;Transaction弱隔离之Write Skew和Phantoms&lt;/a&gt;》中讨论过Write Skew，它的流程是一个transaction从数据库中读一些数据，检测相关的结果，然后基于结果决定做一些操作。这里的问题就是在snapshot隔离中，我们读的结果可能已经过时了，也就是说被别的transaction更新了。所以我们之前的基于结果决定做的操作可能不是我们想要的。&lt;/p&gt;
-
-
-
-&lt;p&gt;当我们读数据的时候，其实数据库并不知道应用程序怎么使用这些数据（你可能只是显示，也可能基于读的结果做某些操作），所以为了安全，数据库一般会说假如有任何transaction改变了你查询的结果就是不valid的。所以为了提供Serializable的隔离，数据库需要能够探测到这种情况，一般怎么做呢？有两种方法：&lt;/p&gt;
-
-
-
-&lt;ul&gt;&lt;li&gt;探测所有基于Stale MVCC object 版本的读（没有提交的写发生在这个读之前）&lt;/li&gt;&lt;li&gt;探测所有影响之前读的写操作（写发生在读之后）&lt;/li&gt;&lt;/ul&gt;
-
-
-
-&lt;h3&gt;探测Stale MVCC读&lt;/h3&gt;
-
-
-
-&lt;p&gt;还记得我们在《&lt;a href=&quot;https://donggeitnote.com/2021/06/06/snapshot-isolation/&quot;&gt;Snapshot的隔离和Repeatable的读&lt;/a&gt;》中提到的多版本控制吗？也就是说当一个transaction读的时候，它会忽略也没有提交的写。依然来看我们之前提到的医生值班的例子，Transaction 43开始读的时候，Transaction 42还没有提交，所以它读的时候Alice的on_call还是为true。但是在43提交的时候，42已经提交了，这就意味着提交时候其实42的修改已经生效了，也就是说43看到的内容其实已经是不对的了，这个时候就需要abort 43的操作。&lt;/p&gt;
-
-
-
-&lt;figure class=&quot;wp-block-image size-large&quot;&gt;&lt;img src=&quot;https://donggeitnote.com/wp-content/uploads/2021/06/image-15.png&quot; alt=&quot;&quot; class=&quot;wp-image-734&quot; srcset=&quot;https://donggeitnote.com/wp-content/uploads/2021/06/image-15.png 624w, https://donggeitnote.com/wp-content/uploads/2021/06/image-15-300x186.png 300w&quot; sizes=&quot;(max-width: 624px) 100vw, 624px&quot;/&gt;&lt;/figure&gt;
-
-
-
-&lt;p&gt;实现也就很简单了，就是在提交之前会检查一下是否有任何写操作提交了，假如有了就需要abort。为什么我们等到提交的时候才检查呢？原因也很简单，因为我们其实并不知道42会对查询到的数据做什么操作，假如只是简单地读，我们完全没有必要去abort 43。这样一来我们就不会出现没有必要的abort操作了。&lt;/p&gt;
-
-
-
-&lt;h2&gt;探测所有影响之前读的写&lt;/h2&gt;
-
-
-
-&lt;p&gt;另外一种情况就是一个transaction修改了之前读的数据。如下图所示：&lt;/p&gt;
-
-
-
-&lt;figure class=&quot;wp-block-image size-large&quot;&gt;&lt;img src=&quot;https://donggeitnote.com/wp-content/uploads/2021/06/image-16.png&quot; alt=&quot;&quot; class=&quot;wp-image-735&quot; srcset=&quot;https://donggeitnote.com/wp-content/uploads/2021/06/image-16.png 624w, https://donggeitnote.com/wp-content/uploads/2021/06/image-16-300x190.png 300w&quot; sizes=&quot;(max-width: 624px) 100vw, 624px&quot;/&gt;&lt;/figure&gt;
-
-
-
-&lt;p&gt;我们在之前《&lt;a href=&quot;https://donggeitnote.com/2021/06/15/transaction-serializable-2pl/&quot;&gt;Transaction Serializable隔离之两阶段锁&lt;/a&gt;》中有提到索引区间锁的概念，这里其实使用了类似的技术，如上图所示，Transaction 42和transaction 43同时查询了Shift1234的值班医生，假如我们对Shift_id加一个索引，数据库就可以使用entry1234来记录transaction 42和43正在读这个数据（这个数据只要保存一会，当transaction结束时就可以丢掉了）。这样一来当有transaction想要写这个数据的时候，它需要取index那边看看是否有transaction正在读这个数据，这和锁有点类似，但是不是block，而是说当有问题的时候，通知那些读你们之前读的内容被修改了。&lt;/p&gt;
-
-
-
-&lt;p&gt;在上图中，42的更新就会去查看想要的索引表，然后知道42也同时读了相应的数据，这样就会通知42去abort。&lt;/p&gt;
-
-
-
-&lt;h2&gt;SSI的性能&lt;/h2&gt;
-
-
-
-&lt;p&gt;和两阶段锁相比，SSI最大的优点就是它不需要等待另外一个transaction的锁。就和snapshot隔离类似，写不会block读，读也不block写。尤其是只读的transaction不需要请求任何锁，性能得到了很大的提升。&lt;/p&gt;
-
-
-
-&lt;p&gt;和串行执行相比，SSI的性能不再局限于单CPU，我们可以利用所有可以利用的资源来提升性能。&lt;/p&gt;
-
-
-
-&lt;p&gt;当然SSI的性能很大程度收abort的概率的影响，比如一个长时间的读或者写就会有很大概率被abort，所以一般来说SSI还是希望读写的transaction比较短。&lt;/p&gt;
-
-
-
-&lt;h2&gt;总结&lt;/h2&gt;
-
-
-
-&lt;p&gt;到本文我们详细介绍了Serializable隔离的三种实现，他们各有其利弊，希望通过这些文章介绍，你能够对Serializable隔离的实现有个大概的了解。&lt;/p&gt;
-                                                    &lt;nav class=&quot;pagination group&quot;&gt;
-                      &lt;/nav&gt;
-        &lt;/div&gt;
-
-        
-        &lt;/div&gt;&lt;/div&gt;</content:encoded>
+                
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
