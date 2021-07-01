@@ -5,470 +5,453 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>6042538f0474403a28e93784414314ab</guid>
-<title>后台开发面试必看：后台服务器开发高性能最佳实践</title>
-<link>https://toutiao.io/k/w76nnho</link>
+<guid>81a426122bacfc3c908f02b1c37a1ad7</guid>
+<title>字节跳动前端日常实习一二三面面经（Offer 还愿）</title>
+<link>https://toutiao.io/k/lu4qgp2</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;post-topic-des nc-post-content&quot;&gt;
-&lt;h2&gt;前言&lt;/h2&gt; 
-&lt;p&gt;&lt;span&gt;在互联网公司技术面试上，除了&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E7%AE%97%E6%B3%95&quot; target=&quot;_blank&quot;&gt;算法&lt;/a&gt;和网络、操作系统这种基础之外，还有一类&lt;/span&gt;&lt;strong&gt;系统设计和优化&lt;/strong&gt;的问题。这类问题需要你有一个全局的技术视野，以及熟悉一些常用的系统优化方法论，也就是工程上的一些 &lt;strong&gt;Best Practice&lt;/strong&gt;，而不至于自己临时拍脑袋瞎设计。&lt;/p&gt; 
-&lt;p&gt;在互联网公司，经常面临一个“三高”问题：&lt;/p&gt; 
+&lt;h1&gt; 时间线 &lt;/h1&gt; 
+&lt;p&gt;
+  5.19投递简历 
+&lt;/p&gt; 
+&lt;p&gt;
+  5.20hr约一面 
+&lt;/p&gt; 
+&lt;p&gt;
+  5.24一面 
+&lt;/p&gt; 
+&lt;p&gt;
+  5.25中午一面通过，hr约二面时间。本来约的是6月1号，但面试官临时请假，改到了3号 
+&lt;/p&gt; 
+&lt;p&gt;
+  6.3二面 
+&lt;/p&gt; 
+&lt;p&gt;
+  6.4下午二面通过，hr约三面时间 
+&lt;/p&gt; 
+&lt;p&gt;
+  6.8三面 
+&lt;/p&gt; 
+&lt;p&gt;
+  6.9中午三面通过，hr约10号三面 
+&lt;/p&gt; 
+&lt;p&gt;
+  有些问题可能不是面试官的本意，还有一些问题没听懂，从场景题提取问题出来还是挺难的 
+&lt;/p&gt; 
+&lt;div&gt;
+ &lt;span&gt; 其实15号中午的时候就offer了，现在来添加&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E9%9D%A2%E7%BB%8F&quot; target=&quot;_blank&quot;&gt;面经&lt;/a&gt;答案，答案只是我的见解哈，有些部分也没给出来，如果有错误欢迎指出 &lt;/span&gt;
+&lt;/div&gt; 
  
-&lt;p&gt;这篇文章将总结一下后台服务器开发中有哪些常用的解决“三高”问题的方法和思想。&lt;/p&gt; 
-&lt;p&gt;希望这些知识，能够给你一丝启发和帮助，助力你收割 各大公司 Offer~&lt;/p&gt; 
-&lt;p&gt;&lt;strong&gt;先上本文思维导图:&lt;/strong&gt;&lt;/p&gt; 
-&lt;p&gt;&lt;img alt=&quot;如何解决三高&quot; src=&quot;https://uploadfiles.nowcoder.com/files/20201120/652587393_1605873447931_007S8ZIlgy1gifsdthgvpj315p0u0aia.jpg&quot;/&gt;&lt;/p&gt; 
-&lt;h2&gt;正文&lt;/h2&gt; 
-&lt;h3&gt;一、缓存&lt;/h3&gt; 
-&lt;p&gt;什么是缓存？看看维基百科怎么说：&lt;/p&gt; 
-&lt;blockquote&gt; 
- &lt;p&gt;In computing, a cache is a hardware or software component that stores data so that future requests for that data can be served faster; the data stored in a cache might be the result of an earlier computation or a copy of data stored elsewhere.&lt;/p&gt; 
-&lt;/blockquote&gt; 
-&lt;p&gt;在计算机中，&lt;strong&gt;缓存&lt;/strong&gt;是存储数据的硬件或软件组件，以便可以更快地满足将来对该数据的请求。 存储在缓存中的数据可能是之前&lt;strong&gt;计算结果&lt;/strong&gt;，也可能是存储在其他位置的&lt;strong&gt;数据副本&lt;/strong&gt;。&lt;/p&gt; 
-&lt;p&gt;缓存本质来说是使用&lt;strong&gt;空间换时间&lt;/strong&gt;的思想，它在计算机世界中无处不在， 比如 CPU 就自带 L1、L2、L3 Cache，这个一般应用开发可能关注较少。但是在一些实时系统、大规模计算模拟、图像处理等追求极致性能的领域，就特别注重编写&lt;strong&gt;缓存友好&lt;/strong&gt;的代码。&lt;/p&gt; 
-&lt;p&gt;什么是缓存友好？简单来说，就是代码在访问数据的时候，尽量使用缓存命中率高的方式。这个后面可以单独写一篇 CPU 缓存系统以及如何编写缓存友好代码的文章。&lt;/p&gt; 
-&lt;h4&gt;1.1 缓存为什么有效？&lt;/h4&gt; 
-&lt;p&gt;缓存之所以能够大幅提高系统的性能，关键在于数据的访问具有&lt;strong&gt;局部性&lt;/strong&gt;，也就是二八定律：「百分之八十的数据访问是集中在 20% 的数据上」。这部分数据也被叫做&lt;strong&gt;热点数据。&lt;/strong&gt;&lt;/p&gt; 
-&lt;p&gt;缓存一般使用内存作为存储，内存读写速度快于磁盘，但容量有限，十分宝贵，不可能将所有数据都缓存起来。&lt;/p&gt; 
-&lt;p&gt;如果应用访问数据没有热点，不遵循二八定律，即大部分数据访问并没有集中在小部分数据上，那么缓存就没有意义，因为大部分数据还没有被再次访问就已经被挤出缓存了。每次访问都会回源到数据库查询，那么反而会降低数据访问效率。&lt;/p&gt; 
-&lt;h4&gt;1.2 缓存分类&lt;/h4&gt; 
- 
-&lt;ul&gt; 
- &lt;li&gt;&lt;p&gt;&lt;strong&gt;2. 分布式缓存:&lt;/strong&gt;&lt;/p&gt; &lt;p&gt;当缓存的数据量增大以后，单机不足以承载缓存服务时，就要考虑对缓存服务做&lt;strong&gt;水平扩展&lt;/strong&gt;，引入缓存集群。&lt;/p&gt; &lt;p&gt;将数据分片后分散存储在不同机器中，如何决定每个数据分片存放在哪台机器呢？一般是采用&lt;strong&gt;&lt;span&gt;一致性 Hash &lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E7%AE%97%E6%B3%95&quot; target=&quot;_blank&quot;&gt;算法&lt;/a&gt;&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;，它能够保证在缓存集群动态调整，不断增加或者减少机器后，&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E5%AE%A2%E6%88%B7%E7%AB%AF&quot; target=&quot;_blank&quot;&gt;客户端&lt;/a&gt;访问时依然能够根据 key 访问到数据。&lt;/span&gt;&lt;/p&gt; &lt;p&gt;&lt;span&gt;一致性 Hash &lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E7%AE%97%E6%B3%95&quot; target=&quot;_blank&quot;&gt;算法&lt;/a&gt;也是值得用一篇文章来讲的，如果暂时还不懂的话可以去搜一下。&lt;/span&gt;&lt;/p&gt; &lt;p&gt;常用的组件有 &lt;strong&gt;Memcache&lt;/strong&gt;、 &lt;strong&gt;Redis Cluster&lt;/strong&gt; 等，第二个是在高性能内存存储 Redis 的基础上，提供分布式存储的解决方案。&lt;/p&gt; &lt;/li&gt;
-&lt;/ul&gt; 
-&lt;h4&gt;1.3 缓存使用指南&lt;/h4&gt; 
-&lt;p&gt;&lt;strong&gt;1. 适合缓存的场景：&lt;/strong&gt;&lt;/p&gt; 
-&lt;ul&gt; 
- &lt;li&gt;&lt;p&gt;&lt;strong&gt;读多写少：&lt;/strong&gt; &lt;/p&gt; &lt;p&gt;比如电商里的商品详情页面，访问频率很高，但是一般写入只在店家上架商品和修改信息的时候发生。如果把热点商品的信息缓存起来，这将拦截掉很多对数据库的访问，提高系统整体的吞吐量。&lt;/p&gt; &lt;p&gt;因为一般数据库的 QPS 由于有「ACID」约束、并且数据是持久化在硬盘的，所以比 Redis 这类基于内存的 NoSQL 存储低不少。常常是一个系统的瓶颈，如果我们把大部分的查询都在 Redis 缓存中命中了，那么系统整体的 QPS 也就上去了。&lt;/p&gt; &lt;/li&gt;
- &lt;li&gt;&lt;p&gt;&lt;strong&gt;计算耗时大，且实时性不高：&lt;/strong&gt;&lt;br/&gt;比如王者荣耀里的全区排行榜，一般一周更新一次，并且计算的数据量也比较大，所以计算后缓存起来，请求排行榜直接从缓存中取出，就不用实时计算了。&lt;/p&gt; &lt;/li&gt;
-&lt;/ul&gt; 
-&lt;p&gt;&lt;strong&gt;2. 不适合缓存的场景&lt;/strong&gt;：&lt;/p&gt; 
-&lt;ul&gt; 
- &lt;li&gt;&lt;strong&gt;写多读少，频繁更新。&lt;/strong&gt; &lt;/li&gt;
- &lt;li&gt;&lt;strong&gt;对数据一致性要求严格：&lt;/strong&gt; 因为缓存会有更新策略，所以很难做到和数据库实时同步。 &lt;/li&gt;
- &lt;li&gt;&lt;strong&gt;数据访问完全随机：&lt;/strong&gt; 因为这样会导致缓存的命中率极低。 &lt;/li&gt;
-&lt;/ul&gt; 
-&lt;h4&gt;1.4 缓存更新的策略&lt;/h4&gt; 
-&lt;p&gt;如何更新缓存其实已经有总结得非常好的「最佳实践」，我们按照套路来，大概率不会犯错。&lt;/p&gt; 
-&lt;p&gt;主要分为两类 &lt;strong&gt;Cache-Aside&lt;/strong&gt; 和 &lt;strong&gt;Cache-As-SoR。&lt;/strong&gt; SoR 即「System Of Record，记录系统」，表示数据源，一般就是指数据库。&lt;/p&gt; 
-&lt;h5&gt;1、Cache-Aside：&lt;/h5&gt; 
-&lt;p&gt;&lt;img alt=&quot;Cache-Aside架构图&quot; src=&quot;https://uploadfiles.nowcoder.com/files/20201120/652587393_1605873447897_007S8ZIlgy1gifjt5j889j31540tuq5x.jpg&quot;/&gt;&lt;/p&gt; 
-&lt;p&gt;这应该是最容易想到的模式了，获取数据时先从缓存读，如果 &lt;strong&gt;cache hit&lt;/strong&gt; 则直接返回，没命中就从数据源获取，然后更新缓存。&lt;/p&gt; 
-&lt;p&gt;写数据的时候则先更新数据源，然后设置缓存失效，下一次获取数据的时候必然 &lt;strong&gt;cache miss&lt;/strong&gt;，然后触发&lt;strong&gt;回源&lt;/strong&gt;。&lt;/p&gt; 
-&lt;p&gt;直接看伪代码：&lt;/p&gt; 
-&lt;p&gt;&lt;img alt=&quot;Cache-Aside 代码示范&quot; src=&quot;https://uploadfiles.nowcoder.com/files/20201120/652587393_1605873447891_007S8ZIlgy1gift5f4ajcj30u00wmgvc.jpg&quot;/&gt;&lt;/p&gt; 
-&lt;p&gt;可以看到这种方式对于缓存的使用者是&lt;strong&gt;不透明&lt;/strong&gt;的，需要使用者手动维护缓存。&lt;/p&gt; 
-&lt;h5&gt;2、Cache-As-SoR：&lt;/h5&gt; 
-&lt;p&gt;&lt;img alt=&quot;Cache-As-SoR架构图&quot; src=&quot;https://uploadfiles.nowcoder.com/files/20201120/652587393_1605873447929_007S8ZIlgy1gifj60t7g9j319w0tuta8.jpg&quot;/&gt;&lt;/p&gt; 
-&lt;p&gt;从字面上来看，就是把 Cache 当作 SoR，也就是数据源，所以一切读写操作都是针对 Cache 的，由 &lt;strong&gt;Cache 内部自己维护和数据源的一致性。&lt;/strong&gt;&lt;/p&gt; 
-&lt;p&gt;这样对于使用者来说就和直接操作 SoR 没有区别了，完全感知不到 Cache 的存在。&lt;/p&gt; 
-&lt;p&gt;CPU 内部的 L1、L2、L3 Cache 就是这种方式，作为数据的使用方应用程序，是完全感知不到在内存和我们之间还存在几层的 Cache，但是我们之前又提到编写 “缓存友好”的代码，不是透明的吗？这是不是冲突呢？&lt;/p&gt; 
-&lt;p&gt;其实不然，缓存友好是指我们通过学习了解缓存内部实现、更新策略之后，通过调整数据访问顺序提高缓存的命中率。&lt;/p&gt; 
-&lt;p&gt;Cache-As-SoR 又分为以下三种方式:&lt;/p&gt; 
-&lt;ul&gt; 
- &lt;li&gt;&lt;strong&gt;Read Through&lt;/strong&gt;：这种方式和 Cache-Aside 非常相似，都是在查询时发生 cache miss 去更新缓存，但是区别在于 Cache-Aside 需要调用方手动更新缓存，而 Cache-As-SoR 则是由缓存内部实现自己负责，对应用层透明。 &lt;/li&gt;
- &lt;li&gt;&lt;strong&gt;Write Through&lt;/strong&gt;： 直写式，就是在将数据写入缓存的同时，缓存也去更新后面的数据源，并且必须等到数据源被更新成功后才可返回。这样保证了缓存和数据库里的&lt;strong&gt;数据一致性&lt;/strong&gt;。 &lt;/li&gt;
- &lt;li&gt;&lt;strong&gt;Write Back&lt;/strong&gt;：回写式，数据写入缓存即可返回，缓存内部会异步的去更新数据源，这样好处是&lt;strong&gt;写操作特别快&lt;/strong&gt;，因为只需要更新缓存。并且缓存内部可以合并对相同数据项的多次更新，但是带来的问题就是&lt;strong&gt;数据不一致&lt;/strong&gt;，可能发生写丢失。 &lt;/li&gt;
-&lt;/ul&gt; 
-&lt;h3&gt;二、预处理和延后处理&lt;/h3&gt; 
-&lt;p&gt;&lt;strong&gt;预先延后&lt;/strong&gt;，这其实是一个事物的两面，不管是预先还是延后核心思想都是将本来该在实时链路上处理的事情剥离，要么提前要么延后处理。&lt;strong&gt;降低实时链路的路径长度，&lt;/strong&gt; 这样能有效提高系统性能。&lt;/p&gt; 
-&lt;h4&gt;2.1 预处理&lt;/h4&gt; 
-&lt;p&gt;举个我们团队实际中遇到的问题：&lt;/p&gt; 
-&lt;p&gt;前两个月支付宝联合杭州市政府发放消费劵，但是要求只有杭州市常驻居民才能领取，那么需要在抢卷请求进入后台的时候就判断一下用户是否是杭州常驻居民。&lt;/p&gt; 
-&lt;p&gt;而判断用户是否是常驻居民这个是另外一个微服务接口，如果直接实时的去调用那个接口，短时的高并发很有可能把这个服务也拖挂，最终导致整个系统不可用，并且 RPC 本身也是比较耗时的，所以就考虑在这里进行优化。&lt;/p&gt; 
-&lt;p&gt;那么该怎么做呢？很简单的一个思路，&lt;strong&gt;提前将杭州所有常驻居民的 user_id 存到缓存中，&lt;/strong&gt;&lt;span&gt; 比如可以直接存到 Redis。大概就是千万量级，这样，当请求到来的时候我们直接通过缓存可以快速判断是否来自杭州常驻居民。如果不是则直接在这里返回&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E5%89%8D%E7%AB%AF&quot; target=&quot;_blank&quot;&gt;前端&lt;/a&gt;。&lt;/span&gt;&lt;/p&gt; 
-&lt;p&gt;&lt;strong&gt;这里通过预先处理减少了实时链路上的 RPC 调用，既减少了系统的外部依赖，也极大的提高了系统的吞吐量。&lt;/strong&gt;&lt;/p&gt; 
-&lt;p&gt;预处理在 CPU 和操作系统中也广泛使用，比如 CPU 基于历史访存信息，将内存中的&lt;strong&gt;指令和数据预取&lt;/strong&gt;到 Cache 中，这样可以大大提高&lt;strong&gt;Cache 命中率。&lt;/strong&gt; 还比如在 Linux 文件系统中，预读算***预测即将访问的 page，然后批量加载比当前读请求更多的数据缓存在 page cache 中，这样当下次读请求到来时可以直接从 cache 中返回，大大减少了访问磁盘的时间。&lt;/p&gt; 
-&lt;h4&gt;2.2 延后处理&lt;/h4&gt; 
-&lt;p&gt;还是支付宝，上栗子：&lt;/p&gt; 
-&lt;p&gt;&lt;img alt=&quot;集五福活动&quot; src=&quot;https://uploadfiles.nowcoder.com/files/20201120/652587393_1605873448256_007S8ZIlgy1gifje6vocvj30iy0s0qhh.jpg&quot;/&gt;&lt;/p&gt; 
-&lt;p&gt;这是支付宝春节集五福活动开奖当晚，不过，作为非酋的我一般是不屑于参与这种活动的。&lt;/p&gt; 
-&lt;p&gt;大家发现没有，这类活动中奖奖金一般会显示 &lt;strong&gt;「稍后到账」&lt;/strong&gt;，为什么呢？那当然是到账这个操作不简单！&lt;/p&gt; 
-&lt;p&gt;到账即转账，A 账户给 B 账户转钱，A 减钱， B 就必须要同时加上钱，也就是说不能 A 减了钱但 B 没有加上，这就会导致资金损失。资金安全是支付业务的生命线，这可不行。&lt;/p&gt; 
-&lt;p&gt;&lt;strong&gt;这两个动作必须一起成功或是一起都不成功，不能只成功一半，这是保证数据一致性。&lt;/strong&gt; 保证两个操作同时成功或者失败就需要用到&lt;strong&gt;事务&lt;/strong&gt;。&lt;/p&gt; 
-&lt;p&gt;如果去实时的做到账，那么大概率数据库的 &lt;strong&gt;TPS（每秒处理的事务数）&lt;/strong&gt; 会是瓶颈。通过产品提示，将到账操作延后处理，解决了数据库 TPS 瓶颈。&lt;/p&gt; 
-&lt;p&gt;延后处理还有一个非常著名的例子，&lt;strong&gt;COW（Copy On Write，写时复制）。&lt;/strong&gt; Linux 创建进程的系统调用 fork，fork 产生的子进程只会创建虚拟地址空间，而不会分配真正的物理内存，子进程共享父进程的物理空间，只有当某个进程需要写入的时候，才会真正分配物理页，拷贝该物理页，通过 COW 减少了很多不必要的数据拷贝。&lt;/p&gt; 
-&lt;h3&gt;三、池化&lt;/h3&gt; 
-&lt;p&gt;后台开发过程中你一定离不开各种 &lt;strong&gt;「池子」：&lt;/strong&gt; 内存池、连接池、线程池、对象池......&lt;/p&gt; 
-&lt;p&gt;内存、连接、线程这些都是资源，创建线程、分配内存、数据库连接这些操作都有一个特征， 那就是&lt;strong&gt;创建和销毁过程都会涉及到很多系统调用或者网络 IO。&lt;/strong&gt; 每次都在请求中去申请创建这些资源，就会增加请求处理耗时，但是如果我们用一个 &lt;strong&gt;容器（池）&lt;/strong&gt; 把它们保存起来，下次需要的时候，直接拿出来使用，避免重复创建和销毁浪费的时间。&lt;/p&gt; 
-&lt;h4&gt;3.1 内存池&lt;/h4&gt; 
-&lt;p&gt;在 C/C++ 中，经常使用 malloc、new 等 API 动态申请内存。由于申请的内存块大小不一，如果频繁的申请、释放会导致大量的&lt;strong&gt;内存碎片&lt;/strong&gt;，并且这些 API 底层依赖系统调用，会有额外的开销。&lt;/p&gt; 
-&lt;p&gt;&lt;strong&gt;内存池就是在使用内存前，先向系统申请一块空间留做备用，使用者需要内池时向内存池申请，用完后还回来。&lt;/strong&gt;&lt;/p&gt; 
-&lt;p&gt;内存池的思想非常简单，实现却不简单，难点在于以下几点:&lt;/p&gt; 
-&lt;ul&gt; 
- &lt;li&gt;&lt;strong&gt;如何快速分配内存&lt;/strong&gt; &lt;/li&gt;
- &lt;li&gt;&lt;strong&gt;降低内存碎片率&lt;/strong&gt; &lt;/li&gt;
- &lt;li&gt;&lt;strong&gt;维护内存池所需的额外空间尽量少&lt;/strong&gt; &lt;/li&gt;
-&lt;/ul&gt; 
-&lt;p&gt;&lt;span&gt;如果不考虑效率，我们完全可以将内存分为不同大小的块，然后用&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E9%93%BE%E8%A1%A8&quot; target=&quot;_blank&quot;&gt;链表&lt;/a&gt;连接起来，分配的时候找到大小最合适的返回，释放的时候直接添加进&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E9%93%BE%E8%A1%A8&quot; target=&quot;_blank&quot;&gt;链表&lt;/a&gt;。如:&lt;/span&gt;&lt;/p&gt; 
-&lt;p&gt;&lt;img alt=&quot;空闲链表&quot; src=&quot;https://uploadfiles.nowcoder.com/files/20201120/652587393_1605873448286_007S8ZIlgy1gifk4wterkj31ii0s6abs.jpg&quot;/&gt;&lt;/p&gt; 
-&lt;p&gt;当然这只是玩具级别的实现，业界有性能非常好的实现了，我们可以直接拿来学习和使用。&lt;/p&gt; 
-&lt;p&gt;比如 Google 的 「tcmalloc」 和 Facebook 的 「jemalloc」。&lt;/p&gt; 
-&lt;p&gt;&lt;span&gt;限于篇幅我们不在这里详细讲解它们的实现原理，如果感兴趣可以搜来看看，也推荐去看看被誉为神书的 CSAPP（《深入理解计算机系统》）第 10 章，那里也讲到了动态内存分配&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E7%AE%97%E6%B3%95&quot; target=&quot;_blank&quot;&gt;算法&lt;/a&gt;。&lt;/span&gt;&lt;/p&gt; 
-&lt;h4&gt;3.2 线程池&lt;/h4&gt; 
-&lt;p&gt;线程是干嘛的？线程就是我们&lt;strong&gt;程序执行的实体&lt;/strong&gt;。在服务器开发领域，我们经常会为每个请求分配一个线程去处理，但是线程的创建销毁、调度都会带来额外的开销，线程太多也会导致系统整体性能下降。在这种场景下，我们通常会提前创建若干个线程，通过线程池来进行管理。当请求到来时，只需从线程池选一个线程去执行处理任务即可。&lt;/p&gt; 
-&lt;p&gt;线程池常常和&lt;strong&gt;队列&lt;/strong&gt;一起使用来实现&lt;strong&gt;任务调度&lt;/strong&gt;，主线程收到请求后将创建对应的任务，然后放到队列里，线程池中的工作线程等待队列里的任务。&lt;/p&gt; 
-&lt;p&gt;线程池实现上一般有四个核心组成部分:&lt;/p&gt; 
-&lt;ul&gt; 
- &lt;li&gt;&lt;strong&gt;管理器（Manager）:&lt;/strong&gt; 用于创建并管理线程池。 &lt;/li&gt;
- &lt;li&gt;&lt;strong&gt;工作线程（Worker）:&lt;/strong&gt; 执行任务的线程。 &lt;/li&gt;
- &lt;li&gt;&lt;strong&gt;任务接口（Task）:&lt;/strong&gt; 每个具体的任务必须实现任务接口，工作线程将调用该接口来完成具体的任务。 &lt;/li&gt;
- &lt;li&gt;&lt;strong&gt;任务队列（TaskQueue）:&lt;/strong&gt; 存放还未执行的任务。 &lt;/li&gt;
-&lt;/ul&gt; 
-&lt;p&gt;&lt;img alt=&quot;线程池模型&quot; src=&quot;https://uploadfiles.nowcoder.com/files/20201120/652587393_1605873448290_007S8ZIlgy1gifknuico6j31er0u0u0x.jpg&quot;/&gt;&lt;/p&gt; 
-&lt;p&gt;线程池在 C、C++ 中没有具体的实现，需要应用开发者手动实现上诉几个部分。&lt;/p&gt; 
-&lt;p&gt;在 Java 中 &lt;strong&gt;「ThreadPoolExecutor」&lt;/strong&gt; 类就是线程池的实现。后续我也会写文章分析 C++ 如何写一个简单的线程池以及 Java 中线程池是如何实现的。&lt;/p&gt; 
-&lt;h4&gt;3.3 连接池&lt;/h4&gt; 
-&lt;p&gt;顾名思义，连接池是创建和管理连接的。&lt;/p&gt; 
-&lt;p&gt;大家最熟悉的莫过于数据库连接池，这里我们简单分析下如果不用数据库连接池，一次 SQL 查询请求会经过哪些步骤:&lt;/p&gt; 
+&lt;h1&gt; &lt;span&gt;&lt;span&gt;一面（&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E7%89%9B%E5%AE%A2&quot; target=&quot;_blank&quot;&gt;牛客&lt;/a&gt;50mins）&lt;/span&gt;&lt;/span&gt; &lt;/h1&gt; 
+&lt;div&gt; 
+ &lt;span&gt; 
+  &lt;ol&gt; 
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;怎么判断两个网站是否同域&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;浏览器从一个域向另一个域的服务器发送请求来访问其资源。 浏览器的同源策略：协议、域名、端口号一致。&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;保持登录状态能够使用什么实现&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;cookie,token&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;externals是怎么实现的&lt;/span&gt; &lt;/p&gt; &lt;p&gt; &lt;span/&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;你这些外部的资源是存在公共的CDN上，还是有现成可以直接用的托管CDN&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;回答了公共的CDN&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;是哪种类型的CDN呢，具体是哪些域名&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;为什么CDN能够加速用户访问一个网站，它的原理是什么&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;最简单的CDN网络由一个DNS服务器和几台缓存服务器组成：&lt;/span&gt; &lt;/p&gt; 
+     &lt;ol&gt; 
+      &lt;li&gt; &lt;p&gt; &lt;span&gt;当用户点击网站页面上的内容URL，经过本地DNS系统解析，DNS系统会最终将域名的解析权交给CNAME指向的CDN专用DNS服务器。&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+      &lt;li&gt; &lt;p&gt; &lt;span&gt;CDN的DNS服务器将CDN的全局负载均衡设备IP地址返回给用户&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+      &lt;li&gt; &lt;p&gt; &lt;span&gt;用户向CDN的全局负载均衡设备发起内容URL访问请求&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+      &lt;li&gt; &lt;p&gt; &lt;span&gt;CDN全局负载均衡设备根据用户IP地址，以及用户请求的内容URL，选择一台用户所属区域的区域负载均衡设备，告诉用户向这台设备发起请求&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+      &lt;li&gt; &lt;p&gt; &lt;span&gt;区域负载均衡设备会为用户选择一台合适的缓存服务器提供服务，选择的依据包括：根据用户IP地址，判断哪一台服务器距用户最近；根据用户所请求的URL中携带的内容名称，判断哪一台服务器上有用户所需内容；查询各个服务器当前的负载情况，判断哪一台服务器尚有服务能力。基于以上这些条件的综合分析之后，区域负载均衡设备会向全局负载均衡设备返回一台缓存服务器的IP地址&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+      &lt;li&gt; &lt;p&gt; &lt;span&gt;全局负载均衡设备把服务器的IP地址返回给用户&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+      &lt;li&gt; &lt;p&gt; &lt;span&gt;用户向缓存服务器发起请求，缓存服务器响应用户请求，将用户所需内容传送到用户终端。如果这台缓存服务器上并没有用户想要的内容，而区域均衡设备依然将它分配给了用户，那么这台服务器就要向它的上一级缓存服务器请求内容，直至追溯到网站的源服务器将内容拉到本地&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+     &lt;/ol&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;怎么确定哪个CDN节点离用户最近呢&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;上个问题答案的第4.5点&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;假设同样的资源，我用域名去访问，访问到哪个服务器取决于什么？&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;DNS &lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;DNS解析过程&lt;/span&gt; &lt;/p&gt; &lt;p&gt; &lt;span&gt;&lt;a href=&quot;https://blog.csdn.net/yanshuanche3765/article/details/82589210&quot; target=&quot;_blank&quot; from-niu=&quot;default&quot;&gt;&lt;span&gt;参考文章&lt;/span&gt;&lt;/a&gt;&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;简单的来说，浏览器先检查自身有没有缓存，如果没有就检查操作系统有没有缓存，如果还是没有就会向本地域名服务器发起一个请求来解析这个域名；如果本地域名服务器还是没有，则会从根域名服务器开始递归查找域名，直到找到为止。&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;DNS解析过程中，某个DNS服务器的记录被篡改过，指向一个恶意网站，这种情况会对用户的访问造成安全风险，这么防范。怎么防范DNS污染（应该是这个问题）&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;感觉这个问题不是很重要&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;DNS使用什么网络协议&lt;/span&gt; &lt;/p&gt; &lt;p&gt; &lt;span&gt;&lt;a href=&quot;https://blog.csdn.net/weixin_41563161/article/details/106069473?utm_medium=distribute.pc_relevant.none-task-blog-baidujs_title-0&amp;amp;spm=1001.2101.3001.4242&quot; target=&quot;_blank&quot; from-niu=&quot;default&quot;&gt;&lt;span&gt;参考文章&lt;/span&gt;&lt;/a&gt;&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;&lt;strong&gt;DNS区域传输的时候使用TCP协议：&lt;/strong&gt;&lt;/span&gt; &lt;/p&gt; 
+     &lt;p&gt; &lt;span&gt;1.辅域名服务器会定时（一般3小时）向主域名服务器进行查询以便了解数据是否有变动。如有变动，会执行一次区域传送，进行数据同步。区域传送使用TCP而不是UDP，因为数据同步传送的数据量比一个请求应答的数据量要多得多。&lt;/span&gt; &lt;/p&gt; 
+     &lt;p&gt; &lt;span&gt;2.TCP是一种可靠连接，保证了数据的准确性。&lt;/span&gt; &lt;/p&gt; 
+     &lt;p&gt; &lt;span&gt;&lt;strong&gt;域名解析时使用UDP协议：&lt;/strong&gt;&lt;/span&gt; &lt;/p&gt; 
+     &lt;p&gt; &lt;span&gt;&lt;span&gt;&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E5%AE%A2%E6%88%B7%E7%AB%AF&quot; target=&quot;_blank&quot;&gt;客户端&lt;/a&gt;向DNS服务器查询域名，一般返回的内容都不超过512字节，用UDP传输即可。不用经过三次握手，这样DNS服务器负载更低，响应更快。理论上说，&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E5%AE%A2%E6%88%B7%E7%AB%AF&quot; target=&quot;_blank&quot;&gt;客户端&lt;/a&gt;也可以指定向DNS服务器查询时用TCP，但事实上，很多DNS服务器进行配置的时候，仅支持UDP查询&lt;/span&gt;&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;除了打包体积减小，还有哪些手段可以提升用户的访问速度&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;缓存，懒加载，代码优化，SSR...&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;HTTP缓存怎么设置&lt;/span&gt; &lt;/p&gt; &lt;p&gt; &lt;span&gt;&lt;a href=&quot;https://blog.csdn.net/jiang_yonghui/article/details/100569565&quot; target=&quot;_blank&quot; from-niu=&quot;default&quot;&gt;&lt;span&gt;参考这个&lt;/span&gt;&lt;/a&gt;&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;通过设置Cache-Control/Pragma、Expires(过期时间)、Last-Modified/Etag。&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;确定协商缓存有效性的协商过程是怎么样的&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;在第一次请求服务器时，服务器会返回资源，并且返回一个资源的缓存标识，一起存到浏览器的缓存数据库。当第二次请求资源时，浏览器会首先将缓存标识发送给服务器，服务器拿到标识后判断标识是否匹配，如果不匹配，表示资源有更新，服务器会将新数据和新的缓存标识一起返回到浏览器；如果缓存标识匹配，表示资源没有更新，并且返回 &lt;/span&gt;&lt;span&gt;304&lt;/span&gt;&lt;span&gt; 状态码，浏览器就读取本地缓存服务器中的数据。&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;有些资源打开页面的时候不需要，需要的时候在加载&lt;/span&gt; &lt;/p&gt; &lt;p&gt; &lt;span&gt;&lt;a href=&quot;https://blog.csdn.net/bury_/article/details/79516223&quot; target=&quot;_blank&quot; from-niu=&quot;default&quot;&gt;&lt;span&gt;懒加载原理&lt;/span&gt;&lt;/a&gt;&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;懒加载&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;不同类型的东西处理方式不一样，例如图片，js代码，他们分别怎么懒加载&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;js通过设置defer和async&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;建议图片懒加载多去看看实现方法&lt;/span&gt; &lt;/p&gt; &lt;p&gt; &lt;span&gt;&lt;a href=&quot;https://blog.csdn.net/w1418899532/article/details/90515969?utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromMachineLearnPai2%7Edefault-4.control&amp;amp;depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromMachineLearnPai2%7Edefault-4.control&quot; target=&quot;_blank&quot; from-niu=&quot;default&quot;&gt;&lt;span&gt;图片懒加载&lt;/span&gt;&lt;/a&gt;&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;有没有更简单的方式去判断图片离浏览器顶部距离的方法&lt;/span&gt; &lt;/p&gt; &lt;p&gt; &lt;span&gt;&lt;a href=&quot;http://www.ruanyifeng.com/blog/2016/11/intersectionobserver_api.html&quot; target=&quot;_blank&quot; from-niu=&quot;default&quot;&gt;&lt;span&gt;阮一峰老师的文章&lt;/span&gt;&lt;/a&gt;&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;面试官建议：intersectionObserver?这个API，可以监控一个元素即将进入到窗口的范围&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;说一下Vue的工作原理（响应式原理）&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;Vue响应式底层实现方法是 Object.defineProperty() 方法，该方法中存在一个getter和setter的可选项，可以对属性值的获取和设置造成影响&lt;/span&gt; &lt;/p&gt; 
+     &lt;ul&gt; 
+      &lt;li&gt; &lt;p&gt; &lt;span&gt;&lt;span&gt;当你把一个普通的 &lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=JavaScript&quot; target=&quot;_blank&quot;&gt;JavaScript&lt;/a&gt; 对象传入 Vue 实例作为 data 选项，Vue 将遍历此对象所有的 property，并使用 Object.defineProperty 把这些 property 全部转为 getter/setter。&lt;/span&gt;&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+      &lt;li&gt; &lt;p&gt; &lt;span&gt;这些 getter/setter 对用户来说是不可见的，但是在内部它们让 Vue 能够追踪依赖，在 property 被访问和修改时通知变更。&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+      &lt;li&gt; &lt;p&gt; &lt;span&gt;每个组件实例都对应一个 watcher 实例，它会在组件渲染的过程中把“接触”过的数据 property 记录为依赖。之后当依赖项的 setter 触发时，会通知 watcher，从而使它关联的组件重新渲染。&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+     &lt;/ul&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;我改变了一个Data中数据后，他怎么更新到实际页面的DOM，这个过程是怎样的&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;模板里面，对于一个字段的引用是怎么收集的&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;对于这个字段的依赖是在什么时候建立的呢，是怎么建立的呢&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;假设有A，B两个请求，希望在A请求完后拿到一个结果，之后将A的结果作为参数给B，B发起请求，这样的过程要怎么实现&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;异步操作&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;如果A，B没有依赖关系，希望两个都拿到结果之后，在执行一些操作，要怎么实现&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;Promise.all&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;你提到Promise.all，那假设浏览器没有这个东西，你给我整一个&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;div&gt; 
+      &lt;span&gt;接下来是20分钟的修改代码过程...&lt;/span&gt;
+      &lt;span&gt; &lt;pre class=&quot;prettyprint lang-js&quot; from-niu=&quot;default&quot;&gt;function myPromiseAll(promises) {
+  let results = [];
+  let promiseCount = 0;
+  let promisesLength = promises.length;
+  return new Promise(function(resolve, reject) {
+    for(let i = 0; i &amp;lt; promises.length; i++){
+      Promise.resolve(promises[i]).then(function(res) {
+        promiseCount++;
+        results[i] = res;
+        // 当所有函数都正确执行了，resolve输出所有返回结果。
+        if (promiseCount === promisesLength) {
+          return resolve(results);
+        }
+      }, function(err) {
+        return reject(err);
+      });
+    }
+  });
+};
+&lt;/pre&gt; &lt;br/&gt; &lt;span/&gt;&lt;/span&gt; 
+     &lt;/div&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;反问&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;部门：交叉面试&lt;/span&gt; &lt;/p&gt; 
+     &lt;p&gt; &lt;span&gt;建议：多实践&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+  &lt;/ol&gt; &lt;br/&gt; &lt;/span&gt; 
+&lt;/div&gt; 
+&lt;h1&gt; &lt;span&gt;&lt;span&gt;二面（&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E7%89%9B%E5%AE%A2&quot; target=&quot;_blank&quot;&gt;牛客&lt;/a&gt;38mins）&lt;/span&gt;&lt;/span&gt; &lt;/h1&gt; 
 &lt;ol&gt; 
- &lt;li&gt;&lt;strong&gt;和 MySQL server 建立 TCP 连接:&lt;/strong&gt;
-   &lt;/li&gt;
- &lt;li&gt;&lt;strong&gt;MySQL 权限认证：&lt;/strong&gt;
-  &lt;ul&gt; 
-   &lt;li&gt;Server 向 Client 发送 密钥 &lt;/li&gt;
-   &lt;li&gt;Client 使用密钥加密用户名、密码等信息，将加密后的报文发送给 Server &lt;/li&gt;
-   &lt;li&gt;Server 根据 Client 请求包，验证是否是合法用户，然后给 Client 发送认证结果 &lt;/li&gt;
-  &lt;/ul&gt; &lt;/li&gt;
- &lt;li&gt;&lt;strong&gt;Client 发送 SQL 语句&lt;/strong&gt; &lt;/li&gt;
- &lt;li&gt;&lt;strong&gt;Server 返回语句执行结果&lt;/strong&gt; &lt;/li&gt;
- &lt;li&gt;&lt;strong&gt;MySQL 关闭&lt;/strong&gt; &lt;/li&gt;
- &lt;li&gt;&lt;strong&gt;TCP 连接断开&lt;/strong&gt;
-   &lt;/li&gt;
+ &lt;li&gt; &lt;p&gt; &lt;span&gt;&lt;span&gt;简单问了下&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E9%A1%B9%E7%9B%AE&quot; target=&quot;_blank&quot;&gt;项目&lt;/a&gt;的东西&lt;/span&gt;&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+ &lt;li&gt; &lt;p&gt; &lt;span&gt;&lt;span&gt;&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E9%A1%B9%E7%9B%AE&quot; target=&quot;_blank&quot;&gt;项目&lt;/a&gt;里有订单管理的功能，一般来说订单要考虑什么状态呢&lt;/span&gt;&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+ &lt;li&gt; &lt;p&gt; &lt;span&gt;如何实时拿到这些状态呢&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+ &lt;li&gt; &lt;p&gt; &lt;span&gt;最近在学什么呢&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+ &lt;li&gt; &lt;span&gt; &lt;p&gt; &lt;span&gt;vue框架有什么特点&lt;/span&gt; &lt;/p&gt; 
+   &lt;blockquote&gt; 
+    &lt;p&gt; &lt;span&gt;数据驱动、组件化&lt;/span&gt; &lt;/p&gt; 
+   &lt;/blockquote&gt; &lt;/span&gt; &lt;/li&gt;
+ &lt;li&gt; &lt;p&gt; &lt;span&gt;手撕代码（写完说思路&lt;/span&gt; &lt;/p&gt; 
+  &lt;blockquote&gt; 
+   &lt;div&gt; 
+    &lt;span&gt;&lt;span&gt;冒泡，快速&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E6%8E%92%E5%BA%8F&quot; target=&quot;_blank&quot;&gt;排序&lt;/a&gt; &lt;/span&gt;&lt;pre class=&quot;prettyprint lang-js&quot; from-niu=&quot;default&quot;&gt;function bubbleSort(array){
+    let length = array.length;
+    for(let i = 0; i &amp;lt; length - 1; i++){
+        for(let j = 0; j &amp;lt; length - i -1; j++){
+            if(array[j] &amp;lt; array[j+1]){
+                [array[j],array[j+1]] = [array[j+1],array[j]];
+            }
+        }
+    }
+}
+
+let test = [6,8,4,5,1];
+bubbleSort(test);
+console.log(test);
+
+function quickSort(array){
+    if(array.length &amp;lt; 2) return array;
+    let leftArray = [];
+    let rightArray = [];
+    let base = array[0];
+    array.forEach((element) =&amp;gt; {
+        if(element &amp;gt; base){
+            leftArray.push(element);
+        } else if(element &amp;lt; base){
+            rightArray.push(element);
+        }
+    });
+    return quickSort(leftArray).concat(base,quickSort(rightArray));
+};
+
+let test2 = [5,3,2,1,4];
+let res = quickSort(test2);
+
+console.log(res);&lt;/pre&gt; &lt;br/&gt; &lt;span/&gt;&lt;/span&gt; 
+   &lt;/div&gt; 
+  &lt;/blockquote&gt; 
+  &lt;blockquote&gt; 
+   &lt;p&gt; &lt;span&gt;实现一个函数，把一个字符串数组（[&#x27;zm&#x27;, &#x27;za&#x27;, &#x27;b&#x27;, &#x27;lm&#x27;, &#x27;ln&#x27;, &#x27;k&#x27;]）格式化成一个对象 { &#x27;b&#x27;: [&#x27;b&#x27;], &#x27;k&#x27;: [&#x27;k&#x27;], &#x27;l&#x27;: [&#x27;lm&#x27;, &#x27;ln&#x27;], &#x27;z&#x27;: [&#x27;za&#x27;, &#x27;zm&#x27;] }&lt;/span&gt; &lt;/p&gt; 
+  &lt;/blockquote&gt; &lt;p&gt; &lt;span&gt;这道题没写完整，说了下思路用伪代码写了下。&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+ &lt;li&gt; &lt;p&gt; &lt;span&gt;近一两年的规划&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+ &lt;li&gt; &lt;p&gt; &lt;span&gt;为什么选择字节&lt;/span&gt; &lt;/p&gt; &lt;p&gt; &lt;span&gt; &lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
 &lt;/ol&gt; 
-&lt;p&gt;可以看出不使用连接池的话，为了执行一条 SQL，会花很多时间在安全认证、网络IO上。&lt;/p&gt; 
-&lt;p&gt;如果使用连接池，执行一条 SQL 就省去了建立连接和断开连接所需的额外开销。&lt;/p&gt; 
-&lt;p&gt;还能想起哪里用到了连接池的思想吗？我认为 &lt;strong&gt;HTTP 长链接&lt;/strong&gt;也算一个变相的链接池，虽然它本质上只有一个连接，但是思想却和连接池不谋而合，都是为了复用同一个连接发送多个 HTTP 请求，避免建立和断开连接的开销。&lt;/p&gt; 
-&lt;p&gt;&lt;strong&gt;池化实际上是预处理和延后处理的一种应用场景，通过池子将各类资源的创建提前和销毁延后。&lt;/strong&gt;&lt;/p&gt; 
-&lt;h3&gt;四、同步变异步&lt;/h3&gt; 
-&lt;p&gt;对于处理耗时的任务，如果采用同步的方式，那么会增加任务耗时，降低系统并发度。&lt;/p&gt; 
-&lt;p&gt;可以通过将同步任务变为异步进行优化。&lt;/p&gt; 
-&lt;p&gt;举个例子，比如我们去 KFC 点餐，遇到排队的人很多，当点完餐后，大多情况下我们会隔几分钟就去问好了没，反复去问了好几次才拿到，在这期间我们也没法干活了，这时候我们是这样的：&lt;/p&gt; 
-&lt;p&gt;&lt;img alt=&quot;同步写法&quot; src=&quot;https://uploadfiles.nowcoder.com/files/20201120/652587393_1605873448286_007S8ZIlgy1gifvfsljxrj30u018ijyn.jpg&quot;/&gt;&lt;/p&gt; 
-&lt;p&gt;这个就叫&lt;strong&gt;同步轮训，&lt;/strong&gt; 这样效率显然太低了。&lt;/p&gt; 
-&lt;p&gt;服务员被问烦了，就在点完餐后给我们一个号码牌，每次准备好了就会在服务台叫号，这样我们就可以在被叫到的时候再去取餐，中途可以继续干自己的事。&lt;/p&gt; 
-&lt;p&gt;这就叫异步,在很多编程语言中有异步编程的库，比如 C++ std::future、Python asyncio 等，但是异步编程往往需要&lt;strong&gt;回调函数（Callback function）&lt;/strong&gt;，如果回调函数的层级太深，这就是&lt;strong&gt;回调地狱（Callback hell）&lt;/strong&gt;。回调地狱如何优化又是一个庞大的话题。。。。&lt;/p&gt; 
-&lt;p&gt;这个例子相当于函数调用的异步化，还有的是情况是处理流程异步化，这个会在接下来消息队列中讲到。&lt;/p&gt; 
-&lt;h3&gt;五、消息队列&lt;/h3&gt; 
-&lt;p&gt;&lt;img alt=&quot;消息队列示意图&quot; src=&quot;https://uploadfiles.nowcoder.com/files/20201120/652587393_1605873448360_007S8ZIlgy1gifwp4n129j31880lwmy6.jpg&quot;/&gt;&lt;/p&gt; 
-&lt;p&gt;这是一个非常简化的消息队列模型，上游生产者将消息通过队列发送给下游消费者。在这之间，消息队列可以发挥很多作用，比如：&lt;/p&gt; 
-&lt;h4&gt;5.1 服务解耦&lt;/h4&gt; 
-&lt;p&gt;有些服务被其它很多服务依赖，比如一个论坛网站，当用户成功发布一条帖子有一系列的流程要做，有积分服务计算积分，推送服务向发布者的粉丝推送一条消息..... 对于这类需求，常见的实现方式是直接调用：&lt;/p&gt; 
-&lt;p&gt;&lt;img alt=&quot;直接调用&quot; src=&quot;https://uploadfiles.nowcoder.com/files/20201120/652587393_1605873448525_007S8ZIlgy1gifwm2nlw8j313e0k675u.jpg&quot;/&gt;&lt;/p&gt; 
-&lt;p&gt;&lt;span&gt;这样如果需要新增一个&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90&quot; target=&quot;_blank&quot;&gt;数据分析&lt;/a&gt;的服务，那么又得改动发布服务，这违背了&lt;/span&gt;&lt;strong&gt;依赖倒置原则&lt;/strong&gt;，&lt;strong&gt;即上层服务不应该依赖下层服务，那么怎么办呢？&lt;/strong&gt;&lt;/p&gt; 
-&lt;p&gt;&lt;img alt=&quot;发布订阅模式&quot; src=&quot;https://uploadfiles.nowcoder.com/files/20201120/652587393_1605873448603_007S8ZIlgy1gifwo36vdzj319e0k8765.jpg&quot;/&gt;&lt;/p&gt; 
-&lt;p&gt;引入消息队列作为中间层，当帖子发布完成后，发送一个事件到消息队列里，而关心&lt;strong&gt;帖子发布成功&lt;/strong&gt;这件事的下游服务就可以订阅这个事件，这样即使后续继续增加新的下游服务，只需要订阅该事件即可，完全不用改动发布服务，完成系统解耦。&lt;/p&gt; 
-&lt;h4&gt;5.2 异步处理&lt;/h4&gt; 
-&lt;p&gt;有些业务涉及到的处理流程非常多，但是很多步骤并不要求实时性。那么我们就可以通过消息队列异步处理。比如淘宝下单，一般包括了&lt;strong&gt;&lt;span&gt;&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E9%A3%8E%E6%8E%A7&quot; target=&quot;_blank&quot;&gt;风控&lt;/a&gt;、锁库存、生成订单、短信/邮件通知&lt;/span&gt;&lt;/strong&gt;等步骤。但是&lt;strong&gt;&lt;span&gt;核心的就&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E9%A3%8E%E6%8E%A7&quot; target=&quot;_blank&quot;&gt;风控&lt;/a&gt;和锁库存，&lt;/span&gt;&lt;/strong&gt;&lt;span&gt; 只要&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E9%A3%8E%E6%8E%A7&quot; target=&quot;_blank&quot;&gt;风控&lt;/a&gt;和扣减库存成功，那么就可以返回结果通知用户成功下单了。&lt;/span&gt;&lt;strong&gt;后续的生成订单，短信通知都可以通过消息队列发送给下游服务异步处理。大大提高了系统响应速度。&lt;/strong&gt; &lt;/p&gt; 
-&lt;p&gt;这就是处理流程异步化。&lt;/p&gt; 
-&lt;h4&gt;5.3 流量削峰&lt;/h4&gt; 
-&lt;p&gt;一般像秒杀、抽奖、抢卷这种活动都伴随着&lt;strong&gt;短时间海量的请求，&lt;/strong&gt; 一般超过后端的处理能力，那么我们就可以在接入层将请求放到消息队列里，后端根据自己的处理能力不断从队列里取出请求进行业务处理。&lt;/p&gt; 
-&lt;p&gt;就像最近长江汛期，上游短时间大量的洪水汇聚直奔下游，但是通过三峡大坝将这些水缓存起来，然后匀速的向下游释放，起到了很好的削峰作用。&lt;/p&gt; 
-&lt;p&gt;起到了平均流量的作用。&lt;/p&gt; 
-&lt;h4&gt;5.4 总结&lt;/h4&gt; 
-&lt;p&gt;消息队列的核心思想就是把同步的操作变成异步处理，异步处理会带来相应的好处，比如:&lt;/p&gt; 
-&lt;ul&gt; 
- &lt;li&gt;服务解耦 &lt;/li&gt;
- &lt;li&gt;提高系统的并发度，将非核心操作异步处理，不会阻塞住主流程 &lt;/li&gt;
-&lt;/ul&gt; 
-&lt;p&gt;但是软件开发没有银弹，所有的方案选择都是一种 &lt;strong&gt;trade-off。&lt;/strong&gt; 同样，异步处理也不全是好处，也会导致一些问题：&lt;/p&gt; 
-&lt;ul&gt; 
- &lt;li&gt;降低了数据一致性，从强一致性变为最终一致性 &lt;/li&gt;
- &lt;li&gt;有消息丢失的风险，比如宕机，需要有容灾机制 &lt;/li&gt;
-&lt;/ul&gt; 
-&lt;h3&gt;六、批量处理&lt;/h3&gt; 
-&lt;p&gt;在涉及到网络连接、IO等情况时，将操作批量进行处理能够有效提高系统的传输速率和吞吐量。&lt;/p&gt; 
-&lt;p&gt;在前后端通信中，&lt;strong&gt;通过合并一些频繁请求的小资源可以获得更快的加载速度。&lt;/strong&gt;&lt;/p&gt; 
-&lt;p&gt;比如我们后台 RPC 框架，经常有更新数据的需求，而有的数据更新的接口往往只接受一项，这个时候我们往往会优化下更新接口，&lt;/p&gt; 
-&lt;p&gt;使其能够接受批量更新的请求，这样可以将批量的数据一次性发送，大大缩短网络 RPC 调用耗时。&lt;/p&gt; 
-&lt;h3&gt;七、数据库&lt;/h3&gt; 
-&lt;p&gt;我们常把后台开发调侃为「CRUD」，数据库在整个应用开发过程中的重要性不言而喻。&lt;/p&gt; 
-&lt;p&gt;而且很多时候系统的瓶颈也往往处在数据库这里，慢的原因也有很多，比如可能是没用索引、没用对索引、读写锁冲突等等。&lt;/p&gt; 
-&lt;p&gt;那么如何使用数据才能又快又好呢？下面这几点需要重点关注：&lt;/p&gt; 
-&lt;h4&gt;7.1 索引&lt;/h4&gt; 
-&lt;p&gt;索引可能是我们平时在使用数据库过程中接触得最多的优化方式。索引好比图书馆里的书籍索引号，想象一下，如果我让你去一个没有书籍索引号的图书馆找《人生》这本书，你是什么样的感受？当然是怀疑人生，同理，你应该可以理解当你查询数据，却不用索引的时候数据库该有多崩溃了吧。&lt;/p&gt; 
-&lt;p&gt;数据库表的索引就像图书馆里的书籍索引号一样，可以提高我们检索数据的效率。索引能提高查找效率，可是你有没有想过为什么呢？&lt;strong&gt;&lt;span&gt;这是因为索引一般而言是一个&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E6%8E%92%E5%BA%8F&quot; target=&quot;_blank&quot;&gt;排序&lt;/a&gt;列表，&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E6%8E%92%E5%BA%8F&quot; target=&quot;_blank&quot;&gt;排序&lt;/a&gt;意味着可以基于二分思想进行查找，将查询时间复杂度做到 O(log(N))，快速的支持等值查询和范围查询。&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt; 
-&lt;p&gt;&lt;strong&gt;二叉搜索树查询效率无疑是最高的，因为平均来说每次比较都能缩小一半的搜索范围，但是一般在数据库索引的实现上却会选择 B 树或 B+ 树而不用二叉搜索树，为什么呢？&lt;/strong&gt;&lt;/p&gt; 
-&lt;p&gt;&lt;span&gt;这就涉及到数据库的存储介质了，数据库的数据和索引都是存放在磁盘，并且是 InnoDB 引擎是以页为基本单位管理磁盘的，一页一般为 16 KB。AVL 或&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E7%BA%A2%E9%BB%91%E6%A0%91&quot; target=&quot;_blank&quot;&gt;红黑树&lt;/a&gt;搜索效率虽然非常高，&lt;/span&gt;&lt;strong&gt;但是同样数据项，它也会比 B、B+ 树更高，高就意味着平均来说会访问更多的节点，即磁盘IO次数！&lt;/strong&gt;&lt;/p&gt; 
-&lt;blockquote&gt; 
- &lt;p&gt;根据 Google 工程师 Jeff Dean 的统计，访问内存数据耗时大概在 100 ns，访问磁盘则是 10,000,000 ns。&lt;/p&gt; 
-&lt;/blockquote&gt; 
-&lt;p&gt;所以表面上来看我们使用 B、B+ 树没有 二叉查找树效率高，但是实际上由于 B、B+ 树降低了树高，减少了磁盘 IO 次数，反而大大提升了速度。&lt;/p&gt; 
-&lt;p&gt;&lt;strong&gt;这也告诉我们，没有绝对的快和慢，系统分析要抓主要矛盾，先分析出决定系统瓶颈的到底是什么，然后才是针对瓶颈的优化。&lt;/strong&gt;&lt;/p&gt; 
-&lt;p&gt;其实关于索引想写的也还有很多，但还是受限于篇幅，以后再单独写。&lt;/p&gt; 
-&lt;p&gt;先把我认为索引必知必会的知识列出来，大家可以查漏补缺:&lt;/p&gt; 
-&lt;ul&gt; 
- &lt;li&gt;&lt;strong&gt;主键索引和普通索引，以及它们之间的区别&lt;/strong&gt; &lt;/li&gt;
- &lt;li&gt;&lt;strong&gt;最左前缀匹配原则&lt;/strong&gt; &lt;/li&gt;
- &lt;li&gt;&lt;strong&gt;索引下推&lt;/strong&gt; &lt;/li&gt;
- &lt;li&gt;&lt;strong&gt;覆盖索引、联合索引&lt;/strong&gt; &lt;/li&gt;
-&lt;/ul&gt; 
-&lt;h4&gt;7.2 读写分离&lt;/h4&gt; 
-&lt;p&gt;一般业务刚上线的时候，直接使用单机数据库就够了，但是随着用户量上来之后，系统就面临着大量的写操作和读操作，单机数据库处理能力有限，容易成为系统瓶颈。&lt;/p&gt; 
-&lt;p&gt;由于存在读写锁冲突，并且很多大型互联网业务往往&lt;strong&gt;读多写少&lt;/strong&gt;，读操作会首先成为数据库瓶颈，我们希望消除读写锁冲突从而提升数据库整体的读写能力。&lt;/p&gt; 
-&lt;p&gt;那么就需要采用读写分离的数据库集群方式，一主多从，主库会同步数据到从库。写操作都到主库，读操作都去从库。&lt;/p&gt; 
-&lt;p&gt;&lt;img alt=&quot;读写分离&quot; src=&quot;https://uploadfiles.nowcoder.com/files/20201120/652587393_1605873448685_007S8ZIlgy1gifs6y545lj317m0tygpu.jpg&quot;/&gt;&lt;/p&gt; 
-&lt;p&gt;读写分离到之后就避免了读写锁争用，这里解释一下，什么叫读写锁争用：&lt;/p&gt; 
-&lt;p&gt; MySQL 中有两种锁: &lt;/p&gt; 
-&lt;ul&gt; 
- &lt;li&gt;&lt;strong&gt;排它锁( X 锁)：&lt;/strong&gt; 事务 T 对数据 A 加上 X 锁时，&lt;strong&gt;只允许事务 T 读取和修改数据 A。&lt;/strong&gt; &lt;/li&gt;
- &lt;li&gt;&lt;strong&gt;共享锁( S 锁)：&lt;/strong&gt; 事务 T 对数据 A 加上 S 锁时，&lt;strong&gt;其他事务只能再对数据 A 加 S 锁，而不能加 X 锁，直到 T 释放 A 上的 S 锁。&lt;/strong&gt; &lt;/li&gt;
-&lt;/ul&gt; 
-&lt;p&gt;读写分离解决问题的同时也会带来新问题，比如主库和从库数据不一致&lt;/p&gt; 
-&lt;p&gt;MySQL 的主从同步依赖于 binlog，binlog(二进制日志)是 MySQL Server 层维护的一种二进制日志，是独立于具体的存储引擎。它主要存储对数据库更新(insert、delete、update)的 SQL 语句，由于记录了完整的 SQL 更新信息，所以 binlog 是可以用来数据恢复和主从同步复制的。&lt;/p&gt; 
-&lt;p&gt;从库从主库拉取 binlog 然后依次执行其中的 SQL 即可达到复制主库的目的，由于从库拉取 binlog 存在网络延迟等，所以主从数据存在延迟问题。&lt;/p&gt; 
-&lt;p&gt;那么这里就要看业务是否允许短时间内的数据不一致，如果不能容忍，那么可以通过如果读从库没获取到数据就去主库读一次来解决。&lt;/p&gt; 
-&lt;h4&gt;7.3 分库分表&lt;/h4&gt; 
-&lt;p&gt;如果用户越来越多，写请求暴涨，对于上面的单 Master 节点肯定扛不住，那么该怎么办呢？多加几个 Master？不行，这样会带来更多的数据不一致的问题，增加系统的复杂度。那该怎么办？就只能对库表进行拆分了。&lt;/p&gt; 
-&lt;p&gt;常见的拆分类型有&lt;strong&gt;垂直拆分和水平拆分。&lt;/strong&gt;&lt;/p&gt; 
-&lt;p&gt;考虑拼夕夕电商系统，一般有 &lt;strong&gt;订单表、用户表、支付表、商品表、商家表等，&lt;/strong&gt; 最初这些表都在一个数据库里。&lt;br/&gt;后来随着砍一刀带来的海量用户，拼夕夕后台扛不住了! 于是紧急从阿狸粑粑那里挖来了几个 P8、P9 大佬对系统进行重构。&lt;/p&gt; 
-&lt;ol&gt; 
- &lt;li&gt;&lt;p&gt;P9 大佬第一步先对数据库进行垂直分库，&lt;br/&gt;&lt;strong&gt;根据业务关联性强弱，将它们分到不同的数据库，&lt;/strong&gt; 比如订单库，商家库、支付库、用户库。&lt;/p&gt; &lt;/li&gt;
- &lt;li&gt;&lt;p&gt;第二步是对一些大表进行垂直分表，&lt;strong&gt;将一个表按照字段分成多表，每个表存储其中一部分字段。&lt;/strong&gt; 比如商品详情表可能最初包含了几十个字段，但是往往最多访问的是商品名称、价格、产地、图片、介绍等信息，所以我们将不常访问的字段单独拆成一个表。&lt;/p&gt; &lt;/li&gt;
-&lt;/ol&gt; 
-&lt;ul&gt; 
- &lt;li&gt;由于垂直分库已经按照业务关联切分到了最小粒度，数据量任然非常大，&lt;strong&gt;P9 大佬开始水平分库，比如可以把订单库分为订单1库、订单2库、订单3库......&lt;/strong&gt;&lt;span&gt; 那么如何决定某个订单放在哪个订单库呢？可以考虑对主键通过哈希&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E7%AE%97%E6%B3%95&quot; target=&quot;_blank&quot;&gt;算法&lt;/a&gt;计算放在哪个库。 &lt;/span&gt;&lt;/li&gt;
- &lt;li&gt;分完库，单表数据量任然很大，查询起来非常慢，&lt;strong&gt;P9 大佬决定按日或者按月将订单分表，叫做日表、月表。&lt;/strong&gt; &lt;/li&gt;
-&lt;/ul&gt; 
-&lt;p&gt;分库分表同时会带来一些问题，比如平时单库单表使用的主键自增特性将作废，因为某个分区库表生成的主键无法保证全局唯一，这就需要引入全局 UUID 服务了。&lt;/p&gt; 
-&lt;p&gt;经过一番大刀阔斧的重构，拼夕夕恢复了往日的活力，大家又可以愉快的在上面互相砍一刀了。&lt;/p&gt; 
-&lt;p&gt;(分库分表会引入很多问题，并没有一一介绍，这里只是为了讲解什么是分库分表)&lt;/p&gt; 
-&lt;h3&gt;八、具体技法&lt;/h3&gt; 
-&lt;h4&gt;8.1 零拷贝&lt;/h4&gt; 
-&lt;p&gt;高性能的服务器应当避免不必要数据复制，特别是在&lt;strong&gt;用户空间和内核空间之间的数据复制。&lt;/strong&gt; 比如 HTTP 静态服务器发送静态文件的时候，一般我们会这样写:&lt;/p&gt; 
-&lt;p&gt;&lt;img alt=&quot;发送文件&quot; src=&quot;https://uploadfiles.nowcoder.com/files/20201120/652587393_1605873448662_007S8ZIlgy1gifp0trcwkj31ix0u0qbr.jpg&quot;/&gt;&lt;/p&gt; 
-&lt;p&gt;如果了解 Linux IO 的话就知道这个过程包含了内核空间和用户空间之间的多次拷贝：&lt;/p&gt; 
-&lt;p&gt;&lt;img alt=&quot;IO示意图&quot; src=&quot;https://uploadfiles.nowcoder.com/files/20201120/652587393_1605873448748_007S8ZIlgy1gifp2f3hmgj319m0to0vo.jpg&quot;/&gt;&lt;/p&gt; 
-&lt;p&gt;内核空间和用户空间之间数据拷贝需要 CPU 亲自完成，但是对于这类&lt;strong&gt;数据不需要在用户空间进行处理&lt;/strong&gt;的程序来说，这样的两次拷贝显然是浪费。什么叫 &lt;strong&gt;「不需要在用户空间进行处理」？&lt;/strong&gt; &lt;/p&gt; 
-&lt;p&gt;比如 FTP 或者 HTTP 静态服务器，它们的作用只是将文件从磁盘发送到网络，不需要在中途对数据进行编解码之类的计算操作。&lt;/p&gt; 
-&lt;p&gt;如果能够直接将数据在内核缓存之间移动，那么除了减少拷贝次数以外，还能避免内核态和用户态之间的上下文切换。&lt;/p&gt; 
-&lt;p&gt;而这正是零拷贝（Zero copy）干的事，主要就是利用各种零拷贝技术，减少不必要的数据拷贝，将 CPU 从数据拷贝这样简单的任务解脱出来，让 CPU 专注于别的任务。&lt;/p&gt; 
-&lt;p&gt;常用的零拷贝技术:&lt;/p&gt; 
-&lt;ol&gt; 
- &lt;li&gt;&lt;p&gt;&lt;strong&gt;mmap&lt;/strong&gt;&lt;/p&gt; &lt;p&gt;&amp;lt;kbd&amp;gt;mmap&amp;lt;/kbd&amp;gt; 通过内存映射，将文件映射到内核缓冲区，同时，用户空间可以共享内核空间的数据。这样，在进行网络传输时，就可以减少内核空间到用户空间的拷贝次数。&lt;/p&gt; &lt;/li&gt;
-&lt;/ol&gt; 
-&lt;p&gt;&lt;img alt=&quot;mmap&quot; src=&quot;https://uploadfiles.nowcoder.com/files/20201120/652587393_1605873448841_007S8ZIlgy1gifpjzd2fqj319b0u0tbk.jpg&quot;/&gt;&lt;/p&gt; 
-&lt;ol start=&quot;2&quot;&gt; 
- &lt;li&gt;&lt;p&gt;&lt;strong&gt;sendfile&lt;/strong&gt;&lt;/p&gt; &lt;p&gt;&amp;lt;kbd&amp;gt;sendfile&amp;lt;/kbd&amp;gt; 是 Linux2.1 版本提供的，数据不经过用户态，直接从页缓存拷贝到 socket 缓存，同时由于和用户态完全无关，就减少了一次上下文切换。&lt;/p&gt; &lt;p&gt;在 Linux 2.4 版本，对 sendfile 进行了优化，直接通过 DMA 将磁盘文件数据读取到 socket 缓存，真正实现了 ”0” 拷贝。前面 mmap 和 2.1 版本的 sendfile 实际上只是消除了用户空间和内核空间之间拷贝，而页缓存和 socket 缓存之间的拷贝依然存在。&lt;/p&gt; &lt;/li&gt;
-&lt;/ol&gt; 
-&lt;h4&gt;8.2 无锁化&lt;/h4&gt; 
-&lt;p&gt;在多线程环境下，为了避免 &lt;strong&gt;竞态条件（race condition），&lt;/strong&gt; 我们通常会采用加锁来进行并发控制，锁的代价也是比较高的，锁会导致上线文切换，甚至被挂起直到锁被释放。&lt;/p&gt; 
-&lt;p&gt;基于硬件提供的原子操作 &lt;strong&gt;CAS(Compare And Swap)&lt;/strong&gt; 实现一些高性能无锁的数据结构，比如无锁队列，可以在保证并发安全的情况下，提供更高的性能。&lt;/p&gt; 
-&lt;p&gt;首先需要理解什么是 CAS，CAS 有三个操作数，内存里当前值M，预期值 E，修改的新值 N，CAS 的语义就是：&lt;/p&gt; 
-&lt;p&gt;&lt;strong&gt;如果当前值等于预期值，则将内存修改为新值，否则不做任何操作&lt;/strong&gt;。&lt;/p&gt; 
-&lt;p&gt;用 C 语言来表达就是:&lt;/p&gt; 
-&lt;p&gt;&lt;img alt=&quot;CAS&quot; src=&quot;https://uploadfiles.nowcoder.com/files/20201120/652587393_1605873448878_007S8ZIlgy1gifr9ideb7j31oo0u0dot.jpg&quot;/&gt;&lt;/p&gt; 
-&lt;p&gt;&lt;strong&gt;注意，上面 CAS 函数实际上是一条原子指令，那么是如何用的呢？&lt;/strong&gt;&lt;/p&gt; 
-&lt;p&gt;假设我需要实现这样一个功能：&lt;/p&gt; 
-&lt;p&gt; 对一个全局变量 global 在两个不同线程分别对它加 100 次，这里多线程访问一个全局变量存在 race condition，所以我们需要采用线程同步操作，下面我分别用锁和CAS的方法来实现这个功能。&lt;/p&gt; 
-&lt;p&gt;&lt;img alt=&quot;CAS和锁示范&quot; src=&quot;https://uploadfiles.nowcoder.com/files/20201120/652587393_1605873448874_007S8ZIlgy1gifrq8av5vj30u014z1dw.jpg&quot;/&gt;&lt;/p&gt; 
-&lt;p&gt;通过使用原子操作大大降低了锁冲突的可能性，提高了程序的性能。&lt;/p&gt; 
-&lt;p&gt;除了 CAS，还有一些硬件原子指令：&lt;/p&gt; 
-&lt;ul&gt; 
- &lt;li&gt;Fetch-And-Add，对变量原子性 + 1 &lt;/li&gt;
- &lt;li&gt;&lt;span&gt;Test-And-Set，这是各种锁&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E7%AE%97%E6%B3%95&quot; target=&quot;_blank&quot;&gt;算法&lt;/a&gt;的核心，在 AT&amp;amp;T/GNU 汇编语法下，叫 xchg 指令，我会单独写一篇如何使用 xchg 实现各种锁。 &lt;/span&gt;&lt;/li&gt;
-&lt;/ul&gt; 
-&lt;h4&gt;8.3 序列化与反序列化&lt;/h4&gt; 
-&lt;p&gt;先看看维基百科怎么定义的序列化：&lt;/p&gt; 
-&lt;blockquote&gt; 
- &lt;p&gt;In computing, serialization (US spelling) or serialisation (UK spelling) is the process of translating a data structure or object state into a format that can be stored (for example, in a file or memory data buffer) or transmitted (for example, across a computer network) and reconstructed later (possibly in a different computer environment). When the resulting series of bits is reread according to the serialization format, it can be used to create a semantically identical clone of the original object. For many complex objects, such as those that make extensive use of references, this process is not straightforward. Serialization of object-oriented objects does not include any of their associated methods with which they were previously linked.&lt;/p&gt; 
-&lt;/blockquote&gt; 
-&lt;p&gt;我相信你大概率没有看完上面的英文描述，其实我也不爱看英文资料，总觉得很慢，但是计算机领域一手的学习资料都是美帝那边的，所以没办法，必须逼自己去试着读一些英文的资料。&lt;/p&gt; 
-&lt;p&gt;实际上也没有那么难，熟悉常用的几百个专业名词，句子都是非常简单的一些从句。没看的话，再倒回去看看？&lt;/p&gt; 
-&lt;p&gt;这里我就不做翻译了，主要是水平太低，估计做到「信达雅」的信都很难。&lt;/p&gt; 
-&lt;p&gt;扯远了，还是回到序列化来。&lt;/p&gt; 
-&lt;p&gt;所有的编程一定是围绕数据展开的，而数据呈现形式往往是结构化的，比如&lt;strong&gt;结构体（Struct）、类（Class）。&lt;/strong&gt; 但是当我们 &lt;strong&gt;通过网络、磁盘等传输、存储数据的时候却要求是二进制流。&lt;/strong&gt; 比如 TCP 连接，它提供给上层应用的是面向连接的可靠字节流服务。那么如何将这些结构体和类转化为可存储和可传输的字节流呢？这就是序列化要干的事情，反之，从字节流如何恢复为结构化的数据就是反序列化。&lt;/p&gt; 
-&lt;p&gt;&lt;strong&gt;序列化解决了对象持久化和跨网络数据交换的问题。&lt;/strong&gt;&lt;/p&gt; 
-&lt;p&gt;序列化一般按照序列化后的结果是否可读，可分为以下两类：&lt;/p&gt; 
- 
-&lt;p&gt;还有 Java 、Go 这类语言内置了序列化方式，比如在 Java 里实现了 Serializable 接口即表示该对象可序列化。&lt;/p&gt; 
-&lt;p&gt;说到这让我想起了大一写的的两个程序，一个是用刚 C 语言写的公交管理系统，当时需要将公交线路、站点信息持久化保存，当时的方案就是每个公交线路写在一行，用 &quot;|&quot;分割信息，比如：&lt;/p&gt; 
-&lt;pre class=&quot;prettyprint&quot; from-niu=&quot;default&quot;&gt;5|6:00-22:00|大学城｜南山站｜北京站
-123|6:30-23:00｜南湖大道｜茶山刘｜世界&lt;/pre&gt;
-&lt;p&gt;第一列就是线路编号、第二项是发车时间、后面就是途径的站点。是不是非常原始？实际上这也是一种序列化方式，只是效率很低，也不通用。而且存在一个问题就是如果信息中包含 “｜”怎么办？当然是用转义。&lt;/p&gt; 
-&lt;p&gt;第二个程序是用 Java 写的网络五子棋，当时需要通过网络传输表示棋子位置的对象，查了一圈最后发现只需要实现 Serializable 接口，自己什么都不用干，就能自己完成对象的序列化，然后通过网络传输后反序列化。当时哪懂得这就叫序列化，只觉得牛逼、神奇！&lt;/p&gt; 
-&lt;p&gt;最后完成了一个可以网络五子棋，拉着隔壁室友一起玩。。。真的是成就感满满哈哈哈。&lt;/p&gt; 
-&lt;p&gt;说来在编程方面，已经很久没有这样的成就感了。&lt;/p&gt; 
-&lt;h2&gt;总结&lt;/h2&gt; 
-&lt;p&gt;这篇文章主要是粗浅的介绍了一些系统设计、系统优化的套路和最佳实践。&lt;/p&gt; 
-&lt;p&gt;不知道你发现没有，从缓存到消息队列、CAS......，很多看起来很牛逼的架构设计其实都来源于操作系统、体系结构。&lt;/p&gt; 
-&lt;p&gt;所以我非常热衷学习一些底层的基础知识，这些看似古老的技术是经过时间洗礼留下来的好东西。现在很多的新技术、框架看似非常厉害，实则不少都是新瓶装旧酒，每几年又会被淘汰一批。&lt;/p&gt; 
-&lt;blockquote&gt; 
- &lt;p&gt;&lt;span&gt;来自我的&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E7%89%9B%E5%AE%A2&quot; target=&quot;_blank&quot;&gt;牛客&lt;/a&gt;博客:&lt;/span&gt;&lt;br/&gt;&lt;a href=&quot;https://blog.nowcoder.net/n/8de2902353c5438eafe95ce8f475cdbd&quot; target=&quot;_blank&quot; from-niu=&quot;default&quot;&gt;后台服务器高性能架构设计&lt;/a&gt;&lt;/p&gt; 
-&lt;/blockquote&gt; 
-&lt;h2&gt;最后说一句（求赞）&lt;/h2&gt; 
-&lt;p&gt;小伙伴们如果觉得写得不错, 顺便帮我点个赞呗~&lt;/p&gt;
+&lt;h1&gt; &lt;span&gt;&lt;span&gt;三面6.8（&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E7%89%9B%E5%AE%A2&quot; target=&quot;_blank&quot;&gt;牛客&lt;/a&gt;38mins）&lt;/span&gt;&lt;span/&gt;&lt;/span&gt; &lt;/h1&gt; 
+&lt;div&gt; 
+ &lt;span&gt; 
+  &lt;ol&gt; 
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;聊了下之前的笔试&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;参与之前的面试下来，有什么感受，有没有总结出自己的长处与短板&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;&lt;span&gt;提到了要深入学原理&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E6%BA%90%E7%A0%81&quot; target=&quot;_blank&quot;&gt;源码&lt;/a&gt;啥的&lt;/span&gt;&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;&lt;span&gt;你打算怎么看&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E6%BA%90%E7%A0%81&quot; target=&quot;_blank&quot;&gt;源码&lt;/a&gt;&lt;/span&gt;&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;&lt;span&gt;聊一下&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E9%A1%B9%E7%9B%AE&quot; target=&quot;_blank&quot;&gt;项目&lt;/a&gt;&lt;/span&gt;&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;&lt;span&gt;为什么做这个&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E9%A1%B9%E7%9B%AE&quot; target=&quot;_blank&quot;&gt;项目&lt;/a&gt;&lt;/span&gt;&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;&lt;span&gt;&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E9%A1%B9%E7%9B%AE&quot; target=&quot;_blank&quot;&gt;项目&lt;/a&gt;有没有你自己想的一些功能&lt;/span&gt;&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;&lt;span&gt;怎样从零搭建&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E9%A1%B9%E7%9B%AE&quot; target=&quot;_blank&quot;&gt;项目&lt;/a&gt;&lt;/span&gt;&lt;/span&gt; &lt;/p&gt; &lt;p&gt; &lt;span&gt;&lt;a href=&quot;https://blog.csdn.net/baidu_41690072/article/details/88820400&quot; target=&quot;_blank&quot; from-niu=&quot;default&quot;&gt;&lt;span&gt;参考&lt;/span&gt;&lt;/a&gt;&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;感觉就是看你是不是真的自己做了一遍&lt;/span&gt; &lt;/p&gt; 
+     &lt;p&gt; &lt;span&gt;使用vue-cli初始化的步骤&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;vue-cli主要帮你完成了哪些事情&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;1.ES6代码转换成ES5代码 2. scss/sass/less/stylus转css 3. .vue文件转换成js文件 4. 使用 jpg、png，font等资源文件 4. 自动添加css各浏览器产商的前缀 5. 代码热更新 6. 资源预加载 7. 每次构建代码清除之前生成的代码 8. 定义环境变量 9. 区分开发环境打包跟生产环境打包 ......&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;其中生成的那些文件，分别是干什么的&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;packjson文件里有一些key，value。其中一个key叫dependencies和devDependencies，能说说作用吗&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;package.json:&lt;/span&gt; &lt;/p&gt; 
+     &lt;p&gt; &lt;span&gt;&lt;span&gt;主要用来定义&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E9%A1%B9%E7%9B%AE&quot; target=&quot;_blank&quot;&gt;项目&lt;/a&gt;中需要依赖的包&lt;/span&gt;&lt;/span&gt; &lt;/p&gt; 
+     &lt;p&gt; &lt;span&gt;package-lock.json：&lt;/span&gt; &lt;/p&gt; 
+     &lt;p&gt; &lt;span&gt;在 &lt;/span&gt;&lt;span&gt;npm install&lt;/span&gt;&lt;span&gt;时候生成一份文件，用以记录当前状态下实际安装的各个npm package的具体来源和版本号。&lt;/span&gt; &lt;/p&gt; 
+     &lt;p&gt; &lt;span&gt;&#x27;^&#x27; :&lt;/span&gt;放在版本号之前，表示向后兼容依赖，说白了就是在大版本号不变的情况下，下载最新版的包 &lt;/p&gt; 
+     &lt;p&gt; &lt;span&gt;&lt;span&gt;&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E9%A1%B9%E7%9B%AE&quot; target=&quot;_blank&quot;&gt;项目&lt;/a&gt;中引入的包版本号之前经常会加^号，每次在执行npm install之后，下载的包都会发生变化，为了系统的稳定性考虑，每次执行完npm install之后会对应生成package-lock文件，该文件记录了上一次安装的具体的版本号，相当于是提供了一个参考，在出现版本兼容性问题的时候，就可以参考这个文件来修改版本号即可。&lt;/span&gt;&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; 
+    &lt;blockquote&gt; 
+     &lt;ol&gt; 
+      &lt;li&gt; &lt;p&gt; &lt;span&gt;“dependencies”&lt;/span&gt;&lt;span&gt; 运行依赖，需引入页面使用&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+      &lt;li&gt; &lt;p&gt; &lt;span&gt;“devDependencies”&lt;/span&gt;&lt;span&gt; 开发依赖(生产环境使用)，只是开发阶段需要&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+     &lt;/ol&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;babel.config.js的作用&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;Babel是一个JS编译器，主要作用是将ECMAScript 2015+ 版本的代码，转换为向后兼容的JS语法，以便能够运行在当前和旧版本的浏览器或其它环境中。&lt;/span&gt; &lt;/p&gt; 
+     &lt;p&gt; &lt;span&gt;&lt;span&gt;Vue&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E9%A1%B9%E7%9B%AE&quot; target=&quot;_blank&quot;&gt;项目&lt;/a&gt;中普遍使用ES6语法，若要求兼容低版本浏览器，就需要引入Babel，将ES6转换为ES5。&lt;/span&gt;&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;babel怎么把es6转成es5&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;es6哪些特性你觉得比较常用或者好用&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;let const var区别&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;&lt;strong&gt;变量提升方面&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;：var声明的变量存在变量提升，即变量可以在声明之前调用，值为undefined。&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;span&gt;let和const不存在变量提升问题(&lt;/span&gt;&lt;span&gt;注意这个‘问题’后缀，其实是有提升的，只不过是let和const具有一个暂时性死区的概念，即没有到其赋值时，之前就不能用&lt;/span&gt;&lt;span&gt;)，即它们所声明的变量一定要在声明后使用，否则报错。&lt;/span&gt; &lt;/p&gt; 
+     &lt;p&gt; &lt;span&gt;&lt;strong&gt;块级作用域方面&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;：var不存在块级作用域,let和const存在块级作用域&lt;/span&gt; &lt;/p&gt; 
+     &lt;p&gt; &lt;span&gt;&lt;strong&gt;声明方面&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;：var允许重复声明变量,let和const在同一作用域不允许重复声明变量。其中const声明一个只读的常量(因为如此，其声明时就一定要赋值，不然报错)。一旦声明，常量的值就不能改变。&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;&lt;span&gt;回到&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E9%A1%B9%E7%9B%AE&quot; target=&quot;_blank&quot;&gt;项目&lt;/a&gt;，登录功能怎么实现的&lt;/span&gt;&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;token怎么保持登录状态&lt;/span&gt; &lt;/p&gt; &lt;p&gt; &lt;span&gt;&lt;a href=&quot;https://blog.csdn.net/u014322206/article/details/85089481&quot; target=&quot;_blank&quot; from-niu=&quot;default&quot;&gt;&lt;span&gt;参考&lt;/span&gt;&lt;/a&gt;&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;&lt;span&gt;当用户请求页面，输入用户信息，服务端经过验证后，会生成一个token安全令牌（随机字符串），并返回给&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E5%AE%A2%E6%88%B7%E7%AB%AF&quot; target=&quot;_blank&quot;&gt;客户端&lt;/a&gt;，当&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E5%AE%A2%E6%88%B7%E7%AB%AF&quot; target=&quot;_blank&quot;&gt;客户端&lt;/a&gt;发送下一次请求的时候，直接携带这个token，服务端识别后，就可以直接访问页面，不需要再次登录了&lt;/span&gt;&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;sessionStorage有什么优势，token应该放在哪&lt;/span&gt; &lt;/p&gt; &lt;p&gt; &lt;span&gt;&lt;a href=&quot;https://www.cnblogs.com/fejerry/p/10898530.html&quot; target=&quot;_blank&quot; from-niu=&quot;default&quot;&gt;&lt;span&gt;sessionStorage的特点&lt;/span&gt;&lt;/a&gt;&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;+各个标签页的sessionStorage 是独立的 。&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;span&gt;+在a标签页写入修改删除sessionStorage ，不会影响到已经打开的标签页中的sessionStorage 。&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;span&gt;+通过a标签，window.open,window.location,windows.history ，右键复制 等方式在新标签页，本页，iframe ，新窗口中打开新页面，当前标签页的 sessionStorage 会传递到新页面。&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;span&gt;+通过按住 ctrl键打开新标签页，或者右键菜单打开新标签页，新窗口 ，当前标签页的 sessionStorage 是不会传递到新页面的 。&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;span&gt;+关闭某个标签页，该标签页的sessionStorage 会被销毁。不影响其他标签页或者窗口 。&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;span&gt;+在某个标签页即使跳出了当前站点，返回来的时候，sessionStorage 也还在的 。&lt;/span&gt; &lt;/p&gt; 
+     &lt;p&gt; &lt;span&gt;鉴于它有以上特点 ：&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;span&gt;1，可以用来做多账户登录 ， sessionid 不用cookie存储，用 sessionStorage 来存储。spa应用比较适合 。&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;p&gt; &lt;span&gt;&lt;a href=&quot;https://blog.csdn.net/qq_43618136/article/details/114656505&quot; target=&quot;_blank&quot; from-niu=&quot;default&quot;&gt;&lt;span&gt;token存放位置参考&lt;/span&gt;&lt;/a&gt;&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;Cookie 的作用是与服务器进行交互，作为 HTTP 规范的一部分而存在 ，而 Web Storage 仅仅是为了在本地“存储”数据而生。而token的安全和性能都是中肯的，唯一的问题就是cookie的存储性能和提取安全性太低，而localstorage更安全而且能够跨会话实现身份鉴别，很明显token应该存在localstorage里。&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;localStorage里可以存图片吗，怎么存&lt;/span&gt; &lt;/p&gt; &lt;p&gt; &lt;span&gt;&lt;a href=&quot;https://blog.csdn.net/cockroach02/article/details/49926595&quot; target=&quot;_blank&quot; from-niu=&quot;default&quot;&gt;&lt;span&gt;参考文章&lt;/span&gt;&lt;/a&gt;&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;我们的想法是做到将已经当前页面中已缓存的图片保存到本地存储中。不过就像我们之前已经确定的，本地存储只支持字符串的存取，那么我们要做的就是将图片转换成 &lt;/span&gt;&lt;span&gt;&lt;a href=&quot;http://en.wikipedia.org/wiki/Data_URI_scheme&quot; target=&quot;_blank&quot; from-niu=&quot;default&quot;&gt;&lt;span&gt;Data URI&lt;/span&gt;&lt;/a&gt;&lt;/span&gt;&lt;span&gt; 。其中一种实现方式就是用canvas元素来加载图片。然后你可以以Data URI的形式从canvas中读取出当前展示的内容。&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;token能放在cookie里吗&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;可以&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;xss能不能取到sessionStorage里的数据&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;可以&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;hash路由和history路由&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;&lt;span&gt;除了这个&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E9%A1%B9%E7%9B%AE&quot; target=&quot;_blank&quot;&gt;项目&lt;/a&gt;还有别的&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E9%A1%B9%E7%9B%AE&quot; target=&quot;_blank&quot;&gt;项目&lt;/a&gt;吗&lt;/span&gt;&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;翻页功能怎么实现&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;&lt;span&gt;数据是&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E5%89%8D%E7%AB%AF&quot; target=&quot;_blank&quot;&gt;前端&lt;/a&gt;来分页还是后端来分页&lt;/span&gt;&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;&lt;span&gt;能实现&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E5%89%8D%E7%AB%AF&quot; target=&quot;_blank&quot;&gt;前端&lt;/a&gt;分页吗&lt;/span&gt;&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;怎么实现&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;数据存哪&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;vuex有用过吗&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;vuex的目的是什么&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;已经有sessionStorage这类的放数据的地方，为什么还要有vuex，有什么特别的价值吗&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;聊了下笔试&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;&lt;span&gt;问了下是不是还没有开始复习&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E7%AE%97%E6%B3%95&quot; target=&quot;_blank&quot;&gt;算法&lt;/a&gt;和数据结构&lt;/span&gt;&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;&lt;span&gt;说一个最近在复习的&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E7%AE%97%E6%B3%95&quot; target=&quot;_blank&quot;&gt;算法&lt;/a&gt;再说说对应的例题&lt;/span&gt;&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;说了道最大无重复子串，双指针&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;复杂度&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;&lt;span&gt;&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92&quot; target=&quot;_blank&quot;&gt;动态规划&lt;/a&gt;一般解决什么样类型的问题&lt;/span&gt;&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;&lt;span&gt;&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92&quot; target=&quot;_blank&quot;&gt;动态规划&lt;/a&gt;相比于回溯，有什么优势&lt;/span&gt;&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;异步组件的懒加载是你自己想的还是教程有的&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;怎么实现懒加载&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;优化效果有看过吗&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;看到面评，问实习是想积累经验还是想转正&lt;/span&gt; &lt;/p&gt; &lt;/li&gt;
+   &lt;li&gt; &lt;p&gt; &lt;span&gt;反问&lt;/span&gt; &lt;/p&gt; 
+    &lt;blockquote&gt; 
+     &lt;p&gt; &lt;span&gt;部门：技术中台&lt;/span&gt; &lt;/p&gt; 
+     &lt;p&gt; &lt;span&gt;看重实习生哪些方面&lt;/span&gt; &lt;/p&gt; 
+    &lt;/blockquote&gt; &lt;/li&gt;
+  &lt;/ol&gt; &lt;br/&gt; &lt;/span&gt; 
+&lt;/div&gt; 
+&lt;h1&gt; 碎碎念 &lt;/h1&gt; 
+&lt;div&gt;&lt;p&gt;
+  字节的面试官是能够看到你之前投递的简历，参加过的笔试和面试结果，所以如果要投的话一定要认真对待面试和笔试吧。
+ &lt;/p&gt;&lt;span&gt;&lt;span&gt;另外我看到&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E7%89%9B%E5%AE%A2&quot; target=&quot;_blank&quot;&gt;牛客&lt;/a&gt;网也有&lt;a class=&quot;content-link  js-post-content-keyword&quot; href=&quot;/jump/super-jump/word?word=%E5%89%8D%E7%AB%AF&quot; target=&quot;_blank&quot;&gt;前端&lt;/a&gt;的课程，笔试面试会涉及到的知识点里边基本都会涵盖，如果大家不知道从哪里开始学起的话可以报名这种课程~&lt;/span&gt;&lt;img data-card-emoji=&quot;[考得全会]&quot; src=&quot;https://uploadfiles.nowcoder.com/images/20191018/63_1571399956257_2484A7DF36877A14689574EEBDA6DD7C&quot;/&gt;&lt;/span&gt; 
+&lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>9180d7a2135604ef9f8b2a941788fc65</guid>
-<title>go-zero：开箱即用的微服务框架</title>
-<link>https://toutiao.io/k/f8q3xuq</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;RichText ztext Post-RichText&quot;&gt;&lt;p&gt;go-zero 是一个集成了各种工程实践的 Web 和 rpc 框架，它的弹性设计保障了大并发服务端的稳定性，并且已经经过了充分的实战检验。&lt;/p&gt;&lt;p&gt;go-zero 在设计时遵循了 “工具大于约定和文档” 的理念，所以 go-zero 包含极简的 API 定义和生成工具 goctl，可以根据定义的 API 文件一键生成 Go、iOS、Android、Kotlin、Dart、TypeScript、JavaScript 代码，并可直接运行。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-fe8853517cf5252c03982b4252290876_b.jpg&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;761&quot; data-rawheight=&quot;527&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic3.zhimg.com/v2-fe8853517cf5252c03982b4252290876_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;761&quot; data-rawheight=&quot;527&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic3.zhimg.com/v2-fe8853517cf5252c03982b4252290876_r.jpg&quot; data-actualsrc=&quot;https://pic3.zhimg.com/v2-fe8853517cf5252c03982b4252290876_b.jpg&quot;/&gt;&lt;figcaption&gt;go-zero 架构图&lt;/figcaption&gt;&lt;/figure&gt;&lt;p&gt;如上图所示，不同客户端的请求都会先进入 go-zero 的 API 端。API 端最主要的作用是通过 ETCD 将对应的请求通过 gRPC 协议转发到 Service 端。根据请求的具体内容，Service 端负责对数据进行查询或存储。如果是查询请求，go-zero 有内置的 API 会先查询缓存层，减少数据库的查询压力。&lt;/p&gt;&lt;p&gt;由图可见，API 端和 Service 端中框架已经内置了非常丰富的功能，在开发过程中只需要我们填充对应的业务逻辑，即可轻松实现 CRDU 级的需求。&lt;/p&gt;&lt;p&gt;我们为什么说 go-zero 是开箱即用的微服务架构呢？不急，我们来盘点下 go-zero 中有哪些强大的特性。&lt;/p&gt;&lt;h2&gt;go-zero 适合做微服务快速开发的特性&lt;/h2&gt;&lt;p&gt;Go-zero 拥有强大的项目脚手架工具 goctl。goctl 和前端中的 Vue-cli、React-cli 一样方便。goctl 通过配置文件可以生成 API、rpc 和 model 等相关代码。同时，go-zero 拥有较完备的项目框架。脚手架生成的项目框架足以应对常见的需求。CRDU 等需求只需要做 “填空题”，在已生成的代码上填充必要的业务逻辑。其他缓存鉴权等需求，框架中也早已内置。&lt;/p&gt;&lt;p&gt;另外，go-zero 拥有独特的“渐进式”框架。“渐进式”是前端Vue框架的一大特性，大意是“易于上手，还便于与第三方库或既有项目整合”。本文借用这个概念是想表明 go-zero 对项目的入侵性较少，go-zero 生成的代码可以拆开使用，逐步对老项目进行改造。&lt;/p&gt;&lt;p&gt;低耦合的模块设计，丰富的中间件，插件和工具：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;go-zero 中各模块耦合程度低，我们可以通过文档中的组件中心寻找合适的中间件或自研中间件。&lt;/li&gt;&lt;li&gt;如果觉得 goctl 不能满足需求，goctl 还支持 plugin 命令对 goctl 进行扩展。&lt;/li&gt;&lt;li&gt;go-zero 的很多配置文件是自定义语法。 go-zero 还提供了 intellij 和 vscode 插件，提供了语法高亮错误检查等编辑增强功能。&lt;/li&gt;&lt;/ul&gt;&lt;h2&gt;goctl 介绍&lt;/h2&gt;&lt;p&gt;goctl 是 go-zero 微服务框架下的代码生成工具。使用 goctl 可显著提升开发效率，让开发人员将时间重点放在业务开发上。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-e0710f4f10288634a98c97d9d206ca48_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;654&quot; data-rawheight=&quot;658&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic1.zhimg.com/v2-e0710f4f10288634a98c97d9d206ca48_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;654&quot; data-rawheight=&quot;658&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic1.zhimg.com/v2-e0710f4f10288634a98c97d9d206ca48_r.jpg&quot; data-actualsrc=&quot;https://pic1.zhimg.com/v2-e0710f4f10288634a98c97d9d206ca48_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p&gt;goctl 的命令可归纳为如下几类：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;API 命令，快速生成一个 API 服务&lt;/li&gt;&lt;li&gt;rpc 命令，支持 proto 模板生成和 rpc 服务代码生成&lt;/li&gt;&lt;li&gt;model 命令，目前支持识别 mysql ddl 进行 model 层代码生成&lt;/li&gt;&lt;li&gt;plugin 命令，支持针对 API 自定义插件&lt;/li&gt;&lt;li&gt;其他命令，目前是发布相关&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;goctl 的命令众多，本次涉及到的只是其中 API、rpc 和 model 相关的基础命令。&lt;/p&gt;&lt;p&gt;&lt;b&gt;使用 goctl 的基本流程&lt;/b&gt;&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic4.zhimg.com/v2-49ee47769682a66ab529cc7f1907cdbf_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;285&quot; data-rawheight=&quot;714&quot; class=&quot;content_image&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;285&quot; data-rawheight=&quot;714&quot; class=&quot;content_image lazy&quot; data-actualsrc=&quot;https://pic4.zhimg.com/v2-49ee47769682a66ab529cc7f1907cdbf_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p&gt;使用 goctl 生成代码的流程大致可以分为 4 步：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;使用命令 a 生成默认的配置文件；&lt;/li&gt;&lt;li&gt;按照业务需求编辑该配置文件；&lt;/li&gt;&lt;li&gt;使用命令 b 按照配置文件生成默认的代码文件；&lt;/li&gt;&lt;li&gt;按照业务逻辑填充对应的代码文件。&lt;/li&gt;&lt;/ul&gt;&lt;h2&gt;什么情况不适宜使用 go-zero 做微服务快速开发？&lt;/h2&gt;&lt;p&gt;看完上面的介绍，想必大家对于 go-zero 开发微服务已经有点跃跃欲试了吧。不过经过一番实践，我认为当出现以下情况时，不适宜采用 go-zero 作为开发微服务的框架。&lt;/p&gt;&lt;p&gt;&lt;b&gt;当前需求与 goctl 的理念相冲突&lt;/b&gt;&lt;/p&gt;&lt;p&gt;go-zero 的一大卖点是脚手架工具 goctl，如果定制需求过多可能与 goctl 生成的代码相冲突。但是如果放弃 goctl 手动编写代码的话，开发效率会大大降低。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-fe8853517cf5252c03982b4252290876_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;761&quot; data-rawheight=&quot;527&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic3.zhimg.com/v2-fe8853517cf5252c03982b4252290876_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;761&quot; data-rawheight=&quot;527&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic3.zhimg.com/v2-fe8853517cf5252c03982b4252290876_r.jpg&quot; data-actualsrc=&quot;https://pic3.zhimg.com/v2-fe8853517cf5252c03982b4252290876_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p&gt;举个例子，如上图所示，go-zero 在 Service 端目前只支持 gRPC，在数据库层只支持 Mysql、MongoDB 和 ClickHouse，服务发现只支持 ETCD。在这种情况下如果想实现 PostgreSQL 替换 Mysql、Consul 替换 ETCD 等定制操作，goctl 生成的代码执行时很可能会出现异常。&lt;/p&gt;&lt;h2&gt;希望框架提供的功能非常完善&lt;/h2&gt;&lt;p&gt;go-zero 大部分组件是自研，比如 sqlx，httpx 等。这些自研组件满足 CRDU 的操作绰绰有余，但是与 gorm、gin 等专攻某一方向的开源项目相比还是有非常大的差距的。&lt;/p&gt;&lt;p&gt;所以随着公司业务发展需求越来越五花八门，当前的主要矛盾从“快速开发”变成“精细化开发”时，会发现该框架有这样或那样的不足。这种情况下就需要提 RP 或自己 fork 一份魔改了。个人觉得这种情况比 Spring 或 Django 那样一个“全家桶” 改动起来要省力省心。&lt;/p&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;p&gt;&lt;b&gt;推荐阅读：&lt;/b&gt;&lt;/p&gt;&lt;a target=&quot;_blank&quot; href=&quot;https://link.zhihu.com/?target=https%3A//www.upyun.com/tech/article/571/QUIC%25E5%258D%258F%25E8%25AE%25AE%25E8%25AF%25A6%25E8%25A7%25A3%25E4%25B9%258BInitial%25E5%258C%2585%25E7%259A%2584%25E5%25A4%2584%25E7%2590%2586.html&quot; data-draft-node=&quot;block&quot; data-draft-type=&quot;link-card&quot; data-image=&quot;https://pic1.zhimg.com/v2-5fb9b0f1477d30c3a1123b38f2c454e4_180x120.jpg&quot; data-image-width=&quot;954&quot; data-image-height=&quot;628&quot; class=&quot;LinkCard old LinkCard--hasImage&quot;&gt;&lt;span class=&quot;LinkCard-backdrop&quot;/&gt;&lt;span class=&quot;LinkCard-content&quot;&gt;&lt;span class=&quot;LinkCard-text&quot;&gt;&lt;span class=&quot;LinkCard-title&quot; data-text=&quot;true&quot;&gt;QUIC协议详解之Initial包的处理&lt;/span&gt;&lt;span class=&quot;LinkCard-meta&quot;&gt;&lt;span&gt;​&lt;svg class=&quot;Zi Zi--InsertLink&quot; fill=&quot;currentColor&quot; viewbox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M13.414 4.222a4.5 4.5 0 1 1 6.364 6.364l-3.005 3.005a.5.5 0 0 1-.707 0l-.707-.707a.5.5 0 0 1 0-.707l3.005-3.005a2.5 2.5 0 1 0-3.536-3.536l-3.005 3.005a.5.5 0 0 1-.707 0l-.707-.707a.5.5 0 0 1 0-.707l3.005-3.005zm-6.187 6.187a.5.5 0 0 1 .638-.058l.07.058.706.707a.5.5 0 0 1 .058.638l-.058.07-3.005 3.004a2.5 2.5 0 0 0 3.405 3.658l.13-.122 3.006-3.005a.5.5 0 0 1 .638-.058l.069.058.707.707a.5.5 0 0 1 .058.638l-.058.069-3.005 3.005a4.5 4.5 0 0 1-6.524-6.196l.16-.168 3.005-3.005zm8.132-3.182a.25.25 0 0 1 .353 0l1.061 1.06a.25.25 0 0 1 0 .354l-8.132 8.132a.25.25 0 0 1-.353 0l-1.061-1.06a.25.25 0 0 1 0-.354l8.132-8.132z&quot;/&gt;&lt;/svg&gt;&lt;/span&gt;www.upyun.com&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;LinkCard-imageCell&quot;&gt;&lt;img class=&quot;LinkCard-image LinkCard-image--horizontal&quot; alt=&quot;图标&quot; src=&quot;https://pic1.zhimg.com/v2-5fb9b0f1477d30c3a1123b38f2c454e4_180x120.jpg&quot;/&gt;&lt;/span&gt;&lt;/span&gt;&lt;/a&gt;&lt;a target=&quot;_blank&quot; href=&quot;https://link.zhihu.com/?target=https%3A//www.upyun.com/tech/article/640/%25E5%25AE%259E%25E6%2593%258D%25E7%25AC%2594%25E8%25AE%25B0%25EF%25BC%259A%25E4%25B8%25BA%2520NSQ%2520%25E9%2585%258D%25E7%25BD%25AE%25E7%259B%2591%25E6%258E%25A7%25E6%259C%258D%25E5%258A%25A1%25E7%259A%2584%25E5%25BF%2583%25E8%25B7%25AF%25E5%258E%2586%25E7%25A8%258B.html&quot; data-draft-node=&quot;block&quot; data-draft-type=&quot;link-card&quot; data-image=&quot;https://pic4.zhimg.com/v2-f18a6f76571f135e62db962fa4b73587_180x120.jpg&quot; data-image-width=&quot;1011&quot; data-image-height=&quot;593&quot; class=&quot;LinkCard old LinkCard--hasImage&quot;&gt;&lt;span class=&quot;LinkCard-backdrop&quot;/&gt;&lt;span class=&quot;LinkCard-content&quot;&gt;&lt;span class=&quot;LinkCard-text&quot;&gt;&lt;span class=&quot;LinkCard-title&quot; data-text=&quot;true&quot;&gt;实操笔记：为 NSQ 配置监控服务的心路历程&lt;/span&gt;&lt;span class=&quot;LinkCard-meta&quot;&gt;&lt;span&gt;​&lt;svg class=&quot;Zi Zi--InsertLink&quot; fill=&quot;currentColor&quot; viewbox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M13.414 4.222a4.5 4.5 0 1 1 6.364 6.364l-3.005 3.005a.5.5 0 0 1-.707 0l-.707-.707a.5.5 0 0 1 0-.707l3.005-3.005a2.5 2.5 0 1 0-3.536-3.536l-3.005 3.005a.5.5 0 0 1-.707 0l-.707-.707a.5.5 0 0 1 0-.707l3.005-3.005zm-6.187 6.187a.5.5 0 0 1 .638-.058l.07.058.706.707a.5.5 0 0 1 .058.638l-.058.07-3.005 3.004a2.5 2.5 0 0 0 3.405 3.658l.13-.122 3.006-3.005a.5.5 0 0 1 .638-.058l.069.058.707.707a.5.5 0 0 1 .058.638l-.058.069-3.005 3.005a4.5 4.5 0 0 1-6.524-6.196l.16-.168 3.005-3.005zm8.132-3.182a.25.25 0 0 1 .353 0l1.061 1.06a.25.25 0 0 1 0 .354l-8.132 8.132a.25.25 0 0 1-.353 0l-1.061-1.06a.25.25 0 0 1 0-.354l8.132-8.132z&quot;/&gt;&lt;/svg&gt;&lt;/span&gt;www.upyun.com&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;LinkCard-imageCell&quot;&gt;&lt;img class=&quot;LinkCard-image LinkCard-image--horizontal&quot; alt=&quot;图标&quot; src=&quot;https://pic4.zhimg.com/v2-f18a6f76571f135e62db962fa4b73587_180x120.jpg&quot;/&gt;&lt;/span&gt;&lt;/span&gt;&lt;/a&gt;&lt;p/&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>123f6b0dc0ba56056e8671c24714f668</guid>
+<title>[推荐] 我在 GitHub 上读清华</title>
+<link>https://toutiao.io/k/d749gee</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;
+
+                
+
+                
+&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>219bd1c8eaa422157bd5a2f5ddafc2d6</guid>
-<title>一文了解数据拆分与分库分表</title>
-<link>https://toutiao.io/k/uamr7qj</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
-
-                    
-                    
-                    
-                    &lt;p data-source-line=&quot;1&quot;&gt;数据库在业务体系不大的情况，一般都是单库出现，通过增加主从复制提高SLA。但当业务体量不断扩大，就需要考虑进行数据拆分来解决性能瓶颈问题。&lt;/p&gt;&lt;p data-source-line=&quot;3&quot;&gt;下面讨论的技术方案主要是从MySQL角度考虑的，其他类型数据库仅作参考。&lt;/p&gt;&lt;h2 data-source-line=&quot;5&quot;&gt;拆分策略&lt;/h2&gt;&lt;h3 data-source-line=&quot;7&quot;&gt;水平拆分&lt;/h3&gt;&lt;p data-source-line=&quot;9&quot;&gt;把单表表分割N个结构相同的表，然后把数据按照策略分散到不同的表中，这是表层面的水平拆分；如果把表在分散在不同的数据库中，这是数据库层面的水平拆分。&lt;/p&gt;&lt;p data-source-line=&quot;11&quot;&gt;比如：订单表每个月有百万条数据累计，每个月都可以进行水平拆分，将上个月的数据放到另外一个数据库。&lt;/p&gt;&lt;p data-source-line=&quot;13&quot;&gt;水平拆分带来的问题：&lt;/p&gt;&lt;ol data-source-line=&quot;14&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;跨库的关联查询性能差。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;数据多次扩容和维护量大。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;跨分片的事务一致性难以保证。&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;h3 data-source-line=&quot;18&quot;&gt;垂直拆分&lt;/h3&gt;&lt;p data-source-line=&quot;20&quot;&gt;把单表中数据按照不同特点，拆分成两张不同的表，常见的策略是根据数据是修改频繁还是读取频繁，把修改频繁的字段放一张表，读取频繁的放另一张表，这是表层面的垂直拆分；如果根据业务属性进行聚集，拆分到不同库的不同表，这是数据库层面的垂直拆分。&lt;/p&gt;&lt;p data-source-line=&quot;22&quot;&gt;比如：用户信息表将用户经验、用户最后登录时间等频繁变化的字段从用户基础信息中抽离出来单独建表。&lt;/p&gt;&lt;p data-source-line=&quot;24&quot;&gt;垂直拆分带来的问题：&lt;/p&gt;&lt;ol data-source-line=&quot;25&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;依然存在单表数据量过大的问题。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;部分表无法关联查询，只能通过接口聚合方式解决，增加了开发的复杂度。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;分布式事务处理复杂。&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;h2 data-source-line=&quot;29&quot;&gt;拆分方式&lt;/h2&gt;&lt;h3 data-source-line=&quot;31&quot;&gt;读写分离&lt;/h3&gt;&lt;p data-source-line=&quot;33&quot;&gt;读写分离是数据库拆分的最基本方式，实现起来难度也不大，只需要根据读写库的配置，把业务中数据写操作路由到写库（主库），数据读操作路由到读库（从库）即可。&lt;/p&gt;&lt;p data-source-line=&quot;35&quot;&gt;&lt;img data-ratio=&quot;0.9621993127147767&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/OqTAl3WTC7FWX9ibKfnZgQLBDiax5CR0F3FTWibqxV1OXRZicjsVU6jqI9gAPZF3xC1uEy8dXhaL01lNbd0KJbUnBg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;291&quot;/&gt;&lt;/p&gt;&lt;h3 data-source-line=&quot;37&quot;&gt;分库分表&lt;/h3&gt;&lt;p data-source-line=&quot;39&quot;&gt;分库分表主要用来解决单表数据量过大的问题，根据特定字段的路由规则，把数据分散到不同的库，不同的表中。&lt;/p&gt;&lt;p data-source-line=&quot;41&quot;&gt;分库分表的作用：&lt;/p&gt;&lt;p data-source-line=&quot;43&quot;&gt;分库：单一数据库支持的读/写QPS是有限的，可以将一个数据库的数据拆分到多个库中，解决数据库连接数不足的问题。&lt;/p&gt;&lt;blockquote data-source-line=&quot;45&quot;&gt;&lt;p&gt;从运维成本方面考虑，当一个数据库实例中的数据过大，对于DBA的运维压力就会增大。数据备份和恢复的时间成本都将随着数据量的大小而愈发不可控。一般来讲，单一数据库实例数据的阈值在1TB之内，是比较合理的范围。&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-source-line=&quot;47&quot;&gt;分表：单一张表的数据量过大，即使用索引来查询数据延迟也会变高，所以可以将一张表的数据拆分到多张表，查询时，只用查拆分后的某一张表，SQL语句的查询性能得到提升。&lt;/p&gt;&lt;blockquote data-source-line=&quot;49&quot;&gt;&lt;p&gt;MySQL数据库大多采用B+树类型的索引，在单表数据量过大的情况下，索引深度的增加也使得磁盘访问的IO次数增加，进而导致查询性能的下降。&lt;/p&gt;&lt;/blockquote&gt;&lt;h3 data-source-line=&quot;51&quot;&gt;业务分库&lt;/h3&gt;&lt;p data-source-line=&quot;53&quot;&gt;基于业务特点拆分数据库，是微服务架构的基础用法。不同的业务数据隔离开来，避免单点故障导致全系统的数据库宕机。&lt;/p&gt;&lt;p data-source-line=&quot;55&quot;&gt;&lt;img data-ratio=&quot;0.6125730994152047&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/OqTAl3WTC7FWX9ibKfnZgQLBDiax5CR0F3ia5r7tfFM0usrMmb4UQ7leseoH1yicoSlgDo7OStQLIANU6mlXyBcKMw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;684&quot;/&gt;&lt;/p&gt;&lt;p data-source-line=&quot;57&quot;&gt;这种模式虽然看起来更合理，但是却引入了接口幂等性和分布式事务等一系列问题。&lt;/p&gt;&lt;h3 data-source-line=&quot;59&quot;&gt;用户分库&lt;/h3&gt;&lt;p data-source-line=&quot;61&quot;&gt;对于tob业务，在多租户场景下会根据客户流水大小提供不相同的服务和数据库。&lt;/p&gt;&lt;p data-source-line=&quot;63&quot;&gt;&lt;img data-ratio=&quot;0.4872080088987764&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/OqTAl3WTC7FWX9ibKfnZgQLBDiax5CR0F3ia1Hdpul6afNjI8XZOp4DpCPkr1dYpnibYLIccDapCtYDk0ewbapxXJA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;899&quot;/&gt;&lt;/p&gt;&lt;p data-source-line=&quot;65&quot;&gt;此外也可能根据客户其他信息进行策略，比如地区，常见云服务的应用，选择华南，华北，华东区之类的。&lt;/p&gt;&lt;h2 data-source-line=&quot;67&quot;&gt;分库分表&lt;/h2&gt;&lt;p data-source-line=&quot;69&quot;&gt;分库分表实属无奈之举，如果数据量低于百万，无需分库分表。如果单表数据量大的话，可以先考虑将数据存到ElasticSearch中，直接查询ES。或者先查询ES，然后通过主键再去查MySQL。&lt;/p&gt;&lt;h3 data-source-line=&quot;71&quot;&gt;分库分表引入的问题&lt;/h3&gt;&lt;ol data-source-line=&quot;73&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;分布式事务问题&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-source-line=&quot;75&quot;&gt;做了垂直分库或者水平分库以后，就必然需要考虑跨库执行SQL带来的分布式事务问题。&lt;/p&gt;&lt;blockquote data-source-line=&quot;77&quot;&gt;&lt;p&gt;有关分布式事务的知识，可以查看博客《&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzUyNzgyNzAwNg==&amp;amp;mid=2247484419&amp;amp;idx=1&amp;amp;sn=fc21f11fc4705511d47bc93b442e8eb6&amp;amp;scene=21#wechat_redirect&quot; target=&quot;_blank&quot; data-linktype=&quot;2&quot;&gt;一文理解分布式事务的解决方案&lt;/a&gt;》&lt;/p&gt;&lt;/blockquote&gt;&lt;ol start=&quot;2&quot; data-source-line=&quot;79&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;跨库join的问题&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-source-line=&quot;81&quot;&gt;分库分表后，表之间的关联操作将受到限制，就无法join位于不同分库的表，也无法join分表粒度不同的表，&lt;/p&gt;&lt;p data-source-line=&quot;83&quot;&gt;解决方法：&lt;/p&gt;&lt;ol start=&quot;3&quot; data-source-line=&quot;88&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;横向扩容的问题&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-source-line=&quot;90&quot;&gt;当使用哈希取模做分表的时候，针对数据量的递增需要动态的增加表，此时就需要考虑数据迁移的问题。&lt;/p&gt;&lt;p data-source-line=&quot;92&quot;&gt;如果原本8个表承载量不够需要扩展到16个表的时候，hash对16取模，新数据是没有问题的，但旧数据会查询不到。&lt;/p&gt;&lt;p data-source-line=&quot;94&quot;&gt;解决方法：&lt;/p&gt;&lt;blockquote data-source-line=&quot;97&quot;&gt;&lt;p&gt;迁移数据的过程可以参考Redis的底层结构字典的扩容（渐进式rehash），可以查看博客《&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzUyNzgyNzAwNg==&amp;amp;mid=2247484299&amp;amp;idx=1&amp;amp;sn=c1d5eb8d8b2532513b03710656b2d05d&amp;amp;scene=21#wechat_redirect&quot; target=&quot;_blank&quot; data-linktype=&quot;2&quot;&gt;一文理解Redis底层数据结构&lt;/a&gt;》&lt;/p&gt;&lt;/blockquote&gt;&lt;ol start=&quot;4&quot; data-source-line=&quot;99&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;结果集合并、排序的问题&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-source-line=&quot;101&quot;&gt;因为数据分散存储到不同的库表中，当查询指定数据列表时，数据来源于不同的子库或者子表，就必然会引发结果集合并、排序的问题。如果每次查询都需要排序、合并等操作，性能肯定会受非常大的影响。&lt;/p&gt;&lt;p data-source-line=&quot;103&quot;&gt;解决方法：&lt;/p&gt;&lt;ul data-source-line=&quot;104&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;结合业务处理，在需求评审上做权衡。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;做好查询的缓存机制。&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3 data-source-line=&quot;107&quot;&gt;分库分表的方式&lt;/h3&gt;&lt;ol data-source-line=&quot;109&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;按租户来分。对于多租户场景，可以考虑。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;按range来分。例如按照时间范围来分。但这种方式需要考虑数据热点问题，例如大量的流量都打在最新的库表上。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;按分表键hash值来分，保证数据分布均匀分散。但这种方式扩容需要进行迁移操作。&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;h3 data-source-line=&quot;113&quot;&gt;保证分库分表之后主键ID的唯一性&lt;/h3&gt;&lt;p data-source-line=&quot;115&quot;&gt;在单库环境下，单表的ID采用MySQL自增的方式。但是，分库之后如果还继续使用数据库自增的方式，就会出现的主键ID重复问题。&lt;/p&gt;&lt;p data-source-line=&quot;117&quot;&gt;这时候就需要一个稳定高性能的分布式ID生成策略，可以查看博客《&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzUyNzgyNzAwNg==&amp;amp;mid=2247484367&amp;amp;idx=1&amp;amp;sn=12fb87da667ee06887c5567dbdd3d04d&amp;amp;scene=21#wechat_redirect&quot; target=&quot;_blank&quot; data-linktype=&quot;2&quot;&gt;一文了解分布式系统ID生成策略&lt;/a&gt;》&lt;/p&gt;&lt;h3 data-source-line=&quot;119&quot;&gt;分库分表基于非分表键的查询&lt;/h3&gt;&lt;p data-source-line=&quot;121&quot;&gt;通常情况下，分库分表的时候，分区字段只有一个。例如对于用户表user，按照user_id字段进行分区，那么之后查询某个用户的信息，只能根据user_id作为分区字段。查询使用其他字段（例如手机号phone_id），则需要扫描所有分表，效率很低。&lt;/p&gt;&lt;p data-source-line=&quot;123&quot;&gt;解决方法：&lt;/p&gt;&lt;p data-source-line=&quot;125&quot;&gt;异构索引&lt;/p&gt;&lt;p data-source-line=&quot;127&quot;&gt;针对这类场景问题，最常用的是采用“异构索引表”的方式解决，即采用异步机制将原表的每一次创建或更新，都换另一个维度保存一份完整的数据表或索引表，拿空间换时间。&lt;/p&gt;&lt;blockquote data-source-line=&quot;129&quot;&gt;&lt;p&gt;需要注意的是，对于更新操作，只能操作原表；异构索引表只能执行查询操作。原表的增量数据，实时地通过同步组件，同步到异构索引表中。&lt;/p&gt;&lt;/blockquote&gt;&lt;h2 data-source-line=&quot;131&quot;&gt;分库分表的技术选型&lt;/h2&gt;&lt;p data-source-line=&quot;133&quot;&gt;MySQL自带分区机制，但大部分互联网公司还是愿意选择Sharding-JDBC、MyCat或者自研中间件，原因主要是第三方的分库分表中间件可以更加灵活掌控业务场景与访问模式。&lt;/p&gt;&lt;h3 data-source-line=&quot;135&quot;&gt;Sharding-JDBC&lt;/h3&gt;&lt;p data-source-line=&quot;137&quot;&gt;Sharding-JDBC定位为轻量级Java框架，是ShardingSphere生态圈中的一个独立产品。更多介绍可以查看参考文档1。&lt;/p&gt;&lt;p data-source-line=&quot;139&quot;&gt;&lt;img data-ratio=&quot;0.5908018867924528&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/OqTAl3WTC7FWX9ibKfnZgQLBDiax5CR0F3lYeY0Xje7EicQVaBvze2Z7aBFJ4A2N0CZrmc9mbMAHWAVhHRLjGgMfw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;848&quot;/&gt;&lt;/p&gt;&lt;p data-source-line=&quot;141&quot;&gt;Sharding-JDBC这种client层方案的优点在于不用部署，运维成本低，不需要代理层的二次转发请求，性能很高。但是如果需要升级，则需要各个系统都进行部署或者做版本隔离：各个系统耦合sharding-jdbc的依赖。&lt;/p&gt;&lt;h3 data-source-line=&quot;143&quot;&gt;MyCat&lt;/h3&gt;&lt;p data-source-line=&quot;145&quot;&gt;MyCat网上资料很多，不过多作讲解。&lt;/p&gt;&lt;p data-source-line=&quot;147&quot;&gt;需要注意的是MyCat这种proxy层方案的缺点在于需要部署并运维一套中间件，运维成本高，但好处在于对于各个项目是透明的，如果遇到升级这种操作只需要中间件那里修改就可以了。&lt;/p&gt;&lt;h3 data-source-line=&quot;149&quot;&gt;总结&lt;/h3&gt;&lt;p data-source-line=&quot;151&quot;&gt;如果没有自研投入的话，分库分表组件选择Sharding-JDBC、MyCat都是不错的选择。&lt;/p&gt;&lt;p data-source-line=&quot;153&quot;&gt;个人建议中小型公司选用Sharding-JDBC，client层方案轻便，而且维护成本低，不需要额外增派人手，而且中小型公司系统复杂度会低一些；但是中大型公司最好还是选用MyCat这类proxy层方案（最好是二次开发或自研），因为大公司系统和项目非常多，人员充足，那么最好有中台部门来研究和维护分库分表组件，然后业务部门直接使用即可。&lt;/p&gt;&lt;p data-source-line=&quot;155&quot;&gt;如果是Service Mesh架构的话，可以期待下ShardingSphere-Sidecar，其优势在于对Kubernetes和Mesos的云原生支持。相信数据网格会给网格架构带来更多期待。&lt;/p&gt;&lt;p data-source-line=&quot;157&quot;&gt;&lt;img data-ratio=&quot;0.7435294117647059&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/OqTAl3WTC7FWX9ibKfnZgQLBDiax5CR0F3BYiarcicyD3vemVMVViaC6VicB09ExUOMHpeTBQeiamhhJIybgJCqk0sEEw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;850&quot;/&gt;&lt;/p&gt;&lt;p data-source-line=&quot;159&quot;&gt;参考文档：&lt;/p&gt;&lt;ol data-source-line=&quot;160&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;https://shardingsphere.apache.org/document/current/cn/overview/&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;/p&gt;
-                &lt;/div&gt;
-
-                
-
-                
-
-
-
-                
+<guid>2bd1853983d81bad07bef6afff30b30b</guid>
+<title>[推荐] 徒手用 Go 写个 Redis 服务器</title>
+<link>https://toutiao.io/k/t9ic9wp</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.66640625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xBgIbW1vdNPWkD6xmM3YDpLKRk9icwRvyvo6aWc1Pz3duHADKROA748khObVndvFBt9tZwTqMfIKZ876WHEDibww/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;span&gt;作者：HDT3213&lt;br/&gt;&lt;/span&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;今天给大家带来的开源项目是 Godis：一个用 Go 语言实现的 Redis 服务器。支持：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;5 种数据结构（string、list、hash、set、sortedset）&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;自动过期（TTL）&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;发布订阅、地理位置、持久化等功能&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.2294736842105263&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/xBgIbW1vdNPWkD6xmM3YDpLKRk9icwRvyyIuib3RuttVFnsljC8XwPgicGkL1zibBcKKAhTERZRwKnzEaesYZhcfXQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1900&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;你或许不需要自己实现 Redis 服务，但你是否厌烦了每天都是写增删改查的业务代码，想提高编程水平试图从零写个项目打开 IDE 却发现无从下手？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;动手造轮子一定是提高编程能力的好办法，下面就带大家用 Go 从零开始写一个 Redis 服务器（Godis），从中你将学到：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;如何编写 Go 语言 TCP 服务器&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;设计并实现安全可靠的通信协议（redis 协议）&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如何使用 Go 语言开发高并发程序&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;设计和实现分布式集群以及分布式事务&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;熟悉链表、哈希表、跳表以及时间轮等常用数据结构&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;千万不要担心内容太难！！虽然示例代码是 Go，但就算你不会 Go 语言也不会影响你理解 Redis 的原理和底层协议以及高性能的秘密。而且作者为了照顾到广大读者，对技术的讲解做了优化。示例代码在原项目基础上做了简化，并逐行地加了注释。如果是高级玩家，请直接访问项目阅读源码：&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;https://github.com/HDT3213/godis&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;下面让我们一起拨开 Redis 的迷雾。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;一、写个 TCP 服务器&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;众所周知 Redis 是 C/S 模型，使用 TCP 协议进行通信。接下来就从实现 TCP 服务端开始。作为广泛用于服务端的编程语言 Golang 提供了非常简洁的 TCP 接口，所以实现起来十分方便。示例代码：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;ListenAndServe&lt;/span&gt;&lt;span&gt;(address &lt;span&gt;string&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;    &lt;span&gt;// 绑定监听地址&lt;/span&gt;&lt;br/&gt;    listener, err := net.Listen(&lt;span&gt;&quot;tcp&quot;&lt;/span&gt;, address)&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; err != &lt;span&gt;nil&lt;/span&gt; {&lt;br/&gt;        log.Fatal(fmt.Sprintf(&lt;span&gt;&quot;listen err: %v&quot;&lt;/span&gt;, err))&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;defer&lt;/span&gt; listener.Close()&lt;br/&gt;    log.Println(fmt.Sprintf(&lt;span&gt;&quot;bind: %s, start listening...&quot;&lt;/span&gt;, address))&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;for&lt;/span&gt; {&lt;br/&gt;        &lt;span&gt;// Accept 会一直阻塞直到有新的连接建立或者listen中断才会返回&lt;/span&gt;&lt;br/&gt;        conn, err := listener.Accept()&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; err != &lt;span&gt;nil&lt;/span&gt; {&lt;br/&gt;            &lt;span&gt;// 通常是由于listener被关闭无法继续监听导致的错误&lt;/span&gt;&lt;br/&gt;            log.Fatal(fmt.Sprintf(&lt;span&gt;&quot;accept err: %v&quot;&lt;/span&gt;, err))&lt;br/&gt;        }&lt;br/&gt;        &lt;span&gt;// 开启新的 goroutine 处理该连接&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;go&lt;/span&gt; Handle(conn)&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;Handle&lt;/span&gt;&lt;span&gt;(conn net.Conn)&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;    reader := bufio.NewReader(conn)&lt;br/&gt;    &lt;span&gt;for&lt;/span&gt; {&lt;br/&gt;        &lt;span&gt;// ReadString 会一直阻塞直到遇到分隔符 &#x27;\n&#x27;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;// 遇到分隔符后 ReadString 会返回上次遇到分隔符到现在收到的所有数据&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;// 若在遇到分隔符之前发生异常, ReadString 会返回已收到的数据和错误信息&lt;/span&gt;&lt;br/&gt;        msg, err := reader.ReadString(&lt;span&gt;&#x27;\n&#x27;&lt;/span&gt;)&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; err != &lt;span&gt;nil&lt;/span&gt; {&lt;br/&gt;            &lt;span&gt;// 通常遇到的错误是连接中断或被关闭，用io.EOF表示&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; err == io.EOF {&lt;br/&gt;                log.Println(&lt;span&gt;&quot;connection close&quot;&lt;/span&gt;)&lt;br/&gt;            } &lt;span&gt;else&lt;/span&gt; {&lt;br/&gt;                log.Println(err)&lt;br/&gt;            }&lt;br/&gt;            &lt;span&gt;return&lt;/span&gt;&lt;br/&gt;        }&lt;br/&gt;        b := []&lt;span&gt;byte&lt;/span&gt;(msg)&lt;br/&gt;        &lt;span&gt;// 将收到的信息发送给客户端&lt;/span&gt;&lt;br/&gt;        conn.Write(b)&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;    ListenAndServe(&lt;span&gt;&quot;:8000&quot;&lt;/span&gt;)&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;👌 至此只用了 40 行代码就搞定服务端啦！启动上面的 TCP 服务后，在终端中输入 &lt;code&gt;telnet 127.0.0.1 8000&lt;/code&gt; 就可以连接到刚写好的服务器，它会将你发送的消息原样返回给你（所以请不要骂它）：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.2675925925925926&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/xBgIbW1vdNPWkD6xmM3YDpLKRk9icwRvyuibu0TPqyuw0zws5DwMnC0m4dRic0QxoiaqrxVsC3ZxU93z9qGVx6licKA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1080&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这个 TCP 服务器的非常简单，主协程调用 accept 函数来监听端口，接受新连接后开启一个 Goroutine 来处理它。这种简单的阻塞 IO 模型有些类似于早期的 Tomcat/Apache 服务器。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;阻塞 IO 模型是使用&lt;strong&gt;一个线程处理一个连接&lt;/strong&gt;，在没有收到新数据时监听线程处于阻塞状态，直到数据就绪后线程被唤醒进行处理。因为阻塞 IO 模型需要开启大量线程并且频繁地进行上下文切换，所以它的效率很低。而 Redis 使用的 epoll 技术（IO 多路复用）用&lt;strong&gt;一个线程处理大量连接&lt;/strong&gt;，极大地提高了吞吐量。那么我们的 TCP 服务器会比 Redis 慢很多吗？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当然不会，Golang 利用 Goroutine 调度开销远远小于线程调度开销的优势封装出 &lt;code&gt;goroutine-per-connection&lt;/code&gt; 风格的极简接口，而且 net/tcp 库将 epoll 封装成了阻塞 IO 的样子，在享受 epoll 高性能的同时避免了原生 epoll 接口所需的复杂异步代码。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在作者的电脑上 Redis 每秒可以响应 10.6k 个 PING 命令，而 Godis（完整代码） 的吞吐量为 9.2 kqps 相差并不大。想了解更多 Golang 高性能的㊙️密，可以搜索 &lt;code&gt;go netpoller&lt;/code&gt; 或者 &lt;code&gt;go 语言 网络轮询器&lt;/code&gt; 关键字&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;另外，合格的 TCP 的服务器在关闭的时候不应该一停了之，而需要完成响应已接收的请求、释放 TCP 连接等必要的清理工作。这个功能我们一般称为 &lt;code&gt;优雅关闭&lt;/code&gt; 或者 &lt;code&gt;graceful shutdown&lt;/code&gt;，优雅关闭步骤：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;首先，关闭 listener 停止接受新连接&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;然后，遍历所有存活连接逐个关闭&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;优雅关闭的代码比较多，这里就不完整贴出了。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;二、透视 Redis 协议&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在解决完通信后，下一步就是搞清楚 Redis 的协议，其实就是一套序列化协议类似 JSON、Protocol Buffers，你看底层其实也就是一些基础的知识。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;自 Redis 2.0 以后的通信统一为 RESP 协议（REdis Serialization Protocol)，该协议易于实现不仅可以高效的被程序解析，还能够被人类读懂容易调试。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;RESP 是一个二进制安全的文本协议，工作于 TCP 协议上。RESP 以行作为单位，客户端和服务器发送的命令或数据一律以 &lt;code&gt;\r\n&lt;/code&gt;（CRLF）作为换行符。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;二进制安全是指允许协议中出现任意字符而不会导致故障。比如 C 语言的字符串以 &lt;code&gt;\0&lt;/code&gt; 作为结尾不允许字符串中间出现 &lt;code&gt;\0&lt;/code&gt;，而 Go 语言的 string 则允许出现 &lt;code&gt;\0&lt;/code&gt;，我们说 Go 语言的 string 是二进制安全的，而 C 语言字符串不是二进制安全的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;RESP 的二进制安全性允许我们在 key 或者 value 中包含 &lt;code&gt;\r&lt;/code&gt; 或者 &lt;code&gt;\n&lt;/code&gt; 这样的特殊字符。在使用 Redis 存储 protobuf、msgpack 等二进制数据时，二进制安全性尤为重要。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;RESP 定义了 5 种格式：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;简单字符串（Simple String）：服务器用来返回简单的结果，比如 &quot;OK&quot; 非二进制安全，且不允许换行&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;错误信息（Error）：服务器用来返回简单的错误信息，比如 &quot;ERR Invalid Synatx&quot; 非二进制安全，且不允许换行&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;整数（Integer）：llen、scard 等命令的返回值，64 位有符号整数&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;字符串（Bulk String）：二进制安全字符串，比如 get 等命令的返回值&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;数组（Array，又称 Multi Bulk Strings）：Bulk String 数组，客户端发送指令以及 lrange 等命令响应的格式&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;RESP 通过第一个字符来表示格式：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;简单字符串：以&quot;+&quot; 开始， 如：&quot;+OK\r\n&quot;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;错误：以&quot;-&quot; 开始，如：&quot;-ERR Invalid Synatx\r\n&quot;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;整数：以&quot;:&quot;开始，如：&quot;:1\r\n&quot;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;字符串：以 &lt;code&gt;$&lt;/code&gt; 开始&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;数组：以 &lt;code&gt;*&lt;/code&gt; 开始&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;下面让我们通过一些实际例子来理解协议。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;2.1 字符串&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;字符串（Bulk String）有两行，第一行为 &lt;code&gt;$&lt;/code&gt;+正文长度，第二行为实际内容。如：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;$3&lt;/span&gt;\r\nSET\r\n&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;字符串（Bulk String）是二进制安全的，就是说可以在 Bulk String 内部包含 &quot;\r\n&quot; 字符（行尾的 CRLF 被隐藏）：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;$4&lt;/span&gt;&lt;br/&gt;a\r\nb&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;2.2 空&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;$-1&lt;/code&gt; 表示 nil，比如使用 get 命令查询一个不存在的 key 时，响应即为 &lt;code&gt;$-1&lt;/code&gt;。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;2.3 数组&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;数组（Array）格式第一行为 &quot;*&quot;+数组长度，其后是相应数量的 字符串（Bulk String）。比如 &lt;code&gt;[&quot;foo&quot;, &quot;bar&quot;]&lt;/code&gt; 的报文（传输时的内容）：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;*2&lt;br/&gt;&lt;span&gt;$3&lt;/span&gt;&lt;br/&gt;foo&lt;br/&gt;&lt;span&gt;$3&lt;/span&gt;&lt;br/&gt;bar&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;客户端也使用 数组（Array）格式向服务端发送指令。命令本身将作为第一个参数，比如 &lt;code&gt;SET key value&lt;/code&gt; 指令的 RESP 报文：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;*3&lt;br/&gt;&lt;span&gt;$3&lt;/span&gt;&lt;br/&gt;SET&lt;br/&gt;&lt;span&gt;$3&lt;/span&gt;&lt;br/&gt;key&lt;br/&gt;&lt;span&gt;$5&lt;/span&gt;&lt;br/&gt;value&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;将换行符打印出来：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$5\r\nvalue\r\n&lt;/code&gt;&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;2.4 解析预备&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;知道常用的 RESP 报文内容后，就可以开始着手解析了。但需要注意的是 RESP 是 &lt;code&gt;二进制安全&lt;/code&gt; 的协议，它允许在正文中使用 &lt;code&gt;\r\n&lt;/code&gt; 字符。举例来说 Redis 可以正确接收并执行 &lt;code&gt;SET &quot;a\r\nb&quot; hellogithub&lt;/code&gt; 指令，这条指令的正确报文是这样的：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;*3  &lt;br/&gt;&lt;span&gt;$3&lt;/span&gt;&lt;br/&gt;SET&lt;br/&gt;&lt;span&gt;$4&lt;/span&gt;&lt;br/&gt;a\r\nb &lt;br/&gt;&lt;span&gt;$11&lt;/span&gt;&lt;br/&gt;hellogithub&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当 &lt;code&gt;ReadBytes&lt;/code&gt; 读取到第五行 &quot;a\r\nb\r\n&quot; 时会将其误认为两行：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;*3  &lt;br/&gt;&lt;span&gt;$3&lt;/span&gt;&lt;br/&gt;SET&lt;br/&gt;&lt;span&gt;$4&lt;/span&gt;&lt;br/&gt;a  // 错误的分行&lt;br/&gt;b // 错误的分行&lt;br/&gt;&lt;span&gt;$11&lt;/span&gt;&lt;br/&gt;hellogithub&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因此当读取到第四行 &lt;code&gt;$4&lt;/code&gt; 后，不应该继续使用 &lt;code&gt;ReadBytes(&#x27;\n&#x27;)&lt;/code&gt; 读取下一行，应使用 &lt;code&gt;io.ReadFull(reader, msg)&lt;/code&gt; 方法来读取指定长度的内容。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;msg = &lt;span&gt;make&lt;/span&gt;([]&lt;span&gt;byte&lt;/span&gt;, &lt;span&gt;4&lt;/span&gt; + &lt;span&gt;2&lt;/span&gt;) &lt;span&gt;// 正文长度4 + 换行符长度2&lt;/span&gt;&lt;br/&gt;_, err = io.ReadFull(reader, msg)&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;2.5 编写 RESP 协议解析器&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;解决完上面内容包含 &quot;\r\n&quot; 的问题，我们就可以开始放手编写 Redis 协议解析器啦！&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;type&lt;/span&gt; Payload &lt;span&gt;struct&lt;/span&gt; {&lt;br/&gt; Data redis.Reply&lt;br/&gt; Err  error&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;// ParseStream 通过 io.Reader 读取数据并将结果通过 channel 将结果返回给调用者&lt;/span&gt;&lt;br/&gt;&lt;span&gt;// 流式处理的接口适合供客户端/服务端使用&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;ParseStream&lt;/span&gt;&lt;span&gt;(reader io.Reader)&lt;/span&gt; &amp;lt;-&lt;span&gt;chan&lt;/span&gt; *&lt;span&gt;Payload&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt; ch := &lt;span&gt;make&lt;/span&gt;(&lt;span&gt;chan&lt;/span&gt; *Payload)&lt;br/&gt; &lt;span&gt;go&lt;/span&gt; parse0(reader, ch)&lt;br/&gt; &lt;span&gt;return&lt;/span&gt; ch&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;由于解析器的代码比较多，这里只简单地介绍一下核心流程。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;parse0&lt;/span&gt;&lt;span&gt;(reader io.Reader, ch &lt;span&gt;chan&lt;/span&gt;&amp;lt;- *Payload)&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;    &lt;span&gt;// 初始化读取状态&lt;/span&gt;&lt;br/&gt;    readingMultiLine := &lt;span&gt;false&lt;/span&gt;&lt;br/&gt;    expectedArgsCount := &lt;span&gt;0&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;var&lt;/span&gt; args [][]&lt;span&gt;byte&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;var&lt;/span&gt; bulkLen &lt;span&gt;int64&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;for&lt;/span&gt; {&lt;br/&gt;        &lt;span&gt;// 上文中我们提到 RESP 是以行为单位的&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;// 因为行分为简单字符串和二进制安全的 BulkString，我们需要封装一个 readLine 函数来兼容&lt;/span&gt;&lt;br/&gt;        line, err = readLine(reader, bulkLen)&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; err != &lt;span&gt;nil&lt;/span&gt; { &lt;br/&gt;            &lt;span&gt;// 处理错误&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;return&lt;/span&gt;&lt;br/&gt;        }&lt;br/&gt;        &lt;span&gt;// 接下来我们对刚刚读取的行进行解析&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;// 我们简单的将 Reply 分为两类:&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;// 单行: StatusReply, IntReply, ErrorReply&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;// 多行: BulkReply, MultiBulkReply&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; !readingMultiLine {&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; isMulitBulkHeader(line) {&lt;br/&gt;                &lt;span&gt;// 我们收到了 MulitBulkReply 的第一行&lt;/span&gt;&lt;br/&gt;                &lt;span&gt;// 获得 MulitBulkReply 中 BulkString 的个数&lt;/span&gt;&lt;br/&gt;                expectedArgsCount = parseMulitBulkHeader(line)&lt;br/&gt;                &lt;span&gt;// 等待 MulitBulkReply 后续行&lt;/span&gt;&lt;br/&gt;                readingMultiLine = &lt;span&gt;true&lt;/span&gt;&lt;br/&gt;            } &lt;span&gt;else&lt;/span&gt; &lt;span&gt;if&lt;/span&gt; isBulkHeader(line) {&lt;br/&gt;                &lt;span&gt;// 我们收到了 BulkReply 的第一行&lt;/span&gt;&lt;br/&gt;                &lt;span&gt;// 获得 BulkReply 第二行的长度, 通过 bulkLen 告诉 readLine 函数下一行 BulkString 的长度&lt;/span&gt;&lt;br/&gt;                bulkLen = parseBulkHeader()&lt;br/&gt;                &lt;span&gt;// 这个 Reply 中一共有 1 个 BulkString&lt;/span&gt;&lt;br/&gt;                expectedArgsCount = &lt;span&gt;1&lt;/span&gt; &lt;br/&gt;                &lt;span&gt;// 等待 BulkReply 后续行&lt;/span&gt;&lt;br/&gt;                readingMultiLine = &lt;span&gt;true&lt;/span&gt;&lt;br/&gt;            } &lt;span&gt;else&lt;/span&gt; {&lt;br/&gt;                &lt;span&gt;// 处理 StatusReply, IntReply, ErrorReply 等单行 Reply&lt;/span&gt;&lt;br/&gt;                reply := parseSingleLineReply(line)&lt;br/&gt;                &lt;span&gt;// 通过 ch 返回结果&lt;/span&gt;&lt;br/&gt;                emitReply(ch)&lt;br/&gt;            }&lt;br/&gt;        } &lt;span&gt;else&lt;/span&gt; {&lt;br/&gt;            &lt;span&gt;// 进入此分支说明我们正在等待 MulitBulkReply 或 BulkReply 的后续行&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;// MulitBulkReply 的后续行有两种，BulkHeader 或者 BulkString&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; isBulkHeader(line) {&lt;br/&gt;                bulkLen = parseBulkHeader()&lt;br/&gt;            } &lt;span&gt;else&lt;/span&gt; {&lt;br/&gt;                &lt;span&gt;// 我们正在读取一个 BulkString, 它可能是 MulitBulkReply 或 BulkReply &lt;/span&gt;&lt;br/&gt;                args = &lt;span&gt;append&lt;/span&gt;(args, line)&lt;br/&gt;            }&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; &lt;span&gt;len&lt;/span&gt;(args) == expectedArgsCount { &lt;span&gt;// 我们已经读取了所有后续行&lt;/span&gt;&lt;br/&gt;                &lt;span&gt;// 通过 ch 返回结果&lt;/span&gt;&lt;br/&gt;                emitReply(ch)&lt;br/&gt;                &lt;span&gt;// 重置状态, 准备解析下一条 Reply&lt;/span&gt;&lt;br/&gt;                readingMultiLine = &lt;span&gt;false&lt;/span&gt;&lt;br/&gt;                expectedArgsCount = &lt;span&gt;0&lt;/span&gt;&lt;br/&gt;                args = &lt;span&gt;nil&lt;/span&gt;&lt;br/&gt;                bulkLen = &lt;span&gt;0&lt;/span&gt;&lt;br/&gt;            }&lt;br/&gt;        }&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;三、实现内存数据库&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;至此我们已经搞定数据接收和解析的部分了，剩下就是我们应该把数据存在哪里了？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;抛开持久化部分，作为基于内存的 KV 数据库 Redis 的所有数据需要都存储在内存中的哈希表，而这个哈希表就是我们今天需要编写的最后一个组件。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;与单线程的 Redis 不同我们实现的 Redis（godis）是并行工作的，所以我们必须考虑各种并发安全问题。常见的并发安全哈希表设计有几种：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;code&gt;sync.map&lt;/code&gt;：Golang 官方提供的并发哈希表，适合读多写少的场景。但是在 &lt;code&gt;m.dirty&lt;/code&gt; 刚被提升后会将 &lt;code&gt;m.read&lt;/code&gt; 复制到新的 &lt;code&gt;m.dirty&lt;/code&gt; 中，在数据量较大的情况下复制操作会阻塞所有协程，存在较大的隐患。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;code&gt;juc.ConcurrentHashMap&lt;/code&gt;：Java 的并发哈希表采用分段锁实现。在进行扩容时访问哈希表线程都将协助进行 rehash 操作，在 rehash 结束前所有的读写操作都会阻塞。因为缓存数据库中键值对数量巨大且对读写操作响应时间要求较高，使用 juc 的策略是不合适的。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;code&gt;memcached hashtable&lt;/code&gt;：在后台线程进行 rehash 操作时，主线程会判断要访问的哈希槽是否已被 rehash 从而决定操作 old_hashtable 还是操作 new_hashtable。这种设计被称为&lt;strong&gt;渐进式 rehash&lt;/strong&gt; 它的优点是 rehash 操作基本不会阻塞主线程的读写，是最理想的的方案。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但渐进式 rehash 的实现非常复杂，所以 godis 采用 Golang 社区广泛使用的分段锁策略（非上面的三种），就是将 key 分散到固定数量的 shard 中避免进行整体 rehash 操作。shard 是有锁保护的 map，当 shard 进行 rehash 时会阻塞 shard 内的读写，但不会对其他 shard 造成影响。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.5855728429985856&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xBgIbW1vdNPWkD6xmM3YDpLKRk9icwRvyAgDiaNQU6ny3uGJqrZIhKlT4MLibuX6BWDeHwaAN5BdbYBs7XRhhawgg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;707&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;代码如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;type&lt;/span&gt; ConcurrentDict &lt;span&gt;struct&lt;/span&gt; {&lt;br/&gt;    table []*Shard&lt;br/&gt;    count &lt;span&gt;int32&lt;/span&gt;&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;type&lt;/span&gt; Shard &lt;span&gt;struct&lt;/span&gt; {&lt;br/&gt;    m     &lt;span&gt;map&lt;/span&gt;[&lt;span&gt;string&lt;/span&gt;]&lt;span&gt;interface&lt;/span&gt;{}&lt;br/&gt;    mutex sync.RWMutex&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;(dict *ConcurrentDict)&lt;/span&gt; &lt;span&gt;spread&lt;/span&gt;&lt;span&gt;(hashCode &lt;span&gt;uint32&lt;/span&gt;)&lt;/span&gt; &lt;span&gt;uint32&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt; tableSize := &lt;span&gt;uint32&lt;/span&gt;(&lt;span&gt;len&lt;/span&gt;(dict.table))&lt;br/&gt; &lt;span&gt;return&lt;/span&gt; (tableSize - &lt;span&gt;1&lt;/span&gt;) &amp;amp; &lt;span&gt;uint32&lt;/span&gt;(hashCode)&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;(dict *ConcurrentDict)&lt;/span&gt; &lt;span&gt;getShard&lt;/span&gt;&lt;span&gt;(index &lt;span&gt;uint32&lt;/span&gt;)&lt;/span&gt; *&lt;span&gt;Shard&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt; &lt;span&gt;return&lt;/span&gt; dict.table[index]&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;(dict *ConcurrentDict)&lt;/span&gt; &lt;span&gt;Get&lt;/span&gt;&lt;span&gt;(key &lt;span&gt;string&lt;/span&gt;)&lt;/span&gt; &lt;span&gt;(val &lt;span&gt;interface&lt;/span&gt;{}, exists &lt;span&gt;bool&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt; hashCode := fnv32(key)&lt;br/&gt; index := dict.spread(hashCode)&lt;br/&gt; shard := dict.getShard(index)&lt;br/&gt; shard.mutex.RLock()&lt;br/&gt; &lt;span&gt;defer&lt;/span&gt; shard.mutex.RUnlock()&lt;br/&gt; val, exists = shard.m[key]&lt;br/&gt; &lt;span&gt;return&lt;/span&gt;&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;(dict *ConcurrentDict)&lt;/span&gt; &lt;span&gt;Put&lt;/span&gt;&lt;span&gt;(key &lt;span&gt;string&lt;/span&gt;, val &lt;span&gt;interface&lt;/span&gt;{})&lt;/span&gt; &lt;span&gt;(result &lt;span&gt;int&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt; &lt;span&gt;if&lt;/span&gt; dict == &lt;span&gt;nil&lt;/span&gt; {&lt;br/&gt;  &lt;span&gt;panic&lt;/span&gt;(&lt;span&gt;&quot;dict is nil&quot;&lt;/span&gt;)&lt;br/&gt; }&lt;br/&gt; hashCode := fnv32(key)&lt;br/&gt; index := dict.spread(hashCode)&lt;br/&gt; shard := dict.getShard(index)&lt;br/&gt; shard.mutex.Lock()&lt;br/&gt; &lt;span&gt;defer&lt;/span&gt; shard.mutex.Unlock()&lt;br/&gt;&lt;br/&gt; &lt;span&gt;if&lt;/span&gt; _, ok := shard.m[key]; ok {&lt;br/&gt;  shard.m[key] = val&lt;br/&gt;  &lt;span&gt;return&lt;/span&gt; &lt;span&gt;0&lt;/span&gt;&lt;br/&gt; } &lt;span&gt;else&lt;/span&gt; {&lt;br/&gt;  shard.m[key] = val&lt;br/&gt;  dict.addCount()&lt;br/&gt;  &lt;span&gt;return&lt;/span&gt; &lt;span&gt;1&lt;/span&gt;&lt;br/&gt; }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;ConcurrentDict&lt;/code&gt; 可以保证对单个 key 操作的并发安全性，但是仍然无法满足并发安全的需求，举例来说：&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;Incr 命令需要完成：&lt;code&gt;读取 -&amp;gt; 做加法 -&amp;gt; 写入&lt;/code&gt; 三步操作，读取和写入两步操作不是原子性的&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;MSETNX 命令当且仅当所有给定键都不存在时所有给定键设置值，我们需要保证「检查多个key是否存在」以及「写入多个key」这两个操作的原子性&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因此我们需要实现 &lt;code&gt;db.Locker&lt;/code&gt; 用于锁定一个或一组 key 直到我们完成所有操作后再释放。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;实现 &lt;code&gt;db.Locker&lt;/code&gt; 最直接的想法是使用一个 &lt;code&gt;map[string]*sync.RWMutex&lt;/code&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;加锁过程分为两步：初始化 mutex -&amp;gt; 加锁&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;解锁过程也分为两步: 解锁 -&amp;gt; 释放mutex&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;那么存在一个无法解决的并发问题：&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;时间&lt;/th&gt;&lt;th&gt;协程A&lt;/th&gt;&lt;th&gt;协程B&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;&lt;br/&gt;&lt;/td&gt;&lt;td&gt;locker[&quot;a&quot;].Unlock()&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;2&lt;/td&gt;&lt;td&gt;locker[&quot;a&quot;] = &amp;amp;sync.RWMutex{}&lt;/td&gt;&lt;td&gt;&lt;br/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;3&lt;/td&gt;&lt;td&gt;&lt;br/&gt;&lt;/td&gt;&lt;td&gt;delete(locker[&quot;a&quot;])&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;4&lt;/td&gt;&lt;td&gt;locker[&quot;a&quot;].Lock()&lt;/td&gt;&lt;td&gt;&lt;br/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;由于 t3 时协程 B 释放了锁，t4 时协程 A 试图加锁会失败。若协程B在解锁时不执行 &lt;code&gt;delete(locker[&quot;a&quot;])&lt;/code&gt; 就可以避免该异常的发生，但是这样会造成严重的内存泄露。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们注意到哈希槽的数量远少于 key 的数量，反过来说多个键可以共用一个哈希槽。所以我们不再直接对 key 进行加锁而是锁定 key 所在的哈希槽也可以保证安全，另一方面哈希槽数量较少即使不释放也不会消耗太多内存。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;type&lt;/span&gt; Locks &lt;span&gt;struct&lt;/span&gt; {&lt;br/&gt;    table []*sync.RWMutex&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;Make&lt;/span&gt;&lt;span&gt;(tableSize &lt;span&gt;int&lt;/span&gt;)&lt;/span&gt; *&lt;span&gt;Locks&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;    table := &lt;span&gt;make&lt;/span&gt;([]*sync.RWMutex, tableSize)&lt;br/&gt;    &lt;span&gt;for&lt;/span&gt; i := &lt;span&gt;0&lt;/span&gt;; i &amp;lt; tableSize; i++ {&lt;br/&gt;        table[i] = &amp;amp;sync.RWMutex{}&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; &amp;amp;Locks{&lt;br/&gt;        table: table,&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;(locks *Locks)&lt;/span&gt;&lt;span&gt;Lock&lt;/span&gt;&lt;span&gt;(key &lt;span&gt;string&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;    index := locks.spread(fnv32(key))&lt;br/&gt;    mu := locks.table[index]&lt;br/&gt;    mu.Lock()&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;(locks *Locks)&lt;/span&gt;&lt;span&gt;UnLock&lt;/span&gt;&lt;span&gt;(key &lt;span&gt;string&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;    index := locks.spread(fnv32(key))&lt;br/&gt;    mu := locks.table[index]&lt;br/&gt;    mu.Unlock()&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在锁定多个 key 时需要注意，若 协程A 持有 键a 的锁试图获得 键b 的锁，此时 协程B 持有 键b 的锁试图获得 键a 的锁则会形成死锁。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;解决方法是所有协程都按照相同顺序加锁，若两个协程都想获得 键a 和 键b 的锁，那么必须先获取 键a 的锁后获取 键b 的锁，这样就可以避免循环等待。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;到目前为止构建 Redis 服务器所需的基本组件已经备齐，只需要将 TCP 服务器、协议解析器与哈希表组装起来我们的 Redis 服务器就可以开始工作啦。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;最后，以上代码均简化自我写的 Godis：一个开源仅用 Go 语言实现的 Redis 服务器。期待您的关注和 Star：&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;项目地址：https://github.com/HDT3213/godis&lt;/p&gt;&lt;/blockquote&gt;&lt;h1 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;/h1&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;四、结束&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;很多朋友的日常工作主要是编写业务代码，对于框架、数据库、中间件这些“架构”、“底层代码” 有一些恐惧感。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但本文我们只写了 3 个组件，共计几百行代码就实现了一个基本的 Redis 服务器。所以底层的技术并不难，只要你对技术感兴趣由浅入深、从简到繁，“底层代码”也并不神秘。&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;span&gt;- END -&lt;/span&gt;&lt;/section&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzA5MzYyNzQ0MQ==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/xBgIbW1vdNOqkqThUJBICyFBlvLvTyOCgBpibwWotSxGExfnOYFfPiaL9yn3GMUOCEVYN2RNslGCdQwgZy6ticdyA/0?wx_fmt=png&quot; data-nickname=&quot;HelloGitHub&quot; data-alias=&quot;GitHub520&quot; data-signature=&quot;分享 GitHub 上有趣、入门级的开源项目。&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;兴趣是最好的老师，&lt;strong&gt;HelloGitHub&lt;/strong&gt; 发现编程的乐趣&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>3d5b6fcdfcbdfe13e375dea8a902e477</guid>
-<title>分布式系统之不可靠时钟揭秘</title>
-<link>https://toutiao.io/k/7fwgr8j</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entry-inner&quot;&gt;
-                                                    
-&lt;h1/&gt;
+<guid>d901213929ddb9effbfb2c955e99d23a</guid>
+<title>[推荐] [译] 如何优化您的日常决策</title>
+<link>https://toutiao.io/k/88ebc7h</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;Post-body&quot;&gt;
+                    &lt;p&gt;当今的生活和工作都是&lt;strong&gt;快节奏&lt;/strong&gt;的，人们每天都会遇到各种各样的事情，并需要做出做相应的&lt;strong&gt;决策&lt;/strong&gt;：哪些事情先做，哪些事情后做，哪些事情应该做，哪些事情不应该做。前些天有读到一篇文章：&lt;a href=&quot;https://jamesclear.com/design-default&quot; rel=&quot; nofollow ugc&quot;&gt;How to Optimize Your Daily Decisions&lt;/a&gt;，作者所做的思考，以及给出的建议，不仅通俗易懂，而且也方便用于日常工作、生活。因此有翻译成中文，分享给有需要的朋友；以下是原文。&lt;/p&gt;
 
+&lt;p&gt;&lt;img src=&quot;http://lovejade.oss-cn-shenzhen.aliyuncs.com/decisions.png&quot; title=&quot;&quot; alt=&quot;如何优化您的日常决策&quot;/&gt;&lt;/p&gt;
 
+&lt;p&gt;您可能会假设人们购买产品是因为它们是什么，但事实是，我们经常购买东西是因为它们的位置。例如，与视线齐平的商店货架上的商品往往比不太显眼的货架上的商品购买得更多。&lt;/p&gt;
 
-&lt;p&gt;时钟是一个我们常常会使用的东西，比如我们会用它来确定一个事情发生的时间或者说一个请求花费的时间。然而在分布式系统中，每个机器都有他们自己的时钟，通常来说是由它们本身的硬件来决定的（比如晶振等），它们都不是精确准确的，所以每个机器之间的时钟都或多或少有点差别。所以当我们需要使用不同机器的时钟时，比如比较两个发生在不同机器上事情发生的先后顺序的时候，就很难说哪一个事情是真正先发生哪一个是后发生的。本文就来介绍一下一般如何处理这个问题。&lt;/p&gt;
+&lt;p&gt;在畅销书 &lt;a href=&quot;https://jamesclear.com/book/nudge&quot; rel=&quot; nofollow ugc&quot; title=&quot;理查德·塞勒 (Richard Thaler) 和卡斯·桑斯坦 (Cass Sunstein) 的推动&quot;&gt;Nudge&lt;/a&gt; ( &lt;a href=&quot;https://jamesclear.com/ebook/nudge&quot; rel=&quot; nofollow ugc&quot; title=&quot;轻推电子书&quot;&gt;Kindle&lt;/a&gt; | &lt;a href=&quot;https://jamesclear.com/audiobook/nudge&quot; rel=&quot; nofollow ugc&quot; title=&quot;轻推有声读物&quot;&gt;Audiobook&lt;/a&gt; ) 中，作者 Richard Thaler 和 Cass Sunstein 解释了我们日常决策受周围世界影响的各种方式。视线水平的货架对我们购买习惯的影响只是一个例子。&lt;/p&gt;
 
+&lt;p&gt;这是另一个：&lt;/p&gt;
 
+&lt;p&gt;过道的尽头是零售商的赚钱机器。根据《纽约时报》引用的数据，可口可乐 45% 的销售额专门来自过道尽头的货架。&lt;/p&gt;
 
-&lt;h2&gt;单调时钟(Monotonic)和当天的时间（Time-of-Day Clock）&lt;/h2&gt;
+&lt;p&gt;这就是为什么这很重要：&lt;/p&gt;
 
+&lt;p&gt;&lt;strong&gt;一些东西&lt;/strong&gt;必须放在与视线齐平的架子上。必须在过道尽头的架子上放&lt;em&gt;一些东西&lt;/em&gt;。某些东西必须是默认选择。某些东西必须是最能见度和最突出的选项。这不仅适用于商店，而且适用于我们生活的几乎每个领域。您的办公室、汽车、厨房和客厅都有默认选择。&lt;/p&gt;
 
+&lt;p&gt;我的论点是这样的：&lt;/p&gt;
 
-&lt;p&gt;在现代计算机上，一般有两种时钟，一个是单调时钟另外一个是当天时间。虽然两者都是时钟，但它们其实有很大的差别。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;如果你为生活中的默认而设计，而不是接受交给你的任何东西，那么过上更好的生活会更容易&lt;/strong&gt;。&lt;/p&gt;
 
+&lt;p&gt;现在让我们谈谈如何做到这一点。&lt;/p&gt;
 
+&lt;h2&gt;默认设计&lt;/h2&gt;
 
-&lt;h3&gt;当天时间&lt;/h3&gt;
+&lt;p&gt;尽管我们中的大多数人在任何特定时刻都有做出广泛选择的自由，但我们经常根据所处的环境做出决定。&lt;/p&gt;
 
+&lt;p&gt;例如，如果我想这样做，我可以在写这篇文章时喝一杯啤酒。但是，我目前坐在办公桌前，旁边放着一杯水。看不到啤酒。虽然我有能力起床、步行到我的车、开车去商店和买啤酒，但我可能不会，因为我周围有更简单的选择——即饮用水。在这种情况下，喝一口水是默认的决定，很容易的决定。&lt;/p&gt;
 
+&lt;p&gt;考虑在您的个人和职业生涯中如何设计您的默认决定。例如：&lt;/p&gt;
 
-&lt;p&gt;所谓当天时间就是我们通常意思上看到的时间，比如现在是几月几日几点几分等。从代码的角度来讲就是类似clock_gettime(CLOCK_REALTIME)返回的值，通常来说这个值会和NTP（Network Time Protocol）进行同步，所以理想状况下各个机器这个值都是差不多，当然现实中每个机器还是不同的，或多或少会有漂移。不过假如漂移过大就会被强制重置从而跳回正确的时间。然而正是因为这种漂移和重置的机制使得这个时钟不太适合用来计算消耗的时间，因为他会不准设置有可能会变成负值。&lt;/p&gt;
+&lt;ul&gt;&lt;li&gt;如果您睡觉时将手机放在床边，那么醒来后立即查看社交媒体和电子邮件可能是默认决定。&lt;/li&gt;
+&lt;li&gt;如果你走进你的客厅，你的沙发和椅子都面向电视机，那么看电视很可能是默认的决定。&lt;/li&gt;
+&lt;li&gt;如果您在厨房里放酒，那么持续饮酒更有可能成为默认决定。&lt;/li&gt;&lt;/ul&gt;
 
+&lt;p&gt;当然，默认值也可以是正数。&lt;/p&gt;
 
+&lt;ul&gt;&lt;li&gt;如果你在工作时在办公桌旁边放一个哑铃，那么做一些快速的弯举更有可能是默认的决定。&lt;/li&gt;
+&lt;li&gt;如果你全天都带着水瓶，那么喝水而不是苏打水更有可能是默认的决定。&lt;/li&gt;
+&lt;li&gt;如果您将牙线放在可见的位置（例如牙刷旁边），则使用牙线更可能是默认决定。&lt;/li&gt;&lt;/ul&gt;
 
-&lt;h3&gt;单调时钟&lt;/h3&gt;
+&lt;p&gt;研究人员将环境违约对我们决策的影响称为&lt;a href=&quot;https://jamesclear.com/choice-architecture&quot; rel=&quot; nofollow ugc&quot; title=&quot;选择架构&quot;&gt;选择架构&lt;/a&gt;。重要的是要意识到您可以成为您选择的架构师。您可以设计为默认。&lt;/p&gt;
 
+&lt;h2&gt;如何优化您的默认决策&lt;/h2&gt;
 
+&lt;p&gt;以下是我在尝试为我的生活中的默认设计时发现的一些有用的策略：&lt;/p&gt;
 
-&lt;p&gt;单调时钟顾名思义就是这个时钟始终往前单调递增。这样一来它就很适合来衡量过去了多长时间。比如说你想看一个请求的时间，可以在发送请求前得到一个时间，然后在得到response之后再获取一个时间，连个时间的差就是你想要的duration。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;简单&lt;/strong&gt;。当您经常被噪音包围时，很难将注意力集中在信号上。当你的厨房里堆满垃圾食品时，要吃得健康就更难了。当您在浏览器中打开 10 个选项卡时，更难以专注于阅读博客文章。当您陷入&lt;a href=&quot;https://jamesclear.com/multitasking-myth&quot; rel=&quot; nofollow ugc&quot; title=&quot;多任务处理的神话：为什么更少的优先级会导致更好的工作&quot;&gt;一心多用的神话&lt;/a&gt;时，完成最重要的任务就更加困难了。如有疑问，消除选项。&lt;/p&gt;
 
+&lt;p&gt;&lt;strong&gt;视觉提示&lt;/strong&gt;。在超市中，将商品放在与视线齐平的货架上会使它们更具视觉效果并且更有可能被购买。在超市之外，您可以使用诸如&lt;a href=&quot;https://jamesclear.com/paper-clips&quot; rel=&quot; nofollow ugc&quot; title=&quot;如何通过使用回形针策略坚持每天的好习惯&quot;&gt;回形针法&lt;/a&gt;或&lt;a href=&quot;https://jamesclear.com/stop-procrastinating-seinfeld-strategy&quot; rel=&quot; nofollow ugc&quot; title=&quot;如何使用宋飞正传策略停止拖延你的目标&quot;&gt;宋飞策略之&lt;/a&gt;类的视觉提示来创建一个环境，在视觉上将您的行为推向正确的方向。&lt;/p&gt;
 
+&lt;p&gt;&lt;strong&gt;选择退出与选择加入&lt;/strong&gt;。有一项&lt;a href=&quot;https://jamesclear.com/environment-design-organ-donation&quot; rel=&quot; nofollow ugc&quot; title=&quot;器官捐献与环境设计&quot;&gt;著名的器官捐赠研究&lt;/a&gt;揭示了多个欧洲国家如何提高器官捐赠率：他们要求公民选择不捐赠而不是选择捐赠。通过提前让未来的自己养成更好的习惯，你可以在生活中做一些类似的事情。例如，您可以将瑜伽课程安排在下周，而您今天感到有动力。当您的锻炼开始时，您必须证明选择退出是合理的，而不是激励自己选择加入。&lt;/p&gt;
 
-&lt;p&gt;需要注意的是这个时间的绝对值没有任何意义，所以你要是去比较多个机器的单调时钟是不合适的。&lt;/p&gt;
+&lt;p&gt;默认设计归结为一个非常简单的前提：改变你的环境，让好的行为更容易，坏的行为更难。&lt;/p&gt;
 
+&lt;h2&gt;为您设计与由您设计&lt;/h2&gt;
 
+&lt;p&gt;默认选择本身并不坏，但整个世界的设计都没有考虑到您的目标。事实上，许多公司的目标与您的目标直接竞争（食品公司可能希望您购买他们的薯片袋，而您想减肥）。出于这个原因，您应该谨慎接受每一个默认值，就好像它应该是最佳选择一样。&lt;/p&gt;
 
-&lt;p&gt;另外对于多CPU的服务器，其实没个CPU的单调时钟也是不同的，只是说一般来说操作系统会帮应用程序处理这个不同，这样一来应用程序就不用担心这个问题。但是有时这个保证也不一定对，所以知道这件事有可能会对一些意想不到的问题有帮助。&lt;/p&gt;
+&lt;p&gt;我通过过自己设计的生活而不是接受别人给我的标准生活，从而获得了更多的成功。质疑一切。你需要改变、调整和改变你的环境，直到它符合你想要的生活。&lt;/p&gt;
 
+&lt;p&gt;是的，你周围的世界塑造了你的习惯和选择，但有一件重要的事情需要意识到：首先必须有人来塑造这个世界。现在，有人可以是你。&lt;/p&gt;
 
+&lt;p&gt;如果你想要更多关于改掉坏习惯和养成好习惯的实用想法，请查看我的书&lt;a href=&quot;https://jamesclear.com/book/atomic-habits&quot; rel=&quot; nofollow ugc&quot;&gt;原子习惯&lt;/a&gt;，它会告诉你习惯的微小改变如何带来显着的结果。&lt;/p&gt;
 
-&lt;p&gt;NTP对单调时钟也是有影响的，它会看本地的单调时钟的频率，假如本地时钟太快或者太慢它会进行调整（一般的容忍度在0.05%），但是和当天时间不同的是，它只会调整频率，不会让单调时钟跳到很前或者很后。所以，一般来说单调时钟还是一个很好的方法来测量消耗的时长，毫秒级别的精度是没有问题。&lt;/p&gt;
+&lt;hr/&gt;
 
+&lt;p&gt;通过该文的阅读，可以给生活、工作带来哪些启示？下面跟大家分享一些（如您有更多建议，欢迎留言分享）：&lt;/p&gt;
 
-
-&lt;h2&gt;时钟的同步和准确性&lt;/h2&gt;
-
-
-
-&lt;p&gt;当天时间是需要进行同步的，因为只有这样它才有真正的意义。然而时钟的同步可能和我们想象的不太一样，我们来看几个例子：&lt;/p&gt;
-
-
-
-&lt;ul&gt;&lt;li&gt;机器上的晶振本身是不准确的，它会漂移。这是一个硬件上的问题，主要会跟环境的温度等等息息相关。Google一般会假设他们的服务器有200ppm的漂移，相当于每30秒有6ms的差别。所以哪怕别的方面都没有问题，这个漂移都是存在的。&lt;/li&gt;&lt;li&gt;机器的时钟和NTP有很大差别的时候，可能会拒绝同步或者被强制重置。这样一来我们就会看到时钟会有一个向前或者向后的跳跃。&lt;/li&gt;&lt;li&gt;假如机器的防火墙设置有问题，那么时钟可能就没有机会和NTP来进行同步了，而我们都不知道这件事。&lt;/li&gt;&lt;li&gt;即使你能够和NTP同步，这个准确度也会因为你的网络延时而有差别。可以想象假如同步的信息收到了网络传输的影响，那么时钟的同步就是不准确的。&lt;/li&gt;&lt;li&gt;NTP服务器本身可能也会有问题，这样一来你拿到的数据可能也不是准确的。&lt;/li&gt;&lt;li&gt;跳跃的秒数会让一分钟的时间发生变化，再也不是60s了，也就是说一分钟可能是59s也可能是61秒，这就很有可能导致系统出现问题。&lt;/li&gt;&lt;li&gt;虚拟机的时间更加复杂，因为多个虚拟机共享CPU，每一个虚拟机在别的机器运行的时候可能都需要暂停几个毫秒，这就使得时间的计算更加困难。&lt;/li&gt;&lt;/ul&gt;
-
-
-
-&lt;p&gt;所以精确的时钟在现实中是很难得到的，但是我们仍然可以做一些努力来得到相对精确的时钟，比如依赖于GPS的PTP (Precision Time Protocol)，然后很好的控制deploy和监控。当然这样做的代价也很大。&lt;/p&gt;
-
-
-
-&lt;h2&gt;依赖同步时钟的实例&lt;/h2&gt;
-
-
-
-&lt;p&gt;虽然我们知道时钟有这样那样的问题，但是我们仍然有很多情况想要依赖于这个时钟，这该怎么办呢？下面我们从几个例子来具体分析如何处理&lt;/p&gt;
-
-
-
-&lt;h3&gt;有序事件的时间戳&lt;/h3&gt;
-
-
-
-&lt;p&gt;一个常见的例子就是多个节点同时写一个值，常见的做法就是比较一下谁先写谁后写，后写的失败或者覆盖先写的。如下图所示，一个多leader的数据库的写:&lt;/p&gt;
-
-
-
-&lt;figure class=&quot;wp-block-image size-large&quot;&gt;&lt;img src=&quot;https://donggeitnote.com/wp-content/uploads/2021/06/image-19.png&quot; alt=&quot;&quot; class=&quot;wp-image-748&quot; srcset=&quot;https://donggeitnote.com/wp-content/uploads/2021/06/image-19.png 624w, https://donggeitnote.com/wp-content/uploads/2021/06/image-19-300x142.png 300w, https://donggeitnote.com/wp-content/uploads/2021/06/image-19-520x245.png 520w&quot; sizes=&quot;(max-width: 624px) 100vw, 624px&quot;/&gt;&lt;/figure&gt;
-
-
-
-&lt;p&gt;Client A在Node 1上写了x=1， 然后这个值被replica到节点3。之后Client B操作节点3，增加了1，所以这个时候x变成了2。最后这两个操作都replica到了节点2。这里我们看到Node1和Node3之间的时间差是小于3ms，这个是一个很正常的差别。而这导致的结果就是在节点2上，当他进行判断哪个是后写的时候出现了错误，因为从节点1过来的值理论上应该是先发生的，但是它上面带着的时间是42.005，而节点3过来的值虽然是后发生的，但是它的时间戳是42.004，这就出现了一个相反的顺序。从而导致节点2上的判断出现了错误。&lt;/p&gt;
-
-
-
-&lt;p&gt;这就是LWW（Last write win）这一机制的问题，这一机制简单来说就是后写的覆盖先写的，这里的问题就是如何判断谁是后写的，因为节点之间的时间戳事实上可能是不准的，这就是导致简单的时间比较是不够精确的。所以很多时候我们不会选择时间戳来进行比较，而是使用一个称之为逻辑时钟的东西，它是基于一个一直在增加的数来进行比较，可以用来比较两个event的相对时间，这其实就足够我们使用了。&lt;/p&gt;
-
-
-
-&lt;h3&gt;时钟的置信区间&lt;/h3&gt;
-
-
-
-&lt;p&gt;我们使用函数读取时间戳的时候，经常可以看到精度，比如我们可以读取到毫秒级的精度，甚至纳秒级的精度。那么这是否意味着我们读到的时间就真的精确到这个级别呢？其实不然，正如我们上面说到的各种时间的漂移，事实的时间是有一个置信区间的，比如说95%的概率现在的时间是在10.3到10.5秒之间，但是不知道具体是哪个。所以假如置信区间是100ms级别的，显然你读到的纳秒值就没有什么意义了。&lt;/p&gt;
-
-
-
-&lt;p&gt;这个置信区间可能是由你系统的已经决定的，比如你看晶振的spec，它会有一个左右的标准值之类的。然而，很不幸的是，这些东西都不会真的暴露给开发者，比如你调用一个系统函数clock_gettime，它就会返回一个时间戳，它不会告诉你时间的置信区间。&lt;/p&gt;
-
-
-
-&lt;p&gt;当然也有API会告诉你这个东西，比如Google的Truetime API会返回一个最早值和最晚值，其实这就是置信区间。&lt;/p&gt;
-
-
-
-&lt;h3&gt;使用同步时钟来进行全局的snapshot&lt;/h3&gt;
-
-
-
-&lt;p&gt;我们之前讨论过snapshot隔离，这里有一个全局Transaction ID用来判断各个transaction会否在snapshot之前还是之后发生。有一种实现方案就是使用同步的时钟，它使用了我们上面提到的Google true Time API，这样就得到了两个区间的时钟，假如他们没有交错，那么就可以简单判断他们的先后了，假如有交错，就认为无法确定。所以为了让这个API返回的值够精确，Google甚至在每一个数据中心部署了一个GPS的接收器，这样可以更精确地进行时钟的同步。&lt;/p&gt;
-
-
-
-&lt;h2&gt;总结&lt;/h2&gt;
-
-
-
-&lt;p&gt;本文介绍了我们最常见的时钟，揭秘了它背后我们平时完全没有在意的问题。希望大家阅读之后能够对分布式系统中时钟有更加深刻的理解。&lt;/p&gt;
-                                                    &lt;nav class=&quot;pagination group&quot;&gt;
-                      &lt;/nav&gt;
-        &lt;/div&gt;
-
-        
-        &lt;/div&gt;&lt;/div&gt;</content:encoded>
+&lt;ol&gt;&lt;li&gt;定时对浏览器所打开的页面，加以阅读、消化、整理，然后关闭；从而提升专注；&lt;/li&gt;
+&lt;li&gt;不再将短视频、微信等浪费时间，却没有太大价值的应用，放置手机桌面显眼位置；&lt;/li&gt;
+&lt;li&gt;如您也有游戏瘾，周末将至，列出读一本书，或看几部电影的计划，尽量不去想玩游戏这事儿；&lt;/li&gt;
+&lt;li&gt;如一定要玩儿，那么再玩了几盘，尽兴之后，删除游戏，让下次打开游戏，变得困难......&lt;/li&gt;&lt;/ol&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>1cd946190b35832355722efac26923ef</guid>
-<title>Java 进阶：Proxy 动态代理机制详解</title>
-<link>https://toutiao.io/k/aqdoox6</link>
+<guid>fa9378bfcfa4d1df5e8535c009ee905a</guid>
+<title>[推荐] 中后台领域低代码搭建设计与实践</title>
+<link>https://toutiao.io/k/9mznc2m</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
                     
 
                     
                     
                     
-                    &lt;h1&gt;&lt;span&gt;一、Jvm加载对象&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;在说Java动态代理之前，还是要说一下Jvm加载对象的过程，这个依旧是理解动态代理的基础性原理：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.428125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvAsASqm13WwwIqIOFvzBCOx949UGrk0T7iaW73YVzLmib9e0b8mo4ZEsvNbSZYryvOYkyUAFLruZZAg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;Java类即源代码程序&lt;code&gt;.java&lt;/code&gt;类型文件，经过编译器编译之后就被转换成字节代码&lt;code&gt;.class&lt;/code&gt;类型文件，类加载器负责读取字节代码，并转换成java.lang.Class对象，描述类在元数据空间的数据结构，类被实例化时，堆中存储实例化的对象信息，并且通过对象类型数据的指针找到类。&lt;/p&gt;&lt;p&gt;过程描述：&lt;strong&gt;源码-&amp;gt;.java文件-&amp;gt;.class文件-&amp;gt;Class对象-&amp;gt;实例对象&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;所以通过New创建对象，独断其背后很多实现细节，理解上述过程之后，再了解一个常用的设计模式，即代理模式。&lt;/p&gt;&lt;h1&gt;&lt;span&gt;二、代理模式&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;h2&gt;&lt;span&gt;1、基本描述&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p&gt;代理模式给某一个(目标)对象提供一个代理对象，并由代理对象持有目标对象的引用。所谓代理，就是一个对象代表另一个对象执行相应的动作程序。而代理对象可以在客户端和目标对象之间起到中介的作用。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.260797342192691&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvAsASqm13WwwIqIOFvzBCOxmNHicIpCIjibvkib9yicYhYkEh0XB3f2KfKx1TgWSNL9uJCr7iblWtG0kOg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1204&quot;/&gt;&lt;/p&gt;&lt;p&gt;代理模式在实际的生活中场景很多，例如中介、律师、代购等行业，都是简单的代理逻辑，在这个模式下存在两个关键角色：&lt;/p&gt;&lt;p&gt;目标对象角色：即代理对象所代表的对象。&lt;/p&gt;&lt;p&gt;代理对象角色：内部含有目标对象的引用，可以操作目标对象；AOP编程就是基于这个思想。&lt;/p&gt;&lt;h2&gt;&lt;span&gt;2、静动态模式&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;strong&gt;静态代理&lt;/strong&gt;：在程序运行之前确定代理角色，并且明确代理类和目标类的关系。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;strong&gt;动态代理&lt;/strong&gt;：基于Java反射机制，在JVM运行时动态创建和生成代理对象。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h1&gt;&lt;span&gt;三、静态代理&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;p&gt;基于上述静态代理的概念，用一段代码进行描述实现，基本逻辑如下：&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;明确目标对象即被代理的对象；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;定义代理对象，通过构造器持有目标对象；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;代理对象中定义前后置增强方法；&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;目标对象与前后置增强代码就组成了代理对象，这样就不用直接访问目标对象，像极了电视剧中那句话：我是律师，我的当事人不方便和你对话。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Proxy01&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;(String[] args)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        TargetObj targetObj = &lt;span&gt;new&lt;/span&gt; TargetObj() ;&lt;br/&gt;        ProxyObj proxyObj = &lt;span&gt;new&lt;/span&gt; ProxyObj(targetObj) ;&lt;br/&gt;        proxyObj.invoke();&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;TargetObj&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;execute&lt;/span&gt; &lt;span&gt;()&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;目标类方法执行...&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;ProxyObj&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; TargetObj targetObj ;&lt;br/&gt;    &lt;span&gt;/**&lt;br/&gt;     * 持有目标对象&lt;br/&gt;     */&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;ProxyObj&lt;/span&gt; &lt;span&gt;(TargetObj targetObj)&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;this&lt;/span&gt;.targetObj = targetObj ;&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;/**&lt;br/&gt;     * 目标对象方法调用&lt;br/&gt;     */&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;invoke&lt;/span&gt; &lt;span&gt;()&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;        before () ;&lt;br/&gt;        targetObj.execute();&lt;br/&gt;        after () ;&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;/**&lt;br/&gt;     * 前后置处理&lt;br/&gt;     */&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;before&lt;/span&gt; &lt;span&gt;()&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;代理对象前置处理...&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;after&lt;/span&gt; &lt;span&gt;()&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;代理对象后置处理...&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;静态代理明确定义了代理对象，即有一个代理对象的&lt;code&gt;.java&lt;/code&gt;文件加载到JVM的过程，很显然的一个问题，在实际的开发过程中，不可能为每个目标对象都定义一个代理类，同样也不能让一个代理对象去代理多个目标对象，这两种方式的维护成本都极高。&lt;/p&gt;&lt;p&gt;代理模式的本质是在目标对象的方法前后置入增强操作，但是又不想修改目标类，通过前面反射机制可以知道，在运行的时候可以获取对象的结构信息，基于Class信息去动态创建代理对象，这就是动态代理机制。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;顺便说一句&lt;/strong&gt;：技术的底层实现逻辑不好理解是众所周知，然而基础知识点并不复杂，例如代理模式的基本原理，但是结合到实际的复杂应用中（AOP模式），很难活灵活现的理解到是基于反射和动态代理的方式实现的。&lt;/p&gt;&lt;h1&gt;&lt;span&gt;四、动态代理&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;h2&gt;&lt;span&gt;1、场景描述&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p&gt;基于一个场景来描述动态代理和静态代理的区别，即最近几年很火的概念，海外代购：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5056910569105691&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvAsASqm13WwwIqIOFvzBCOxF2T9cren7KFejqv7Jf8KpTHJktpvowYlbjTnqC5zY1TAndRxftB00w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1230&quot;/&gt;&lt;/p&gt;&lt;p&gt;在代购刚兴起的初期，是一些常去海外出差的人，会接代购需求，即代理人固定；后来就兴起海外代购平台，海淘等一系列产品，即用户代购需求（目标对象）由代购平台去实现，但是具体谁来操作这个就看即时分配，这个场景与动态代理的原理类似。&lt;/p&gt;&lt;h2&gt;&lt;span&gt;2、基础API案例&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p&gt;首先看两个核心类，这里简述下概念，看完基本过程再细聊：&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;Proxy-创建代理对象，核心参数：&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;ClassLoader：（目标类）加载器；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Interfaces：（目标类）接口数组；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;InvocationHandler：代理调用机制；&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;InvocationHandler-代理类调用机制：&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;invoke：这个上篇说的反射原理；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;method：反射类库中的核心API；&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/ul&gt;&lt;p&gt;&lt;strong&gt;目标对象和接口&lt;/strong&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;interface&lt;/span&gt; &lt;span&gt;IUser&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;Integer &lt;span&gt;update&lt;/span&gt; &lt;span&gt;(String name)&lt;/span&gt; &lt;/span&gt;;&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;UserService&lt;/span&gt; &lt;span&gt;implements&lt;/span&gt; &lt;span&gt;IUser&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;@Override&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; Integer &lt;span&gt;update&lt;/span&gt;&lt;span&gt;(String name)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        Integer userId = &lt;span&gt;99&lt;/span&gt; ;&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;UserId=&quot;&lt;/span&gt;+userId+&lt;span&gt;&quot;;updateName=&quot;&lt;/span&gt;+name);&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; userId ;&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;strong&gt;代理对象执行机制&lt;/strong&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;UserHandler&lt;/span&gt; &lt;span&gt;implements&lt;/span&gt; &lt;span&gt;InvocationHandler&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; Object target ;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;UserHandler&lt;/span&gt; &lt;span&gt;(Object target)&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;this&lt;/span&gt;.target = target ;&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;@Override&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; Object &lt;span&gt;invoke&lt;/span&gt;&lt;span&gt;(Object proxy, Method method, Object[] args)&lt;/span&gt; &lt;span&gt;throws&lt;/span&gt; Throwable &lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;before()...&quot;&lt;/span&gt;);&lt;br/&gt;        Object result = method.invoke(target, args);&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;after()...&quot;&lt;/span&gt;);&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; result;&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;strong&gt;具体组合方式&lt;/strong&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Proxy02&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;(String[] args)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;/*&lt;br/&gt;         * 生成$Proxy0的class文件&lt;br/&gt;         */&lt;/span&gt;&lt;br/&gt;        System.getProperties().put(&lt;span&gt;&quot;sun.misc.ProxyGenerator.saveGeneratedFiles&quot;&lt;/span&gt;, &lt;span&gt;&quot;true&quot;&lt;/span&gt;);&lt;br/&gt;        &lt;span&gt;/*&lt;br/&gt;         * 目标对象信息&lt;br/&gt;         */&lt;/span&gt;&lt;br/&gt;        IUser userService = &lt;span&gt;new&lt;/span&gt; UserService();&lt;br/&gt;        ClassLoader classLoader = userService.getClass().getClassLoader();&lt;br/&gt;        Class&amp;lt;?&amp;gt;[] interfaces = UserService&lt;span&gt;.&lt;span&gt;class&lt;/span&gt;.&lt;span&gt;getInterfaces&lt;/span&gt;() &lt;/span&gt;;&lt;br/&gt;        &lt;span&gt;/*&lt;br/&gt;         * 创建代理对象&lt;br/&gt;         */&lt;/span&gt;&lt;br/&gt;        InvocationHandler userHandler = &lt;span&gt;new&lt;/span&gt; UserHandler(userService);&lt;br/&gt;        &lt;span&gt;/*&lt;br/&gt;         * 代理类对象名&lt;br/&gt;         * proxyClassName=com.java.proxy.$Proxy0&lt;br/&gt;         */&lt;/span&gt;&lt;br/&gt;        String proxyClassName = Proxy.newProxyInstance(classLoader,interfaces,userHandler).getClass().getName();&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;proxyClassName=&quot;&lt;/span&gt;+proxyClassName);&lt;br/&gt;        &lt;span&gt;/*&lt;br/&gt;         * 具体业务实现模拟&lt;br/&gt;         */&lt;/span&gt;&lt;br/&gt;        IUser proxyUser1 = (IUser) Proxy.newProxyInstance(classLoader,interfaces,userHandler);&lt;br/&gt;        IUser proxyUser2 = (IUser) Proxy.newProxyInstance(classLoader,interfaces,userHandler);&lt;br/&gt;        proxyUser1.update(&lt;span&gt;&quot;cicada&quot;&lt;/span&gt;) ;&lt;br/&gt;        proxyUser2.update(&lt;span&gt;&quot;smile&quot;&lt;/span&gt;) ;&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这里之所以要生成代理类的结构信息，因为从JVM加载的过程看不到相关内容，关键信息再次被独断：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;javap -v Proxy02.class&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.525&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/uUIibyNXbAvAsASqm13WwwIqIOFvzBCOxmhica7mc6mn7worSiaVgSGUOVoBbxMHS96ic2Eib12s8CnUmzoY3Qu3pvg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;查看代理类名称&lt;/strong&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;/*&lt;br/&gt; * proxyClassName=com.java.proxy.$Proxy0&lt;br/&gt; */&lt;/span&gt;&lt;br/&gt;String proxyClassName = Proxy.newProxyInstance(classLoader,interfaces,userHandler).getClass().getName();&lt;br/&gt;System.out.println(&lt;span&gt;&quot;proxyClassName=&quot;&lt;/span&gt;+proxyClassName);&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;下意识输出代理对象名称，这里即对应JVM机制，找到Class对象名，然后分析结构，这样就明白动态代理具体的执行原理了。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;生成代理类.class文件&lt;/strong&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;System.getProperties().put(&lt;span&gt;&quot;sun.misc.ProxyGenerator.saveGeneratedFiles&quot;&lt;/span&gt;, &lt;span&gt;&quot;true&quot;&lt;/span&gt;);&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;通过上面JVM加载对象的机制可知，描述代理类的Class对象一定存在，只是在运行时并没有生成显式的&lt;code&gt;.class&lt;/code&gt;文件，通过上面生成代理类&lt;code&gt;.class&lt;/code&gt;的语法，会在项目目录的&lt;code&gt;/com/java/proxy&lt;/code&gt;路径下创建文件。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;顺便说一句&lt;/strong&gt;：作为一只程序员，复杂总是和我们环环相绕，说好的简单点呢？&lt;/p&gt;&lt;h2&gt;&lt;span&gt;3、代理类结构&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;继承与实现&lt;/strong&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; $&lt;span&gt;Proxy0&lt;/span&gt; &lt;span&gt;extends&lt;/span&gt; &lt;span&gt;Proxy&lt;/span&gt; &lt;span&gt;implements&lt;/span&gt; &lt;span&gt;IUser&lt;/span&gt; &lt;/span&gt;{}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;从代理类的功能来思考，可以想到需要继承Proxy与实现IUser接口，还有就是持有调用机制的具体实现类，用来做业务增强。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;构造方法&lt;/strong&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; $Proxy0(InvocationHandler var1) &lt;span&gt;throws&lt;/span&gt;  {&lt;br/&gt;    &lt;span&gt;super&lt;/span&gt;(var1);&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;通过构造方法，持有UserHandler具体的执行机制对象。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;接口实现&lt;/strong&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;final&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; $&lt;span&gt;Proxy0&lt;/span&gt; &lt;span&gt;extends&lt;/span&gt; &lt;span&gt;Proxy&lt;/span&gt; &lt;span&gt;implements&lt;/span&gt; &lt;span&gt;IUser&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; Method m3;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;final&lt;/span&gt; Integer &lt;span&gt;update&lt;/span&gt;&lt;span&gt;(String var1)&lt;/span&gt; &lt;span&gt;throws&lt;/span&gt;  &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;try&lt;/span&gt; {&lt;br/&gt;            &lt;span&gt;return&lt;/span&gt; (Integer)&lt;span&gt;super&lt;/span&gt;.h.invoke(&lt;span&gt;this&lt;/span&gt;, m3, &lt;span&gt;new&lt;/span&gt; Object[]{var1});&lt;br/&gt;        } &lt;span&gt;catch&lt;/span&gt; (RuntimeException | Error var3) {&lt;br/&gt;            &lt;span&gt;throw&lt;/span&gt; var3;&lt;br/&gt;        } &lt;span&gt;catch&lt;/span&gt; (Throwable var4) {&lt;br/&gt;            &lt;span&gt;throw&lt;/span&gt; &lt;span&gt;new&lt;/span&gt; UndeclaredThrowableException(var4);&lt;br/&gt;        }&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;目标类的基本需求&lt;code&gt;update()&lt;/code&gt;方法，通过代理类进行承接，并基于UserHandler实现具体的增强业务处理。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;基础方法&lt;/strong&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;final&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; $&lt;span&gt;Proxy0&lt;/span&gt; &lt;span&gt;extends&lt;/span&gt; &lt;span&gt;Proxy&lt;/span&gt; &lt;span&gt;implements&lt;/span&gt; &lt;span&gt;IUser&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; Method m0;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; Method m1;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; Method m2;&lt;br/&gt;    &lt;span&gt;public&lt;/span&gt; $Proxy0(InvocationHandler var1) &lt;span&gt;throws&lt;/span&gt;  {&lt;br/&gt;        &lt;span&gt;super&lt;/span&gt;(var1);&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;static&lt;/span&gt; {&lt;br/&gt;        &lt;span&gt;try&lt;/span&gt; {&lt;br/&gt;            m1 = Class.forName(&lt;span&gt;&quot;java.lang.Object&quot;&lt;/span&gt;).getMethod(&lt;span&gt;&quot;equals&quot;&lt;/span&gt;, Class.forName(&lt;span&gt;&quot;java.lang.Object&quot;&lt;/span&gt;));&lt;br/&gt;            m2 = Class.forName(&lt;span&gt;&quot;java.lang.Object&quot;&lt;/span&gt;).getMethod(&lt;span&gt;&quot;toString&quot;&lt;/span&gt;);&lt;br/&gt;            m3 = Class.forName(&lt;span&gt;&quot;com.java.proxy.IUser&quot;&lt;/span&gt;).getMethod(&lt;span&gt;&quot;update&quot;&lt;/span&gt;, Class.forName(&lt;span&gt;&quot;java.lang.String&quot;&lt;/span&gt;));&lt;br/&gt;            m0 = Class.forName(&lt;span&gt;&quot;java.lang.Object&quot;&lt;/span&gt;).getMethod(&lt;span&gt;&quot;hashCode&quot;&lt;/span&gt;);&lt;br/&gt;        } &lt;span&gt;catch&lt;/span&gt; (NoSuchMethodException var2) {&lt;br/&gt;            &lt;span&gt;throw&lt;/span&gt; &lt;span&gt;new&lt;/span&gt; NoSuchMethodError(var2.getMessage());&lt;br/&gt;        } &lt;span&gt;catch&lt;/span&gt; (ClassNotFoundException var3) {&lt;br/&gt;            &lt;span&gt;throw&lt;/span&gt; &lt;span&gt;new&lt;/span&gt; NoClassDefFoundError(var3.getMessage());&lt;br/&gt;        }&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;final&lt;/span&gt; &lt;span&gt;boolean&lt;/span&gt; &lt;span&gt;equals&lt;/span&gt;&lt;span&gt;(Object var1)&lt;/span&gt; &lt;span&gt;throws&lt;/span&gt;  &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;try&lt;/span&gt; {&lt;br/&gt;            &lt;span&gt;return&lt;/span&gt; (Boolean)&lt;span&gt;super&lt;/span&gt;.h.invoke(&lt;span&gt;this&lt;/span&gt;, m1, &lt;span&gt;new&lt;/span&gt; Object[]{var1});&lt;br/&gt;        } &lt;span&gt;catch&lt;/span&gt; (RuntimeException | Error var3) {&lt;br/&gt;            &lt;span&gt;throw&lt;/span&gt; var3;&lt;br/&gt;        } &lt;span&gt;catch&lt;/span&gt; (Throwable var4) {&lt;br/&gt;            &lt;span&gt;throw&lt;/span&gt; &lt;span&gt;new&lt;/span&gt; UndeclaredThrowableException(var4);&lt;br/&gt;        }&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;final&lt;/span&gt; String &lt;span&gt;toString&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;span&gt;throws&lt;/span&gt;  &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;try&lt;/span&gt; {&lt;br/&gt;            &lt;span&gt;return&lt;/span&gt; (String)&lt;span&gt;super&lt;/span&gt;.h.invoke(&lt;span&gt;this&lt;/span&gt;, m2, (Object[])&lt;span&gt;null&lt;/span&gt;);&lt;br/&gt;        } &lt;span&gt;catch&lt;/span&gt; (RuntimeException | Error var2) {&lt;br/&gt;            &lt;span&gt;throw&lt;/span&gt; var2;&lt;br/&gt;        } &lt;span&gt;catch&lt;/span&gt; (Throwable var3) {&lt;br/&gt;            &lt;span&gt;throw&lt;/span&gt; &lt;span&gt;new&lt;/span&gt; UndeclaredThrowableException(var3);&lt;br/&gt;        }&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;final&lt;/span&gt; &lt;span&gt;int&lt;/span&gt; &lt;span&gt;hashCode&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;span&gt;throws&lt;/span&gt;  &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;try&lt;/span&gt; {&lt;br/&gt;            &lt;span&gt;return&lt;/span&gt; (Integer)&lt;span&gt;super&lt;/span&gt;.h.invoke(&lt;span&gt;this&lt;/span&gt;, m0, (Object[])&lt;span&gt;null&lt;/span&gt;);&lt;br/&gt;        } &lt;span&gt;catch&lt;/span&gt; (RuntimeException | Error var2) {&lt;br/&gt;            &lt;span&gt;throw&lt;/span&gt; var2;&lt;br/&gt;        } &lt;span&gt;catch&lt;/span&gt; (Throwable var3) {&lt;br/&gt;            &lt;span&gt;throw&lt;/span&gt; &lt;span&gt;new&lt;/span&gt; UndeclaredThrowableException(var3);&lt;br/&gt;        }&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;基于Object类，定义Java中几个常用方法equals()判断，toString()方法，hashCode()值，这个在分析Map源码的时候有说过为什么这几个方法通常都是一起出现。&lt;/p&gt;&lt;h2&gt;&lt;span&gt;4、JDK源码&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p&gt;上面是案例执行的过程和原理，还有一个关键点要明白，即JDK源码的逻辑：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;IUser proxyUser = (IUser) Proxy.newProxyInstance(classLoader,interfaces,userHandler);&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Proxy提供的静态方法&lt;code&gt;newProxyInstance()&lt;/code&gt;，通过各个参数的传入，构建一个新的代理Class对象，即$Proxy0类的结构信息，这里再回首看下三个核心参数：&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;ClassLoader：基于JVM运行过程，所以需要获取目标类UserService的类加载器；&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;Interfaces：目标类UserService实现的接口，从面向对象来考虑，接口与实现分离，代理类通过实现IUser接口，模拟目标类的需求；&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;InvocationHandler：代理类提供的功能封装即UserHandler，可以在目标方法调用前后做增强处理；&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;最后总结一下动态代理的实现的核心技术点：Jvm加载原理、反射机制、面向对象思想；每次阅读JDK的源码都会惊叹设计者的鬼斧神工，滴水穿石坚持才会有收获。&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzU4Njg0MzYwNw==&amp;amp;mid=2247484904&amp;amp;idx=1&amp;amp;sn=da482e4543ad9716ab631cfe9c8c8a19&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;JVM类加载机制&lt;/a&gt; | &lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzU4Njg0MzYwNw==&amp;amp;mid=2247484184&amp;amp;idx=1&amp;amp;sn=ad4621bc62e4cb5fda79c686b6af50d4&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;代理模式&lt;/a&gt; | &lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzU4Njg0MzYwNw==&amp;amp;mid=2247484178&amp;amp;idx=1&amp;amp;sn=1f02afe35946d2e0aa21e757fbc1b111&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;AOP切面编程&lt;/a&gt; | &lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzU4Njg0MzYwNw==&amp;amp;mid=2247484826&amp;amp;idx=1&amp;amp;sn=b2f6b76a196233f7ba0dc6cf92824e09&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;自定义日志记录&lt;/a&gt; | &lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzU4Njg0MzYwNw==&amp;amp;mid=2247485374&amp;amp;idx=1&amp;amp;sn=2371c8682f059031b6ffd23c5c412202&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;Map源码分析&lt;/a&gt;&lt;/p&gt;&lt;h1&gt;&lt;span&gt;五、源代码地址&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;pre&gt;&lt;code&gt;GitHub·地址&lt;br/&gt;https://github.com/cicadasmile/java-base-parent&lt;br/&gt;GitEE·地址&lt;br/&gt;https://gitee.com/cicadasmile/java-base-parent&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzU4Njg0MzYwNw==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvBCuF3zfJnqPKpUia4wfn1FUtTHpxxkR5HvbicPgOjibPicX0goMOkny1NdkLAJvBaqrYh3UdwMjiaDQMA/0?wx_fmt=png&quot; data-nickname=&quot;知了一笑&quot; data-alias=&quot;cicada_smile&quot; data-signature=&quot;积累是一个孤独且枯燥的过程&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;
+                    &lt;p data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-backh=&quot;108&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.1859375&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPiadQyCOHNzUdyYbWTfk32WkUfq4DV9FJsfiatfYcicXiaL0Dwm8UdSDemw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;h1&gt;&lt;span&gt;前言&lt;/span&gt;&lt;br/&gt;&lt;/h1&gt;&lt;p&gt;2021年5月22日，哈啰技术沙龙-大前端的探索与实践，在杭州成功举办。&lt;br/&gt;以下是由 @杜诗晨（庙爷）分享的主题&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.6666666666666666&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPLliaW0A8SjYmsv7pEaOPNziaeRGVLSBoNw1HJHhKQuVAea3h433s7oFA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1620&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;h1&gt;&lt;span&gt;什么是低代码搭建&lt;/span&gt;&lt;/h1&gt;&lt;blockquote&gt;&lt;p&gt;通过提供一种可视化的应用开发环境，降低或去除对原生代码编写的需求量快速构建应用程序。&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;传统开发交付一个产品的流程，首先产品输出 prd，然后设计 ui 设计进行设计，设计完成给到前端，前端再去开发。如果是个新项目可能还要这种配置各种复杂环境。同时后端也在开发，然后联调、测试。其实现在大部分的公司都是这种开发流程。那这种缺点就很明显，涉及到的人非常多，开发周期也变得非常长。&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPtOS1u4Cl3aOgShwe38SfJeVNeUwxzkrkjOXKymScEr02cesdiaouVEA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;p&gt;低代码搭建是一个什么样的流程？如果是一个成熟的配置搭建平台，只需要提供一个配置平台，开发人员不论是刚毕业的大学生或者是前端小白，甚至可能是一个后端开发，都可以通过这个配置平台搭建，快速生成网页。&lt;/p&gt;&lt;p&gt;关于低代码的市场规模和衍生的历史大家可以从下图中了解一下，这里提供两份报告作为延伸学习：海比研究报告 | 艾瑞咨询&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPMicFWOGIhnFvY0kibU57uAwpHmQQf4YDqhIialSRibhZyJDQD3T6giaD03A/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;h5&gt;&lt;span&gt;概念衍生历史&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;低代码这个概念其实很早就有了，80年代的时候提出了第四代编程语言，这个第四代是什么意思呢，第一代是机器语言，第二代汇编语言，第三代高级语言。前三代都是操作语言，需要编程指出怎么做，一步一步的写运行步骤，这样是有学习成本的，并且项目开发周期长，出于商业需要第四代语言被软件厂商提出，在一定程度上只需要说明做什么，有什么目的，不需要写出怎么做的过程。&lt;/p&gt;&lt;p&gt;2000 年 vpl 被提出，可视化编程语言，意思就是用户用过图形化操作程序元素而不是通过文本制定来创建程序，基于流的概念比如虚幻引擎，还有一些运用在3D编程，音乐合成，信号处理，物联网嵌入式等等领域。&lt;/p&gt;&lt;p&gt;2014年知名咨询公司提出了低代码/零代码的概念，在这之前国外有很多低代码产品出现并且商业化&lt;/p&gt;&lt;p&gt;2016年，国内相继发布这些低代码的平台。国内知名的像阿里百度腾讯，他们都有这种搭建平台。&lt;/p&gt;&lt;p&gt;在今年（2021），整个中国市场已经形成了完整的低代码无代码的生态体系。就比如说像现在这种 aPass 平台或者是 Sass 平台之类的，平台会包含的低代码去快速搭建这种应用。&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPoAWlumsz3iaE2bEv1YfoNdrA4MCet3TFKBohYH9ibhPkJW0m5yaOkuibA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;h5&gt;&lt;span&gt;市场规模&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;投资界似乎也发现了这种趋势，全球规模在去年的时候已经达到了八十四亿美元。预计今年超过百亿。23年超过200亿。&lt;/p&gt;&lt;p&gt;比如说二月份的时候，就有一家创业公司，他们融了大概上亿美元，估值也有几十亿。所以说这一块从全球的低代码的市场规模来说，低代码还是非常有潜力的。&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPyYa4lGG9S22xhiaGbZoibdicDq5icOg2UGCwSB2tW394djib3Dwz1k1v1hQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;h5&gt;&lt;span&gt;搭建分类&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;现在市场上基本上分为两类搭建类型，一类是营销类搭建 no code，一类是通用类搭建，就是我们所说的 low code 和 pro code。营销类 no node 无需编码，直接生成营销活动，前端资源紧缺的时候，后端开发人员也可通过 low code 可搭建中台领域的页面，前端这边为了避免各种工程环境，减低门槛也可通过 pro code 的形式来去搭建。&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPUTtjuEjyaH1S3gBm6wwBYsBh8asSEg8NysWooFMXXhS4fqiaZl3YASg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;h5&gt;&lt;span&gt;面向人群&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;那么这么分类我认为是面向的人群不同，一个特别通用的搭建平台，可能复杂度就上升了很高，所以说我们要做这个低代码搭建平台的时候，一定要想好我们面向的人群是什么？&lt;br/&gt;营销类 no node 无需编码，直接生成营销活动，前端资源紧缺的时候，后端开发人员也可通过 low code 可搭建中台领域的页面，前端这边为了避免各种工程环境，减低门槛也可通过 pro code 的形式来去搭建&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPQyMUSThEYuXTFOveibzCLxWLUwQvibpOdvqAzPHLPbloDarBBdzPhVmA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;h1&gt;&lt;span&gt;中后台领域痛点&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;首先交互不统一，比如说有一些很相似的页面，但是由不同的产品或者设计师出的图。&lt;br/&gt;那实际上他们想要达到的效果是很相似的。但是交互不同，不同的前端开发出来的效果也不一样。不同职级的开发可维护性就会差一点，代码可能会复杂一些，会出现不同的编码风格。中台还有一个痛点的就是中台的系统非常多，业务重，人员有缺口。我之前负责的那个域，前后端比例当时是有 1：7 的样子，借人也好，招人也好，都是很难去补上这个缺口。&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPQd03Ta3ibMkOAVibnGRwQsICj1P5xjS3R35FbyXcicwvMicAEHk1H5o7fg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;h5&gt;&lt;span&gt;设定目标&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;所以我们设定了三个目标，一个是提效降本。我们怎么样去把这一块的研发效能提上来。&lt;br/&gt;第二个目标是部分生产力可转移后端，让后端也有能力输出前端页面&lt;br/&gt;第三点就是抽象中后台的系统基础组件。前端在组件化的过程中逐渐沉淀，复用这些能力，赋能到搭建平台中。&lt;/p&gt;&lt;h1&gt;&lt;span&gt;如何做？波塞冬建站平台&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;有了这些目标，促使我们做了波塞冬建站平台，通过可视化操作 + 部分编码(或者不编码)生成中后台系统。让前端业务开发变成组件开发，逐渐沉淀可复用组件，让简单业务少编码甚至不编码。为前端增效，为后端赋能。&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPvpiaBRx4ViaRSNRWYhxRxMHEh08I0zxKR9mA5vL4mjeficcOLDiaVMhkcg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;h5&gt;&lt;span&gt;使用数据&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;这个平台上线之后，线上的有117个页面在运行，共发布了870次，其中已经设计了6个团队，提升的人效也很显著，假设我们平均开发一个增量页面需要3人日，用波塞冬只需要一人日，老页面迭代修改配置也只需要0.5d&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPOhSrM6IIQicQAldHHsMMUuiaUCYo4htAYSNQHjOiakVZHvwHvK0HQibGKg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;h5&gt;&lt;span&gt;平台流程&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;给大家讲解下平台原理，比如说一个创建者，他首先要去波塞冬平台创建页面，生成一份 schema ，这份 schema 被波塞冬后端保存在SQL中，我们的用户，也就是页面访问者，通过业务平台网站获取页面，这里边相当于业务平台网站有个sdk，他直接取拉波塞冬保存的schema，sdk通过 schema 渲染组件 和 业务数据的接口，这样一个页面就展示出来了&lt;br/&gt;那我们这边也有很多组件贡献者，如果创建者不满足需求的，贡献者这边去维护组件这样就能贡献生态&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPZ08hKMr6JKFcwUYgkXXJ3xIWiaW9GicWrRicxf567r3RNUqsB45x3BrvA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;h5&gt;&lt;span&gt;平台架构&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;整个平台的架构是这样的：&lt;br/&gt;底层我们是拿vue搭建，不过这块技术选型哪个框架都可以，只要定义好 schema，react + antd 也能搞&lt;br/&gt;组件这一块就是根据固定的 schema 进行封装，未来可能还有一些业务组件接入&lt;br/&gt;渲染这一层主要是提供给开发者用来丰富组件库或一些其他业务场景&lt;br/&gt;平台能力也就是我们要提供的这个界面，主要是一些用户可以操作的功能，这些功能想一下入手还有一点小成本，我们提供了文档，视频等，可以做到边接入边开发，还提供了一些实例供配置方借鉴&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPTCUSNfcjCVy43TEss2hvkOcxw5xN1xuLSl5xEGicTGhKNOxCNzCdAyg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;h5&gt;&lt;span&gt;接入方式&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;我们的解析方式有三种，一种是 sdk直接引入，这样方便升级，也方便二次开发，sdk的引入方式非常灵活。&lt;br/&gt;还有一种是 ifame 引入，这样只需引入一个标签即可，剩下的都在波塞冬里配置。&lt;br/&gt;一键建站的方式，相当于站点维度，没有项目的概念，域名菜单权限页面，都是在波塞冬里完成的，不需要本地环境，这种比较适合后端开发人员&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPYIFicTOAKdIugLe0eumicq90LiaUkuKJIWDxiaJXhqrQRvRsGiaicJLj99Hw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;h5&gt;&lt;span&gt;渲染引擎&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;展示一下 sdk 的引用，我们可能会在不同开发环境中引入，这里提供环境变量的配置&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPA65kczibOWUc6vy7J6ZTPXtjlguSqGCm9WLkm6mF0Dp4xuB3jZuDYtg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;h5&gt;&lt;span&gt;一键建站&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;刚才有介绍我们有三种引入方式，给大家看下第三种一键建站是怎么做的，我们加强了应用管理，一个应用就是一个站点，菜单，域名都是在平台里申请，这样用户通过页面访问就是配置的界面，完全不需要再去申请工程，这里我们用了代理的方式进行一个转发，转发的目标是一个基座，类似微前端的那个基座，只不过这个基座我们通过当前域名拉取配置，最终提供给用户。&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPVfuBTLcG5rzYZDNTb4qxRJVGTKbGgGfib1ZONpekgDfAh8xr7IycdXw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;h5&gt;&lt;span&gt;页面布局&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;带大家看一下创建页面的布局，最左侧是组件区，目前是基础组件，这里未来可能会做组件分类，把业务组件和自定义组件也接进来，中间是布局设计区，比如说列表页有固定三个区域，筛选项，中部功能区，列表，表单页不做限制，右侧为配置区，可以配置绑定字段和文案还有一些额外属性，组件的交互，像select这种option是接口调用的数据，还可以配置远程接口&lt;/p&gt;&lt;h5&gt;&lt;span&gt;模型设计（JSON SCHEMA）&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;我们创建页面后，会生成一份 schema ，什么是 json schema ，简单介绍一下，json shema 是 json 的一种约束，用来定义json的数据结构和验证格式，我们在这里用来保证数据的一致性&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPLkXHvc0UVVl9icYwlXNBz40Rsq1PhIygKvza4SrQ7kpGEe5oMFMZH6Q/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;p&gt;每个页面有一个主体，用来描述版本和一些原信息，body就是他的内容&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPHdTia1gbvHAoF8TJQj1Bw8ZaYwz5qUFT8P06MChLSmJtXUTpjq2xcqA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;h5&gt;&lt;span&gt;JSON SCHEMA&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;我们目前页面分为两种，一种就是列表页面，一种是 form 页，但是他们的描述协议都是一样的，那基本的组件描述我们定义好了，这样其实简单的需求就能实现了，但是前端避免不了交互这一层，比如说一个选择框，当我选择了 A，B会触发一个事件，并且B还要拿到A所携带的入参信息&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPmB9USaibXAe33MWt5L43sUCMaHXcwgHOibp7TaibfvsKMoZ8gj7XXYqicA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;h5&gt;&lt;span&gt;操作事件&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;我们这边做了一个操作事件功能，我们只需要把组件的 ref 设置好，操作事件这一块就可以定义他的出参入参，方便交互&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPt5rtLJC35qWP1DEBPKNxQCGLiaVMLPkNaiaTIxCq6bp7q6TzIqNPUaOQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;h5&gt;&lt;span&gt;数据中心&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;接口配置这里，比如说一个 select 从远程接口获取到一个枚举，就可以存下来，给其他组件消费&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPkeaNNJc9kRU3FOaicR5FEichfT9Cl0SYPRlErhRKLQTDO8ao1s0DjpLQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;h5&gt;&lt;span&gt;自定义插槽&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;比如说平台目前有不支持的组件或交互，还没有维护在平台里的，这里可以利用 vue 的 slot 进行二次开发，只需要拖入一个 slot&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPwyViaJdGAkBanhSENuGH0hNl8f7X1wD0jDNYGEgNlibFZCrQ3wIicB5TQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;h5&gt;&lt;span&gt;自定义插槽-编码&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;slot 里的组件可以获取到配置里的 ref 和想要拿到的 scope，做任何你想做的事儿&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPgN4Of1tWWJpE94mLUVEjDKyU1jVqWflfrmdVgicKlNJ6UibeTIHI04IQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;480&quot;/&gt;&lt;/p&gt;&lt;h5&gt;&lt;span&gt;稳定性&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;我们做低代码平台，归根到底是一个渲染引擎渲染一组 schema ，那么稳定性也得考虑，我们每次修改线上配置，可能心情如图，那我发布时怎么保证准确性，传统开发我们会有一个review 的过程，我们就把这个过程也搬上来了&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPYuGtczw1hRcH849icrwiaG54LBopoUMdkHiavde2v8G1aibeTQS5Vvhd0Q/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;h5&gt;&lt;span&gt;SCHEMA DIFF &amp;amp; 版本对比&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;schema diff 每次发布时，需要选择版本来确认我改了什么，大大降低了风险。&lt;br/&gt;发布时也要进行二次确认&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPmmTb0uyDmKlibyxiaq1gZtdVtiaggp3tlH7BnH83pE4ZY6CgurMxS7Ztg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;h1&gt;&lt;span&gt;未来规划&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.5625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xdDaByDutCjAmyLtEqTAMsib5OJh6S6mPJsKkXnlxN4Jht7eWpWTV04ultiblzntWyBpvFBXciaY9KC85VzAHTHnw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;h5&gt;&lt;span&gt;AUTO-CODE&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;我们目前的能力，在版本对比这一块希望能做到 merge，并且提供可视化，也就是说你不一定非要看 schema 这种东西，组件这里继续丰富，能承载更多的需求，low-code 目标就做到 no-code 让非开发人员直接生成页面，不需要写一点代码，最终这个生产力就可以转移，终极目标就是做成 auto-code ，利用机器学习识别设计图，直接生成网站，抹去大部分配置，auto-code 目前业界有很多公司已经实现，我们也在慢慢摸索。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p data-darkmode-color-16057140139831=&quot;rgb(162, 162, 162)&quot; data-darkmode-original-color-16057140139831=&quot;rgb(68, 68, 68)&quot; data-style=&quot;padding-top: 7px; padding-bottom: 7px; color: rgb(68, 68, 68); font-size: 14px; line-height: 1.8; font-family: &amp;quot;Helvetica Neue&amp;quot;, Helvetica, &amp;quot;Lucida Grande&amp;quot;, Arial, &amp;quot;Hiragino Sans GB&amp;quot;, 微软雅黑, &amp;quot;WenQuanYi Micro Hei&amp;quot;, STHeiti, SimSun, sans-serif; text-align: center;&quot;&gt;&lt;span&gt;The End&lt;/span&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-darkmode-color-16057140139831=&quot;rgb(163, 163, 163)&quot; data-darkmode-original-color-16057140139831=&quot;rgb(0,0,0)&quot; data-style=&quot;padding-right: 10px; padding-left: 10px; font-size: 16px; color: black; line-height: 1.6; letter-spacing: 0px; word-break: break-word; text-align: left; font-family: Optima-Regular, Optima, PingFangSC-light, PingFangTC-light, &amp;quot;PingFang SC&amp;quot;, Cambria, Cochin, Georgia, Times, &amp;quot;Times New Roman&amp;quot;, serif;&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot; data-darkmode-color-16057140139831=&quot;rgb(141, 141, 141)&quot; data-darkmode-original-color-16057140139831=&quot;rgb(89, 89, 89)&quot; data-style=&quot;padding-top: 8px; padding-bottom: 8px; line-height: 26px; color: rgb(89, 89, 89);&quot;&gt;&lt;span&gt;如果你觉得这篇内容对你挺有启发，请你轻轻点下小手指，帮我两个小忙呗：&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot; data-darkmode-color-16057140139831=&quot;rgb(141, 141, 141)&quot; data-darkmode-original-color-16057140139831=&quot;rgb(89, 89, 89)&quot; data-style=&quot;padding-top: 8px; padding-bottom: 8px; line-height: 26px; color: rgb(89, 89, 89);&quot;&gt;&lt;span&gt;1、点亮&lt;strong data-darkmode-color-16057140139831=&quot;rgb(71, 193, 168)&quot; data-darkmode-original-color-16057140139831=&quot;rgb(71, 193, 168)&quot;&gt;「在看」&lt;/strong&gt;，让更多的人看到这篇满满干货的内容；&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot; data-darkmode-color-16057140139831=&quot;rgb(141, 141, 141)&quot; data-darkmode-original-color-16057140139831=&quot;rgb(89, 89, 89)&quot; data-style=&quot;padding-top: 8px; padding-bottom: 8px; line-height: 26px; color: rgb(89, 89, 89);&quot;&gt;&lt;span&gt;2、关注公众号「哈啰技术团队」，可第一时间收到最新技术推文。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot; data-darkmode-color-16057140139831=&quot;rgb(141, 141, 141)&quot; data-darkmode-original-color-16057140139831=&quot;rgb(89, 89, 89)&quot; data-style=&quot;padding-top: 8px; padding-bottom: 8px; line-height: 26px; color: rgb(89, 89, 89);&quot;&gt;&lt;span&gt;如果喜欢就点个👍喔，有您的喜欢⛽️，我们会更有动力输出有价值的技术分享滴；&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.3365323096609085&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/xdDaByDutCja1wGKtp4IvKFbKKgKS8L0kQO9PzXxFoTia27KOzppMGsiba5RdY3TAY6XTpIDGsLJLrYCBRCKMKnw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1563&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;
                 &lt;/div&gt;
 
                 
