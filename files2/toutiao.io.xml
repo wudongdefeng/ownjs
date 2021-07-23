@@ -40,204 +40,6 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>9fc6cfffa5963c53252effc5783627d7</guid>
-<title>[译] Google Web 前端性能优化指南</title>
-<link>https://toutiao.io/k/o9uac2u</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entry-content&quot;&gt;
-      &lt;p&gt;曾经看到有篇文章写了关于用户对于网站的性能延迟的感知，其中列出了几个关键性的指标：&lt;/p&gt;
-&lt;a id=&quot;more&quot;/&gt;
-
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;延迟时间&lt;/th&gt;
-&lt;th&gt;指标介绍&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;&lt;tr&gt;
-&lt;td&gt;0 ~ 16ms&lt;/td&gt;
-&lt;td&gt;新帧更新时间，每秒渲染 60 个新帧保证动画很流畅&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;0 ~ 100ms&lt;/td&gt;
-&lt;td&gt;响应用户操作时间，在此时间窗口内用户会感觉到响应被立即执行&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;100 ~ 1000ms&lt;/td&gt;
-&lt;td&gt;加载页面或更新视图时间，在这个窗口内用户会感觉任务进展是自然的、连续的&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;&amp;gt;= 1000ms (1s)&lt;/td&gt;
-&lt;td&gt;用户会失去对他们正在执行的任务的注意力&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;&amp;gt;= 10000ms (10s)&lt;/td&gt;
-&lt;td&gt;用户感到沮丧并可能放弃任务，并且以后可能会也可能不会回来&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;&lt;/table&gt;
-&lt;p&gt;由此可见，性能对于一个应用非常重要。&lt;/p&gt;
-&lt;p&gt;为了能够对 web 应用的性能优化有一个整体的认知，本文对 google 的 web 前端性能优化指南进行了翻译整理。整个性能优化的内容分为三个部分：加载性能、渲染性能和性能评估。&lt;/p&gt;
-&lt;h2 id=&quot;一、加载性能&quot;&gt;&lt;a href=&quot;#一、加载性能&quot; class=&quot;headerlink&quot; title=&quot;一、加载性能&quot;/&gt;一、加载性能&lt;/h2&gt;&lt;p&gt;加载性能主要是受用户的网络条件、要加载的资源多少以及资源内容的大小的影响。用户的网络条件我们无法控制，所以页面资源的加载数量以及资源内容的大小是我们优化的方向，另一方面我们也可以在我们依赖的传输协议上作文章，比如使用 http 缓存等。&lt;/p&gt;
-&lt;h3 id=&quot;1-1-资源加载性能优化&quot;&gt;&lt;a href=&quot;#1-1-资源加载性能优化&quot; class=&quot;headerlink&quot; title=&quot;1.1 资源加载性能优化&quot;/&gt;1.1 资源加载性能优化&lt;/h3&gt;&lt;p&gt;不同的资源类型使用的优化手段会稍微有些不同：&lt;/p&gt;
-&lt;h4 id=&quot;文本资源&quot;&gt;&lt;a href=&quot;#文本资源&quot; class=&quot;headerlink&quot; title=&quot;文本资源&quot;/&gt;文本资源&lt;/h4&gt;&lt;p&gt;文本资源主要包括：HTML、JavaScript、CSS 等，主要优化手段有：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;减小内容：minify&lt;/li&gt;
-&lt;li&gt;压缩内容：比如使用 gzip 压缩&lt;/li&gt;
-&lt;li&gt;减少第三方库的使用&lt;/li&gt;
-&lt;li&gt;JavaScript 特有的优化
-&lt;/li&gt;
-&lt;li&gt;CSS 特有的优化&lt;ul&gt;
-&lt;li&gt;内嵌较小的 CSS 文件&lt;/li&gt;
-&lt;li&gt;请勿内嵌较大数据 URI&lt;/li&gt;
-&lt;li&gt;请勿内嵌 CSS 属性&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4 id=&quot;图片资源&quot;&gt;&lt;a href=&quot;#图片资源&quot; class=&quot;headerlink&quot; title=&quot;图片资源&quot;/&gt;图片资源&lt;/h4&gt;&lt;p&gt;主要优化手段有：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;去掉不必要的图片&lt;/li&gt;
-&lt;li&gt;选择合适的图片格式&lt;ul&gt;
-&lt;li&gt;PNG: 剪贴画、线条画、需要透明度的&lt;/li&gt;
-&lt;li&gt;JPG: 照片&lt;/li&gt;
-&lt;li&gt;GIF: 动画&lt;/li&gt;
-&lt;li&gt;WebP&lt;/li&gt;
-&lt;li&gt;若不确定，同时保存所有格式对比大小&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;去掉 metadata&lt;/li&gt;
-&lt;li&gt;调整图片尺寸&lt;ul&gt;
-&lt;li&gt;合理的大小&lt;/li&gt;
-&lt;li&gt;裁切重要的部分，其余留白&lt;/li&gt;
-&lt;li&gt;减小图片质量: 主要是 JPG&lt;/li&gt;
-&lt;li&gt;使用压缩工具: 比如 tinyPNG，支持 .png 和 .jpg&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;使用 video 代替大的 GIF&lt;/li&gt;
-&lt;li&gt;Lazy load&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;1-2-HTTP-协议及缓存优化&quot;&gt;&lt;a href=&quot;#1-2-HTTP-协议及缓存优化&quot; class=&quot;headerlink&quot; title=&quot;1.2 HTTP 协议及缓存优化&quot;/&gt;1.2 HTTP 协议及缓存优化&lt;/h3&gt;&lt;p&gt;缓存对于资源加载优化的优势非常明显，对于同一个资源在内容没有改变的情况下不需要做二次加载，极大的提升了加载效率。&lt;/p&gt;
-&lt;h4 id=&quot;使用-CDN&quot;&gt;&lt;a href=&quot;#使用-CDN&quot; class=&quot;headerlink&quot; title=&quot;使用 CDN&quot;/&gt;使用 CDN&lt;/h4&gt;&lt;p&gt;CDN 的优点是就近访问，通过缓存代理将资源内容缓存在 CDN 的边缘节点，当用户请求资源的时候如果命中缓存就直接返回缓存的内容，否则就回源到资源服务器拉取内容再返回，同时对资源进行缓存&lt;/p&gt;
-&lt;h4 id=&quot;优化-HTTP-请求体&quot;&gt;&lt;a href=&quot;#优化-HTTP-请求体&quot; class=&quot;headerlink&quot; title=&quot;优化 HTTP 请求体&quot;/&gt;优化 HTTP 请求体&lt;/h4&gt;&lt;ul&gt;
-&lt;li&gt;合并文本内容&lt;/li&gt;
-&lt;li&gt;合并图片&lt;/li&gt;
-&lt;li&gt;scripts 文件位置: 放在 &amp;lt;/body&amp;gt; 前&lt;/li&gt;
-&lt;li&gt;内嵌 scripts: 少量代码时&lt;/li&gt;
-&lt;li&gt;同一资源避免多次加载&lt;/li&gt;
-&lt;li&gt;懒加载&lt;/li&gt;
-&lt;li&gt;使用 HTTP/2 的特性（二进制分帧层、请求与响应复用、数据流优先级、每个来源一个连接、流控制、服务器推送、标头压缩-、HPACK 的安全性和性能）&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4 id=&quot;使用-HTTP-缓存头&quot;&gt;&lt;a href=&quot;#使用-HTTP-缓存头&quot; class=&quot;headerlink&quot; title=&quot;使用 HTTP 缓存头&quot;/&gt;使用 HTTP 缓存头&lt;/h4&gt;&lt;ul&gt;
-&lt;li&gt;Last-Modified / If-Modified-Since：数据从上一次请求的 Last-Modified 来；服务端返回 200 和内容，表示内容有更新；服务端返回 304 无内容，表示内容没有更新；只能用在 GET 和 HEAD；遇到 If-None-Match 无效，除非服务端不支持 If-None-Match&lt;/li&gt;
-&lt;li&gt;Etag / If -None-Match：数据从上一次请求的 Last-Modified 来；服务端返回 200 和内容，表示内容有更新；服务端返回 304 无内容，表示内容没有更新&lt;/li&gt;
-&lt;li&gt;cache-control&lt;ul&gt;
-&lt;li&gt;no-cache：可以缓存，但每次强制客户端检查更新情况&lt;/li&gt;
-&lt;li&gt;no-store：不能缓存&lt;/li&gt;
-&lt;li&gt;public：允许浏览器和中间缓存&lt;/li&gt;
-&lt;li&gt;private：允许浏览器缓存，不允许中间缓存&lt;/li&gt;
-&lt;li&gt;max-age：缓存的最大时长，单位：秒，最长一年：31536000&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;expires：设置一个资源过期的时间；过了那个时间点后，向服务器请求新内容；作为 cache-control 的备选方案；最长时间同样不能超过一年；If-Modified-Since、If-Unmodified-Since、Last-Modified&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;1-3-PRPL-模式&quot;&gt;&lt;a href=&quot;#1-3-PRPL-模式&quot; class=&quot;headerlink&quot; title=&quot;1.3 PRPL 模式&quot;/&gt;1.3 PRPL 模式&lt;/h3&gt;&lt;p&gt;PRPL 是一个首字母缩写词，它描述了一种用于使网页加载并变得更快的交互模式：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Push (or preload)：推送或预加载最重要的资源&lt;/li&gt;
-&lt;li&gt;Render：尽快渲染初始路径&lt;/li&gt;
-&lt;li&gt;Pre-cache：预缓存剩余资源&lt;/li&gt;
-&lt;li&gt;Lazy load：延迟加载其他路由和非关键资源&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;二、渲染性能&quot;&gt;&lt;a href=&quot;#二、渲染性能&quot; class=&quot;headerlink&quot; title=&quot;二、渲染性能&quot;/&gt;二、渲染性能&lt;/h2&gt;&lt;p&gt;渲染性能指的是浏览器对网页内容的渲染性能。该性能主要受用户设备的性能、网络条件以及影响渲染性能的代码逻辑的影响。同样，用户设备的性能和网络条件我们无法控制，所以我们只能从影响渲染性能的代码逻辑入手。&lt;/p&gt;
-&lt;h3 id=&quot;2-1-浏览器关键渲染路径&quot;&gt;&lt;a href=&quot;#2-1-浏览器关键渲染路径&quot; class=&quot;headerlink&quot; title=&quot;2.1 浏览器关键渲染路径&quot;/&gt;2.1 浏览器关键渲染路径&lt;/h3&gt;&lt;p&gt;关键渲染路径也就是浏览器将 HTML、CSS 和 JavaScript 转换成实际运作的网站必须采取的一系列步骤。通过优化关键渲染路径，我们可以显著缩短首次渲染页面的时间。&lt;/p&gt;
-&lt;p&gt;关于具体的知识这里不作过多介绍，感兴趣的同学可以到文章底部参考资源部分找到相关资料，这里主要介绍优化方面的内容。&lt;/p&gt;
-&lt;h3 id=&quot;2-2-渲染性能优化&quot;&gt;&lt;a href=&quot;#2-2-渲染性能优化&quot; class=&quot;headerlink&quot; title=&quot;2.2 渲染性能优化&quot;/&gt;2.2 渲染性能优化&lt;/h3&gt;&lt;h4 id=&quot;优化-JavaScript-执行&quot;&gt;&lt;a href=&quot;#优化-JavaScript-执行&quot; class=&quot;headerlink&quot; title=&quot;优化 JavaScript 执行&quot;/&gt;优化 JavaScript 执行&lt;/h4&gt;&lt;ul&gt;
-&lt;li&gt;requestAnimationFrame：对于动画效果的实现，避免使用 setTimeout 或 setInterval，请使用 requestAnimationFrame。&lt;/li&gt;
-&lt;li&gt;降低复杂性或使用 Web Worker：将长时间运行的 JavaScript 从主线程移到 Web Worker。&lt;/li&gt;
-&lt;li&gt;了解 JavaScript 的“帧税”：使用微任务来执行对多个帧的 DOM 更改。&lt;/li&gt;
-&lt;li&gt;避免微优化 JavaScript：使用 Chrome DevTools 的 Timeline 和 JavaScript 分析器来评估 JavaScript 的影响。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4 id=&quot;缩小样式计算的范围并降低其复杂性&quot;&gt;&lt;a href=&quot;#缩小样式计算的范围并降低其复杂性&quot; class=&quot;headerlink&quot; title=&quot;缩小样式计算的范围并降低其复杂性&quot;/&gt;缩小样式计算的范围并降低其复杂性&lt;/h4&gt;&lt;ul&gt;
-&lt;li&gt;降低选择器的复杂性&lt;/li&gt;
-&lt;li&gt;减少要计算样式的元素数量&lt;/li&gt;
-&lt;li&gt;测量样式重新计算的开销&lt;/li&gt;
-&lt;li&gt;使用块、元素、修饰符(BEM)编写样式&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4 id=&quot;避免大型、复杂的布局和布局抖动&quot;&gt;&lt;a href=&quot;#避免大型、复杂的布局和布局抖动&quot; class=&quot;headerlink&quot; title=&quot;避免大型、复杂的布局和布局抖动&quot;/&gt;避免大型、复杂的布局和布局抖动&lt;/h4&gt;&lt;ul&gt;
-&lt;li&gt;尽可能避免布局操作：对“几何属性”（如宽度、高度、左侧或顶部）的更改&lt;/li&gt;
-&lt;li&gt;使用 flexbox 而不是较早的布局模型&lt;/li&gt;
-&lt;li&gt;避免强制同步布局：始终先批量读取样式并执行（浏览器可以使用上一帧的布局值），然后执行任何写操作&lt;/li&gt;
-&lt;li&gt;避免布局抖动：不要在循环中读取样式值&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4 id=&quot;简化绘制的复杂度、减小绘制区域&quot;&gt;&lt;a href=&quot;#简化绘制的复杂度、减小绘制区域&quot; class=&quot;headerlink&quot; title=&quot;简化绘制的复杂度、减小绘制区域&quot;/&gt;简化绘制的复杂度、减小绘制区域&lt;/h4&gt;&lt;ul&gt;
-&lt;li&gt;触发布局与绘制&lt;ul&gt;
-&lt;li&gt;触发布局必然触发绘制&lt;/li&gt;
-&lt;li&gt;更改非几何属性，例如背景、文本或阴影，会触发绘制&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;使用 Chrome DevTools 快速确定绘制瓶颈&lt;/li&gt;
-&lt;li&gt;提升移动或淡出的元素&lt;ul&gt;
-&lt;li&gt;will-change&lt;/li&gt;
-&lt;li&gt;3D 变形: transform: translateZ(0);&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;减少绘制区域：编排动画和变换使其不过多重叠&lt;/li&gt;
-&lt;li&gt;降低绘制的复杂性：绘制任何涉及模糊（例如阴影）的元素所花的时间将比（例如）绘制一个红框的时间要长&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4 id=&quot;坚持仅合成器的属性和管理层计数&quot;&gt;&lt;a href=&quot;#坚持仅合成器的属性和管理层计数&quot; class=&quot;headerlink&quot; title=&quot;坚持仅合成器的属性和管理层计数&quot;/&gt;坚持仅合成器的属性和管理层计数&lt;/h4&gt;&lt;ul&gt;
-&lt;li&gt;坚持使用 transform 和 opacity 属性更改来实现动画&lt;/li&gt;
-&lt;li&gt;提升您打算设置动画的元素&lt;/li&gt;
-&lt;li&gt;管理层（layer）并避免层数激增&lt;/li&gt;
-&lt;li&gt;使用 Chrome DevTools 来了解应用中的层&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4 id=&quot;使输入处理程序去除抖动&quot;&gt;&lt;a href=&quot;#使输入处理程序去除抖动&quot; class=&quot;headerlink&quot; title=&quot;使输入处理程序去除抖动&quot;/&gt;使输入处理程序去除抖动&lt;/h4&gt;&lt;ul&gt;
-&lt;li&gt;避免长时间运行输入处理程序&lt;/li&gt;
-&lt;li&gt;避免在输入处理程序中更改样式&lt;/li&gt;
-&lt;li&gt;使滚动处理程序去除抖动&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;三、性能评估&quot;&gt;&lt;a href=&quot;#三、性能评估&quot; class=&quot;headerlink&quot; title=&quot;三、性能评估&quot;/&gt;三、性能评估&lt;/h2&gt;&lt;p&gt;评估一个网站的性能之前，首先要确定衡量性能好坏的指标，通过指标数据才能客观评估哪些方面做得好，哪些方面（以及如何）可以改进。&lt;/p&gt;
-&lt;h3 id=&quot;3-1-指标类型&quot;&gt;&lt;a href=&quot;#3-1-指标类型&quot; class=&quot;headerlink&quot; title=&quot;3.1 指标类型&quot;/&gt;3.1 指标类型&lt;/h3&gt;&lt;ul&gt;
-&lt;li&gt;Perceived load speed: 加载并渲染可视区域内容的速度&lt;/li&gt;
-&lt;li&gt;Load responsiveness: 加载并执行引用的 JavaScript 代码以响应用户交互的速度&lt;/li&gt;
-&lt;li&gt;Runtime responsiveness: 加载完成后，页面响应用户交互的速度&lt;/li&gt;
-&lt;li&gt;Visual stability: 页面上的元素是否以用户不期望的方式移动并可能干扰他们的交互？&lt;/li&gt;
-&lt;li&gt;Smoothness: 过渡和动画渲染桢率是否稳定，状态变化是否流畅?&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;3-2-重要的衡量指标&quot;&gt;&lt;a href=&quot;#3-2-重要的衡量指标&quot; class=&quot;headerlink&quot; title=&quot;3.2 重要的衡量指标&quot;/&gt;3.2 重要的衡量指标&lt;/h3&gt;&lt;ul&gt;
-&lt;li&gt;First contentful paint (FCP): 测量从页面开始加载到屏幕上呈现页面内容的任何部分的时间&lt;/li&gt;
-&lt;li&gt;Largest contentful paint (LCP): 测量从页面开始加载到最大的文本块或图像元素在屏幕上呈现的时间&lt;/li&gt;
-&lt;li&gt;First input delay (FID): 衡量从用户首次与您的网站进行交互（即当他们单击链接，点击按钮或使用自定义的 JavaScript 驱动的控件）到浏览器实际能够响应该交互之间的时间&lt;/li&gt;
-&lt;li&gt;Time to Interactive (TTI): 测量从页面开始加载到可视化呈现之间的时间，页面的初始脚本（如果有）已经加载，并且能够可靠地快速响应用户输入的时间&lt;/li&gt;
-&lt;li&gt;Total blocking time (TBT): 测量主线程被阻塞足够长时间以防止输入响应的 FCP 和 TTI 之间的总时间&lt;/li&gt;
-&lt;li&gt;Cumulative layout shift (CLS): 测量页面开始加载到页面生命周期状态变为隐藏之间发生的所有意外布局转换的累积分数&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;四、参考资源&quot;&gt;&lt;a href=&quot;#四、参考资源&quot; class=&quot;headerlink&quot; title=&quot;四、参考资源&quot;/&gt;四、参考资源&lt;/h2&gt;
-
-    &lt;/div&gt;
-    &lt;div class=&quot;post-info&quot;&gt;
-      &lt;p&gt;
-        作者
-        Richard Chen
-        发表于
-        &lt;i&gt;2021-07-22 15:41:00&lt;/i&gt;
-
-        
-        ，添加在分类
-        
-        &lt;a href=&quot;/cate/performance/&quot; data-cate=&quot;性能优化&quot;&gt;
-          &lt;code class=&quot;notebook&quot;&gt;性能优化&lt;/code&gt;
-        &lt;/a&gt;
-        
-        下
-        
-
-        
-
-        ，最后修改于
-        &lt;i&gt;2021-07-22 15:41:00&lt;/i&gt;
-      &lt;/p&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
 <guid>c19f415049f9627cdfd60d9b7f95c678</guid>
 <title>软件设计的目标和途径</title>
 <link>https://toutiao.io/k/d67pcrt</link>
@@ -558,5 +360,19 @@ if(userList.length() != 0){
 
 &lt;/div&gt;
 &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>238938ce7f82e4e027396cec811482d8</guid>
+<title>CPU 核数与线程数有什么关系？</title>
+<link>https://toutiao.io/k/3h5esll</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;reward_qrcode_area reward_area tc&quot; id=&quot;js_reward_qrcode&quot;&gt;
+                                &lt;p class=&quot;tips_global&quot;&gt;Long-press QR code to transfer me a reward&lt;/p&gt;
+                                                                &lt;p class=&quot;reward_tips&quot;&gt;欢迎添加个人微信coder_saver&lt;/p&gt;
+                                &lt;span class=&quot;reward_qrcode_img_wrp&quot;&gt;&lt;img class=&quot;reward_qrcode_img&quot; id=&quot;js_reward_qrcode_img&quot;/&gt;&lt;/span&gt;
+                                &lt;p class=&quot;tips_global&quot;&gt;As required by Apple&#x27;s new policy, the Reward feature has been disabled on Weixin for iOS. You can still reward an Official Account by transferring money via QR code.&lt;/p&gt;
+                            &lt;/div&gt;
+                                                                            
+                              
+            &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
