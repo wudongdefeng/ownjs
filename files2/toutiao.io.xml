@@ -355,18 +355,6 @@ export default class SandBox {
   &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>59a2c5ee62c39cb35758b0073d3f087f</guid>
-<title>实践 DevSecOps，很多人第一步就做错了</title>
-<link>https://toutiao.io/k/ldv3dxl</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;weui-dialog&quot;&gt;
-      &lt;p class=&quot;weui-dialog__hd&quot;&gt;&lt;strong class=&quot;weui-dialog__title&quot;&gt;&quot;Top Stories&quot; is disabled&lt;/strong&gt;&lt;/p&gt;
-      &lt;p class=&quot;weui-dialog__bd&quot;&gt;
-        Enable &quot;Top Stories&quot; in &quot;Settings&quot; &amp;gt; &quot;General&quot; &amp;gt; &quot;Manage Discover&quot;      &lt;/p&gt;
-      
-    &lt;/div&gt;
-  &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
 <guid>59ccc5fe856ee9299751c1962766577b</guid>
 <title>从零设计可视化大屏搭建引擎</title>
 <link>https://toutiao.io/k/662perp</link>
@@ -592,6 +580,18 @@ export default class SandBox {
   &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果大家想看更完整的配置面板实现， 可以参考开源项目 &lt;a href=&quot;https://link.zhihu.com/?target=https%3A//github.com/MrXujiang/h5-Dooring&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;H5-Dooring | H5可视化编辑器&lt;/a&gt;&lt;/p&gt;&lt;p&gt;我们可以看看最终的配置面板实现效果:&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-fa88a68cd17104b625b2e4d0a8946300_b.gif&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;720&quot; data-rawheight=&quot;388&quot; data-thumbnail=&quot;https://pic1.zhimg.com/v2-fa88a68cd17104b625b2e4d0a8946300_b.jpg&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic1.zhimg.com/v2-fa88a68cd17104b625b2e4d0a8946300_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;720&quot; data-rawheight=&quot;388&quot; data-thumbnail=&quot;https://pic1.zhimg.com/v2-fa88a68cd17104b625b2e4d0a8946300_b.jpg&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic1.zhimg.com/v2-fa88a68cd17104b625b2e4d0a8946300_r.jpg&quot; data-actualsrc=&quot;https://pic1.zhimg.com/v2-fa88a68cd17104b625b2e4d0a8946300_b.gif&quot;/&gt;&lt;/figure&gt;&lt;h3&gt;控制中心概述 &amp;amp; 功能辅助设计&lt;/h3&gt;&lt;p&gt;&lt;b&gt;控制中心&lt;/b&gt;的实现主要是业务层的， 没有涉及太多复杂的技术， 所以这里我简单介绍一下。 因为可视化大屏页面展示的信息有些可能是私密数据， 只希望一部分人看到， 所以我们需要对页面的访问进行控制。 其次由于企业内部业务战略需求， 可能会对页面进行各种验证， 状态校验， 数据更新频率等， 所以我们需要设计一套控制中心来管理。 最基本的就是访问控制， 如下:&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-07ddb9a1552a17983cd7b789d2b6e69c_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1284&quot; data-rawheight=&quot;530&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic1.zhimg.com/v2-07ddb9a1552a17983cd7b789d2b6e69c_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1284&quot; data-rawheight=&quot;530&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic1.zhimg.com/v2-07ddb9a1552a17983cd7b789d2b6e69c_r.jpg&quot; data-actualsrc=&quot;https://pic1.zhimg.com/v2-07ddb9a1552a17983cd7b789d2b6e69c_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p&gt;&lt;b&gt;功能辅助设计&lt;/b&gt; 主要是一些用户操作上的优化， 比如快捷键， 画布缩放， 大屏快捷导航， 撤销重做等操作， 这块可以根据具体的产品需求来完善。 大家后期设计搭建产品时也可以参考实现。&lt;/p&gt;&lt;h2&gt;可视化大屏后期规划和未来展望&lt;/h2&gt;&lt;p&gt;为了实现更富有展现力， 满足更多场景的可视化大屏引擎， 我们一方面需要提高引擎扩展性， 一方面需要完善物料生态， 其次只要与时俱进， 提供更多智能化的场景功能， 比如搭建埋点， 数据预警等， 具体规划如下:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;丰富组件物料， 支持3D组件， 地理空间组件等&lt;/li&gt;&lt;li&gt;搭建埋点， 方便后期对组件进行分析&lt;/li&gt;&lt;li&gt;实现数据源， 事件机制闭环&lt;/li&gt;&lt;li&gt;支持用户自定义组件&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;如果大家对可视化搭建或者低代码/零代码感兴趣， 也可以参考我往期的文章或者在评论区交流你的想法和心得。&lt;/p&gt;&lt;h2&gt;往期文章&lt;/h2&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>59a2c5ee62c39cb35758b0073d3f087f</guid>
+<title>实践 DevSecOps，很多人第一步就做错了</title>
+<link>https://toutiao.io/k/ldv3dxl</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;weui-dialog&quot;&gt;
+      &lt;p class=&quot;weui-dialog__hd&quot;&gt;&lt;strong class=&quot;weui-dialog__title&quot;&gt;&quot;Top Stories&quot; is disabled&lt;/strong&gt;&lt;/p&gt;
+      &lt;p class=&quot;weui-dialog__bd&quot;&gt;
+        Enable &quot;Top Stories&quot; in &quot;Settings&quot; &amp;gt; &quot;General&quot; &amp;gt; &quot;Manage Discover&quot;      &lt;/p&gt;
+      
+    &lt;/div&gt;
+  &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
 <guid>43798f211581161f350ce454de1246cc</guid>
