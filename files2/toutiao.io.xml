@@ -5,632 +5,180 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>7e5d5481319d70c04824317c40b526b2</guid>
-<title>什么是布隆过滤器？如何解决高并发缓存穿透问题？</title>
-<link>https://toutiao.io/k/8klo399</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
-
-                    
-                    
-                    
-                    &lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;大家好，我是Tom哥~&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;日常开发中，大家经常使用缓存，但是你知道大型的互联网公司面对高并发流量，要注意缓存穿透问题吗!!!    &lt;span&gt;本&lt;/span&gt;&lt;span&gt;文会介绍布隆过滤器，空间换时间，以较低的内存空间、高效解决这个问题。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;本篇文章的目录：&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-backh=&quot;638&quot; data-backw=&quot;578&quot; data-ratio=&quot;1.1039861351819757&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/2KTof9YshwdQPcrMUlviaId4sbV7gLjDHgVwfreYQVHN37AKgGZkANkx06qK2FU5ic9BVDNz04oVUjwUibDp6by7A/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1154&quot;/&gt;&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;Mzg2NzYyNjQzNg==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/2KTof9YshwdmOC0H6kaQlnh3rvWF2hPpzBoAoibbfQkhLdXfEpQgd8frHoDJDH503rv3FaMK6las2rCNQY7icr6w/0?wx_fmt=png&quot; data-nickname=&quot;微观技术&quot; data-alias=&quot;weiguanjishu&quot; data-signature=&quot;前阿里架构师，研究生，CSDN博客专家。负责过电商交易、社区团购、流量营销等业务。分享后端架构技能、一线大厂面试经验、团队管理等话题。欢迎关注&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;&lt;br/&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;1、性能不够，缓存来凑&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;现在的年轻人都喜欢网购，没事就逛逛淘宝，剁剁手，买些自己喜欢的东西，释放下工作压力。&lt;/span&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.6514195583596214&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/2KTof9YshwdQPcrMUlviaId4sbV7gLjDHff8jyDR6CotOX3dgI3vcbr9qlVvIbfPlatmILiauOXRicibiasegOk0K5w/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1268&quot;/&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;br/&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;地址：&lt;/p&gt;&lt;p&gt;https://detail.tmall.com/item.htm?id=628993216729&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;上图是一个天猫 iphone12 的&lt;/span&gt;&lt;code&gt;&lt;span&gt;商品详情页&lt;/span&gt;&lt;/code&gt;&lt;span&gt;，id表示商品的编号&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;我们都知道淘宝的访问量是非常高的，为了提升系统的吞吐量，做了很多性能优化，其中非常重要一点是将信息异构到缓存中。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;有句话说的好：&lt;strong&gt;性能不够，缓存来凑。&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;但是，使用缓存时，我们要关注一个重要问题，如果缓存没有命中怎么办？&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.4590909090909091&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/2KTof9YshwdQPcrMUlviaId4sbV7gLjDH59K8oibuKMZJ1wctKjKcMhLPAOIwzxDPwcq4R88xc2zYY6cWVsfgTXQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;440&quot;/&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;br/&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;2、缓存没有命中，怎么办？&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.952&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/2KTof9YshwdQPcrMUlviaId4sbV7gLjDHtCOfkTglGGicqZV5LoEjyV4ibIHsSKYTaPYQvWaRPCMEDnBpWBGCvy4Q/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;750&quot;/&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;①我们先查询缓存，判断缓存中是否有数据&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;②如果有数据，直接返回&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;③如果缓存为空，我们需要再查一次数据库，并将数据格式异构化，然后预热到缓冲中，然后将结果返回&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;注意：&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;步骤 ③ 存在风险漏洞，如果缓存中数据不存在，压力会转嫁给数据库。假如被竞争对手利用，搞无效请求流量攻击，瞬间大量请求打到数据库中，对系统性能产生很大影响，很容易把数据库打挂，这种现象称为缓存穿透。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;3、那么如何处理缓存穿透？&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;我们的思路是，缓存中能不能判断这个数据库值的存在性，如果真的不存在，直接返回，也避免一次数据库查询。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;由于不存在是个&lt;/span&gt;&lt;code&gt;&lt;span&gt;无限边界&lt;/span&gt;&lt;/code&gt;&lt;span&gt;，所以，我们采用反向策略，将存在的值建立一个高效的检索。每次缓存取值时，先走一次判空检索。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;简单归纳下，这个框架的要求：&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;经调研，我们发现&lt;/span&gt;&lt;code&gt;&lt;span&gt;布隆过滤器&lt;/span&gt;&lt;/code&gt;&lt;span&gt;具备以上两个条件。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;4、什么是布隆过滤器？&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;布隆过滤器（Bloom Filter）是1970年由布隆提出的。它实际上是一个很长的二进制向量和一系列随机映射函数。布隆过滤器可以用于检索一个元素是否在一个集合中。&lt;/span&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;优点：空间效率和查询时间都远远超过一般的算法。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;缺点：有一定的误识别率，删除困难。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;5、布隆过滤器如何构建？&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;布隆过滤器本质上是一个 n 位的二进制数组，用0和1表示。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;假如我们以商品为例，有三件商品，商品编码分别为，&lt;/span&gt;&lt;code&gt;&lt;span&gt;id1&lt;/span&gt;&lt;/code&gt;&lt;span&gt;、&lt;/span&gt;&lt;code&gt;&lt;span&gt;id2&lt;/span&gt;&lt;/code&gt;&lt;span&gt;、&lt;/span&gt;&lt;code&gt;&lt;span&gt;id3&lt;/span&gt;&lt;/code&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;a）首先，对&lt;/span&gt;&lt;code&gt;&lt;span&gt;id1&lt;/span&gt;&lt;/code&gt;&lt;span&gt;，进行三次哈希，并确定其在二进制数组中的位置。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.37421875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/2KTof9YshwdQPcrMUlviaId4sbV7gLjDHtcKh11kV9gictsChDiaR7Mu9BAQjgUnKRQOG0iaJqVCn1o0T21ZyuOxBQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;br/&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;三次哈希，对应的二进制数组下标分别是 2、5、8，将原始数据从 0 变为 1。&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;b）对&lt;/span&gt;&lt;code&gt;&lt;span&gt;id2&lt;/span&gt;&lt;/code&gt;&lt;span&gt;，进行三次哈希，并确定其在二进制数组中的位置。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.39609375&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/2KTof9YshwdQPcrMUlviaId4sbV7gLjDHeAcT8xn1O2ZB7Sm83vgziammUoG1IFPyjHQOfFJMbqKDzica5N8xgDRA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;三次哈希，对应的二进制数组下标分别是 2、7、98，将原始数据从 0 变为 1。&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;下标 2，之前已经被操作设置成 1，则本次认为是哈希冲突，不需要改动。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;Hash 规则：如果在 Hash 后，原始位它是 0 的话，将其从 0 变为 1；如果本身这一位就是 1 的话，则保持不变。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;6、布隆过滤器如何使用？&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;&lt;br/&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;1.3746958637469586&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/2KTof9YshwdQPcrMUlviaId4sbV7gLjDH7CKaPflUqzLCSNNlQ20OdJkx9JkIJbloibKxYCbNA2s5wYMq8esp47w/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;822&quot;/&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;br/&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;跟初始化的过程有点类似，当查询一件商品的缓存信息时，我们首先要判断这件商品是否存在。&lt;/span&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;通过三个哈希函数对商品id计算哈希值&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;然后，在布隆数组中查找访问对应的位值，0或1&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;判断，三个值中，只要有一个不是1，那么我们认为数据是不存在的。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;注意：布隆过滤器只能精确判断数据不存在情况，对于存在我们只能说是可能，因为存在Hash冲突情况，当然这个概率非常低。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;7、如何减少布隆过滤器的误判？&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;a）&lt;/span&gt;&lt;span&gt;增加二进制位数组的长度。这样经过hash后数据会更加的离散化，出现冲突的概率会大大降低&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;b）增加Hash的次数，变相的增加数据特征，特征越多，冲突的概率越小&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;8、布隆过滤器会不会很费内存？&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;带着疑问，我们来做个实验&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;假设有1千万个数据，我们需要记录其是否存在。存在的话标记1，不存在标记为0。技术选型，框架采用Redis的&lt;/span&gt;&lt;code&gt;&lt;span&gt;BitMap&lt;/span&gt;&lt;/code&gt;&lt;span&gt;存储。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;数据初始化预热代码：&lt;/span&gt;&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;redisTemplate.executePipelined(new RedisCallback&amp;lt;Long&amp;gt;() {&lt;br/&gt;    @Nullable&lt;br/&gt;    @Override&lt;br/&gt;    public Long doInRedis(RedisConnection connection) throws DataAccessException {&lt;br/&gt;        connection.openPipeline();&lt;br/&gt;        &lt;span&gt;for&lt;/span&gt; (int offset = 10000000; offset &amp;gt;= 0; offset--) {&lt;br/&gt;            boolean value = offset % 2 == 0 ? &lt;span&gt;true&lt;/span&gt; : &lt;span&gt;false&lt;/span&gt;;&lt;br/&gt;            connection.setBit(&lt;span&gt;&quot;bloom-filter-data-1&quot;&lt;/span&gt;.getBytes(), offset, value);&lt;br/&gt;        }&lt;br/&gt;        connection.closePipeline();&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; null;&lt;br/&gt;    }&lt;br/&gt;});&lt;br/&gt;System.out.println(&lt;span&gt;&quot;数据预热完成&quot;&lt;/span&gt;);&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;性能有点慢，我们也可以采用分组形式，10000个数一组，多批次提交。&lt;/p&gt;&lt;/blockquote&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.353125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/2KTof9YshwdQPcrMUlviaId4sbV7gLjDHQOmElTu0mpSjQgHIE0ibDYQ9VJ0ia0p3ZlyLzFM9rnINwKEcq5g1oOQg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;数据上传完了后，大小 1.19M，跟我们设想的一样。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;计算公式：&lt;/span&gt;&lt;span&gt; 10000000/8/1024/1024=1.19M&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;9、Java应用中，如何使用布隆过滤器？代码实例&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;J&lt;/span&gt;&lt;span&gt;ava语言的生态非常繁荣，提供了很多开箱即用的开源框架供我们使用。布隆过滤器也不例外，Java 中提供了一个 &lt;/span&gt;&lt;code&gt;&lt;span&gt;Redisson&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 的组件，它内置了布隆过滤器。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;首先引入依赖包&lt;/span&gt;&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&amp;lt;dependency&amp;gt;&lt;br/&gt;    &amp;lt;groupId&amp;gt;org.redisson&amp;lt;/groupId&amp;gt;&lt;br/&gt;    &amp;lt;artifactId&amp;gt;redisson&amp;lt;/artifactId&amp;gt;&lt;br/&gt;    &amp;lt;version&amp;gt;3.11.1&amp;lt;/version&amp;gt;&lt;br/&gt;&amp;lt;/dependency&amp;gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;代码示例：&lt;/span&gt;&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;/**&lt;br/&gt; * @author 微信公众号：微观技术&lt;br/&gt; */&lt;br/&gt;@Test&lt;br/&gt;public void &lt;span&gt;test5&lt;/span&gt;() {&lt;br/&gt;    Config config = new Config();&lt;br/&gt;    config.useSingleServer().setAddress(&lt;span&gt;&quot;redis://172.16.67.37:6379&quot;&lt;/span&gt;);&lt;br/&gt;    RedissonClient cient = Redisson.create(config);&lt;br/&gt;    RBloomFilter&amp;lt;String&amp;gt; bloomFilter = cient.getBloomFilter(&lt;span&gt;&quot;test5-bloom-filter&quot;&lt;/span&gt;);&lt;br/&gt;    // 初始化布隆过滤器，数组长度100W，误判率 1%&lt;br/&gt;    bloomFilter.tryInit(1000000L, 0.01);&lt;br/&gt;    // 添加数据&lt;br/&gt;    bloomFilter.add(&lt;span&gt;&quot;Tom哥&quot;&lt;/span&gt;);&lt;br/&gt;    // 判断是否存在&lt;br/&gt;    System.out.println(bloomFilter.contains(&lt;span&gt;&quot;微观技术&quot;&lt;/span&gt;));&lt;br/&gt;    System.out.println(bloomFilter.contains(&lt;span&gt;&quot;Tom哥&quot;&lt;/span&gt;));&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;运行结果：&lt;/span&gt;&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;false&lt;/span&gt;   // 肯定不存在&lt;br/&gt;&lt;span&gt;true&lt;/span&gt;    // 可能存在，有1%的误判率&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;注意：误判率设置过小，会产生更多次的 Hash 操作，降低系统的性能。通常我们的建议值是 1%&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;10、布隆过滤器二进制数组，如何处理删除？&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;初始化后的布隆过滤器，可以直接拿来使用了。但是如果原始数据删除了怎么办？布隆过滤器二进制数组如何维护？&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;直接删除不行吗？&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;还真不行！因为这里面有Hash冲突的可能，会导致误删。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;怎么办？&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;方案1：开发定时任务，每隔几个小时，自动创建一个新的布隆过滤器数组，替换老的，有点&lt;/span&gt;&lt;code&gt;&lt;span&gt;CopyOnWriteArrayList&lt;/span&gt;&lt;/code&gt;&lt;span&gt;的味道&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;方案2：布隆过滤器增加一个等长的数组，存储计数器，主要解决冲突问题，每次删除时对应的计数器减一，如果结果为0，更新主数组的二进制值为0&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;br/&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;11、布隆过滤器的应用场景&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;本文重点介绍的，解决缓存穿透&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;网页爬虫对URL的去重，避免爬取相同的URL地址&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;反垃圾邮件，从数十亿个垃圾邮件列表中判断某邮箱是否垃圾邮箱&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;hr/&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;关于我：前阿里架构师，出过专利，竞赛拿过奖，CSDN博客专家，负责过电商交易、社区生鲜、营销、金融等业务，多年团队管理经验，爱思考，喜欢结交朋友&lt;/span&gt;&lt;/section&gt;&lt;h1 accuse=&quot;qTitle&quot;&gt;&lt;span&gt;&lt;span&gt;「长按2秒」↓↓&lt;/span&gt;&lt;span&gt;↓ 二维码，拉你进群，BAT大厂大神技术交流&lt;/span&gt;&lt;/span&gt;&lt;/h1&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;section&gt;&lt;p&gt;&lt;br/&gt;&lt;img class=&quot;rich_pages&quot; data-galleryid=&quot;&quot; data-ratio=&quot;1.069090909090909&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2KTof9YshwcdJhGaQRdAk0VWLIAIU548z3Izf6mwqwwUX9X86hvNHZq158VYMEaxegjfRg8ic02O0HeWD4xIsiaQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;550&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;推荐阅读&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzg2NzYyNjQzNg==&amp;amp;mid=2247485309&amp;amp;idx=1&amp;amp;sn=1209b7e3324440f7893847a935b3af5f&amp;amp;chksm=ceb9fbd6f9ce72c0ec04b49ed36d947df9b25fecdd7266dac148bb36582b96c2792e1d15d325&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;代码写的烂，经常被同事怼，教你一招！&lt;/a&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzg2NzYyNjQzNg==&amp;amp;mid=2247485237&amp;amp;idx=1&amp;amp;sn=e13bb954fb332221ac999e6a5d7f3127&amp;amp;chksm=ceb9fb9ef9ce72885f7a552630c2ed84badd1683019ff86459e8088fe886e89dd4b3932fb5f9&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;同事问我，SQL 语句明明命中了索引，为什么执行很慢？&lt;/a&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzg2NzYyNjQzNg==&amp;amp;mid=2247484980&amp;amp;idx=1&amp;amp;sn=25a530689f0657750d579263800369a6&amp;amp;chksm=ceb9fa9ff9ce7389974d2f33bea9d861920cb75cca559f1f2810c89f729011bb3c2839ac46da&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;学会这10个设计原则，离架构师又进了一步！！！&lt;/a&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzg2NzYyNjQzNg==&amp;amp;mid=2247484929&amp;amp;idx=1&amp;amp;sn=d8cb3306dea9f1b92fd30d59da3f536a&amp;amp;chksm=ceb9faaaf9ce73bca59b46021a450fdc84aa0f85d6b49ff0e5578cc3abaa1433447f7dffc5e4&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;span&gt;人人都是架构师？？？谈何容易！！&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;
-                &lt;/div&gt;
-
-                
-
-                
-
-
-
-                
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>41ce1964bde2748131e2d8396cb09632</guid>
-<title>从零开始写一个微前端框架（渲染篇）</title>
-<link>https://toutiao.io/k/1r35tnn</link>
+<guid>858785bbebca84e1ba01cc63c31b6338</guid>
+<title>从零开始写一个微前端框架（沙箱篇）</title>
+<link>https://toutiao.io/k/86zehix</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;h2&gt;前言&lt;/h2&gt;
 
-&lt;p&gt;自从微前端框架&lt;a href=&quot;https://github.com/micro-zoe/micro-app&quot;&gt;micro-app&lt;/a&gt;开源后，很多小伙伴都非常感兴趣，问我是如何实现的，但这并不是几句话可以说明白的。为了讲清楚其中的原理，我会从零开始实现一个简易的微前端框架，它的核心功能包括：渲染、JS沙箱、样式隔离、数据通信。由于内容太多，会根据功能分成四篇文章进行讲解，这是系列文章的第一篇：渲染篇。&lt;/p&gt;
+&lt;p&gt;自从微前端框架&lt;a href=&quot;https://github.com/micro-zoe/micro-app&quot;&gt;micro-app&lt;/a&gt;开源后，很多小伙伴都非常感兴趣，问我是如何实现的，但这并不是几句话可以说明白的。为了讲清楚其中的原理，我会从零开始实现一个简易的微前端框架，它的核心功能包括：渲染、JS沙箱、样式隔离、数据通信。由于内容太多，会根据功能分成四篇文章进行讲解，这是系列文章的第二篇：沙箱篇。&lt;/p&gt;
 
 &lt;p&gt;通过这些文章，你可以了解微前端框架的具体原理和实现方式，这在你以后使用微前端或者自己写一套微前端框架时会有很大的帮助。如果这篇文章对你有帮助，欢迎点赞留言。&lt;/p&gt;
 
 &lt;h2&gt;相关推荐&lt;/h2&gt;
 
-&lt;p&gt;micro-app源码地址：&lt;a href=&quot;https://github.com/micro-zoe/micro-app&quot;&gt;https://github.com/micro-zoe/micro-app&lt;/a&gt;&lt;/p&gt;
 
-&lt;h2&gt;整体架构&lt;/h2&gt;
 
-&lt;p&gt;和micro-app一样，我们的简易微前端框架设计思路是像使用iframe一样简单，而又可以避免iframe存在的问题，其使用方式如下：&lt;/p&gt;
+&lt;h2&gt;开始&lt;/h2&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://img13.360buyimg.com/imagetools/jfs/t1/181724/1/15979/23894/60ffedfcEa74486b6/9cfeb02f4347357a.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;前一篇文章中，我们已经完成了微前端的渲染工作，虽然页面已经正常渲染，但是此时基座应用和子应用是在同一个window下执行的，这有可能产生一些问题，如全局变量冲突、全局事件监听和解绑。&lt;/p&gt;
 
-&lt;p&gt;最终效果也有点类似，整个微前端应用都被封装在自定义标签micro-app中，渲染后效果如下图：&lt;/p&gt;
+&lt;p&gt;下面我们列出了两个具体的问题，然后通过创建沙箱来解决。&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://img11.360buyimg.com/imagetools/jfs/t1/187866/25/15336/129323/60ffc089E76d6416d/9fb1f6ee70499254.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;h3&gt;问题示例&lt;/h3&gt;
 
-&lt;p&gt;所以我们整体架构思路为：&lt;strong&gt;CustomElement + HTMLEntry&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;1、子应用向window上添加一个全局变量：&lt;code&gt;globalStr=&#x27;child&#x27;&lt;/code&gt;，如果此时基座应用也有一个相同的全局变量：&lt;code&gt;globalStr=&#x27;parent&#x27;&lt;/code&gt;，此时就产生了变量冲突，基座应用的变量会被覆盖。&lt;/p&gt;
 
-&lt;p&gt;HTMLEntry就是以html文件作为入口地址进行渲染，入上图中的&lt;code&gt;http://localhost:3000/&lt;/code&gt;就是一个html地址。&lt;/p&gt;
+&lt;p&gt;2、子应用渲染后通过监听&lt;code&gt;scroll&lt;/code&gt;添加了一个全局监听事件&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;概念图：&lt;/strong&gt;
-&lt;img src=&quot;https://img10.360buyimg.com/imagetools/jfs/t1/188133/39/15743/117766/61024cd2E5ed84b36/b816384088ba6ed1.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;h2&gt;前置工作&lt;/h2&gt;
-
-&lt;p&gt;在正式开始之前，我们需要搭建一个开发环境，创建一个代码仓库&lt;code&gt;simple-micro-app&lt;/code&gt;。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;目录结构&lt;/strong&gt;
-&lt;img src=&quot;https://img11.360buyimg.com/imagetools/jfs/t1/196336/1/15327/76954/6102650dE1f9d7850/3fe44809e029d4d5.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;代码仓库主要分为src主目录和examples案例目录，vue2为基座应用，react17为子应用，两个项目都是使用官方脚手架创建的，构建工具使用rollup。&lt;/p&gt;
-
-&lt;p&gt;两个应用页面分别如下图：&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;基座应用 -- vue2&lt;/strong&gt;
-&lt;img src=&quot;https://img14.360buyimg.com/imagetools/jfs/t1/183486/38/17307/81178/6107bfb4E651ac3f8/37cfca6b3ca62cc1.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;子应用 -- react17&lt;/strong&gt;
-&lt;img src=&quot;https://img12.360buyimg.com/imagetools/jfs/t1/183475/14/17257/107373/6107bfbaEdf0e0509/75b199e0e408040e.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;在vue2项目中，配置&lt;code&gt;resolve.alias&lt;/code&gt;，将simple-micro-app指向src目录的index.js。&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// vue.config.js
-...
-chainWebpack: config =&amp;gt; {
-    config.resolve.alias
-      .set(&quot;simple-micro-app&quot;, path.join(__dirname, &#x27;../../src/index.js&#x27;))
-  },
+&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;window.addEventListener(&#x27;scroll&#x27;, () =&amp;gt; {
+  console.log(&#x27;scroll&#x27;)
+})
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;在react17的webpack-dev-server中配置静态资源支持跨域访问。&lt;/p&gt;
+&lt;p&gt;当子应用被卸载时，监听函数却没有解除绑定，对页面滚动的监听一直存在。如果子应用二次渲染，监听函数会绑定两次，这显然是错误的。&lt;/p&gt;
 
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// config/webpackDevServer.config.js
-...
-headers: {
-  &#x27;Access-Control-Allow-Origin&#x27;: &#x27;*&#x27;,
-},
-&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;接下来我们就通过给微前端创建一个JS沙箱环境，隔离基座应用和子应用的JS，从而解决这两个典型的问题，&lt;/p&gt;
 
-&lt;h2&gt;正式开始&lt;/h2&gt;
+&lt;h3&gt;创建沙箱&lt;/h3&gt;
 
-&lt;p&gt;为了讲的更加明白，我们不会直接贴出已经完成的代码，而是从无到有，一步步实现整个过程，这样才能更加清晰，容易理解。&lt;/p&gt;
+&lt;p&gt;由于每个子应用都需要一个独立的沙箱，所以我们通过class创建一个类：SandBox，当一个新的子应用被创建时，就创建一个新的沙箱与其绑定。&lt;/p&gt;
 
-&lt;h3&gt;创建容器&lt;/h3&gt;
+&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/sandbox.js
+export default class SandBox {
+  active = false // 沙箱是否在运行
+  microWindow = {} // // 代理的对象
+  injectedKeys = new Set() // 新添加的属性，在卸载时清空
 
-&lt;p&gt;微前端的渲染是将子应用的js、css等静态资源加载到基座应用中执行，所以基座应用和子应用本质是同一个页面。这不同于iframe，iframe则是创建一个新的窗口，由于每次加载都要初始化整个窗口信息，所以iframe的性能不高。&lt;/p&gt;
-
-&lt;p&gt;如同每个前端框架在渲染时都要指定一个根元素，微前端渲染时也需要指定一个根元素作为容器，这个根元素可以是一个div或其它元素。&lt;/p&gt;
-
-&lt;p&gt;这里我们使用的是通过customElements创建的自定义元素，因为它不仅提供一个元素容器，还自带了生命周期函数，我们可以在这些钩子函数中进行加载渲染等操作，从而简化步骤。&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/element.js
-
-// 自定义元素
-class MyElement extends HTMLElement {
-  // 声明需要监听的属性名，只有这些属性变化时才会触发attributeChangedCallback
-  static get observedAttributes () {
-    return [&#x27;name&#x27;, &#x27;url&#x27;]
-  }
-
-  constructor() {
-    super();
-  }
-
-  connectedCallback() {
-    // 元素被插入到DOM时执行，此时去加载子应用的静态资源并渲染
-    console.log(&#x27;micro-app is connected&#x27;)
-  }
-
-  disconnectedCallback () {
-    // 元素从DOM中删除时执行，此时进行一些卸载操作
-    console.log(&#x27;micro-app has disconnected&#x27;)
-  }
-
-  attributeChangedCallback (attr, oldVal, newVal) {
-    // 元素属性发生变化时执行，可以获取name、url等属性的值
-    console.log(`attribute ${attrName}: ${newVal}`)
-  }
-}
-
-/**
- * 注册元素
- * 注册后，就可以像普通元素一样使用micro-app，当micro-app元素被插入或删除DOM时即可触发相应的生命周期函数。
- */
-window.customElements.define(&#x27;micro-app&#x27;, MyElement)
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;code&gt;micro-app&lt;/code&gt;元素可能存在重复定义的情况，所以我们加一层判断，并放入函数中。&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/element.js
-
-export function defineElement () {
-  // 如果已经定义过，则忽略
-  if (!window.customElements.get(&#x27;micro-app&#x27;)) {
-    window.customElements.define(&#x27;micro-app&#x27;, MyElement)
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;在&lt;code&gt;/src/index.js&lt;/code&gt;中定义默认对象&lt;code&gt;SimpleMicroApp&lt;/code&gt;，引入并执行&lt;code&gt;defineElement&lt;/code&gt;函数。&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/index.js
-
-import { defineElement } from &#x27;./element&#x27;
-
-const SimpleMicroApp = {
-  start () {
-    defineElement()
-  }
-}
-
-export default SimpleMicroApp
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;引入simple-micro-app&lt;/h3&gt;
-
-&lt;p&gt;在vue2项目的main.js中引入simple-micro-app，执行start函数进行初始化。&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// vue2/src/main.js
-
-import SimpleMicroApp from &#x27;simple-micro-app&#x27;
-
-SimpleMicroApp.start()
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;然后就可以在vue2项目中的任何位置使用micro-app标签。&lt;/p&gt;
-
-&lt;pre lang=&quot;html&quot;&gt;&lt;code&gt;&amp;lt;!-- page1.vue --&amp;gt;
-&amp;lt;template&amp;gt;
-  &amp;lt;div&amp;gt;
-    &amp;lt;micro-app name=&#x27;app&#x27; url=&#x27;http://localhost:3001/&#x27;&amp;gt;&amp;lt;/micro-app&amp;gt;
-  &amp;lt;/div&amp;gt;
-&amp;lt;/template&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;插入micro-app标签后，就可以看到控制台打印的钩子信息。
-&lt;img src=&quot;https://img14.360buyimg.com/imagetools/jfs/t1/185099/11/16261/81332/610297a1Ede21e543/999043868783cbec.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;以上我们就完成了容器元素的初始化，子应用的所有元素都会放入到这个容器中。接下来我们就需要完成子应用的静态资源加载及渲染。&lt;/p&gt;
-
-&lt;h3&gt;创建微应用实例&lt;/h3&gt;
-
-&lt;p&gt;很显然，初始化的操作要放在&lt;code&gt;connectedCallback&lt;/code&gt; 中执行。我们声明一个类，它的每一个实例都对应一个微应用，用于控制微应用的资源加载、渲染、卸载等。&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/app.js
-
-// 创建微应用
-export default class CreateApp {
   constructor () {}
 
-  status = &#x27;created&#x27; // 组件状态，包括 created/loading/mount/unmount
+  // 启动
+  start () {}
 
-  // 存放应用的静态资源
-  source = { 
-    links: new Map(), // link元素对应的静态资源
-    scripts: new Map(), // script元素对应的静态资源
-  }
-
-  // 资源加载完时执行
-  onLoad () {}
-
-  /**
-   * 资源加载完成后进行渲染
-   */
-  mount () {}
-
-  /**
-   * 卸载应用
-   * 执行关闭沙箱，清空缓存等操作
-   */
-  unmount () {}
+  // 停止
+  stop () {}
 }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;我们在&lt;code&gt;connectedCallback&lt;/code&gt;函数中初始化实例，将name、url及元素自身作为参数传入，在&lt;code&gt;CreateApp&lt;/code&gt;的constructor中记录这些值，并根据url地址请求html。&lt;/p&gt;
+&lt;p&gt;我们使用&lt;a href=&quot;https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Proxy&quot;&gt;Proxy&lt;/a&gt;进行代理操作，代理对象为空对象&lt;code&gt;microWindow&lt;/code&gt;，得益于Proxy强大的功能，实现沙箱变得简单且高效。&lt;/p&gt;
 
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/element.js
-import CreateApp, { appInstanceMap } from &#x27;./app&#x27;
+&lt;p&gt;在&lt;code&gt;constructor&lt;/code&gt;中进行代理相关操作，通过Proxy代理&lt;code&gt;microWindow&lt;/code&gt;，设置&lt;code&gt;get&lt;/code&gt;、&lt;code&gt;set&lt;/code&gt;、&lt;code&gt;deleteProperty&lt;/code&gt;三个拦截器，此时子应用对window的操作基本上可以覆盖。&lt;/p&gt;
 
-...
-connectedCallback () {
-  // 创建微应用实例
-  const app = new CreateApp({
-    name: this.name,
-    url: this.url,
-    container: this,
-  })
+&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/sandbox.js
+export default class SandBox {
+  active = false // 沙箱是否在运行
+  microWindow = {} // // 代理的对象
+  injectedKeys = new Set() // 新添加的属性，在卸载时清空
 
-  // 记入缓存，用于后续功能
-  appInstanceMap.set(this.name, app)
-}
+  constructor () {
+    this.proxyWindow = new Proxy(this.microWindow, {
+      // 取值
+      get: (target, key) =&amp;gt; {
+        // 优先从代理对象上取值
+        if (Reflect.has(target, key)) {
+          return Reflect.get(target, key)
+        }
 
-attributeChangedCallback (attrName, oldVal, newVal) {
-  // 分别记录name及url的值
-  if (attrName === &#x27;name&#x27; &amp;amp;&amp;amp; !this.name &amp;amp;&amp;amp; newVal) {
-    this.name = newVal
-  } else if (attrName === &#x27;url&#x27; &amp;amp;&amp;amp; !this.url &amp;amp;&amp;amp; newVal) {
-    this.url = newVal
+        // 否则兜底到window对象上取值
+        const rawValue = Reflect.get(window, key)
+
+        // 如果兜底的值为函数，则需要绑定window对象，如：console、alert等
+        if (typeof rawValue === &#x27;function&#x27;) {
+          const valueStr = rawValue.toString()
+          // 排除构造函数
+          if (!/^function\s+[A-Z]/.test(valueStr) &amp;amp;&amp;amp; !/^class\s+/.test(valueStr)) {
+            return rawValue.bind(window)
+          }
+        }
+
+        // 其它情况直接返回
+        return rawValue
+      },
+      // 设置变量
+      set: (target, key, value) =&amp;gt; {
+        // 沙箱只有在运行时可以设置变量
+        if (this.active) {
+          Reflect.set(target, key, value)
+
+          // 记录添加的变量，用于后续清空操作
+          this.injectedKeys.add(key)
+        }
+
+        return true
+      },
+      deleteProperty: (target, key) =&amp;gt; {
+        // 当前key存在于代理对象上时才满足删除条件
+        if (target.hasOwnProperty(key)) {
+          return Reflect.deleteProperty(target, key)
+        }
+        return true
+      },
+    })
   }
+
+  ...
 }
-...
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;在初始化实例时，根据传入的参数请求静态资源。&lt;/p&gt;
+&lt;p&gt;创建完代理后，我们接着完善&lt;code&gt;start&lt;/code&gt;和&lt;code&gt;stop&lt;/code&gt;两个方法，实现方式也非常简单，具体如下：&lt;/p&gt;
+
+&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/sandbox.js
+export default class SandBox {
+  ...
+  // 启动
+  start () {
+    if (!this.active) {
+      this.active = true
+    }
+  }
+
+  // 停止
+  stop () {
+    if (this.active) {
+      this.active = false
+
+      // 清空变量
+      this.injectedKeys.forEach((key) =&amp;gt; {
+        Reflect.deleteProperty(this.microWindow, key)
+      })
+      this.injectedKeys.clear()
+    }
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;上面一个沙箱的雏形就完成了，我们尝试一下，看看是否有效。&lt;/p&gt;
+
+&lt;h3&gt;使用沙箱&lt;/h3&gt;
+
+&lt;p&gt;在&lt;code&gt;src/app.js&lt;/code&gt;中引入沙箱，在&lt;code&gt;CreateApp&lt;/code&gt;的构造函数中创建沙箱实例，并在&lt;code&gt;mount&lt;/code&gt;方法中执行沙箱的start方法，在&lt;code&gt;unmount&lt;/code&gt;方法中执行沙箱的stop方法。&lt;/p&gt;
 
 &lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/app.js
 import loadHtml from &#x27;./source&#x27;
++ import Sandbox from &#x27;./sandbox&#x27;
 
-// 创建微应用
 export default class CreateApp {
   constructor ({ name, url, container }) {
-    this.name = name // 应用名称
-    this.url = url  // url地址
-    this.container = container // micro-app元素
-    this.status = &#x27;loading&#x27;
-    loadHtml(this)
+    ...
++    this.sandbox = new Sandbox(name)
   }
+
   ...
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;请求html&lt;/h3&gt;
-
-&lt;p&gt;我们使用fetch请求静态资源，好处是浏览器自带且支持promise，但这也要求子应用的静态资源支持跨域访问。&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// src/source.js
-
-export default function loadHtml (app) {
-  fetch(app.url).then((res) =&amp;gt; {
-    return res.text()
-  }).then((html) =&amp;gt; {
-    console.log(&#x27;html:&#x27;, html)
-  }).catch((e) =&amp;gt; {
-    console.error(&#x27;加载html出错&#x27;, e)
-  })
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;因为请求js、css等都需要使用到fetch，所以我们将它提取出来作为公共方法。&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/utils.js
-
-/**
- * 获取静态资源
- * @param {string} url 静态资源地址
- */
-export function fetchSource (url) {
-  return fetch(url).then((res) =&amp;gt; {
-    return res.text()
-  })
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;重新使用封装后的方法，并对获取到到html进行处理。&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// src/source.js
-import { fetchSource } from &#x27;./utils&#x27;
-
-export default function loadHtml (app) {
-  fetchSource(app.url).then((html) =&amp;gt; {
-    html = html
-      .replace(/&amp;lt;head[^&amp;gt;]*&amp;gt;[\s\S]*?&amp;lt;\/head&amp;gt;/i, (match) =&amp;gt; {
-        // 将head标签替换为micro-app-head，因为web页面只允许有一个head标签
-        return match
-          .replace(/&amp;lt;head/i, &#x27;&amp;lt;micro-app-head&#x27;)
-          .replace(/&amp;lt;\/head&amp;gt;/i, &#x27;&amp;lt;/micro-app-head&amp;gt;&#x27;)
-      })
-      .replace(/&amp;lt;body[^&amp;gt;]*&amp;gt;[\s\S]*?&amp;lt;\/body&amp;gt;/i, (match) =&amp;gt; {
-        // 将body标签替换为micro-app-body，防止与基座应用的body标签重复导致的问题。
-        return match
-          .replace(/&amp;lt;body/i, &#x27;&amp;lt;micro-app-body&#x27;)
-          .replace(/&amp;lt;\/body&amp;gt;/i, &#x27;&amp;lt;/micro-app-body&amp;gt;&#x27;)
-      })
-
-    // 将html字符串转化为DOM结构
-    const htmlDom = document.createElement(&#x27;div&#x27;)
-    htmlDom.innerHTML = html
-    console.log(&#x27;html:&#x27;, htmlDom)
-
-    // 进一步提取和处理js、css等静态资源
-    extractSourceDom(htmlDom, app)
-  }).catch((e) =&amp;gt; {
-    console.error(&#x27;加载html出错&#x27;, e)
-  })
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;html格式化后，我们就可以得到一个DOM结构。从下图可以看到，这个DOM结构包含link、style、script等标签，接下来就需要对这个DOM做进一步处理。
-&lt;img src=&quot;https://img10.360buyimg.com/imagetools/jfs/t1/191546/8/15866/369938/6103a5c8E777fffb0/ca845992645ebea4.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;h3&gt;提取js、css等静态资源地址&lt;/h3&gt;
-
-&lt;p&gt;我们在&lt;code&gt;extractSourceDom&lt;/code&gt;方法中循环递归处理每一个DOM节点，查询到所有link、style、script标签，提取静态资源地址并格式化标签。&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// src/source.js
-
-/**
- * 递归处理每一个子元素
- * @param parent 父元素
- * @param app 应用实例
- */
-function extractSourceDom(parent, app) {
-  const children = Array.from(parent.children)
-
-  // 递归每一个子元素
-  children.length &amp;amp;&amp;amp; children.forEach((child) =&amp;gt; {
-    extractSourceDom(child, app)
-  })
-
-  for (const dom of children) {
-    if (dom instanceof HTMLLinkElement) {
-      // 提取css地址
-      const href = dom.getAttribute(&#x27;href&#x27;)
-      if (dom.getAttribute(&#x27;rel&#x27;) === &#x27;stylesheet&#x27; &amp;amp;&amp;amp; href) {
-        // 计入source缓存中
-        app.source.links.set(href, {
-          code: &#x27;&#x27;, // 代码内容
-        })
-      }
-      // 删除原有元素
-      parent.removeChild(dom)
-    } else if (dom instanceof HTMLScriptElement) {
-      // 并提取js地址
-      const src = dom.getAttribute(&#x27;src&#x27;)
-      if (src) { // 远程script
-        app.source.scripts.set(src, {
-          code: &#x27;&#x27;, // 代码内容
-          isExternal: true, // 是否远程script
-        })
-      } else if (dom.textContent) { // 内联script
-        const nonceStr = Math.random().toString(36).substr(2, 15)
-        app.source.scripts.set(nonceStr, {
-          code: dom.textContent, // 代码内容
-          isExternal: false, // 是否远程script
-        })
-      }
-
-      parent.removeChild(dom)
-    } else if (dom instanceof HTMLStyleElement) {
-      // 进行样式隔离
-    }
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;请求静态资源&lt;/h3&gt;
-
-&lt;p&gt;上面已经拿到了html中的css、js等静态资源的地址，接下来就是请求这些地址，拿到资源的内容。&lt;/p&gt;
-
-&lt;p&gt;接着完善&lt;code&gt;loadHtml&lt;/code&gt;，在&lt;code&gt;extractSourceDom&lt;/code&gt;下面添加请求资源的方法。&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// src/source.js
-...
-export default function loadHtml (app) {
-  ...
-  // 进一步提取和处理js、css等静态资源
-  extractSourceDom(htmlDom, app)
-
-  // 获取micro-app-head元素
-  const microAppHead = htmlDom.querySelector(&#x27;micro-app-head&#x27;)
-  // 如果有远程css资源，则通过fetch请求
-  if (app.source.links.size) {
-    fetchLinksFromHtml(app, microAppHead, htmlDom)
-  } else {
-    app.onLoad(htmlDom)
-  }
-
-  // 如果有远程js资源，则通过fetch请求
-  if (app.source.scripts.size) {
-    fetchScriptsFromHtml(app, htmlDom)
-  } else {
-    app.onLoad(htmlDom)
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;code&gt;fetchLinksFromHtml&lt;/code&gt;和&lt;code&gt;fetchScriptsFromHtml&lt;/code&gt;分别请求css和js资源，请求资源后的处理方式不同，css资源会转化为style标签插入DOM中，而js不会立即执行，我们会在应用的mount方法中执行js。&lt;/p&gt;
-
-&lt;p&gt;两个方法的具体实现方式如下：&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// src/source.js
-/**
- * 获取link远程资源
- * @param app 应用实例
- * @param microAppHead micro-app-head
- * @param htmlDom html DOM结构
- */
- export function fetchLinksFromHtml (app, microAppHead, htmlDom) {
-  const linkEntries = Array.from(app.source.links.entries())
-  // 通过fetch请求所有css资源
-  const fetchLinkPromise = []
-  for (const [url] of linkEntries) {
-    fetchLinkPromise.push(fetchSource(url))
-  }
-
-  Promise.all(fetchLinkPromise).then((res) =&amp;gt; {
-    for (let i = 0; i &amp;lt; res.length; i++) {
-      const code = res[i]
-      // 拿到css资源后放入style元素并插入到micro-app-head中
-      const link2Style = document.createElement(&#x27;style&#x27;)
-      link2Style.textContent = code
-      microAppHead.appendChild(link2Style)
-
-      // 将代码放入缓存，再次渲染时可以从缓存中获取
-      linkEntries[i][1].code = code
-    }
-
-    // 处理完成后执行onLoad方法
-    app.onLoad(htmlDom)
-  }).catch((e) =&amp;gt; {
-    console.error(&#x27;加载css出错&#x27;, e)
-  })
-}
-
-/**
- * 获取js远程资源
- * @param app 应用实例
- * @param htmlDom html DOM结构
- */
- export function fetchScriptsFromHtml (app, htmlDom) {
-  const scriptEntries = Array.from(app.source.scripts.entries())
-  // 通过fetch请求所有js资源
-  const fetchScriptPromise = []
-  for (const [url, info] of scriptEntries) {
-    // 如果是内联script，则不需要请求资源
-    fetchScriptPromise.push(info.code ? Promise.resolve(info.code) :  fetchSource(url))
-  }
-
-  Promise.all(fetchScriptPromise).then((res) =&amp;gt; {
-    for (let i = 0; i &amp;lt; res.length; i++) {
-      const code = res[i]
-      // 将代码放入缓存，再次渲染时可以从缓存中获取
-      scriptEntries[i][1].code = code
-    }
-
-    // 处理完成后执行onLoad方法
-    app.onLoad(htmlDom)
-  }).catch((e) =&amp;gt; {
-    console.error(&#x27;加载js出错&#x27;, e)
-  })
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;上面可以看到，css和js加载完成后都执行了&lt;code&gt;onLoad&lt;/code&gt;方法，所以&lt;code&gt;onLoad&lt;/code&gt;方法被执行了两次，接下来我们就要完善&lt;code&gt;onLoad&lt;/code&gt;方法并渲染微应用。&lt;/p&gt;
-
-&lt;h3&gt;渲染&lt;/h3&gt;
-
-&lt;p&gt;因为&lt;code&gt;onLoad&lt;/code&gt;被执行了两次，所以我们进行标记，当第二次执行时说明所有资源都加载完成，然后进行渲染操作。&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/app.js
-
-// 创建微应用
-export default class CreateApp {
-  ...
-  // 资源加载完时执行
-  onLoad (htmlDom) {
-    this.loadCount = this.loadCount ? this.loadCount + 1 : 1
-    // 第二次执行且组件未卸载时执行渲染
-    if (this.loadCount === 2 &amp;amp;&amp;amp; this.status !== &#x27;unmount&#x27;) {
-      // 记录DOM结构用于后续操作
-      this.source.html = htmlDom
-      // 执行mount方法
-      this.mount()
-    }
-  }
-  ...
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;在&lt;code&gt;mount&lt;/code&gt;方法中将DOM结构插入文档中，然后执行js文件进行渲染操作，此时微应用即可完成基本的渲染。&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/app.js
-
-// 创建微应用
-export default class CreateApp {
-  ...
-  /**
-   * 资源加载完成后进行渲染
-   */
   mount () {
-    // 克隆DOM节点
-    const cloneHtml = this.source.html.cloneNode(true)
-    // 创建一个fragment节点作为模版，这样不会产生冗余的元素
-    const fragment = document.createDocumentFragment()
-    Array.from(cloneHtml.childNodes).forEach((node) =&amp;gt; {
-      fragment.appendChild(node)
-    })
-
-    // 将格式化后的DOM结构插入到容器中
-    this.container.appendChild(fragment)
-
+    ...
++    this.sandbox.start()
     // 执行js
     this.source.scripts.forEach((info) =&amp;gt; {
       (0, eval)(info.code)
     })
-
-    // 标记应用为已渲染
-    this.status = &#x27;mounted&#x27;
   }
-  ...
-}
-&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;以上步骤完成了微前端的基本渲染操作，我们看一下效果。&lt;/p&gt;
-
-&lt;h3&gt;开始使用&lt;/h3&gt;
-
-&lt;p&gt;我们在基座应用下面嵌入微前端：&lt;/p&gt;
-
-&lt;pre lang=&quot;html&quot;&gt;&lt;code&gt;&amp;lt;!-- vue2/src/pages/page1.vue --&amp;gt;
-&amp;lt;template&amp;gt;
-  &amp;lt;div&amp;gt;
-    &amp;lt;img alt=&quot;Vue logo&quot; src=&quot;../assets/logo.png&quot;&amp;gt;
-    &amp;lt;HelloWorld :msg=&quot;&#x27;基座应用vue@&#x27; + version&quot; /&amp;gt;
-    &amp;lt;!-- 👇嵌入微前端 --&amp;gt;
-    &amp;lt;micro-app name=&#x27;app&#x27; url=&#x27;http://localhost:3001/&#x27;&amp;gt;&amp;lt;/micro-app&amp;gt;
-  &amp;lt;/div&amp;gt;
-&amp;lt;/template&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;最终得到的效果如下：
-&lt;img src=&quot;https://img13.360buyimg.com/imagetools/jfs/t1/185669/20/17155/175504/6107c08dEa8fb8327/0aaed694618d387e.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;可见react17已经正常嵌入运行了。&lt;/p&gt;
-
-&lt;p&gt;我们给子应用react17添加一个懒加载页面&lt;code&gt;page2&lt;/code&gt;，验证一下多页面应用是否可以正常运行。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://img12.360buyimg.com/imagetools/jfs/t1/182096/10/17439/269998/6107c866E0db7a485/f3ccdbfa15178fe9.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;code&gt;page2&lt;/code&gt;的内容也非常简单，只是一段标题：
-&lt;img src=&quot;https://img14.360buyimg.com/imagetools/jfs/t1/182410/34/17370/31568/6107c8b0E5eacf97e/a1669c5dd48946f7.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;在页面上添加一个按钮，点击即可跳转page2。
-&lt;img src=&quot;https://img10.360buyimg.com/imagetools/jfs/t1/185081/15/17251/111042/6107c97dE0a545e05/4df4b4ac364d4cdf.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;点击按钮，得到的效果如下：
-&lt;img src=&quot;https://img10.360buyimg.com/imagetools/jfs/t1/194701/15/15808/110041/6107c9e5E64b542ea/05047937cf87a814.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;正常渲染！🎉🎉&lt;/p&gt;
-
-&lt;p&gt;一个简易的微前端框架就完成了，当然此时它是非常基础的，没有JS沙箱和样式隔离。&lt;/p&gt;
-
-&lt;p&gt;关于JS沙箱和样式隔离我们会单独做一篇文章分享，但是此时我们还有一件事情需要做 - 卸载应用。&lt;/p&gt;
-
-&lt;h3&gt;卸载&lt;/h3&gt;
-
-&lt;p&gt;当micro-app元素被删除时会自动执行生命周期函数&lt;code&gt;disconnectedCallback&lt;/code&gt;，我们在此处执行卸载相关操作。&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/element.js
-
-class MyElement extends HTMLElement {
-  ...
-  disconnectedCallback () {
-    // 获取应用实例
-    const app = appInstanceMap.get(this.name)
-    // 如果有属性destory，则完全卸载应用包括缓存的文件
-    app.unmount(this.hasAttribute(&#x27;destory&#x27;))
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;接下来完善应用的&lt;code&gt;unmount&lt;/code&gt;方法：&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/app.js
-
-export default class CreateApp {
-  ...
   /**
    * 卸载应用
    * @param destory 是否完全销毁，删除缓存资源
    */
   unmount (destory) {
-    // 更新状态
-    this.status = &#x27;unmount&#x27;
-    // 清空容器
-    this.container = null
+    ...
++    this.sandbox.stop()
     // destory为true，则删除应用
     if (destory) {
       appInstanceMap.delete(this.name)
@@ -639,36 +187,423 @@ export default class CreateApp {
 }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;当destory为true时，删除应用的实例，此时所有静态资源失去了引用，自动被浏览器回收。&lt;/p&gt;
+&lt;p&gt;我们在上面创建了沙箱实例并启动沙箱，这样沙箱就生效了吗？&lt;/p&gt;
 
-&lt;p&gt;在基座应用vue2中添加一个按钮，切换子应用的显示/隐藏状态，验证多次渲染和卸载是否正常运行。&lt;/p&gt;
+&lt;p&gt;显然是不行的，我们还需要将子应用的js通过一个with函数包裹，修改js作用域，将子应用的window指向代理的对象。形式如：&lt;/p&gt;
 
-&lt;p&gt;效果如下：
-&lt;img src=&quot;https://cangdu.org/img/simple-micro-app-1-1.gif&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;(function(window, self) {
+  with(window) {
+    子应用的js代码
+  }
+}).call(代理对象, 代理对象, 代理对象)
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;一且运行正常！🎉&lt;/p&gt;
+&lt;p&gt;在sandbox中添加方法&lt;code&gt;bindScope&lt;/code&gt;，修改js作用域：&lt;/p&gt;
+
+&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/sandbox.js
+
+export default class SandBox {
+  ...
+  // 修改js作用域
+  bindScope (code) {
+    window.proxyWindow = this.proxyWindow
+    return `;(function(window, self){with(window){;${code}\n}}).call(window.proxyWindow, window.proxyWindow, window.proxyWindow);`
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后在mount方法中添加对&lt;code&gt;bindScope&lt;/code&gt;的使用&lt;/p&gt;
+
+&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/app.js
+
+export default class CreateApp {
+  mount () {
+    ...
+    // 执行js
+    this.source.scripts.forEach((info) =&amp;gt; {
+-      (0, eval)(info.code)
++      (0, eval)(this.sandbox.bindScope(info.code))
+    })
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;到此沙箱才真正起作用，我们验证一下问题示例中的第一个问题。&lt;/p&gt;
+
+&lt;p&gt;先关闭沙箱，由于子应用覆盖了基座应用的全局变量&lt;code&gt;globalStr&lt;/code&gt;，当我们在基座中访问这个变量时，得到的值为：&lt;code&gt;child&lt;/code&gt;，说明变量产生了冲突。
+&lt;img src=&quot;https://img10.360buyimg.com/imagetools/jfs/t1/179310/20/17339/17390/610915fbE4a3dc8d8/018239339143fc6c.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;开启沙箱后，重新在基座应用中打印&lt;code&gt;globalStr&lt;/code&gt;的值，得到的值为：&lt;code&gt;parent&lt;/code&gt;，说明变量冲突的问题已经解决，沙箱正确运行。
+&lt;img src=&quot;https://img13.360buyimg.com/imagetools/jfs/t1/188904/35/16621/17992/61091601E65e86483/d22c5dea75533274.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;第一个问题已经解决，我们开始解决第二个问题：全局监听事件。&lt;/p&gt;
+
+&lt;h3&gt;重写全局事件&lt;/h3&gt;
+
+&lt;p&gt;再来回顾一下第二个问题，错误的原因是在子应用卸载时没有清空事件监听，如果子应用知道自己将要被卸载，主动清空事件监听，这个问题可以避免，但这是理想情况，一是子应用不知道自己何时被卸载，二是很多第三方库也有一些全局的监听事件，子应用无法全部控制。所以我们需要在子应用卸载时，自动将子应用残余的全局监听事件进行清空。&lt;/p&gt;
+
+&lt;p&gt;我们在沙箱中重写&lt;code&gt;window.addEventListener&lt;/code&gt;和&lt;code&gt;window.removeEventListener&lt;/code&gt;，记录所有全局监听事件，在应用卸载时如果有残余的全局监听事件则进行清空。&lt;/p&gt;
+
+&lt;p&gt;创建一个&lt;code&gt;effect&lt;/code&gt;函数，在这里执行具体的操作&lt;/p&gt;
+
+&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/sandbox.js
+
+// 记录addEventListener、removeEventListener原生方法
+const rawWindowAddEventListener = window.addEventListener
+const rawWindowRemoveEventListener = window.removeEventListener
+
+/**
+ * 重写全局事件的监听和解绑
+ * @param microWindow 原型对象
+ */
+ function effect (microWindow) {
+  // 使用Map记录全局事件
+  const eventListenerMap = new Map()
+
+  // 重写addEventListener
+  microWindow.addEventListener = function (type, listener, options) {
+    const listenerList = eventListenerMap.get(type)
+    // 当前事件非第一次监听，则添加缓存
+    if (listenerList) {
+      listenerList.add(listener)
+    } else {
+      // 当前事件第一次监听，则初始化数据
+      eventListenerMap.set(type, new Set([listener]))
+    }
+    // 执行原生监听函数
+    return rawWindowAddEventListener.call(window, type, listener, options)
+  }
+
+  // 重写removeEventListener
+  microWindow.removeEventListener = function (type, listener, options) {
+    const listenerList = eventListenerMap.get(type)
+    // 从缓存中删除监听函数
+    if (listenerList?.size &amp;amp;&amp;amp; listenerList.has(listener)) {
+      listenerList.delete(listener)
+    }
+    // 执行原生解绑函数
+    return rawWindowRemoveEventListener.call(window, type, listener, options)
+  }
+
+  // 清空残余事件
+  return () =&amp;gt; {
+    console.log(&#x27;需要卸载的全局事件&#x27;, eventListenerMap)
+    // 清空window绑定事件
+    if (eventListenerMap.size) {
+      // 将残余的没有解绑的函数依次解绑
+      eventListenerMap.forEach((listenerList, type) =&amp;gt; {
+        if (listenerList.size) {
+          for (const listener of listenerList) {
+            rawWindowRemoveEventListener.call(window, type, listener)
+          }
+        }
+      })
+      eventListenerMap.clear()
+    }
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在沙箱的构造函数中执行effect方法，得到卸载的钩子函数releaseEffect，在沙箱关闭时执行卸载操作，也就是在stop方法中执行releaseEffect函数&lt;/p&gt;
+
+&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/sandbox.js
+
+export default class SandBox {
+  ...
+  // 修改js作用域
+  constructor () {
+    // 卸载钩子
++   this.releaseEffect = effect(this.microWindow)
+    ...
+  }
+
+  stop () {
+    if (this.active) {
+      this.active = false
+
+      // 清空变量
+      this.injectedKeys.forEach((key) =&amp;gt; {
+        Reflect.deleteProperty(this.microWindow, key)
+      })
+      this.injectedKeys.clear()
+
+      // 卸载全局事件
++      this.releaseEffect()
+    }
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这样重写全局事件及卸载的操作基本完成，我们验证一下是否正常运行。&lt;/p&gt;
+
+&lt;p&gt;首先关闭沙箱，验证问题二的存在：卸载子应用后滚动页面，依然在打印scroll，说明事件没有被卸载。
+&lt;img src=&quot;https://img12.360buyimg.com/imagetools/jfs/t1/185201/25/17527/23936/610a4384E88c606c8/dfa2a466f0f35e7d.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;开启沙箱后，卸载子应用，滚动页面，此时scroll不再打印，说明事件已经被卸载。
+&lt;img src=&quot;https://img13.360buyimg.com/imagetools/jfs/t1/198687/20/1559/52367/610a4388E03df3f53/293f524047cf8e66.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;从截图中可以看出，除了我们主动监听的&lt;code&gt;scroll&lt;/code&gt;事件，还有&lt;code&gt;error&lt;/code&gt;、&lt;code&gt;unhandledrejection&lt;/code&gt;等其它全局事件，这些事件都是由框架、构建工具等第三方绑定的，如果不进行清空，会导致内存无法回收，造成内存泄漏。&lt;/p&gt;
+
+&lt;p&gt;沙箱功能到此就基本完成了，两个问题都已经解决。当然沙箱需要解决的问题远不止这些，但基本架构思路是不变的。&lt;/p&gt;
 
 &lt;h2&gt;结语&lt;/h2&gt;
 
-&lt;p&gt;到此微前端渲染篇的文章就结束了，我们完成了微前端的渲染和卸载功能，当然它的功能是非常简单的，只是叙述了微前端的基本实现思路。接下来我们会完成JS沙箱、样式隔离、数据通讯等功能，如果你能耐下心来读一遍，会对你了解微前端有很大帮助。&lt;/p&gt;
+&lt;p&gt;JS沙箱的核心在于修改js作用域和重写window，它的使用场景不限于微前端，也可以用于其它地方，比如在我们向外部提供组件或引入第三方组件时都可以使用沙箱来避免冲突。&lt;/p&gt;
 
-&lt;h2&gt;代码地址：&lt;/h2&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://github.com/bailicangdu/simple-micro-app&quot;&gt;https://github.com/bailicangdu/simple-micro-app&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;下一篇文章我们会完成微前端的样式隔离。&lt;/p&gt;
 &lt;/div&gt;
   &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>2bd217e81a7837ada280051a7d7e3330</guid>
-<title>推荐两款超实用的 gRPC 客户端调试工具</title>
-<link>https://toutiao.io/k/622rri2</link>
+<guid>59a2c5ee62c39cb35758b0073d3f087f</guid>
+<title>实践 DevSecOps，很多人第一步就做错了</title>
+<link>https://toutiao.io/k/ldv3dxl</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;weui-dialog&quot;&gt;
+      &lt;p class=&quot;weui-dialog__hd&quot;&gt;&lt;strong class=&quot;weui-dialog__title&quot;&gt;&quot;Top Stories&quot; is disabled&lt;/strong&gt;&lt;/p&gt;
+      &lt;p class=&quot;weui-dialog__bd&quot;&gt;
+        Enable &quot;Top Stories&quot; in &quot;Settings&quot; &amp;gt; &quot;General&quot; &amp;gt; &quot;Manage Discover&quot;      &lt;/p&gt;
+      
+    &lt;/div&gt;
+  &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>59ccc5fe856ee9299751c1962766577b</guid>
+<title>从零设计可视化大屏搭建引擎</title>
+<link>https://toutiao.io/k/662perp</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;RichText ztext Post-RichText&quot; articlelinkcardprops=&quot;[object Object]&quot; usegifprops=&quot;[object Object]&quot;&gt;&lt;p/&gt;&lt;blockquote&gt; 相关文章: &lt;a href=&quot;https://zhuanlan.zhihu.com/p/355872058&quot; class=&quot;internal&quot;&gt;从零开发一款可视化大屏制作平台&lt;/a&gt; &lt;br/&gt; 演示地址: &lt;a href=&quot;https://link.zhihu.com/?target=http%3A//v6.dooring.cn/beta/editor&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;V6可视化大屏编辑器&lt;/a&gt; &lt;/blockquote&gt;&lt;p&gt;几个月前我写了一篇关于&lt;a href=&quot;https://zhuanlan.zhihu.com/p/355872058&quot; class=&quot;internal&quot;&gt;从零开发一款可视化大屏制作平台&lt;/a&gt; 的文章， 简单概述了一下可视化大屏搭建平台的一些设计思路和效果演示， 这篇文章我会就 &lt;b&gt;如何设计可视化大屏搭建引擎&lt;/b&gt; 这一主题， 详细介绍一下实现原理。&lt;/p&gt;&lt;p&gt;按照我一向的写作风格， 我会在下面列出文章的大纲，以便大家有选择且高效率的阅读和学习:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;快速了解数据可视化&lt;/li&gt;&lt;li&gt;如何设计通用的大屏搭建引擎&lt;/li&gt;&lt;li&gt;大屏搭建引擎核心功能实现&lt;/li&gt;&lt;li&gt;拖拽器实现&lt;/li&gt;&lt;li&gt;物料中心设计&lt;/li&gt;&lt;li&gt;动态渲染器实现&lt;/li&gt;&lt;li&gt;配置面板设计&lt;/li&gt;&lt;li&gt;控制中心概述&lt;/li&gt;&lt;li&gt;功能辅助设计&lt;/li&gt;&lt;li&gt;可视化大屏后期规划和未来展望&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;大家可以轻松根据右侧的文章导航， 快速定位到自己想看的位置， 接下来我们开始进入正文。&lt;/p&gt;&lt;h2&gt;快速了解数据可视化&lt;/h2&gt;&lt;p&gt;说到数据可视化， 想必大家多多少少稍接触过， &lt;b&gt;从技术层面谈&lt;/b&gt;， 最直观的就是前端可视化框架， 比如:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;echart&lt;/li&gt;&lt;li&gt;antv&lt;/li&gt;&lt;li&gt;Chart.js&lt;/li&gt;&lt;li&gt;D3.js&lt;/li&gt;&lt;li&gt;Vega&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;这些库都能帮我们轻松制作可视化图表。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-46e7bdcf19c06b56e53b25934b290879_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1294&quot; data-rawheight=&quot;590&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic2.zhimg.com/v2-46e7bdcf19c06b56e53b25934b290879_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1294&quot; data-rawheight=&quot;590&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic2.zhimg.com/v2-46e7bdcf19c06b56e53b25934b290879_r.jpg&quot; data-actualsrc=&quot;https://pic2.zhimg.com/v2-46e7bdcf19c06b56e53b25934b290879_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p&gt;&lt;b&gt;从实用性的角度来谈&lt;/b&gt;， 其最主要的意义就在于帮助用户&lt;b&gt;更好的分析和表达数据&lt;/b&gt;。所以说谈到数据可视化， 更多的是和各种图表打交道， 通过 &lt;b&gt;数据 -&amp;gt; 图表组合 -&amp;gt; 可视化页面&lt;/b&gt; 这一业务流程， 就构成了我们今天要研究的话题——&lt;b&gt;设计可视化大屏搭建引擎&lt;/b&gt;。&lt;/p&gt;&lt;h2&gt;如何设计通用的大屏搭建引擎&lt;/h2&gt;&lt;p&gt;说到 “&lt;b&gt;引擎&lt;/b&gt;” 这个词也许有种莫名的高大上， 其实在互联网技术中， 我们经常会听到各种相关的名词，比如 “&lt;b&gt;浏览器渲染引擎&lt;/b&gt;” ， “&lt;b&gt;规则引擎&lt;/b&gt;” ， “&lt;b&gt;图像识别引擎&lt;/b&gt;” 等， 我觉得 “&lt;b&gt;引擎&lt;/b&gt;” 的本质就是&lt;b&gt;提供一套可靠的机制， 为系统提供源源不断的生产力&lt;/b&gt;。 所以我们今天谈的“&lt;b&gt;可视化大屏搭建引擎&lt;/b&gt;”， 本质上也是提供一套搭建机制， 支撑我们设计各种复杂的可视化页面。&lt;/p&gt;&lt;p&gt;为了方便大家理解可视化搭建， 我这里展示2张可视化大屏的页面， 来和大家一起分析一下可视化大屏的组成要素:&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-41c94f20b1fc16a7f42be5689f420bc8_b.jpg&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1306&quot; data-rawheight=&quot;734&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic1.zhimg.com/v2-41c94f20b1fc16a7f42be5689f420bc8_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1306&quot; data-rawheight=&quot;734&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic1.zhimg.com/v2-41c94f20b1fc16a7f42be5689f420bc8_r.jpg&quot; data-actualsrc=&quot;https://pic1.zhimg.com/v2-41c94f20b1fc16a7f42be5689f420bc8_b.jpg&quot;/&gt;&lt;figcaption&gt;V6.Dooring&lt;/figcaption&gt;&lt;/figure&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-fe9e1e47122b52b0a506d9b110f06f16_b.jpg&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1312&quot; data-rawheight=&quot;730&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic3.zhimg.com/v2-fe9e1e47122b52b0a506d9b110f06f16_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1312&quot; data-rawheight=&quot;730&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic3.zhimg.com/v2-fe9e1e47122b52b0a506d9b110f06f16_r.jpg&quot; data-actualsrc=&quot;https://pic3.zhimg.com/v2-fe9e1e47122b52b0a506d9b110f06f16_b.jpg&quot;/&gt;&lt;figcaption&gt;v6.dooring&lt;/figcaption&gt;&lt;/figure&gt;&lt;p&gt;当然实际应用中大屏展现的内容和形式远比这复杂， 我们从上图可以提炼出大屏页面的2个直观特征:&lt;/p&gt;&lt;p&gt;因为我们可视化大屏载体是页面， 是&lt;code&gt;html&lt;/code&gt;， 所以还有另外一个特征: &lt;b&gt;事件/交互&lt;/b&gt;。综上我们总结出了可视化大屏的必备要素:&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-f882cdbab2178a85c2b30947b44aee8e_b.jpg&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1228&quot; data-rawheight=&quot;662&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic3.zhimg.com/v2-f882cdbab2178a85c2b30947b44aee8e_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1228&quot; data-rawheight=&quot;662&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic3.zhimg.com/v2-f882cdbab2178a85c2b30947b44aee8e_r.jpg&quot; data-actualsrc=&quot;https://pic3.zhimg.com/v2-f882cdbab2178a85c2b30947b44aee8e_b.jpg&quot;/&gt;&lt;figcaption&gt;v6.dooring&lt;/figcaption&gt;&lt;/figure&gt;&lt;p&gt;我们只要充分的理解了可视化大屏的组成和特征， 我们才能更好的设计&lt;b&gt;可视化大屏搭建引擎&lt;/b&gt;， 基于以上分析， 我设计了一张基础引擎的架构图:&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-185c1e3c6cdf9623ed1c7bbe3869896e_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1286&quot; data-rawheight=&quot;764&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic3.zhimg.com/v2-185c1e3c6cdf9623ed1c7bbe3869896e_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1286&quot; data-rawheight=&quot;764&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic3.zhimg.com/v2-185c1e3c6cdf9623ed1c7bbe3869896e_r.jpg&quot; data-actualsrc=&quot;https://pic3.zhimg.com/v2-185c1e3c6cdf9623ed1c7bbe3869896e_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p&gt;接下来我就带大家一起来拆解并实现上面的搭建引擎。&lt;/p&gt;&lt;h2&gt;大屏搭建引擎核心功能实现&lt;/h2&gt;&lt;p&gt;俗话说: “好的拆解是成功的一半”， &lt;b&gt;任何一个复杂任务或者系统， 我们只要能将其拆解成很多细小的子模块， 就能很好的解决并实现它&lt;/b&gt;. (学习也是一样)&lt;/p&gt;&lt;p&gt;接下来我们就逐一解决上述基础引擎的几个核心子模块: - &lt;b&gt;拖拽器实现&lt;/b&gt; - &lt;b&gt;物料中心设计&lt;/b&gt; - &lt;b&gt;动态渲染器实现&lt;/b&gt; - &lt;b&gt;配置面板设计&lt;/b&gt; - &lt;b&gt;控制中心概述&lt;/b&gt; - &lt;b&gt;功能辅助设计&lt;/b&gt;&lt;/p&gt;&lt;h3&gt;拖拽器实现&lt;/h3&gt;&lt;p&gt;拖拽器是可视化搭建引擎的核心模块， 也是用来解决上述提到的大屏页面特征中的“&lt;b&gt;空间坐标关系&lt;/b&gt;”这一问题。 我们先来看一下实现效果:&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-1b8749543d7ab340a2bba3fb30c4b90e_b.gif&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;800&quot; data-rawheight=&quot;395&quot; data-thumbnail=&quot;https://pic3.zhimg.com/v2-1b8749543d7ab340a2bba3fb30c4b90e_b.jpg&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic3.zhimg.com/v2-1b8749543d7ab340a2bba3fb30c4b90e_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;800&quot; data-rawheight=&quot;395&quot; data-thumbnail=&quot;https://pic3.zhimg.com/v2-1b8749543d7ab340a2bba3fb30c4b90e_b.jpg&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic3.zhimg.com/v2-1b8749543d7ab340a2bba3fb30c4b90e_r.jpg&quot; data-actualsrc=&quot;https://pic3.zhimg.com/v2-1b8749543d7ab340a2bba3fb30c4b90e_b.gif&quot;/&gt;&lt;/figure&gt;&lt;p&gt;有关拖拽的技术实现， 我们可以利用原生 &lt;code&gt;js&lt;/code&gt; 实现， 也可以使用第三方成熟的拖拽库， 比如:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;b&gt;DnD&lt;/b&gt;&lt;/li&gt;&lt;li&gt;&lt;b&gt;React-Dragable&lt;/b&gt;&lt;/li&gt;&lt;li&gt;&lt;b&gt;react-moveable&lt;/b&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;我之前也开源了一个轻量级自由拖拽库 &lt;b&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//github.com/MrXujiang/rc-drag&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;rc-drag&lt;/a&gt;&lt;/b&gt; ， 效果如下:&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-65fdea1f051d8e2137553fb68cba25bc_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1286&quot; data-rawheight=&quot;652&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic1.zhimg.com/v2-65fdea1f051d8e2137553fb68cba25bc_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1286&quot; data-rawheight=&quot;652&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic1.zhimg.com/v2-65fdea1f051d8e2137553fb68cba25bc_r.jpg&quot; data-actualsrc=&quot;https://pic1.zhimg.com/v2-65fdea1f051d8e2137553fb68cba25bc_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p&gt;有关它的技术实现可以参考我的另一篇文章: &lt;a href=&quot;https://link.zhihu.com/?target=https%3A//juejin.cn/post/6917648021794586631&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;轻松教你搞定组件的拖拽， 缩放， 多控制点伸缩和拖拽数据上报&lt;/a&gt;。 大家也可以基于此做二次扩展和封装。&lt;/p&gt;&lt;p&gt;我们拖拽器的基本原型代码如下:&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-js&quot;&gt;&lt;span class=&quot;kr&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;DragBox&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;props&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;props&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;setTarget&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;React&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;useState&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+    &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;elementGuidelines&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;，&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;setElementGuidelines&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;React&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;useState&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([]);&lt;/span&gt;
+    &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;frame&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;setFrame&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;React&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;useState&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;translate&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;React&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;useEffect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;setTarget&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;document&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;querySelector&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;.target&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[]);&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;div&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;className&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;container&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;div&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;className&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;target&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;拖拽内部组件&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;，&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;比如图表&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;基础组件等&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;/div&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Moveable&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;elementGuidelines&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;elementGuidelines&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;snappable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;snapThreshold&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;isDisplaySnapDigit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;snapGap&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;snapElement&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;snapVertical&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;snapHorizontal&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;snapCenter&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;snapDigit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;draggable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;throttleDrag&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;startDragRotate&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;throttleDragRotate&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;zoom&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;origin&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;padding&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{{&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;left&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;top&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;right&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;bottom&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}}&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;onDragStart&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                &lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;frame&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;translate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+                &lt;span class=&quot;c1&quot;&gt;// 自定义的拖拽开始逻辑
+&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;            &lt;span class=&quot;p&quot;&gt;}}&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;onDrag&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                &lt;span class=&quot;nx&quot;&gt;frame&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;translate&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;beforeTranslate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                &lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;style&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;transform&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;sb&quot;&gt;`translate(&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;beforeTranslate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;px, &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;beforeTranslate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;px)`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                &lt;span class=&quot;c1&quot;&gt;// 自定义的拖拽结束逻辑
+&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;            &lt;span class=&quot;p&quot;&gt;}}&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;/div&amp;gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;以上只是实现了基本的拖拽功能， 我们需要对拖拽位置信息做保存以便在预览是实现“&lt;b&gt;所搭即所得&lt;/b&gt;”的效果。位置信息会和其他属性统一保存在组件的&lt;b&gt;DSL&lt;/b&gt;数据中， 这块在接下来内容中会详细介绍。&lt;/p&gt;&lt;p&gt;对于拖拽器的进一步深入， 我们还可以设置参考线， 对齐线， 吸附等， 并且可以在拖拽的不同时期(比如&lt;b&gt;onDragStart&lt;/b&gt;和&lt;b&gt;onDragEnd&lt;/b&gt;)做不同的业务逻辑。这些 &lt;b&gt;Moveable&lt;/b&gt; 都提供了对应的api支持， 大家可以参考使用。&lt;/p&gt;&lt;h3&gt;物料中心设计&lt;/h3&gt;&lt;p&gt;物料中心主要为大屏页面提供“&lt;b&gt;原材料&lt;/b&gt;”。为了设计健壮且通用的物料， 我们需要设计一套标准组件结构和属性协议。并且为了方便物料管理和查询， 我们还需要对物料进行分类， 我的分类如下:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;b&gt;可视化组件&lt;/b&gt; (柱状图， 饼图， 条形图， 地图可视化等)&lt;/li&gt;&lt;li&gt;&lt;b&gt;修饰型组件&lt;/b&gt; (图片， 轮播图， 修饰素材等)&lt;/li&gt;&lt;li&gt;&lt;b&gt;文字类组件&lt;/b&gt; (文本， 文本跑马灯， 文字看板)&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;具体的物料库演示如下:&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic4.zhimg.com/v2-cd2c5e377b2179185500f355ea36bf2b_b.gif&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;750&quot; data-rawheight=&quot;388&quot; data-thumbnail=&quot;https://pic4.zhimg.com/v2-cd2c5e377b2179185500f355ea36bf2b_b.jpg&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic4.zhimg.com/v2-cd2c5e377b2179185500f355ea36bf2b_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;750&quot; data-rawheight=&quot;388&quot; data-thumbnail=&quot;https://pic4.zhimg.com/v2-cd2c5e377b2179185500f355ea36bf2b_b.jpg&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic4.zhimg.com/v2-cd2c5e377b2179185500f355ea36bf2b_r.jpg&quot; data-actualsrc=&quot;https://pic4.zhimg.com/v2-cd2c5e377b2179185500f355ea36bf2b_b.gif&quot;/&gt;&lt;figcaption&gt;v6.dooring&lt;/figcaption&gt;&lt;/figure&gt;&lt;p&gt;这里我拿一个可视化组件的实现来举例说明:&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ts&quot;&gt;&lt;span class=&quot;kr&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;React&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;，&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;memo&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;，&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;useEffect&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;react&#x27;&lt;/span&gt;
+&lt;span class=&quot;kr&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Chart&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;@antv/g2&#x27;&lt;/span&gt;
+
+&lt;span class=&quot;kr&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;colors&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;@/components/BasicShop/common&#x27;&lt;/span&gt;
+
+&lt;span class=&quot;kr&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;ChartConfigType&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;./schema&#x27;&lt;/span&gt;
+
+&lt;span class=&quot;kr&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;ChartComponentProps&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;ChartConfigType&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;ChartComponent&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;React.FC&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;ChartComponentProps&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;width&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;height&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;toggle&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;legendPosition&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;legendLayout&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;legendShape&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;labelColor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;axisColor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;multiColor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;tipEvent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;titleEvent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;dataType&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;apiAddress&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;apiMethod&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;apiData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;refreshTime&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;})&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;useEffect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;timer&lt;/span&gt;:&lt;span class=&quot;kt&quot;&gt;any&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;chart&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Chart&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
+      &lt;span class=&quot;nx&quot;&gt;container&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;sb&quot;&gt;`chart-&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;nx&quot;&gt;autoFit&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;nx&quot;&gt;width&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;nx&quot;&gt;height&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;// 数据过滤， 接入
+&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;    &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;dataX&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;({&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;Number&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}))&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;chart&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;dataX&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;// 图表属性组装
+&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;    &lt;span class=&quot;nx&quot;&gt;chart&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;legend&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+      &lt;span class=&quot;nx&quot;&gt;toggle&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+          &lt;span class=&quot;nx&quot;&gt;position&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;legendPosition&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+          &lt;span class=&quot;nx&quot;&gt;layout&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;legendLayout&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+          &lt;span class=&quot;nx&quot;&gt;marker&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;kt&quot;&gt;symbol&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;legendShape&lt;/span&gt;
+          &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+    &lt;span class=&quot;nx&quot;&gt;chart&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;tooltip&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
+      &lt;span class=&quot;nx&quot;&gt;showTitle&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;nx&quot;&gt;showMarkers&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;// 其他图表信息源配置， 方法雷同， 此处省略
+&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;    &lt;span class=&quot;c1&quot;&gt;// ...
+&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;
+    &lt;span class=&quot;nx&quot;&gt;chart&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;render&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+
+  &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[])&lt;/span&gt;
+
+  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`chart-&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;/&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kr&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;memo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;ChartComponent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;以上就是我们的基础物料的实现模式， 可视化组件采用了&lt;code&gt;g2&lt;/code&gt;，  当然大家也可以使用熟悉的&lt;code&gt;echart&lt;/code&gt;， &lt;code&gt;D3.js&lt;/code&gt;等. 不同物料既有通用的 &lt;code&gt;props&lt;/code&gt; ， 也有专有的 &lt;code&gt;props&lt;/code&gt;， 取决于我们如何定义物料的&lt;code&gt;Schema&lt;/code&gt;。&lt;/p&gt;&lt;p&gt;在设计 &lt;code&gt;Schema&lt;/code&gt; 前我们需要明确组件的属性划分， 为了满足组件配置的灵活性和通用性， 我做了如下划分:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;b&gt;外观属性&lt;/b&gt; (组件宽高， 颜色， 标签， 展现模式等)&lt;/li&gt;&lt;li&gt;&lt;b&gt;数据配置&lt;/b&gt; (静态数据， 动态数据)&lt;/li&gt;&lt;li&gt;&lt;b&gt;事件/交互&lt;/b&gt; (如单击， 跳转等)&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;有了以上划分， 我们就可以轻松设计想要的通用&lt;code&gt;Schema&lt;/code&gt;了。 我们先来看看实现后的配置面板:&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-f8964ec7b8e3fe38713ac13859c70e9a_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1306&quot; data-rawheight=&quot;728&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic3.zhimg.com/v2-f8964ec7b8e3fe38713ac13859c70e9a_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1306&quot; data-rawheight=&quot;728&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic3.zhimg.com/v2-f8964ec7b8e3fe38713ac13859c70e9a_r.jpg&quot; data-actualsrc=&quot;https://pic3.zhimg.com/v2-f8964ec7b8e3fe38713ac13859c70e9a_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p&gt;这些属性项都是基于我们定义的&lt;code&gt;schema&lt;/code&gt;配置项， 通过 &lt;b&gt;解析引擎&lt;/b&gt; 动态渲染出来的， 有关 &lt;b&gt;解析引擎&lt;/b&gt; 和配置面板， 我会在下面的章节和大家介绍。 我们先看看组件的 &lt;code&gt;schema&lt;/code&gt; 结构:&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ts&quot;&gt;&lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Chart&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;ChartSchema&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;editAttrs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;layerName&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;kr&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;Text&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;nx&quot;&gt;cate&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;base&#x27;&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;，&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;y&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;kr&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;Number&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;nx&quot;&gt;cate&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;base&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;DataConfig&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 数据配置项
+&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;    &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;eventConfig&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 事件配置项
+&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;
+  &lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;，&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;width&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;200&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;height&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;200&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;zIndex&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;layerName&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;柱状图&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;labelColor&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;rgba(188，200，212，1)&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;// ... 其他配置初始值
+&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;    &lt;span class=&quot;nx&quot;&gt;multiColor&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&#x27;rgba(91, 143, 249, 1)&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;rgba(91, 143, 249, 1)&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;rgba(91, 143, 249，,1)&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;rgba(91, 143, 249, 1)&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;A&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;25&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;，&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;B&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;66&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;其中 &lt;b&gt;editAttrs&lt;/b&gt; 表示可编辑的属性列表， &lt;b&gt;config&lt;/b&gt; 为属性的初始值， 当然大家也可以根据自己的喜好， 设计类似的通用&lt;code&gt;schema&lt;/code&gt;。&lt;/p&gt;&lt;p&gt;我们通过以上设计的标准组件和标准&lt;code&gt;schema&lt;/code&gt;， 就可以批量且高效的生产各种物料， 还可以轻松集成任何第三方可视化组件库。&lt;/p&gt;&lt;h3&gt;动态渲染器实现&lt;/h3&gt;&lt;p&gt;我们都知道， 一个页面中元素很多时会影响页面整体的加载速度， 因为浏览器渲染页面需要消耗&lt;b&gt;CPU / GPU&lt;/b&gt;。对于可视化页面来说， 每一个可视化组件都需要渲染大量的信息元， 这无疑会对页面性能造成不小的影响， 所以我们需要设计一种机制， 让组件异步加载到画布上， 而不是一次性加载几十个几百个组件(这样的话页面会有大量的白屏时间， 用户体验极度下降)。&lt;/p&gt;&lt;p&gt;动态加载器就是提供了这样一种机制， 保证组件的加载都是异步的， 一方面可以减少页面体积， 另一方面用户可以更早的看到页面元素。目前我们熟的动态加载机制也有很多， &lt;code&gt;Vue&lt;/code&gt; 和 &lt;code&gt;React&lt;/code&gt; 生态都提供了开箱即用的解决方案(虽然我们可以用 &lt;code&gt;webpack&lt;/code&gt; 自行设计这样的动态模型， 此处为了提高行文效率， 我们直接基于现成方案封装)。我们先看一下动态渲染组件的过程:&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-62e22d5718812795d0a70fe5a72c9d5d_b.gif&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;720&quot; data-rawheight=&quot;367&quot; data-thumbnail=&quot;https://pic2.zhimg.com/v2-62e22d5718812795d0a70fe5a72c9d5d_b.jpg&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic2.zhimg.com/v2-62e22d5718812795d0a70fe5a72c9d5d_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;720&quot; data-rawheight=&quot;367&quot; data-thumbnail=&quot;https://pic2.zhimg.com/v2-62e22d5718812795d0a70fe5a72c9d5d_b.jpg&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic2.zhimg.com/v2-62e22d5718812795d0a70fe5a72c9d5d_r.jpg&quot; data-actualsrc=&quot;https://pic2.zhimg.com/v2-62e22d5718812795d0a70fe5a72c9d5d_b.gif&quot;/&gt;&lt;figcaption&gt;v6.dooring&lt;/figcaption&gt;&lt;/figure&gt;&lt;p&gt;上面的演示可以细微的看出从左侧组件菜单拖动某个组件图标到画布上后， 真正的组件才开始加载渲染。&lt;/p&gt;&lt;p&gt;这里我们以 &lt;code&gt;umi3.0&lt;/code&gt; 提供的 &lt;code&gt;dynamic&lt;/code&gt; 函数来最小化实现一个动态渲染器. 如果不熟悉 &lt;code&gt;umi&lt;/code&gt; 生态的朋友， 也不用着急， 看完我的实现过程和原理之后， 就可以利用任何熟悉的动态加载机制实现它了。 实现如下:&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-js&quot;&gt;&lt;span class=&quot;kr&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;React&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;useMemo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;memo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;FC&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;react&#x27;&lt;/span&gt;
+&lt;span class=&quot;kr&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;dynamic&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;umi&#x27;&lt;/span&gt;
+
+&lt;span class=&quot;kr&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;LoadingComponent&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;@/components/LoadingComponent&#x27;&lt;/span&gt;
+
+
+&lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;DynamicFunc&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;cpName&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;category&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;dynamic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;loader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;c1&quot;&gt;//  动态加载组件
+&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;      &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;default&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Graph&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;import&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`@/components/materies/&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;cpName&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+      &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;props&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;DynamicType&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;，&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;props&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Graph&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&amp;gt;&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;loading&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;LoadingComponent&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;DynamicRenderEngine&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;FC&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;DynamicType&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;memo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;props&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; 
+  &lt;span class=&quot;nx&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
+  &lt;span class=&quot;nx&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
+  &lt;span class=&quot;c1&quot;&gt;// 其他配置... 
+&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;props&lt;/span&gt;
+  &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Dynamic&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;useMemo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;DynamicFunc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
+
+  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Dynamic&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;props&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+
+&lt;span class=&quot;kr&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;DynamicRenderEngine&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;是不是很简单? 当然我们也可以根据自身业务需要， 设计更复杂强大的动态渲染器。&lt;/p&gt;&lt;h3&gt;配置面板设计&lt;/h3&gt;&lt;p&gt;实现配置面板的前提是对组件 &lt;code&gt;Schema&lt;/code&gt; 结构有一个系统的设计， 在介绍组件库实现中我们介绍了通用组件 &lt;code&gt;schema&lt;/code&gt; 的一个设计案例， 我们基于这样的案例结构， 来实现 &lt;b&gt;动态配置面板&lt;/b&gt;。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-6d5b9798796fd54f14428fce8a970e8d_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1304&quot; data-rawheight=&quot;334&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic2.zhimg.com/v2-6d5b9798796fd54f14428fce8a970e8d_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1304&quot; data-rawheight=&quot;334&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic2.zhimg.com/v2-6d5b9798796fd54f14428fce8a970e8d_r.jpg&quot; data-actualsrc=&quot;https://pic2.zhimg.com/v2-6d5b9798796fd54f14428fce8a970e8d_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p&gt;由上图可以知道， 动态配置面板的一个核心要素就是 &lt;b&gt;表单渲染器&lt;/b&gt;。 表单渲染器的目的就是基于属性配置列表 &lt;code&gt;attrs&lt;/code&gt; 来动态渲染出对应的表单项。我之前写了一篇文章详细的介绍了表单设计器的技术实现的文章， 大家感兴趣也可以参考一下。&lt;/p&gt;&lt;p&gt;我这里来简单实现一个基础的表单渲染器模型:&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ts&quot;&gt;&lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;FormEditor&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;props&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;FormEditorProps&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;attrs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;defaultValue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;onSave&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;props&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+  &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;onFinish&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;values&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;Store&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;// 保存配置项数据
+&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;    &lt;span class=&quot;nx&quot;&gt;onSave&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;onSave&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;values&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
+
+  &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;handlechange&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;// 更新逻辑
+&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+  &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;form&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Form&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;useForm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+
+  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;Form&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;form&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;form&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;...formItemLayout&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;onFinish&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;onFinish&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;initialValues&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;defaultValue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;onValuesChange&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;handlechange&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;attrs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+          &lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;React.Fragment&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;kr&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;Number&#x27;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+              &lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;Form.Item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;label&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&amp;gt;&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;InputNumber&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;/&amp;gt;&lt;/span&gt;
+              &lt;span class=&quot;p&quot;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;Form.Item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;)}&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;kr&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;Text&#x27;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+              &lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;Form.Item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;label&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&amp;gt;&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;Input&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;placeholder&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;placeholder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;/&amp;gt;&lt;/span&gt;
+              &lt;span class=&quot;p&quot;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;Form.Item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;)}&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;kr&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;TextArea&#x27;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+              &lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;Form.Item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;label&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&amp;gt;&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;TextArea&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;rows&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;/&amp;gt;&lt;/span&gt;
+              &lt;span class=&quot;p&quot;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;Form.Item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;)}&lt;/span&gt;
+            &lt;span class=&quot;c1&quot;&gt;// 其他配置类型
+&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;          &lt;span class=&quot;p&quot;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;React.Fragment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;})}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;Form&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果大家想看更完整的配置面板实现， 可以参考开源项目 &lt;a href=&quot;https://link.zhihu.com/?target=https%3A//github.com/MrXujiang/h5-Dooring&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;H5-Dooring | H5可视化编辑器&lt;/a&gt;&lt;/p&gt;&lt;p&gt;我们可以看看最终的配置面板实现效果:&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-fa88a68cd17104b625b2e4d0a8946300_b.gif&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;720&quot; data-rawheight=&quot;388&quot; data-thumbnail=&quot;https://pic1.zhimg.com/v2-fa88a68cd17104b625b2e4d0a8946300_b.jpg&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic1.zhimg.com/v2-fa88a68cd17104b625b2e4d0a8946300_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;720&quot; data-rawheight=&quot;388&quot; data-thumbnail=&quot;https://pic1.zhimg.com/v2-fa88a68cd17104b625b2e4d0a8946300_b.jpg&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic1.zhimg.com/v2-fa88a68cd17104b625b2e4d0a8946300_r.jpg&quot; data-actualsrc=&quot;https://pic1.zhimg.com/v2-fa88a68cd17104b625b2e4d0a8946300_b.gif&quot;/&gt;&lt;/figure&gt;&lt;h3&gt;控制中心概述 &amp;amp; 功能辅助设计&lt;/h3&gt;&lt;p&gt;&lt;b&gt;控制中心&lt;/b&gt;的实现主要是业务层的， 没有涉及太多复杂的技术， 所以这里我简单介绍一下。 因为可视化大屏页面展示的信息有些可能是私密数据， 只希望一部分人看到， 所以我们需要对页面的访问进行控制。 其次由于企业内部业务战略需求， 可能会对页面进行各种验证， 状态校验， 数据更新频率等， 所以我们需要设计一套控制中心来管理。 最基本的就是访问控制， 如下:&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-07ddb9a1552a17983cd7b789d2b6e69c_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1284&quot; data-rawheight=&quot;530&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic1.zhimg.com/v2-07ddb9a1552a17983cd7b789d2b6e69c_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1284&quot; data-rawheight=&quot;530&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic1.zhimg.com/v2-07ddb9a1552a17983cd7b789d2b6e69c_r.jpg&quot; data-actualsrc=&quot;https://pic1.zhimg.com/v2-07ddb9a1552a17983cd7b789d2b6e69c_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p&gt;&lt;b&gt;功能辅助设计&lt;/b&gt; 主要是一些用户操作上的优化， 比如快捷键， 画布缩放， 大屏快捷导航， 撤销重做等操作， 这块可以根据具体的产品需求来完善。 大家后期设计搭建产品时也可以参考实现。&lt;/p&gt;&lt;h2&gt;可视化大屏后期规划和未来展望&lt;/h2&gt;&lt;p&gt;为了实现更富有展现力， 满足更多场景的可视化大屏引擎， 我们一方面需要提高引擎扩展性， 一方面需要完善物料生态， 其次只要与时俱进， 提供更多智能化的场景功能， 比如搭建埋点， 数据预警等， 具体规划如下:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;丰富组件物料， 支持3D组件， 地理空间组件等&lt;/li&gt;&lt;li&gt;搭建埋点， 方便后期对组件进行分析&lt;/li&gt;&lt;li&gt;实现数据源， 事件机制闭环&lt;/li&gt;&lt;li&gt;支持用户自定义组件&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;如果大家对可视化搭建或者低代码/零代码感兴趣， 也可以参考我往期的文章或者在评论区交流你的想法和心得。&lt;/p&gt;&lt;h2&gt;往期文章&lt;/h2&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>43798f211581161f350ce454de1246cc</guid>
+<title>一次跨域问题的分析</title>
+<link>https://toutiao.io/k/bu12ly2</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
                     
 
                     
                     
                     
-                    &lt;section data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.75&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/lkVfNnnUQnlHs65Y8RHabCwhUJERZ5Y5SNVibS2GEO9xecx5Easr5WvO40Lb3PkkykLL9BmicibsDGYTtycbMOwGw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;图片拍摄于2021年7月10日，湖州安吉。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;h3 md-src-pos=&quot;181..187&quot;&gt;介绍&lt;/h3&gt;&lt;p md-src-pos=&quot;108..158&quot;&gt;&lt;span&gt;正好看到董泽润老哥一篇关于使用&lt;/span&gt;&lt;code md-src-pos=&quot;126..137&quot;&gt;&lt;span&gt;WireShark&lt;/span&gt;&lt;/code&gt;&lt;span&gt;分析&lt;/span&gt;&lt;code md-src-pos=&quot;141..147&quot;&gt;&lt;span&gt;gRPC&lt;/span&gt;&lt;/code&gt;&lt;span&gt;&lt;span&gt;流量的文章&lt;/span&gt;，&lt;span&gt;学到了。原文地址:&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzg5MTYyNzM3OQ==&amp;amp;mid=2247484266&amp;amp;idx=1&amp;amp;sn=624672bb75251908072931f161be7d8c&amp;amp;chksm=cfcb3176f8bcb860edd532a80af4fd9fad9650bf9e84436cd1e13fa54c8c62bd50b931650584&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;小技巧！Wireshark 让调试 grpc 不再困难&lt;/a&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p md-src-pos=&quot;160..194&quot;&gt;&lt;span&gt;那我就介绍使用过的两款&lt;/span&gt;&lt;code md-src-pos=&quot;178..184&quot;&gt;&lt;span&gt;gRPC&lt;/span&gt;&lt;/code&gt;&lt;span&gt;&lt;span&gt;客户端调试工具吧&lt;/span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;h3 md-src-pos=&quot;181..187&quot;&gt;&lt;br/&gt;&lt;/h3&gt;&lt;h3 md-src-pos=&quot;181..187&quot;&gt;Evans&lt;/h3&gt;&lt;p md-src-pos=&quot;206..271&quot;&gt;&lt;code md-src-pos=&quot;206..213&quot;&gt;&lt;span&gt;Evans&lt;sup&gt;[1&lt;/sup&gt;&lt;sup&gt;]&lt;/sup&gt;&lt;/span&gt;&lt;/code&gt;&lt;span&gt;&lt;span&gt;有两种运行模式&lt;/span&gt;：&lt;/span&gt;&lt;code md-src-pos=&quot;220..226&quot;&gt;&lt;span&gt;REPL&lt;/span&gt;&lt;/code&gt;&lt;span&gt;和&lt;/span&gt;&lt;code md-src-pos=&quot;229..234&quot;&gt;&lt;span&gt;CLI&lt;/span&gt;&lt;/code&gt;&lt;span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p md-src-pos=&quot;206..271&quot;&gt;&lt;span&gt;&lt;span&gt;比起其他&lt;/span&gt;&lt;/span&gt;&lt;code md-src-pos=&quot;240..246&quot;&gt;&lt;span&gt;gRPC&lt;/span&gt;&lt;/code&gt;&lt;span&gt;客户端,&lt;code md-src-pos=&quot;206..213&quot;&gt;Evans&lt;/code&gt;更具有表现力，并且它还支持自动补全功能。&lt;/span&gt;&lt;/p&gt;&lt;p md-src-pos=&quot;273..307&quot;&gt;&lt;span&gt;&lt;span&gt;&lt;code md-src-pos=&quot;206..213&quot;&gt;&lt;span&gt;Evans&lt;/span&gt;&lt;/code&gt;的安装非常方便&lt;/span&gt;，&lt;span&gt;在&lt;/span&gt;&lt;/span&gt;&lt;code md-src-pos=&quot;284..289&quot;&gt;&lt;span&gt;Mac&lt;/span&gt;&lt;/code&gt;&lt;span&gt;&lt;span&gt;上我们只需要执行以下两行命令即可&lt;/span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.6306818181818182&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/lkVfNnnUQnlHs65Y8RHabCwhUJERZ5Y5o89yRVibBB62AgdwMsRHAibf8V5cSMwugYsy4CyLia9qhgZT9K6lr7VJQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;704&quot;/&gt;&lt;/p&gt;&lt;p md-src-pos=&quot;365..383&quot;&gt;&lt;/p&gt;&lt;p md-src-pos=&quot;365..383&quot;&gt;&lt;span&gt;我们来学习一下&lt;/span&gt;&lt;code md-src-pos=&quot;373..379&quot;&gt;&lt;span&gt;REPL&lt;/span&gt;&lt;/code&gt;&lt;span&gt;&lt;span&gt;模式&lt;/span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p md-src-pos=&quot;385..485&quot;&gt;&lt;span&gt;首先我们需要有一个&lt;/span&gt;&lt;code md-src-pos=&quot;395..399&quot;&gt;&lt;span&gt;pb&lt;/span&gt;&lt;/code&gt;&lt;span&gt;文件，假设你的文件在&lt;/span&gt;&lt;code md-src-pos=&quot;411..426&quot;&gt;&lt;span&gt;api/api.proto&lt;/span&gt;&lt;/code&gt;&lt;span&gt;，&lt;span&gt;我们只需要这样：&lt;/span&gt;&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.7858672376873662&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/lkVfNnnUQnlHs65Y8RHabCwhUJERZ5Y5RoBztNZ2AG2TiaTyFlUex6voEVyamfQxfzyh4b7qVj9TM1ic5GK1dNQg/640?wx_fmt=gif&quot; data-type=&quot;gif&quot; data-w=&quot;934&quot;/&gt;&lt;/p&gt;&lt;p md-src-pos=&quot;385..485&quot;&gt;&lt;span&gt;默认地址为&lt;/span&gt;&lt;code md-src-pos=&quot;493..510&quot;&gt;&lt;span&gt;127.0.0.1:50051&lt;/span&gt;&lt;/code&gt;&lt;span&gt;，&lt;span&gt;当然你可以通过&lt;/span&gt;&lt;/span&gt;&lt;code md-src-pos=&quot;519..527&quot;&gt;&lt;span&gt;--host&lt;/span&gt;&lt;/code&gt;&lt;span&gt;和&lt;/span&gt;&lt;code md-src-pos=&quot;530..538&quot;&gt;&lt;span&gt;--port&lt;/span&gt;&lt;/code&gt;&lt;span&gt;来指定服务器。&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.9702127659574468&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/lkVfNnnUQnlHs65Y8RHabCwhUJERZ5Y5FxxeztTlChp2TswzU7KcId6SRia4oWc3FPGvf0LdRfQGPxQUibd7nVjg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;940&quot;/&gt;&lt;/p&gt;&lt;p md-src-pos=&quot;598..604&quot;&gt;&lt;span&gt;&lt;span&gt;上图的命令&lt;/span&gt;:&lt;/span&gt;&lt;/p&gt;&lt;ul md-src-pos=&quot;605..702&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;code md-src-pos=&quot;608..622&quot;&gt;&lt;span&gt;show package&lt;/span&gt;&lt;/code&gt;&lt;span&gt;读取&lt;/span&gt;&lt;code md-src-pos=&quot;626..630&quot;&gt;&lt;span&gt;pb&lt;/span&gt;&lt;/code&gt;&lt;span&gt;&lt;span&gt;包名&lt;/span&gt;，&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;code md-src-pos=&quot;637..651&quot;&gt;&lt;span&gt;show service&lt;/span&gt;&lt;/code&gt;&lt;span&gt;&lt;span&gt;显示对应服务列表&lt;/span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;code md-src-pos=&quot;665..675&quot;&gt;&lt;span&gt;call xxx&lt;/span&gt;&lt;/code&gt;&lt;span&gt;调用&lt;/span&gt;&lt;code md-src-pos=&quot;679..685&quot;&gt;&lt;span&gt;gRPC&lt;/span&gt;&lt;/code&gt;&lt;span&gt;&lt;span&gt;服务&lt;/span&gt;......&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;.....&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p md-src-pos=&quot;704..716&quot;&gt;&lt;span&gt;&lt;span&gt;更多命令可自行查阅官网&lt;/span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p md-src-pos=&quot;718..861&quot;&gt;&lt;span&gt;除了上述这种直接引入&lt;/span&gt;&lt;code md-src-pos=&quot;729..733&quot;&gt;&lt;span&gt;pb&lt;/span&gt;&lt;/code&gt;&lt;span&gt;文件外，我们还可以通过&lt;/span&gt;&lt;code md-src-pos=&quot;746..752&quot;&gt;&lt;span&gt;gRPC&lt;/span&gt;&lt;/code&gt;&lt;span&gt;&lt;span&gt;反射包&lt;/span&gt;(&lt;/span&gt;&lt;code md-src-pos=&quot;757..769&quot;&gt;&lt;span&gt;reflection&lt;/span&gt;&lt;/code&gt;&lt;span&gt;)， &lt;span&gt;将&lt;/span&gt;&lt;/span&gt;&lt;code md-src-pos=&quot;774..787&quot;&gt;&lt;span&gt;grpc.Server&lt;/span&gt;&lt;/code&gt;&lt;span&gt;&lt;span&gt;注册到反射服务中&lt;/span&gt;&lt;span&gt;。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p md-src-pos=&quot;718..861&quot;&gt;&lt;span&gt;这样的话，就可以通过&lt;/span&gt;&lt;code md-src-pos=&quot;809..821&quot;&gt;&lt;span&gt;reflection&lt;/span&gt;&lt;/code&gt;&lt;span&gt;&lt;span&gt;提供的反射服&lt;/span&gt;务&lt;span&gt;查询到对应的&lt;/span&gt;&lt;/span&gt;&lt;code md-src-pos=&quot;836..842&quot;&gt;&lt;span&gt;gRPC&lt;/span&gt;&lt;/code&gt;&lt;span&gt;服务，或者直接调用&lt;/span&gt;&lt;code md-src-pos=&quot;850..856&quot;&gt;&lt;span&gt;gRPC&lt;/span&gt;&lt;/code&gt;&lt;span&gt;&lt;span&gt;服务&lt;/span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p md-src-pos=&quot;863..871&quot;&gt;&lt;span&gt;注册反射服务操作也很简单，&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.701123595505618&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/lkVfNnnUQnlHs65Y8RHabCwhUJERZ5Y54g0tMroG31tA4kzTViaS5Z9uKelFN7iciaXdEYMv3oCjnnvDdSE7ta4Dw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;890&quot;/&gt;&lt;/p&gt;&lt;p md-src-pos=&quot;863..871&quot;&gt;&lt;/p&gt;&lt;p md-src-pos=&quot;1021..1098&quot;&gt;&lt;span&gt;回到&lt;/span&gt;&lt;code md-src-pos=&quot;1024..1031&quot;&gt;&lt;span&gt;Evans&lt;/span&gt;&lt;/code&gt;&lt;span&gt;工具， 如果一个&lt;/span&gt;&lt;code md-src-pos=&quot;1041..1047&quot;&gt;&lt;span&gt;gRPC&lt;/span&gt;&lt;/code&gt;&lt;span&gt;服务注册了反射，我们就可以使用&lt;/span&gt;&lt;code md-src-pos=&quot;1064..1083&quot;&gt;&lt;span&gt;-r&lt;/span&gt;&lt;/code&gt;&lt;span&gt;选项来启动&lt;/span&gt;&lt;code md-src-pos=&quot;1090..1097&quot;&gt;&lt;span&gt;Evans&lt;/span&gt;&lt;/code&gt;&lt;span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p md-src-pos=&quot;1100..1158&quot;&gt;&lt;span&gt;比如像下面这样&lt;/span&gt;： &lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.6867469879518072&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/lkVfNnnUQnlHs65Y8RHabCwhUJERZ5Y5SkPqgIfCn4YbiaBRhJbKnjUO2iaoUkSSGgLWTicpvRuMwrpyOLou0Ogicw/640?wx_fmt=gif&quot; data-type=&quot;gif&quot; data-w=&quot;1079&quot;/&gt;&lt;/p&gt;&lt;p md-src-pos=&quot;1100..1158&quot;&gt;&lt;span&gt;对另外一种模式感兴趣的可以自行查看官网，这里不再演示。&lt;/span&gt;&lt;/p&gt;&lt;h3 md-src-pos=&quot;181..187&quot;&gt;&lt;br/&gt;&lt;/h3&gt;&lt;h3 md-src-pos=&quot;181..187&quot;&gt;BloomRPC&lt;/h3&gt;&lt;p md-src-pos=&quot;1175..1215&quot;&gt;&lt;code md-src-pos=&quot;1175..1185&quot;&gt;&lt;span&gt;BloomRPC&lt;sup&gt;[2&lt;/sup&gt;&lt;sup&gt;]&lt;/sup&gt;&lt;/span&gt;&lt;/code&gt;&lt;span&gt;是一个简单的&lt;/span&gt;&lt;code md-src-pos=&quot;1192..1197&quot;&gt;&lt;span&gt;GUI&lt;/span&gt;&lt;/code&gt;&lt;span&gt;&lt;span&gt;客户端工具，使用这个那就更简单了&lt;/span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p md-src-pos=&quot;1217..1289&quot;&gt;&lt;span&gt;只需要导入&lt;/span&gt;&lt;code md-src-pos=&quot;1223..1227&quot;&gt;&lt;span&gt;pb&lt;/span&gt;&lt;/code&gt;&lt;span&gt;&lt;span&gt;文件，然后点两下即可&lt;/span&gt;。 &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.552821997105644&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/lkVfNnnUQnlHs65Y8RHabCwhUJERZ5Y5ggXIlBBuBRpJTg8IGFibthsHuDPEZJ2MBp3UeUhib2ibsT1kJUcxSW5Rg/640?wx_fmt=gif&quot; data-type=&quot;gif&quot; data-w=&quot;1382&quot;/&gt;&lt;/p&gt;&lt;p md-src-pos=&quot;1291..1321&quot;&gt;&lt;/p&gt;&lt;p md-src-pos=&quot;1291..1321&quot;&gt;&lt;span&gt;当然有个不好点在于，每次修改了&lt;/span&gt;&lt;code md-src-pos=&quot;1307..1311&quot;&gt;&lt;span&gt;pb&lt;/span&gt;&lt;/code&gt;&lt;span&gt;，&lt;span&gt;都不得不重新导入&lt;/span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p md-src-pos=&quot;1291..1321&quot;&gt;&lt;span/&gt;&lt;/p&gt;&lt;h3 md-src-pos=&quot;1324..1330&quot;&gt;总结&lt;/h3&gt;&lt;p md-src-pos=&quot;1331..1410&quot;&gt;&lt;span&gt;以上介绍了两款&lt;/span&gt;&lt;code md-src-pos=&quot;1339..1345&quot;&gt;&lt;span&gt;gRPC&lt;/span&gt;&lt;/code&gt;&lt;span&gt;客户端工具。不知道你们平常都使用&lt;/span&gt;&lt;code md-src-pos=&quot;1363..1369&quot;&gt;&lt;span&gt;gRPC&lt;/span&gt;&lt;/code&gt;&lt;span&gt;哪些周边工具，欢迎一起讨论&lt;/span&gt;。&lt;/p&gt;&lt;h3 md-src-pos=&quot;1324..1330&quot;&gt;相关文章推荐&lt;/h3&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUzNTY5MzU2MA==&amp;amp;mid=2247483901&amp;amp;idx=1&amp;amp;sn=807de1cd6962dd1ccc53e8b5ec75a5b0&amp;amp;chksm=fa80d06acdf7597c5c28884216b70bbc7f5e266443d47cdc04ffad9767803dbf264f31313472&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;gRPC入门教程汇总&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUzNTY5MzU2MA==&amp;amp;mid=2247487354&amp;amp;idx=1&amp;amp;sn=f2f1121193603f69c9fde18ece2c71b9&amp;amp;chksm=fa80deedcdf757fbfa3ce5393d473bc2a79447466423c81ee2c8feb9091825afa1a0311af985&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;Interceptor拦截器 -- gRPC生态里的中间件&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUzNTY5MzU2MA==&amp;amp;mid=2247486329&amp;amp;idx=1&amp;amp;sn=04cf6ab2613ac1174808fa727b18212f&amp;amp;chksm=fa80daeecdf753f8c4625bc522bce5960383da9eadf2edd5ef57a8ae384c99f7ebb45d43e397&amp;amp;scene=21#wechat_redirect&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;gRPC服务注册发现及负载均衡的实现方案与源码解析&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;h3 md-src-pos=&quot;8529..8535&quot;&gt;&lt;br/&gt;&lt;/h3&gt;&lt;h3 md-src-pos=&quot;8529..8535&quot;&gt;&lt;span&gt;附录&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;span&gt;[1]&lt;/span&gt;&lt;span&gt;https://github.com/ktr0731/evans&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;[2]&lt;/span&gt;&lt;span&gt;https://github.com/uw-labs/bloomrpc&lt;/span&gt;&lt;span/&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;如果文章对你有所帮助，点赞、转发&lt;strong&gt;、&lt;/strong&gt;留言都是一种支持！&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzUzNTY5MzU2MA==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/z4pQ0O5h0f4pGhLz2xEbRFHnAQon2QLYgbBibCJo1ibJHesLWshPJeRibateRtAqkaf6BgjlbhYiaxHLq6Zu07CRPw/0?wx_fmt=png&quot; data-nickname=&quot;网管叨bi叨&quot; data-alias=&quot;kevin_tech&quot; data-signature=&quot;分享软件开发和系统架构设计基础、Go 语言和Kubernetes。&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;section&gt;&lt;span data-darkmode-color-16222629164135=&quot;rgb(160, 160, 160)&quot; data-darkmode-original-color-16222629164135=&quot;#fff|rgb(160, 160, 160)&quot;/&gt;&lt;/section&gt;
+                    &lt;p&gt;&lt;img data-ratio=&quot;0.5&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/1skeHK2GybyAwafRAF02CWOLUgUricgqP9oBPt6AddyGl3IMAYrrGPQKps4taeEibwmrms1ButHdfe44A7qA9y4w/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;800&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;h2&gt;事件起因&lt;/h2&gt;&lt;p&gt;一个需求让我开放一个 HTTP 接口给前端，在联调的过程中，前端请求时出现了一个 CORS 错误，也即跨域问题，错误如下 👇&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.14496314496314497&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/1skeHK2GybyAwafRAF02CWOLUgUricgqPMqhic2xUcXCshTRvmWU3WdsBJ8dnuKfn6vQEbIcMmpNLqBK8OUAhapQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1628&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;p&gt;一开始我的想法是，跨域问题，这我熟啊，在学校写代码的时候就经常遇到，这解决起来不是分分钟的吗。&lt;/p&gt;&lt;p&gt;可更改之后我傻眼了，为什么一直不生效？我陷入了沉思。&lt;/p&gt;&lt;p&gt;在继续描述之前，我们先来了解下到底什么是跨域以及常见的解决方案有哪些。&lt;/p&gt;&lt;h2&gt;什么是跨域&lt;/h2&gt;&lt;p&gt;所谓跨域，全称是 &lt;strong&gt;跨源资源共享 (CORS)&lt;/strong&gt; Cross- Origin Resource Sharing ，是一种基于 HTTP Header 的机制，该机制通过允许服务器标示除了它自己以外的其它 origin（域，协议和端口），这样浏览器可以访问加载这些资源。&lt;/p&gt;&lt;p&gt;举个例子：运行在 https://domain-a.com 的 JavaScript 代码使用 &lt;code&gt;XMLHttpRequest&lt;/code&gt; 分别发起两个请求 👇&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;&quot;&gt;&lt;code&gt;请求A：https:&lt;span&gt;//domain-a.com/query&lt;/span&gt;&lt;br/&gt;请求B：https:&lt;span&gt;//domain-b.com/query&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;由于发请求的页面站点为 domain-a.com，所以请求 A 属于同源请求，domain-a.com 的后台服务器是允许请求。但是请求 B 的站点域是 domain-b.com，如果要发请求到 domain-b.com，就属于跨源访问，出于安全性考虑，浏览器限制脚本内发起的跨源 HTTP 请求。如下图所示：&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.6526232114467408&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/1skeHK2GybyAwafRAF02CWOLUgUricgqPVRbkNJHXrUpgVxy3f97wibyFcrDwBnfp9WNcZxkBibuibAxFicicCyjODTw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1258&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;p&gt;因此，为了解决上述问题，跨源域资源共享（ CORS )机制就应运而生了。该机制允许 Web 应用服务器进行跨源访问控制，从而使跨源数据传输得以安全进行。&lt;/p&gt;&lt;h2&gt;CORS 工作机制&lt;/h2&gt;&lt;p&gt;跨源资源共享标准新增了一组 HTTP 首部字段，允许服务器声明哪些源站通过浏览器有权限访问哪些资源。&lt;/p&gt;&lt;p&gt;而且对那些可能对服务器数据产生副作用的 HTTP 请求方法（特别是 GET 以外的 HTTP 请求，或者搭配某些 MIME 类型的 POST 请求），浏览器必须首先使用 &lt;strong&gt;OPTIONS&lt;/strong&gt; 方法发起一个预检请求（preflight request），从而获知服务端是否允许该跨源请求。&lt;/p&gt;&lt;p&gt;只有在服务器确认允许之后，才发起实际的 HTTP 请求。在预检请求的返回中，服务器端也可以通知客户端，是否需要携带身份凭证（包括 Cookies 和 HTTP 认证相关数据）。&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.4593908629441624&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/1skeHK2GybyAwafRAF02CWOLUgUricgqPjOXfhl2yXLgiaXriaxXt5iaNEaNOCYGaicKKiaiaXN5AyspgZq1ib83Onc4lg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;788&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;p&gt;大致流程如上图所示，CORS 请求失败会产生错误，但是为了安全，在 JavaScript 代码层面是无法获知到底具体是哪里出了问题。你只能查看浏览器的控制台以得知具体是哪里出现了错误。&lt;/p&gt;&lt;p&gt;在新增的这一组 HTTP 首部字段中，最重要的便是 Access-Control-Allow-Origin，其语法如下：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;&quot;&gt;&lt;code&gt;&lt;span&gt;Access-Control-Allow-Origin&lt;/span&gt;: &amp;lt;origin&amp;gt; | *&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;其中，origin 参数的值指定了允许访问该资源的外域 URI。对于不需要携带身份凭证的请求，服务器可以指定该字段的值为通配符，表示允许来自所有域的请求。&lt;/p&gt;&lt;p&gt;例如，下面的字段值将允许来自 http://www.domain-a.com 的请求：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;&quot;&gt;&lt;code&gt;Access-Control-Allow-Origin: http:&lt;span&gt;//www.domain-a.com&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;如果服务端指定了具体的域名而非“*”，那么响应首部中的 Vary 字段的值必须包含 Origin。这将告诉客户端：服务器对不同的源站返回不同的内容。&lt;/p&gt;&lt;p&gt;接下来所说的解决方案主要就是围绕这一字段进行的。&lt;/p&gt;&lt;h2&gt;Spring 中对于跨域的常见解决方案&lt;/h2&gt;&lt;p&gt;本节介绍一下使用 Spring 中对于跨域的常见解决方案，主要分为以下几种。&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;1.&lt;/span&gt;直接设置请求头&lt;/span&gt;&lt;span&gt;&lt;span&gt;2.&lt;/span&gt;@CrossOrigin 注解&lt;/span&gt;&lt;span&gt;&lt;span&gt;3.&lt;/span&gt;WebMvcConfigurer 配置&lt;/span&gt;&lt;span&gt;&lt;span&gt;4.&lt;/span&gt;使用 CorsFilter 拦截器&lt;/span&gt;&lt;/p&gt;&lt;p&gt;这一块的知识点网上一搜一大把，这里就不展开说明了。重点回到本次的问题分析。&lt;/p&gt;&lt;h2&gt;上述方案使用结束之后仍然失效？&lt;/h2&gt;&lt;p&gt;解决这个问题，经历了几个过程。&lt;/p&gt;&lt;p&gt;使用 @CrossOrigin 注解，接口 1、2 请求正常，但该方案不够通用，暂时舍弃。&lt;/p&gt;&lt;p&gt;使用 WebMvcConfigurer 配置的 addCorsMappings 方法配置接口 3 时失败，仍然出现跨域问题。&lt;/p&gt;&lt;p&gt;查找资料发现，这有可能是&lt;strong&gt;客户端请求经过的先后顺序问题，当服务端接收到一个请求时，该请求会先经过过滤器，然后进入拦截器中，然后再进入 Mapping 映射中的路径所指向的资源，所以跨域配置在 mapping 上并不起作用，返回的头信息中并没有配置的跨域信息，浏览器就会报跨域异常。&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;因此才会出现这种情况，当你在项目中使用了该方法配置跨域问题后，再使用自定义的拦截器时，跨域问题的相关配置就会失效，请求依然会报跨域问题的错。&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;此时我选择了最后一种方案，也即，直接使用 CorsFilter 拦截器。&lt;/p&gt;&lt;p&gt;在配置好拦截器之后，仍然出现跨域问题，此时的我心态崩了。&lt;/p&gt;&lt;h2&gt;治标 or 治本&lt;/h2&gt;&lt;p&gt;后来，我意外的发现前端在调用接口时的 URL 有问题，并没有按照我给他的规则去拼接 URL，果然，在请求了正确的 URL 之后，跨域问题，随即消失了。&lt;/p&gt;&lt;p&gt;也就是说，整个事件出现的原因是因为请求参数异常。&lt;/p&gt;&lt;p&gt;至此，这个问题其实已经解决了，治标已经完成。&lt;/p&gt;&lt;p&gt;只是，这时我又产生了新的疑问，为什么请求参数异常没有走到业务逻辑处理而是出现了跨域问题 🤔️&lt;/p&gt;&lt;p&gt;让我们情景再现一下 👇&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;java&quot;&gt;&lt;code&gt;@GetMapping(&lt;span&gt;&quot;/error&quot;&lt;/span&gt;)&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; ApiResult&amp;lt;String&amp;gt; &lt;span&gt;error&lt;/span&gt;Test(&lt;span&gt;@RequestParam&lt;/span&gt; String id) {&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; (StringUtils.isBlank(&lt;span&gt;id&lt;/span&gt;)) {&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; RestUtil.&lt;span&gt;error&lt;/span&gt;(&lt;span&gt;1&lt;/span&gt;, &lt;span&gt;&quot;参数异常&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; RestUtil.success(&lt;span&gt;id&lt;/span&gt;);&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;代码样例如上，请求情况如下 👇&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;javascript&quot;&gt;&lt;code&gt;fetch(&lt;span&gt;&quot;http://www.a.com/error&quot;&lt;/span&gt;); &lt;span&gt;// 出现跨域&lt;/span&gt;&lt;br/&gt;fetch(&lt;span&gt;&quot;http://www.a.com/error?id=123&quot;&lt;/span&gt;); &lt;span&gt;// 正常访问&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;经师兄提点，猜想是由于系统内部抛了异常被拦截后自动重定向到淘宝错误页，果然，在我直接使用浏览器访问上述 URL 后，果然跳转到了淘宝的错误页。&lt;/p&gt;&lt;p&gt;而系统之所以会报异常，原因出在 &lt;code&gt;@RequestParam&lt;/code&gt; 注解上，让我们看一下他的源码&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.49624060150375937&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/1skeHK2GybyAwafRAF02CWOLUgUricgqP0I2G06PeTSnTplEp45KYPvjhpIK5icnjTYTbhhYpVf42mj16jZypaCA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1463&quot; title=&quot;null&quot;/&gt;默认该参数是必传的！&lt;/p&gt;&lt;p&gt;如果不传该参数，甚至进不去业务逻辑的错误校验，从而直接被系统捕获了，接下来就是我们刚才熟知的那一幕了。&lt;/p&gt;&lt;p&gt;所以，其实只要设置成 &lt;code&gt;@RequestParam(required = false)&lt;/code&gt;，或者不使用该注解，即可从根源上解决该问题。&lt;/p&gt;&lt;h2&gt;刨根问底一下&lt;/h2&gt;&lt;p&gt;其实从问题的解决角度来说，到这里已经可以了，只不过刨根问底一下，为什么请求错误了会跳到淘宝的错误页，而不是显示 tomcat 的错误页呢？&lt;/p&gt;&lt;p&gt;在询问了师兄和查找相关资料后，我发现，是由于 tengine（阿里内部的魔改 Nginx）的 error_page 配置造成的，在 proxy_intercept_errors 配置成功后，使得在发生错误时自动重定向到淘宝错误页，所以即使在业务接口做了跨域处理，前端仍会出现跨域问题，因为这一次跨到了淘宝错误页的域。&lt;/p&gt;&lt;p&gt;nginx 配置目录在 &lt;code&gt;/home/admin/cai/conf&lt;/code&gt;&lt;/p&gt;&lt;p&gt;配置文件中并未出现重定向页面，重定向页面的配置在另一个文件中 &lt;code&gt;/opt/taobao/tengine/conf/services.conf&lt;/code&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;json&quot;&gt;&lt;code&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;400&lt;/span&gt; http://err.taobao.com/error1.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;403&lt;/span&gt; http://err.taobao.com/error1.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;404&lt;/span&gt; http://err.taobao.com/error1.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;405&lt;/span&gt; http://err.taobao.com/error1.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;408&lt;/span&gt; http://err.taobao.com/error1.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;410&lt;/span&gt; http://err.taobao.com/error1.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;411&lt;/span&gt; http://err.taobao.com/error1.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;412&lt;/span&gt; http://err.taobao.com/error1.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;413&lt;/span&gt; http://err.taobao.com/error1.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;414&lt;/span&gt; http://err.taobao.com/error1.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;415&lt;/span&gt; http://err.taobao.com/error1.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;500&lt;/span&gt; http://err.taobao.com/error2.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;501&lt;/span&gt; http://err.taobao.com/error2.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;502&lt;/span&gt; http://err.taobao.com/error2.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;503&lt;/span&gt; http://err.taobao.com/error2.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;506&lt;/span&gt; http://err.taobao.com/error2.html;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;重新加载配置 &lt;code&gt;/home/admin/cai/bin/nginxctl reload&lt;/code&gt;&lt;/p&gt;&lt;p&gt;至此，刨根问底结束。&lt;/p&gt;&lt;h2&gt;总结一下解决方案&lt;/h2&gt;&lt;p&gt;方案 1：关闭 nginx 的 proxy_intercept_errors 选项&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;&lt;code&gt;proxy_intercept_errors&lt;/code&gt;  指令后面跟  &lt;code&gt;on&lt;/code&gt;  或  &lt;code&gt;off&lt;/code&gt; ，分别表示 打开 或 关闭 拦截错误页功能。&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;方案 2：避免在请求时直接产生错误，在本例中是请求参数缺失的问题&lt;/p&gt;&lt;p&gt;&lt;code&gt;@RequestParam&lt;/code&gt; 注解默认是必传的，如果没有会报 400 错误，所以才会重定向到淘宝错误页。&lt;/p&gt;&lt;p&gt;更改为 &lt;code&gt;@RequestParam(required = false)&lt;/code&gt;&lt;/p&gt;&lt;p&gt;然后在接下来的业务逻辑中进行校验&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;json&quot;&gt;&lt;code&gt;@GetMapping(&lt;span&gt;&quot;/error&quot;&lt;/span&gt;)&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; ApiResult&amp;lt;String&amp;gt; &lt;span&gt;error&lt;/span&gt;Test(&lt;span&gt;@RequestParam&lt;/span&gt;(required = &lt;span&gt;false&lt;/span&gt;) String id) {&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; (StringUtils.isBlank(&lt;span&gt;id&lt;/span&gt;)) {&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; RestUtil.&lt;span&gt;error&lt;/span&gt;(&lt;span&gt;1&lt;/span&gt;, &lt;span&gt;&quot;参数异常&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; RestUtil.success(&lt;span&gt;id&lt;/span&gt;);&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;h2&gt;实验验证&lt;/h2&gt;&lt;p&gt;有了合理的猜想后，我们需要来验证一下，到底是不是上述猜想导致的，因此需要验证一下。&lt;/p&gt;&lt;p&gt;验证：修改 nginx 的 &lt;code&gt;proxy_intercept_errors&lt;/code&gt; 配置选项，将拦截关闭&lt;/p&gt;&lt;p&gt;预期效果：不会重定向，且出现原生的 tomcat 错误页面&lt;/p&gt;&lt;p&gt;实验后：&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.2814107274063189&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/1skeHK2GybyAwafRAF02CWOLUgUricgqP5FMuTRAJiaXlB8ITfuTMyYKwfME6ewwFqDxptevFA28EbrIUcro6HZg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1361&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;p&gt;控制台 fetch 时也不会出现跨域错误了&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.1244886031560491&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/1skeHK2GybyAwafRAF02CWOLUgUricgqPxVI02288cHOFhGUGlqSHS91X5CGtghHTicj1QQ2WULJcE8Qbf0co0HA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1711&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;p&gt;至此，问题解决完成。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;
                 &lt;/div&gt;
 
                 
@@ -681,55 +616,97 @@ export default class CreateApp {
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>d4c87217e437d8fa77733b6db03e0346</guid>
-<title>Nacos 注册中心之概要设计</title>
-<link>https://toutiao.io/k/ziy0cf7</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
-
-                    
-                    
-                    
-                    &lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;h1 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;前言&lt;/h1&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在之前的文章中分析了Nacos配置中心，配置中心的核心是配置的创建、读取、推送。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;注册中心的核心比配置中心多一个&lt;code&gt;服务探活&lt;/code&gt;模块，他俩的相似度非常高，甚至阿里内部的注册中心就叫&lt;code&gt;ConfigServer&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Nacos注册中心打算分成几个模块来分析，本文重点在于&lt;code&gt;概要设计&lt;/code&gt;，基于2.0.0版本。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt; &lt;/span&gt;&lt;span/&gt;&lt;span&gt;环境搭建&lt;/span&gt;&lt;span/&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;用Nacos的源码来搭建源码阅读和调试环境，可参考&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzI5NjE2MDQwNg==&amp;amp;mid=2247485206&amp;amp;idx=1&amp;amp;sn=2585f5592dccf22429e6e4361e99688b&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;《Nacos配置中心模块详解》&lt;/a&gt; &lt;code&gt;Nacos调试环境搭建&lt;/code&gt;部分。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其中 JVM参数可以指定只启动Naming模块，也可以不指定，默认全都启动。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;example模块下将NamingExample复制一份进行测试。&lt;/p&gt;&lt;h1 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;设计概要&lt;/h1&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt; &lt;/span&gt;&lt;span/&gt;&lt;span&gt;服务发现模型&lt;/span&gt;&lt;span/&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;客户端视角的服务发现模型（注意：服务端视角的模型定义与客户端视角有区别）包含以下几点内容：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;Service：服务&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Cluster：集群&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Instance：实例&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;代码注释：We introduce a &#x27;service --&amp;gt; cluster --&amp;gt; instance&#x27; model, in which service stores a list of clusters, which contains a list of instances&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;他们的关系如下&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.5458128078817734&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_png/xacdaKuBM0QFUmsXLf1F2roXhfSILRdJ63sVicj62h0DkgibzcQCytfqZEfRHVjo7cl9OKALWlvS1HeNnxA4iauiag/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2030&quot;/&gt;&lt;/figure&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;Service&lt;span/&gt;&lt;/h3&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.6214689265536724&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_png/xacdaKuBM0QFUmsXLf1F2roXhfSILRdJ6zV123WXw1oaCBpMRVPszLDAichpkahW12AKwAcW7nrrC5BEv8TaEDg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;708&quot;/&gt;&lt;/figure&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;name：服务名&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;protectThreshold：保护阈值，限制了实例被探活摘除的最大比例&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;appName：服务的应用名，暂无实际用处&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;groupName：分组名&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;metadata：元数据&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;Cluster&lt;span/&gt;&lt;/h3&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.6031746031746031&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_png/xacdaKuBM0QFUmsXLf1F2roXhfSILRdJ8WGBiaNJyhb5kKkeDDE6A0HpXP9uOVnbNe9hnukSB3KymYGHkguX8EA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;756&quot;/&gt;&lt;/figure&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;serviceName：所属服务名&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;name：集群名&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;healthChecker：服务探活配置，此处仅对服务端主动探活生效，有TCP、HTTP、MySQL、None几种方式，默认TCP&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;defaultPort：默认端口&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;defaultCheckPort：默认探活端口&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;useIPPort4Check：是否使用port进行探活&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;metadata：元数据&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;Instance&lt;span/&gt;&lt;/h3&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;1.104859335038363&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_png/xacdaKuBM0QFUmsXLf1F2roXhfSILRdJEvk6iaWRPm1a8ERMosZIhOKc1m4U5ZlXLMsTcymyYc6ibfh0Eft8fruw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;782&quot;/&gt;&lt;/figure&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;instanceId：实例id，唯一标志，Nacos提供了&lt;code&gt;simple&lt;/code&gt;和&lt;code&gt;snowflake&lt;/code&gt;两种算法来生成，默认是&lt;code&gt;simple&lt;/code&gt;，其生成方式为&lt;code&gt;ip#port#clusterName#serviceName&lt;/code&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;ip：实例ip&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;port：实例port&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;weight：实例权重&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;healthy：实例健康状态&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;clusterName：所属集群名&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;serviceName：所属服务名&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;metadata：元数据&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;enabled：是否接收请求，可用于临时禁用或摘流等场景&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;ephemeral：是否为临时实例，后文会介绍该参数&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;hr data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;getInstanceHeartBeatInterval：获取实例心跳上报间隔时间，默认5秒，可配置&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;getInstanceHeartBeatTimeOut：获取心跳超时时间，15秒，配置&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;getIpDeleteTimeout：获取ip被删除的超时时间，默认30秒，可配置&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;getInstanceIdGenerator：获取id生成器&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;除了上述的三层模型外，Nacos注册中心和配置中心有着一样的namespace设计，与client绑定，可隔离环境，租户。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt; &lt;/span&gt;&lt;span/&gt;&lt;span&gt;接口设计&lt;/span&gt;&lt;span/&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;registerInstance：注册实例&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;deregisterInstance：注销实例&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;getAllInstances：获取一个服务的所有实例（包括不健康）&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;selectInstances：根据条件获取一个服务的实例&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;selectOneHealthyInstance：根据负载均衡策略获取服务的一个健康的实例&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;subscribe：订阅服务&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;unsubscribe：取消订阅服务&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;getServicesOfServer：根据条件分页获取所有服务&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt; &lt;/span&gt;&lt;span/&gt;&lt;span&gt;交互流程&lt;/span&gt;&lt;span/&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Nacos 2.0 为ephemeral不同的实例提供了两套流程：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;ephemeral=false，永久实例，与server端的交互采用http请求，server节点间数据同步采用了raft协议，健康检查采用了server端主动探活的机制&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;ephemeral=true，临时实例，与server端的交互采用grpc请求，server节点间数据同步采用了distro协议，健康检查采用了TCP连接的KeepAlive模式&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;临时实例的交互流程&lt;span/&gt;&lt;/h3&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;client初始化，与server建立连接&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;client 注册服务，将serviceName+ip+port+clusterName等数据打包发送grpc请求&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;同时客户端缓存已注册过的服务，当client与server连接断开重连时，client重新将这些数据注册到server端&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;server端接收到client的注册请求，将注册信息存入client对象（用于保存client的所有数据）中，并触发ClientChangedEvent、ClientRegisterServiceEvent、InstanceMetadataEvent&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;ClientChangedEvent触发server节点之间的数据同步（distro协议）&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;ClientRegisterServiceEvent触发更新publisherIndexes（保存service =&amp;gt; clientId的Map&amp;lt;Service, Set&lt;string&gt;&amp;gt;，即哪些客户端注册了这个服务的索引），同时也触发一个ServiceChangedEvent，该事件负责向监听该服务的客户端进行推送&lt;/string&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;InstanceMetadataEvent，处理元数据，Nacos在2.0中将元数据与基础数据拆分开，分为不同的处理流程&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;client订阅服务&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;根据serviceName、groupName、clusters信息生成key，创建eventListener，同时向server端发送订阅请求，并缓存订阅信息，用于连接断开重连后再次向server端发送信息&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;server端接收到client的订阅请求&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;将订阅信息打包为subscribers，并存入client对象中，触发ClientSubscribeServiceEvent事件&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;ClientSubscribeServiceEvent事件更新subscriberIndexes（保存service =&amp;gt; clientId的Map&amp;lt;Service, Set&lt;string&gt;&amp;gt;，即哪些客户端订阅了这个服务的索引），同时触发ServiceSubscribedEvent事件&lt;/string&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;ServiceSubscribedEvent事件会延时500ms向该client推送该服务的最新数据&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;反向的操作如注销、取消订阅与正向操作类似，不再赘述&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h1 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;最后&lt;/h1&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;本文从总体上分析了Nacos 2.0的模型设计、接口设计以及交互流程，读完后对Nacos的服务发现有一个整体上的认识。后续篇幅会从细节入手，如dubbo Nacos扩展、一致性协议、探活、CMDB扩展等逐一进行分析。&lt;/p&gt;&lt;hr data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;关于作者：专注后端的中间件开发，公众号&quot;捉虫大师&quot;作者，关注我，给你最纯粹的技术干货&lt;/p&gt;&lt;/blockquote&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;1&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_jpg/xacdaKuBM0QFUmsXLf1F2roXhfSILRdJhWRY1kIib1RGO921X9Zo5saULWEtViaib5qxaMN0DY1KCS26e8NoOVd8A/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;258&quot;/&gt;&lt;/figure&gt;&lt;span&gt;- END -&lt;/span&gt;&lt;/section&gt;
-                &lt;/div&gt;
-
-                
-
-                
+<guid>3140635687803680b0430ee51b039a5c</guid>
+<title>分布式系统硬件基础之漫谈存储设备</title>
+<link>https://toutiao.io/k/y74p0gl</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entry-inner&quot;&gt;
+                                                    
+&lt;p&gt;我们在分析各种分布式系统场景时不可避免地会讨论到数据的读写，很多时候我们会对数据的读写做很多的优化和特殊处理，而这些操作的背后根源都离不开数据存储的硬件，本文就来和大家谈一谈这其中设计的各种硬件和相应的技术。&lt;/p&gt;
 
 
 
-                
-                &lt;div class=&quot;reward_qrcode_area reward_area tc&quot; id=&quot;js_reward_qrcode&quot;&gt;
-                                &lt;p class=&quot;tips_global&quot;&gt;Long-press QR code to transfer me a reward&lt;/p&gt;
-                                                                &lt;p class=&quot;reward_tips&quot;/&gt;
-                                &lt;span class=&quot;reward_qrcode_img_wrp&quot;&gt;&lt;img class=&quot;reward_qrcode_img&quot; id=&quot;js_reward_qrcode_img&quot;/&gt;&lt;/span&gt;
-                                &lt;p class=&quot;tips_global&quot;&gt;As required by Apple&#x27;s new policy, the Reward feature has been disabled on Weixin for iOS. You can still reward an Official Account by transferring money via QR code.&lt;/p&gt;
-                            &lt;/div&gt;
-                                                                            
-                              
-            &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>f7059f53d4852800426b09f1ad237dd8</guid>
-<title>Design for failure 常见的 12 种设计思想</title>
-<link>https://toutiao.io/k/yrbuwue</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
-
-                    
-                    
-                    
-                    &lt;p data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;span&gt;▲&lt;/span&gt;&lt;span&gt;&lt;strong&gt; 点击上方“架构精进之路”&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;关注公众号&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;回复&lt;/span&gt;&lt;span&gt;“01”&lt;/span&gt;&lt;span&gt;领&lt;/span&gt;&lt;span&gt;取「&lt;/span&gt;&lt;span&gt;程序员进阶大礼包&lt;/span&gt;&lt;span&gt;」&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzA3MDg5MDkzOA==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/Z2bVaFK6CgQmUQ0Aca9qSYNFn0tQEXQc5EibBkqQLYtibYBj1hXuagwXkNc3kVwplHxIl7KQfBIiagysgn9GDUUibw/0?wx_fmt=png&quot; data-nickname=&quot;架构精进之路&quot; data-alias=&quot;jiagou_jingjin&quot; data-signature=&quot;十年研发风雨路，大厂架构师，CSDN博客专家。专注软件架构研究，技术学习与职业成长，坚持分享接地气儿的架构技术干货文章！&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;span/&gt;&lt;span&gt;这是&lt;/span&gt;&lt;span&gt;&lt;strong&gt;「&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;&lt;strong&gt;架构精进之路」公众号&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;的第&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;strong&gt;76&lt;/strong&gt;&lt;/span&gt;&lt;/span&gt;&lt;span&gt;篇原创文章&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;hello，大家好，我是张张，「架构精进之路」公号作者。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;通常情况下，我们的一个请求会经过三个服务来处理。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;img data-ratio=&quot;0.272108843537415&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z2bVaFK6CgSobUtRfK9OHSHQyltZerYRIHpWZicibQtjFGVicXS9REShFLVo7pgkJM7MsHFFkicgeSoVZiccB4Bwpfw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1470&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;请&lt;/span&gt;&lt;span&gt;求从客户端发出，到达Proxy Layer（执行一些公共的逻辑，如逻辑、流控、审计等），完成后，发往App Layer（执行具体业务逻辑），执行完毕后，发向Data Laye（进行数据持久化）。&lt;/span&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;事情看起来很简单，然而，在一个分布式系统中：&lt;strong&gt;出错是常态&lt;/strong&gt;。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;因此，我们需要：&lt;strong&gt;Design For Failure&lt;/strong&gt;。即当你的系统将错误当作正常流时，系统便已经对错误免疫了。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;在此，跟大家介绍常见的12种设计思想。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.4712286158631415&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z2bVaFK6CgSobUtRfK9OHSHQyltZerYRy45PM5L5I7wxP0EnosaBnkzYibhTyp9gxLb8me0F0sagHicGTEGSuFXw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1286&quot;/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;1、防御性设计（Defensive Design）&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;section&gt;&lt;span&gt;所谓的防御性设计实际上就是“防呆”，英文叫Idiot Proofing。说白了就是用户有时候会不自觉的做一些蠢事，我们在设计的时候要尽量考虑到一些不规范的交互行为，如果你的用户是一只猴子，你要写包单保证系统不被玩坏。&lt;/span&gt;&lt;/section&gt;&lt;blockquote&gt;&lt;section&gt;&lt;span&gt;例如，在Android开发中使用到的Monkey Test就是用于这样的目的。&lt;/span&gt;&lt;strong/&gt;&lt;/section&gt;&lt;/blockquote&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;2、边界情况（Edge Case）&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;section&gt;&lt;span&gt;这个设计思想在测试领域比较常见，就是我们在设计我们的设计案例的时候有没有充分考虑在边界情况下的系统行为。&lt;/span&gt;&lt;/section&gt;&lt;blockquote&gt;&lt;section&gt;&lt;span&gt;比较常见的例如，闰年情况、跨日情况等边界。&lt;/span&gt;&lt;/section&gt;&lt;/blockquote&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;3、防误措施（Mistake Proofing）&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;section&gt;&lt;span&gt;怎么保证不会发生错误。例如在人机交互环节，能不能进行输入校验？&lt;/span&gt;&lt;/section&gt;&lt;h3&gt;&lt;strong&gt;&lt;span&gt;4、解耦（Decoupling）&lt;/span&gt;&lt;/strong&gt;&lt;/h3&gt;&lt;section&gt;&lt;span&gt;设计的时候，哪怕是最基础的代码也应该符合开闭原则。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;Spring的IOC就是为了把对象创建及维护从原来的由引用类负责这种强耦合模式转成通过spring容器负责。且解耦一般的做法是通过把内部逻辑封装起来，暴露对外统一API接口，调用方不需要了解被调用方的内部逻辑实现，只需要知道提供什么功能即可。&lt;/span&gt;&lt;/section&gt;&lt;blockquote class=&quot;js_blockquote_wrap&quot; data-type=&quot;2&quot; data-url=&quot;&quot; data-author-name=&quot;&quot; data-content-utf8-length=&quot;62&quot; data-source-title=&quot;&quot;&gt;&lt;section class=&quot;js_blockquote_digest&quot;&gt;&lt;section&gt;再引申一下，解耦的作用就在于复用，把所有的高内聚功能独立成一个个模块，然后就可以像乐高积木一样根据调用方的实际需求进行组装。&lt;/section&gt;&lt;/section&gt;&lt;/blockquote&gt;&lt;h3&gt;&lt;strong&gt;&lt;span&gt;5、冗余（Redundancy）&lt;/span&gt;&lt;/strong&gt;&lt;/h3&gt;&lt;section&gt;&lt;span&gt;所谓的冗余指的通过重复配置关键组件或部件，保证在关键组件失效的情况下还有备份组件运作以便保证系统可以继续提供服务。生活中的例子请参与飞机的双引擎设计。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;主从模式就是冗余的体现。在正常情况下，主实例负责提供全部的服务，从实例在主实例整体或部分不可用的情况下，完全替代主实例整体或局部而对外提供服务。&lt;/span&gt;&lt;/section&gt;&lt;h3&gt;&lt;strong&gt;&lt;span&gt;6、重试（Retry）&lt;/span&gt;&lt;/strong&gt;&lt;/h3&gt;&lt;section&gt;&lt;span&gt;重试是在分布式系统下处理瞬态故障的一个基本手段，简单有效（当然重试的前提是要求幂等）。但是重试也是可以很危险的，它能够引起把一个局部小时间迅速升级为一个系统重大故障，严重者导致系统假死。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;img data-ratio=&quot;0.17506297229219145&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z2bVaFK6CgSobUtRfK9OHSHQyltZerYRVMGzpysic7FyatNKYDepVqTkCGiciaqh4zAO9dYVEibHuKmJqgdxpcB7fw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;794&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;举个简单例子：如果我们的链路类似上图，这里会发生什么问题？&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;在极端情况下，重试次数达到5*5*5*5=625次。&lt;/span&gt;&lt;/section&gt;&lt;blockquote class=&quot;js_blockquote_wrap&quot; data-type=&quot;2&quot; data-url=&quot;&quot; data-author-name=&quot;&quot; data-content-utf8-length=&quot;88&quot; data-source-title=&quot;&quot;&gt;&lt;section class=&quot;js_blockquote_digest&quot;&gt;&lt;section&gt;当链路中的其中一个服务故障率异常的时候，那重试风暴便开启了，因为重试为服务器带来额外的开销和线程的占用，然后其他新来的请求又形成排队，这样的话就形成了类似的DDos恶性事件。&lt;span/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/blockquote&gt;&lt;h3&gt;&lt;strong&gt;&lt;span&gt;7、冷备（Cold Standby）&lt;/span&gt;&lt;/strong&gt;&lt;/h3&gt;&lt;section&gt;&lt;span&gt;冷备实际上也是冗余设计的其中一种体现，只是它会更侧重于“冷”，意思是当系统发生宕机时，这个系统是需要手动启动用于替换下线的主实例，它是跟热备是不一样，热备更多体现在自动切换。&lt;/span&gt;&lt;/section&gt;&lt;h3&gt;&lt;strong&gt;&lt;span&gt;8、熔断（Derating）&lt;/span&gt;&lt;/strong&gt;&lt;/h3&gt;&lt;section&gt;&lt;span&gt;熔断本质上就是一种防御性设计或者策略。假设一个微服务体系下的系统，其中A服务调用B服务。系统的QPS是千级别，当时如果B服务挂掉的话A的线程绝对在短时间内占满耗尽而导致假死，从而形成大量A请求积压而导致情况恶化，最终形成雪崩。&lt;/span&gt;&lt;/section&gt;&lt;h3&gt;&lt;strong&gt;&lt;span&gt;9、容错（Error Tolerance）&lt;/span&gt;&lt;/strong&gt;&lt;/h3&gt;&lt;section&gt;&lt;span&gt;狭义的容错泛指人机交互界面的时候需要对用户输入进行输入校验，保证数据准确性。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;广义的容错应该是两个具有明确边界的事物（如服务间，系统间）交互时候针对可能发生的一切主客观异常情况的防御性手段。常见的容错机制有failsafe、failback、failover、failfast。&lt;/span&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;failfast 更多指的是快速失败，避免线程积压导致系统滚雪球式崩溃。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;failover 指的是失效转移。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;failsafe 指的是失效安全。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;failback 指的是失效自动恢复，将故障实例切换到备实例。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3&gt;&lt;strong&gt;&lt;span&gt;10、失效安全（Fail safe）&lt;/span&gt;&lt;/strong&gt;&lt;/h3&gt;&lt;section&gt;&lt;span&gt;所谓的失效安全，就是指在特定失效的情况下，一个系统或者服务也不会对业务造成损害。&lt;/span&gt;&lt;/section&gt;&lt;blockquote class=&quot;js_blockquote_wrap&quot; data-type=&quot;2&quot; data-url=&quot;&quot; data-author-name=&quot;&quot; data-content-utf8-length=&quot;127&quot; data-source-title=&quot;&quot;&gt;&lt;section class=&quot;js_blockquote_digest&quot;&gt;&lt;section&gt;例如：我们使用token进行安全登录也是一种失效安全的体现，如果token失效了（如时间过期），用户是无法登录的，因为正常登录需要token有一种约束因素，这种因素就是时间。如果时间过了，代表这种约束因素不存在或者不再有效了，登录功能就不能正常工作了。&lt;/section&gt;&lt;/section&gt;&lt;/blockquote&gt;&lt;h3&gt;&lt;strong&gt;&lt;span&gt;11、优雅降级（Graceful Degradation）&lt;/span&gt;&lt;/strong&gt;&lt;br/&gt;&lt;/h3&gt;&lt;section&gt;&lt;span&gt;服务降级跟熔断还是挺像的，只是降级来得更加温和和优雅一点。熔断是直接断掉防止异常进一步扩大而导致雪崩，但是我们的终极目标是提供尽可能多的服务，这个就是优雅降级的理念。在一些异常情况或者秒杀场景下，为了保证核心服务（如商品下单、支付）的正常可用，会放弃掉一些非核心服务（如历史账单查询），这就是所谓的服务降级。&lt;/span&gt;&lt;/section&gt;&lt;blockquote&gt;&lt;section&gt;&lt;span&gt;在微服务框架中，一般会使用Hystrix的@HystrixCommand或Feign的@FeignClient对服务进行声明，然后为每个服务配置相应的fallback类，最终结合起来进行服务降级。&lt;/span&gt;&lt;/section&gt;&lt;/blockquote&gt;&lt;h3&gt;&lt;strong&gt;&lt;span&gt;12、耐用性（Durability）&lt;/span&gt;&lt;/strong&gt;&lt;/h3&gt;&lt;section&gt;&lt;span&gt;这里我理解的是系统或数据的耐受性。&lt;/span&gt;&lt;/section&gt;&lt;blockquote class=&quot;js_blockquote_wrap&quot; data-type=&quot;2&quot; data-url=&quot;&quot; data-author-name=&quot;&quot; data-content-utf8-length=&quot;42&quot; data-source-title=&quot;&quot;&gt;&lt;section class=&quot;js_blockquote_digest&quot;&gt;&lt;section&gt;例如数据，为什么我们一定要持久化到数据库，因为就是要借助数据库硬件各种维度的耐受性。&lt;/section&gt;&lt;/section&gt;&lt;/blockquote&gt;&lt;p&gt;&lt;/p&gt;&lt;section&gt;&lt;strong&gt;补充&lt;/strong&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;作为一名designer或者developer，应该要对墨菲定律心存敬畏。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;另外，需要额外补充一点的就是：&lt;strong&gt;监控（Monitoring）&lt;/strong&gt;。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;我们的系统有哪几个纬度的监控，估计最多就是常规的硬件状态监控。当然这里的监控我理解除了技术指标监控，还更应该有业务指标监控，否则我们都在裸泳，等海水退下去后就一览无遗。&lt;/span&gt;&lt;/section&gt;&lt;blockquote&gt;&lt;section&gt;&lt;span&gt;监控实际上是为了更好的主动防御，一套完善的告警监控系统，能够快速通知开发与运维，开发侧能够完成紧急修复并能够协同运维进行快速部署。&lt;/span&gt;&lt;/section&gt;&lt;/blockquote&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;&lt;span&gt;🎉&lt;/span&gt; 福利&lt;/span&gt;&lt;span&gt;：&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;关注公众号回复关键字：&lt;/span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;重构&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;，即可免费获取&lt;strong&gt;《&lt;span&gt;重构：改善既有代码的设计》&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;·················· &lt;/span&gt;&lt;span&gt;END&lt;/span&gt;&lt;span&gt; ··················&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;关注公众号，免费领学习资料&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzA3MDg5MDkzOA==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/Z2bVaFK6CgQmUQ0Aca9qSYNFn0tQEXQc5EibBkqQLYtibYBj1hXuagwXkNc3kVwplHxIl7KQfBIiagysgn9GDUUibw/0?wx_fmt=png&quot; data-nickname=&quot;架构精进之路&quot; data-alias=&quot;jiagou_jingjin&quot; data-signature=&quot;十年研发风雨路，大厂架构师，CSDN博客专家。专注软件架构研究，技术学习与职业成长，坚持分享接地气儿的架构技术干货文章！&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;span&gt;十年研发路，大厂架构师，&lt;/span&gt;&lt;span&gt;CSDN博客专家&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;专注架构技术学习及分享，职业与认知升级&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;坚持分享接地气儿的干货，&lt;span&gt;期待与你一起成长&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;hr/&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;98311&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.5555555555555556&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z2bVaFK6CgTqLjdQBs7fV8zqHRaQhA2ibia13fFn6ibS5qr5PpmZoxd8nlhAyJu7d1CjLicAruicOEb7uxibEGM476xg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;900&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;87502&quot;&gt;&lt;p&gt;&lt;span&gt;「架构精进之路」专注架构研究，技术分享&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;97708&quot;&gt;&lt;section&gt;&lt;section data-brushtype=&quot;text&quot;&gt;&lt;span&gt;点“赞”和“在看”哦&lt;/span&gt;&lt;img class=&quot;__bg_gif&quot; data-ratio=&quot;1.5925925925925926&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/noz2jw2hPlWiaCrGuJxBicU5mcib3QapDLyo6eKnNVm9dPTV4Z1SicHLtrCCwOG9gblMBFlKf7p9cvwL6wIkZJvamg/640?wx_fmt=gif&quot; data-type=&quot;gif&quot; data-w=&quot;135&quot;/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;
-                &lt;/div&gt;
-
-                
-
-                
+&lt;h2&gt;Cache和读写&lt;/h2&gt;
 
 
 
-                
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+&lt;p&gt;我们都知道把数据放到内存中，这样有读请求过来的时候就可以直接从内存中读取到相关数据（hit cache的情况），而不需要去访问具体的物理磁盘，从而减少了disk I/O的操作。同样地，写也可以写到内存中，只是和读不同的是，内存写终究只是一个中间状态，你最终还是要写到磁盘中才行，所以内存到写操作来说只起到一个delay的作用（当然假如你没有persist保存的情况下，可能也不需要写到磁盘，但我们讨论正常的需要persist保存的情况）。&lt;/p&gt;
+
+
+
+&lt;p&gt;不过当我们再仔细想一下，其实cache对写并不仅仅是一个delay的作用，它其实还有一些别的好处：&lt;/p&gt;
+
+
+
+&lt;ul&gt;&lt;li&gt;&lt;strong&gt;多次写，一次flush&lt;/strong&gt;：我们很容易就可以想到假如我们对一个数据进行了多次更新，然后再进行一次flush到磁盘，那么这些多次的更新操作其实就只要一次磁盘的写就好了。这从另一个角度减少了磁盘的写操作。&lt;/li&gt;&lt;li&gt;&lt;strong&gt;I/O Merge&lt;/strong&gt;&lt;strong&gt;：&lt;/strong&gt;另外一个好处，就是我们可能有多个数值在内存中被修改了，但我们可以把这些数值集合在一起，一次性更新，这样真正的物理写就可以看成是一次磁盘操作了。&lt;/li&gt;&lt;/ul&gt;
+
+
+
+&lt;p&gt;理解了这一点之后，我们再来想想我们之前提到的Write-ahead的logging策略。在write-ahead logging中，内存的修改并没有立即flush到disk中（减少了Random IO的操作），而是写到了一个sequential的log文件中（速度比较快），然后再通过一个后台进程来进行优化写（比如合并之类的）。&lt;/p&gt;
+
+
+
+&lt;p&gt;这里有人会问为什么Random I/O的操作没有Sequential I/O写的速度快，这是因为对物理磁盘来说，磁头移动是需要时间的，Random I/O就意味着每次要写的偏移地址之间有很大的差别，所以这个磁头需要不停地移动，这显然是很费时间的。而Sequential I/O则不尽然，假如偏移地址是连续的，磁头就不需要不停的移动寻找新的写的偏移，这样就减少了磁头偏移的时间（这里还要看各个厂家的fw的设置，就是sequential写之间的间隔对这个也是有影响的，因为假如sequential写之间间隔时间比较长，那么磁头可能会被reset，所以我们一般认为overlap sequential写是最佳的方案）。&lt;/p&gt;
+
+
+
+&lt;h2&gt;SSD&lt;/h2&gt;
+
+
+
+&lt;p&gt;其实我们上文提到的磁盘准确来讲是HDD，事实上在我们现如今的系统中HDD是最后一层存储，在其和Memory之间还存在另外一种存储介质：SSD。它和HDD不同，不再使用磁头和磁盘来进行存储，它是基于固态电子存储芯片阵列制成的硬盘。简单来说，它有以下优点：&lt;/p&gt;
+
+
+
+&lt;ul&gt;&lt;li&gt;和HDD相比来说，它的random读写的速度都要快很多。一般来说，它的读要比写稍微快一点点。稍后我们来解释这个原因。&lt;/li&gt;&lt;li&gt;Sequential的读写也比HDD速度要快。但是因为HDD的Random 读写比Sequential要差很多，所以单纯比较Sequential的读写速度，SSD提升倍数没有Random读写提升得那么明显，但也有很大的提升。&lt;/li&gt;&lt;li&gt;同步操作有很大的提升。因为HDD只有一个磁头（现在有新的HDD可以支持多个磁头，但是每个磁头也只能访问特定的扇区），所以对于同步操作来说就不能做到真正的同步，说白了还是一个单线程的操作。而SSD则没有这样的限制。&lt;/li&gt;&lt;/ul&gt;
+
+
+
+&lt;p&gt;对SSD来说，读操作比较简单，你可以不停地读一个小的单元。但是写操作就比较复杂了，在写之前你必须做一个擦除的操作，而且每次擦除只能是一个block，比如512KB。这个擦除操作还是比较慢的，而且最终会把这个block擦坏了（想象一下，你在一张纸上不停用铅笔写，不停要橡皮擦，最终这张纸的命运就是被擦破）。所以我们对HDD一般讨论的是I/O，而对SSD则一般研究的是寿命。&lt;/p&gt;
+
+
+
+&lt;p&gt;提到block的擦除，我们就不得不聊一聊SSD的GC（Garbage Collection），其实也很好理解，就是为了让一些block预先准备好了，SSD会回收一些block。这个时候就会有一个数据搬移的过程，比如把几个block中的少量数据（就是数据量不到一个block，但是占用了一个block）移到同一个block中，然后这几个block就可以空出一些出来。这种搬移的操作，其实也是一个新的写的循环，我们称之为Write amplification。你也可以想象，这里的GC操作是需要reserve一些空间来进行的，比如有一个空的block，我们就可以很容易把几个block中的数据搬运过去，假如空的block越来越少，那么搬运的代价就越大。&lt;/p&gt;
+
+
+
+&lt;p&gt;这也是为什么我们发现当SSD要写满的情况下，性能就会急剧下降。比如你写110GB文件到160GB的SSD和写到同样的320GB的SSD得到的速度可能会有差别，究其根源还是因为需要等待擦除操作。一般来说直接写到一个空的block只需要几百微秒，但是擦除则可能需要几毫秒的时间。&lt;/p&gt;
+
+
+
+&lt;h2&gt;RAID&lt;/h2&gt;
+
+
+
+&lt;p&gt;RAID全称廉价磁盘冗余阵列（Redundant Arrays of Independent Disk），它有不同级别的设置，我们可以简单看看几个它的常见的级别：&lt;/p&gt;
+
+
+
+&lt;ul&gt;&lt;li&gt;&lt;strong&gt;RAID0&lt;/strong&gt;: 这个级别是最便宜的也是性能最好的RAID设置。因为他其实没有冗余，一般来说用来存储一些你不怎么在意的数据，比如replica或者即将废弃的数据。所以不是所有的RAID都有这个R（Redundant）的，这种情况下，如果磁盘发生了损坏，是没有办法恢复数据的（除非你有别的redundant在别的机器上）&lt;/li&gt;&lt;li&gt;&lt;strong&gt;RAID1&lt;/strong&gt;: RAID的读性能是很好的，同时它会duplicate数据到不同磁盘上，所以这个设置终于有了真正的R的出现。一般来说对于类log系统可以使用这一配置。&lt;/li&gt;&lt;li&gt;&lt;strong&gt;RAID5&lt;/strong&gt;: 这个配置可以保证一个磁盘发生损坏的情况下，数据还可以恢复。从每个单元的存储消耗来看，它是最经济的做法。因为你其实只额外多了一个磁盘就可以达到redundant的效果。它的写的效率其实比较低，因为要把额外的校验位写到磁盘中。所以一般来说它比较适合读比较重的场景。另外这种配置下，性能最大的问题点其实在于磁盘出问题时的恢复。&lt;/li&gt;&lt;li&gt;&lt;strong&gt;RAID6&lt;/strong&gt;：相对RAID5的只能有一个磁盘出问题的场景，RAID6能支持两个磁盘同时出问题。&lt;/li&gt;&lt;li&gt;&lt;strong&gt;RAID10&lt;/strong&gt;：RAID10对数据存储来说是一个不错的选择，它的读写效率都不错。所以和RAID5类似，生产场景中使用得也比较多，它的安全性比较高，但是空间利用率相对比较低。&lt;/li&gt;&lt;li&gt;&lt;strong&gt;RAID50&lt;/strong&gt;: 其实就是一系列RAID5，对大得数据集可以使用。（比如data warehouse等）&lt;/li&gt;&lt;/ul&gt;
+
+
+
+&lt;p&gt;简单的比较可以见下表：&lt;/p&gt;
+
+
+
+&lt;figure class=&quot;wp-block-image size-large&quot;&gt;&lt;img src=&quot;https://donggeitnote.com/wp-content/uploads/2021/07/image-17.png&quot; alt=&quot;&quot; class=&quot;wp-image-818&quot; srcset=&quot;https://donggeitnote.com/wp-content/uploads/2021/07/image-17.png 624w, https://donggeitnote.com/wp-content/uploads/2021/07/image-17-300x153.png 300w&quot; sizes=&quot;(max-width: 624px) 100vw, 624px&quot;/&gt;&lt;/figure&gt;
+
+
+
+&lt;p&gt;最后在简单提一下，RAID中cache其实也是一个比较重要的概念，只是说这个cache和我们常见的benefit读不太一样，它更多地会被用来帮助写。&lt;/p&gt;
+
+
+
+&lt;h2&gt;总结&lt;/h2&gt;
+
+
+
+&lt;p&gt;至此，我们就简单介绍了数据存储的几种常见的硬件HDD,SSD,RAID。理解他们有助于我们在今后的工作中优化数据读写，尤其是性能研究的时候会有很大的帮助。&lt;/p&gt;
+                                                    &lt;nav class=&quot;pagination group&quot;&gt;
+                      &lt;/nav&gt;
+        &lt;/div&gt;
+
+        
+        &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
