@@ -5,586 +5,9 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>59ccc5fe856ee9299751c1962766577b</guid>
-<title>从零设计可视化大屏搭建引擎</title>
-<link>https://toutiao.io/k/662perp</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;RichText ztext Post-RichText&quot; articlelinkcardprops=&quot;[object Object]&quot; usegifprops=&quot;[object Object]&quot;&gt;&lt;p/&gt;&lt;blockquote&gt; 相关文章: &lt;a href=&quot;https://zhuanlan.zhihu.com/p/355872058&quot; class=&quot;internal&quot;&gt;从零开发一款可视化大屏制作平台&lt;/a&gt; &lt;br/&gt; 演示地址: &lt;a href=&quot;https://link.zhihu.com/?target=http%3A//v6.dooring.cn/beta/editor&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;V6可视化大屏编辑器&lt;/a&gt; &lt;/blockquote&gt;&lt;p&gt;几个月前我写了一篇关于&lt;a href=&quot;https://zhuanlan.zhihu.com/p/355872058&quot; class=&quot;internal&quot;&gt;从零开发一款可视化大屏制作平台&lt;/a&gt; 的文章， 简单概述了一下可视化大屏搭建平台的一些设计思路和效果演示， 这篇文章我会就 &lt;b&gt;如何设计可视化大屏搭建引擎&lt;/b&gt; 这一主题， 详细介绍一下实现原理。&lt;/p&gt;&lt;p&gt;按照我一向的写作风格， 我会在下面列出文章的大纲，以便大家有选择且高效率的阅读和学习:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;快速了解数据可视化&lt;/li&gt;&lt;li&gt;如何设计通用的大屏搭建引擎&lt;/li&gt;&lt;li&gt;大屏搭建引擎核心功能实现&lt;/li&gt;&lt;li&gt;拖拽器实现&lt;/li&gt;&lt;li&gt;物料中心设计&lt;/li&gt;&lt;li&gt;动态渲染器实现&lt;/li&gt;&lt;li&gt;配置面板设计&lt;/li&gt;&lt;li&gt;控制中心概述&lt;/li&gt;&lt;li&gt;功能辅助设计&lt;/li&gt;&lt;li&gt;可视化大屏后期规划和未来展望&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;大家可以轻松根据右侧的文章导航， 快速定位到自己想看的位置， 接下来我们开始进入正文。&lt;/p&gt;&lt;h2&gt;快速了解数据可视化&lt;/h2&gt;&lt;p&gt;说到数据可视化， 想必大家多多少少稍接触过， &lt;b&gt;从技术层面谈&lt;/b&gt;， 最直观的就是前端可视化框架， 比如:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;echart&lt;/li&gt;&lt;li&gt;antv&lt;/li&gt;&lt;li&gt;Chart.js&lt;/li&gt;&lt;li&gt;D3.js&lt;/li&gt;&lt;li&gt;Vega&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;这些库都能帮我们轻松制作可视化图表。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-46e7bdcf19c06b56e53b25934b290879_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1294&quot; data-rawheight=&quot;590&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic2.zhimg.com/v2-46e7bdcf19c06b56e53b25934b290879_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1294&quot; data-rawheight=&quot;590&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic2.zhimg.com/v2-46e7bdcf19c06b56e53b25934b290879_r.jpg&quot; data-actualsrc=&quot;https://pic2.zhimg.com/v2-46e7bdcf19c06b56e53b25934b290879_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p&gt;&lt;b&gt;从实用性的角度来谈&lt;/b&gt;， 其最主要的意义就在于帮助用户&lt;b&gt;更好的分析和表达数据&lt;/b&gt;。所以说谈到数据可视化， 更多的是和各种图表打交道， 通过 &lt;b&gt;数据 -&amp;gt; 图表组合 -&amp;gt; 可视化页面&lt;/b&gt; 这一业务流程， 就构成了我们今天要研究的话题——&lt;b&gt;设计可视化大屏搭建引擎&lt;/b&gt;。&lt;/p&gt;&lt;h2&gt;如何设计通用的大屏搭建引擎&lt;/h2&gt;&lt;p&gt;说到 “&lt;b&gt;引擎&lt;/b&gt;” 这个词也许有种莫名的高大上， 其实在互联网技术中， 我们经常会听到各种相关的名词，比如 “&lt;b&gt;浏览器渲染引擎&lt;/b&gt;” ， “&lt;b&gt;规则引擎&lt;/b&gt;” ， “&lt;b&gt;图像识别引擎&lt;/b&gt;” 等， 我觉得 “&lt;b&gt;引擎&lt;/b&gt;” 的本质就是&lt;b&gt;提供一套可靠的机制， 为系统提供源源不断的生产力&lt;/b&gt;。 所以我们今天谈的“&lt;b&gt;可视化大屏搭建引擎&lt;/b&gt;”， 本质上也是提供一套搭建机制， 支撑我们设计各种复杂的可视化页面。&lt;/p&gt;&lt;p&gt;为了方便大家理解可视化搭建， 我这里展示2张可视化大屏的页面， 来和大家一起分析一下可视化大屏的组成要素:&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-41c94f20b1fc16a7f42be5689f420bc8_b.jpg&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1306&quot; data-rawheight=&quot;734&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic1.zhimg.com/v2-41c94f20b1fc16a7f42be5689f420bc8_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1306&quot; data-rawheight=&quot;734&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic1.zhimg.com/v2-41c94f20b1fc16a7f42be5689f420bc8_r.jpg&quot; data-actualsrc=&quot;https://pic1.zhimg.com/v2-41c94f20b1fc16a7f42be5689f420bc8_b.jpg&quot;/&gt;&lt;figcaption&gt;V6.Dooring&lt;/figcaption&gt;&lt;/figure&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-fe9e1e47122b52b0a506d9b110f06f16_b.jpg&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1312&quot; data-rawheight=&quot;730&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic3.zhimg.com/v2-fe9e1e47122b52b0a506d9b110f06f16_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1312&quot; data-rawheight=&quot;730&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic3.zhimg.com/v2-fe9e1e47122b52b0a506d9b110f06f16_r.jpg&quot; data-actualsrc=&quot;https://pic3.zhimg.com/v2-fe9e1e47122b52b0a506d9b110f06f16_b.jpg&quot;/&gt;&lt;figcaption&gt;v6.dooring&lt;/figcaption&gt;&lt;/figure&gt;&lt;p&gt;当然实际应用中大屏展现的内容和形式远比这复杂， 我们从上图可以提炼出大屏页面的2个直观特征:&lt;/p&gt;&lt;p&gt;因为我们可视化大屏载体是页面， 是&lt;code&gt;html&lt;/code&gt;， 所以还有另外一个特征: &lt;b&gt;事件/交互&lt;/b&gt;。综上我们总结出了可视化大屏的必备要素:&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-f882cdbab2178a85c2b30947b44aee8e_b.jpg&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1228&quot; data-rawheight=&quot;662&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic3.zhimg.com/v2-f882cdbab2178a85c2b30947b44aee8e_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1228&quot; data-rawheight=&quot;662&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic3.zhimg.com/v2-f882cdbab2178a85c2b30947b44aee8e_r.jpg&quot; data-actualsrc=&quot;https://pic3.zhimg.com/v2-f882cdbab2178a85c2b30947b44aee8e_b.jpg&quot;/&gt;&lt;figcaption&gt;v6.dooring&lt;/figcaption&gt;&lt;/figure&gt;&lt;p&gt;我们只要充分的理解了可视化大屏的组成和特征， 我们才能更好的设计&lt;b&gt;可视化大屏搭建引擎&lt;/b&gt;， 基于以上分析， 我设计了一张基础引擎的架构图:&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-185c1e3c6cdf9623ed1c7bbe3869896e_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1286&quot; data-rawheight=&quot;764&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic3.zhimg.com/v2-185c1e3c6cdf9623ed1c7bbe3869896e_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1286&quot; data-rawheight=&quot;764&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic3.zhimg.com/v2-185c1e3c6cdf9623ed1c7bbe3869896e_r.jpg&quot; data-actualsrc=&quot;https://pic3.zhimg.com/v2-185c1e3c6cdf9623ed1c7bbe3869896e_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p&gt;接下来我就带大家一起来拆解并实现上面的搭建引擎。&lt;/p&gt;&lt;h2&gt;大屏搭建引擎核心功能实现&lt;/h2&gt;&lt;p&gt;俗话说: “好的拆解是成功的一半”， &lt;b&gt;任何一个复杂任务或者系统， 我们只要能将其拆解成很多细小的子模块， 就能很好的解决并实现它&lt;/b&gt;. (学习也是一样)&lt;/p&gt;&lt;p&gt;接下来我们就逐一解决上述基础引擎的几个核心子模块: - &lt;b&gt;拖拽器实现&lt;/b&gt; - &lt;b&gt;物料中心设计&lt;/b&gt; - &lt;b&gt;动态渲染器实现&lt;/b&gt; - &lt;b&gt;配置面板设计&lt;/b&gt; - &lt;b&gt;控制中心概述&lt;/b&gt; - &lt;b&gt;功能辅助设计&lt;/b&gt;&lt;/p&gt;&lt;h3&gt;拖拽器实现&lt;/h3&gt;&lt;p&gt;拖拽器是可视化搭建引擎的核心模块， 也是用来解决上述提到的大屏页面特征中的“&lt;b&gt;空间坐标关系&lt;/b&gt;”这一问题。 我们先来看一下实现效果:&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-1b8749543d7ab340a2bba3fb30c4b90e_b.gif&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;800&quot; data-rawheight=&quot;395&quot; data-thumbnail=&quot;https://pic3.zhimg.com/v2-1b8749543d7ab340a2bba3fb30c4b90e_b.jpg&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic3.zhimg.com/v2-1b8749543d7ab340a2bba3fb30c4b90e_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;800&quot; data-rawheight=&quot;395&quot; data-thumbnail=&quot;https://pic3.zhimg.com/v2-1b8749543d7ab340a2bba3fb30c4b90e_b.jpg&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic3.zhimg.com/v2-1b8749543d7ab340a2bba3fb30c4b90e_r.jpg&quot; data-actualsrc=&quot;https://pic3.zhimg.com/v2-1b8749543d7ab340a2bba3fb30c4b90e_b.gif&quot;/&gt;&lt;/figure&gt;&lt;p&gt;有关拖拽的技术实现， 我们可以利用原生 &lt;code&gt;js&lt;/code&gt; 实现， 也可以使用第三方成熟的拖拽库， 比如:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;b&gt;DnD&lt;/b&gt;&lt;/li&gt;&lt;li&gt;&lt;b&gt;React-Dragable&lt;/b&gt;&lt;/li&gt;&lt;li&gt;&lt;b&gt;react-moveable&lt;/b&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;我之前也开源了一个轻量级自由拖拽库 &lt;b&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//github.com/MrXujiang/rc-drag&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;rc-drag&lt;/a&gt;&lt;/b&gt; ， 效果如下:&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-65fdea1f051d8e2137553fb68cba25bc_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1286&quot; data-rawheight=&quot;652&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic1.zhimg.com/v2-65fdea1f051d8e2137553fb68cba25bc_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1286&quot; data-rawheight=&quot;652&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic1.zhimg.com/v2-65fdea1f051d8e2137553fb68cba25bc_r.jpg&quot; data-actualsrc=&quot;https://pic1.zhimg.com/v2-65fdea1f051d8e2137553fb68cba25bc_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p&gt;有关它的技术实现可以参考我的另一篇文章: &lt;a href=&quot;https://link.zhihu.com/?target=https%3A//juejin.cn/post/6917648021794586631&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;轻松教你搞定组件的拖拽， 缩放， 多控制点伸缩和拖拽数据上报&lt;/a&gt;。 大家也可以基于此做二次扩展和封装。&lt;/p&gt;&lt;p&gt;我们拖拽器的基本原型代码如下:&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-js&quot;&gt;&lt;span class=&quot;kr&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;DragBox&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;props&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;props&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;setTarget&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;React&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;useState&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;elementGuidelines&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;，&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;setElementGuidelines&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;React&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;useState&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([]);&lt;/span&gt;
-    &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;frame&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;setFrame&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;React&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;useState&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
-        &lt;span class=&quot;nx&quot;&gt;translate&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;React&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;useEffect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;nx&quot;&gt;setTarget&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;document&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;querySelector&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;.target&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[]);&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;div&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;className&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;container&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;div&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;className&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;target&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;拖拽内部组件&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;，&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;比如图表&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;基础组件等&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;/div&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Moveable&lt;/span&gt;
-            &lt;span class=&quot;nx&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;nx&quot;&gt;elementGuidelines&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;elementGuidelines&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;nx&quot;&gt;snappable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;nx&quot;&gt;snapThreshold&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;nx&quot;&gt;isDisplaySnapDigit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;nx&quot;&gt;snapGap&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;nx&quot;&gt;snapElement&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;nx&quot;&gt;snapVertical&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;nx&quot;&gt;snapHorizontal&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;nx&quot;&gt;snapCenter&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;nx&quot;&gt;snapDigit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;nx&quot;&gt;draggable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;nx&quot;&gt;throttleDrag&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;nx&quot;&gt;startDragRotate&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;nx&quot;&gt;throttleDragRotate&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;nx&quot;&gt;zoom&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;nx&quot;&gt;origin&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;nx&quot;&gt;padding&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{{&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;left&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;top&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;right&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;bottom&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}}&lt;/span&gt;
-            &lt;span class=&quot;nx&quot;&gt;onDragStart&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-                &lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;frame&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;translate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-                &lt;span class=&quot;c1&quot;&gt;// 自定义的拖拽开始逻辑
-&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;            &lt;span class=&quot;p&quot;&gt;}}&lt;/span&gt;
-            &lt;span class=&quot;nx&quot;&gt;onDrag&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-                &lt;span class=&quot;nx&quot;&gt;frame&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;translate&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;beforeTranslate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-                &lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;style&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;transform&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;sb&quot;&gt;`translate(&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;beforeTranslate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;px, &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;beforeTranslate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;px)`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-                &lt;span class=&quot;c1&quot;&gt;// 自定义的拖拽结束逻辑
-&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;            &lt;span class=&quot;p&quot;&gt;}}&lt;/span&gt;
-        &lt;span class=&quot;o&quot;&gt;/&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;/div&amp;gt;;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;以上只是实现了基本的拖拽功能， 我们需要对拖拽位置信息做保存以便在预览是实现“&lt;b&gt;所搭即所得&lt;/b&gt;”的效果。位置信息会和其他属性统一保存在组件的&lt;b&gt;DSL&lt;/b&gt;数据中， 这块在接下来内容中会详细介绍。&lt;/p&gt;&lt;p&gt;对于拖拽器的进一步深入， 我们还可以设置参考线， 对齐线， 吸附等， 并且可以在拖拽的不同时期(比如&lt;b&gt;onDragStart&lt;/b&gt;和&lt;b&gt;onDragEnd&lt;/b&gt;)做不同的业务逻辑。这些 &lt;b&gt;Moveable&lt;/b&gt; 都提供了对应的api支持， 大家可以参考使用。&lt;/p&gt;&lt;h3&gt;物料中心设计&lt;/h3&gt;&lt;p&gt;物料中心主要为大屏页面提供“&lt;b&gt;原材料&lt;/b&gt;”。为了设计健壮且通用的物料， 我们需要设计一套标准组件结构和属性协议。并且为了方便物料管理和查询， 我们还需要对物料进行分类， 我的分类如下:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;b&gt;可视化组件&lt;/b&gt; (柱状图， 饼图， 条形图， 地图可视化等)&lt;/li&gt;&lt;li&gt;&lt;b&gt;修饰型组件&lt;/b&gt; (图片， 轮播图， 修饰素材等)&lt;/li&gt;&lt;li&gt;&lt;b&gt;文字类组件&lt;/b&gt; (文本， 文本跑马灯， 文字看板)&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;具体的物料库演示如下:&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic4.zhimg.com/v2-cd2c5e377b2179185500f355ea36bf2b_b.gif&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;750&quot; data-rawheight=&quot;388&quot; data-thumbnail=&quot;https://pic4.zhimg.com/v2-cd2c5e377b2179185500f355ea36bf2b_b.jpg&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic4.zhimg.com/v2-cd2c5e377b2179185500f355ea36bf2b_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;750&quot; data-rawheight=&quot;388&quot; data-thumbnail=&quot;https://pic4.zhimg.com/v2-cd2c5e377b2179185500f355ea36bf2b_b.jpg&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic4.zhimg.com/v2-cd2c5e377b2179185500f355ea36bf2b_r.jpg&quot; data-actualsrc=&quot;https://pic4.zhimg.com/v2-cd2c5e377b2179185500f355ea36bf2b_b.gif&quot;/&gt;&lt;figcaption&gt;v6.dooring&lt;/figcaption&gt;&lt;/figure&gt;&lt;p&gt;这里我拿一个可视化组件的实现来举例说明:&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ts&quot;&gt;&lt;span class=&quot;kr&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;React&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;，&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;memo&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;，&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;useEffect&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;react&#x27;&lt;/span&gt;
-&lt;span class=&quot;kr&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Chart&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;@antv/g2&#x27;&lt;/span&gt;
-
-&lt;span class=&quot;kr&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;colors&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;@/components/BasicShop/common&#x27;&lt;/span&gt;
-
-&lt;span class=&quot;kr&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;ChartConfigType&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;./schema&#x27;&lt;/span&gt;
-
-&lt;span class=&quot;kr&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;ChartComponentProps&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;ChartConfigType&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;ChartComponent&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;React.FC&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;ChartComponentProps&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;width&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;height&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;toggle&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;legendPosition&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;legendLayout&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;legendShape&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;labelColor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;axisColor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;multiColor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;tipEvent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;titleEvent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;dataType&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;apiAddress&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;apiMethod&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;apiData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;refreshTime&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;})&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;useEffect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;kd&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;timer&lt;/span&gt;:&lt;span class=&quot;kt&quot;&gt;any&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;chart&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Chart&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
-      &lt;span class=&quot;nx&quot;&gt;container&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;sb&quot;&gt;`chart-&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-      &lt;span class=&quot;nx&quot;&gt;autoFit&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-      &lt;span class=&quot;nx&quot;&gt;width&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-      &lt;span class=&quot;nx&quot;&gt;height&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
-
-    &lt;span class=&quot;c1&quot;&gt;// 数据过滤， 接入
-&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;    &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;dataX&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;({&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;Number&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}))&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;chart&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;dataX&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-
-    &lt;span class=&quot;c1&quot;&gt;// 图表属性组装
-&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;    &lt;span class=&quot;nx&quot;&gt;chart&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;legend&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-      &lt;span class=&quot;nx&quot;&gt;toggle&lt;/span&gt;
-        &lt;span class=&quot;o&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-          &lt;span class=&quot;nx&quot;&gt;position&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;legendPosition&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-          &lt;span class=&quot;nx&quot;&gt;layout&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;legendLayout&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-          &lt;span class=&quot;nx&quot;&gt;marker&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;kt&quot;&gt;symbol&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;legendShape&lt;/span&gt;
-          &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-        &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-
-    &lt;span class=&quot;nx&quot;&gt;chart&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;tooltip&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
-      &lt;span class=&quot;nx&quot;&gt;showTitle&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-      &lt;span class=&quot;nx&quot;&gt;showMarkers&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
-
-    &lt;span class=&quot;c1&quot;&gt;// 其他图表信息源配置， 方法雷同， 此处省略
-&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;    &lt;span class=&quot;c1&quot;&gt;// ...
-&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;
-    &lt;span class=&quot;nx&quot;&gt;chart&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;render&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-
-  &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[])&lt;/span&gt;
-
-  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`chart-&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;/&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;span class=&quot;kr&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;memo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;ChartComponent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;以上就是我们的基础物料的实现模式， 可视化组件采用了&lt;code&gt;g2&lt;/code&gt;，  当然大家也可以使用熟悉的&lt;code&gt;echart&lt;/code&gt;， &lt;code&gt;D3.js&lt;/code&gt;等. 不同物料既有通用的 &lt;code&gt;props&lt;/code&gt; ， 也有专有的 &lt;code&gt;props&lt;/code&gt;， 取决于我们如何定义物料的&lt;code&gt;Schema&lt;/code&gt;。&lt;/p&gt;&lt;p&gt;在设计 &lt;code&gt;Schema&lt;/code&gt; 前我们需要明确组件的属性划分， 为了满足组件配置的灵活性和通用性， 我做了如下划分:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;b&gt;外观属性&lt;/b&gt; (组件宽高， 颜色， 标签， 展现模式等)&lt;/li&gt;&lt;li&gt;&lt;b&gt;数据配置&lt;/b&gt; (静态数据， 动态数据)&lt;/li&gt;&lt;li&gt;&lt;b&gt;事件/交互&lt;/b&gt; (如单击， 跳转等)&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;有了以上划分， 我们就可以轻松设计想要的通用&lt;code&gt;Schema&lt;/code&gt;了。 我们先来看看实现后的配置面板:&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-f8964ec7b8e3fe38713ac13859c70e9a_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1306&quot; data-rawheight=&quot;728&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic3.zhimg.com/v2-f8964ec7b8e3fe38713ac13859c70e9a_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1306&quot; data-rawheight=&quot;728&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic3.zhimg.com/v2-f8964ec7b8e3fe38713ac13859c70e9a_r.jpg&quot; data-actualsrc=&quot;https://pic3.zhimg.com/v2-f8964ec7b8e3fe38713ac13859c70e9a_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p&gt;这些属性项都是基于我们定义的&lt;code&gt;schema&lt;/code&gt;配置项， 通过 &lt;b&gt;解析引擎&lt;/b&gt; 动态渲染出来的， 有关 &lt;b&gt;解析引擎&lt;/b&gt; 和配置面板， 我会在下面的章节和大家介绍。 我们先看看组件的 &lt;code&gt;schema&lt;/code&gt; 结构:&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ts&quot;&gt;&lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Chart&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;ChartSchema&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;editAttrs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-      &lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;layerName&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-      &lt;span class=&quot;kr&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;Text&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-      &lt;span class=&quot;nx&quot;&gt;cate&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;base&#x27;&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;，&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-      &lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;y&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-      &lt;span class=&quot;kr&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;Number&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-      &lt;span class=&quot;nx&quot;&gt;cate&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;base&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;DataConfig&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 数据配置项
-&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;    &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;eventConfig&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 事件配置项
-&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;
-  &lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;，&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;width&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;200&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;height&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;200&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;zIndex&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;layerName&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;柱状图&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;labelColor&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;rgba(188，200，212，1)&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-    &lt;span class=&quot;c1&quot;&gt;// ... 其他配置初始值
-&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;    &lt;span class=&quot;nx&quot;&gt;multiColor&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&#x27;rgba(91, 143, 249, 1)&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;rgba(91, 143, 249, 1)&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;rgba(91, 143, 249，,1)&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;rgba(91, 143, 249, 1)&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;
-      &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;A&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;25&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-      &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;，&lt;/span&gt;
-      &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;B&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;66&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-      &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;其中 &lt;b&gt;editAttrs&lt;/b&gt; 表示可编辑的属性列表， &lt;b&gt;config&lt;/b&gt; 为属性的初始值， 当然大家也可以根据自己的喜好， 设计类似的通用&lt;code&gt;schema&lt;/code&gt;。&lt;/p&gt;&lt;p&gt;我们通过以上设计的标准组件和标准&lt;code&gt;schema&lt;/code&gt;， 就可以批量且高效的生产各种物料， 还可以轻松集成任何第三方可视化组件库。&lt;/p&gt;&lt;h3&gt;动态渲染器实现&lt;/h3&gt;&lt;p&gt;我们都知道， 一个页面中元素很多时会影响页面整体的加载速度， 因为浏览器渲染页面需要消耗&lt;b&gt;CPU / GPU&lt;/b&gt;。对于可视化页面来说， 每一个可视化组件都需要渲染大量的信息元， 这无疑会对页面性能造成不小的影响， 所以我们需要设计一种机制， 让组件异步加载到画布上， 而不是一次性加载几十个几百个组件(这样的话页面会有大量的白屏时间， 用户体验极度下降)。&lt;/p&gt;&lt;p&gt;动态加载器就是提供了这样一种机制， 保证组件的加载都是异步的， 一方面可以减少页面体积， 另一方面用户可以更早的看到页面元素。目前我们熟的动态加载机制也有很多， &lt;code&gt;Vue&lt;/code&gt; 和 &lt;code&gt;React&lt;/code&gt; 生态都提供了开箱即用的解决方案(虽然我们可以用 &lt;code&gt;webpack&lt;/code&gt; 自行设计这样的动态模型， 此处为了提高行文效率， 我们直接基于现成方案封装)。我们先看一下动态渲染组件的过程:&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-62e22d5718812795d0a70fe5a72c9d5d_b.gif&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;720&quot; data-rawheight=&quot;367&quot; data-thumbnail=&quot;https://pic2.zhimg.com/v2-62e22d5718812795d0a70fe5a72c9d5d_b.jpg&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic2.zhimg.com/v2-62e22d5718812795d0a70fe5a72c9d5d_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;720&quot; data-rawheight=&quot;367&quot; data-thumbnail=&quot;https://pic2.zhimg.com/v2-62e22d5718812795d0a70fe5a72c9d5d_b.jpg&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic2.zhimg.com/v2-62e22d5718812795d0a70fe5a72c9d5d_r.jpg&quot; data-actualsrc=&quot;https://pic2.zhimg.com/v2-62e22d5718812795d0a70fe5a72c9d5d_b.gif&quot;/&gt;&lt;figcaption&gt;v6.dooring&lt;/figcaption&gt;&lt;/figure&gt;&lt;p&gt;上面的演示可以细微的看出从左侧组件菜单拖动某个组件图标到画布上后， 真正的组件才开始加载渲染。&lt;/p&gt;&lt;p&gt;这里我们以 &lt;code&gt;umi3.0&lt;/code&gt; 提供的 &lt;code&gt;dynamic&lt;/code&gt; 函数来最小化实现一个动态渲染器. 如果不熟悉 &lt;code&gt;umi&lt;/code&gt; 生态的朋友， 也不用着急， 看完我的实现过程和原理之后， 就可以利用任何熟悉的动态加载机制实现它了。 实现如下:&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-js&quot;&gt;&lt;span class=&quot;kr&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;React&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;useMemo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;memo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;FC&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;react&#x27;&lt;/span&gt;
-&lt;span class=&quot;kr&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;dynamic&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;umi&#x27;&lt;/span&gt;
-
-&lt;span class=&quot;kr&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;LoadingComponent&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;@/components/LoadingComponent&#x27;&lt;/span&gt;
-
-
-&lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;DynamicFunc&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;cpName&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;category&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;dynamic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;loader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-      &lt;span class=&quot;c1&quot;&gt;//  动态加载组件
-&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;      &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;default&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Graph&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;import&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`@/components/materies/&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;cpName&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-
-      &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;props&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;DynamicType&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;，&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;props&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Graph&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&amp;gt;&lt;/span&gt;
-      &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;loading&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;LoadingComponent&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&amp;gt;&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;DynamicRenderEngine&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;FC&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;DynamicType&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;memo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;props&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; 
-  &lt;span class=&quot;nx&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
-  &lt;span class=&quot;nx&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
-  &lt;span class=&quot;c1&quot;&gt;// 其他配置... 
-&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;props&lt;/span&gt;
-  &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Dynamic&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;useMemo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;DynamicFunc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
-
-  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Dynamic&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;props&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
-
-&lt;span class=&quot;kr&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;DynamicRenderEngine&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;是不是很简单? 当然我们也可以根据自身业务需要， 设计更复杂强大的动态渲染器。&lt;/p&gt;&lt;h3&gt;配置面板设计&lt;/h3&gt;&lt;p&gt;实现配置面板的前提是对组件 &lt;code&gt;Schema&lt;/code&gt; 结构有一个系统的设计， 在介绍组件库实现中我们介绍了通用组件 &lt;code&gt;schema&lt;/code&gt; 的一个设计案例， 我们基于这样的案例结构， 来实现 &lt;b&gt;动态配置面板&lt;/b&gt;。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-6d5b9798796fd54f14428fce8a970e8d_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1304&quot; data-rawheight=&quot;334&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic2.zhimg.com/v2-6d5b9798796fd54f14428fce8a970e8d_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1304&quot; data-rawheight=&quot;334&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic2.zhimg.com/v2-6d5b9798796fd54f14428fce8a970e8d_r.jpg&quot; data-actualsrc=&quot;https://pic2.zhimg.com/v2-6d5b9798796fd54f14428fce8a970e8d_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p&gt;由上图可以知道， 动态配置面板的一个核心要素就是 &lt;b&gt;表单渲染器&lt;/b&gt;。 表单渲染器的目的就是基于属性配置列表 &lt;code&gt;attrs&lt;/code&gt; 来动态渲染出对应的表单项。我之前写了一篇文章详细的介绍了表单设计器的技术实现的文章， 大家感兴趣也可以参考一下。&lt;/p&gt;&lt;p&gt;我这里来简单实现一个基础的表单渲染器模型:&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ts&quot;&gt;&lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;FormEditor&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;props&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;FormEditorProps&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;attrs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;defaultValue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;onSave&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;props&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-
-  &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;onFinish&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;values&lt;/span&gt;: &lt;span class=&quot;kt&quot;&gt;Store&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;c1&quot;&gt;// 保存配置项数据
-&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;    &lt;span class=&quot;nx&quot;&gt;onSave&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;onSave&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;values&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
-
-  &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;handlechange&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;c1&quot;&gt;// 更新逻辑
-&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-  &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;form&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Form&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;useForm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;Form&lt;/span&gt;
-      &lt;span class=&quot;na&quot;&gt;form&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;form&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-      &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;...formItemLayout&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-      &lt;span class=&quot;na&quot;&gt;onFinish&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;onFinish&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-      &lt;span class=&quot;na&quot;&gt;initialValues&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;defaultValue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-      &lt;span class=&quot;na&quot;&gt;onValuesChange&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;handlechange&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt;
-      &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;nx&quot;&gt;attrs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-          &lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;React.Fragment&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&amp;gt;&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;kr&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;Number&#x27;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-              &lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;Form.Item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;label&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&amp;gt;&lt;/span&gt;
-                &lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;InputNumber&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;/&amp;gt;&lt;/span&gt;
-              &lt;span class=&quot;p&quot;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;Form.Item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;)}&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;kr&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;Text&#x27;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-              &lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;Form.Item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;label&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&amp;gt;&lt;/span&gt;
-                &lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;Input&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;placeholder&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;placeholder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;/&amp;gt;&lt;/span&gt;
-              &lt;span class=&quot;p&quot;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;Form.Item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;)}&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;kr&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#x27;TextArea&#x27;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-              &lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;Form.Item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;label&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&amp;gt;&lt;/span&gt;
-                &lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;TextArea&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;rows&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;/&amp;gt;&lt;/span&gt;
-              &lt;span class=&quot;p&quot;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;Form.Item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;)}&lt;/span&gt;
-            &lt;span class=&quot;c1&quot;&gt;// 其他配置类型
-&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;          &lt;span class=&quot;p&quot;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;React.Fragment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-      &lt;span class=&quot;p&quot;&gt;})}&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;Form&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果大家想看更完整的配置面板实现， 可以参考开源项目 &lt;a href=&quot;https://link.zhihu.com/?target=https%3A//github.com/MrXujiang/h5-Dooring&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;H5-Dooring | H5可视化编辑器&lt;/a&gt;&lt;/p&gt;&lt;p&gt;我们可以看看最终的配置面板实现效果:&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-fa88a68cd17104b625b2e4d0a8946300_b.gif&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;720&quot; data-rawheight=&quot;388&quot; data-thumbnail=&quot;https://pic1.zhimg.com/v2-fa88a68cd17104b625b2e4d0a8946300_b.jpg&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic1.zhimg.com/v2-fa88a68cd17104b625b2e4d0a8946300_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;720&quot; data-rawheight=&quot;388&quot; data-thumbnail=&quot;https://pic1.zhimg.com/v2-fa88a68cd17104b625b2e4d0a8946300_b.jpg&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic1.zhimg.com/v2-fa88a68cd17104b625b2e4d0a8946300_r.jpg&quot; data-actualsrc=&quot;https://pic1.zhimg.com/v2-fa88a68cd17104b625b2e4d0a8946300_b.gif&quot;/&gt;&lt;/figure&gt;&lt;h3&gt;控制中心概述 &amp;amp; 功能辅助设计&lt;/h3&gt;&lt;p&gt;&lt;b&gt;控制中心&lt;/b&gt;的实现主要是业务层的， 没有涉及太多复杂的技术， 所以这里我简单介绍一下。 因为可视化大屏页面展示的信息有些可能是私密数据， 只希望一部分人看到， 所以我们需要对页面的访问进行控制。 其次由于企业内部业务战略需求， 可能会对页面进行各种验证， 状态校验， 数据更新频率等， 所以我们需要设计一套控制中心来管理。 最基本的就是访问控制， 如下:&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-07ddb9a1552a17983cd7b789d2b6e69c_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1284&quot; data-rawheight=&quot;530&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic1.zhimg.com/v2-07ddb9a1552a17983cd7b789d2b6e69c_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1284&quot; data-rawheight=&quot;530&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic1.zhimg.com/v2-07ddb9a1552a17983cd7b789d2b6e69c_r.jpg&quot; data-actualsrc=&quot;https://pic1.zhimg.com/v2-07ddb9a1552a17983cd7b789d2b6e69c_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p&gt;&lt;b&gt;功能辅助设计&lt;/b&gt; 主要是一些用户操作上的优化， 比如快捷键， 画布缩放， 大屏快捷导航， 撤销重做等操作， 这块可以根据具体的产品需求来完善。 大家后期设计搭建产品时也可以参考实现。&lt;/p&gt;&lt;h2&gt;可视化大屏后期规划和未来展望&lt;/h2&gt;&lt;p&gt;为了实现更富有展现力， 满足更多场景的可视化大屏引擎， 我们一方面需要提高引擎扩展性， 一方面需要完善物料生态， 其次只要与时俱进， 提供更多智能化的场景功能， 比如搭建埋点， 数据预警等， 具体规划如下:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;丰富组件物料， 支持3D组件， 地理空间组件等&lt;/li&gt;&lt;li&gt;搭建埋点， 方便后期对组件进行分析&lt;/li&gt;&lt;li&gt;实现数据源， 事件机制闭环&lt;/li&gt;&lt;li&gt;支持用户自定义组件&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;如果大家对可视化搭建或者低代码/零代码感兴趣， 也可以参考我往期的文章或者在评论区交流你的想法和心得。&lt;/p&gt;&lt;h2&gt;往期文章&lt;/h2&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>858785bbebca84e1ba01cc63c31b6338</guid>
-<title>从零开始写一个微前端框架（沙箱篇）</title>
-<link>https://toutiao.io/k/86zehix</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;h2&gt;前言&lt;/h2&gt;
-
-&lt;p&gt;自从微前端框架&lt;a href=&quot;https://github.com/micro-zoe/micro-app&quot;&gt;micro-app&lt;/a&gt;开源后，很多小伙伴都非常感兴趣，问我是如何实现的，但这并不是几句话可以说明白的。为了讲清楚其中的原理，我会从零开始实现一个简易的微前端框架，它的核心功能包括：渲染、JS沙箱、样式隔离、数据通信。由于内容太多，会根据功能分成四篇文章进行讲解，这是系列文章的第二篇：沙箱篇。&lt;/p&gt;
-
-&lt;p&gt;通过这些文章，你可以了解微前端框架的具体原理和实现方式，这在你以后使用微前端或者自己写一套微前端框架时会有很大的帮助。如果这篇文章对你有帮助，欢迎点赞留言。&lt;/p&gt;
-
-&lt;h2&gt;相关推荐&lt;/h2&gt;
-
-
-
-&lt;h2&gt;开始&lt;/h2&gt;
-
-&lt;p&gt;前一篇文章中，我们已经完成了微前端的渲染工作，虽然页面已经正常渲染，但是此时基座应用和子应用是在同一个window下执行的，这有可能产生一些问题，如全局变量冲突、全局事件监听和解绑。&lt;/p&gt;
-
-&lt;p&gt;下面我们列出了两个具体的问题，然后通过创建沙箱来解决。&lt;/p&gt;
-
-&lt;h3&gt;问题示例&lt;/h3&gt;
-
-&lt;p&gt;1、子应用向window上添加一个全局变量：&lt;code&gt;globalStr=&#x27;child&#x27;&lt;/code&gt;，如果此时基座应用也有一个相同的全局变量：&lt;code&gt;globalStr=&#x27;parent&#x27;&lt;/code&gt;，此时就产生了变量冲突，基座应用的变量会被覆盖。&lt;/p&gt;
-
-&lt;p&gt;2、子应用渲染后通过监听&lt;code&gt;scroll&lt;/code&gt;添加了一个全局监听事件&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;window.addEventListener(&#x27;scroll&#x27;, () =&amp;gt; {
-  console.log(&#x27;scroll&#x27;)
-})
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;当子应用被卸载时，监听函数却没有解除绑定，对页面滚动的监听一直存在。如果子应用二次渲染，监听函数会绑定两次，这显然是错误的。&lt;/p&gt;
-
-&lt;p&gt;接下来我们就通过给微前端创建一个JS沙箱环境，隔离基座应用和子应用的JS，从而解决这两个典型的问题，&lt;/p&gt;
-
-&lt;h3&gt;创建沙箱&lt;/h3&gt;
-
-&lt;p&gt;由于每个子应用都需要一个独立的沙箱，所以我们通过class创建一个类：SandBox，当一个新的子应用被创建时，就创建一个新的沙箱与其绑定。&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/sandbox.js
-export default class SandBox {
-  active = false // 沙箱是否在运行
-  microWindow = {} // // 代理的对象
-  injectedKeys = new Set() // 新添加的属性，在卸载时清空
-
-  constructor () {}
-
-  // 启动
-  start () {}
-
-  // 停止
-  stop () {}
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;我们使用&lt;a href=&quot;https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Proxy&quot;&gt;Proxy&lt;/a&gt;进行代理操作，代理对象为空对象&lt;code&gt;microWindow&lt;/code&gt;，得益于Proxy强大的功能，实现沙箱变得简单且高效。&lt;/p&gt;
-
-&lt;p&gt;在&lt;code&gt;constructor&lt;/code&gt;中进行代理相关操作，通过Proxy代理&lt;code&gt;microWindow&lt;/code&gt;，设置&lt;code&gt;get&lt;/code&gt;、&lt;code&gt;set&lt;/code&gt;、&lt;code&gt;deleteProperty&lt;/code&gt;三个拦截器，此时子应用对window的操作基本上可以覆盖。&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/sandbox.js
-export default class SandBox {
-  active = false // 沙箱是否在运行
-  microWindow = {} // // 代理的对象
-  injectedKeys = new Set() // 新添加的属性，在卸载时清空
-
-  constructor () {
-    this.proxyWindow = new Proxy(this.microWindow, {
-      // 取值
-      get: (target, key) =&amp;gt; {
-        // 优先从代理对象上取值
-        if (Reflect.has(target, key)) {
-          return Reflect.get(target, key)
-        }
-
-        // 否则兜底到window对象上取值
-        const rawValue = Reflect.get(window, key)
-
-        // 如果兜底的值为函数，则需要绑定window对象，如：console、alert等
-        if (typeof rawValue === &#x27;function&#x27;) {
-          const valueStr = rawValue.toString()
-          // 排除构造函数
-          if (!/^function\s+[A-Z]/.test(valueStr) &amp;amp;&amp;amp; !/^class\s+/.test(valueStr)) {
-            return rawValue.bind(window)
-          }
-        }
-
-        // 其它情况直接返回
-        return rawValue
-      },
-      // 设置变量
-      set: (target, key, value) =&amp;gt; {
-        // 沙箱只有在运行时可以设置变量
-        if (this.active) {
-          Reflect.set(target, key, value)
-
-          // 记录添加的变量，用于后续清空操作
-          this.injectedKeys.add(key)
-        }
-
-        return true
-      },
-      deleteProperty: (target, key) =&amp;gt; {
-        // 当前key存在于代理对象上时才满足删除条件
-        if (target.hasOwnProperty(key)) {
-          return Reflect.deleteProperty(target, key)
-        }
-        return true
-      },
-    })
-  }
-
-  ...
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;创建完代理后，我们接着完善&lt;code&gt;start&lt;/code&gt;和&lt;code&gt;stop&lt;/code&gt;两个方法，实现方式也非常简单，具体如下：&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/sandbox.js
-export default class SandBox {
-  ...
-  // 启动
-  start () {
-    if (!this.active) {
-      this.active = true
-    }
-  }
-
-  // 停止
-  stop () {
-    if (this.active) {
-      this.active = false
-
-      // 清空变量
-      this.injectedKeys.forEach((key) =&amp;gt; {
-        Reflect.deleteProperty(this.microWindow, key)
-      })
-      this.injectedKeys.clear()
-    }
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;上面一个沙箱的雏形就完成了，我们尝试一下，看看是否有效。&lt;/p&gt;
-
-&lt;h3&gt;使用沙箱&lt;/h3&gt;
-
-&lt;p&gt;在&lt;code&gt;src/app.js&lt;/code&gt;中引入沙箱，在&lt;code&gt;CreateApp&lt;/code&gt;的构造函数中创建沙箱实例，并在&lt;code&gt;mount&lt;/code&gt;方法中执行沙箱的start方法，在&lt;code&gt;unmount&lt;/code&gt;方法中执行沙箱的stop方法。&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/app.js
-import loadHtml from &#x27;./source&#x27;
-+ import Sandbox from &#x27;./sandbox&#x27;
-
-export default class CreateApp {
-  constructor ({ name, url, container }) {
-    ...
-+    this.sandbox = new Sandbox(name)
-  }
-
-  ...
-  mount () {
-    ...
-+    this.sandbox.start()
-    // 执行js
-    this.source.scripts.forEach((info) =&amp;gt; {
-      (0, eval)(info.code)
-    })
-  }
-
-  /**
-   * 卸载应用
-   * @param destory 是否完全销毁，删除缓存资源
-   */
-  unmount (destory) {
-    ...
-+    this.sandbox.stop()
-    // destory为true，则删除应用
-    if (destory) {
-      appInstanceMap.delete(this.name)
-    }
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;我们在上面创建了沙箱实例并启动沙箱，这样沙箱就生效了吗？&lt;/p&gt;
-
-&lt;p&gt;显然是不行的，我们还需要将子应用的js通过一个with函数包裹，修改js作用域，将子应用的window指向代理的对象。形式如：&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;(function(window, self) {
-  with(window) {
-    子应用的js代码
-  }
-}).call(代理对象, 代理对象, 代理对象)
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;在sandbox中添加方法&lt;code&gt;bindScope&lt;/code&gt;，修改js作用域：&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/sandbox.js
-
-export default class SandBox {
-  ...
-  // 修改js作用域
-  bindScope (code) {
-    window.proxyWindow = this.proxyWindow
-    return `;(function(window, self){with(window){;${code}\n}}).call(window.proxyWindow, window.proxyWindow, window.proxyWindow);`
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;然后在mount方法中添加对&lt;code&gt;bindScope&lt;/code&gt;的使用&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/app.js
-
-export default class CreateApp {
-  mount () {
-    ...
-    // 执行js
-    this.source.scripts.forEach((info) =&amp;gt; {
--      (0, eval)(info.code)
-+      (0, eval)(this.sandbox.bindScope(info.code))
-    })
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;到此沙箱才真正起作用，我们验证一下问题示例中的第一个问题。&lt;/p&gt;
-
-&lt;p&gt;先关闭沙箱，由于子应用覆盖了基座应用的全局变量&lt;code&gt;globalStr&lt;/code&gt;，当我们在基座中访问这个变量时，得到的值为：&lt;code&gt;child&lt;/code&gt;，说明变量产生了冲突。
-&lt;img src=&quot;https://img10.360buyimg.com/imagetools/jfs/t1/179310/20/17339/17390/610915fbE4a3dc8d8/018239339143fc6c.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;开启沙箱后，重新在基座应用中打印&lt;code&gt;globalStr&lt;/code&gt;的值，得到的值为：&lt;code&gt;parent&lt;/code&gt;，说明变量冲突的问题已经解决，沙箱正确运行。
-&lt;img src=&quot;https://img13.360buyimg.com/imagetools/jfs/t1/188904/35/16621/17992/61091601E65e86483/d22c5dea75533274.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;第一个问题已经解决，我们开始解决第二个问题：全局监听事件。&lt;/p&gt;
-
-&lt;h3&gt;重写全局事件&lt;/h3&gt;
-
-&lt;p&gt;再来回顾一下第二个问题，错误的原因是在子应用卸载时没有清空事件监听，如果子应用知道自己将要被卸载，主动清空事件监听，这个问题可以避免，但这是理想情况，一是子应用不知道自己何时被卸载，二是很多第三方库也有一些全局的监听事件，子应用无法全部控制。所以我们需要在子应用卸载时，自动将子应用残余的全局监听事件进行清空。&lt;/p&gt;
-
-&lt;p&gt;我们在沙箱中重写&lt;code&gt;window.addEventListener&lt;/code&gt;和&lt;code&gt;window.removeEventListener&lt;/code&gt;，记录所有全局监听事件，在应用卸载时如果有残余的全局监听事件则进行清空。&lt;/p&gt;
-
-&lt;p&gt;创建一个&lt;code&gt;effect&lt;/code&gt;函数，在这里执行具体的操作&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/sandbox.js
-
-// 记录addEventListener、removeEventListener原生方法
-const rawWindowAddEventListener = window.addEventListener
-const rawWindowRemoveEventListener = window.removeEventListener
-
-/**
- * 重写全局事件的监听和解绑
- * @param microWindow 原型对象
- */
- function effect (microWindow) {
-  // 使用Map记录全局事件
-  const eventListenerMap = new Map()
-
-  // 重写addEventListener
-  microWindow.addEventListener = function (type, listener, options) {
-    const listenerList = eventListenerMap.get(type)
-    // 当前事件非第一次监听，则添加缓存
-    if (listenerList) {
-      listenerList.add(listener)
-    } else {
-      // 当前事件第一次监听，则初始化数据
-      eventListenerMap.set(type, new Set([listener]))
-    }
-    // 执行原生监听函数
-    return rawWindowAddEventListener.call(window, type, listener, options)
-  }
-
-  // 重写removeEventListener
-  microWindow.removeEventListener = function (type, listener, options) {
-    const listenerList = eventListenerMap.get(type)
-    // 从缓存中删除监听函数
-    if (listenerList?.size &amp;amp;&amp;amp; listenerList.has(listener)) {
-      listenerList.delete(listener)
-    }
-    // 执行原生解绑函数
-    return rawWindowRemoveEventListener.call(window, type, listener, options)
-  }
-
-  // 清空残余事件
-  return () =&amp;gt; {
-    console.log(&#x27;需要卸载的全局事件&#x27;, eventListenerMap)
-    // 清空window绑定事件
-    if (eventListenerMap.size) {
-      // 将残余的没有解绑的函数依次解绑
-      eventListenerMap.forEach((listenerList, type) =&amp;gt; {
-        if (listenerList.size) {
-          for (const listener of listenerList) {
-            rawWindowRemoveEventListener.call(window, type, listener)
-          }
-        }
-      })
-      eventListenerMap.clear()
-    }
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;在沙箱的构造函数中执行effect方法，得到卸载的钩子函数releaseEffect，在沙箱关闭时执行卸载操作，也就是在stop方法中执行releaseEffect函数&lt;/p&gt;
-
-&lt;pre lang=&quot;js&quot;&gt;&lt;code&gt;// /src/sandbox.js
-
-export default class SandBox {
-  ...
-  // 修改js作用域
-  constructor () {
-    // 卸载钩子
-+   this.releaseEffect = effect(this.microWindow)
-    ...
-  }
-
-  stop () {
-    if (this.active) {
-      this.active = false
-
-      // 清空变量
-      this.injectedKeys.forEach((key) =&amp;gt; {
-        Reflect.deleteProperty(this.microWindow, key)
-      })
-      this.injectedKeys.clear()
-
-      // 卸载全局事件
-+      this.releaseEffect()
-    }
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;这样重写全局事件及卸载的操作基本完成，我们验证一下是否正常运行。&lt;/p&gt;
-
-&lt;p&gt;首先关闭沙箱，验证问题二的存在：卸载子应用后滚动页面，依然在打印scroll，说明事件没有被卸载。
-&lt;img src=&quot;https://img12.360buyimg.com/imagetools/jfs/t1/185201/25/17527/23936/610a4384E88c606c8/dfa2a466f0f35e7d.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;开启沙箱后，卸载子应用，滚动页面，此时scroll不再打印，说明事件已经被卸载。
-&lt;img src=&quot;https://img13.360buyimg.com/imagetools/jfs/t1/198687/20/1559/52367/610a4388E03df3f53/293f524047cf8e66.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;从截图中可以看出，除了我们主动监听的&lt;code&gt;scroll&lt;/code&gt;事件，还有&lt;code&gt;error&lt;/code&gt;、&lt;code&gt;unhandledrejection&lt;/code&gt;等其它全局事件，这些事件都是由框架、构建工具等第三方绑定的，如果不进行清空，会导致内存无法回收，造成内存泄漏。&lt;/p&gt;
-
-&lt;p&gt;沙箱功能到此就基本完成了，两个问题都已经解决。当然沙箱需要解决的问题远不止这些，但基本架构思路是不变的。&lt;/p&gt;
-
-&lt;h2&gt;结语&lt;/h2&gt;
-
-&lt;p&gt;JS沙箱的核心在于修改js作用域和重写window，它的使用场景不限于微前端，也可以用于其它地方，比如在我们向外部提供组件或引入第三方组件时都可以使用沙箱来避免冲突。&lt;/p&gt;
-
-&lt;p&gt;下一篇文章我们会完成微前端的样式隔离。&lt;/p&gt;
-&lt;/div&gt;
-  &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>59a2c5ee62c39cb35758b0073d3f087f</guid>
-<title>实践 DevSecOps，很多人第一步就做错了</title>
-<link>https://toutiao.io/k/ldv3dxl</link>
+<guid>867ec2981b98efd8c8f445ddff87dabd</guid>
+<title>第 062 期「码农周刊 VIP 会员专属邮件周报」今晚发送，请查收！</title>
+<link>https://toutiao.io/k/s01gzxl</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;weui-dialog&quot;&gt;
       &lt;p class=&quot;weui-dialog__hd&quot;&gt;&lt;strong class=&quot;weui-dialog__title&quot;&gt;&quot;Top Stories&quot; is disabled&lt;/strong&gt;&lt;/p&gt;
       &lt;p class=&quot;weui-dialog__bd&quot;&gt;
@@ -594,16 +17,88 @@ export default class SandBox {
   &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>43798f211581161f350ce454de1246cc</guid>
-<title>一次跨域问题的分析</title>
-<link>https://toutiao.io/k/bu12ly2</link>
+<guid>92f19a75952364b042e3d20774d521b5</guid>
+<title>Vue 刷新页面有哪几种方式</title>
+<link>https://toutiao.io/k/pha8yz4</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entryContent&quot;&gt;&amp;#13;
+        &lt;p&gt;在Vue项目中，刷新当前页除了 &lt;code&gt;window.reload()&lt;/code&gt;，你还能想到什么办法？而且这种办法会重新加载资源出现短暂的空白页面。体验不是很好。&lt;/p&gt;
+&lt;p&gt;在某个详情页面的时候，我们经常需要通过路由中的详情 &lt;code&gt;id&lt;/code&gt; 去获取内容，当我们在不同的详情页来回切换的时候，打开的页面是同一个，只是需要通过监听路由中的参数 &lt;code&gt;id&lt;/code&gt; 的变化去重新请求详情接口。&lt;/p&gt;
+&lt;p&gt;如果这个详情页只需要一个接口还好，只需要通过 &lt;code&gt;watch&lt;/code&gt; 去监听，里面做数据请求就好。&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot; language-csharp&quot;&gt;watch&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&amp;#13;
+    $route&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&amp;#13;
+      immediate&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&amp;#13;
+      &lt;span class=&quot;token function&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;to&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&amp;#13;
+        &lt;span class=&quot;token keyword&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;to&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;name &lt;span class=&quot;token operator&quot;&gt;==&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&#x27;Detail&#x27;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&amp;#13;
+          &lt;span class=&quot;token keyword&quot;&gt;let&lt;/span&gt; id &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; to&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;id&amp;#13;
+           &lt;span class=&quot;token comment&quot;&gt;// ...&lt;/span&gt;&amp;#13;
+        &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&amp;#13;
+      &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&amp;#13;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&amp;#13;
+  &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&amp;#13;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;那一旦这个页面有很多的接口，数据逻辑依赖很复杂的时候，这个时候再写一推的监听就很容易出现屎山代码。而且不好维护。&lt;/p&gt;
+&lt;p&gt;此时我们最希望的是进入每个详情页都刷新页面，也就是重新加载一遍组件。怎么去维护好一个全局刷新页面的方法去更新路由组件？&lt;/p&gt;
+&lt;p&gt;我们可以通过在 &lt;code&gt;App.vue&lt;/code&gt; 里定义一个 &lt;code&gt;reload&lt;/code&gt; 方法，通过&lt;code&gt;provide&lt;/code&gt; 和 &lt;code&gt;inject&lt;/code&gt; 来抛出和注入到其它页面使用。&lt;/p&gt;
+&lt;p&gt;而最终的重担落在这个 &lt;code&gt;reload&lt;/code&gt; 方法身上，其实也简单，这个方法主要的做的事是控制一个变量的值来控制整个页面的路由组件移除和显示。&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot; language-xml&quot;&gt;&lt;span class=&quot;token tag&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;lt;&lt;/span&gt;template&lt;span class=&quot;token punctuation&quot;&gt;&amp;gt;&lt;/span&gt;&lt;/span&gt;&amp;#13;
+  &lt;span class=&quot;token tag&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;lt;&lt;/span&gt;div &lt;span class=&quot;token attr-name&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;app&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;gt;&lt;/span&gt;&lt;/span&gt;&amp;#13;
+    &lt;span class=&quot;token tag&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;lt;&lt;/span&gt;router-view &lt;span class=&quot;token attr-name&quot;&gt;v-if&lt;/span&gt;&lt;span class=&quot;token attr-value&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;isRouterAlive&lt;span class=&quot;token punctuation&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;/&amp;gt;&lt;/span&gt;&lt;/span&gt;&amp;#13;
+  &lt;span class=&quot;token tag&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;lt;/&lt;/span&gt;div&lt;span class=&quot;token punctuation&quot;&gt;&amp;gt;&lt;/span&gt;&lt;/span&gt;&amp;#13;
+&lt;span class=&quot;token tag&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;lt;/&lt;/span&gt;template&lt;span class=&quot;token punctuation&quot;&gt;&amp;gt;&lt;/span&gt;&lt;/span&gt;&amp;#13;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&quot;js language-js&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&amp;#13;
+  name&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&#x27;App&#x27;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&amp;#13;
+  &lt;span class=&quot;token function&quot;&gt;provide&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&amp;#13;
+    &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&amp;#13;
+      reload&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;reload&amp;#13;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&amp;#13;
+  &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&amp;#13;
+  &lt;span class=&quot;token function&quot;&gt;data&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&amp;#13;
+    &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&amp;#13;
+      isRouterAlive&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token boolean&quot;&gt;true&lt;/span&gt;&amp;#13;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&amp;#13;
+  &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&amp;#13;
+  methods&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&amp;#13;
+    &lt;span class=&quot;token function&quot;&gt;reload&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&amp;#13;
+      &lt;span class=&quot;token keyword&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;isRouterAlive &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token boolean&quot;&gt;false&lt;/span&gt;&amp;#13;
+      &lt;span class=&quot;token keyword&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;$nextTick&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&amp;#13;
+        &lt;span class=&quot;token keyword&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;isRouterAlive &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token boolean&quot;&gt;true&lt;/span&gt;&amp;#13;
+      &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&amp;#13;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&amp;#13;
+  &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&amp;#13;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&amp;#13;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;然后在其它页面注入该方法直接调用即可&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;js language-js&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&amp;#13;
+  inject&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&#x27;reload&#x27;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&amp;#13;
+  &lt;span class=&quot;token function&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&amp;#13;
+    &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&amp;#13;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&amp;#13;
+  &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&amp;#13;
+&amp;#13;
+  methods&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&amp;#13;
+    &lt;span class=&quot;token function&quot;&gt;refresh&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&amp;#13;
+      &lt;span class=&quot;token keyword&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;reload&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&amp;#13;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&amp;#13;
+  &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&amp;#13;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;实际项目中经常有各种曲线救国的思路可以帮我们解决很多问题。遇到问题一定要发散下思维，这个时候搞懂原理，再结合各种特性才能想到解决办法。&lt;/p&gt;
+&lt;p&gt;实践告诉我们文档中的方法很正，但是并不能解决所有的问题。往往需要根据文档中的多个特性相结合找到思路。&lt;/p&gt;
+    &lt;/div&gt;&amp;#13;
+&amp;#13;
+    &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>a6166e508ae15e06b7507458494158d7</guid>
+<title>恐惧和自我偏见：成长的最大障碍</title>
+<link>https://toutiao.io/k/45ae6zg</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
                     
 
                     
                     
                     
-                    &lt;p&gt;&lt;img data-ratio=&quot;0.5&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/1skeHK2GybyAwafRAF02CWOLUgUricgqP9oBPt6AddyGl3IMAYrrGPQKps4taeEibwmrms1ButHdfe44A7qA9y4w/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;800&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;h2&gt;事件起因&lt;/h2&gt;&lt;p&gt;一个需求让我开放一个 HTTP 接口给前端，在联调的过程中，前端请求时出现了一个 CORS 错误，也即跨域问题，错误如下 👇&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.14496314496314497&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/1skeHK2GybyAwafRAF02CWOLUgUricgqPMqhic2xUcXCshTRvmWU3WdsBJ8dnuKfn6vQEbIcMmpNLqBK8OUAhapQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1628&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;p&gt;一开始我的想法是，跨域问题，这我熟啊，在学校写代码的时候就经常遇到，这解决起来不是分分钟的吗。&lt;/p&gt;&lt;p&gt;可更改之后我傻眼了，为什么一直不生效？我陷入了沉思。&lt;/p&gt;&lt;p&gt;在继续描述之前，我们先来了解下到底什么是跨域以及常见的解决方案有哪些。&lt;/p&gt;&lt;h2&gt;什么是跨域&lt;/h2&gt;&lt;p&gt;所谓跨域，全称是 &lt;strong&gt;跨源资源共享 (CORS)&lt;/strong&gt; Cross- Origin Resource Sharing ，是一种基于 HTTP Header 的机制，该机制通过允许服务器标示除了它自己以外的其它 origin（域，协议和端口），这样浏览器可以访问加载这些资源。&lt;/p&gt;&lt;p&gt;举个例子：运行在 https://domain-a.com 的 JavaScript 代码使用 &lt;code&gt;XMLHttpRequest&lt;/code&gt; 分别发起两个请求 👇&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;&quot;&gt;&lt;code&gt;请求A：https:&lt;span&gt;//domain-a.com/query&lt;/span&gt;&lt;br/&gt;请求B：https:&lt;span&gt;//domain-b.com/query&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;由于发请求的页面站点为 domain-a.com，所以请求 A 属于同源请求，domain-a.com 的后台服务器是允许请求。但是请求 B 的站点域是 domain-b.com，如果要发请求到 domain-b.com，就属于跨源访问，出于安全性考虑，浏览器限制脚本内发起的跨源 HTTP 请求。如下图所示：&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.6526232114467408&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/1skeHK2GybyAwafRAF02CWOLUgUricgqPVRbkNJHXrUpgVxy3f97wibyFcrDwBnfp9WNcZxkBibuibAxFicicCyjODTw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1258&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;p&gt;因此，为了解决上述问题，跨源域资源共享（ CORS )机制就应运而生了。该机制允许 Web 应用服务器进行跨源访问控制，从而使跨源数据传输得以安全进行。&lt;/p&gt;&lt;h2&gt;CORS 工作机制&lt;/h2&gt;&lt;p&gt;跨源资源共享标准新增了一组 HTTP 首部字段，允许服务器声明哪些源站通过浏览器有权限访问哪些资源。&lt;/p&gt;&lt;p&gt;而且对那些可能对服务器数据产生副作用的 HTTP 请求方法（特别是 GET 以外的 HTTP 请求，或者搭配某些 MIME 类型的 POST 请求），浏览器必须首先使用 &lt;strong&gt;OPTIONS&lt;/strong&gt; 方法发起一个预检请求（preflight request），从而获知服务端是否允许该跨源请求。&lt;/p&gt;&lt;p&gt;只有在服务器确认允许之后，才发起实际的 HTTP 请求。在预检请求的返回中，服务器端也可以通知客户端，是否需要携带身份凭证（包括 Cookies 和 HTTP 认证相关数据）。&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.4593908629441624&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/1skeHK2GybyAwafRAF02CWOLUgUricgqPjOXfhl2yXLgiaXriaxXt5iaNEaNOCYGaicKKiaiaXN5AyspgZq1ib83Onc4lg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;788&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;p&gt;大致流程如上图所示，CORS 请求失败会产生错误，但是为了安全，在 JavaScript 代码层面是无法获知到底具体是哪里出了问题。你只能查看浏览器的控制台以得知具体是哪里出现了错误。&lt;/p&gt;&lt;p&gt;在新增的这一组 HTTP 首部字段中，最重要的便是 Access-Control-Allow-Origin，其语法如下：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;&quot;&gt;&lt;code&gt;&lt;span&gt;Access-Control-Allow-Origin&lt;/span&gt;: &amp;lt;origin&amp;gt; | *&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;其中，origin 参数的值指定了允许访问该资源的外域 URI。对于不需要携带身份凭证的请求，服务器可以指定该字段的值为通配符，表示允许来自所有域的请求。&lt;/p&gt;&lt;p&gt;例如，下面的字段值将允许来自 http://www.domain-a.com 的请求：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;&quot;&gt;&lt;code&gt;Access-Control-Allow-Origin: http:&lt;span&gt;//www.domain-a.com&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;如果服务端指定了具体的域名而非“*”，那么响应首部中的 Vary 字段的值必须包含 Origin。这将告诉客户端：服务器对不同的源站返回不同的内容。&lt;/p&gt;&lt;p&gt;接下来所说的解决方案主要就是围绕这一字段进行的。&lt;/p&gt;&lt;h2&gt;Spring 中对于跨域的常见解决方案&lt;/h2&gt;&lt;p&gt;本节介绍一下使用 Spring 中对于跨域的常见解决方案，主要分为以下几种。&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;1.&lt;/span&gt;直接设置请求头&lt;/span&gt;&lt;span&gt;&lt;span&gt;2.&lt;/span&gt;@CrossOrigin 注解&lt;/span&gt;&lt;span&gt;&lt;span&gt;3.&lt;/span&gt;WebMvcConfigurer 配置&lt;/span&gt;&lt;span&gt;&lt;span&gt;4.&lt;/span&gt;使用 CorsFilter 拦截器&lt;/span&gt;&lt;/p&gt;&lt;p&gt;这一块的知识点网上一搜一大把，这里就不展开说明了。重点回到本次的问题分析。&lt;/p&gt;&lt;h2&gt;上述方案使用结束之后仍然失效？&lt;/h2&gt;&lt;p&gt;解决这个问题，经历了几个过程。&lt;/p&gt;&lt;p&gt;使用 @CrossOrigin 注解，接口 1、2 请求正常，但该方案不够通用，暂时舍弃。&lt;/p&gt;&lt;p&gt;使用 WebMvcConfigurer 配置的 addCorsMappings 方法配置接口 3 时失败，仍然出现跨域问题。&lt;/p&gt;&lt;p&gt;查找资料发现，这有可能是&lt;strong&gt;客户端请求经过的先后顺序问题，当服务端接收到一个请求时，该请求会先经过过滤器，然后进入拦截器中，然后再进入 Mapping 映射中的路径所指向的资源，所以跨域配置在 mapping 上并不起作用，返回的头信息中并没有配置的跨域信息，浏览器就会报跨域异常。&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;因此才会出现这种情况，当你在项目中使用了该方法配置跨域问题后，再使用自定义的拦截器时，跨域问题的相关配置就会失效，请求依然会报跨域问题的错。&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;此时我选择了最后一种方案，也即，直接使用 CorsFilter 拦截器。&lt;/p&gt;&lt;p&gt;在配置好拦截器之后，仍然出现跨域问题，此时的我心态崩了。&lt;/p&gt;&lt;h2&gt;治标 or 治本&lt;/h2&gt;&lt;p&gt;后来，我意外的发现前端在调用接口时的 URL 有问题，并没有按照我给他的规则去拼接 URL，果然，在请求了正确的 URL 之后，跨域问题，随即消失了。&lt;/p&gt;&lt;p&gt;也就是说，整个事件出现的原因是因为请求参数异常。&lt;/p&gt;&lt;p&gt;至此，这个问题其实已经解决了，治标已经完成。&lt;/p&gt;&lt;p&gt;只是，这时我又产生了新的疑问，为什么请求参数异常没有走到业务逻辑处理而是出现了跨域问题 🤔️&lt;/p&gt;&lt;p&gt;让我们情景再现一下 👇&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;java&quot;&gt;&lt;code&gt;@GetMapping(&lt;span&gt;&quot;/error&quot;&lt;/span&gt;)&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; ApiResult&amp;lt;String&amp;gt; &lt;span&gt;error&lt;/span&gt;Test(&lt;span&gt;@RequestParam&lt;/span&gt; String id) {&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; (StringUtils.isBlank(&lt;span&gt;id&lt;/span&gt;)) {&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; RestUtil.&lt;span&gt;error&lt;/span&gt;(&lt;span&gt;1&lt;/span&gt;, &lt;span&gt;&quot;参数异常&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; RestUtil.success(&lt;span&gt;id&lt;/span&gt;);&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;代码样例如上，请求情况如下 👇&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;javascript&quot;&gt;&lt;code&gt;fetch(&lt;span&gt;&quot;http://www.a.com/error&quot;&lt;/span&gt;); &lt;span&gt;// 出现跨域&lt;/span&gt;&lt;br/&gt;fetch(&lt;span&gt;&quot;http://www.a.com/error?id=123&quot;&lt;/span&gt;); &lt;span&gt;// 正常访问&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;经师兄提点，猜想是由于系统内部抛了异常被拦截后自动重定向到淘宝错误页，果然，在我直接使用浏览器访问上述 URL 后，果然跳转到了淘宝的错误页。&lt;/p&gt;&lt;p&gt;而系统之所以会报异常，原因出在 &lt;code&gt;@RequestParam&lt;/code&gt; 注解上，让我们看一下他的源码&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.49624060150375937&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/1skeHK2GybyAwafRAF02CWOLUgUricgqP0I2G06PeTSnTplEp45KYPvjhpIK5icnjTYTbhhYpVf42mj16jZypaCA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1463&quot; title=&quot;null&quot;/&gt;默认该参数是必传的！&lt;/p&gt;&lt;p&gt;如果不传该参数，甚至进不去业务逻辑的错误校验，从而直接被系统捕获了，接下来就是我们刚才熟知的那一幕了。&lt;/p&gt;&lt;p&gt;所以，其实只要设置成 &lt;code&gt;@RequestParam(required = false)&lt;/code&gt;，或者不使用该注解，即可从根源上解决该问题。&lt;/p&gt;&lt;h2&gt;刨根问底一下&lt;/h2&gt;&lt;p&gt;其实从问题的解决角度来说，到这里已经可以了，只不过刨根问底一下，为什么请求错误了会跳到淘宝的错误页，而不是显示 tomcat 的错误页呢？&lt;/p&gt;&lt;p&gt;在询问了师兄和查找相关资料后，我发现，是由于 tengine（阿里内部的魔改 Nginx）的 error_page 配置造成的，在 proxy_intercept_errors 配置成功后，使得在发生错误时自动重定向到淘宝错误页，所以即使在业务接口做了跨域处理，前端仍会出现跨域问题，因为这一次跨到了淘宝错误页的域。&lt;/p&gt;&lt;p&gt;nginx 配置目录在 &lt;code&gt;/home/admin/cai/conf&lt;/code&gt;&lt;/p&gt;&lt;p&gt;配置文件中并未出现重定向页面，重定向页面的配置在另一个文件中 &lt;code&gt;/opt/taobao/tengine/conf/services.conf&lt;/code&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;json&quot;&gt;&lt;code&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;400&lt;/span&gt; http://err.taobao.com/error1.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;403&lt;/span&gt; http://err.taobao.com/error1.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;404&lt;/span&gt; http://err.taobao.com/error1.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;405&lt;/span&gt; http://err.taobao.com/error1.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;408&lt;/span&gt; http://err.taobao.com/error1.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;410&lt;/span&gt; http://err.taobao.com/error1.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;411&lt;/span&gt; http://err.taobao.com/error1.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;412&lt;/span&gt; http://err.taobao.com/error1.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;413&lt;/span&gt; http://err.taobao.com/error1.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;414&lt;/span&gt; http://err.taobao.com/error1.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;415&lt;/span&gt; http://err.taobao.com/error1.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;500&lt;/span&gt; http://err.taobao.com/error2.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;501&lt;/span&gt; http://err.taobao.com/error2.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;502&lt;/span&gt; http://err.taobao.com/error2.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;503&lt;/span&gt; http://err.taobao.com/error2.html;&lt;br/&gt;&lt;span&gt;error_page&lt;/span&gt;              &lt;span&gt;506&lt;/span&gt; http://err.taobao.com/error2.html;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;重新加载配置 &lt;code&gt;/home/admin/cai/bin/nginxctl reload&lt;/code&gt;&lt;/p&gt;&lt;p&gt;至此，刨根问底结束。&lt;/p&gt;&lt;h2&gt;总结一下解决方案&lt;/h2&gt;&lt;p&gt;方案 1：关闭 nginx 的 proxy_intercept_errors 选项&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;&lt;code&gt;proxy_intercept_errors&lt;/code&gt;  指令后面跟  &lt;code&gt;on&lt;/code&gt;  或  &lt;code&gt;off&lt;/code&gt; ，分别表示 打开 或 关闭 拦截错误页功能。&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;方案 2：避免在请求时直接产生错误，在本例中是请求参数缺失的问题&lt;/p&gt;&lt;p&gt;&lt;code&gt;@RequestParam&lt;/code&gt; 注解默认是必传的，如果没有会报 400 错误，所以才会重定向到淘宝错误页。&lt;/p&gt;&lt;p&gt;更改为 &lt;code&gt;@RequestParam(required = false)&lt;/code&gt;&lt;/p&gt;&lt;p&gt;然后在接下来的业务逻辑中进行校验&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre data-lang=&quot;json&quot;&gt;&lt;code&gt;@GetMapping(&lt;span&gt;&quot;/error&quot;&lt;/span&gt;)&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; ApiResult&amp;lt;String&amp;gt; &lt;span&gt;error&lt;/span&gt;Test(&lt;span&gt;@RequestParam&lt;/span&gt;(required = &lt;span&gt;false&lt;/span&gt;) String id) {&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; (StringUtils.isBlank(&lt;span&gt;id&lt;/span&gt;)) {&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; RestUtil.&lt;span&gt;error&lt;/span&gt;(&lt;span&gt;1&lt;/span&gt;, &lt;span&gt;&quot;参数异常&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; RestUtil.success(&lt;span&gt;id&lt;/span&gt;);&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;h2&gt;实验验证&lt;/h2&gt;&lt;p&gt;有了合理的猜想后，我们需要来验证一下，到底是不是上述猜想导致的，因此需要验证一下。&lt;/p&gt;&lt;p&gt;验证：修改 nginx 的 &lt;code&gt;proxy_intercept_errors&lt;/code&gt; 配置选项，将拦截关闭&lt;/p&gt;&lt;p&gt;预期效果：不会重定向，且出现原生的 tomcat 错误页面&lt;/p&gt;&lt;p&gt;实验后：&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.2814107274063189&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/1skeHK2GybyAwafRAF02CWOLUgUricgqP5FMuTRAJiaXlB8ITfuTMyYKwfME6ewwFqDxptevFA28EbrIUcro6HZg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1361&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;p&gt;控制台 fetch 时也不会出现跨域错误了&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.1244886031560491&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/1skeHK2GybyAwafRAF02CWOLUgUricgqPxVI02288cHOFhGUGlqSHS91X5CGtghHTicj1QQ2WULJcE8Qbf0co0HA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1711&quot; title=&quot;null&quot;/&gt;&lt;/p&gt;&lt;p&gt;至此，问题解决完成。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;
+                    &lt;blockquote data-type=&quot;blockquote&quot;&gt;&lt;p data-type=&quot;paragraph&quot;&gt;&lt;em data-type=&quot;italic&quot;&gt;我们每个人都有一些害怕的事情，成长就是克服恐惧，做到原来不敢做的事情。如果自己都不相信自己能做到，还有谁会相信我们呢？只有克服内心的恐惧和自我偏见，才能收获成长。原文链接：[&lt;/em&gt;Fears and Limiting Beliefs](https://www.patreon.com/posts/20851818)&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-type=&quot;paragraph&quot;&gt;&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;通常来说，我们每个人在生活中都或多或少面临懒惰、拖延症以及缺乏决心的困扰，本质上这都是我们内心中的恐惧和自我偏见的反映，大概率我们并不真的懒惰&lt;span data-type=&quot;sup&quot;&gt;[1]&lt;/span&gt;。&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;实现梦想的最大障碍并不是懒惰、意志力不足或没有时间，最大的障碍是我们内心的恐惧和自我偏见。&lt;/p&gt;&lt;h5 data-id=&quot;heading0&quot; data-type=&quot;heading&quot; top=&quot;424&quot;&gt;信念 Beliefs&lt;/h5&gt;&lt;p data-type=&quot;paragraph&quot;&gt;我们的信念似乎会影响很多事情：&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p data-type=&quot;paragraph&quot;&gt;信念影响动机&lt;span data-type=&quot;sup&quot;&gt;[2]&lt;/span&gt;。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p data-type=&quot;paragraph&quot;&gt;信念影响压力&lt;span data-type=&quot;sup&quot;&gt;[3]&lt;/span&gt;。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p data-type=&quot;paragraph&quot;&gt;信念影响我们的自控能力&lt;span data-type=&quot;sup&quot;&gt;[4]&lt;/span&gt;。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p data-type=&quot;paragraph&quot;&gt;信念影响我们学习、改变的潜力&lt;span data-type=&quot;sup&quot;&gt;[5]&lt;/span&gt;（成长心态）。&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-type=&quot;paragraph&quot;&gt;&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;自我限制信念（self-limiting belief）&lt;span data-type=&quot;sup&quot;&gt;[6]&lt;/span&gt;是指那些你自认为是正确的、但却限制了你进步的信念。它可以表现为消极的自我暗示或对世界的悲观看法。例如：“我赚不到更多钱了，因为这已经是我们行业的玻璃天花板”，“像我这样的人不可能成为企业家”，“别人总是说我数学不好，所以我是一个糟糕的程序员”。&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;大多数信念都是我们自认为的事实，然而并没有得到任何积极的验证。&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;好消息是，信念是可以改变的。马丁·塞格利曼在《活出最乐观的自己》(Learned Optimism)&lt;span data-type=&quot;sup&quot;&gt;[7]&lt;/span&gt;中很好的解释了如何通过重塑信念来改变生活态度。还有一本书叫《伯恩斯新情绪疗法》(Feeling Good: The New Mood Therapy)&lt;span data-type=&quot;sup&quot;&gt;[8]&lt;/span&gt;，是开始了解认知行为疗法&lt;span data-type=&quot;sup&quot;&gt;[9]&lt;/span&gt;的最好的入门书籍。&lt;/p&gt;&lt;h5 data-id=&quot;heading1&quot; data-type=&quot;heading&quot; top=&quot;936&quot;&gt;恐惧 Fears&lt;/h5&gt;&lt;p data-type=&quot;paragraph&quot;&gt;内心的恐惧也会产生类似的效果：阻止我们做自己想做的事情。恐惧的问题在于它们会撒谎、会逃避。&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;恐惧是非常微妙的，它会导致一些看似无关的行为——你会沉迷于追剧，而不是写一篇思考了一整天的文章。为什么会这样？因为你害怕这篇文章不够完美，人们会不喜欢。这篇文章还不够好，甚至文章还没有写出来，但已经不够好了！&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;我们的大脑在估计可能性和概率的时候表现非常糟糕，尤其是当事情可能出错的时候。&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;恐惧让我们厌恶风险，让我们错过完全可以把握的机会。&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;解决恐惧问题不仅能帮助我们自己，还能帮助到我们的团队&lt;span data-type=&quot;sup&quot;&gt;[10]&lt;/span&gt;。&lt;/p&gt;&lt;h5 data-id=&quot;heading2&quot; data-type=&quot;heading&quot; top=&quot;1298&quot;&gt;我们能做什么？&lt;/h5&gt;&lt;p data-type=&quot;paragraph&quot;&gt;首先，有一个很重要但颇有争议的观点：不要只相信真实的东西，而要相信有用的东西，甚至迷信也有帮助&lt;span data-type=&quot;sup&quot;&gt;[11]&lt;/span&gt;。&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;其次，谨慎地采取小的、不完美的步骤&lt;span data-type=&quot;sup&quot;&gt;[12]&lt;/span&gt;，而不是一下子制定一个巨大的、雄心勃勃的计划。变化不会在一瞬间发生，也不会立即看到显著的变化。事实可能恰恰相反：为改变付出的努力越多，阻力就越大&lt;span data-type=&quot;sup&quot;&gt;[13]&lt;/span&gt;。&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;最后，走出舒适区，直面我们的恐惧。例如，如果我们害怕拒绝，那就挑战一下”拒绝“，看看它是什么感觉。&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;总之，开始通过实验来验证我们的信念。&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;关于在生活中运用信念和自我认知的知识，阅读马克·曼森（Mark Manson）的&lt;em data-type=&quot;italic&quot;&gt;&lt;span data-type=&quot;strong&quot;&gt;自我认知指南&lt;/span&gt;&lt;/em&gt;&lt;span data-type=&quot;sup&quot;&gt;[14]&lt;/span&gt;是一个很好的起点。&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;&lt;/p&gt;&lt;blockquote data-type=&quot;blockquote&quot;&gt;&lt;p data-type=&quot;paragraph&quot;&gt;&lt;span data-type=&quot;strong&quot;&gt;Reference:&lt;/span&gt;&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;[1] https://medium.com/personal-growth/youre-not-lazy-7e357516c007&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;[2] https://www.stanforddaily.com/2010/10/25/willpower-can-be-an-unlimited-resource-study-says/&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;[3] https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3374921/&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;[4] https://medicalxpress.com/news/2015-04-dont-self-control-believing.html&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;[5] https://sharpbrains.com/blog/2018/08/13/meta-analysis-finds-value-in-teaching-the-science-of-neuroplasticity-especially-for-math-achievement-among-at-risk-students/&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;[6] http://www.stevepavlina.com/blog/2012/07/dissolving-limiting-beliefs/&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;[7] https://book.douban.com/subject/4934590/&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;[8] https://book.douban.com/subject/5980113/&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;[9] http://cbtsanfrancisco.com/cbt-is-for-hackers/&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;[10] https://blog.liberationist.org/this-idea-will-get-you-fired-928d816f8f64&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;[11] http://journals.sagepub.com/doi/abs/10.1177/0956797610372631&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;[12] https://practicingruby.com/articles/low-cost-approach-to-side-projects&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;[13] https://www.goodreads.com/book/show/10645233-do-the-work&lt;/p&gt;&lt;p data-type=&quot;paragraph&quot;&gt;[14] https://markmanson.net/downloads/self-knowledge&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;封面题图来自https://unsplash.com/@jasmin_sessler&lt;/span&gt;&lt;/p&gt;
                 &lt;/div&gt;
 
                 
@@ -616,97 +111,92 @@ export default class SandBox {
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>3140635687803680b0430ee51b039a5c</guid>
-<title>分布式系统硬件基础之漫谈存储设备</title>
-<link>https://toutiao.io/k/y74p0gl</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entry-inner&quot;&gt;
-                                                    
-&lt;p&gt;我们在分析各种分布式系统场景时不可避免地会讨论到数据的读写，很多时候我们会对数据的读写做很多的优化和特殊处理，而这些操作的背后根源都离不开数据存储的硬件，本文就来和大家谈一谈这其中设计的各种硬件和相应的技术。&lt;/p&gt;
+<guid>3a57e06551916ed125c83696a426cb40</guid>
+<title>面试官：小松子来聊一聊内存逃逸</title>
+<link>https://toutiao.io/k/lszkuxv</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;欢迎大家点击上方文字「Golang梦工厂」关注公众号，设为星标，第一时间接收推送文章。&lt;/code&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;前言&lt;/span&gt;&lt;/h2&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;哈喽，大家好，我是&lt;code&gt;asong&lt;/code&gt;。最近无聊看了一下&lt;code&gt;Go&lt;/code&gt;语言的面试八股文，发现面试官都喜欢问内存逃逸这个话题，这个激起了我的兴趣，我对内存逃逸的了解很浅，所以找了很多文章精读了一下，在这里做一个总结，方便日后查阅、学习。&lt;/p&gt;&lt;/blockquote&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;什么是内存逃逸&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;初次看到这个话题，我是懵逼的，怎么还有内存逃逸，内存逃逸到底是干什么的？接下来我们一起来看看什么是内存逃逸。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们都知道一般情况下程序存放在&lt;code&gt;rom&lt;/code&gt;或者&lt;code&gt;Flash&lt;/code&gt;中，运行时需要拷贝到内存中执行，内存会分别存储不同的信息，内存空间包含两个最重要的区域：堆区(Heap)和栈区(Stack)，对于我这种&lt;code&gt;C&lt;/code&gt;语言出身的人，对堆内存和栈内存的了解还是挺深的。在&lt;code&gt;C&lt;/code&gt;语言中，栈区域会专门存放函数的参数、局部变量等，栈的地址从内存高地址往低地址增长，而堆内存正好相反，堆地址从内存低地址往高地址增长，但是如果我们想在堆区域分配内存需要我们手动调用&lt;code&gt;malloc&lt;/code&gt;函数去堆区域申请内存分配，然后我使用完了还需要自己手动释放，如果没有释放就会导致内存泄漏。写过&lt;code&gt;C&lt;/code&gt;语言的朋友应该都知道&lt;code&gt;C&lt;/code&gt;语言函数是不能返回局部变量地址(特指存放于栈区的局部变量地址)，除非是局部静态变量地址，字符串常量地址、动态分配地址。其原因是一般局部变量的作用域只在函数内，其存储位置在栈区中，当程序调用完函数后，局部变量会随此函数一起被释放。其地址指向的内容不明（原先的数值可能不变，也可能改变）。而局部静态变量地址和字符串常量地址存放在数据区，动态分配地址存放在堆区，函数运行结束后只会释放栈区的内容，而不会改变数据区和堆区。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;所以在&lt;code&gt;C&lt;/code&gt;语言中我们想在一个函数中返回局部变量地址时，有三个正确的方式：返回静态局部变量地址、返回字符串常量地址，返回动态分配在堆上的地址，因为他们都不在栈区，即使释放函数，其内容也不会受影响，我们以在返回堆上内存地址为例看一段代码：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;#&lt;span&gt;include&lt;/span&gt; &lt;span&gt;&quot;stdio.h&quot;&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;#&lt;span&gt;include&lt;/span&gt; &lt;span&gt;&quot;stdlib.h&quot;&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;//返回动态分配的地址 &lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;int&lt;/span&gt;* &lt;span&gt;f1&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;br/&gt;&lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;int&lt;/span&gt; a = &lt;span&gt;9&lt;/span&gt;;&lt;br/&gt;    &lt;span&gt;int&lt;/span&gt; *pa = (&lt;span&gt;int&lt;/span&gt;*) &lt;span&gt;malloc&lt;/span&gt;(&lt;span&gt;8&lt;/span&gt;);&lt;br/&gt;    *pa = a;&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; pa;&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;int&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;br/&gt;&lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;int&lt;/span&gt; *pb;&lt;br/&gt;    pb = f1();&lt;br/&gt;    &lt;span&gt;printf&lt;/span&gt;(&lt;span&gt;&quot;after : *pb = %d\tpb = %p\n&quot;&lt;/span&gt;,*pb, pb);&lt;br/&gt;    &lt;span&gt;free&lt;/span&gt;(pb);&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; &lt;span&gt;1&lt;/span&gt;;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;通过上面的例子我们知道在&lt;code&gt;C&lt;/code&gt;语言中动态内存的分配与释放完全交与程序员的手中，这样就会导致我们在写程序时如履薄冰，好处是我们可以完全掌控内存，缺点是我们一不小心就会导致内存泄漏，所以很多现代语言都有&lt;code&gt;GC&lt;/code&gt;机制，&lt;code&gt;Go&lt;/code&gt;就是一门带垃圾回收的语言，真正解放了我们程序员的双手，我们不需要在像写&lt;code&gt;C&lt;/code&gt;语言那样考虑是否能返回局部变量地址了，内存管理交与给编译器，编译器会经过逃逸分析把变量合理的分配到&quot;正确&quot;的地方。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;说到这里，可以简单总结一下什么是内存逃逸了：&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;在一段程序中，每一个函数都会有自己的内存区域存放自己的局部变量、返回地址等，这些内存会由编译器在栈中进行分配，每一个函数都会分配一个栈桢，在函数运行结束后进行销毁，但是有些变量我们想在函数运行结束后仍然使用它，那么就需要把这个变量在堆上分配，这种从&quot;栈&quot;上逃逸到&quot;堆&quot;上的现象就成为内存逃逸。&lt;/p&gt;&lt;/blockquote&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;什么是逃逸分析&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上面我们知道了什么是内存逃逸，下面我们就来看一看什么是逃逸分析？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上文我们说到&lt;code&gt;C&lt;/code&gt;语言使用&lt;code&gt;malloc&lt;/code&gt;在堆上动态分配内存后，还需要手动调用&lt;code&gt;free&lt;/code&gt;释放内存，如果不释放就会造成内存泄漏的风险。在&lt;code&gt;Go&lt;/code&gt;语言中堆内存的分配与释放完全不需要我们去管了，&lt;code&gt;Go&lt;/code&gt;语言引入了&lt;code&gt;GC&lt;/code&gt;机制，&lt;code&gt;GC&lt;/code&gt;机制会对位于堆上的对象进行自动管理，当某个对象不可达时(即没有其对象引用它时)，他将会被回收并被重用。虽然引入&lt;code&gt;GC&lt;/code&gt;可以让开发人员降低对内存管理的心智负担，但是&lt;code&gt;GC&lt;/code&gt;也会给程序带来性能损耗，当堆内存中有大量待扫描的堆内存对象时，将会给&lt;code&gt;GC&lt;/code&gt;带来过大的压力，虽然&lt;code&gt;Go&lt;/code&gt;语言使用的是标记清除算法，并且在此基础上使用了三色标记法和写屏障技术，提高了效率，但是如果我们的程序仍在堆上分配了大量内存，依赖会对&lt;code&gt;GC&lt;/code&gt;造成不可忽视的压力。因此为了减少&lt;code&gt;GC&lt;/code&gt;造成的压力，&lt;code&gt;Go&lt;/code&gt;语言引入了逃逸分析，也就是想法设法尽量减少在堆上的内存分配，可以在栈中分配的变量尽量留在栈中。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;小结逃逸分析：&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;逃逸分析就是指程序在编译阶段根据代码中的数据流，对代码中哪些变量需要在栈中分配，哪些变量需要在堆上分配进行静态分析的方法。堆和栈相比，堆适合不可预知大小的内存分配。但是为此付出的代价是分配速度较慢，而且会形成内存碎片。栈内存分配则会非常快。栈分配内存只需要两个CPU指令：“PUSH”和“RELEASE”，分配和释放；而堆分配内存首先需要去找到一块大小合适的内存块，之后要通过垃圾回收才能释放。所以逃逸分析更做到更好内存分配，提高程序的运行速度。&lt;/p&gt;&lt;/blockquote&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;code&gt;Go&lt;/code&gt;语言中的逃逸分析&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Go&lt;/code&gt;语言的逃逸分析总共实现了两个版本：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;粗略看了一下逃逸分析的代码，大概有&lt;code&gt;1500+&lt;/code&gt;行（go1.15.7）。代码我倒是没仔细看，注释我倒是仔细看了一遍，注释写的还是很详细的，代码路径：src/cmd/compile/internal/gc/escape.go，大家可以自己看一遍注释，其逃逸分析原理如下：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;pointers to stack objects cannot be stored in the heap&lt;/code&gt;：指向栈对象的指针不能存储在堆中&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;pointers to a stack object cannot outlive that object&lt;/code&gt;：指向栈对象的指针不能超过该对象的存活期，也就说指针不能在栈对象被销毁后依旧存活。（例子：声明的函数返回并销毁了对象的栈帧，或者它在循环迭代中被重复用于逻辑上不同的变量）&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们大概知道它的分析准则是什么就好了，具体逃逸分析是怎么做的，感兴趣的同学可以根据源码自行研究。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;既然逃逸分析是在编译阶段进行的，那我们就可以通过&lt;code&gt;go build -gcflags &#x27;-m -m -l&#x27;&lt;/code&gt;命令查看到逃逸分析的结果，我们之前在分析内联优化时使用的&lt;code&gt;-gcflags &#x27;-m -m&#x27;&lt;/code&gt;，能看到所有的编译器优化，这里使用&lt;code&gt;-l&lt;/code&gt;禁用掉内联优化，只关注逃逸优化就好了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;现在我们也知道了逃逸分析，接下来我们就看几个逃逸分析的例子。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;几个逃逸分析的例子&lt;/span&gt;&lt;/h2&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;1. 函数返回局部指针变量&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;先看例子：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;Add&lt;/span&gt;&lt;span&gt;(x,y &lt;span&gt;int&lt;/span&gt;)&lt;/span&gt; *&lt;span&gt;int&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt; res := &lt;span&gt;0&lt;/span&gt;&lt;br/&gt; res = x + y&lt;br/&gt; &lt;span&gt;return&lt;/span&gt; &amp;amp;res&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt;  {&lt;br/&gt; Add(&lt;span&gt;1&lt;/span&gt;,&lt;span&gt;2&lt;/span&gt;)&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;查看逃逸分析结果：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;go&lt;/span&gt; build -gcflags=&lt;span&gt;&quot;-m -m -l&quot;&lt;/span&gt; ./test1.&lt;span&gt;go&lt;/span&gt;&lt;br/&gt;# command-line-arguments&lt;br/&gt;./test1.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;6&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;: &amp;amp;res escapes to heap&lt;br/&gt;./test1.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;6&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:         from ~r2 (&lt;span&gt;return&lt;/span&gt;) at ./test1.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;6&lt;/span&gt;:&lt;span&gt;2&lt;/span&gt;&lt;br/&gt;./test1.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;4&lt;/span&gt;:&lt;span&gt;2&lt;/span&gt;: moved to heap: res&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;分析结果很明了，函数返回的局部变量是一个指针变量，当函数&lt;code&gt;Add&lt;/code&gt;执行结束后，对应的栈桢就会被销毁，但是引用已经返回到函数之外，如果我们在外部解引用地址，就会导致程序访问非法内存，就像上面的&lt;code&gt;C&lt;/code&gt;语言的例子一样，所以编译器经过逃逸分析后将其在堆上分配内存。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;2. interface类型逃逸&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;先看一个例子：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt;  {&lt;br/&gt; str := &lt;span&gt;&quot;asong太帅了吧&quot;&lt;/span&gt;&lt;br/&gt; fmt.Printf(&lt;span&gt;&quot;%v&quot;&lt;/span&gt;,str)&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;查看逃逸分析结果：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;go&lt;/span&gt; build -gcflags=&lt;span&gt;&quot;-m -m -l&quot;&lt;/span&gt; ./test2.&lt;span&gt;go&lt;/span&gt; &lt;br/&gt;# command-line-arguments&lt;br/&gt;./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;13&lt;/span&gt;: str escapes to heap&lt;br/&gt;./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;13&lt;/span&gt;:        from ... argument (arg to ...) at ./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;13&lt;/span&gt;&lt;br/&gt;./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;13&lt;/span&gt;:        from *(... argument) (indirection) at ./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;13&lt;/span&gt;&lt;br/&gt;./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;13&lt;/span&gt;:        from ... argument (passed to call[argument content escapes]) at ./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;13&lt;/span&gt;&lt;br/&gt;./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;13&lt;/span&gt;: main ... argument does not escape&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;str&lt;/code&gt;是&lt;code&gt;main&lt;/code&gt;函数中的一个局部变量，传递给&lt;code&gt;fmt.Println()&lt;/code&gt;函数后发生了逃逸，这是因为&lt;code&gt;fmt.Println()&lt;/code&gt;函数的入参是一个&lt;code&gt;interface{}&lt;/code&gt;类型，如果函数参数为&lt;code&gt;interface{}&lt;/code&gt;，那么在编译期间就很难确定其参数的具体类型，也会发送逃逸。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;观察这个分析结果，我们可以看到没有&lt;code&gt;moved to heap: str&lt;/code&gt;，这也就是说明&lt;code&gt;str&lt;/code&gt;变量并没有在堆上进行分配，只是它存储的值逃逸到堆上了，也就说任何被&lt;code&gt;str&lt;/code&gt;引用的对象必须分配在堆上。如果我们把代码改成这样：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt;  {&lt;br/&gt; str := &lt;span&gt;&quot;asong太帅了吧&quot;&lt;/span&gt;&lt;br/&gt; fmt.Printf(&lt;span&gt;&quot;%p&quot;&lt;/span&gt;,&amp;amp;str)&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;查看逃逸分析结果：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;go&lt;/span&gt; build -gcflags=&lt;span&gt;&quot;-m -m -l&quot;&lt;/span&gt; ./test2.&lt;span&gt;go&lt;/span&gt;&lt;br/&gt;# command-line-arguments&lt;br/&gt;./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;18&lt;/span&gt;: &amp;amp;str escapes to heap&lt;br/&gt;./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;18&lt;/span&gt;:        from ... argument (arg to ...) at ./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;12&lt;/span&gt;&lt;br/&gt;./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;18&lt;/span&gt;:        from *(... argument) (indirection) at ./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;12&lt;/span&gt;&lt;br/&gt;./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;18&lt;/span&gt;:        from ... argument (passed to call[argument content escapes]) at ./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;12&lt;/span&gt;&lt;br/&gt;./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;18&lt;/span&gt;: &amp;amp;str escapes to heap&lt;br/&gt;./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;18&lt;/span&gt;:        from &amp;amp;str (&lt;span&gt;interface&lt;/span&gt;-converted) at ./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;18&lt;/span&gt;&lt;br/&gt;./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;18&lt;/span&gt;:        from ... argument (arg to ...) at ./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;12&lt;/span&gt;&lt;br/&gt;./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;18&lt;/span&gt;:        from *(... argument) (indirection) at ./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;12&lt;/span&gt;&lt;br/&gt;./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;18&lt;/span&gt;:        from ... argument (passed to call[argument content escapes]) at ./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;12&lt;/span&gt;&lt;br/&gt;./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;8&lt;/span&gt;:&lt;span&gt;2&lt;/span&gt;: moved to heap: str&lt;br/&gt;./test2.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;12&lt;/span&gt;: main ... argument does not escape&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这回&lt;code&gt;str&lt;/code&gt;也逃逸到了堆上，在堆上进行内存分配，这是因为我们访问&lt;code&gt;str&lt;/code&gt;的地址，因为入参是&lt;code&gt;interface&lt;/code&gt;类型，所以变量&lt;code&gt;str&lt;/code&gt;的地址以实参的形式传入&lt;code&gt;fmt.Printf&lt;/code&gt;后被装箱到一个&lt;code&gt;interface{}&lt;/code&gt;形参变量中，装箱的形参变量的值要在堆上分配，但是还要存储一个栈上的地址，也就是&lt;code&gt;str&lt;/code&gt;的地址，堆上的对象不能存储一个栈上的地址，所以&lt;code&gt;str&lt;/code&gt;也逃逸到堆上，在堆上分配内存。（&lt;strong&gt;这里注意一个知识点：Go语言的参数传递只有值传递&lt;/strong&gt;）&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;3. 闭包产生的逃逸&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;Increase&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;span&gt;func&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;span&gt;int&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt; n := &lt;span&gt;0&lt;/span&gt;&lt;br/&gt; &lt;span&gt;return&lt;/span&gt; &lt;span&gt;&lt;span&gt;func&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;span&gt;int&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;  n++&lt;br/&gt;  &lt;span&gt;return&lt;/span&gt; n&lt;br/&gt; }&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt; in := Increase()&lt;br/&gt; fmt.Println(in()) &lt;span&gt;// 1&lt;/span&gt;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;查看逃逸分析结果：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;go&lt;/span&gt; build -gcflags=&lt;span&gt;&quot;-m -m -l&quot;&lt;/span&gt; ./test3.&lt;span&gt;go&lt;/span&gt;&lt;br/&gt;# command-line-arguments&lt;br/&gt;./test3.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;10&lt;/span&gt;:&lt;span&gt;3&lt;/span&gt;: Increase.func1 capturing by ref: n (addr=&lt;span&gt;true&lt;/span&gt; assign=&lt;span&gt;true&lt;/span&gt; width=&lt;span&gt;8&lt;/span&gt;)&lt;br/&gt;./test3.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;: &lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;literal&lt;/span&gt; &lt;span&gt;escapes&lt;/span&gt; &lt;span&gt;to&lt;/span&gt; &lt;span&gt;heap&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;./test3.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:         from ~r0 (assigned) at ./test3.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;7&lt;/span&gt;:&lt;span&gt;17&lt;/span&gt;&lt;br/&gt;./test3.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;: &lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;literal&lt;/span&gt; &lt;span&gt;escapes&lt;/span&gt; &lt;span&gt;to&lt;/span&gt; &lt;span&gt;heap&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;./test3.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:         from &amp;amp;(&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;literal&lt;/span&gt;) &lt;span&gt;(address-of)&lt;/span&gt; &lt;span&gt;at&lt;/span&gt; ./&lt;span&gt;test3&lt;/span&gt;.&lt;span&gt;go&lt;/span&gt;:9:9&lt;/span&gt;&lt;br/&gt;./test3.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:&lt;span&gt;9&lt;/span&gt;:         from ~r0 (assigned) at ./test3.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;7&lt;/span&gt;:&lt;span&gt;17&lt;/span&gt;&lt;br/&gt;./test3.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;10&lt;/span&gt;:&lt;span&gt;3&lt;/span&gt;: &amp;amp;n escapes to heap&lt;br/&gt;./test3.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;10&lt;/span&gt;:&lt;span&gt;3&lt;/span&gt;:        from &lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;literal&lt;/span&gt; &lt;span&gt;(captured by a closure)&lt;/span&gt; &lt;span&gt;at&lt;/span&gt; ./&lt;span&gt;test3&lt;/span&gt;.&lt;span&gt;go&lt;/span&gt;:9:9&lt;/span&gt;&lt;br/&gt;./test3.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;10&lt;/span&gt;:&lt;span&gt;3&lt;/span&gt;:        from &amp;amp;(&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;literal&lt;/span&gt;) &lt;span&gt;(address-of)&lt;/span&gt; &lt;span&gt;at&lt;/span&gt; ./&lt;span&gt;test3&lt;/span&gt;.&lt;span&gt;go&lt;/span&gt;:9:9&lt;/span&gt;&lt;br/&gt;./test3.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;10&lt;/span&gt;:&lt;span&gt;3&lt;/span&gt;:        from ~r0 (assigned) at ./test3.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;7&lt;/span&gt;:&lt;span&gt;17&lt;/span&gt;&lt;br/&gt;./test3.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;8&lt;/span&gt;:&lt;span&gt;2&lt;/span&gt;: moved to heap: n&lt;br/&gt;./test3.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;17&lt;/span&gt;:&lt;span&gt;16&lt;/span&gt;: in() escapes to heap&lt;br/&gt;./test3.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;17&lt;/span&gt;:&lt;span&gt;16&lt;/span&gt;:       from ... argument (arg to ...) at ./test3.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;17&lt;/span&gt;:&lt;span&gt;13&lt;/span&gt;&lt;br/&gt;./test3.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;17&lt;/span&gt;:&lt;span&gt;16&lt;/span&gt;:       from *(... argument) (indirection) at ./test3.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;17&lt;/span&gt;:&lt;span&gt;13&lt;/span&gt;&lt;br/&gt;./test3.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;17&lt;/span&gt;:&lt;span&gt;16&lt;/span&gt;:       from ... argument (passed to call[argument content escapes]) at ./test3.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;17&lt;/span&gt;:&lt;span&gt;13&lt;/span&gt;&lt;br/&gt;./test3.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;17&lt;/span&gt;:&lt;span&gt;13&lt;/span&gt;: main ... argument does not escape&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因为函数也是一个指针类型，所以匿名函数当作返回值时也发生了逃逸，在匿名函数中使用外部变量&lt;code&gt;n&lt;/code&gt;，这个变量&lt;code&gt;n&lt;/code&gt;会一直存在直到&lt;code&gt;in&lt;/code&gt;被销毁，所以&lt;code&gt;n&lt;/code&gt;变量逃逸到了堆上。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;4. 变量大小不确定及栈空间不足引发逃逸&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们先使用&lt;code&gt;ulimit -a&lt;/code&gt;查看操作系统的栈空间：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;ulimit -a&lt;br/&gt;-t: cpu time (seconds)              unlimited&lt;br/&gt;-f: file size (blocks)              unlimited&lt;br/&gt;-d: data seg size (kbytes)          unlimited&lt;br/&gt;-s: stack size (kbytes)             &lt;span&gt;8192&lt;/span&gt;&lt;br/&gt;-c: core file size (blocks)         &lt;span&gt;0&lt;/span&gt;&lt;br/&gt;-v: address space (kbytes)          unlimited&lt;br/&gt;-l: locked-in-memory size (kbytes)  unlimited&lt;br/&gt;-u: processes                       &lt;span&gt;2784&lt;/span&gt;&lt;br/&gt;-n: file descriptors                &lt;span&gt;256&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我的电脑的栈空间大小是&lt;code&gt;8192&lt;/code&gt;，所以根据这个我们写一个测试用例：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;package&lt;/span&gt; main&lt;br/&gt;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; (&lt;br/&gt; &lt;span&gt;&quot;math/rand&quot;&lt;/span&gt;&lt;br/&gt;)&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;LessThan8192&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt;  {&lt;br/&gt; nums := &lt;span&gt;make&lt;/span&gt;([]&lt;span&gt;int&lt;/span&gt;, &lt;span&gt;100&lt;/span&gt;) &lt;span&gt;// = 64KB&lt;/span&gt;&lt;br/&gt; &lt;span&gt;for&lt;/span&gt; i := &lt;span&gt;0&lt;/span&gt;; i &amp;lt; &lt;span&gt;len&lt;/span&gt;(nums); i++ {&lt;br/&gt;  nums[i] = rand.Int()&lt;br/&gt; }&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;MoreThan8192&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt; nums := &lt;span&gt;make&lt;/span&gt;([]&lt;span&gt;int&lt;/span&gt;, &lt;span&gt;1000000&lt;/span&gt;) &lt;span&gt;// = 64KB&lt;/span&gt;&lt;br/&gt; &lt;span&gt;for&lt;/span&gt; i := &lt;span&gt;0&lt;/span&gt;; i &amp;lt; &lt;span&gt;len&lt;/span&gt;(nums); i++ {&lt;br/&gt;  nums[i] = rand.Int()&lt;br/&gt; }&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;NonConstant&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt; number := &lt;span&gt;10&lt;/span&gt;&lt;br/&gt; s := &lt;span&gt;make&lt;/span&gt;([]&lt;span&gt;int&lt;/span&gt;, number)&lt;br/&gt; &lt;span&gt;for&lt;/span&gt; i := &lt;span&gt;0&lt;/span&gt;; i &amp;lt; &lt;span&gt;len&lt;/span&gt;(s); i++ {&lt;br/&gt;  s[i] = i&lt;br/&gt; }&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt; NonConstant()&lt;br/&gt; MoreThan8192()&lt;br/&gt; LessThan8192()&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;查看逃逸分析结果：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;go&lt;/span&gt; build -gcflags=&lt;span&gt;&quot;-m -m -l&quot;&lt;/span&gt; ./test4.&lt;span&gt;go&lt;/span&gt;&lt;br/&gt;# command-line-arguments&lt;br/&gt;./test4.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;8&lt;/span&gt;:&lt;span&gt;14&lt;/span&gt;: LessThan8192 &lt;span&gt;make&lt;/span&gt;([]&lt;span&gt;int&lt;/span&gt;, &lt;span&gt;100&lt;/span&gt;) does not escape&lt;br/&gt;./test4.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;16&lt;/span&gt;:&lt;span&gt;14&lt;/span&gt;: &lt;span&gt;make&lt;/span&gt;([]&lt;span&gt;int&lt;/span&gt;, &lt;span&gt;1000000&lt;/span&gt;) escapes to heap&lt;br/&gt;./test4.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;16&lt;/span&gt;:&lt;span&gt;14&lt;/span&gt;:       from &lt;span&gt;make&lt;/span&gt;([]&lt;span&gt;int&lt;/span&gt;, &lt;span&gt;1000000&lt;/span&gt;) (non-constant size) at ./test4.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;16&lt;/span&gt;:&lt;span&gt;14&lt;/span&gt;&lt;br/&gt;./test4.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;25&lt;/span&gt;:&lt;span&gt;11&lt;/span&gt;: &lt;span&gt;make&lt;/span&gt;([]&lt;span&gt;int&lt;/span&gt;, number) escapes to heap&lt;br/&gt;./test4.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;25&lt;/span&gt;:&lt;span&gt;11&lt;/span&gt;:       from &lt;span&gt;make&lt;/span&gt;([]&lt;span&gt;int&lt;/span&gt;, number) (non-constant size) at ./test4.&lt;span&gt;go&lt;/span&gt;:&lt;span&gt;25&lt;/span&gt;:&lt;span&gt;11&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们可以看到，当栈空间足够时，不会发生逃逸，但是当变量过大时，已经完全超过栈空间的大小时，将会发生逃逸到堆上分配内存。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;同样当我们初始化切片时，没有直接指定大小，而是填入的变量，这种情况为了保证内存的安全，编译器也会触发逃逸，在堆上进行分配内存。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;参考文章（建议大家阅读一遍）&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;https://driverzhang.github.io/post/golang%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E9%80%83%E9%80%B8%E5%88%86%E6%9E%90/&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;https://segmentfault.com/a/1190000039843497&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;https://tonybai.com/2021/05/24/understand-go-escape-analysis-by-example/&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;https://cloud.tencent.com/developer/article/1732263&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;https://geektutu.com/post/hpg-escape-analysis.html&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;总结&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;本文到这里结束了，这篇文章我们一起分析了什么是内存逃逸以及&lt;code&gt;Go&lt;/code&gt;语言中的逃逸分析，上面只列举了几个例子，因为发生的逃逸的情况是列举不全的，我们只需要了解什么是逃逸分析，了解逃逸的策略就可以了，后面在实战中可以根据具体代码具体分析，写出更优质的代码。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;最后对逃逸做一个总结：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;逃逸分析在编译阶段确定哪些变量可以分配在栈中，哪些变量分配在堆上&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;逃逸分析减轻了&lt;code&gt;GC&lt;/code&gt;压力，提高程序的运行速度&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;栈上内存使用完毕不需要&lt;code&gt;GC&lt;/code&gt;处理，堆上内存使用完毕会交给&lt;code&gt;GC&lt;/code&gt;处理&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;函数传参时对于需要修改原对象值，或占用内存比较大的结构体，选择传指针。对于只读的占用内存较小的结构体，直接传值能够获得更好的性能&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;根据代码具体分析，尽量减少逃逸代码，减轻&lt;code&gt;GC&lt;/code&gt;压力，提高性能&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;素质三连（分享、点赞、在看）都是笔者持续创作更多优质内容的动力！我是&lt;code&gt;asong&lt;/code&gt;，我们下期见。&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;创建了一个Golang学习交流群，欢迎各位大佬们踊跃入群，我们一起学习交流。入群方式：关注公众号获取。更多学习资料请到公众号领取。&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.31875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/CqB2u93NwB8rxL8DUy5BbjNyggRGwIWE7Y2icLH12dMCLvlJ3AG8PR7qVOBWj2mVrxbJdYibAILPRGVo32XlnXJw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;推荐往期文章：&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>57d41a30b459a983618265a27c9e21f7</guid>
+<title>2021 年 Go 生态圈 rpc 框架 benchmark</title>
+<link>https://toutiao.io/k/nwr0uyg</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;article-entry&quot; itemprop=&quot;articleBody&quot;&gt;
+      
+      
+      
+      &lt;p&gt;有朋友问，每年年初的时候我会发布一个rpc的框架的大比拼，今年为啥没有了？&lt;br/&gt;&lt;a id=&quot;more&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;有几个原因，一是我去年下半年换了一份工作，熟悉新的业务耗费了很大精力，导致博客文章相对少了，开源的贡献也少了，二是rpcx我自己觉得性能已经很不错了没有想着进一步的优化，所以也没有做相应的benchmark比较。&lt;/p&gt;
+&lt;p&gt;前几个星期头条的同学推出他们的rpcx框架&lt;a href=&quot;https://github.com/cloudwego/kitex&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;kitex&lt;/a&gt;,据说性能要比rpcx和grpc好很多，加上今年GopherChina2021大会上他们也分享了他们的netpoll的优化。&lt;/p&gt;
+&lt;p&gt;本来，我对自定义epoll一类的框架如evio、gnet是不感冒的，因为go本身的net库也是基于epoll实现的，只不过这类框架在处理epoll事件之后的处理和标准库是不一样的。在GopherChina大会上我也和小伙伴说，我担心的这类框架的&quot;长尾效应&quot;,也就是从客户端视角看，大大并发的情况下latency的长尾效应可能是一个很大的痛点。这个话题我一直想专门写一篇文章探讨一下，希望这个秋季能出一篇深度分析标准库和自定义epoll的文章。&lt;/p&gt;
+&lt;p&gt;当然，既然头条的同学测试kitex性能不错，那么我也就把kitex加入到我的&lt;a href=&quot;https://github.com/rpcxio/rpcx-benchmark&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;rpc benchmark项目&lt;/a&gt;中了,并且在这个周末也对几种Go rpc框架做了benchmark对比,我想自己测试看看这些框架的性能表现。&lt;/p&gt;
+&lt;p&gt;当然，每次发表benchmark文章，我都会先声明，没有一个benchmark可以全面的反应这些框架的完整的性能的，更不用说完整的特性了。每个人在使用rpc框架时，面对的场景可能都不同，有些是CPU敏感的服务、有的是IO敏感的服务、有的是内存敏感的服务、有的是读数据库的服务、有的是提供缓存的服务、有些是写文件的服务，消息的长度有大有小、消息的编码格式也不尽相同，有的是同步调用，有的是异步调用，有些是同机房的调用，有些是跨机房的调用，有些用tcp，有些用udp,......,各种各样五花八门，所以没有一种benchmark可以涵盖所有的场景。这次我做的benchmark，也只是覆盖了其中的一种场景。但是幸运的是，这个项目提供了一个框架，可以根据你的场景自己定制，如果你感兴趣，你可以在这个项目的基础上做一些修改，以便和你的使用场景做匹配。&lt;/p&gt;
+&lt;p&gt;另外，性能只是比较rpc框架的一个方面，千万不要因为测试结果A框架比B框架好就拿去吹嘘，那是幼稚的表现。另外也不可能Go生态圈只有一个框架存在，目前Go生态圈至少有十几个框架存在，各有特色。我个人对于Go生态圈的微服务框架持开放态度，而且也会了解和学习其它框架的优点，让rpcx框架变得更好，我相信·其他开发者也是这么想的。&lt;/p&gt;
+&lt;p&gt;想比以前的测试，我把Dubbo、Motan、Tarsgo等rpc框架去掉了。我个人不认为这些框架真的适合Go生态群的开发。Go的设计哲学就是简单，这几种框架都需要复杂的配置。当然我知道这些框架原先是Java、C++语言的，只不过为了跨语言才port到Go生态圈，导致这些框架的使用非常的复杂，因为为了保持和主语言的框架的兼容。如果单纯的Go生态圈的使用的话，我还是建议挑选简单可依赖的纯Go生态圈的框架。&lt;/p&gt;
+&lt;p&gt;为了尽量保持一致的测试环境，所有的框架统一遵循下面的约定：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;分别测试并发数为100、200、500、1000、2000、5000的场景，测试单个服务在面对不同并发量的情况下的性能。&lt;/li&gt;
+&lt;li&gt;从客户端统计吞吐率和延迟(latency)&lt;/li&gt;
+&lt;li&gt;采用共享的client。创建一定数量的client作为client池。&lt;/li&gt;
+&lt;li&gt;所有的框架都是在“公平”的情况下测试。测试数据都是一致的，采用protobuf进行测试。虽然有比Protobuf性能更好的序列化框架，但是因为不具有通用性所以不考虑。&lt;/li&gt;
+&lt;li&gt;测试会进行预热。&lt;/li&gt;
+&lt;li&gt;避免&lt;a href=&quot;http://highscalability.com/blog/2015/10/5/your-load-generator-is-probably-lying-to-you-take-the-red-pi.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;coordinated omission&lt;/a&gt;:测试统计的是等待时间+服务时间,而不是服务端服务时间&lt;/li&gt;
+&lt;li&gt;统计既包含平均值，也包含P99.9值。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;测试环境&quot;&gt;测试环境&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Intel(R) Xeon(R) Silver 4110 CPU @ 2.10GHz,2颗&lt;/li&gt;
+&lt;li&gt;总物理核 8个， 开超线程逻辑核数为 32个&lt;/li&gt;
+&lt;li&gt;内存 128G&lt;/li&gt;
+&lt;li&gt;Go 1.16.6&lt;/li&gt;
+&lt;li&gt;各框架版本&lt;ul&gt;
+&lt;li&gt;arpc: 1.1.5&lt;/li&gt;
+&lt;li&gt;go std rpc: 1.16.6&lt;/li&gt;
+&lt;li&gt;grpc: 1.39.0&lt;/li&gt;
+&lt;li&gt;kitex: 0.0.3&lt;/li&gt;
+&lt;li&gt;rpcx: 1.6.5&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;测试是在单机上进行的。 坏处就是测试是没有像实际情况一样经过实际网络，而是本机网络支持处理，好处就是我们可以刨去长距离或者不好的网络的影响，只关注于rpc框架的处理。&lt;/p&gt;
+&lt;h2 id=&quot;测试步骤&quot;&gt;测试步骤&lt;/h2&gt;
+&lt;p&gt;生成每个框架的服务端和客户端:&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;p class=&quot;line&quot;&gt;1&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;2&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;3&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;4&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;5&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;6&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;7&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;8&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;9&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;10&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;11&lt;/p&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;p class=&quot;line&quot;&gt;-&lt;span class=&quot;ruby&quot;&gt;rwxr-xr-x &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt; smallnest &lt;span class=&quot;constant&quot;&gt;USER&lt;/span&gt;  &lt;span class=&quot;number&quot;&gt;9756450&lt;/span&gt; &lt;span class=&quot;constant&quot;&gt;Aug&lt;/span&gt;  &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;17&lt;/span&gt;&lt;span class=&quot;symbol&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;number&quot;&gt;50&lt;/span&gt; arpc_server&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;-&lt;span class=&quot;ruby&quot;&gt;rwxr-xr-x &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt; smallnest &lt;span class=&quot;constant&quot;&gt;USER&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;12800584&lt;/span&gt; &lt;span class=&quot;constant&quot;&gt;Aug&lt;/span&gt;  &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;17&lt;/span&gt;&lt;span class=&quot;symbol&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;number&quot;&gt;51&lt;/span&gt; gostd_server&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;-&lt;span class=&quot;ruby&quot;&gt;rwxr-xr-x &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt; smallnest &lt;span class=&quot;constant&quot;&gt;USER&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;12520016&lt;/span&gt; &lt;span class=&quot;constant&quot;&gt;Aug&lt;/span&gt;  &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;17&lt;/span&gt;&lt;span class=&quot;symbol&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;number&quot;&gt;52&lt;/span&gt; grpc_server&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;-&lt;span class=&quot;ruby&quot;&gt;rwxr-xr-x &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt; smallnest &lt;span class=&quot;constant&quot;&gt;USER&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;11240760&lt;/span&gt; &lt;span class=&quot;constant&quot;&gt;Aug&lt;/span&gt;  &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;17&lt;/span&gt;&lt;span class=&quot;symbol&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;number&quot;&gt;53&lt;/span&gt; kitex_server&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;-&lt;span class=&quot;ruby&quot;&gt;rwxr-xr-x &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt; smallnest &lt;span class=&quot;constant&quot;&gt;USER&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;11810350&lt;/span&gt; &lt;span class=&quot;constant&quot;&gt;Aug&lt;/span&gt;  &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;17&lt;/span&gt;&lt;span class=&quot;symbol&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;number&quot;&gt;54&lt;/span&gt; rpcx_server&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;/&gt;&lt;p class=&quot;line&quot;&gt;-&lt;span class=&quot;ruby&quot;&gt;rwxr-xr-x &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt; smallnest &lt;span class=&quot;constant&quot;&gt;USER&lt;/span&gt;  &lt;span class=&quot;number&quot;&gt;5021980&lt;/span&gt; &lt;span class=&quot;constant&quot;&gt;Aug&lt;/span&gt;  &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;17&lt;/span&gt;&lt;span class=&quot;symbol&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;number&quot;&gt;56&lt;/span&gt; arpc_client&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;-&lt;span class=&quot;ruby&quot;&gt;rwxr-xr-x &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt; smallnest &lt;span class=&quot;constant&quot;&gt;USER&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;11109233&lt;/span&gt; &lt;span class=&quot;constant&quot;&gt;Aug&lt;/span&gt;  &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;17&lt;/span&gt;&lt;span class=&quot;symbol&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;number&quot;&gt;57&lt;/span&gt; gostd_client&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;-&lt;span class=&quot;ruby&quot;&gt;rwxr-xr-x &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt; smallnest &lt;span class=&quot;constant&quot;&gt;USER&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;12581237&lt;/span&gt; &lt;span class=&quot;constant&quot;&gt;Aug&lt;/span&gt;  &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;17&lt;/span&gt;&lt;span class=&quot;symbol&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;number&quot;&gt;58&lt;/span&gt; grpc_client&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;-&lt;span class=&quot;ruby&quot;&gt;rwxr-xr-x &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt; smallnest &lt;span class=&quot;constant&quot;&gt;USER&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;11559544&lt;/span&gt; &lt;span class=&quot;constant&quot;&gt;Aug&lt;/span&gt;  &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;17&lt;/span&gt;&lt;span class=&quot;symbol&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;number&quot;&gt;59&lt;/span&gt; kitex_client&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;line&quot;&gt;-&lt;span class=&quot;ruby&quot;&gt;rwxr-xr-x &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt; smallnest &lt;span class=&quot;constant&quot;&gt;USER&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;16065065&lt;/span&gt; &lt;span class=&quot;constant&quot;&gt;Aug&lt;/span&gt;  &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;18&lt;/span&gt;&lt;span class=&quot;symbol&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;number&quot;&gt;00&lt;/span&gt; rpcx_client&lt;/span&gt;&lt;/p&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
 
+&lt;p&gt;启动服务端:&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;p class=&quot;line&quot;&gt;1&lt;/p&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;p class=&quot;line&quot;&gt;./xxx_server &lt;span class=&quot;operator&quot;&gt;-d&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;127.0&lt;/span&gt;.&lt;span class=&quot;number&quot;&gt;0.1&lt;/span&gt;:&lt;span class=&quot;number&quot;&gt;8972&lt;/span&gt;&lt;/p&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
 
+&lt;p&gt;客户端测试(并发数100)&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;p class=&quot;line&quot;&gt;1&lt;/p&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;p class=&quot;line&quot;&gt;./xxx_client -c &lt;span class=&quot;number&quot;&gt;1000&lt;/span&gt; -n &lt;span class=&quot;number&quot;&gt;10000000&lt;/span&gt; &lt;span class=&quot;operator&quot;&gt;-s&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;127.0&lt;/span&gt;.&lt;span class=&quot;number&quot;&gt;0.1&lt;/span&gt;:&lt;span class=&quot;number&quot;&gt;8973&lt;/span&gt;&lt;/p&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
 
-&lt;h2&gt;Cache和读写&lt;/h2&gt;
+&lt;p&gt;每个场景会发送一千万个请求，内容一个不大不小的protobuf编码的数据，服务端收到后会设置某个字段为&lt;code&gt;OK&lt;/code&gt;,并返回。没有复杂的计算。&lt;/p&gt;
+&lt;p&gt;相对于简单的echo 字符串的服务，消息体适中，编码格式通用，业务处理简单，耗时很短吞吐率有保障。&lt;/p&gt;
+&lt;h2 id=&quot;测试结果&quot;&gt;测试结果&lt;/h2&gt;
+&lt;p&gt;当前对5种rpc框架做了测试，有些是普通的rpc服务，比如arpc、Go标准库中的rpc、有些是支持微服务治理的框架如kitex、rpcx，有些是有一些微服务治理的功能如grpc。测试的时候，并没有测试他们的微服务治理的功能，而是只是测试了他们简单的rpc调用。&lt;/p&gt;
+&lt;p&gt;实际测试是，发现kitex在并发数为2000的时候，客户端调用会有少量出错，并发数为5000时，会有10+%的调用出错。&lt;/p&gt;
+&lt;h3 id=&quot;吞吐率_(越高越好)&quot;&gt;吞吐率 (越高越好)&lt;/h3&gt;
+&lt;p&gt;也就是每秒完成的调用数。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;throughputs.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;h3 id=&quot;延迟(平均耗时，越小越好)&quot;&gt;延迟(平均耗时，越小越好)&lt;/h3&gt;
+&lt;p&gt;单位毫秒。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;latency.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;h3 id=&quot;延迟(P99-9耗时，越小越好)&quot;&gt;延迟(P99.9耗时，越小越好)&lt;/h3&gt;
+&lt;p&gt;单位毫秒。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;p99.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;h3 id=&quot;原始测试数据&quot;&gt;原始测试数据&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&quot;data.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;h2 id=&quot;简单总结&quot;&gt;简单总结&lt;/h2&gt;
+&lt;p&gt;arpc表现亮眼，吞吐率和耗时表现都不错。它是一个类似go web编程风格的rpc框架，采用router和handler的方式实现服务，值的学习。&lt;/p&gt;
+&lt;p&gt;kitex在并发量小的时候吞吐率要比rpcx要好，随着并发量增多，吞吐率基本差不多，吞吐率在大一些，它的长尾效应很明显P99.9延迟很高，这符合我对自定义epoll框架的推测。如果有小伙伴有不同的想法，欢迎发送评论。&lt;/p&gt;
+&lt;p&gt;Go标准库rpc框架中规中矩。&lt;/p&gt;
+&lt;p&gt;rpcx框架表现优异，在各种并发量的情况下都领先，并且没有明显的长尾效应。&lt;/p&gt;
+&lt;p&gt;grpc本来也是很不错的框架，但是性能和这几位比起来，还稍差一些。&lt;/p&gt;
+&lt;p&gt;通过这次测试，我对rpcx当前的性能有了一个大致的了解，并且通过对其它rpc框架测试，又进一步优化了rpcx的性能。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;可能这个测试对于基于netpoll的kitex不&quot;公平&quot;，我的理解是自定义netpoll适合那种有巨量socket连接，并发量适中的场景。&lt;/p&gt;
+&lt;/blockquote&gt;
 
-
-
-&lt;p&gt;我们都知道把数据放到内存中，这样有读请求过来的时候就可以直接从内存中读取到相关数据（hit cache的情况），而不需要去访问具体的物理磁盘，从而减少了disk I/O的操作。同样地，写也可以写到内存中，只是和读不同的是，内存写终究只是一个中间状态，你最终还是要写到磁盘中才行，所以内存到写操作来说只起到一个delay的作用（当然假如你没有persist保存的情况下，可能也不需要写到磁盘，但我们讨论正常的需要persist保存的情况）。&lt;/p&gt;
-
-
-
-&lt;p&gt;不过当我们再仔细想一下，其实cache对写并不仅仅是一个delay的作用，它其实还有一些别的好处：&lt;/p&gt;
-
-
-
-&lt;ul&gt;&lt;li&gt;&lt;strong&gt;多次写，一次flush&lt;/strong&gt;：我们很容易就可以想到假如我们对一个数据进行了多次更新，然后再进行一次flush到磁盘，那么这些多次的更新操作其实就只要一次磁盘的写就好了。这从另一个角度减少了磁盘的写操作。&lt;/li&gt;&lt;li&gt;&lt;strong&gt;I/O Merge&lt;/strong&gt;&lt;strong&gt;：&lt;/strong&gt;另外一个好处，就是我们可能有多个数值在内存中被修改了，但我们可以把这些数值集合在一起，一次性更新，这样真正的物理写就可以看成是一次磁盘操作了。&lt;/li&gt;&lt;/ul&gt;
-
-
-
-&lt;p&gt;理解了这一点之后，我们再来想想我们之前提到的Write-ahead的logging策略。在write-ahead logging中，内存的修改并没有立即flush到disk中（减少了Random IO的操作），而是写到了一个sequential的log文件中（速度比较快），然后再通过一个后台进程来进行优化写（比如合并之类的）。&lt;/p&gt;
-
-
-
-&lt;p&gt;这里有人会问为什么Random I/O的操作没有Sequential I/O写的速度快，这是因为对物理磁盘来说，磁头移动是需要时间的，Random I/O就意味着每次要写的偏移地址之间有很大的差别，所以这个磁头需要不停地移动，这显然是很费时间的。而Sequential I/O则不尽然，假如偏移地址是连续的，磁头就不需要不停的移动寻找新的写的偏移，这样就减少了磁头偏移的时间（这里还要看各个厂家的fw的设置，就是sequential写之间的间隔对这个也是有影响的，因为假如sequential写之间间隔时间比较长，那么磁头可能会被reset，所以我们一般认为overlap sequential写是最佳的方案）。&lt;/p&gt;
-
-
-
-&lt;h2&gt;SSD&lt;/h2&gt;
-
-
-
-&lt;p&gt;其实我们上文提到的磁盘准确来讲是HDD，事实上在我们现如今的系统中HDD是最后一层存储，在其和Memory之间还存在另外一种存储介质：SSD。它和HDD不同，不再使用磁头和磁盘来进行存储，它是基于固态电子存储芯片阵列制成的硬盘。简单来说，它有以下优点：&lt;/p&gt;
-
-
-
-&lt;ul&gt;&lt;li&gt;和HDD相比来说，它的random读写的速度都要快很多。一般来说，它的读要比写稍微快一点点。稍后我们来解释这个原因。&lt;/li&gt;&lt;li&gt;Sequential的读写也比HDD速度要快。但是因为HDD的Random 读写比Sequential要差很多，所以单纯比较Sequential的读写速度，SSD提升倍数没有Random读写提升得那么明显，但也有很大的提升。&lt;/li&gt;&lt;li&gt;同步操作有很大的提升。因为HDD只有一个磁头（现在有新的HDD可以支持多个磁头，但是每个磁头也只能访问特定的扇区），所以对于同步操作来说就不能做到真正的同步，说白了还是一个单线程的操作。而SSD则没有这样的限制。&lt;/li&gt;&lt;/ul&gt;
-
-
-
-&lt;p&gt;对SSD来说，读操作比较简单，你可以不停地读一个小的单元。但是写操作就比较复杂了，在写之前你必须做一个擦除的操作，而且每次擦除只能是一个block，比如512KB。这个擦除操作还是比较慢的，而且最终会把这个block擦坏了（想象一下，你在一张纸上不停用铅笔写，不停要橡皮擦，最终这张纸的命运就是被擦破）。所以我们对HDD一般讨论的是I/O，而对SSD则一般研究的是寿命。&lt;/p&gt;
-
-
-
-&lt;p&gt;提到block的擦除，我们就不得不聊一聊SSD的GC（Garbage Collection），其实也很好理解，就是为了让一些block预先准备好了，SSD会回收一些block。这个时候就会有一个数据搬移的过程，比如把几个block中的少量数据（就是数据量不到一个block，但是占用了一个block）移到同一个block中，然后这几个block就可以空出一些出来。这种搬移的操作，其实也是一个新的写的循环，我们称之为Write amplification。你也可以想象，这里的GC操作是需要reserve一些空间来进行的，比如有一个空的block，我们就可以很容易把几个block中的数据搬运过去，假如空的block越来越少，那么搬运的代价就越大。&lt;/p&gt;
-
-
-
-&lt;p&gt;这也是为什么我们发现当SSD要写满的情况下，性能就会急剧下降。比如你写110GB文件到160GB的SSD和写到同样的320GB的SSD得到的速度可能会有差别，究其根源还是因为需要等待擦除操作。一般来说直接写到一个空的block只需要几百微秒，但是擦除则可能需要几毫秒的时间。&lt;/p&gt;
-
-
-
-&lt;h2&gt;RAID&lt;/h2&gt;
-
-
-
-&lt;p&gt;RAID全称廉价磁盘冗余阵列（Redundant Arrays of Independent Disk），它有不同级别的设置，我们可以简单看看几个它的常见的级别：&lt;/p&gt;
-
-
-
-&lt;ul&gt;&lt;li&gt;&lt;strong&gt;RAID0&lt;/strong&gt;: 这个级别是最便宜的也是性能最好的RAID设置。因为他其实没有冗余，一般来说用来存储一些你不怎么在意的数据，比如replica或者即将废弃的数据。所以不是所有的RAID都有这个R（Redundant）的，这种情况下，如果磁盘发生了损坏，是没有办法恢复数据的（除非你有别的redundant在别的机器上）&lt;/li&gt;&lt;li&gt;&lt;strong&gt;RAID1&lt;/strong&gt;: RAID的读性能是很好的，同时它会duplicate数据到不同磁盘上，所以这个设置终于有了真正的R的出现。一般来说对于类log系统可以使用这一配置。&lt;/li&gt;&lt;li&gt;&lt;strong&gt;RAID5&lt;/strong&gt;: 这个配置可以保证一个磁盘发生损坏的情况下，数据还可以恢复。从每个单元的存储消耗来看，它是最经济的做法。因为你其实只额外多了一个磁盘就可以达到redundant的效果。它的写的效率其实比较低，因为要把额外的校验位写到磁盘中。所以一般来说它比较适合读比较重的场景。另外这种配置下，性能最大的问题点其实在于磁盘出问题时的恢复。&lt;/li&gt;&lt;li&gt;&lt;strong&gt;RAID6&lt;/strong&gt;：相对RAID5的只能有一个磁盘出问题的场景，RAID6能支持两个磁盘同时出问题。&lt;/li&gt;&lt;li&gt;&lt;strong&gt;RAID10&lt;/strong&gt;：RAID10对数据存储来说是一个不错的选择，它的读写效率都不错。所以和RAID5类似，生产场景中使用得也比较多，它的安全性比较高，但是空间利用率相对比较低。&lt;/li&gt;&lt;li&gt;&lt;strong&gt;RAID50&lt;/strong&gt;: 其实就是一系列RAID5，对大得数据集可以使用。（比如data warehouse等）&lt;/li&gt;&lt;/ul&gt;
-
-
-
-&lt;p&gt;简单的比较可以见下表：&lt;/p&gt;
-
-
-
-&lt;figure class=&quot;wp-block-image size-large&quot;&gt;&lt;img src=&quot;https://donggeitnote.com/wp-content/uploads/2021/07/image-17.png&quot; alt=&quot;&quot; class=&quot;wp-image-818&quot; srcset=&quot;https://donggeitnote.com/wp-content/uploads/2021/07/image-17.png 624w, https://donggeitnote.com/wp-content/uploads/2021/07/image-17-300x153.png 300w&quot; sizes=&quot;(max-width: 624px) 100vw, 624px&quot;/&gt;&lt;/figure&gt;
-
-
-
-&lt;p&gt;最后在简单提一下，RAID中cache其实也是一个比较重要的概念，只是说这个cache和我们常见的benefit读不太一样，它更多地会被用来帮助写。&lt;/p&gt;
-
-
-
-&lt;h2&gt;总结&lt;/h2&gt;
-
-
-
-&lt;p&gt;至此，我们就简单介绍了数据存储的几种常见的硬件HDD,SSD,RAID。理解他们有助于我们在今后的工作中优化数据读写，尤其是性能研究的时候会有很大的帮助。&lt;/p&gt;
-                                                    &lt;nav class=&quot;pagination group&quot;&gt;
-                      &lt;/nav&gt;
-        &lt;/div&gt;
-
-        
-        &lt;/div&gt;&lt;/div&gt;</content:encoded>
+      
+    &lt;/div&gt;
+    &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
