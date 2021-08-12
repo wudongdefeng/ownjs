@@ -5,245 +5,6 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>fb2df63f5523c5e3b48401b0b93f2078</guid>
-<title>IndexedDB 快速入门</title>
-<link>https://toutiao.io/k/7hbxp47</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;post-header&quot;&gt;&lt;h1 class=&quot;title&quot;&gt;IndexedDB 快速入门&lt;/h1&gt;&lt;p class=&quot;meta&quot;&gt;冯宇 Posted at — Aug 7, 2021
-&lt;span class=&quot;meta&quot; id=&quot;busuanzi_container_page_pv&quot;&gt;阅读 &lt;span id=&quot;busuanzi_value_page_pv&quot;/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/div&gt;&lt;div class=&quot;markdown&quot;&gt;&lt;p&gt;&lt;strong&gt;注：如果你只是想快速体验一下 IndexedDB，建议直接去使用 &lt;a href=&quot;https://jsstore.net/&quot;&gt;JsStore&lt;/a&gt; 。它基本上完全隐藏了 IndexedDB 繁琐的技术细节，提供的接口也更加人性化，同时还有更高级的特性（如 sql join、upsert、webworker 等）。&lt;/strong&gt;&lt;/p&gt;&lt;h2 id=&quot;indexeddb-简介&quot;&gt;IndexedDB 简介&lt;/h2&gt;&lt;p&gt;作为前端开发工程师，你可能已经习惯了使用一些前端的存储方案，如 LocalStorage, Session Storage, Cookie 之类等等。而这些存储在存储结构简单、数据量小的场景中非常好用，但是遇到大规模结构化存储的场景中就不那么好用了。为此，诞生了一种新的存储标准 IndexedDB，用于在前端解决大规模量结构化数据存储的场景。如服务端数据缓存至前端加速，前端日志缓存记录等。&lt;/p&gt;&lt;p&gt;本文将介绍 IndexedDB 快速入门的相关内容，至于高级使用，仍建议详细阅读 IndexedDB 的&lt;a href=&quot;https://developer.mozilla.org/zh-CN/docs/Web/API/IndexedDB_API&quot;&gt;官方文档&lt;/a&gt;。&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;性能评测可参考： &lt;a href=&quot;https://zhuanlan.zhihu.com/p/104536473&quot;&gt;https://zhuanlan.zhihu.com/p/104536473&lt;/a&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;h2 id=&quot;indexeddb-的兼容性&quot;&gt;IndexedDB 的兼容性&lt;/h2&gt;&lt;p&gt;如今 IndexedDB 几乎在现代化的浏览器都已经实现，因此可以放心大胆的在产品环境使用。截至本文撰写时间，当前 IndexedDB 的浏览器兼容性参考如下:&lt;/p&gt;&lt;p&gt;&lt;img src=&quot;imgs/indexeddb1.png&quot; alt=&quot;IndexedDB 兼容性概览&quot;/&gt;&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;数据来源: &lt;a href=&quot;https://caniuse.com/indexeddb&quot;&gt;https://caniuse.com/indexeddb&lt;/a&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;h2 id=&quot;indexeddb-的存储容量限制&quot;&gt;IndexedDB 的存储容量限制&lt;/h2&gt;&lt;p&gt;IndexedDB 的最大存储容量通常是动态的，通常&lt;strong&gt;全局限制&lt;/strong&gt;为当前磁盘空间的 50%，如浏览器安装分区容量为 500GB，则 IndexedDB 最大可能占用空间为 250GB —— 这对于前端存储来几乎是足够的&lt;/p&gt;&lt;p&gt;还有另一个限制称为&lt;strong&gt;组限制&lt;/strong&gt;——这被定义为全局限制的 20％，但它至少有 10 MB，最大为 2GB。 每个源都是一组（源组）的一部分。 每个 eTLD+1 域都有一个组。 例如：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;code&gt;mozilla.org&lt;/code&gt;——组 1，源 1&lt;/li&gt;&lt;li&gt;&lt;code&gt;www.mozilla.org&lt;/code&gt;——组 1，源 2&lt;/li&gt;&lt;li&gt;&lt;code&gt;joe.blogs.mozilla.org&lt;/code&gt;——组 1，源 3&lt;/li&gt;&lt;li&gt;&lt;code&gt;firefox.com&lt;/code&gt; ——组 2，源 4&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;在这个组中，mozilla.org、www.mozilla.org和joe.blogs.mozilla.org可以聚合使用最多20％的全局限制。 firefox.com 单独最多使用 20％。&lt;/p&gt;&lt;p&gt;达到限制后有两种不同的反应：&lt;/p&gt;&lt;p&gt;组限制也称为“硬限制”：它不会触发源回收。
-全局限制是一个“软限制”，因为其有可能释放一些空间并且这个操作可能持续。&lt;/p&gt;&lt;h2 id=&quot;indexeddb-安全性&quot;&gt;IndexedDB 安全性&lt;/h2&gt;&lt;p&gt;IndexedDB 使用同源原则，这意味着它把存储空间绑定到了创建它的站点的源（典型情况下，就是站点的域或是子域），所以它不能被任何其他源访问。&lt;/p&gt;&lt;h2 id=&quot;indexeddb-简易示例&quot;&gt;IndexedDB 简易示例&lt;/h2&gt;&lt;p&gt;IndexedDB 的 API 是基于事件响应全异步性的，使用的时候需要监听对应的事件完成操作。一个基本的创建数据库的操作实例如下:&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span&gt;// 如果被打开的数据库不存在，则会自动创建
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;var&lt;/span&gt; &lt;span&gt;request&lt;/span&gt; = &lt;span&gt;window&lt;/span&gt;.&lt;span&gt;indexedDB&lt;/span&gt;.&lt;span&gt;open&lt;/span&gt;(&lt;span&gt;&quot;MyTestDatabase&quot;&lt;/span&gt;);
-
-&lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onerror&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-  &lt;span&gt;alert&lt;/span&gt;(&lt;span&gt;&quot;Why didn&#x27;t you allow my web app to use IndexedDB?!&quot;&lt;/span&gt;);
-};
-
-&lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-  &lt;span&gt;const&lt;/span&gt; &lt;span&gt;db&lt;/span&gt; = &lt;span&gt;event&lt;/span&gt;.&lt;span&gt;target&lt;/span&gt;.&lt;span&gt;result&lt;/span&gt;;
-
-  &lt;span&gt;// 在不使用 db 的时候尽可能 close掉，否则无法打开一个更高版本的 db，表现形式为 hang 死，无法接收到 onsuccess 事件
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;// 注意 close() 函数不会立即中断已经在运行中的 transaction
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;// 但是不能再用这个实例创建新的transaction，否则会抛异常
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;db&lt;/span&gt;.&lt;span&gt;close&lt;/span&gt;();
-};
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&quot;数据库的版本号&quot;&gt;数据库的版本号&lt;/h3&gt;&lt;p&gt;&lt;code&gt;open()&lt;/code&gt; 函数可以传一个可选的 &lt;code&gt;version&lt;/code&gt; 参数指定版本号，当 version 比当前 &lt;code&gt;db.version&lt;/code&gt; 高时，会触发 &lt;code&gt;onupgradeneeded&lt;/code&gt; 事件，同时，会更新 &lt;code&gt;db.version&lt;/code&gt; 属性：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span&gt;var&lt;/span&gt; &lt;span&gt;request&lt;/span&gt; = &lt;span&gt;window&lt;/span&gt;.&lt;span&gt;indexedDB&lt;/span&gt;.&lt;span&gt;open&lt;/span&gt;(&lt;span&gt;&quot;MyTestDatabase&quot;&lt;/span&gt;, &lt;span&gt;2&lt;/span&gt;);
-
-&lt;span&gt;// 该事件仅在较新的浏览器中实现了
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onupgradeneeded&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-  &lt;span&gt;// 保存 IDBDataBase 接口
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;var&lt;/span&gt; &lt;span&gt;db&lt;/span&gt; = &lt;span&gt;event&lt;/span&gt;.&lt;span&gt;target&lt;/span&gt;.&lt;span&gt;result&lt;/span&gt;;
-
-  &lt;span&gt;// 为该数据库创建一个对象仓库
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;// 注意 createObjectStore() 只能在 onupgradeneeded 事务中运行
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;var&lt;/span&gt; &lt;span&gt;objectStore&lt;/span&gt; = &lt;span&gt;db&lt;/span&gt;.&lt;span&gt;createObjectStore&lt;/span&gt;(&lt;span&gt;&quot;name&quot;&lt;/span&gt;, { &lt;span&gt;keyPath&lt;/span&gt;: &lt;span&gt;&quot;myKey&quot;&lt;/span&gt; });
-};
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;为了防止在其他标签页中打开高版本的数据库 hang 住的情况，一种做法可以参考如下:&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span&gt;var&lt;/span&gt; &lt;span&gt;openReq&lt;/span&gt; = &lt;span&gt;mozIndexedDB&lt;/span&gt;.&lt;span&gt;open&lt;/span&gt;(&lt;span&gt;&quot;MyTestDatabase&quot;&lt;/span&gt;, &lt;span&gt;2&lt;/span&gt;);
-
-&lt;span&gt;openReq&lt;/span&gt;.&lt;span&gt;onblocked&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-  &lt;span&gt;// 如果其他的一些页签加载了该数据库，在我们继续之前需要关闭它们
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;alert&lt;/span&gt;(&lt;span&gt;&quot;请关闭其他由该站点打开的页签！&quot;&lt;/span&gt;);
-};
-
-&lt;span&gt;openReq&lt;/span&gt;.&lt;span&gt;onupgradeneeded&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-  &lt;span&gt;// 其他的数据已经被关闭，一切就绪
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;db&lt;/span&gt;.&lt;span&gt;createObjectStore&lt;/span&gt;(&lt;span&gt;/* ... */&lt;/span&gt;);
-  &lt;span&gt;useDatabase&lt;/span&gt;(&lt;span&gt;db&lt;/span&gt;);
-};
-
-&lt;span&gt;openReq&lt;/span&gt;.&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-  &lt;span&gt;var&lt;/span&gt; &lt;span&gt;db&lt;/span&gt; = &lt;span&gt;event&lt;/span&gt;.&lt;span&gt;target&lt;/span&gt;.&lt;span&gt;result&lt;/span&gt;;
-  &lt;span&gt;useDatabase&lt;/span&gt;(&lt;span&gt;db&lt;/span&gt;);
-  &lt;span&gt;return&lt;/span&gt;;
-};
-
-&lt;span&gt;function&lt;/span&gt; &lt;span&gt;useDatabase&lt;/span&gt;(&lt;span&gt;db&lt;/span&gt;) {
-  &lt;span&gt;// 当由其他页签请求了版本变更时，确认添加了一个会被通知的事件处理程序。
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;// 这里允许其他页签来更新数据库，如果不这样做，版本升级将不会发生知道用户关闭了这些页签。
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;db&lt;/span&gt;.&lt;span&gt;onversionchange&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-    &lt;span&gt;db&lt;/span&gt;.&lt;span&gt;close&lt;/span&gt;();
-    &lt;span&gt;alert&lt;/span&gt;(&lt;span&gt;&quot;A new version of this page is ready. Please reload or close this tab!&quot;&lt;/span&gt;);
-  };
-
-  &lt;span&gt;// 处理数据库
-&lt;/span&gt;&lt;span/&gt;}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&quot;一个基本的存储示例&quot;&gt;一个基本的存储示例&lt;/h3&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span&gt;const&lt;/span&gt; &lt;span&gt;dbName&lt;/span&gt; = &lt;span&gt;&quot;the_name&quot;&lt;/span&gt;;
-
-&lt;span&gt;var&lt;/span&gt; &lt;span&gt;request&lt;/span&gt; = &lt;span&gt;indexedDB&lt;/span&gt;.&lt;span&gt;open&lt;/span&gt;(&lt;span&gt;dbName&lt;/span&gt;, &lt;span&gt;2&lt;/span&gt;);
-
-&lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onerror&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-  &lt;span&gt;// 错误处理
-&lt;/span&gt;&lt;span/&gt;};
-&lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onupgradeneeded&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-  &lt;span&gt;var&lt;/span&gt; &lt;span&gt;db&lt;/span&gt; = &lt;span&gt;event&lt;/span&gt;.&lt;span&gt;target&lt;/span&gt;.&lt;span&gt;result&lt;/span&gt;;
-
-  &lt;span&gt;// 建立一个对象仓库来存储我们客户的相关信息，我们选择 ssn 作为键路径（key path）
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;// 因为 ssn 可以保证是不重复的
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;var&lt;/span&gt; &lt;span&gt;objectStore&lt;/span&gt; = &lt;span&gt;db&lt;/span&gt;.&lt;span&gt;createObjectStore&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;, { &lt;span&gt;keyPath&lt;/span&gt;: &lt;span&gt;&quot;ssn&quot;&lt;/span&gt; });
-
-  &lt;span&gt;// 建立一个索引来通过姓名来搜索客户。名字可能会重复，所以我们不能使用 unique 索引
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;createIndex&lt;/span&gt;(&lt;span&gt;&quot;name&quot;&lt;/span&gt;, &lt;span&gt;&quot;name&quot;&lt;/span&gt;, { &lt;span&gt;unique&lt;/span&gt;: &lt;span&gt;false&lt;/span&gt; });
-
-  &lt;span&gt;// 使用邮箱建立索引，我们向确保客户的邮箱不会重复，所以我们使用 unique 索引
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;createIndex&lt;/span&gt;(&lt;span&gt;&quot;email&quot;&lt;/span&gt;, &lt;span&gt;&quot;email&quot;&lt;/span&gt;, { &lt;span&gt;unique&lt;/span&gt;: &lt;span&gt;true&lt;/span&gt; });
-
-  &lt;span&gt;// 使用事务的 oncomplete 事件确保在插入数据前对象仓库已经创建完毕
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;transaction&lt;/span&gt;.&lt;span&gt;oncomplete&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-    &lt;span&gt;// 将数据保存到新创建的对象仓库
-&lt;/span&gt;&lt;span/&gt;    &lt;span&gt;var&lt;/span&gt; &lt;span&gt;customerObjectStore&lt;/span&gt; = &lt;span&gt;db&lt;/span&gt;.&lt;span&gt;transaction&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;, &lt;span&gt;&quot;readwrite&quot;&lt;/span&gt;).&lt;span&gt;objectStore&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;);
-    &lt;span&gt;customerData&lt;/span&gt;.&lt;span&gt;forEach&lt;/span&gt;(&lt;span&gt;function&lt;/span&gt; (&lt;span&gt;customer&lt;/span&gt;) {
-      &lt;span&gt;// add 函数在 keyPath 冲突时会抛异常，如果期望直接覆盖，请使用 put 函数
-&lt;/span&gt;&lt;span/&gt;      &lt;span&gt;customerObjectStore&lt;/span&gt;.&lt;span&gt;add&lt;/span&gt;(&lt;span&gt;customer&lt;/span&gt;);
-    });
-  };
-};
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;&lt;p&gt;&lt;strong&gt;关于索引&lt;/strong&gt;: IndexedDB 的索引会自动按照由小到大的顺序自动进行排列(有点像 HBase 的 RowKey 设计)，同时可以支持多个字段联合索引，如: objectStore.createIndex(“f1-f2”, [“f1”, “f2”]); 对于要想使用类似于 SQL 中的 where 条件查询，则必须预先在对应的字段创建索引才能实现。另外由于 IndexedDB API 并不提供类似于 Order By 的功能，因此只能使用 cursor 的遍历方向来替代。&lt;/p&gt;&lt;/blockquote&gt;&lt;h3 id=&quot;基本-curd-示例&quot;&gt;基本 CURD 示例&lt;/h3&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span&gt;// ========= 增加数据 ============
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;// 在所有数据添加完毕后的处理
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;transaction&lt;/span&gt;.&lt;span&gt;oncomplete&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-  &lt;span&gt;alert&lt;/span&gt;(&lt;span&gt;&quot;All done!&quot;&lt;/span&gt;);
-};
-
-&lt;span&gt;transaction&lt;/span&gt;.&lt;span&gt;onerror&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-  &lt;span&gt;// 不要忘记错误处理！
-&lt;/span&gt;&lt;span/&gt;};
-
-&lt;span&gt;var&lt;/span&gt; &lt;span&gt;objectStore&lt;/span&gt; = &lt;span&gt;transaction&lt;/span&gt;.&lt;span&gt;objectStore&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;);
-&lt;span&gt;customerData&lt;/span&gt;.&lt;span&gt;forEach&lt;/span&gt;(&lt;span&gt;function&lt;/span&gt; (&lt;span&gt;customer&lt;/span&gt;) {
-  &lt;span&gt;var&lt;/span&gt; &lt;span&gt;request&lt;/span&gt; = &lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;add&lt;/span&gt;(&lt;span&gt;customer&lt;/span&gt;);
-  &lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-    &lt;span&gt;// event.target.result === customer.ssn;
-&lt;/span&gt;&lt;span/&gt;  };
-});
-
-&lt;span&gt;// =========== 删除数据 ==================
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;var&lt;/span&gt; &lt;span&gt;request&lt;/span&gt; = &lt;span&gt;db&lt;/span&gt;
-  .&lt;span&gt;transaction&lt;/span&gt;([&lt;span&gt;&quot;customers&quot;&lt;/span&gt;], &lt;span&gt;&quot;readwrite&quot;&lt;/span&gt;)
-  .&lt;span&gt;objectStore&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;)
-  .&lt;span&gt;delete&lt;/span&gt;(&lt;span&gt;&quot;444-44-4444&quot;&lt;/span&gt;);
-&lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-  &lt;span&gt;// 删除成功！
-&lt;/span&gt;&lt;span/&gt;};
-
-&lt;span&gt;// =========== 读取数据 ==================
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;var&lt;/span&gt; &lt;span&gt;transaction&lt;/span&gt; = &lt;span&gt;db&lt;/span&gt;.&lt;span&gt;transaction&lt;/span&gt;([&lt;span&gt;&quot;customers&quot;&lt;/span&gt;]);
-&lt;span&gt;var&lt;/span&gt; &lt;span&gt;objectStore&lt;/span&gt; = &lt;span&gt;transaction&lt;/span&gt;.&lt;span&gt;objectStore&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;);
-&lt;span&gt;var&lt;/span&gt; &lt;span&gt;request&lt;/span&gt; = &lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;get&lt;/span&gt;(&lt;span&gt;&quot;444-44-4444&quot;&lt;/span&gt;);
-&lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onerror&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-  &lt;span&gt;// 错误处理!
-&lt;/span&gt;&lt;span/&gt;};
-&lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-  &lt;span&gt;// 对 request.result 做些操作！
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;alert&lt;/span&gt;(&lt;span&gt;&quot;Name for SSN 444-44-4444 is &quot;&lt;/span&gt; + &lt;span&gt;request&lt;/span&gt;.&lt;span&gt;result&lt;/span&gt;.&lt;span&gt;name&lt;/span&gt;);
-};
-
-&lt;span&gt;// 简化示例，和上面等效
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;db&lt;/span&gt;.&lt;span&gt;transaction&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;).&lt;span&gt;objectStore&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;).&lt;span&gt;get&lt;/span&gt;(&lt;span&gt;&quot;444-44-4444&quot;&lt;/span&gt;).&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (
-  &lt;span&gt;event&lt;/span&gt;
-) {
-  &lt;span&gt;alert&lt;/span&gt;(&lt;span&gt;&quot;Name for SSN 444-44-4444 is &quot;&lt;/span&gt; + &lt;span&gt;event&lt;/span&gt;.&lt;span&gt;target&lt;/span&gt;.&lt;span&gt;result&lt;/span&gt;.&lt;span&gt;name&lt;/span&gt;);
-};
-
-&lt;span&gt;// 使用游标
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;var&lt;/span&gt; &lt;span&gt;objectStore&lt;/span&gt; = &lt;span&gt;db&lt;/span&gt;.&lt;span&gt;transaction&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;).&lt;span&gt;objectStore&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;);
-
-&lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;openCursor&lt;/span&gt;().&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-  &lt;span&gt;var&lt;/span&gt; &lt;span&gt;cursor&lt;/span&gt; = &lt;span&gt;event&lt;/span&gt;.&lt;span&gt;target&lt;/span&gt;.&lt;span&gt;result&lt;/span&gt;;
-  &lt;span&gt;if&lt;/span&gt; (&lt;span&gt;cursor&lt;/span&gt;) {
-    &lt;span&gt;alert&lt;/span&gt;(&lt;span&gt;&quot;Name for SSN &quot;&lt;/span&gt; + &lt;span&gt;cursor&lt;/span&gt;.&lt;span&gt;key&lt;/span&gt; + &lt;span&gt;&quot; is &quot;&lt;/span&gt; + &lt;span&gt;cursor&lt;/span&gt;.&lt;span&gt;value&lt;/span&gt;.&lt;span&gt;name&lt;/span&gt;);
-    &lt;span&gt;cursor&lt;/span&gt;.&lt;span&gt;continue&lt;/span&gt;();
-  } &lt;span&gt;else&lt;/span&gt; {
-    &lt;span&gt;alert&lt;/span&gt;(&lt;span&gt;&quot;No more entries!&quot;&lt;/span&gt;);
-  }
-};
-
-&lt;span&gt;// 使用 index 索引数据
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;// 首先，确定你已经在 request.onupgradeneeded 中创建了索引:
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;// objectStore.createIndex(&quot;name&quot;, &quot;name&quot;);
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;// 否则你将得到 DOMException。
-&lt;/span&gt;&lt;span/&gt;
-&lt;span&gt;var&lt;/span&gt; &lt;span&gt;index&lt;/span&gt; = &lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;index&lt;/span&gt;(&lt;span&gt;&quot;name&quot;&lt;/span&gt;);
-
-&lt;span&gt;index&lt;/span&gt;.&lt;span&gt;get&lt;/span&gt;(&lt;span&gt;&quot;Donna&quot;&lt;/span&gt;).&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-  &lt;span&gt;alert&lt;/span&gt;(&lt;span&gt;&quot;Donna&#x27;s SSN is &quot;&lt;/span&gt; + &lt;span&gt;event&lt;/span&gt;.&lt;span&gt;target&lt;/span&gt;.&lt;span&gt;result&lt;/span&gt;.&lt;span&gt;ssn&lt;/span&gt;);
-};
-
-&lt;span&gt;// =========== 更新数据 ==================
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;var&lt;/span&gt; &lt;span&gt;objectStore&lt;/span&gt; = &lt;span&gt;db&lt;/span&gt;.&lt;span&gt;transaction&lt;/span&gt;([&lt;span&gt;&quot;customers&quot;&lt;/span&gt;], &lt;span&gt;&quot;readwrite&quot;&lt;/span&gt;).&lt;span&gt;objectStore&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;);
-&lt;span&gt;var&lt;/span&gt; &lt;span&gt;request&lt;/span&gt; = &lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;get&lt;/span&gt;(&lt;span&gt;&quot;444-44-4444&quot;&lt;/span&gt;);
-&lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onerror&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-  &lt;span&gt;// 错误处理
-&lt;/span&gt;&lt;span/&gt;};
-&lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-  &lt;span&gt;// 获取我们想要更新的数据
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;var&lt;/span&gt; &lt;span&gt;data&lt;/span&gt; = &lt;span&gt;event&lt;/span&gt;.&lt;span&gt;target&lt;/span&gt;.&lt;span&gt;result&lt;/span&gt;;
-
-  &lt;span&gt;// 更新你想修改的数据
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;data&lt;/span&gt;.&lt;span&gt;age&lt;/span&gt; = &lt;span&gt;42&lt;/span&gt;;
-
-  &lt;span&gt;// 把更新过的对象放回数据库
-&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;var&lt;/span&gt; &lt;span&gt;requestUpdate&lt;/span&gt; = &lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;put&lt;/span&gt;(&lt;span&gt;data&lt;/span&gt;);
-  &lt;span&gt;requestUpdate&lt;/span&gt;.&lt;span&gt;onerror&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-    &lt;span&gt;// 错误处理
-&lt;/span&gt;&lt;span/&gt;  };
-  &lt;span&gt;requestUpdate&lt;/span&gt;.&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-    &lt;span&gt;// 完成，数据已更新！
-&lt;/span&gt;&lt;span/&gt;  };
-};
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&quot;关于搜索查询&quot;&gt;关于搜索查询&lt;/h2&gt;&lt;p&gt;通过上述的示例，可以看到其实 IndexedDB 存储其实是文档型数据库的套路，并且自身的 API 并不支持像 SQL 那样复杂功能多样的查询功能，因此在使用前必须好好设计存储结构，务必确保自己的查询条件不至于太复杂难以实现，这里列出一些常见的查询示例与 SQL 的对照(所有需要用到的 index 需要事先创建好，这里不再赘述):&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span&gt;// select * from table order by field desc
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;index&lt;/span&gt;(&lt;span&gt;&quot;field&quot;&lt;/span&gt;).&lt;span&gt;openCursor&lt;/span&gt;(&lt;span&gt;null&lt;/span&gt;, &lt;span&gt;&quot;prev&quot;&lt;/span&gt;);
-
-&lt;span&gt;// select * from table where field between 1 and 10
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;index&lt;/span&gt;(&lt;span&gt;&quot;field&quot;&lt;/span&gt;).&lt;span&gt;openCursor&lt;/span&gt;(&lt;span&gt;IDBKeyRange&lt;/span&gt;.&lt;span&gt;bound&lt;/span&gt;(&lt;span&gt;1&lt;/span&gt;, &lt;span&gt;10&lt;/span&gt;, &lt;span&gt;false&lt;/span&gt;, &lt;span&gt;true&lt;/span&gt;));
-
-&lt;span&gt;// select distinct on (f1, f2) * from table
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;// 需要预先创建f1, f2的联合索引: objectStore.createIndex(&quot;f1-f2&quot;, [&quot;f1&quot;, &quot;f2&quot;], { unique: false });
-&lt;/span&gt;&lt;span/&gt;&lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;index&lt;/span&gt;(&lt;span&gt;&quot;f1-f2&quot;&lt;/span&gt;).&lt;span&gt;openCursor&lt;/span&gt;(&lt;span&gt;null&lt;/span&gt;, &lt;span&gt;&quot;nextunique&quot;&lt;/span&gt;);
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;条件搜索主要使用&lt;code&gt;openCursor(keyRange, direction)&lt;/code&gt;函数，&lt;a href=&quot;https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange&quot;&gt;IDBKeyRange&lt;/a&gt; 参数表示查询的范围，类似于&lt;code&gt;where&lt;/code&gt;的功能，而&lt;a href=&quot;https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor/direction&quot;&gt;direction&lt;/a&gt; 决定游标遍历的方向，因此可以实现简单的&lt;code&gt;order by&lt;/code&gt;的功能。但是特别注意对于联合索引，每个字段也都是按照&lt;code&gt;asc&lt;/code&gt;顺序排序的，因此没办法通过 direction 实现类似于&lt;code&gt;order by f1 asc, f2 desc, f3 desc&lt;/code&gt;这样的排序，使用前务必设计好存储结构。&lt;/p&gt;&lt;p&gt;还需要注意无论&lt;code&gt;nextunique&lt;/code&gt;还是&lt;code&gt;prevunique&lt;/code&gt;，由于它们内部对于相同 value 的排序都是从小到大的，因此它们返回的内容都是一样的，例如:&lt;/p&gt;&lt;p&gt;假设创建&lt;code&gt;objectStore.createIndex(&quot;f1-f2&quot;, [&quot;f1&quot;, &quot;f2&quot;], { unique: false })&lt;/code&gt;索引，无论&lt;code&gt;openCursor&lt;/code&gt;的 direction 参数是&lt;code&gt;nextunique&lt;/code&gt;还是&lt;code&gt;prevunique&lt;/code&gt;，都只会筛选出&lt;code&gt;{&quot;f1&quot;:&quot;a&quot;,&quot;f2&quot;:&quot;b&quot;,&quot;f3&quot;:&quot;c&quot;}&lt;/code&gt;这条结果，cursor 的遍历顺序只会影响这条记录出现的次序而已。&lt;/p&gt;&lt;h2 id=&quot;promise&quot;&gt;Promise&lt;/h2&gt;&lt;p&gt;IndexedDB API 本身并不提供 Promise 接口，如果你的场景确实需要用到 Promise，可以考虑自己简单封装下:&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span&gt;new&lt;/span&gt; &lt;span&gt;Promise&lt;/span&gt;(&lt;span&gt;resolve&lt;/span&gt;, &lt;span&gt;reject&lt;/span&gt;) {
-  &lt;span&gt;const&lt;/span&gt; &lt;span&gt;request&lt;/span&gt; = &lt;span&gt;window&lt;/span&gt;.&lt;span&gt;indexedDB&lt;/span&gt;.&lt;span&gt;open&lt;/span&gt;(&lt;span&gt;&quot;MyTestDatabase&quot;&lt;/span&gt;);
-
-  &lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onerror&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-    &lt;span&gt;return&lt;/span&gt; &lt;span&gt;reject&lt;/span&gt;(&lt;span&gt;event&lt;/span&gt;);
-  }
-
-  &lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-    &lt;span&gt;const&lt;/span&gt; &lt;span&gt;db&lt;/span&gt; = &lt;span&gt;event&lt;/span&gt;.&lt;span&gt;target&lt;/span&gt;.&lt;span&gt;result&lt;/span&gt;;
-    &lt;span&gt;const&lt;/span&gt; &lt;span&gt;getReq&lt;/span&gt; = &lt;span&gt;db&lt;/span&gt;
-      .&lt;span&gt;transaction&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;)
-      .&lt;span&gt;objectStore&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;)
-      .&lt;span&gt;get&lt;/span&gt;(&lt;span&gt;&quot;444-44-4444&quot;&lt;/span&gt;)
-
-    &lt;span&gt;getReq&lt;/span&gt;.&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-      &lt;span&gt;return&lt;/span&gt; &lt;span&gt;resolve&lt;/span&gt;(&lt;span&gt;event&lt;/span&gt;.&lt;span&gt;target&lt;/span&gt;.&lt;span&gt;result&lt;/span&gt;.&lt;span&gt;name&lt;/span&gt;);
-    };
-
-    &lt;span&gt;getReq&lt;/span&gt;.&lt;span&gt;onerror&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
-      &lt;span&gt;return&lt;/span&gt; &lt;span&gt;reject&lt;/span&gt;(&lt;span&gt;event&lt;/span&gt;)
-    }
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果需要大量使用 Promise，可以考虑使用第三方类库&lt;a href=&quot;https://www.npmjs.com/package/idb&quot;&gt;idb&lt;/a&gt;或更精简的版本&lt;a href=&quot;https://www.npmjs.com/package/idb-keyval&quot;&gt;idb-keyval&lt;/a&gt;，它们将 IndexedDB 的 API 进行了 Promise 的封装，其中&lt;a href=&quot;https://www.npmjs.com/package/idb-keyval&quot;&gt;idb-keyval&lt;/a&gt;对 KV 对这种存储结构进行了更简化的封装调用，对于自己的场景只有简单的 KV 存储这种场景可以考虑使用&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>4d5636bfda27716b709e5f03be48c443</guid>
-<title>Java 进阶：从整体上观察面向对象</title>
-<link>https://toutiao.io/k/d5zzykx</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
-
-                    
-                    
-                    
-                    &lt;h1&gt;&lt;span&gt;一、面向对象&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;面向对象是Java编程中最核心的思想，基本特征：继承、封装、多态。&lt;/p&gt;&lt;h2&gt;&lt;span&gt;1、特征之封装&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p&gt;将结构、数据、操作封装在对象实体中，使用时可以不关注对象内部结构，只能访问开放权限的功能入口，从而降低程序耦合程度，提供安全性和可持续维护性。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Concept01&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;(String[] args)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        Student student = &lt;span&gt;new&lt;/span&gt; Student(&lt;span&gt;&quot;张三&quot;&lt;/span&gt;,&lt;span&gt;&quot;高三&quot;&lt;/span&gt;,&lt;span&gt;29f&lt;/span&gt;);&lt;br/&gt;        student.conclusion();&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Student&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; String name ;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; String grade ;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; Float score ;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;Student&lt;/span&gt;&lt;span&gt;(String name, String grade, Float score)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;this&lt;/span&gt;.name = name;&lt;br/&gt;        &lt;span&gt;this&lt;/span&gt;.grade = grade;&lt;br/&gt;        &lt;span&gt;this&lt;/span&gt;.score = score;&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;conclusion&lt;/span&gt; &lt;span&gt;()&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;姓名：&quot;&lt;/span&gt;+&lt;span&gt;this&lt;/span&gt;.getName());&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;年级：&quot;&lt;/span&gt;+&lt;span&gt;this&lt;/span&gt;.getGrade());&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;分数：&quot;&lt;/span&gt;+&lt;span&gt;this&lt;/span&gt;.getGrade());&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; (&lt;span&gt;this&lt;/span&gt;.getScore() &amp;gt;= &lt;span&gt;100.0f&lt;/span&gt;){&lt;br/&gt;            System.out.println(&lt;span&gt;&quot;评语：本学期优等生&quot;&lt;/span&gt;);&lt;br/&gt;        } &lt;span&gt;else&lt;/span&gt; {&lt;br/&gt;            System.out.println(&lt;span&gt;&quot;评语：本学期潜力股&quot;&lt;/span&gt;);&lt;br/&gt;        }&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;案例描述Student的学期总结，通过构造方法构建具体的学生对象，并且只通过conclusion方法获取学生学期评价。&lt;/p&gt;&lt;h2&gt;&lt;span&gt;2、特征之继承&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p&gt;子类除了提供自身的能力之外，还可以通过继承的方式获取父类开放的属性和方法，以增强自身的功能。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Concept02&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;(String[] args)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;// 判断 Digital 是 Phone 父类&lt;/span&gt;&lt;br/&gt;        System.out.println(Digital&lt;span&gt;.&lt;span&gt;class&lt;/span&gt;.&lt;span&gt;isAssignableFrom&lt;/span&gt;(&lt;span&gt;Phone&lt;/span&gt;.&lt;span&gt;class&lt;/span&gt;))&lt;/span&gt;;&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Digital&lt;/span&gt; &lt;/span&gt;{}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Phone&lt;/span&gt; &lt;span&gt;extends&lt;/span&gt; &lt;span&gt;Digital&lt;/span&gt;&lt;/span&gt;{}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这里通过isAssignableFrom方法判断Digital是Phone父类。&lt;/p&gt;&lt;h2&gt;&lt;span&gt;3、特征之多态&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p&gt;不同主体类对同一个动作给出不同的实现方式，多态也是Java描述设计模式的常用手段，最直接的作用就是程序解耦。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Concept03&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;(String[] args)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        Animal animalDog = &lt;span&gt;new&lt;/span&gt; Dog();&lt;br/&gt;        Animal animalCat = &lt;span&gt;new&lt;/span&gt; Cat();&lt;br/&gt;        animalDog.voice();&lt;br/&gt;        animalCat.voice();&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Animal&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;voice&lt;/span&gt; &lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;Animal ... voice&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Dog&lt;/span&gt; &lt;span&gt;extends&lt;/span&gt; &lt;span&gt;Animal&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;@Override&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;voice&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;Dog ... Wang wang&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Cat&lt;/span&gt; &lt;span&gt;extends&lt;/span&gt; &lt;span&gt;Animal&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;@Override&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;voice&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;Cat ... Meow meow&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;通常动物都有发出声音的能力，但是不同动物声音不同，这里基于多态实现，不同动物的声音特征。&lt;/p&gt;&lt;h1&gt;&lt;span&gt;二、关系图谱&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;p&gt;在了解面向对象之后，还需要理解一下基础的关系模型，在实际的业务中都是基于这些基础的关系解决场景问题。&lt;/p&gt;&lt;h2&gt;&lt;span&gt;1、继承与实现&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p&gt;继承关系：强调属性和方法从父类向子类的传承。实现关系：强调描述抽象和具体实现的逻辑。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;/**&lt;br/&gt; * 继承&lt;br/&gt; */&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;classA&lt;/span&gt; &lt;/span&gt;{}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;classB&lt;/span&gt; &lt;span&gt;extends&lt;/span&gt; &lt;span&gt;classA&lt;/span&gt; &lt;/span&gt;{}&lt;br/&gt;&lt;span&gt;&lt;span&gt;interface&lt;/span&gt; &lt;span&gt;interfaceA&lt;/span&gt; &lt;/span&gt;{}&lt;br/&gt;&lt;span&gt;&lt;span&gt;interface&lt;/span&gt; &lt;span&gt;interfaceB&lt;/span&gt; &lt;span&gt;extends&lt;/span&gt; &lt;span&gt;interfaceA&lt;/span&gt; &lt;/span&gt;{}&lt;br/&gt;&lt;span&gt;/**&lt;br/&gt; * 实现&lt;br/&gt; */&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;classC&lt;/span&gt; &lt;span&gt;implements&lt;/span&gt; &lt;span&gt;interfaceA&lt;/span&gt;,&lt;span&gt;interfaceB&lt;/span&gt;&lt;/span&gt;{}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.37073170731707317&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvCp2RA5msCibTSo4dpYP8blibdg8u4iaTKknBD8PdpHIFeQjC0Wx7icgjqDmibVASTEkoSwS8apFdXdM8w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;820&quot;/&gt;&lt;/p&gt;&lt;h2&gt;&lt;span&gt;2、依赖与关联&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p&gt;依赖关系：常用来描述方法局部变量或者入参，即类的方法中调用了另一个类。关联关系：类的成员变量是另一个类，比如常见的一对一，一对多关系。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;/**&lt;br/&gt; * 依赖&lt;br/&gt; */&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;RelyA&lt;/span&gt; &lt;/span&gt;{}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;RelyB&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;depend&lt;/span&gt; &lt;span&gt;(RelyA rely)&lt;/span&gt;&lt;/span&gt;{}&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;/**&lt;br/&gt; * 关联&lt;br/&gt; */&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;AssociateA&lt;/span&gt; &lt;/span&gt;{}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;AssociateB&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; AssociateA associateA ;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.35960591133004927&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvCp2RA5msCibTSo4dpYP8blibScn5TqWrXZL8tD5gRQBUIiaDsibWia4wib00Cw70gicBdatAiabUJsDZcpZA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;812&quot;/&gt;&lt;/p&gt;&lt;h2&gt;&lt;span&gt;3、组合与聚合&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p&gt;聚合关系：描述整体与部分的关系，但是部分不需要依赖整体存在。组合关系：描述整体与部分的关系，但是部分需要依赖整体存在。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;/**&lt;br/&gt; * 聚合&lt;br/&gt; */&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;ElementA&lt;/span&gt; &lt;/span&gt;{}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;ElementB&lt;/span&gt; &lt;/span&gt;{}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Aggregation&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; ElementA elementA ;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; ElementB elementB ;&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;/**&lt;br/&gt; * 组合&lt;br/&gt; */&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;PortionA&lt;/span&gt;&lt;/span&gt;{}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;PortionB&lt;/span&gt;&lt;/span&gt;{}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Composition&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; PortionA portionA ;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; PortionB portionB ;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.3117408906882591&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvCp2RA5msCibTSo4dpYP8blib0OdSWJPrr8jrOYjBq3UM6QTc4w2BBLic3kgS1YwHt2BfISTXSJjXG1g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;988&quot;/&gt;&lt;/p&gt;&lt;h1&gt;&lt;span&gt;三、模式与原则&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;p&gt;在面对复杂业务时，可以时常参考设计模式和基本原则，以此设计合理的业务结构，实现代码的高内聚低耦合，但是在一些特定场景下，也要果断的突破这些模板或原则，可以更好的支撑业务。&lt;/p&gt;&lt;h2&gt;&lt;span&gt;1、设计模式&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;创建模式&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;抽象对象实例化的创建过程，对不同类型的对象提供高效的管理方式与合理的创建手段。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;结构模式&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;设计类的组装模式，合理的对象结构，有利于支持业务的持续迭代，结构会直接影响代码的可持续维护性。&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;代理模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;外观模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;适配器模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;装饰者模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;组合模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;享元模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;桥梁模式&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;strong&gt;行为模式&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;行为模式涉及对象职责定义，通信协作，和最具体的业务逻辑实现，明确程序运行时的流程轨迹。&lt;/p&gt;&lt;p&gt;可以基于继承或实现的方式控制不同类的行为职责，即顶层抽象控制行为，下层逐级做具体逻辑实现；或者直接聚合管理责任对象，做统一分配。&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;观察者模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;模版方法模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;策略模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;命令模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;调停者模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;备忘录模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;解释器模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;迭代器模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;状态模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;责任链模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;访问者模式&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2&gt;&lt;span&gt;2、基本原则&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;开闭原则：在做代码结构设计时，应该考虑对扩展开放，对修改关闭，抽象思维搭建结构，具体实现扩展细节。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;单一职责：一个类应该只负责一项职责；减少代码一处变更引起的程序大规模改动情况，降低类的复杂度；&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;接口隔离：每一个接口应该是一种角色；尽量避免具体实现类中用不到但是又必须实现的方法；&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;依赖倒转：上层模块不应该依赖下层模块，抽象逻辑不应该依赖具体细节，即中心思想是面向接口编程。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;里氏替换：继承时遵循里氏替换原则，子类中尽量不要重写父类的方法，可以扩展父类的功能；&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;迪米特原则：最少知道原则即类对象对其依赖的类知道的越少越好，以此降低耦合程度；&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;组合/聚合复用：新对象应使用部分已有的对象，使其成为新对象组成部分，实现已有功能的复用，以此降低单个类的复杂程度。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h1&gt;&lt;span&gt;四、业务应用&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;p&gt;在业务开发中，很多复杂的逻辑都是基于面向对象的思想做的设计和具体实现，但是在实际上业务是不断变化的，所以不管是常用的Mvc模式，或者领域设计，只要经过多个版本迭代，多人参与的开发，到最后代码在逻辑层面都会让人着迷。&lt;/p&gt;&lt;p&gt;也就是常说的一种现象：新人重构，老人不断修复问题，然而铁打的问题，流水的开发，但凡经历过重构的同学都知道，所谓的大规模重构很难彻底解决问题，甚至这是个循环动作。所以业务代码更多是在那个版本周期内是合理的，站在一个开发的角度，这里也可以理解为笔者个人角度，通常从下面几个角度去思考具体的业务开发：&lt;/p&gt;&lt;p&gt;这是个人认为业务工程中最重要的基础，不管业务如何复杂，都离不开与之相应的数据增删改查，所以对常规基础操作做好统一代码风格管理，这样有助于别人快速理解整体结构和逻辑。&lt;/p&gt;&lt;p&gt;这里风格指：接口命名，参数，组件，中间件等统一，以持久层为例，避免多个组件混用的情况，如果是周期相对较长的项目，经常看到单是分页查询的实现逻辑都有多种情况。&lt;/p&gt;&lt;p&gt;易变是业务本身的特点，所以高度复用的业务代码本身就存在很大的限制，例如常见的很多方法，为了适配各种场景，不断扩展入参，然后有些特殊业务也会进行特殊传参。&lt;/p&gt;&lt;p&gt;还有一些开发常说的，能用一个接口实现，绝对不使用两个接口，看似很有个性，实际已经走在挖坑的路上，多个功能请求同一个接口，即意味着任何接口的改动都要考虑很多逻辑的适配。&lt;/p&gt;&lt;p&gt;所以从上层向下看，不必过度考虑复用，从下向上看，底层的改动相对较少，应该考虑复用。&lt;/p&gt;&lt;p&gt;从项目生命周期的角度思考，业务是一个迭代的过程，不需要过度前卫的设计，项目的生命周期是多久没人知道，最稳妥的做法是快速迭代，产品和技术工程能快速稳定的支撑业务发展即可。&lt;/p&gt;&lt;p&gt;经典的业务分层管理是快速迭代的基本支撑，例如常用的Mvc模式，在复杂的业务场景下可以再次细化管理，或者向领域设计靠近。&lt;/p&gt;&lt;p&gt;业务可以理解为流程管理，小的流程通常service中可以直接处理，但是复杂流程则十分讲究设计，一个基础思想就是分段管理，比较经典的案例就是下单：构建结算页面时初始化订单-支付时订单提交-支付成功才会执行订单。&lt;/p&gt;&lt;p&gt;逻辑上的细节要持续追求严谨，业务实现手段和思路适当放宽，流程经得起考验，底层实现合理的复用，组件选择上应该站在高纬度，就基本足以。&lt;/p&gt;&lt;h1&gt;&lt;span&gt;五、源代码地址&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;pre&gt;&lt;code&gt;GitHub·地址&lt;br/&gt;https://github.com/cicadasmile/java-base-parent&lt;br/&gt;GitEE·地址&lt;br/&gt;https://gitee.com/cicadasmile/java-base-parent&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzU4Njg0MzYwNw==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvBCuF3zfJnqPKpUia4wfn1FUtTHpxxkR5HvbicPgOjibPicX0goMOkny1NdkLAJvBaqrYh3UdwMjiaDQMA/0?wx_fmt=png&quot; data-nickname=&quot;知了一笑&quot; data-alias=&quot;cicada_smile&quot; data-signature=&quot;积累是一个孤独且枯燥的过程&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;
-                &lt;/div&gt;
-
-                
-
-                
-
-
-
-                
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
 <guid>d6368afec53aa59cd0dd5553ff6ffa9c</guid>
 <title>蚂蚁集团万级规模 K8s 集群 Etcd 高可用建设之路</title>
 <link>https://toutiao.io/k/0yu4k5h</link>
@@ -566,6 +327,245 @@
 &lt;/blockquote&gt;
 &lt;/div&gt;
   &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>fb2df63f5523c5e3b48401b0b93f2078</guid>
+<title>IndexedDB 快速入门</title>
+<link>https://toutiao.io/k/7hbxp47</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;post-header&quot;&gt;&lt;h1 class=&quot;title&quot;&gt;IndexedDB 快速入门&lt;/h1&gt;&lt;p class=&quot;meta&quot;&gt;冯宇 Posted at — Aug 7, 2021
+&lt;span class=&quot;meta&quot; id=&quot;busuanzi_container_page_pv&quot;&gt;阅读 &lt;span id=&quot;busuanzi_value_page_pv&quot;/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/div&gt;&lt;div class=&quot;markdown&quot;&gt;&lt;p&gt;&lt;strong&gt;注：如果你只是想快速体验一下 IndexedDB，建议直接去使用 &lt;a href=&quot;https://jsstore.net/&quot;&gt;JsStore&lt;/a&gt; 。它基本上完全隐藏了 IndexedDB 繁琐的技术细节，提供的接口也更加人性化，同时还有更高级的特性（如 sql join、upsert、webworker 等）。&lt;/strong&gt;&lt;/p&gt;&lt;h2 id=&quot;indexeddb-简介&quot;&gt;IndexedDB 简介&lt;/h2&gt;&lt;p&gt;作为前端开发工程师，你可能已经习惯了使用一些前端的存储方案，如 LocalStorage, Session Storage, Cookie 之类等等。而这些存储在存储结构简单、数据量小的场景中非常好用，但是遇到大规模结构化存储的场景中就不那么好用了。为此，诞生了一种新的存储标准 IndexedDB，用于在前端解决大规模量结构化数据存储的场景。如服务端数据缓存至前端加速，前端日志缓存记录等。&lt;/p&gt;&lt;p&gt;本文将介绍 IndexedDB 快速入门的相关内容，至于高级使用，仍建议详细阅读 IndexedDB 的&lt;a href=&quot;https://developer.mozilla.org/zh-CN/docs/Web/API/IndexedDB_API&quot;&gt;官方文档&lt;/a&gt;。&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;性能评测可参考： &lt;a href=&quot;https://zhuanlan.zhihu.com/p/104536473&quot;&gt;https://zhuanlan.zhihu.com/p/104536473&lt;/a&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;h2 id=&quot;indexeddb-的兼容性&quot;&gt;IndexedDB 的兼容性&lt;/h2&gt;&lt;p&gt;如今 IndexedDB 几乎在现代化的浏览器都已经实现，因此可以放心大胆的在产品环境使用。截至本文撰写时间，当前 IndexedDB 的浏览器兼容性参考如下:&lt;/p&gt;&lt;p&gt;&lt;img src=&quot;imgs/indexeddb1.png&quot; alt=&quot;IndexedDB 兼容性概览&quot;/&gt;&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;数据来源: &lt;a href=&quot;https://caniuse.com/indexeddb&quot;&gt;https://caniuse.com/indexeddb&lt;/a&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;h2 id=&quot;indexeddb-的存储容量限制&quot;&gt;IndexedDB 的存储容量限制&lt;/h2&gt;&lt;p&gt;IndexedDB 的最大存储容量通常是动态的，通常&lt;strong&gt;全局限制&lt;/strong&gt;为当前磁盘空间的 50%，如浏览器安装分区容量为 500GB，则 IndexedDB 最大可能占用空间为 250GB —— 这对于前端存储来几乎是足够的&lt;/p&gt;&lt;p&gt;还有另一个限制称为&lt;strong&gt;组限制&lt;/strong&gt;——这被定义为全局限制的 20％，但它至少有 10 MB，最大为 2GB。 每个源都是一组（源组）的一部分。 每个 eTLD+1 域都有一个组。 例如：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;code&gt;mozilla.org&lt;/code&gt;——组 1，源 1&lt;/li&gt;&lt;li&gt;&lt;code&gt;www.mozilla.org&lt;/code&gt;——组 1，源 2&lt;/li&gt;&lt;li&gt;&lt;code&gt;joe.blogs.mozilla.org&lt;/code&gt;——组 1，源 3&lt;/li&gt;&lt;li&gt;&lt;code&gt;firefox.com&lt;/code&gt; ——组 2，源 4&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;在这个组中，mozilla.org、www.mozilla.org和joe.blogs.mozilla.org可以聚合使用最多20％的全局限制。 firefox.com 单独最多使用 20％。&lt;/p&gt;&lt;p&gt;达到限制后有两种不同的反应：&lt;/p&gt;&lt;p&gt;组限制也称为“硬限制”：它不会触发源回收。
+全局限制是一个“软限制”，因为其有可能释放一些空间并且这个操作可能持续。&lt;/p&gt;&lt;h2 id=&quot;indexeddb-安全性&quot;&gt;IndexedDB 安全性&lt;/h2&gt;&lt;p&gt;IndexedDB 使用同源原则，这意味着它把存储空间绑定到了创建它的站点的源（典型情况下，就是站点的域或是子域），所以它不能被任何其他源访问。&lt;/p&gt;&lt;h2 id=&quot;indexeddb-简易示例&quot;&gt;IndexedDB 简易示例&lt;/h2&gt;&lt;p&gt;IndexedDB 的 API 是基于事件响应全异步性的，使用的时候需要监听对应的事件完成操作。一个基本的创建数据库的操作实例如下:&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span&gt;// 如果被打开的数据库不存在，则会自动创建
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;var&lt;/span&gt; &lt;span&gt;request&lt;/span&gt; = &lt;span&gt;window&lt;/span&gt;.&lt;span&gt;indexedDB&lt;/span&gt;.&lt;span&gt;open&lt;/span&gt;(&lt;span&gt;&quot;MyTestDatabase&quot;&lt;/span&gt;);
+
+&lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onerror&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+  &lt;span&gt;alert&lt;/span&gt;(&lt;span&gt;&quot;Why didn&#x27;t you allow my web app to use IndexedDB?!&quot;&lt;/span&gt;);
+};
+
+&lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+  &lt;span&gt;const&lt;/span&gt; &lt;span&gt;db&lt;/span&gt; = &lt;span&gt;event&lt;/span&gt;.&lt;span&gt;target&lt;/span&gt;.&lt;span&gt;result&lt;/span&gt;;
+
+  &lt;span&gt;// 在不使用 db 的时候尽可能 close掉，否则无法打开一个更高版本的 db，表现形式为 hang 死，无法接收到 onsuccess 事件
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;// 注意 close() 函数不会立即中断已经在运行中的 transaction
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;// 但是不能再用这个实例创建新的transaction，否则会抛异常
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;db&lt;/span&gt;.&lt;span&gt;close&lt;/span&gt;();
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&quot;数据库的版本号&quot;&gt;数据库的版本号&lt;/h3&gt;&lt;p&gt;&lt;code&gt;open()&lt;/code&gt; 函数可以传一个可选的 &lt;code&gt;version&lt;/code&gt; 参数指定版本号，当 version 比当前 &lt;code&gt;db.version&lt;/code&gt; 高时，会触发 &lt;code&gt;onupgradeneeded&lt;/code&gt; 事件，同时，会更新 &lt;code&gt;db.version&lt;/code&gt; 属性：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span&gt;var&lt;/span&gt; &lt;span&gt;request&lt;/span&gt; = &lt;span&gt;window&lt;/span&gt;.&lt;span&gt;indexedDB&lt;/span&gt;.&lt;span&gt;open&lt;/span&gt;(&lt;span&gt;&quot;MyTestDatabase&quot;&lt;/span&gt;, &lt;span&gt;2&lt;/span&gt;);
+
+&lt;span&gt;// 该事件仅在较新的浏览器中实现了
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onupgradeneeded&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+  &lt;span&gt;// 保存 IDBDataBase 接口
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;var&lt;/span&gt; &lt;span&gt;db&lt;/span&gt; = &lt;span&gt;event&lt;/span&gt;.&lt;span&gt;target&lt;/span&gt;.&lt;span&gt;result&lt;/span&gt;;
+
+  &lt;span&gt;// 为该数据库创建一个对象仓库
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;// 注意 createObjectStore() 只能在 onupgradeneeded 事务中运行
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;var&lt;/span&gt; &lt;span&gt;objectStore&lt;/span&gt; = &lt;span&gt;db&lt;/span&gt;.&lt;span&gt;createObjectStore&lt;/span&gt;(&lt;span&gt;&quot;name&quot;&lt;/span&gt;, { &lt;span&gt;keyPath&lt;/span&gt;: &lt;span&gt;&quot;myKey&quot;&lt;/span&gt; });
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;为了防止在其他标签页中打开高版本的数据库 hang 住的情况，一种做法可以参考如下:&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span&gt;var&lt;/span&gt; &lt;span&gt;openReq&lt;/span&gt; = &lt;span&gt;mozIndexedDB&lt;/span&gt;.&lt;span&gt;open&lt;/span&gt;(&lt;span&gt;&quot;MyTestDatabase&quot;&lt;/span&gt;, &lt;span&gt;2&lt;/span&gt;);
+
+&lt;span&gt;openReq&lt;/span&gt;.&lt;span&gt;onblocked&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+  &lt;span&gt;// 如果其他的一些页签加载了该数据库，在我们继续之前需要关闭它们
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;alert&lt;/span&gt;(&lt;span&gt;&quot;请关闭其他由该站点打开的页签！&quot;&lt;/span&gt;);
+};
+
+&lt;span&gt;openReq&lt;/span&gt;.&lt;span&gt;onupgradeneeded&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+  &lt;span&gt;// 其他的数据已经被关闭，一切就绪
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;db&lt;/span&gt;.&lt;span&gt;createObjectStore&lt;/span&gt;(&lt;span&gt;/* ... */&lt;/span&gt;);
+  &lt;span&gt;useDatabase&lt;/span&gt;(&lt;span&gt;db&lt;/span&gt;);
+};
+
+&lt;span&gt;openReq&lt;/span&gt;.&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+  &lt;span&gt;var&lt;/span&gt; &lt;span&gt;db&lt;/span&gt; = &lt;span&gt;event&lt;/span&gt;.&lt;span&gt;target&lt;/span&gt;.&lt;span&gt;result&lt;/span&gt;;
+  &lt;span&gt;useDatabase&lt;/span&gt;(&lt;span&gt;db&lt;/span&gt;);
+  &lt;span&gt;return&lt;/span&gt;;
+};
+
+&lt;span&gt;function&lt;/span&gt; &lt;span&gt;useDatabase&lt;/span&gt;(&lt;span&gt;db&lt;/span&gt;) {
+  &lt;span&gt;// 当由其他页签请求了版本变更时，确认添加了一个会被通知的事件处理程序。
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;// 这里允许其他页签来更新数据库，如果不这样做，版本升级将不会发生知道用户关闭了这些页签。
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;db&lt;/span&gt;.&lt;span&gt;onversionchange&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+    &lt;span&gt;db&lt;/span&gt;.&lt;span&gt;close&lt;/span&gt;();
+    &lt;span&gt;alert&lt;/span&gt;(&lt;span&gt;&quot;A new version of this page is ready. Please reload or close this tab!&quot;&lt;/span&gt;);
+  };
+
+  &lt;span&gt;// 处理数据库
+&lt;/span&gt;&lt;span/&gt;}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&quot;一个基本的存储示例&quot;&gt;一个基本的存储示例&lt;/h3&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span&gt;const&lt;/span&gt; &lt;span&gt;dbName&lt;/span&gt; = &lt;span&gt;&quot;the_name&quot;&lt;/span&gt;;
+
+&lt;span&gt;var&lt;/span&gt; &lt;span&gt;request&lt;/span&gt; = &lt;span&gt;indexedDB&lt;/span&gt;.&lt;span&gt;open&lt;/span&gt;(&lt;span&gt;dbName&lt;/span&gt;, &lt;span&gt;2&lt;/span&gt;);
+
+&lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onerror&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+  &lt;span&gt;// 错误处理
+&lt;/span&gt;&lt;span/&gt;};
+&lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onupgradeneeded&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+  &lt;span&gt;var&lt;/span&gt; &lt;span&gt;db&lt;/span&gt; = &lt;span&gt;event&lt;/span&gt;.&lt;span&gt;target&lt;/span&gt;.&lt;span&gt;result&lt;/span&gt;;
+
+  &lt;span&gt;// 建立一个对象仓库来存储我们客户的相关信息，我们选择 ssn 作为键路径（key path）
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;// 因为 ssn 可以保证是不重复的
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;var&lt;/span&gt; &lt;span&gt;objectStore&lt;/span&gt; = &lt;span&gt;db&lt;/span&gt;.&lt;span&gt;createObjectStore&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;, { &lt;span&gt;keyPath&lt;/span&gt;: &lt;span&gt;&quot;ssn&quot;&lt;/span&gt; });
+
+  &lt;span&gt;// 建立一个索引来通过姓名来搜索客户。名字可能会重复，所以我们不能使用 unique 索引
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;createIndex&lt;/span&gt;(&lt;span&gt;&quot;name&quot;&lt;/span&gt;, &lt;span&gt;&quot;name&quot;&lt;/span&gt;, { &lt;span&gt;unique&lt;/span&gt;: &lt;span&gt;false&lt;/span&gt; });
+
+  &lt;span&gt;// 使用邮箱建立索引，我们向确保客户的邮箱不会重复，所以我们使用 unique 索引
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;createIndex&lt;/span&gt;(&lt;span&gt;&quot;email&quot;&lt;/span&gt;, &lt;span&gt;&quot;email&quot;&lt;/span&gt;, { &lt;span&gt;unique&lt;/span&gt;: &lt;span&gt;true&lt;/span&gt; });
+
+  &lt;span&gt;// 使用事务的 oncomplete 事件确保在插入数据前对象仓库已经创建完毕
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;transaction&lt;/span&gt;.&lt;span&gt;oncomplete&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+    &lt;span&gt;// 将数据保存到新创建的对象仓库
+&lt;/span&gt;&lt;span/&gt;    &lt;span&gt;var&lt;/span&gt; &lt;span&gt;customerObjectStore&lt;/span&gt; = &lt;span&gt;db&lt;/span&gt;.&lt;span&gt;transaction&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;, &lt;span&gt;&quot;readwrite&quot;&lt;/span&gt;).&lt;span&gt;objectStore&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;);
+    &lt;span&gt;customerData&lt;/span&gt;.&lt;span&gt;forEach&lt;/span&gt;(&lt;span&gt;function&lt;/span&gt; (&lt;span&gt;customer&lt;/span&gt;) {
+      &lt;span&gt;// add 函数在 keyPath 冲突时会抛异常，如果期望直接覆盖，请使用 put 函数
+&lt;/span&gt;&lt;span/&gt;      &lt;span&gt;customerObjectStore&lt;/span&gt;.&lt;span&gt;add&lt;/span&gt;(&lt;span&gt;customer&lt;/span&gt;);
+    });
+  };
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;&lt;p&gt;&lt;strong&gt;关于索引&lt;/strong&gt;: IndexedDB 的索引会自动按照由小到大的顺序自动进行排列(有点像 HBase 的 RowKey 设计)，同时可以支持多个字段联合索引，如: objectStore.createIndex(“f1-f2”, [“f1”, “f2”]); 对于要想使用类似于 SQL 中的 where 条件查询，则必须预先在对应的字段创建索引才能实现。另外由于 IndexedDB API 并不提供类似于 Order By 的功能，因此只能使用 cursor 的遍历方向来替代。&lt;/p&gt;&lt;/blockquote&gt;&lt;h3 id=&quot;基本-curd-示例&quot;&gt;基本 CURD 示例&lt;/h3&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span&gt;// ========= 增加数据 ============
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;// 在所有数据添加完毕后的处理
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;transaction&lt;/span&gt;.&lt;span&gt;oncomplete&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+  &lt;span&gt;alert&lt;/span&gt;(&lt;span&gt;&quot;All done!&quot;&lt;/span&gt;);
+};
+
+&lt;span&gt;transaction&lt;/span&gt;.&lt;span&gt;onerror&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+  &lt;span&gt;// 不要忘记错误处理！
+&lt;/span&gt;&lt;span/&gt;};
+
+&lt;span&gt;var&lt;/span&gt; &lt;span&gt;objectStore&lt;/span&gt; = &lt;span&gt;transaction&lt;/span&gt;.&lt;span&gt;objectStore&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;);
+&lt;span&gt;customerData&lt;/span&gt;.&lt;span&gt;forEach&lt;/span&gt;(&lt;span&gt;function&lt;/span&gt; (&lt;span&gt;customer&lt;/span&gt;) {
+  &lt;span&gt;var&lt;/span&gt; &lt;span&gt;request&lt;/span&gt; = &lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;add&lt;/span&gt;(&lt;span&gt;customer&lt;/span&gt;);
+  &lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+    &lt;span&gt;// event.target.result === customer.ssn;
+&lt;/span&gt;&lt;span/&gt;  };
+});
+
+&lt;span&gt;// =========== 删除数据 ==================
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;var&lt;/span&gt; &lt;span&gt;request&lt;/span&gt; = &lt;span&gt;db&lt;/span&gt;
+  .&lt;span&gt;transaction&lt;/span&gt;([&lt;span&gt;&quot;customers&quot;&lt;/span&gt;], &lt;span&gt;&quot;readwrite&quot;&lt;/span&gt;)
+  .&lt;span&gt;objectStore&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;)
+  .&lt;span&gt;delete&lt;/span&gt;(&lt;span&gt;&quot;444-44-4444&quot;&lt;/span&gt;);
+&lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+  &lt;span&gt;// 删除成功！
+&lt;/span&gt;&lt;span/&gt;};
+
+&lt;span&gt;// =========== 读取数据 ==================
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;var&lt;/span&gt; &lt;span&gt;transaction&lt;/span&gt; = &lt;span&gt;db&lt;/span&gt;.&lt;span&gt;transaction&lt;/span&gt;([&lt;span&gt;&quot;customers&quot;&lt;/span&gt;]);
+&lt;span&gt;var&lt;/span&gt; &lt;span&gt;objectStore&lt;/span&gt; = &lt;span&gt;transaction&lt;/span&gt;.&lt;span&gt;objectStore&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;);
+&lt;span&gt;var&lt;/span&gt; &lt;span&gt;request&lt;/span&gt; = &lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;get&lt;/span&gt;(&lt;span&gt;&quot;444-44-4444&quot;&lt;/span&gt;);
+&lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onerror&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+  &lt;span&gt;// 错误处理!
+&lt;/span&gt;&lt;span/&gt;};
+&lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+  &lt;span&gt;// 对 request.result 做些操作！
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;alert&lt;/span&gt;(&lt;span&gt;&quot;Name for SSN 444-44-4444 is &quot;&lt;/span&gt; + &lt;span&gt;request&lt;/span&gt;.&lt;span&gt;result&lt;/span&gt;.&lt;span&gt;name&lt;/span&gt;);
+};
+
+&lt;span&gt;// 简化示例，和上面等效
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;db&lt;/span&gt;.&lt;span&gt;transaction&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;).&lt;span&gt;objectStore&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;).&lt;span&gt;get&lt;/span&gt;(&lt;span&gt;&quot;444-44-4444&quot;&lt;/span&gt;).&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (
+  &lt;span&gt;event&lt;/span&gt;
+) {
+  &lt;span&gt;alert&lt;/span&gt;(&lt;span&gt;&quot;Name for SSN 444-44-4444 is &quot;&lt;/span&gt; + &lt;span&gt;event&lt;/span&gt;.&lt;span&gt;target&lt;/span&gt;.&lt;span&gt;result&lt;/span&gt;.&lt;span&gt;name&lt;/span&gt;);
+};
+
+&lt;span&gt;// 使用游标
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;var&lt;/span&gt; &lt;span&gt;objectStore&lt;/span&gt; = &lt;span&gt;db&lt;/span&gt;.&lt;span&gt;transaction&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;).&lt;span&gt;objectStore&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;);
+
+&lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;openCursor&lt;/span&gt;().&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+  &lt;span&gt;var&lt;/span&gt; &lt;span&gt;cursor&lt;/span&gt; = &lt;span&gt;event&lt;/span&gt;.&lt;span&gt;target&lt;/span&gt;.&lt;span&gt;result&lt;/span&gt;;
+  &lt;span&gt;if&lt;/span&gt; (&lt;span&gt;cursor&lt;/span&gt;) {
+    &lt;span&gt;alert&lt;/span&gt;(&lt;span&gt;&quot;Name for SSN &quot;&lt;/span&gt; + &lt;span&gt;cursor&lt;/span&gt;.&lt;span&gt;key&lt;/span&gt; + &lt;span&gt;&quot; is &quot;&lt;/span&gt; + &lt;span&gt;cursor&lt;/span&gt;.&lt;span&gt;value&lt;/span&gt;.&lt;span&gt;name&lt;/span&gt;);
+    &lt;span&gt;cursor&lt;/span&gt;.&lt;span&gt;continue&lt;/span&gt;();
+  } &lt;span&gt;else&lt;/span&gt; {
+    &lt;span&gt;alert&lt;/span&gt;(&lt;span&gt;&quot;No more entries!&quot;&lt;/span&gt;);
+  }
+};
+
+&lt;span&gt;// 使用 index 索引数据
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;// 首先，确定你已经在 request.onupgradeneeded 中创建了索引:
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;// objectStore.createIndex(&quot;name&quot;, &quot;name&quot;);
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;// 否则你将得到 DOMException。
+&lt;/span&gt;&lt;span/&gt;
+&lt;span&gt;var&lt;/span&gt; &lt;span&gt;index&lt;/span&gt; = &lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;index&lt;/span&gt;(&lt;span&gt;&quot;name&quot;&lt;/span&gt;);
+
+&lt;span&gt;index&lt;/span&gt;.&lt;span&gt;get&lt;/span&gt;(&lt;span&gt;&quot;Donna&quot;&lt;/span&gt;).&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+  &lt;span&gt;alert&lt;/span&gt;(&lt;span&gt;&quot;Donna&#x27;s SSN is &quot;&lt;/span&gt; + &lt;span&gt;event&lt;/span&gt;.&lt;span&gt;target&lt;/span&gt;.&lt;span&gt;result&lt;/span&gt;.&lt;span&gt;ssn&lt;/span&gt;);
+};
+
+&lt;span&gt;// =========== 更新数据 ==================
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;var&lt;/span&gt; &lt;span&gt;objectStore&lt;/span&gt; = &lt;span&gt;db&lt;/span&gt;.&lt;span&gt;transaction&lt;/span&gt;([&lt;span&gt;&quot;customers&quot;&lt;/span&gt;], &lt;span&gt;&quot;readwrite&quot;&lt;/span&gt;).&lt;span&gt;objectStore&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;);
+&lt;span&gt;var&lt;/span&gt; &lt;span&gt;request&lt;/span&gt; = &lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;get&lt;/span&gt;(&lt;span&gt;&quot;444-44-4444&quot;&lt;/span&gt;);
+&lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onerror&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+  &lt;span&gt;// 错误处理
+&lt;/span&gt;&lt;span/&gt;};
+&lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+  &lt;span&gt;// 获取我们想要更新的数据
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;var&lt;/span&gt; &lt;span&gt;data&lt;/span&gt; = &lt;span&gt;event&lt;/span&gt;.&lt;span&gt;target&lt;/span&gt;.&lt;span&gt;result&lt;/span&gt;;
+
+  &lt;span&gt;// 更新你想修改的数据
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;data&lt;/span&gt;.&lt;span&gt;age&lt;/span&gt; = &lt;span&gt;42&lt;/span&gt;;
+
+  &lt;span&gt;// 把更新过的对象放回数据库
+&lt;/span&gt;&lt;span/&gt;  &lt;span&gt;var&lt;/span&gt; &lt;span&gt;requestUpdate&lt;/span&gt; = &lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;put&lt;/span&gt;(&lt;span&gt;data&lt;/span&gt;);
+  &lt;span&gt;requestUpdate&lt;/span&gt;.&lt;span&gt;onerror&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+    &lt;span&gt;// 错误处理
+&lt;/span&gt;&lt;span/&gt;  };
+  &lt;span&gt;requestUpdate&lt;/span&gt;.&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+    &lt;span&gt;// 完成，数据已更新！
+&lt;/span&gt;&lt;span/&gt;  };
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&quot;关于搜索查询&quot;&gt;关于搜索查询&lt;/h2&gt;&lt;p&gt;通过上述的示例，可以看到其实 IndexedDB 存储其实是文档型数据库的套路，并且自身的 API 并不支持像 SQL 那样复杂功能多样的查询功能，因此在使用前必须好好设计存储结构，务必确保自己的查询条件不至于太复杂难以实现，这里列出一些常见的查询示例与 SQL 的对照(所有需要用到的 index 需要事先创建好，这里不再赘述):&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span&gt;// select * from table order by field desc
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;index&lt;/span&gt;(&lt;span&gt;&quot;field&quot;&lt;/span&gt;).&lt;span&gt;openCursor&lt;/span&gt;(&lt;span&gt;null&lt;/span&gt;, &lt;span&gt;&quot;prev&quot;&lt;/span&gt;);
+
+&lt;span&gt;// select * from table where field between 1 and 10
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;index&lt;/span&gt;(&lt;span&gt;&quot;field&quot;&lt;/span&gt;).&lt;span&gt;openCursor&lt;/span&gt;(&lt;span&gt;IDBKeyRange&lt;/span&gt;.&lt;span&gt;bound&lt;/span&gt;(&lt;span&gt;1&lt;/span&gt;, &lt;span&gt;10&lt;/span&gt;, &lt;span&gt;false&lt;/span&gt;, &lt;span&gt;true&lt;/span&gt;));
+
+&lt;span&gt;// select distinct on (f1, f2) * from table
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;// 需要预先创建f1, f2的联合索引: objectStore.createIndex(&quot;f1-f2&quot;, [&quot;f1&quot;, &quot;f2&quot;], { unique: false });
+&lt;/span&gt;&lt;span/&gt;&lt;span&gt;objectStore&lt;/span&gt;.&lt;span&gt;index&lt;/span&gt;(&lt;span&gt;&quot;f1-f2&quot;&lt;/span&gt;).&lt;span&gt;openCursor&lt;/span&gt;(&lt;span&gt;null&lt;/span&gt;, &lt;span&gt;&quot;nextunique&quot;&lt;/span&gt;);
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;条件搜索主要使用&lt;code&gt;openCursor(keyRange, direction)&lt;/code&gt;函数，&lt;a href=&quot;https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange&quot;&gt;IDBKeyRange&lt;/a&gt; 参数表示查询的范围，类似于&lt;code&gt;where&lt;/code&gt;的功能，而&lt;a href=&quot;https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor/direction&quot;&gt;direction&lt;/a&gt; 决定游标遍历的方向，因此可以实现简单的&lt;code&gt;order by&lt;/code&gt;的功能。但是特别注意对于联合索引，每个字段也都是按照&lt;code&gt;asc&lt;/code&gt;顺序排序的，因此没办法通过 direction 实现类似于&lt;code&gt;order by f1 asc, f2 desc, f3 desc&lt;/code&gt;这样的排序，使用前务必设计好存储结构。&lt;/p&gt;&lt;p&gt;还需要注意无论&lt;code&gt;nextunique&lt;/code&gt;还是&lt;code&gt;prevunique&lt;/code&gt;，由于它们内部对于相同 value 的排序都是从小到大的，因此它们返回的内容都是一样的，例如:&lt;/p&gt;&lt;p&gt;假设创建&lt;code&gt;objectStore.createIndex(&quot;f1-f2&quot;, [&quot;f1&quot;, &quot;f2&quot;], { unique: false })&lt;/code&gt;索引，无论&lt;code&gt;openCursor&lt;/code&gt;的 direction 参数是&lt;code&gt;nextunique&lt;/code&gt;还是&lt;code&gt;prevunique&lt;/code&gt;，都只会筛选出&lt;code&gt;{&quot;f1&quot;:&quot;a&quot;,&quot;f2&quot;:&quot;b&quot;,&quot;f3&quot;:&quot;c&quot;}&lt;/code&gt;这条结果，cursor 的遍历顺序只会影响这条记录出现的次序而已。&lt;/p&gt;&lt;h2 id=&quot;promise&quot;&gt;Promise&lt;/h2&gt;&lt;p&gt;IndexedDB API 本身并不提供 Promise 接口，如果你的场景确实需要用到 Promise，可以考虑自己简单封装下:&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span&gt;new&lt;/span&gt; &lt;span&gt;Promise&lt;/span&gt;(&lt;span&gt;resolve&lt;/span&gt;, &lt;span&gt;reject&lt;/span&gt;) {
+  &lt;span&gt;const&lt;/span&gt; &lt;span&gt;request&lt;/span&gt; = &lt;span&gt;window&lt;/span&gt;.&lt;span&gt;indexedDB&lt;/span&gt;.&lt;span&gt;open&lt;/span&gt;(&lt;span&gt;&quot;MyTestDatabase&quot;&lt;/span&gt;);
+
+  &lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onerror&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+    &lt;span&gt;return&lt;/span&gt; &lt;span&gt;reject&lt;/span&gt;(&lt;span&gt;event&lt;/span&gt;);
+  }
+
+  &lt;span&gt;request&lt;/span&gt;.&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+    &lt;span&gt;const&lt;/span&gt; &lt;span&gt;db&lt;/span&gt; = &lt;span&gt;event&lt;/span&gt;.&lt;span&gt;target&lt;/span&gt;.&lt;span&gt;result&lt;/span&gt;;
+    &lt;span&gt;const&lt;/span&gt; &lt;span&gt;getReq&lt;/span&gt; = &lt;span&gt;db&lt;/span&gt;
+      .&lt;span&gt;transaction&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;)
+      .&lt;span&gt;objectStore&lt;/span&gt;(&lt;span&gt;&quot;customers&quot;&lt;/span&gt;)
+      .&lt;span&gt;get&lt;/span&gt;(&lt;span&gt;&quot;444-44-4444&quot;&lt;/span&gt;)
+
+    &lt;span&gt;getReq&lt;/span&gt;.&lt;span&gt;onsuccess&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+      &lt;span&gt;return&lt;/span&gt; &lt;span&gt;resolve&lt;/span&gt;(&lt;span&gt;event&lt;/span&gt;.&lt;span&gt;target&lt;/span&gt;.&lt;span&gt;result&lt;/span&gt;.&lt;span&gt;name&lt;/span&gt;);
+    };
+
+    &lt;span&gt;getReq&lt;/span&gt;.&lt;span&gt;onerror&lt;/span&gt; = &lt;span&gt;function&lt;/span&gt; (&lt;span&gt;event&lt;/span&gt;) {
+      &lt;span&gt;return&lt;/span&gt; &lt;span&gt;reject&lt;/span&gt;(&lt;span&gt;event&lt;/span&gt;)
+    }
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果需要大量使用 Promise，可以考虑使用第三方类库&lt;a href=&quot;https://www.npmjs.com/package/idb&quot;&gt;idb&lt;/a&gt;或更精简的版本&lt;a href=&quot;https://www.npmjs.com/package/idb-keyval&quot;&gt;idb-keyval&lt;/a&gt;，它们将 IndexedDB 的 API 进行了 Promise 的封装，其中&lt;a href=&quot;https://www.npmjs.com/package/idb-keyval&quot;&gt;idb-keyval&lt;/a&gt;对 KV 对这种存储结构进行了更简化的封装调用，对于自己的场景只有简单的 KV 存储这种场景可以考虑使用&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>4d5636bfda27716b709e5f03be48c443</guid>
+<title>Java 进阶：从整体上观察面向对象</title>
+<link>https://toutiao.io/k/d5zzykx</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
+
+                    
+                    
+                    
+                    &lt;h1&gt;&lt;span&gt;一、面向对象&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;面向对象是Java编程中最核心的思想，基本特征：继承、封装、多态。&lt;/p&gt;&lt;h2&gt;&lt;span&gt;1、特征之封装&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p&gt;将结构、数据、操作封装在对象实体中，使用时可以不关注对象内部结构，只能访问开放权限的功能入口，从而降低程序耦合程度，提供安全性和可持续维护性。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Concept01&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;(String[] args)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        Student student = &lt;span&gt;new&lt;/span&gt; Student(&lt;span&gt;&quot;张三&quot;&lt;/span&gt;,&lt;span&gt;&quot;高三&quot;&lt;/span&gt;,&lt;span&gt;29f&lt;/span&gt;);&lt;br/&gt;        student.conclusion();&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Student&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; String name ;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; String grade ;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; Float score ;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;Student&lt;/span&gt;&lt;span&gt;(String name, String grade, Float score)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;this&lt;/span&gt;.name = name;&lt;br/&gt;        &lt;span&gt;this&lt;/span&gt;.grade = grade;&lt;br/&gt;        &lt;span&gt;this&lt;/span&gt;.score = score;&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;conclusion&lt;/span&gt; &lt;span&gt;()&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;姓名：&quot;&lt;/span&gt;+&lt;span&gt;this&lt;/span&gt;.getName());&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;年级：&quot;&lt;/span&gt;+&lt;span&gt;this&lt;/span&gt;.getGrade());&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;分数：&quot;&lt;/span&gt;+&lt;span&gt;this&lt;/span&gt;.getGrade());&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; (&lt;span&gt;this&lt;/span&gt;.getScore() &amp;gt;= &lt;span&gt;100.0f&lt;/span&gt;){&lt;br/&gt;            System.out.println(&lt;span&gt;&quot;评语：本学期优等生&quot;&lt;/span&gt;);&lt;br/&gt;        } &lt;span&gt;else&lt;/span&gt; {&lt;br/&gt;            System.out.println(&lt;span&gt;&quot;评语：本学期潜力股&quot;&lt;/span&gt;);&lt;br/&gt;        }&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;案例描述Student的学期总结，通过构造方法构建具体的学生对象，并且只通过conclusion方法获取学生学期评价。&lt;/p&gt;&lt;h2&gt;&lt;span&gt;2、特征之继承&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p&gt;子类除了提供自身的能力之外，还可以通过继承的方式获取父类开放的属性和方法，以增强自身的功能。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Concept02&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;(String[] args)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;// 判断 Digital 是 Phone 父类&lt;/span&gt;&lt;br/&gt;        System.out.println(Digital&lt;span&gt;.&lt;span&gt;class&lt;/span&gt;.&lt;span&gt;isAssignableFrom&lt;/span&gt;(&lt;span&gt;Phone&lt;/span&gt;.&lt;span&gt;class&lt;/span&gt;))&lt;/span&gt;;&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Digital&lt;/span&gt; &lt;/span&gt;{}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Phone&lt;/span&gt; &lt;span&gt;extends&lt;/span&gt; &lt;span&gt;Digital&lt;/span&gt;&lt;/span&gt;{}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这里通过isAssignableFrom方法判断Digital是Phone父类。&lt;/p&gt;&lt;h2&gt;&lt;span&gt;3、特征之多态&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p&gt;不同主体类对同一个动作给出不同的实现方式，多态也是Java描述设计模式的常用手段，最直接的作用就是程序解耦。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Concept03&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;(String[] args)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        Animal animalDog = &lt;span&gt;new&lt;/span&gt; Dog();&lt;br/&gt;        Animal animalCat = &lt;span&gt;new&lt;/span&gt; Cat();&lt;br/&gt;        animalDog.voice();&lt;br/&gt;        animalCat.voice();&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Animal&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;voice&lt;/span&gt; &lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;Animal ... voice&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Dog&lt;/span&gt; &lt;span&gt;extends&lt;/span&gt; &lt;span&gt;Animal&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;@Override&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;voice&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;Dog ... Wang wang&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Cat&lt;/span&gt; &lt;span&gt;extends&lt;/span&gt; &lt;span&gt;Animal&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;@Override&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;voice&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;Cat ... Meow meow&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;通常动物都有发出声音的能力，但是不同动物声音不同，这里基于多态实现，不同动物的声音特征。&lt;/p&gt;&lt;h1&gt;&lt;span&gt;二、关系图谱&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;p&gt;在了解面向对象之后，还需要理解一下基础的关系模型，在实际的业务中都是基于这些基础的关系解决场景问题。&lt;/p&gt;&lt;h2&gt;&lt;span&gt;1、继承与实现&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p&gt;继承关系：强调属性和方法从父类向子类的传承。实现关系：强调描述抽象和具体实现的逻辑。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;/**&lt;br/&gt; * 继承&lt;br/&gt; */&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;classA&lt;/span&gt; &lt;/span&gt;{}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;classB&lt;/span&gt; &lt;span&gt;extends&lt;/span&gt; &lt;span&gt;classA&lt;/span&gt; &lt;/span&gt;{}&lt;br/&gt;&lt;span&gt;&lt;span&gt;interface&lt;/span&gt; &lt;span&gt;interfaceA&lt;/span&gt; &lt;/span&gt;{}&lt;br/&gt;&lt;span&gt;&lt;span&gt;interface&lt;/span&gt; &lt;span&gt;interfaceB&lt;/span&gt; &lt;span&gt;extends&lt;/span&gt; &lt;span&gt;interfaceA&lt;/span&gt; &lt;/span&gt;{}&lt;br/&gt;&lt;span&gt;/**&lt;br/&gt; * 实现&lt;br/&gt; */&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;classC&lt;/span&gt; &lt;span&gt;implements&lt;/span&gt; &lt;span&gt;interfaceA&lt;/span&gt;,&lt;span&gt;interfaceB&lt;/span&gt;&lt;/span&gt;{}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.37073170731707317&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvCp2RA5msCibTSo4dpYP8blibdg8u4iaTKknBD8PdpHIFeQjC0Wx7icgjqDmibVASTEkoSwS8apFdXdM8w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;820&quot;/&gt;&lt;/p&gt;&lt;h2&gt;&lt;span&gt;2、依赖与关联&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p&gt;依赖关系：常用来描述方法局部变量或者入参，即类的方法中调用了另一个类。关联关系：类的成员变量是另一个类，比如常见的一对一，一对多关系。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;/**&lt;br/&gt; * 依赖&lt;br/&gt; */&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;RelyA&lt;/span&gt; &lt;/span&gt;{}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;RelyB&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;depend&lt;/span&gt; &lt;span&gt;(RelyA rely)&lt;/span&gt;&lt;/span&gt;{}&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;/**&lt;br/&gt; * 关联&lt;br/&gt; */&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;AssociateA&lt;/span&gt; &lt;/span&gt;{}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;AssociateB&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; AssociateA associateA ;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.35960591133004927&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvCp2RA5msCibTSo4dpYP8blibScn5TqWrXZL8tD5gRQBUIiaDsibWia4wib00Cw70gicBdatAiabUJsDZcpZA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;812&quot;/&gt;&lt;/p&gt;&lt;h2&gt;&lt;span&gt;3、组合与聚合&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p&gt;聚合关系：描述整体与部分的关系，但是部分不需要依赖整体存在。组合关系：描述整体与部分的关系，但是部分需要依赖整体存在。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;/**&lt;br/&gt; * 聚合&lt;br/&gt; */&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;ElementA&lt;/span&gt; &lt;/span&gt;{}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;ElementB&lt;/span&gt; &lt;/span&gt;{}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Aggregation&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; ElementA elementA ;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; ElementB elementB ;&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;/**&lt;br/&gt; * 组合&lt;br/&gt; */&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;PortionA&lt;/span&gt;&lt;/span&gt;{}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;PortionB&lt;/span&gt;&lt;/span&gt;{}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Composition&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; PortionA portionA ;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; PortionB portionB ;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.3117408906882591&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvCp2RA5msCibTSo4dpYP8blib0OdSWJPrr8jrOYjBq3UM6QTc4w2BBLic3kgS1YwHt2BfISTXSJjXG1g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;988&quot;/&gt;&lt;/p&gt;&lt;h1&gt;&lt;span&gt;三、模式与原则&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;p&gt;在面对复杂业务时，可以时常参考设计模式和基本原则，以此设计合理的业务结构，实现代码的高内聚低耦合，但是在一些特定场景下，也要果断的突破这些模板或原则，可以更好的支撑业务。&lt;/p&gt;&lt;h2&gt;&lt;span&gt;1、设计模式&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;创建模式&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;抽象对象实例化的创建过程，对不同类型的对象提供高效的管理方式与合理的创建手段。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;结构模式&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;设计类的组装模式，合理的对象结构，有利于支持业务的持续迭代，结构会直接影响代码的可持续维护性。&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;代理模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;外观模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;适配器模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;装饰者模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;组合模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;享元模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;桥梁模式&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;strong&gt;行为模式&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;行为模式涉及对象职责定义，通信协作，和最具体的业务逻辑实现，明确程序运行时的流程轨迹。&lt;/p&gt;&lt;p&gt;可以基于继承或实现的方式控制不同类的行为职责，即顶层抽象控制行为，下层逐级做具体逻辑实现；或者直接聚合管理责任对象，做统一分配。&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;观察者模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;模版方法模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;策略模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;命令模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;调停者模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;备忘录模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;解释器模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;迭代器模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;状态模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;责任链模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;访问者模式&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2&gt;&lt;span&gt;2、基本原则&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;开闭原则：在做代码结构设计时，应该考虑对扩展开放，对修改关闭，抽象思维搭建结构，具体实现扩展细节。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;单一职责：一个类应该只负责一项职责；减少代码一处变更引起的程序大规模改动情况，降低类的复杂度；&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;接口隔离：每一个接口应该是一种角色；尽量避免具体实现类中用不到但是又必须实现的方法；&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;依赖倒转：上层模块不应该依赖下层模块，抽象逻辑不应该依赖具体细节，即中心思想是面向接口编程。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;里氏替换：继承时遵循里氏替换原则，子类中尽量不要重写父类的方法，可以扩展父类的功能；&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;迪米特原则：最少知道原则即类对象对其依赖的类知道的越少越好，以此降低耦合程度；&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;组合/聚合复用：新对象应使用部分已有的对象，使其成为新对象组成部分，实现已有功能的复用，以此降低单个类的复杂程度。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h1&gt;&lt;span&gt;四、业务应用&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;p&gt;在业务开发中，很多复杂的逻辑都是基于面向对象的思想做的设计和具体实现，但是在实际上业务是不断变化的，所以不管是常用的Mvc模式，或者领域设计，只要经过多个版本迭代，多人参与的开发，到最后代码在逻辑层面都会让人着迷。&lt;/p&gt;&lt;p&gt;也就是常说的一种现象：新人重构，老人不断修复问题，然而铁打的问题，流水的开发，但凡经历过重构的同学都知道，所谓的大规模重构很难彻底解决问题，甚至这是个循环动作。所以业务代码更多是在那个版本周期内是合理的，站在一个开发的角度，这里也可以理解为笔者个人角度，通常从下面几个角度去思考具体的业务开发：&lt;/p&gt;&lt;p&gt;这是个人认为业务工程中最重要的基础，不管业务如何复杂，都离不开与之相应的数据增删改查，所以对常规基础操作做好统一代码风格管理，这样有助于别人快速理解整体结构和逻辑。&lt;/p&gt;&lt;p&gt;这里风格指：接口命名，参数，组件，中间件等统一，以持久层为例，避免多个组件混用的情况，如果是周期相对较长的项目，经常看到单是分页查询的实现逻辑都有多种情况。&lt;/p&gt;&lt;p&gt;易变是业务本身的特点，所以高度复用的业务代码本身就存在很大的限制，例如常见的很多方法，为了适配各种场景，不断扩展入参，然后有些特殊业务也会进行特殊传参。&lt;/p&gt;&lt;p&gt;还有一些开发常说的，能用一个接口实现，绝对不使用两个接口，看似很有个性，实际已经走在挖坑的路上，多个功能请求同一个接口，即意味着任何接口的改动都要考虑很多逻辑的适配。&lt;/p&gt;&lt;p&gt;所以从上层向下看，不必过度考虑复用，从下向上看，底层的改动相对较少，应该考虑复用。&lt;/p&gt;&lt;p&gt;从项目生命周期的角度思考，业务是一个迭代的过程，不需要过度前卫的设计，项目的生命周期是多久没人知道，最稳妥的做法是快速迭代，产品和技术工程能快速稳定的支撑业务发展即可。&lt;/p&gt;&lt;p&gt;经典的业务分层管理是快速迭代的基本支撑，例如常用的Mvc模式，在复杂的业务场景下可以再次细化管理，或者向领域设计靠近。&lt;/p&gt;&lt;p&gt;业务可以理解为流程管理，小的流程通常service中可以直接处理，但是复杂流程则十分讲究设计，一个基础思想就是分段管理，比较经典的案例就是下单：构建结算页面时初始化订单-支付时订单提交-支付成功才会执行订单。&lt;/p&gt;&lt;p&gt;逻辑上的细节要持续追求严谨，业务实现手段和思路适当放宽，流程经得起考验，底层实现合理的复用，组件选择上应该站在高纬度，就基本足以。&lt;/p&gt;&lt;h1&gt;&lt;span&gt;五、源代码地址&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;pre&gt;&lt;code&gt;GitHub·地址&lt;br/&gt;https://github.com/cicadasmile/java-base-parent&lt;br/&gt;GitEE·地址&lt;br/&gt;https://gitee.com/cicadasmile/java-base-parent&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzU4Njg0MzYwNw==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvBCuF3zfJnqPKpUia4wfn1FUtTHpxxkR5HvbicPgOjibPicX0goMOkny1NdkLAJvBaqrYh3UdwMjiaDQMA/0?wx_fmt=png&quot; data-nickname=&quot;知了一笑&quot; data-alias=&quot;cicada_smile&quot; data-signature=&quot;积累是一个孤独且枯燥的过程&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;
+                &lt;/div&gt;
+
+                
+
+                
+
+
+
+                
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
 <guid>ac14c4b9298e7a43c4d0a98c1d07b436</guid>
