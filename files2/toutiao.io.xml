@@ -134,33 +134,264 @@
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;pre&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;span&gt;本文来自&lt;/span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzIyNjM2MzQyNg==&amp;amp;mid=2247485133&amp;amp;idx=1&amp;amp;sn=52b9eb0a673fa095d84e996760ea358a&amp;amp;chksm=e870d780df075e967e7307419705509105ca735eb6e78bfa641b16f1190ebff9fde575baf44e&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;李宏毅机器学习笔记&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;span&gt;李宏毅机器学习笔记&lt;/span&gt;&lt;/a&gt;&lt;span&gt;（LeeML-Notes）&lt;/span&gt;&lt;span&gt;组队学习，&lt;/span&gt;&lt;span&gt;详细介绍了使用深度学习技术的三大主要步骤。&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;教程地址：https://github.com/datawhalechina/leeml-notes&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/pre&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-croporisrc=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsGQyQO3kXRlrTqGHTLN5IDLM7IW0V0nIvSeibYuf7NoCfDwXJvFC2huzrZq6coWJKVsKksoFzuqmww/0?wx_fmt=png&quot; data-cropx1=&quot;134.6643598615917&quot; data-cropx2=&quot;632.690311418685&quot; data-cropy1=&quot;313.44290657439444&quot; data-cropy2=&quot;480.6124567474048&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.3353413654618474&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/vI9nYe94fsGQyQO3kXRlrTqGHTLN5IDLbDR7UPBFgmsic6gHSTuNibB2hQNHVA5kkodAjQs1ndnQmRibVY2dPmpew/640?wx_fmt=other&quot; data-type=&quot;other&quot; data-w=&quot;498&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;深度学习的三个步骤：&lt;/p&gt;&lt;section&gt;&lt;span&gt;Step1：神经网络（Neural network）&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;Step2：模型评估（Goodness of function）&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;Step3：选择最优函数（Pick best function）&lt;/span&gt;&lt;/section&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;Step1：神经网络&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;神经网络是由很多单元连接而成，这些单元称为神经元。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.58603066439523&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazHRc6P9BzDgSjglgTpurfl6GFByz83NNHkBJ8UWONQibzcBwHWybHDiadw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1174&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;神经网络类似于人类的神经细胞，电信号在神经元上传递，类似于数值在神经网络中传递的过程。 &lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.7814854682454252&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazHl7ibZMVaFA8hKGNXHm8zjfianSzBN8jibLo012mlqBHWydNicTwCLEa7Ig/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;929&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在这个神经网络里面，一个神经元就相当于一个逻辑回归函数，所以上图中有很多逻辑回归函数，其中每个逻辑回归都有自己的权重和自己的偏差，这些权重和偏差就是参数。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;图中红框表示的就是神经元，多个神经元以不同的方式进行连接，就会构成不同结构神经网络。神经元的连接方式是由人工设计的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.40479548660084624&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazHG4EYLhtibolW4x5qExts15sdibAVU9wG5tZ4exxOicEQ6xwzx7qYZF0Zw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;709&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.1680129240710824&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazHIsenS8QSU6ibEjQOHDpSfuukQyPozlywSZXfLboeh561eUiaCiawCBAfg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1238&quot;/&gt;&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;每个&lt;strong&gt;输入&lt;/strong&gt;乘以其对应的&lt;strong&gt;权重&lt;/strong&gt;，将结果&lt;strong&gt;求和&lt;/strong&gt;，得到𝑍；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;将和代入&lt;strong&gt;激活函数&lt;/strong&gt;，得到结果𝑦。&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;全连接前馈神经网络&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;全连接&lt;/strong&gt;：每一个神经元的输出都连接到下一层神经元的每一个神经元，每一个神经元的输入都来自上一层的每一个神经元。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;前馈&lt;/strong&gt;：前馈（feedforward）也可以称为前向，从信号流向来理解就是输入信号进入网络后，信号流动是单向的，即信号从前一层流向后一层，一直到输出层，其中任意两层之间的连接并没有反馈（feedback），亦即信号没有从后一层又返回到前一层。&lt;/p&gt;&lt;section&gt;&lt;span&gt;如图所示，这是一个4层的全连接神经网络，每一层有两个神经元，每个神经元的激活函数都是sigmoid。&lt;/span&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.38024357239512857&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazHYemY8Lu8zTlUtfkMmU91AR8AbBjOkNkaoOANGGsUic6mLGoSV4YIf8g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;739&quot;/&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;网络输入为(1, -1)，激活函数为sigmoid：&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.40841865756541523&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazHf0tRSMiaEujcMic9rVkfuibJVzxG9cL4bcsyJZhfAasDBh6NT0IZIObjg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;879&quot;/&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;网络输入为(0, 0)，激活函数为sigmoid：&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.40790960451977404&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazHFOEo94Eic8nr5HAyAJ8WVHja0rSvRaldicvzAJpDnRPicRSKGGU0nGByw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;885&quot;/&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;神经网络结构：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.6245398773006134&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazHxv3slH4OTG8kOY28wQBn8mXFGHhXicOMxgU2F6oUd6UY7MKJ0D5UR1A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;815&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;Input Layer：网络的输入层，Layer的size和真实输入大小匹配。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;Hidden Layers：处于输入层和输出层之间的网络层。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;Output Layer：网络的最后一层，神经元计算产生的结果直接输出，作为模型的输出。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;一些疑问&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/section&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;为什么叫「&lt;span&gt;全连接&lt;/span&gt;」？&lt;/p&gt;&lt;p&gt;因为网络中相邻的两层神经元，前一层的每一个神经元和后一层的每一个神经元都有连接，所以叫做全连接；&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;为什么叫「前馈」？&lt;/p&gt;&lt;p&gt;因为值在网络中传递的方向是由前往后传（输入层传向输出层），所以叫做Feedforward。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;Deep Learning，“Deep”体现在哪里？&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.7741935483870968&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazH34rOD71C1cgmiaWcAhXC1SW56u9sUiaxTPxGyPmia8fia9Q72EuLvZ8G4g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;930&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.7762886597938145&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazHwiapectqvpRRic1YA4KYb7rgBm8a6WvcHy1E19Exn04h6pxTVTLgDpbQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;970&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;神经网络的连接方式由人工设计，所以可以堆叠很多层神经元构成很“深”网络，如上图所示2015年提出的ResNet就达到了152层的深度。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;深度神经需要特殊的训练技巧&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;随着层数变多，网络参数增多，随之运算量增大，通常都是超过亿万级的计算。对于这样复杂的结构，我们一定不会一个一个的计算，对于亿万级的计算，使用loop循环效率很低。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;网络的运算过程如图所示：&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-cropselx1=&quot;0&quot; data-cropselx2=&quot;558&quot; data-cropsely1=&quot;0&quot; data-cropsely2=&quot;432&quot; data-ratio=&quot;0.7300884955752213&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazHEJdRTexuRQ8R1rtIicSO7dic9mMD7h91jQGnY8iaBc18WxKiaqraecl2Fg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;678&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上图中，网络的运算过程可看作是矩阵的运算。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-cropselx1=&quot;0&quot; data-cropselx2=&quot;558&quot; data-cropsely1=&quot;0&quot; data-cropsely2=&quot;432&quot; data-ratio=&quot;0.7250712250712251&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazHNP9KAOvHg2fGWKpVib6yBTt36qsls7RM0WsJLy1g6eIZ5NUKkOcHRRw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;702&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;网络的计算方法就像是嵌套，所以整个神经网络运算就相当于一连串的矩阵运算。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.12401883830455258&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazHHOZwmZVKn0fvzDmcg7rRPDXnmClSeWEF0sFeYAkgvKyMS6gdZia4UVA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;637&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;从结构上看每一层的计算都是一样的，也就是用计算机进行并行矩阵运算。这样写成矩阵运算的好处是，你可以使用GPU加速，GPU核心多，可以并行做大量的矩阵运算。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;神经网络的本质：通过隐藏层进行特征转换&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;隐藏层可以看作是对网络输入层输入特征进行特征处理，在最后一层隐藏层进行输出，这时的输出可以看作一组全新的特征，将其输出给输出层，输出层对这组全新的特征进行分类。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.7149075081610446&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazHBsyRBDt3H66yNuDJQlaTuQeEyOwibh2UocoalScDKVBL0Dh25wgWcfA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;919&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;举例：手写数字识别&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;举一个手写数字体识别的例子：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;输入：一个16*16=256维的向量，每个pixel对应一个dimension，有颜色用（ink）用1表示，没有颜色（no ink）用0表示，将图片展平为一个256维的向量作为网络输入。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;输出：10个维度，每个维度代表一个数字的置信度（可理解为是该数字的概率有多大）&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5602988260405549&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazHpAXrobV4IibFvnZTz2mYeDk2ibuhFkmHWwibIic1N6QuQbxrTibafJREibCQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;937&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;从输出结果来看，每一个维度对应输出一个数字，代表模型输出为当前分类数字的概率。说明这张图片是2的可能性就是最大的。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5771889400921659&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazH6xBvjzsAzJU3uZiayegnvRNYRz32fgdEHBC9lOS7Zlh8Z3fH4AGdFcw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;868&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在这个问题中，唯一确定的就是，输入是256维的向量，输出是10维的向量，我们所需要找的函数就是输入和输出之间的神经网络这个函数。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5666003976143141&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazHVzZuhNkxaibVibEvMVRnR5VjF7LEtlY9WXiaSIicQwNPXSa1qAXnKFmnVw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1006&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;从上图看神经网络的结构决定了函数集（function set），通常来讲函数集中的函数越多越复杂，网络的表达空间就越大，越能handle复杂的模式，所以说网络结构（network structured）很关键。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.7407809110629068&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazHAnoPZRGcHkJGgXqM0nH4xSLBZodWEvicv831Z0OVZzt86RJKoickLveQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;922&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;接下来有几个问题：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;多少层？每层有多少神经元？这个问我们需要用尝试加上直觉的方法来进行调试。对于有些机器学习相关的问题，我们一般用特征工程来提取特征，但是对于深度学习，我们只需要设计神经网络模型来进行就可以了。对于语音识别和影像识别，深度学习是个好的方法，因为特征工程提取特征并不容易。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;结构可以自动确定吗？有很多设计方法可以让机器自动找到神经网络的结构的，比如进化人工神经网络（Evolutionary Artificial Neural Networks）但是这些方法并不是很普及 。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;我们可以设计网络结构吗？可以的，比如 CNN卷积神经网络（Convolutional Neural Network ）&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;Step2：模型评估&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;损失示例&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.7288629737609329&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazH8P9qrgnSyYYudBSMj3hqPeAfdAibSu941VjquEgubdwHm57ElESFwnQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;686&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;对于模型的评估，我们一般采用损失函数来反应模型的优劣，所以对于神经网络来说，我们可以采用交叉熵（cross entropy）函数来对 𝑦 和 𝑦̂ 的损失进行计算，接下来我们就通过调整参数，让交叉熵越小越好。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;总体损失&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.7492625368731564&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazHTBYknO8Zxkb0FjAg1iblibphHX9yibdVp6vvGoU7vShibtsWJB2tDXDxnQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;678&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;对于损失，我们不单单要计算一笔数据的，而是要计算整体所有训练数据的损失，然后把所有的训练数据的损失都加起来，得到一个总体损失𝐿。接下来就是在functon set里面找到一组函数能最小化这个总体损失𝐿，或者是找一组神经网络的参数𝜃，来最小化总体损失𝐿。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;Step3：选择最优函数&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;如何找到最优的函数和最好的一组参数?&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;——使用梯度下降。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;具体流程：𝜃是一组包含权重和偏差的参数集合，随机找一个初始值，接下来计算一下每个参数对应的偏微分，得到的一个偏微分的集合∇𝐿就是梯度，有了这些偏微分，我们就可以更新梯度得到新的参数，这样不断反复进行，就能得到一组参数使得损失函数的值最小。&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.7172312223858616&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazHYxJVKEr0qbmLBAQaia9nPiaB8DQOmiaHttAcDtZVRq1XrPrYbWNy7S0TQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;679&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.701280227596017&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazHFWFmmHYZG530b7fzjbC9GiasLKwyBrAsuEeYeBPBWXMLlw6rxHU7NCA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;703&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;反向传播&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;在神经网络训练中，我们需要将计算得到的损失向前传递，以计算各个神经元连接的权重对损失的影响大小，这里用到的方法就是反向传播。我们可以用很多框架来进行计算损失，比如说TensorFlow，Pytorch，theano等。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.7323529411764705&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazH5EE8iaS3VPa0CTRyLYCRNicwjyDG5edibTQg8hwKu3Xq40FZ8pLSIoAMg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;680&quot;/&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;思考题&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;为什么要用深度学习，深层架构带来哪些好处？那是不是隐藏层越多越好？&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;隐藏层越多越好？&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.7351664254703328&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazHAmXc0f5tGn8pKFRPsUlZ99h8yTIgfEA2icLWpMrTVWHSq8caOFgtwfg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;691&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;从图中展示的结果看，毫无疑问，理论上网络的层次越深效果越好，但现实中是这样吗？&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;普遍性定理&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.7303030303030303&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsFNR5fVC7qnkqtAPeg2MiazHYgYQRK70w4Py6IYESyaicYuGnl1N5rMRibhvkLibSBTPyRVMibibe1rWNBQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;660&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;参数更多的模型拟合数据效果更好是很正常的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;有一个通用的理论：对于任何一个连续的函数，都可以用足够多的神经元来表示。那为什么我们还需要深度(Deep)神经网络结构呢，是不是直接用一层包含很多神经元的网络(Fat)来表示就可以了？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;推荐人：王茂霖、丁一超&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>7172914852fcea93e3ba1f2372fd38e3</guid>
-<title>奇葩面试题，O(logn) 的底数是多少？</title>
-<link>https://toutiao.io/k/wxvr8pu</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
+<guid>da289d1b7581b6221c9245340537f2f5</guid>
+<title>技术面试最后反问面试官的话</title>
+<link>https://toutiao.io/k/do55tqr</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;body class=&quot;logged-out env-production page-responsive&quot; id=&quot;readabilityBody&quot;&gt;
+    
 
-                    
-                    
-                    
-                    &lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;大家好，我是老三，最近裸辞了，在面试。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;前两天一个面试，只面了十分钟就结束了——&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;事情是这样的：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;面试官：你能说说HashMap的数据结构吗？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;老三：数组+链表+红黑树，阿巴阿巴……&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;面试官：那你说说红黑树的查找复杂度是多少？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;老三：O(logn)。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;面试官：那这个复杂度的底数是多少？&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.8958333333333334&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/PMZOEonJxWc9cxEPYXkFWlpg8VXqoB6gI9EGEYKfY8K10QQRX0OpEHcfQdgpcLerb7NbsdLrkHkjy5ibYJkTSmg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;240&quot;/&gt;&lt;figcaption&gt;&lt;span/&gt;靓仔疑问&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;老三：时间复杂度O(logn)有底数？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;面试官：没有吗？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;尬住……&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;面试官：那你再说一下快速排序的时间复杂度？底数是多少？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;老三露出智（尴）慧（尬）的微笑……&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;面试官：好了，我没什么要问的了，这次面试到这结束吧。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;1.1403508771929824&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/PMZOEonJxWc9cxEPYXkFWlpg8VXqoB6gPTS2HNTx3KOamNqH4cY5bgeBV86EyVRxEnTDicThlxz8rnkM8KAlEDw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;228&quot;/&gt;&lt;figcaption&gt;&lt;span/&gt;这里塞&lt;/figcaption&gt;&lt;/figure&gt;&lt;hr data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;结束面试之后，老三意难平，赶紧查一下。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;O(logn)是有底数的！&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;看一下时间复杂度的定义：&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;❝&lt;/span&gt;&lt;p&gt;在进行算法分析时， 语句总的执行次数 T ( n ) 是关于问题规模 n 的 函 数 。进 而 分 析 T ( n ) 随 n 的变化情况并确定 T ( n ) 的 数 量级。算法的时间复杂度，也就是算法的时间量度， 记作：T ( n )= O(f(n))。它表示随问题规模 n 的增大， 算法执行时间的增长率和f ( n ) 的增长率相同， 称作算法的渐近时间复杂度， 简称为时间复杂度。其中 f ( n ) 是问题规模 n 的某个函数。&lt;/p&gt;&lt;span&gt;❞&lt;/span&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;有点抽象对不对，直接上例子，我们来意会一下。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;        &lt;span&gt;int&lt;/span&gt; n=&lt;span&gt;10&lt;/span&gt;;&lt;br/&gt;        &lt;span&gt;int&lt;/span&gt; count=&lt;span&gt;1&lt;/span&gt;;&lt;br/&gt;        &lt;span&gt;while&lt;/span&gt; (count&amp;lt;n){&lt;br/&gt;            count=count*&lt;span&gt;2&lt;/span&gt;;&lt;br/&gt;            &lt;span&gt;//时间复杂度为O(1)的运算&lt;/span&gt;&lt;br/&gt;            System.out.println(count);&lt;br/&gt;        }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;看一下，这个运算，每次 count 乘以 2 之后， 就距离n更近了一分。也就是说：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.5532710280373832&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/PMZOEonJxWc9cxEPYXkFWlpg8VXqoB6gMIg40CCVKleYv4NpA6XO7JGbRUKPQyiaibfOicwnzNHqoEgc8cY8RCmog/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;535&quot;/&gt;&lt;figcaption&gt;&lt;span/&gt;时间复杂度&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;破案了，O(logn)确实是有底数的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这个底数是由什么决定的呢？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;算法中log级别的时间复杂度都是由于使用了分治思想，这个底数直接由分治的复杂度决定。如果采用二分法,那么就会以2为底，，三分法就会以3为底数，其他类似。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;O(logn)底数意义不大！&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;那问题来了，为什么我们平时不写底数呢？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;总不能因为这个底数太难打吧……&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们注意到，时间复杂度的定义：T ( n )= O(f(n))。它表示随问题规模 n 的增大， 算法执行时间的增长率和f ( n ) 的增长率相同， 称作算法的&lt;strong&gt;「渐近时间复杂度」&lt;/strong&gt;，简称时间复杂度。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;假如说我们要比较两个函数f(n)和g(n)的增长快慢，用什么办法呢？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;可以使用微积分里的极限：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.46905537459283386&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/PMZOEonJxWc9cxEPYXkFWlpg8VXqoB6gepvjDibFqEJdzDiaUeZpwwZBGpwgGkjQpiblx9etBDagmDOBiaRncFn70w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;614&quot;/&gt;&lt;figcaption&gt;&lt;span/&gt;增长快慢&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;老三高数忘完了哈哈，不会推导，总之最后的结果是一个常数。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;也就是，假如n非常大的时候，任意底数的一个对数函数都只是相差一个常数倍而已。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;所以无论底数是什么，log级别的渐进意义是一样的。也就是说该算法的时间复杂度的增长与处理数据多少的增长的关系是一样的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;总之：&lt;strong&gt;「O（logn）已经可以表达所有底数的对数了」&lt;/strong&gt;。&lt;/p&gt;&lt;hr data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;花了一个小时，无用的知识又增加了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;简单总结，就是O(logn)有底数，但是没有纠结的必要。&lt;/p&gt;&lt;br data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;hr data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;「参考：」&lt;/strong&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;[1]. [重学数据结构（序：概览）](https://fighter3.blog.csdn.net/article/details/107725490)&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;[2]. [剑指Offer——算法复杂度中的O(logN)底数是多少](https://blog.csdn.net/sunhuaqiang1/article/details/52231502/?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_title~default-0.control&amp;amp;spm=1001.2101.3001.4242)&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;[3]. [如何理解算法时间复杂度的表示法，例如 O(n²)、O(n)、O(1)、O(nlogn) 等？](https://www.zhihu.com/question/21387264)&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzkwODE5ODM0Ng==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/PMZOEonJxWeFt08hV3N1706WTzfhoTNoXm5LXRV0XibppmeNR4zSNMa3QOJJ7ib4O21P5yohibwuD26Tp9ETWZAqA/0?wx_fmt=png&quot; data-nickname=&quot;三分恶&quot; data-alias=&quot;Fighter3FullStack&quot; data-signature=&quot;一个全栈开发。分享Java后端、Web前端、计算机基础知识。&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;section data-mpa-template=&quot;t&quot; data-from=&quot;yb-recommend-list&quot;&gt;&lt;section data-mpa-template=&quot;t&quot; data-from=&quot;yb-recommend&quot; data-recommend-article-type=&quot;normal&quot; data-recomment-template-id=&quot;1&quot; data-recommend-article-id=&quot;2247486580_1&quot; data-recommend-article-time=&quot;1625753837&quot; data-recommend-article-cover=&quot;http://mmbiz.qpic.cn/mmbiz_jpg/PMZOEonJxWeE5gzC3zlmXKQbOOoKBsIicjeEod89ZmNFwz5rEMUVEcTgQHoUKhpcNUPpd593ysvQmqPaBI5qsGg/0?wx_fmt=jpeg&quot; data-recommend-article-title=&quot;十二张图，踹开消息队列的大门&quot; data-recommend-article-content-url=&quot;http://mp.weixin.qq.com/s?__biz=MzkwODE5ODM0Ng==&amp;amp;mid=2247486580&amp;amp;idx=1&amp;amp;sn=7a2d29719bc6699f91acfcf0321d0da4&amp;amp;chksm=c0cce4d1f7bb6dc74722a4a0c58b89daf220d107d5c16129ea6145dc66272c08064c19dd99c6#rd&quot;&gt;&lt;a href=&quot;http://mp.weixin.qq.com/s?__biz=MzkwODE5ODM0Ng==&amp;amp;mid=2247486580&amp;amp;idx=1&amp;amp;sn=7a2d29719bc6699f91acfcf0321d0da4&amp;amp;chksm=c0cce4d1f7bb6dc74722a4a0c58b89daf220d107d5c16129ea6145dc66272c08064c19dd99c6&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;1&quot;&gt;&lt;section data-recommend-type=&quot;normal&quot; data-recommend-tid=&quot;1&quot; data-mid=&quot;&quot;&gt;&lt;section data-mid=&quot;&quot;&gt;&lt;section data-mid=&quot;&quot;&gt;&lt;span class=&quot;js_jump_icon h5_image_link&quot; data-positionback=&quot;static&quot;&gt;&lt;img data-ratio=&quot;0.425&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/PMZOEonJxWeE5gzC3zlmXKQbOOoKBsIicjeEod89ZmNFwz5rEMUVEcTgQHoUKhpcNUPpd593ysvQmqPaBI5qsGg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot;&gt;&lt;p data-recommend-title=&quot;t&quot; data-mid=&quot;&quot;&gt;十二张图，踹开消息队列的大门&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/a&gt;&lt;/section&gt;&lt;br/&gt;&lt;section data-mpa-template=&quot;t&quot; data-from=&quot;yb-recommend&quot; data-recommend-article-type=&quot;normal&quot; data-recomment-template-id=&quot;1&quot; data-recommend-article-id=&quot;2247486836_1&quot; data-recommend-article-time=&quot;1626365912&quot; data-recommend-article-cover=&quot;http://mmbiz.qpic.cn/mmbiz_jpg/PMZOEonJxWdkFHwTZ52CGtmPON2vpU1iagQj7zKJa4blSPkV6hCIGrrwMcqIHAINaohXl9GvKPYgXosuEzlu7EQ/0?wx_fmt=jpeg&quot; data-recommend-article-title=&quot;刷算法，这些api不可不知！&quot; data-recommend-article-content-url=&quot;http://mp.weixin.qq.com/s?__biz=MzkwODE5ODM0Ng==&amp;amp;mid=2247486836&amp;amp;idx=1&amp;amp;sn=b0a6b713fa3d1419cd55d7660a670ac7&amp;amp;chksm=c0cce5d1f7bb6cc7ab673e2b7cd627b6e19fd59faad5504aedbf971dda123a72e663f180c051#rd&quot;&gt;&lt;a href=&quot;http://mp.weixin.qq.com/s?__biz=MzkwODE5ODM0Ng==&amp;amp;mid=2247486836&amp;amp;idx=1&amp;amp;sn=b0a6b713fa3d1419cd55d7660a670ac7&amp;amp;chksm=c0cce5d1f7bb6cc7ab673e2b7cd627b6e19fd59faad5504aedbf971dda123a72e663f180c051&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;1&quot;&gt;&lt;section data-recommend-type=&quot;normal&quot; data-recommend-tid=&quot;1&quot; data-mid=&quot;&quot;&gt;&lt;section data-mid=&quot;&quot;&gt;&lt;section data-mid=&quot;&quot;&gt;&lt;span class=&quot;js_jump_icon h5_image_link&quot; data-positionback=&quot;static&quot;&gt;&lt;img data-ratio=&quot;0.42578125&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/PMZOEonJxWdkFHwTZ52CGtmPON2vpU1iagQj7zKJa4blSPkV6hCIGrrwMcqIHAINaohXl9GvKPYgXosuEzlu7EQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot;&gt;&lt;p data-recommend-title=&quot;t&quot; data-mid=&quot;&quot;&gt;刷算法，这些api不可不知！&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/a&gt;&lt;/section&gt;&lt;br/&gt;&lt;section data-mpa-template=&quot;t&quot; data-from=&quot;yb-recommend&quot; data-recommend-article-type=&quot;normal&quot; data-recomment-template-id=&quot;1&quot; data-recommend-article-id=&quot;2247486545_1&quot; data-recommend-article-time=&quot;1625283361&quot; data-recommend-article-cover=&quot;http://mmbiz.qpic.cn/mmbiz_jpg/PMZOEonJxWeJiaXVNcxfVCpacqoSWFgI4m37xs6szCn1j0dI08kGHkp7K25Dk5hoPuuR6C4LIbryOsneYuUawqQ/0?wx_fmt=jpeg&quot; data-recommend-article-title=&quot;假如我是超级躺王&quot; data-recommend-article-content-url=&quot;http://mp.weixin.qq.com/s?__biz=MzkwODE5ODM0Ng==&amp;amp;mid=2247486545&amp;amp;idx=1&amp;amp;sn=c868afacfe125c85e0d2527052984d6d&amp;amp;chksm=c0cce4f4f7bb6de24f5ac8ba032c70b36cd26c00daf7ff0f87fb0cc3e3994c72b595a5a42038#rd&quot;&gt;&lt;a href=&quot;http://mp.weixin.qq.com/s?__biz=MzkwODE5ODM0Ng==&amp;amp;mid=2247486545&amp;amp;idx=1&amp;amp;sn=c868afacfe125c85e0d2527052984d6d&amp;amp;chksm=c0cce4f4f7bb6de24f5ac8ba032c70b36cd26c00daf7ff0f87fb0cc3e3994c72b595a5a42038&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;1&quot;&gt;&lt;section data-recommend-type=&quot;normal&quot; data-recommend-tid=&quot;1&quot; data-mid=&quot;&quot;&gt;&lt;section data-mid=&quot;&quot;&gt;&lt;section data-mid=&quot;&quot;&gt;&lt;span class=&quot;js_jump_icon h5_image_link&quot; data-positionback=&quot;static&quot;&gt;&lt;img data-ratio=&quot;0.4253092293054234&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/PMZOEonJxWeJiaXVNcxfVCpacqoSWFgI4m37xs6szCn1j0dI08kGHkp7K25Dk5hoPuuR6C4LIbryOsneYuUawqQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1051&quot;/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot;&gt;&lt;p data-recommend-title=&quot;t&quot; data-mid=&quot;&quot;&gt;假如我是超级躺王&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/a&gt;&lt;/section&gt;&lt;br/&gt;&lt;section data-mpa-template=&quot;t&quot; data-from=&quot;yb-recommend&quot; data-recommend-article-type=&quot;normal&quot; data-recomment-template-id=&quot;1&quot; data-recommend-article-id=&quot;2247486176_1&quot; data-recommend-article-time=&quot;1621812600&quot; data-recommend-article-cover=&quot;http://mmbiz.qpic.cn/mmbiz_jpg/PMZOEonJxWcUdEsjLhrqT29X3Lb8QxkQaXZYeRFjwvXndAx7t28auwUakY0KBSQplPwWbv1sYBQLsIViclW8vIQ/0?wx_fmt=jpeg&quot; data-recommend-article-title=&quot;“三次握手，四次挥手”这么讲，保证你忘不了&quot; data-recommend-article-content-url=&quot;http://mp.weixin.qq.com/s?__biz=MzkwODE5ODM0Ng==&amp;amp;mid=2247486176&amp;amp;idx=1&amp;amp;sn=46cba7da4639e24f56a401f1fc3b7300&amp;amp;chksm=c0cce245f7bb6b53d8d6bcb7c58c4d49acd933c70f97272fae078066664bceecc88642a19a76#rd&quot;&gt;&lt;a href=&quot;http://mp.weixin.qq.com/s?__biz=MzkwODE5ODM0Ng==&amp;amp;mid=2247486176&amp;amp;idx=1&amp;amp;sn=46cba7da4639e24f56a401f1fc3b7300&amp;amp;chksm=c0cce245f7bb6b53d8d6bcb7c58c4d49acd933c70f97272fae078066664bceecc88642a19a76&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;1&quot;&gt;&lt;section data-recommend-type=&quot;normal&quot; data-recommend-tid=&quot;1&quot; data-mid=&quot;&quot;&gt;&lt;section data-mid=&quot;&quot;&gt;&lt;section data-mid=&quot;&quot;&gt;&lt;span class=&quot;js_jump_icon h5_image_link&quot; data-positionback=&quot;static&quot;&gt;&lt;img data-ratio=&quot;0.425&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/PMZOEonJxWcUdEsjLhrqT29X3Lb8QxkQaXZYeRFjwvXndAx7t28auwUakY0KBSQplPwWbv1sYBQLsIViclW8vIQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;720&quot;/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot;&gt;&lt;p data-recommend-title=&quot;t&quot; data-mid=&quot;&quot;&gt;“三次握手，四次挥手”这么讲，保证你忘不了&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/a&gt;&lt;/section&gt;&lt;br/&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;
-                &lt;/div&gt;
+    
 
-                
-
-                
+  &lt;p id=&quot;start-of-content&quot; class=&quot;show-on-focus&quot;/&gt;
 
 
 
-                
-                &lt;div class=&quot;reward_qrcode_area reward_area tc&quot; id=&quot;js_reward_qrcode&quot;&gt;
-                                &lt;p class=&quot;tips_global&quot;&gt;Long-press QR code to transfer me a reward&lt;/p&gt;
-                                                                &lt;p class=&quot;reward_tips&quot;&gt;听说一键三连等于学会哦！&lt;/p&gt;
-                                &lt;span class=&quot;reward_qrcode_img_wrp&quot;&gt;&lt;img class=&quot;reward_qrcode_img&quot; id=&quot;js_reward_qrcode_img&quot;/&gt;&lt;/span&gt;
-                                &lt;p class=&quot;tips_global&quot;&gt;As required by Apple&#x27;s new policy, the Reward feature has been disabled on Weixin for iOS. You can still reward an Official Account by transferring money via QR code.&lt;/p&gt;
-                            &lt;/div&gt;
-                                                                            
-                              
-            &lt;/div&gt;&lt;/div&gt;</content:encoded>
+
+
+
+    
+
+
+    
+
+  &lt;include-fragment class=&quot;js-notification-shelf-include-fragment&quot; data-base-src=&quot;https://github.com/notifications/beta/shelf&quot;/&gt;
+
+
+
+
+  &lt;div class=&quot;application-main &quot; data-commit-hovercards-enabled=&quot;&quot; data-discussion-hovercards-enabled=&quot;&quot; data-issue-and-pr-hovercards-enabled=&quot;&quot;&gt;
+        &lt;div itemscope=&quot;&quot; itemtype=&quot;http://schema.org/SoftwareSourceCode&quot; class=&quot;&quot;&gt;
+    &lt;main id=&quot;js-repo-pjax-container&quot; data-pjax-container=&quot;&quot;&gt;
+      
+
+      
+
+
+
+
+  
+
+
+  
+
+
+&lt;div class=&quot;clearfix new-discussion-timeline container-xl px-3 px-md-4 px-lg-5&quot;&gt;
+  &lt;div id=&quot;repo-content-pjax-container&quot; class=&quot;repository-content &quot;&gt;
+
+    
+
+
+    
+      
+    &lt;div&gt;
+  &lt;p class=&quot;d-none d-lg-block mt-6 mr-3 Popover top-0 right-0 color-shadow-medium col-3&quot;&gt;
+    
+  &lt;/p&gt;
+
+  &lt;div data-view-component=&quot;true&quot; class=&quot;gutter-condensed gutter-lg flex-column flex-md-row d-flex&quot;&gt;
+
+  &lt;div data-view-component=&quot;true&quot; class=&quot;flex-shrink-0 col-12 col-md-9 mb-4 mb-md-0&quot;&gt;      
+      &lt;div class=&quot;file-navigation mb-3 d-flex flex-items-start&quot;&gt;
+  
+
+
+
+  
+
+  &lt;p class=&quot;flex-auto&quot;/&gt;
+
+  &lt;include-fragment data-test-selector=&quot;overview-actions-fragment&quot; src=&quot;/yifeikong/reverse-interview-zh/overview_actions/master&quot;/&gt;
+
+
+    &lt;span class=&quot;d-none d-md-flex ml-2&quot;&gt;
+
+          
+&lt;get-repo class=&quot;&quot;&gt;
+    
+    &lt;details class=&quot;position-relative details-overlay details-reset&quot; data-action=&quot;toggle:get-repo#onDetailsToggle&quot;&gt;
+      &lt;summary class=&quot;btn btn-primary&quot; data-hydro-click=&quot;{&amp;quot;event_type&amp;quot;:&amp;quot;repository.click&amp;quot;,&amp;quot;payload&amp;quot;:{&amp;quot;repository_id&amp;quot;:207837082,&amp;quot;target&amp;quot;:&amp;quot;CLONE_OR_DOWNLOAD_BUTTON&amp;quot;,&amp;quot;originating_url&amp;quot;:&amp;quot;https://github.com/yifeikong/reverse-interview-zh?hmsr=toutiao.io&amp;amp;utm_campaign=toutiao.io&amp;amp;utm_medium=toutiao.io&amp;amp;utm_source=toutiao.io&amp;quot;,&amp;quot;user_id&amp;quot;:null}}&quot; data-hydro-click-hmac=&quot;48584ac859f0e785b04b5c495c5607b5e6599136b0dff592852fc6efe57556d0&quot;&gt;
+        Code
+        &lt;span class=&quot;dropdown-caret&quot;/&gt;
+&lt;/summary&gt;      &lt;div class=&quot;position-relative&quot;&gt;
+        &lt;div class=&quot;dropdown-menu dropdown-menu-sw p-0&quot;&gt;
+          
+
+
+          
+          
+          &lt;div class=&quot;p-3&quot; data-targets=&quot;get-repo.platforms&quot; data-platform=&quot;xcode&quot; hidden=&quot;&quot;&gt;
+            &lt;h4 class=&quot;lh-condensed mb-3&quot;&gt;Launching Xcode&lt;span class=&quot;AnimatedEllipsis&quot;/&gt;&lt;/h4&gt;
+            &lt;p class=&quot;color-text-secondary&quot;&gt;If nothing happens, &lt;a href=&quot;https://developer.apple.com/xcode/&quot;&gt;download Xcode&lt;/a&gt; and try again.&lt;/p&gt;
+            &lt;button data-action=&quot;click:get-repo#onDetailsToggle&quot; type=&quot;button&quot; data-view-component=&quot;true&quot; class=&quot;btn-link&quot;&gt;
+  
+  
+              Go back
+
+  
+
+&lt;/button&gt;          &lt;/div&gt;
+          &lt;div class=&quot;p-3 &quot; data-targets=&quot;get-repo.platforms&quot; data-target=&quot;new-codespace.loadingVscode prefetch-pane.loadingVscode&quot; data-platform=&quot;vscode&quot; hidden=&quot;&quot;&gt;
+  &lt;poll-include-fragment data-target=&quot;get-repo.vscodePoller new-codespace.vscodePoller prefetch-pane.vscodePoller&quot;&gt;
+    &lt;h4 class=&quot;lh-condensed mb-3&quot;&gt;Launching Visual Studio Code&lt;span class=&quot;AnimatedEllipsis&quot; data-hide-on-error=&quot;&quot;/&gt;&lt;/h4&gt;
+    &lt;p class=&quot;color-text-secondary&quot; data-hide-on-error=&quot;&quot;&gt;Your codespace will open once ready.&lt;/p&gt;
+    &lt;p class=&quot;color-text-secondary&quot; data-show-on-error=&quot;&quot; hidden=&quot;&quot;&gt;There was a problem preparing your codespace, please try again.&lt;/p&gt;
+  &lt;/poll-include-fragment&gt;
+&lt;/div&gt;
+
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/details&gt;
+
+&lt;/get-repo&gt;
+
+
+      
+    &lt;/span&gt;
+&lt;/div&gt;
+
+      
+
+
+&lt;div class=&quot;Box mb-3&quot;&gt;
+  
+  &lt;h2 id=&quot;files&quot; class=&quot;sr-only&quot;&gt;Files&lt;/h2&gt;
+  
+
+
+    &lt;a class=&quot;d-none js-permalink-shortcut&quot; data-hotkey=&quot;y&quot; href=&quot;/yifeikong/reverse-interview-zh/tree/a3d068c97f9f547e9751745e051999d854c60681&quot;&gt;Permalink&lt;/a&gt;
+
+  &lt;div data-view-component=&quot;true&quot; class=&quot;include-fragment-error flash flash-error flash-full py-2&quot;&gt;
+  &lt;svg aria-hidden=&quot;true&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; data-view-component=&quot;true&quot; class=&quot;octicon octicon-alert&quot;&gt;
+    &lt;path fill-rule=&quot;evenodd&quot; d=&quot;M8.22 1.754a.25.25 0 00-.44 0L1.698 13.132a.25.25 0 00.22.368h12.164a.25.25 0 00.22-.368L8.22 1.754zm-1.763-.707c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0114.082 15H1.918a1.75 1.75 0 01-1.543-2.575L6.457 1.047zM9 11a1 1 0 11-2 0 1 1 0 012 0zm-.25-5.25a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5z&quot;/&gt;
+&lt;/svg&gt;&lt;p&gt;
+  
+    Failed to load latest commit information.
+
+
+  
+&lt;/p&gt;&lt;/div&gt;  &lt;div class=&quot;js-details-container Details&quot;&gt;
+    &lt;div role=&quot;grid&quot; aria-labelledby=&quot;files&quot; class=&quot;Details-content--hidden-not-important js-navigation-container js-active-navigation-container d-md-block&quot; data-pjax=&quot;&quot;&gt;
+      &lt;div class=&quot;sr-only&quot; role=&quot;row&quot;&gt;
+        &lt;p role=&quot;columnheader&quot;&gt;Type&lt;/p&gt;
+        &lt;p role=&quot;columnheader&quot;&gt;Name&lt;/p&gt;
+        &lt;p role=&quot;columnheader&quot; class=&quot;d-none d-md-block&quot;&gt;Latest commit message&lt;/p&gt;
+        &lt;p role=&quot;columnheader&quot;&gt;Commit time&lt;/p&gt;
+      &lt;/div&gt;
+
+        
+        
+    &lt;/div&gt;
+    &lt;p class=&quot;Details-content--shown Box-footer d-md-none p-0&quot;&gt;
+      &lt;button type=&quot;button&quot; class=&quot;d-block btn-link js-details-target width-full px-3 py-2&quot; aria-expanded=&quot;false&quot;&gt;
+        View code
+      &lt;/button&gt;
+    &lt;/p&gt;
+  &lt;/div&gt;
+
+
+
+
+&lt;/div&gt;
+
+    &lt;readme-toc&gt;
+
+    
+
+  &lt;/readme-toc&gt;
+
+
+&lt;/div&gt;
+
+    &lt;div data-view-component=&quot;true&quot; class=&quot;flex-shrink-0 col-12 col-md-3&quot;&gt;      
+
+      &lt;div class=&quot;BorderGrid BorderGrid--spacious&quot; data-pjax=&quot;&quot;&gt;
+        &lt;div class=&quot;BorderGrid-row hide-sm hide-md&quot;&gt;
+          &lt;div class=&quot;BorderGrid-cell&quot;&gt;
+              &lt;h2 class=&quot;mb-3 h4&quot;&gt;About&lt;/h2&gt;
+
+    &lt;p class=&quot;f4 mt-3&quot;&gt;
+      技术面试最后反问面试官的话
+    &lt;/p&gt;
+
+  &lt;h3 class=&quot;sr-only&quot;&gt;Topics&lt;/h3&gt;
+  
+
+  &lt;h3 class=&quot;sr-only&quot;&gt;Resources&lt;/h3&gt;
+  
+
+  &lt;h3 class=&quot;sr-only&quot;&gt;License&lt;/h3&gt;
+  
+
+  &lt;include-fragment aria-label=&quot;Loading...&quot; src=&quot;/yifeikong/reverse-interview-zh/hovercards/citation/sidebar_partial?commit=a3d068c97f9f547e9751745e051999d854c60681&quot;&gt;
+  &lt;/include-fragment&gt;
+
+          &lt;/div&gt;
+        &lt;/div&gt;
+          
+          
+          
+      &lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;
+
+
+
+  &lt;/div&gt;
+&lt;/div&gt;
+
+    &lt;/main&gt;
+  &lt;/div&gt;
+
+  &lt;/div&gt;
+
+          
+
+
+
+
+  &lt;div id=&quot;ajax-error-message&quot; class=&quot;ajax-error-message flash flash-error&quot; hidden=&quot;&quot;&gt;
+    &lt;svg aria-hidden=&quot;true&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; data-view-component=&quot;true&quot; class=&quot;octicon octicon-alert&quot;&gt;
+    &lt;path fill-rule=&quot;evenodd&quot; d=&quot;M8.22 1.754a.25.25 0 00-.44 0L1.698 13.132a.25.25 0 00.22.368h12.164a.25.25 0 00.22-.368L8.22 1.754zm-1.763-.707c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0114.082 15H1.918a1.75 1.75 0 01-1.543-2.575L6.457 1.047zM9 11a1 1 0 11-2 0 1 1 0 012 0zm-.25-5.25a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5z&quot;/&gt;
+&lt;/svg&gt;
+    &lt;button type=&quot;button&quot; class=&quot;flash-close js-ajax-error-dismiss&quot; aria-label=&quot;Dismiss error&quot;&gt;
+      &lt;svg aria-hidden=&quot;true&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; data-view-component=&quot;true&quot; class=&quot;octicon octicon-x&quot;&gt;
+    &lt;path fill-rule=&quot;evenodd&quot; d=&quot;M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z&quot;/&gt;
+&lt;/svg&gt;
+    &lt;/button&gt;&lt;p&gt;
+    You can’t perform that action at this time.
+  &lt;/p&gt;&lt;/div&gt;
+
+  &lt;div class=&quot;js-stale-session-flash flash flash-warn flash-banner&quot; hidden=&quot;&quot;&gt;
+    &lt;svg aria-hidden=&quot;true&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; data-view-component=&quot;true&quot; class=&quot;octicon octicon-alert&quot;&gt;
+    &lt;path fill-rule=&quot;evenodd&quot; d=&quot;M8.22 1.754a.25.25 0 00-.44 0L1.698 13.132a.25.25 0 00.22.368h12.164a.25.25 0 00.22-.368L8.22 1.754zm-1.763-.707c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0114.082 15H1.918a1.75 1.75 0 01-1.543-2.575L6.457 1.047zM9 11a1 1 0 11-2 0 1 1 0 012 0zm-.25-5.25a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5z&quot;/&gt;
+&lt;/svg&gt;
+    &lt;span class=&quot;js-stale-session-flash-signed-in&quot; hidden=&quot;&quot;&gt;You signed in with another tab or window. &lt;a href=&quot;&quot;&gt;Reload&lt;/a&gt; to refresh your session.&lt;/span&gt;
+    &lt;span class=&quot;js-stale-session-flash-signed-out&quot; hidden=&quot;&quot;&gt;You signed out in another tab or window. &lt;a href=&quot;&quot;&gt;Reload&lt;/a&gt; to refresh your session.&lt;/span&gt;
+  &lt;/div&gt;
+    &lt;template id=&quot;site-details-dialog&quot;&gt;
+  &lt;details class=&quot;details-reset details-overlay details-overlay-dark lh-default color-text-primary hx_rsm&quot; open=&quot;&quot;&gt;
+    &lt;summary role=&quot;button&quot; aria-label=&quot;Close dialog&quot;/&gt;
+    &lt;details-dialog class=&quot;Box Box--overlay d-flex flex-column anim-fade-in fast hx_rsm-dialog hx_rsm-modal&quot;&gt;
+      &lt;button class=&quot;Box-btn-octicon m-0 btn-octicon position-absolute right-0 top-0&quot; type=&quot;button&quot; aria-label=&quot;Close dialog&quot; data-close-dialog=&quot;&quot;&gt;
+        &lt;svg aria-hidden=&quot;true&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; data-view-component=&quot;true&quot; class=&quot;octicon octicon-x&quot;&gt;
+    &lt;path fill-rule=&quot;evenodd&quot; d=&quot;M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z&quot;/&gt;
+&lt;/svg&gt;
+      &lt;/button&gt;
+      &lt;p class=&quot;octocat-spinner my-6 js-details-dialog-spinner&quot;/&gt;
+    &lt;/details-dialog&gt;
+  &lt;/details&gt;
+&lt;/template&gt;
+
+    
+
+    &lt;template id=&quot;snippet-clipboard-copy-button&quot;&gt;
+  
+&lt;/template&gt;
+
+
+
+
+  &lt;/body&gt;
+&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
