@@ -227,119 +227,195 @@ icmp&lt;span&gt;[&lt;/span&gt;icmptype&lt;span&gt;]=&lt;/span&gt;icmp-echo    To
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>de411580aa8b13b3a7e1b0d404aebc42</guid>
-<title>Python 实现并发的几种方式</title>
-<link>https://toutiao.io/k/2vm24gc</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;post_content&quot;&gt;
+<guid>7d12a5668c461fe1e00ee1efecded096</guid>
+<title>mdebug：基于 React 开发的 Web 调试工具</title>
+<link>https://toutiao.io/k/rlcbuqs</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;container app-preview post-body&quot;&gt;
+  &lt;div class=&quot;preview&quot;&gt;&lt;h1 align=&quot;center&quot;&gt;
+&lt;img src=&quot;https://user-images.githubusercontent.com/6822604/130725631-dde49c00-24fe-44c6-a3fd-a5c709ce6e57.png&quot;/&gt;
+&lt;/h1&gt;
 
-&lt;p&gt;工作中需要蛋疼的用python实现并发，在读文档+实践了很久之后，做个总结。注意，本文全是根据我实践中的理解来写的，并且尽量避开了实现细节以及我讨厌使用的asyncio.future和task。因为我觉得你搞并发的时候就应该像golang一样，尽量避免让开发者去搞那些奇怪的功能，而是专注于怎么轻松起一个协程，共享数据并且获得结果。&lt;/p&gt;
+&lt;p align=&quot;center&quot;&gt;基于React开发的移动web调试工具&lt;/p&gt;
 
+&lt;p align=&quot;center&quot;&gt;项目地址:
+&lt;a href=&quot;https://github.com/tnfe/mdebug&quot; target=&quot;_blank&quot;&gt;https://github.com/tnfe/mdebug&lt;/a&gt;&lt;/p&gt;
 
+&lt;table&gt;
+  &lt;tr&gt;
+    &lt;th&gt;&lt;h4 align=&quot;center&quot;&gt;&lt;h4 align=&quot;center&quot;&gt;简单易用&lt;/h4&gt;&lt;/h4&gt;&lt;/th&gt;
+    &lt;th&gt;&lt;h4 align=&quot;center&quot;/&gt;&lt;h4 align=&quot;center&quot;&gt;功能全面&lt;/h4&gt;&lt;/th&gt;
+    &lt;th&gt;&lt;h4 align=&quot;center&quot;/&gt;&lt;h4 align=&quot;center&quot;&gt;易扩展&lt;/h4&gt;&lt;/th&gt;
+    &lt;th&gt;&lt;h4 align=&quot;center&quot;/&gt;&lt;h4 align=&quot;center&quot;&gt;高性能&lt;/h4&gt;&lt;/th&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot;&gt;&lt;sub&gt;使用cdn方式,一键接入&lt;/sub&gt;&lt;/td&gt;
+    &lt;td align=&quot;center&quot;&gt;&lt;sub&gt;类Chrome devtools, 支持日志,网络,存储,性能等, 具有更好的网络捕获能力和丰富的日志展现形式&lt;/sub&gt;&lt;/td&gt;
+    &lt;td align=&quot;center&quot;&gt;&lt;sub&gt;暴露内部丰富的事件, 可以和react组件无缝进行集成&lt;/sub&gt;&lt;/td&gt;
+    &lt;td align=&quot;center&quot;&gt;&lt;sub&gt;支持大数据量展示, 不卡顿&lt;/sub&gt;&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+
+
+
+&lt;h2&gt;一、快速体验&lt;/h2&gt;
 
-&lt;span id=&quot;more-1042&quot;/&gt;
+&lt;p&gt;&lt;a href=&quot;https://tnfe.github.io/mdebug&quot;&gt;https://tnfe.github.io/mdebug&lt;/a&gt;&lt;/p&gt;
 
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/6822604/131059931-7efb7494-82fe-4a27-bd79-ed2bd9ce2c11.png&quot; alt=&quot;image&quot;/&gt;&lt;/p&gt;
 
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/6822604/131216593-59803c8f-1819-4907-b02a-e4bad0c1666b.png&quot;/&gt;&lt;/p&gt;
 
-&lt;h1&gt;通过asyncio异步实现并发&lt;/h1&gt;
+&lt;h2&gt;二、Examples&lt;/h2&gt;
 
 
 
-&lt;p&gt;asyncio是python原生支持的携程库，性能还可以，这里以3.6版本来讲吧，因为后面几个版本一直在加各种额外feature。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://codesandbox.io/s/crimson-sun-py8x7?fontsize=14&amp;amp;hidenavigation=1&amp;amp;theme=dark&quot;&gt;&lt;img src=&quot;https://codesandbox.io/static/img/play-codesandbox.svg&quot; alt=&quot;Edit crimson-sun-py8x7&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
 
+&lt;h2&gt;三、安装&lt;/h2&gt;
 
+&lt;h4&gt;Install using npm&lt;/h4&gt;
 
-&lt;h3&gt;事件循环&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;npm install mdebug --save
 
+&lt;/code&gt;&lt;/pre&gt;
 
-
-&lt;p&gt;python的异步是基于事件循环的。所谓事件循环，可以认为是系统在不断遍历由协程组成的List，然后根据条件来判断是否要运行/挂起当前的协程。当然实际的实现比较复杂，这里不多讨论。&lt;/p&gt;
-
-
-
-&lt;p&gt;通过事件循环可以实现协程的”假并发”：&lt;/p&gt;
-
-
-
-&lt;p&gt;可以使用asyncio.get_event_loop()获得当前的事件循环，然后使用run_until_complete方法，运行一个协程并传入参数。一些网上的博主说run_until_complete是阻塞的，但是我亲测这玩意并不一定阻塞，具体需要你自己亲自测试一下。比如我在调用websockets库的serve方法返回的future时这玩意就不会阻塞。我推测是因为内部有一些特殊的实现，在loop没结束时就挂起了，这里不想细究，因为3.7以后就有了asyncio.run，比这个强多了。&lt;/p&gt;
-
-
-
-&lt;p&gt;当然，一个比较通用的方法是使用loop.create_task运行一个协程。这个方法用起来没什么太多问题，亲测在3.6版本非常好用，跟golang的go一样。&lt;/p&gt;
-
-
-
-&lt;h3&gt;async 和 await&lt;/h3&gt;
-
-
-
-&lt;p&gt;总有人把这俩放在一起说，但是我觉得这俩的意义完全不一样。&lt;/p&gt;
-
-
-
-&lt;p&gt;async用在函数声明前，标记接下来def的这个函数是一个异步函数，可以放在协程中运行。当然，如果这个函数里不含任何异步的元素，也能用async标记，因为仅仅是个标记嘛。被async标记的函数中可以使用await。&lt;/p&gt;
-
-
-
-&lt;p&gt;await用于函数调用前，代表以协程的方式运行一个异步函数，并且交出当前协程对线程资源的占用(也就是java的yield)。举个例子，A协程中使用await调用B协程，python解释器会把A协程给暂停掉，然后运行B协程，直到B运行完，或者B遇到了一些事情，交出了资源，才会继续运行A协程。&lt;/p&gt;
-
-
-
-&lt;p&gt;一旦我们起了一个协程，python就会想尽办法用比较优的方式来调度他。例如，我们用await起了一个IO密集型的函数。当这个函数等待IO时，系统会主动把他暂停掉，继续执行其他的协程。有一个点比较有意思，在我实际应用中，如果A协程用await起了B协程，如果这个B协程没有全部执行完，A协程后续后续的代码并不会被执行。如果你想做到go那样的异步，还是要用事件循环。&lt;/p&gt;
-
-
-
-&lt;h3&gt;asyncio.sleep(0)&lt;/h3&gt;
-
-
-
-&lt;p&gt;亲测，使用sleep(0)可以主动交出当前协程资源，让系统重新调度，而且不会真的sleep。这就可以实现手动切协程了。&lt;/p&gt;
-
-
-
-&lt;h1&gt;通过进程实现真并发&lt;/h1&gt;
-
-
-
-&lt;p&gt;因为Python解释器的原因，如果想要实现真并发，必须要用进程。这里就不讲python的进程池了，原因还是我不喜欢，觉得怪怪的。&lt;/p&gt;
-
-
-
-&lt;h3&gt;Process的启动和停止&lt;/h3&gt;
-
-
-
-&lt;p&gt;起一个process很简单，只要建立一个process对象，然后调用start_processn方法即可。&lt;/p&gt;
-
-
-
-&lt;p&gt;停止process时需要注意，terminate方法极其不靠谱，很容易关不掉进程。join方法可调用也可不掉用，不用担心僵尸进程的问题，因为你新启动一个process的时候系统会自动帮你清理僵尸进程(python文档这么说的，但是我用terminate方法的时候还是经常产生僵尸进程)。事实上，还是os.kill靠谱，因为kill -9是程序一定要接受并响应的信号。&lt;/p&gt;
-
-
-
-&lt;h3&gt;Process之间的信息交换&lt;/h3&gt;
-
-
-
-&lt;p&gt;首先，如果你基于一个类的方法(非静态,非类方法)启了一个进程，那么你需要当心了。虽然python不是使用fork启动的进程(当然你可以手动指定使用fork)，它实际产生的效果也是跟fork一样的，那些内存数据都会复制一份，对象的属性值也会是这一时刻的，除了那些专门用于进程通信的对象，如Pipe和Queue以及Value。&lt;/p&gt;
-
-
-
-&lt;p&gt;关于Pipe和Queue，还是建议去看官方文档，写的很清楚并且易用，亲测数据量大的时候用Queue比较合适。&lt;/p&gt;
-
-
-
-&lt;h3&gt;Daemon Process&lt;/h3&gt;
-
-
-
-&lt;p&gt;Python文档介绍，Daemon Process是指守护进程。守护进程被父进程创建后，不能产生自己的子进程。当父进程停止时，守护进程也会停止。然而！！我自己亲测，父进程停止后，守护进程真的不一定停！！好几次了！所以你还是手动kill一下比较靠谱。&lt;/p&gt;
-
-
-
-&lt;p&gt;就先写这么多吧，纯靠经验和文档，没有深究源码。&lt;/p&gt;
+&lt;h2&gt;四、使用&lt;/h2&gt;
+
+&lt;h3&gt;1. ES6&lt;/h3&gt;
+
+&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;  import mdebug from &#x27;mdebug&#x27;;
+  mdebug.init();
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;2.CDN&lt;/h3&gt;
+
+&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;(function() {
+    var scp = document.createElement(&#x27;script&#x27;);
+    // 加载最新的mdebug版本
+    scp.src = &#x27;https://unpkg.com/mdebug@latest/dist/index.js&#x27;;
+    scp.async = true;
+    scp.charset = &#x27;utf-8&#x27;;
+    // 加载成功并初始化
+    scp.onload = function() {
+        mdebug.init();
+    };
+    // 加载状态切换回调
+    scp.onreadystate = function() {};
+    // 加载失败回调 
+    scp.onerror = function() {};
+    document.getElementsByTagName(&#x27;head&#x27;)[0].appendChild(scp);
+})();
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2&gt;五、API&lt;/h2&gt;
+
+&lt;h3&gt;1. init&lt;/h3&gt;
+
+&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;mdebug.init({
+    containerId: &#x27;&#x27; // mdebug挂载容器id, 如果传空, 内部会自动生成一个不重复的id,
+    plugins: [], // 传入mdebug插件
+    hideToolbar: [], // 传入需要隐藏的tab id
+});
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;2. addPlugin&lt;/h3&gt;
+
+&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;mdebug.addPlugin({
+    id: &#x27;&#x27;, // tab id
+    name: &#x27;&#x27;, // tab对应的中文title,
+    enName: &#x27;&#x27;, // tab对应的英文title
+    component: () =&amp;gt; {}, // tab对应的react组件
+});
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;3. removePlugin&lt;/h3&gt;
+
+&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;// 支持移除的panel对应的id
+/*
+System =&amp;gt; system;
+Elements =&amp;gt; elements;
+Console =&amp;gt; console
+Application =&amp;gt; application
+NetWork =&amp;gt; network
+Performance =&amp;gt; performance
+Settings =&amp;gt; settings
+*/
+mdebug.removePlugin([]);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;4. exportLog&lt;/h3&gt;
+
+&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;/*
+@returned {
+  type: &#x27;&#x27; // 日志类型
+  source: [], // 原始日志
+}
+@params type
+// type等于log, 返回所有的console日志
+// type等于net, 返回所有的net日志
+*/
+mdebug.exportLog(type);
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;5. on&lt;/h3&gt;
+
+&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;mdebug.on(eventName, callback);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;6. emit&lt;/h3&gt;
+
+&lt;pre lang=&quot;javascript&quot;&gt;&lt;code&gt;mdebug.emit(eventName, data);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2&gt;六、事件列表&lt;/h2&gt;
+
+&lt;table&gt;&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;strong&gt;事件名称&lt;/strong&gt;&lt;/th&gt;
+&lt;th align=&quot;center&quot;&gt;&lt;strong&gt;数据&lt;/strong&gt;&lt;/th&gt;
+&lt;th align=&quot;center&quot;&gt;&lt;strong&gt;触发时机&lt;/strong&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;ready&lt;/td&gt;
+&lt;td align=&quot;center&quot;&gt;object&lt;/td&gt;
+&lt;td align=&quot;center&quot;&gt;mdebug加载完毕&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;addTab&lt;/td&gt;
+&lt;td align=&quot;center&quot;&gt;object&lt;/td&gt;
+&lt;td align=&quot;center&quot;&gt;增加面板&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;removeTab&lt;/td&gt;
+&lt;td align=&quot;center&quot;&gt;array&lt;/td&gt;
+&lt;td align=&quot;center&quot;&gt;移除面板&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;changeTab&lt;/td&gt;
+&lt;td align=&quot;center&quot;&gt;object&lt;/td&gt;
+&lt;td align=&quot;center&quot;&gt;面板切换&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;
+
+&lt;h2&gt;七、开发&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;npm i&lt;/li&gt;
+&lt;li&gt;npm start   // 启动开发&lt;/li&gt;
+&lt;li&gt;npm run build  //打包&lt;/li&gt;
+&lt;li&gt;npm run test // 单元测试&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2&gt;八、相关文章&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&quot;https://www.cnblogs.com/yzg1/p/5160594.html?utm_source=tuicool&amp;amp;utm_medium=referral&quot;&gt;移动端前端开发调试&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://developers.google.com/web/tools/chrome-devtools/&quot;&gt;Chrome 开发者工具&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
 &lt;/div&gt;
-
-
-&lt;/div&gt;&lt;/div&gt;</content:encoded>
+  &lt;/div&gt;
+  &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
