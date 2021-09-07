@@ -5,198 +5,16 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>efaf4ed4630aefcfa1c2afb2624fd6c4</guid>
-<title>聊聊 Spring 事务失效的 12 种场景，太坑了</title>
-<link>https://toutiao.io/k/5qng48y</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;/h2&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzUxODkzNTQ3Nw==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/uL371281oDHlDcdbjNJic1yCwAu2dmJ9AunIQh9DXdm5JE7v9libnPgJQicoaGs9Eiaee2kPeFGWJxsPkZ9zCQbrIw/0?wx_fmt=png&quot; data-nickname=&quot;苏三说技术&quot; data-alias=&quot;susanSayJava&quot; data-signature=&quot;作者就职于知名互联网公司，掘金月度优秀作者，从事开发、架构和部分管理工作。实战经验丰富，对jdk、spring、springboot、springcloud、mybatis等开源框架源码有一定研究，欢迎关注，和我一起交流。&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;span&gt;大家好，我是苏三，又跟大家见面了。&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;前言&lt;/span&gt;&lt;br/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;对于从事java开发工作的同学来说，spring的事务肯定再熟悉不过了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在某些业务场景下，如果一个请求中，需要同时&lt;span&gt;写入&lt;/span&gt;多张表的数据。为了保证操作的原子性（要么同时成功，要么同时失败），避免数据不一致的情况，我们一般都会用到spring事务。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;确实，spring事务用起来贼爽，就用一个简单的注解：&lt;code&gt;@Transactional&lt;/code&gt;，就能轻松搞定事务。我猜大部分小伙伴也是这样用的，而且一直用一直爽。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但如果你使用不当，它也会坑你于无形。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;今天我们就一起聊聊，事务失效的一些场景，说不定你已经中招了。不信，让我们一起看看。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.9913419913419913&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/uL371281oDFI5ibhP1TXOMnqQtJhfb3XCnTbgmpiab2LDA8VVCmg2jMUoeJd70gAJsj7vL2IB0icYxsbsvnKIu9LQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1386&quot;/&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;一 事务不生效&lt;/span&gt;&lt;/h2&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;1.访问权限问题&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;众所周知，java的访问权限主要有四种：private、default、protected、public，它们的权限从左到右，依次变大。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但如果我们在开发过程中，把有某些事务方法，定义了错误的访问权限，就会导致事务功能出问题，例如：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@Service&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;UserService&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;br/&gt;    &lt;span&gt;@Transactional&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;private&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;add&lt;/span&gt;&lt;span&gt;(UserModel userModel)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;         saveData(userModel);&lt;br/&gt;         updateData(userModel);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们可以看到add方法的访问权限被定义成了&lt;code&gt;private&lt;/code&gt;，这样会导致事务失效，spring要求被代理方法必须是&lt;code&gt;public&lt;/code&gt;的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;说白了，在&lt;code&gt;AbstractFallbackTransactionAttributeSource&lt;/code&gt;类的&lt;code&gt;computeTransactionAttribute&lt;/code&gt;方法中有个判断，如果目标方法不是public，则&lt;code&gt;TransactionAttribute&lt;/code&gt;返回null，即不支持事务。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;protected&lt;/span&gt; TransactionAttribute &lt;span&gt;computeTransactionAttribute&lt;/span&gt;&lt;span&gt;(Method method, @Nullable Class&amp;lt;?&amp;gt; targetClass)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;// Don&#x27;t allow no-public methods as required.&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; (allowPublicMethodsOnly() &amp;amp;&amp;amp; !Modifier.isPublic(method.getModifiers())) {&lt;br/&gt;      &lt;span&gt;return&lt;/span&gt; &lt;span&gt;null&lt;/span&gt;;&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;// The method may be on an interface, but we need attributes from the target class.&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// If the target class is null, the method will be unchanged.&lt;/span&gt;&lt;br/&gt;    Method specificMethod = AopUtils.getMostSpecificMethod(method, targetClass);&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;// First try is the method in the target class.&lt;/span&gt;&lt;br/&gt;    TransactionAttribute txAttr = findTransactionAttribute(specificMethod);&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; (txAttr != &lt;span&gt;null&lt;/span&gt;) {&lt;br/&gt;      &lt;span&gt;return&lt;/span&gt; txAttr;&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;// Second try is the transaction attribute on the target class.&lt;/span&gt;&lt;br/&gt;    txAttr = findTransactionAttribute(specificMethod.getDeclaringClass());&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; (txAttr != &lt;span&gt;null&lt;/span&gt; &amp;amp;&amp;amp; ClassUtils.isUserLevelMethod(method)) {&lt;br/&gt;      &lt;span&gt;return&lt;/span&gt; txAttr;&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; (specificMethod != method) {&lt;br/&gt;      &lt;span&gt;// Fallback is to look at the original method.&lt;/span&gt;&lt;br/&gt;      txAttr = findTransactionAttribute(method);&lt;br/&gt;      &lt;span&gt;if&lt;/span&gt; (txAttr != &lt;span&gt;null&lt;/span&gt;) {&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; txAttr;&lt;br/&gt;      }&lt;br/&gt;      &lt;span&gt;// Last fallback is the class of the original method.&lt;/span&gt;&lt;br/&gt;      txAttr = findTransactionAttribute(method.getDeclaringClass());&lt;br/&gt;      &lt;span&gt;if&lt;/span&gt; (txAttr != &lt;span&gt;null&lt;/span&gt; &amp;amp;&amp;amp; ClassUtils.isUserLevelMethod(method)) {&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; txAttr;&lt;br/&gt;      }&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; &lt;span&gt;null&lt;/span&gt;;&lt;br/&gt;  }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;也就是说，如果我们自定义的事务方法（即目标方法），它的访问权限不是&lt;code&gt;public&lt;/code&gt;，而是private、default或protected的话，spring则不会提供事务功能。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;2. 方法用final修饰&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;有时候，某个方法不想被子类重新，这时可以将该方法定义成final的。普通方法这样定义是没问题的，但如果将事务方法定义成final，例如：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@Service&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;UserService&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Transactional&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;final&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;add&lt;/span&gt;&lt;span&gt;(UserModel userModel)&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;        saveData(userModel);&lt;br/&gt;        updateData(userModel);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们可以看到add方法被定义成了&lt;code&gt;final&lt;/code&gt;的，这样会导致事务失效。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;为什么？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果你看过spring事务的源码，可能会知道spring事务底层使用了aop，也就是通过jdk动态代理或者cglib，帮我们生成了代理类，在代理类中实现的事务功能。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但如果某个方法用final修饰了，那么在它的代理类中，就无法重写该方法，而添加事务功能。&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;注意：如果某个方法是static的，同样无法通过动态代理，变成事务方法。&lt;/p&gt;&lt;/blockquote&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;3.方法内部调用&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;有时候我们需要在某个Service类的某个方法中，调用另外一个事务方法，比如：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@Service&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;UserService&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Autowired&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; UserMapper userMapper;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Transactional&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;add&lt;/span&gt;&lt;span&gt;(UserModel userModel)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        userMapper.insertUser(userModel);&lt;br/&gt;        updateStatus(userModel);&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Transactional&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;updateStatus&lt;/span&gt;&lt;span&gt;(UserModel userModel)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        doSameThing();&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们看到在事务方法add中，直接调用事务方法updateStatus。从前面介绍的内容可以知道，updateStatus方法拥有事务的能力是因为spring aop生成代理了对象，但是这种方法直接调用了this对象的方法，所以updateStatus方法不会生成事务。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;由此可见，在同一个类中的方法直接内部调用，会导致事务失效。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;那么问题来了，如果有些场景，确实想在同一个类的某个方法中，调用它自己的另外一个方法，该怎么办呢？&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;3.1 新加一个Service方法&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这个方法非常简单，只需要新加一个Service方法，把@Transactional注解加到新Service方法上，把需要事务执行的代码移到新方法中。具体代码如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@Servcie&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;ServiceA&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;   &lt;span&gt;@Autowired&lt;/span&gt;&lt;br/&gt;   prvate ServiceB serviceB;&lt;br/&gt;&lt;br/&gt;   &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;save&lt;/span&gt;&lt;span&gt;(User user)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;         queryData1();&lt;br/&gt;         queryData2();&lt;br/&gt;         serviceB.doSave(user);&lt;br/&gt;   }&lt;br/&gt; }&lt;br/&gt;&lt;br/&gt; &lt;span&gt;@Servcie&lt;/span&gt;&lt;br/&gt; &lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;ServiceB&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Transactional&lt;/span&gt;(rollbackFor=Exception&lt;span&gt;.&lt;span&gt;class&lt;/span&gt;)&lt;br/&gt;    &lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;doSave&lt;/span&gt;(&lt;span&gt;User&lt;/span&gt; &lt;span&gt;user&lt;/span&gt;) &lt;/span&gt;{&lt;br/&gt;       addData1();&lt;br/&gt;       updateData2();&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt; }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;3.2 在该Service类中注入自己&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果不想再新加一个Service类，在该Service类中注入自己也是一种选择。具体代码如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@Servcie&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;ServiceA&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;   &lt;span&gt;@Autowired&lt;/span&gt;&lt;br/&gt;   prvate ServiceA serviceA;&lt;br/&gt;&lt;br/&gt;   &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;save&lt;/span&gt;&lt;span&gt;(User user)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;         queryData1();&lt;br/&gt;         queryData2();&lt;br/&gt;         serviceA.doSave(user);&lt;br/&gt;   }&lt;br/&gt;&lt;br/&gt;   &lt;span&gt;@Transactional&lt;/span&gt;(rollbackFor=Exception&lt;span&gt;.&lt;span&gt;class&lt;/span&gt;)&lt;br/&gt;   &lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;doSave&lt;/span&gt;(&lt;span&gt;User&lt;/span&gt; &lt;span&gt;user&lt;/span&gt;) &lt;/span&gt;{&lt;br/&gt;       addData1();&lt;br/&gt;       updateData2();&lt;br/&gt;    }&lt;br/&gt; }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;可能有些人可能会有这样的疑问：这种做法会不会出现循环依赖问题？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;答案：不会。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其实spring ioc内部的三级缓存保证了它，不会出现循环依赖问题。但有些坑，如果你想进一步了解循环依赖问题，可以看看我之前文章《&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzUxODkzNTQ3Nw==&amp;amp;mid=2247485600&amp;amp;idx=1&amp;amp;sn=0c49b94e7fbd35c88c4470e936023e3e&amp;amp;chksm=f9800e7acef7876ca05ab45ce9420ea140f188e84153f23d0af9d044f475458ad38d49a6546a&amp;amp;token=1641046204&amp;amp;lang=zh_CN&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;spring：我是如何解决循环依赖的？&lt;/a&gt;》。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;3.3 通过AopContent类&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在该Service类中使用AopContext.currentProxy()获取代理对象&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上面的方法2确实可以解决问题，但是代码看起来并不直观，还可以通过在该Service类中使用AOPProxy获取代理对象，实现相同的功能。具体代码如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@Servcie&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;ServiceA&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;   &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;save&lt;/span&gt;&lt;span&gt;(User user)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;         queryData1();&lt;br/&gt;         queryData2();&lt;br/&gt;         ((ServiceA)AopContext.currentProxy()).doSave(user);&lt;br/&gt;   }&lt;br/&gt;&lt;br/&gt;   &lt;span&gt;@Transactional&lt;/span&gt;(rollbackFor=Exception&lt;span&gt;.&lt;span&gt;class&lt;/span&gt;)&lt;br/&gt;   &lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;doSave&lt;/span&gt;(&lt;span&gt;User&lt;/span&gt; &lt;span&gt;user&lt;/span&gt;) &lt;/span&gt;{&lt;br/&gt;       addData1();&lt;br/&gt;       updateData2();&lt;br/&gt;    }&lt;br/&gt; }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;4.未被spring管理&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在我们平时开发过程中，有个细节很容易被忽略。即使用spring事务的前提是：对象要被spring管理，需要创建bean实例。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;通常情况下，我们通过@Controller、@Service、@Component、@Repository等注解，可以自动实现bean实例化和依赖注入的功能。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当然创建bean实例的方法还有很多，有兴趣的小伙伴可以看看我之前写的另一篇文章《&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzUxODkzNTQ3Nw==&amp;amp;mid=2247488466&amp;amp;idx=1&amp;amp;sn=1e63e6991b5fb47e067d2edf055981d3&amp;amp;chksm=f9801508cef79c1ea208906ceef09593a9f594b3926478eb65b7ef64e0311f13ac5aaf4135ce&amp;amp;token=1641046204&amp;amp;lang=zh_CN&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;@Autowired的这些骚操作，你都知道吗？&lt;/a&gt;》&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果有一天，你匆匆忙忙的开发了一个Service类，但忘了加@Service注解，比如：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;//@Service&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;UserService&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Transactional&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;add&lt;/span&gt;&lt;span&gt;(UserModel userModel)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;         saveData(userModel);&lt;br/&gt;         updateData(userModel);&lt;br/&gt;    }    &lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;从上面的例子，我们可以看到UserService类没有加&lt;code&gt;@Service&lt;/code&gt;注解，那么该类不会交给spring管理，所以它的add方法也不会生成事务。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;5.多线程调用&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在实际项目开发中，多线程的使用场景还是挺多的。如果spring事务用在多线程场景中，会有问题吗？&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@Slf&lt;/span&gt;4j&lt;br/&gt;&lt;span&gt;@Service&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;UserService&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Autowired&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; UserMapper userMapper;&lt;br/&gt;    &lt;span&gt;@Autowired&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; RoleService roleService;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Transactional&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;add&lt;/span&gt;&lt;span&gt;(UserModel userModel)&lt;/span&gt; &lt;span&gt;throws&lt;/span&gt; Exception &lt;/span&gt;{&lt;br/&gt;        userMapper.insertUser(userModel);&lt;br/&gt;        &lt;span&gt;new&lt;/span&gt; Thread(() -&amp;gt; {&lt;br/&gt;            roleService.doOtherThing();&lt;br/&gt;        }).start();&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;@Service&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;RoleService&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Transactional&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;doOtherThing&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;保存role表数据&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;从上面的例子中，我们可以看到事务方法add中，调用了事务方法doOtherThing，但是事务方法doOtherThing是在另外一个线程中调用的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这样会导致两个方法不在同一个线程中，获取到的数据库连接不一样，从而是两个不同的事务。如果想doOtherThing方法中抛了异常，add方法也回滚是不可能的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果看过spring事务源码的朋友，可能会知道spring的事务是通过数据库连接来实现的。当前线程中保存了一个map，key是数据源，value是数据库连接。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;private&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;final&lt;/span&gt; ThreadLocal&amp;lt;Map&amp;lt;Object, Object&amp;gt;&amp;gt; resources =&lt;br/&gt;&lt;br/&gt;  &lt;span&gt;new&lt;/span&gt; NamedThreadLocal&amp;lt;&amp;gt;(&lt;span&gt;&quot;Transactional resources&quot;&lt;/span&gt;);&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们说的同一个事务，其实是指同一个数据库连接，只有拥有同一个数据库连接才能同时提交和回滚。如果在不同的线程，拿到的数据库连接肯定是不一样的，所以是不同的事务。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;6.表不支持事务&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;周所周知，在mysql5之前，默认的数据库引擎是&lt;code&gt;myisam&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;它的好处就不用多说了：索引文件和数据文件是分开存储的，对于查多写少的单表操作，性能比innodb更好。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;有些老项目中，可能还在用它。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在创建表的时候，只需要把&lt;code&gt;ENGINE&lt;/code&gt;参数设置成&lt;code&gt;MyISAM&lt;/code&gt;即可：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;CREATE TABLE `category` (&lt;br/&gt;  `id` bigint NOT NULL AUTO_INCREMENT,&lt;br/&gt;  `one_category` varchar(&lt;span&gt;20&lt;/span&gt;) COLLATE utf8mb4_bin DEFAULT NULL,&lt;br/&gt;  `two_category` varchar(&lt;span&gt;20&lt;/span&gt;) COLLATE utf8mb4_bin DEFAULT NULL,&lt;br/&gt;  `three_category` varchar(&lt;span&gt;20&lt;/span&gt;) COLLATE utf8mb4_bin DEFAULT NULL,&lt;br/&gt;  `four_category` varchar(&lt;span&gt;20&lt;/span&gt;) COLLATE utf8mb4_bin DEFAULT NULL,&lt;br/&gt;  &lt;span&gt;PRIMARY &lt;span&gt;KEY&lt;/span&gt; &lt;span&gt;(`id`)&lt;/span&gt;&lt;br/&gt;) ENGINE&lt;/span&gt;=MyISAM AUTO_INCREMENT=&lt;span&gt;4&lt;/span&gt; DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;myisam好用，但有个很致命的问题是：&lt;code&gt;不支持事务&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果只是单表操作还好，不会出现太大的问题。但如果需要跨多张表操作，由于其不支持事务，数据极有可能会出现不完整的情况。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;此外，myisam还不支持行锁和外键。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;所以在实际业务场景中，myisam使用的并不多。在mysql5以后，myisam已经逐渐退出了历史的舞台，取而代之的是innodb。&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;有时候我们在开发的过程中，发现某张表的事务一直都没有生效，那不一定是spring事务的锅，最好确认一下你使用的那张表，是否支持事务。&lt;/p&gt;&lt;/blockquote&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;7.未开启事务&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;有时候，事务没有生效的根本原因是没有开启事务。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;你看到这句话可能会觉得好笑。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;开启事务不是一个项目中，最最最基本的功能吗？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;为什么还会没有开启事务？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;没错，如果项目已经搭建好了，事务功能肯定是有的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但如果你是在搭建项目demo的时候，只有一张表，而这张表的事务没有生效。那么会是什么原因造成的呢？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当然原因有很多，但没有开启事务，这个原因极其容易被忽略。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果你使用的是springboot项目，那么你很幸运。因为springboot通过&lt;code&gt;DataSourceTransactionManagerAutoConfiguration&lt;/code&gt;类，已经默默的帮你开启了事务。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;你所要做的事情很简单，只需要配置&lt;code&gt;spring.datasource&lt;/code&gt;相关参数即可。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但如果你使用的还是传统的spring项目，则需要在applicationContext.xml文件中，手动配置事务相关参数。如果忘了配置，事务肯定是不会生效的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;具体配置如下信息：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;   &lt;br/&gt;&amp;lt;!-- 配置事务管理器 --&amp;gt; &lt;br/&gt;&amp;lt;bean &lt;span&gt;&lt;span&gt;class&lt;/span&gt;&lt;/span&gt;=&lt;span&gt;&quot;org.springframework.jdbc.datasource.DataSourceTransactionManager&quot;&lt;/span&gt; id=&lt;span&gt;&quot;transactionManager&quot;&lt;/span&gt;&amp;gt; &lt;br/&gt;    &amp;lt;property name=&lt;span&gt;&quot;dataSource&quot;&lt;/span&gt; ref=&lt;span&gt;&quot;dataSource&quot;&lt;/span&gt;&amp;gt;&amp;lt;/property&amp;gt; &lt;br/&gt;&amp;lt;/bean&amp;gt; &lt;br/&gt;&amp;lt;tx:advice id=&lt;span&gt;&quot;advice&quot;&lt;/span&gt; transaction-manager=&lt;span&gt;&quot;transactionManager&quot;&lt;/span&gt;&amp;gt; &lt;br/&gt;    &amp;lt;tx:attributes&amp;gt; &lt;br/&gt;        &amp;lt;tx:method name=&lt;span&gt;&quot;*&quot;&lt;/span&gt; propagation=&lt;span&gt;&quot;REQUIRED&quot;&lt;/span&gt;/&amp;gt;&lt;br/&gt;    &amp;lt;/tx:attributes&amp;gt; &lt;br/&gt;&amp;lt;/tx:advice&amp;gt; &lt;br/&gt;&amp;lt;!-- 用切点把事务切进去 --&amp;gt; &lt;br/&gt;&amp;lt;aop:config&amp;gt; &lt;br/&gt;    &amp;lt;aop:pointcut expression=&lt;span&gt;&quot;execution(* com.susan.*.*(..))&quot;&lt;/span&gt; id=&lt;span&gt;&quot;pointcut&quot;&lt;/span&gt;/&amp;gt; &lt;br/&gt;    &amp;lt;aop:advisor advice-ref=&lt;span&gt;&quot;advice&quot;&lt;/span&gt; pointcut-ref=&lt;span&gt;&quot;pointcut&quot;&lt;/span&gt;/&amp;gt; &lt;br/&gt;&amp;lt;/aop:config&amp;gt; &lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;默默的说一句，如果在pointcut标签中的切入点匹配规则，配错了的话，有些类的事务也不会生效。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;二 事务不回滚&lt;/span&gt;&lt;/h2&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;1.错误的传播特性&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其实，我们在使用&lt;code&gt;@Transactional&lt;/code&gt;注解时，是可以指定&lt;code&gt;propagation&lt;/code&gt;参数的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;该参数的作用是指定事务的传播特性，spring目前支持7种传播特性：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;REQUIRED&lt;/code&gt; 如果当前上下文中存在事务，那么加入该事务，如果不存在事务，创建一个事务，这是默认的传播属性值。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;SUPPORTS&lt;/code&gt; 如果当前上下文存在事务，则支持事务加入事务，如果不存在事务，则使用非事务的方式执行。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;MANDATORY&lt;/code&gt; 如果当前上下文中存在事务，否则抛出异常。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;REQUIRES_NEW&lt;/code&gt; 每次都会新建一个事务，并且同时将上下文中的事务挂起，执行当前新建事务完成以后，上下文事务恢复再执行。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;NOT_SUPPORTED&lt;/code&gt; 如果当前上下文中存在事务，则挂起当前事务，然后新的方法在没有事务的环境中执行。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;NEVER&lt;/code&gt; 如果当前上下文中存在事务，则抛出异常，否则在无事务环境上执行代码。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;NESTED&lt;/code&gt; 如果当前上下文中存在事务，则嵌套事务执行，如果不存在事务，则新建事务。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果我们在手动设置propagation参数的时候，把传播特性设置错了，比如：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@Service&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;UserService&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Transactional&lt;/span&gt;(propagation = Propagation.NEVER)&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;add&lt;/span&gt;&lt;span&gt;(UserModel userModel)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        saveData(userModel);&lt;br/&gt;        updateData(userModel);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们可以看到add方法的事务传播特性定义成了Propagation.NEVER，这种类型的传播特性不支持事务，如果有事务则会抛异常。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;目前只有这三种传播特性才会创建新事务：REQUIRED，REQUIRES_NEW，NESTED。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;2.自己吞了异常&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;事务不会回滚，最常见的问题是：开发者在代码中手动try...catch了异常。比如：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@Slf&lt;/span&gt;4j&lt;br/&gt;&lt;span&gt;@Service&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;UserService&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;br/&gt;    &lt;span&gt;@Transactional&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;add&lt;/span&gt;&lt;span&gt;(UserModel userModel)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;try&lt;/span&gt; {&lt;br/&gt;            saveData(userModel);&lt;br/&gt;            updateData(userModel);&lt;br/&gt;        } &lt;span&gt;catch&lt;/span&gt; (Exception e) {&lt;br/&gt;            log.error(e.getMessage(), e);&lt;br/&gt;        }&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这种情况下spring事务当然不会回滚，因为开发者自己捕获了异常，又没有手动抛出，换句话说就是把异常吞掉了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果想要spring事务能够正常回滚，必须抛出它能够处理的异常。如果没有抛异常，则spring认为程序是正常的。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;3.手动抛了别的异常&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;即使开发者没有手动捕获异常，但如果抛的异常不正确，spring事务也不会回滚。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@Slf&lt;/span&gt;4j&lt;br/&gt;&lt;span&gt;@Service&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;UserService&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;br/&gt;    &lt;span&gt;@Transactional&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;add&lt;/span&gt;&lt;span&gt;(UserModel userModel)&lt;/span&gt; &lt;span&gt;throws&lt;/span&gt; Exception &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;try&lt;/span&gt; {&lt;br/&gt;             saveData(userModel);&lt;br/&gt;             updateData(userModel);&lt;br/&gt;        } &lt;span&gt;catch&lt;/span&gt; (Exception e) {&lt;br/&gt;            log.error(e.getMessage(), e);&lt;br/&gt;            &lt;span&gt;throw&lt;/span&gt; &lt;span&gt;new&lt;/span&gt; Exception(e);&lt;br/&gt;        }&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上面的这种情况，开发人员自己捕获了异常，又手动抛出了异常：Exception，事务同样不会回滚。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因为spring事务，默认情况下只会回滚&lt;code&gt;RuntimeException&lt;/code&gt;（运行时异常）和&lt;code&gt;Error&lt;/code&gt;（错误），对于普通的Exception（非运行时异常），它不会回滚。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;4.自定义了回滚异常&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在使用@Transactional注解声明事务时，有时我们想自定义回滚的异常，spring也是支持的。可以通过设置&lt;code&gt;rollbackFor&lt;/code&gt;参数，来完成这个功能。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但如果这个参数的值设置错了，就会引出一些莫名其妙的问题，例如：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@Slf&lt;/span&gt;4j&lt;br/&gt;&lt;span&gt;@Service&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;UserService&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;br/&gt;    &lt;span&gt;@Transactional&lt;/span&gt;(rollbackFor = BusinessException&lt;span&gt;.&lt;span&gt;class&lt;/span&gt;)&lt;br/&gt;    &lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;add&lt;/span&gt;(&lt;span&gt;UserModel&lt;/span&gt; &lt;span&gt;userModel&lt;/span&gt;) &lt;span&gt;throws&lt;/span&gt; &lt;span&gt;Exception&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;       saveData(userModel);&lt;br/&gt;       updateData(userModel);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果在执行上面这段代码，保存和更新数据时，程序报错了，抛了SqlException、DuplicateKeyException等异常。而BusinessException是我们自定义的异常，报错的异常不属于BusinessException，所以事务也不会回滚。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;即使rollbackFor有默认值，但阿里巴巴开发者规范中，还是要求开发者重新指定该参数。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这是为什么呢？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因为如果使用默认值，一旦程序抛出了Exception，事务不会回滚，这会出现很大的bug。所以，建议一般情况下，将该参数设置成：Exception或Throwable。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;5.嵌套事务回滚多了&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;UserService&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Autowired&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; UserMapper userMapper;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Autowired&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; RoleService roleService;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Transactional&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;add&lt;/span&gt;&lt;span&gt;(UserModel userModel)&lt;/span&gt; &lt;span&gt;throws&lt;/span&gt; Exception &lt;/span&gt;{&lt;br/&gt;        userMapper.insertUser(userModel);&lt;br/&gt;        roleService.doOtherThing();&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;@Service&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;RoleService&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Transactional&lt;/span&gt;(propagation = Propagation.NESTED)&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;doOtherThing&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;保存role表数据&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这种情况使用了嵌套的内部事务，原本是希望调用roleService.doOtherThing方法时，如果出现了异常，只回滚doOtherThing方法里的内容，不回滚 userMapper.insertUser里的内容，即回滚保存点。。但事实是，insertUser也回滚了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;why?&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因为doOtherThing方法出现了异常，没有手动捕获，会继续往上抛，到外层add方法的代理方法中捕获了异常。所以，这种情况是直接回滚了整个事务，不只回滚单个保存点。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;怎么样才能只回滚保存点呢？&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@Slf&lt;/span&gt;4j&lt;br/&gt;&lt;span&gt;@Service&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;UserService&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Autowired&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; UserMapper userMapper;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Autowired&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; RoleService roleService;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Transactional&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;add&lt;/span&gt;&lt;span&gt;(UserModel userModel)&lt;/span&gt; &lt;span&gt;throws&lt;/span&gt; Exception &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;        userMapper.insertUser(userModel);&lt;br/&gt;        &lt;span&gt;try&lt;/span&gt; {&lt;br/&gt;            roleService.doOtherThing();&lt;br/&gt;        } &lt;span&gt;catch&lt;/span&gt; (Exception e) {&lt;br/&gt;            log.error(e.getMessage(), e);&lt;br/&gt;        }&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;可以将内部嵌套事务放在try/catch中，并且不继续往上抛异常。这样就能保证，如果内部嵌套事务中出现异常，只回滚内部事务，而不影响外部事务。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;三 其他&lt;/span&gt;&lt;/h2&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;1 大事务问题&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在使用spring事务时，有个让人非常头疼的问题，就是大事务问题。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;通常情况下，我们会在方法上&lt;code&gt;@Transactional&lt;/code&gt;注解，填加事务功能，比如：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@Service&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;UserService&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;br/&gt;    &lt;span&gt;@Autowired&lt;/span&gt; &lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; RoleService roleService;&lt;br/&gt;    &lt;br/&gt;    &lt;span&gt;@Transactional&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;add&lt;/span&gt;&lt;span&gt;(UserModel userModel)&lt;/span&gt; &lt;span&gt;throws&lt;/span&gt; Exception &lt;/span&gt;{&lt;br/&gt;       query1();&lt;br/&gt;       query2();&lt;br/&gt;       query3();&lt;br/&gt;       roleService.save(userModel);&lt;br/&gt;       update(userModel);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;@Service&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;RoleService&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;br/&gt;    &lt;span&gt;@Autowired&lt;/span&gt; &lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; RoleService roleService;&lt;br/&gt;    &lt;br/&gt;    &lt;span&gt;@Transactional&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;save&lt;/span&gt;&lt;span&gt;(UserModel userModel)&lt;/span&gt; &lt;span&gt;throws&lt;/span&gt; Exception &lt;/span&gt;{&lt;br/&gt;       query4();&lt;br/&gt;       query5();&lt;br/&gt;       query6();&lt;br/&gt;       saveData(userModel);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但&lt;code&gt;@Transactional&lt;/code&gt;注解，如果被加到方法上，有个缺点就是整个方法都包含在事务当中了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上面的这个例子中，在UserService类中，其实只有这两行才需要事务：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;roleService.save(userModel);&lt;br/&gt;update(userModel);&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在RoleService类中，只有这一行需要事务：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;saveData(userModel);&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;现在的这种写法，会导致所有的query方法也被包含在同一个事务当中。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果query方法非常多，调用层级很深，而且有部分查询方法比较耗时的话，会造成整个事务非常耗时，而从造成大事务问题。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;关于大事务问题的危害，可以阅读一下我的另一篇文章《&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzUxODkzNTQ3Nw==&amp;amp;mid=2247485262&amp;amp;idx=1&amp;amp;sn=abe19452e4c13876270f329cc6929be7&amp;amp;chksm=f9800194cef78882e5ad4d8eb00b7e3f745a4159aee6afb1858cc16cae599f8889afa330e17b&amp;amp;token=305097496&amp;amp;lang=zh_CN&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;让人头痛的大事务问题到底要如何解决？&lt;/a&gt;》，上面有详细的讲解。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.2759259259259259&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/uL371281oDEBCPPbyDJ73OtgGneSbqS4EPv3uEv9HEcX4hevWFJGDG8gPspHNL0abAiaEvxZoGZbBIkTbBQGfHQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1080&quot;/&gt;&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;2.编程式事务&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上面聊的这些内容都是基于&lt;code&gt;@Transactional&lt;/code&gt;注解的，主要说的是它的事务问题，我们把这种事务叫做：&lt;code&gt;声明式事务&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其实，spring还提供了另外一种创建事务的方式，即通过手动编写代码实现的事务，&lt;span&gt;我们把这种事务叫做&lt;/span&gt;：&lt;code&gt;编程式事务&lt;/code&gt;。例如：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;br/&gt;   &lt;span&gt;@Autowired&lt;/span&gt;&lt;br/&gt;   &lt;span&gt;private&lt;/span&gt; TransactionTemplate transactionTemplate;&lt;br/&gt;   &lt;br/&gt;   ...&lt;br/&gt;   &lt;br/&gt;   &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;save&lt;/span&gt;&lt;span&gt;(&lt;span&gt;final&lt;/span&gt; User user)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;         queryData1();&lt;br/&gt;         queryData2();&lt;br/&gt;         transactionTemplate.execute((status) =&amp;gt; {&lt;br/&gt;            addData1();&lt;br/&gt;            updateData2();&lt;br/&gt;            &lt;span&gt;return&lt;/span&gt; Boolean.TRUE;&lt;br/&gt;         })&lt;br/&gt;   }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在spring中为了支持编程式事务，专门提供了一个类：TransactionTemplate，在它的execute方法中，就实现了事务的功能。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;相较于&lt;code&gt;@Transactional&lt;/code&gt;注解声明式事务，我更建议大家使用，基于&lt;code&gt;TransactionTemplate&lt;/code&gt;的编程式事务。主要原因如下：&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;避免由于spring aop问题，导致事务失效的问题。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;能够更小粒度的控制事务的范围，更直观。&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;建议在项目中少使用@Transactional注解开启事务。但并不是说一定不能用它，如果项目中有些业务逻辑比较简单，而且不经常变动，使用@Transactional注解开启事务开启事务也无妨，因为它更简单，开发效率更高，但是千万要小心事务失效的问题。&lt;/p&gt;&lt;/blockquote&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>ed78cfd78332fbde1d5fe2a04081f0b6</guid>
-<title>开源单机存储引擎之 B-Tree/B+Tree</title>
-<link>https://toutiao.io/k/9w662rp</link>
+<guid>68f92b4b87c0c49f3ce19d44fad8d348</guid>
+<title>用 Python 轻松完成一个 Saga 分布式事务，保姆级教程</title>
+<link>https://toutiao.io/k/kbrldxv</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
                     
 
                     
                     
                     
-                    &lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;前面已整理过一篇&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzI0NjA1MTU5Ng==&amp;amp;mid=2247484175&amp;amp;idx=1&amp;amp;sn=238083c5c401155669858df3b4b9fe3f&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;关于 LSMTree 的开源单机存储引擎&lt;/a&gt;。本篇收集几个 B-Tree/B+Tree 的开源实现。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;LMDB&lt;/span&gt;&lt;sup&gt;[1]&lt;/sup&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;LMDB（Lightning Memory-Mapped Database）是一个 C 语言实现的 B+Tree 结构的 key-value 存储引擎。它支持 MVCC、支持事务（ACID）、支持一写多读并发执行（读和写互不阻塞）。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我觉得 LMDB 设计上最大的特点，或者说“槽点”是：没有自己管理内存；而是直接使用 mmap，将内存/缓存的管理交给操作系统。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;重点是，这竟然还成为了 LMDB 宣传的“亮点”：&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;With memory-mapped files, it has the read performance of a pure in-memory database while retaining the persistence of standard disk-based databases.&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;有点想吐槽……&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;不用自己实现内存（缓存）管理，好处是简化了存储引擎的实现。根据经验，如果数据量和内存大小接近，大部分请求都能命中 page cache，使用 mmap 似乎问题不大。MongoDB 最初的存储引擎就是采用了类似的方式。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但是如果数据量远超过内存大小（很多场景都是如此），那么海量的 page cache miss 造成的缺页、换页可能会是性能灾难，并且你几乎做不了任何控制和优化，毕竟你把一切都交给了操作系统。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当然，LMDB 仍然非常经典，代码不长，资料也不少，就算不看代码，看看相关文档也好：&lt;span&gt;LMDB TECHNICAL INFORMATION&lt;/span&gt;&lt;sup&gt;[2]&lt;/sup&gt;。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;BoltDB&lt;/span&gt;&lt;sup&gt;[3]&lt;/sup&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;BoltDB 是参考 LMDB，并用 Go 语言实现的存储引擎。业界使用 BoltDB 的开源项目主要有 &lt;span&gt;etcd&lt;/span&gt;&lt;sup&gt;[4]&lt;/sup&gt;、&lt;span&gt;consul&lt;/span&gt;&lt;sup&gt;[5]&lt;/sup&gt; 等。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;BoltDB 源码比较清晰，没有太多奇技淫巧，就是经典的 B+Tree 实现。性能上可能不够突出，不过胜在简单可靠。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;目前，BoltDB 的原作者已经“放弃治疗”了，现在这个项目由 etcd 团队维护一个 fork 分支。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;BerkeleyDB&lt;/span&gt;&lt;sup&gt;[6]&lt;/sup&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;不同于前面提到的 LMDB 和 BoltDB，BerkeleyDB 是一个 B-Tree 结构的存储引擎。关于 B-Tree 和 B+Tree 的差别，网上的资料很多，这里就不赘述。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;BerkeleyDB 是一个比较历史悠久的项目。BerkeleyDB 的前身是伯克利加州大学为了移除受 AT&amp;amp;T 限制的代码，从 BSD 4.3 到 4.4 时所改写的软件。目前的代码由 Oracle 维护。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;WiredTiger&lt;/span&gt;&lt;sup&gt;[7]&lt;/sup&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;WiredTiger 一个 B-Tree 存储引擎。2014 年，WiredTiger 被当时崛起的文档型数据库 MongoDB 收购。MongoDB 3.2 之后 WiredTiger 成为 MongoDB 的默认存储引擎。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;其它&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;MySQL 的官方存储引擎 &lt;span&gt;InnoDB&lt;/span&gt;&lt;sup&gt;[8]&lt;/sup&gt; 和 &lt;span&gt;PostgreSQL 的存储引擎&lt;/span&gt;&lt;sup&gt;[9]&lt;/sup&gt; 也是优秀的 B+Tree 和 B-Tree 存储引擎。不过，因为关系数据库的复杂性，这两个存储引擎也比上面提到的几个存储引擎复杂不少。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;参考资料&lt;/span&gt;&lt;/h3&gt;&lt;section data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;span&gt;[1]&lt;/span&gt;&lt;p&gt;LMDB: &lt;em&gt;https://github.com/LMDB/lmdb&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[2]&lt;/span&gt;&lt;p&gt;LMDB TECHNICAL INFORMATION: &lt;em&gt;https://symas.com/lmdb/technical/&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[3]&lt;/span&gt;&lt;p&gt;BoltDB: &lt;em&gt;https://github.com/etcd-io/bbolt&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[4]&lt;/span&gt;&lt;p&gt;etcd: &lt;em&gt;https://github.com/etcd-io/etcd&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[5]&lt;/span&gt;&lt;p&gt;consul: &lt;em&gt;https://github.com/hashicorp/consul&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[6]&lt;/span&gt;&lt;p&gt;BerkeleyDB: &lt;em&gt;https://www.oracle.com/database/technologies/related/berkeleydb-downloads.html&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[7]&lt;/span&gt;&lt;p&gt;WiredTiger: &lt;em&gt;https://github.com/wiredtiger/wiredtiger&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[8]&lt;/span&gt;&lt;p&gt;InnoDB: &lt;em&gt;https://github.com/mysql/mysql-server/tree/8.0/storage/innobase&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[9]&lt;/span&gt;&lt;p&gt;PostgreSQL 的存储引擎: &lt;em&gt;https://github.com/postgres/postgres/tree/master/src/backend/storage&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;
-                &lt;/div&gt;
-
-                
-
-                
-
-
-
-                
-                &lt;div class=&quot;reward_qrcode_area reward_area tc&quot; id=&quot;js_reward_qrcode&quot;&gt;
-                                &lt;p class=&quot;tips_global&quot; aria-hidden=&quot;true&quot; id=&quot;js_a11y_reward_qr_title&quot;&gt;Long-press QR code to transfer me a reward&lt;/p&gt;
-                                                                &lt;p role=&quot;option&quot; aria-labelledby=&quot;js_a11y_reward_qr_word js_a11y_comma js_a11y_reward_qr_title js_a11y_reward_qr_money&quot; aria-describedby=&quot;js_a11y_reward_qr_tips &quot; class=&quot;reward_tips&quot; id=&quot;js_a11y_reward_qr_word&quot;/&gt;
-                                &lt;span class=&quot;reward_qrcode_img_wrp&quot;&gt;&lt;img alt=&quot;赞赏二维码&quot; class=&quot;reward_qrcode_img&quot; id=&quot;js_reward_qrcode_img&quot;/&gt;&lt;/span&gt;
-                                &lt;p aria-hidden=&quot;true&quot; id=&quot;js_a11y_reward_qr_tips&quot; class=&quot;tips_global&quot;&gt;As required by Apple&#x27;s new policy, the Reward feature has been disabled on Weixin for iOS. You can still reward an Official Account by transferring money via QR code.&lt;/p&gt;
-                            &lt;/div&gt;
-                                                                            
-                              
-            &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>a82d0bc38e2330bdf8a03623ef71fe33</guid>
-<title>ElasticSearch 基础之分布式存储</title>
-<link>https://toutiao.io/k/q1fwpsv</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entry-inner&quot;&gt;
-                                                    
-&lt;p&gt;我们在之前的文章中讨论了ElasticSearch中cluster的创建，也了解了Shard的概念，本文就来聊聊ElasticSearch的数据是如何在各个shard中保存和查询的。&lt;/p&gt;
-
-
-
-&lt;h1&gt;文本和Shared的关系&lt;/h1&gt;
-
-
-
-&lt;p&gt;我们知道index的文本是会保存到一个primary的shard中，那么ElasticSearch是如何知道某个文本是属于哪一个shard的呢？比如说我们要保存文本的时候，是应该把它保存到shard1还是shard2，读取的时候又是应该到shard1中查找还是shard2中查找，这些都是如何决定的呢？&lt;/p&gt;
-
-
-
-&lt;p&gt;这个问题乍一听起来好像还蛮神秘，其实仔细一想也很简单，只有有一个统一的基于某个id的算法就可以实现了。在ElasticSearch中，它是通过下面这个公式来计算的：&lt;/p&gt;
-
-
-
-&lt;figure class=&quot;wp-block-image size-large&quot;&gt;&lt;img src=&quot;https://donggeitnote.com/wp-content/uploads/2021/08/image-16.png&quot; alt=&quot;&quot; class=&quot;wp-image-869&quot; srcset=&quot;https://donggeitnote.com/wp-content/uploads/2021/08/image-16.png 624w, https://donggeitnote.com/wp-content/uploads/2021/08/image-16-300x25.png 300w&quot; sizes=&quot;(max-width: 624px) 100vw, 624px&quot;/&gt;&lt;/figure&gt;
-
-
-
-&lt;p&gt;这里routing的值默认就是文本的id（当然也可以自定义），这样一来我们就可以把某一个文本指定到特定的shard中。&lt;/p&gt;
-
-
-
-&lt;p&gt;从这个公式也可以看出来我们为什么需要对primary shard的数目做一个限制，只允许在index创建的时候设置，而且不允许改变，如果改变了，那么所有的根据这个公式算出来的shard值就会发生变化，之前保存的内容就有可能再也找不到了。&lt;/p&gt;
-
-
-
-&lt;h1&gt;Primary和Replica shards之间的交互&lt;/h1&gt;
-
-
-
-&lt;p&gt;为了我们后面的解释方便，先假设相关的cluster结构如下图所示，也就是说整个cluster由三个node组成，然后有两个primary的shards，每一个primary的shard有两个replica。&lt;/p&gt;
-
-
-
-&lt;figure class=&quot;wp-block-image size-large&quot;&gt;&lt;img src=&quot;https://donggeitnote.com/wp-content/uploads/2021/08/image-17.png&quot; alt=&quot;&quot; class=&quot;wp-image-870&quot; srcset=&quot;https://donggeitnote.com/wp-content/uploads/2021/08/image-17.png 624w, https://donggeitnote.com/wp-content/uploads/2021/08/image-17-300x80.png 300w&quot; sizes=&quot;(max-width: 624px) 100vw, 624px&quot;/&gt;&lt;/figure&gt;
-
-
-
-&lt;h2&gt;写操作&lt;/h2&gt;
-
-
-
-&lt;p&gt;写操作包括新建，index和删除文本等，对写操作来说需要首先在primary shard中完成，然后再拷贝到相应的replica中。简单的流程示意图如下所示：&lt;/p&gt;
-
-
-
-&lt;figure class=&quot;wp-block-image size-large&quot;&gt;&lt;img src=&quot;https://donggeitnote.com/wp-content/uploads/2021/08/image-18.png&quot; alt=&quot;&quot; class=&quot;wp-image-871&quot; srcset=&quot;https://donggeitnote.com/wp-content/uploads/2021/08/image-18.png 624w, https://donggeitnote.com/wp-content/uploads/2021/08/image-18-300x144.png 300w&quot; sizes=&quot;(max-width: 624px) 100vw, 624px&quot;/&gt;&lt;/figure&gt;
-
-
-
-&lt;ol type=&quot;1&quot;&gt;&lt;li&gt;客户端发送新建，index或者删除的请求到node1.&lt;/li&gt;&lt;li&gt;Node1会根据文本的id来计算属于哪个shard，假设我们计算后发现这个文本属于shard0，它会把相应的请求指向shard0 primary所在的node，也就是node3.&lt;/li&gt;&lt;li&gt;Node3会在primary shard上执行请求，当请求成功之后会把相应的请求在forward对应的replica所在的节点，也就是node2和node1. 当所有的replica shard都回复成功之后（这里其实是可以设置是同步等还是异步处理），它会向node1返回成功，然后node1在向客户端返回成功的response。&lt;/li&gt;&lt;/ol&gt;
-
-
-
-&lt;p&gt;大体的流程就是我们上面所示意的，不过这里还是有几个地方需要注意的：&lt;/p&gt;
-
-
-
-&lt;ol type=&quot;1&quot;&gt;&lt;li&gt;Replication：就是我们上面提到的如何进行replica的处理，默认的值是sync，也就是说只有replica也处理了相关的请求，才会返回response给相应的节点。另外一个设置是async，也就是说当primary处理完成之后就会立即返回response给相应的节点，当然它也会异步把请求forward给replica的节点，只是说replica的节点何时能处理完成就没有保证了。&lt;/li&gt;&lt;li&gt;Consistency：通常来说，在进行写操作之前primary需要检查一下是否有大多数节点是有效的，这样可以保证这个写不会出问题，比如你不会写到一个网络有问题的节点等。通常我们这里所说的大多数是通过这个算式来计算的：&lt;/li&gt;&lt;/ol&gt;
-
-
-
-&lt;figure class=&quot;wp-block-image size-large&quot;&gt;&lt;img src=&quot;https://donggeitnote.com/wp-content/uploads/2021/08/image-19.png&quot; alt=&quot;&quot; class=&quot;wp-image-872&quot; srcset=&quot;https://donggeitnote.com/wp-content/uploads/2021/08/image-19.png 624w, https://donggeitnote.com/wp-content/uploads/2021/08/image-19-300x27.png 300w&quot; sizes=&quot;(max-width: 624px) 100vw, 624px&quot;/&gt;&lt;/figure&gt;
-
-
-
-&lt;p&gt;这里我们可以把consistency设置为1（只有primary），all（所有的primary+replica）或者quorum也就是大多数等。&lt;/p&gt;
-
-
-
-&lt;ul&gt;&lt;li&gt;Timeout：ElasticSearch如何判断一个节点是有效的，默认来说是这个超时是一分钟。当然你也可以设置成别的值，比如说50ms，30s等等。&lt;/li&gt;&lt;/ul&gt;
-
-
-
-&lt;h2&gt;读操作&lt;/h2&gt;
-
-
-
-&lt;p&gt;文本的读相对来说就简单了很多，既可以从一个primary的shard读也可以从一个replica进行读。大概的流程如下所示：&lt;/p&gt;
-
-
-
-&lt;figure class=&quot;wp-block-image size-large&quot;&gt;&lt;img src=&quot;https://donggeitnote.com/wp-content/uploads/2021/08/image-20.png&quot; alt=&quot;&quot; class=&quot;wp-image-873&quot; srcset=&quot;https://donggeitnote.com/wp-content/uploads/2021/08/image-20.png 624w, https://donggeitnote.com/wp-content/uploads/2021/08/image-20-300x108.png 300w&quot; sizes=&quot;(max-width: 624px) 100vw, 624px&quot;/&gt;&lt;/figure&gt;
-
-
-
-&lt;ol type=&quot;1&quot;&gt;&lt;li&gt;Node1接收到了一个读请求。&lt;/li&gt;&lt;li&gt;Node1根据id计算出来这个文本是在shard0上，我们可以看到三个节点都有shard0的数据，所以都可以被选择，这里随机选择了node2来获取数据。&lt;/li&gt;&lt;li&gt;Node2返回文本给node1，然后node1再返回对应的结果给客户端。&lt;/li&gt;&lt;/ol&gt;
-
-
-
-&lt;p&gt;这里的第二步如何选择哪一个节点也是有讲究的，有点类似负载均衡的做法，就是大概的意思还是希望各个节点的访问和处理尽量均匀。比如说可以使用round-robin来轮询。&lt;/p&gt;
-
-
-
-&lt;h2&gt;读写结合的操作&lt;/h2&gt;
-
-
-
-&lt;p&gt;比较常见的读写结合的操作就是进行局部更新（Partial Update）。大概的示意图如下所示：&lt;/p&gt;
-
-
-
-&lt;figure class=&quot;wp-block-image size-large&quot;&gt;&lt;img src=&quot;https://donggeitnote.com/wp-content/uploads/2021/08/image-21.png&quot; alt=&quot;&quot; class=&quot;wp-image-874&quot; srcset=&quot;https://donggeitnote.com/wp-content/uploads/2021/08/image-21.png 624w, https://donggeitnote.com/wp-content/uploads/2021/08/image-21-300x137.png 300w&quot; sizes=&quot;(max-width: 624px) 100vw, 624px&quot;/&gt;&lt;/figure&gt;
-
-
-
-&lt;ol type=&quot;1&quot;&gt;&lt;li&gt;客户端把请求发送到node1&lt;/li&gt;&lt;li&gt;同样的会根据id找到相应的primary shard在node3，把对应的请求转发到node3&lt;/li&gt;&lt;li&gt;Node3会从primary shard中查询文本，改变相应的局部内容，然后在primary中重新index文本。假如有别的process在这个过程中也修改了文本，那么就需要进行conflict的处理。&lt;/li&gt;&lt;li&gt;当primary处理好了之后，他会把新的版本发给所有的replica的节点，等他们全部处理成功了，会向node1返回成功的response，从而最终返回想的结果给客户端。&lt;/li&gt;&lt;/ol&gt;
-
-
-
-&lt;h2&gt;Mget和bulk操作&lt;/h2&gt;
-
-
-
-&lt;p&gt;对于类似mget和bulk的操作其实和单个操作比较类似，唯一的差别就是第一个节点会根据shard重新组合这些操作，然后再并行把这些request发送给相应的节点。最后在返回结果的时候还需要进行重新组合，一起返回给客户端。下图是一个mget的请求示意图。&lt;/p&gt;
-
-
-
-&lt;figure class=&quot;wp-block-image size-large&quot;&gt;&lt;img src=&quot;https://donggeitnote.com/wp-content/uploads/2021/08/image-22.png&quot; alt=&quot;&quot; class=&quot;wp-image-875&quot; srcset=&quot;https://donggeitnote.com/wp-content/uploads/2021/08/image-22.png 624w, https://donggeitnote.com/wp-content/uploads/2021/08/image-22-300x111.png 300w&quot; sizes=&quot;(max-width: 624px) 100vw, 624px&quot;/&gt;&lt;/figure&gt;
-
-
-
-&lt;ol type=&quot;1&quot;&gt;&lt;li&gt;节点1收到mget的请求。&lt;/li&gt;&lt;li&gt;节点1会重新根据shard来创建request，并把它们发送给对应的shard，等到这些shard的request返回结果之后，再重新组成response返回给客户端。&lt;/li&gt;&lt;/ol&gt;
-
-
-
-&lt;h1&gt;总结&lt;/h1&gt;
-
-
-
-&lt;p&gt;本文总结了ElasticSearch中分布式存储操作的内部实现方法，包括了读操作，写操作，读写结合操作以及bulk操作的处理方法。&lt;/p&gt;
-                                                    &lt;nav class=&quot;pagination group&quot;&gt;
-                      &lt;/nav&gt;
-        &lt;/div&gt;
-
-        
-        &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>7b3dd32fcfa90ca436f75ca60c8e70ef</guid>
-<title>DDIA 对 Raft 的这种极端场景的描述，要如何理解？</title>
-<link>https://toutiao.io/k/9lodlv4</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
-
-                    
-                    
-                    
-                    &lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzIwODA2NjIxOA==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/hBL5R2neMA0g3RQ9bRYaJib92ovwsSB9pPup1lt5cB24cJVJia1dc3Nr2kFSBHsJq5HL9DcLhoAGribSBvHU7ZzjA/0?wx_fmt=png&quot; data-nickname=&quot;多颗糖&quot; data-alias=&quot;duoketang&quot; data-signature=&quot;分布式系统和个人成长。我想要说的，前人们都说过了。&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;本文选自我在知乎的回答。&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.22795969773299748&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/hBL5R2neMA2VCDK4F7rc7GPCpgE5VoWzz0ibBI9rkOtpVKPYQm6Mq6OfZqE21DQE8fqUpJR1oGEVpSfEtZPicWpw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;794&quot;/&gt;&lt;/p&gt;&lt;p data-sourcepos=&quot;7:1-7:261&quot;&gt;&lt;/p&gt;&lt;p data-sourcepos=&quot;7:1-7:261&quot;&gt;《设计数据密集型应用》(即 DDIA)中提到 Raft 的一个问题，即，Raft 算法存在一种失去活性(liveness)的极端情况：如果有一条网络连接不可靠，Raft 当前领导者会不断被迫下台导致系统实质上毫无进展。&lt;/p&gt;&lt;p data-sourcepos=&quot;11:1-11:42&quot;&gt;我们先来具体描述一下该问题。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.9128440366972477&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/hBL5R2neMA2VCDK4F7rc7GPCpgE5VoWzqqVgTnBCZiacOymJPDRNw30NPNwqKocUsDowFB7h703RszQ4Ux2lamg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;436&quot;/&gt;&lt;/p&gt;&lt;p data-sourcepos=&quot;15:1-15:44&quot;&gt;&lt;/p&gt;&lt;p data-sourcepos=&quot;18:1-18:421&quot;&gt;如图所示的 4 节点 Raft 集群，其中有一个节点和其他三个网络不太稳定，假设它能发送消息给别的节点但收不到其他节点的消息，那么它就会一直收不到心跳消息，然后转为 candidate 自增任期并发起新的选举，来自更大任期的 &lt;code&gt;RequestVote&lt;/code&gt; 请求会导致现在的 Leader 下台重新选举。这样一直反复，会导致集群无法正常工作。&lt;/p&gt;&lt;p data-sourcepos=&quot;20:1-20:174&quot;&gt;Raft 大论文提到一种解决方式是加入一个新的 &lt;strong&gt;PreVote 阶段&lt;/strong&gt;，etcd 就这么干了，为此增加了一种新的节点状态叫做 &lt;code&gt;PreCandidate&lt;/code&gt; 状态。&lt;/p&gt;&lt;p data-sourcepos=&quot;20:1-20:174&quot;&gt;&lt;img data-ratio=&quot;0.949238578680203&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/hBL5R2neMA2VCDK4F7rc7GPCpgE5VoWzl0HwlKTTicfkFID4LD2AdyG4qmZfzwmw74RDqib97T3y9tkCYJaic65Tg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;591&quot;/&gt;&lt;/p&gt;&lt;p data-sourcepos=&quot;22:1-22:186&quot;&gt;&lt;strong&gt;PreVote 阶段&lt;/strong&gt;作用是当一个节点想要发起选举时，首先要确认自己确实有资格赢得投票而不是在浪费时间，才会真的自增任期发起新的选举。&lt;/p&gt;&lt;p data-sourcepos=&quot;24:1-24:244&quot;&gt;&lt;strong&gt;PreVote 阶段&lt;/strong&gt;的具体流程是，在发起真正的选举之前，先发送 &lt;code&gt;PreVote&lt;/code&gt; 消息给所有节点， &lt;code&gt;PreVote&lt;/code&gt;消息和 &lt;code&gt;RequestVote&lt;/code&gt; 消息一样，但节点不会自增自己的任期，只会增加消息中的 term 参数。&lt;/p&gt;&lt;p data-sourcepos=&quot;26:1-26:65&quot;&gt;收到 &lt;code&gt;PreVote&lt;/code&gt; 消息的节点同意重新选举的条件是：&lt;/p&gt;&lt;ol data-sourcepos=&quot;27:1-29:0&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;参数中的任期更大，或者任期相同但 log index 更大；&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;至少一次 election timeout 时间内没有收到领导者心跳；&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-sourcepos=&quot;30:1-30:110&quot;&gt;只有超过半数节点同意 &lt;code&gt;PreVote&lt;/code&gt; 消息，该节点才能真正去自增任期并发起新的选举。&lt;/p&gt;&lt;p data-sourcepos=&quot;32:1-32:225&quot;&gt;回到上述情况，网络链路有问题的那个节点在 &lt;code&gt;PreVote&lt;/code&gt; 阶段会发现自己无法赢得超过半数节点同意自己发起选举(别的节点都能收到心跳)，因此不会自增任期去干扰 Leader 工作。&lt;/p&gt;&lt;h2 data-sourcepos=&quot;34:1-34:24&quot;&gt;问题解决了吗？&lt;/h2&gt;&lt;p data-sourcepos=&quot;36:1-36:122&quot;&gt;问题并没有解决，只有 &lt;code&gt;PreVote&lt;/code&gt; 阶段还可能有一种极端情况会导致 Raft 失去活性。如图所示：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5338983050847458&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/hBL5R2neMA2VCDK4F7rc7GPCpgE5VoWzoEp5x4FSoH2ibv4ql3icDn4lDswJiavWn1loUaIcicQpZgvjPe5YZIkxaw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;472&quot;/&gt;&lt;/p&gt;&lt;p data-sourcepos=&quot;38:1-38:44&quot;&gt;&lt;/p&gt;&lt;p data-sourcepos=&quot;42:1-42:417&quot;&gt;图中是一个 5 节点组成的 Raft 集群，故障发生之前 4 是 Leader。现在故障发生了，5 宕机了，同时 4 只和 2 保持连接，1、2、3互相保持连接。这种情况下 1、3 收不到 Leader 的心跳，会发起 &lt;code&gt;PreVote&lt;/code&gt;请求，但由于 2 能收到 Leader 节点 4 的心跳，所以 2 不会同意 &lt;code&gt;PreVote&lt;/code&gt; 请求，因此节点 1、3 无法获得多数派的 &lt;code&gt;PreVote&lt;/code&gt; 同意。&lt;/p&gt;&lt;p data-sourcepos=&quot;44:1-44:207&quot;&gt;该集群的问题是，无法选举出新的 Leader，但旧的 Leader 又只能 &lt;code&gt;AppendEntries&lt;/code&gt; 到两个节点(2和自己)，无法达成多数派，整个集群无法取得任何进展，不满足活性。&lt;/p&gt;&lt;p data-sourcepos=&quot;46:1-46:242&quot;&gt;此处 Raft 协议明明可以容忍 2 个节点故障，但增加了 &lt;code&gt;PreVote&lt;/code&gt; 阶段后反而无法容忍仅仅 1 个节点故障，其实没有 &lt;code&gt;PreVote&lt;/code&gt; 阶段的话，1 和 3 是有机会当选 Leader 推进整个系统正常工作的。&lt;/p&gt;&lt;p data-sourcepos=&quot;48:1-48:72&quot;&gt;&lt;strong&gt;因此 Raft 还需要增加一种机制来让 Leader 主动下台&lt;/strong&gt;。&lt;/p&gt;&lt;p data-sourcepos=&quot;50:1-50:210&quot;&gt;这个机制很简单：Leader 没有收到来自多数派节点的 &lt;code&gt;AppendEntries&lt;/code&gt; 响应时就主动下台。这样，图中 1、2 和 3 都有机会当选新的 Leader，整个集群依旧可以正常工作。&lt;/p&gt;&lt;p data-sourcepos=&quot;52:1-52:125&quot;&gt;etcd 把这叫做 &lt;code&gt;CheckQuorum&lt;/code&gt;，etcd 的 issue 中有关于此问题的讨论：https://github.com/etcd-io/etcd/issues/3866&lt;/p&gt;&lt;p data-sourcepos=&quot;54:1-54:216&quot;&gt;&lt;code&gt;CheckQuorum&lt;/code&gt; 确保了如果当前 Leader 无法连接到多数派节点，它将会下台并选举出新的 Leader。&lt;code&gt;PreVote&lt;/code&gt; 确保一旦 Leader 当选，整个系统将是稳定的，Leader 不会被迫下台。&lt;/p&gt;&lt;p data-sourcepos=&quot;56:1-56:62&quot;&gt;那么 PreVote + CheckQuorum 可以解决活性问题了吗？&lt;/p&gt;&lt;p data-sourcepos=&quot;58:1-58:12&quot;&gt;可以了！&lt;/p&gt;&lt;p data-sourcepos=&quot;60:1-60:158&quot;&gt;&lt;strong&gt;文末预告下，我下半年即将出版的新书会对 Paxos 和 Raft 进行方方面面的讨论，当然也包含这些算法细节，敬请期待！&lt;/strong&gt;&lt;/p&gt;&lt;p data-sourcepos=&quot;60:1-60:158&quot;&gt;&lt;strong&gt;&lt;br/&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;em&gt;&lt;strong&gt;欢迎关注我的公众号：&lt;/strong&gt;&lt;/em&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages js_insertlocalimg&quot; data-ratio=&quot;0.36484375&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/hBL5R2neMA1ynq0HZhJ5kup6vibWOUCRsH7QIzgtnEIDoWXpYqiacbxwrHoWMAL3XYQj08bbxRxNlcQd4NYLZibCQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;h2 data-sourcepos=&quot;62:1-62:12&quot;&gt;Reference&lt;/h2&gt;&lt;p data-sourcepos=&quot;64:1-64:214&quot;&gt;Heidi Howard and Jon Crowcroft: &quot;Coracle: Evaluating Consensus at the Internet Edge,&quot; at Annual Conference of the ACM Special Interest Group on Data Communication (SIGCOMM), August 2015. doi:10.1145/2829988.2790010&lt;/p&gt;&lt;p data-sourcepos=&quot;66:1-66:111&quot;&gt;ONGARO, D. &quot;Consensus: Bridging Theory and Practice.&quot; PhD thesis, Stanford University, 2014 (work in progress).&lt;/p&gt;&lt;p data-sourcepos=&quot;68:1-68:93&quot;&gt;Heidi Howard, Ittai Abraham: &quot;Raft does not Guarantee Liveness in the face of Network Faults&quot;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;
+                    &lt;p&gt;&lt;span&gt;银行跨行转账业务是一个典型分布式事务场景，假设 A 需要跨行转账给 B，那么就涉及两个银行的数据，无法通过一个数据库的本地事务保证转账的 ACID，只能够通过分布式事务来解决。&lt;/span&gt;&lt;/p&gt;&lt;h2&gt;&lt;span&gt;分布式事务&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;分布式事务在分布式环境下，为了满足可用性、性能与降级服务的需要，降低一致性与隔离性的要求，一方面遵循 BASE 理论：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;另一方面，分布式事务也部分遵循 ACID 规范：&lt;/span&gt;&lt;/p&gt;&lt;h2&gt;&lt;span&gt;SAGA&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;Saga 是这一篇数据库论文SAGAS提到的一个分布式事务方案。其核心思想是将长事务拆分为多个本地短事务，由 Saga 事务协调器协调，如果各个本地事务成功完成那就正常完成，如果某个步骤失败，则根据相反顺序一次调用补偿操作。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;目前可用于 SAGA 的开源框架，主要为 Java 语言，其中以 seata 为代表。我们的例子采用 go 语言，使用的分布式事务框架为https://github.com/yedf/dtm，它对分布式事务的支持非常优雅。下面来详细讲解 SAGA 的组成：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;DTM 事务框架里，有 3 个角色，与经典的 XA 分布式事务一样：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;下面看一个成功完成的 SAGA 时序图，就很容易理解 SAGA 分布式事务：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.7671691792294807&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/9m9OfQX94VtmicKKfY1TghX3qLX9OrR6YRrxr4ncicK0Q2909bKaz70HClYuUicd73DCicoZ9B1Ocgia5rxCGM1Y0WA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1194&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;h2&gt;&lt;span&gt;SAGA 实践&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;对于我们要进行的银行转账的例子，我们将在正向操作中，进行转入转出，在补偿操作中，做相反的调整。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;首先我们创建账户余额表：&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;CREATE TABLE dtm_busi.&lt;span&gt;`user_account`&lt;/span&gt; (&lt;br/&gt;  &lt;span&gt;`id`&lt;/span&gt; &lt;span&gt;int&lt;/span&gt;(&lt;span&gt;11&lt;/span&gt;) AUTO_INCREMENT PRIMARY KEY,&lt;br/&gt;  &lt;span&gt;`user_id`&lt;/span&gt; &lt;span&gt;int&lt;/span&gt;(&lt;span&gt;11&lt;/span&gt;) not NULL UNIQUE ,&lt;br/&gt;  &lt;span&gt;`balance`&lt;/span&gt; decimal(&lt;span&gt;10&lt;/span&gt;,&lt;span&gt;2&lt;/span&gt;) NOT NULL DEFAULT &lt;span&gt;&#x27;0.00&#x27;&lt;/span&gt;,&lt;br/&gt;  &lt;span&gt;`create_time`&lt;/span&gt; datetime DEFAULT now(),&lt;br/&gt;  &lt;span&gt;`update_time`&lt;/span&gt; datetime DEFAULT now()&lt;br/&gt;);&lt;br/&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;span&gt;我们先编写核心业务代码，调整用户的账户余额&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;saga_adjust_balance&lt;/span&gt;&lt;span&gt;(cursor, uid, amount)&lt;/span&gt;:&lt;br/&gt;  affected = utils.sqlexec(cursor, &lt;span&gt;&quot;update dtm_busi.user_account set balance=balance+%d where user_id=%d and balance &amp;gt;= -%d&quot;&lt;/span&gt; %(amount, uid, amount))&lt;br/&gt;  &lt;span&gt;if&lt;/span&gt; affected == &lt;span&gt;0&lt;/span&gt;:&lt;br/&gt;    &lt;span&gt;raise&lt;/span&gt; Exception(&lt;span&gt;&quot;update error, balance not enough&quot;&lt;/span&gt;)&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;span&gt;下面我们来编写具体的正向操作 /补偿操作的处理函数&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;@app.post(&quot;/api/TransOutSaga&quot;)&lt;/span&gt;&lt;br/&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;trans_out_saga&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;:&lt;br/&gt;  saga_adjust_balance(c, out_uid, &lt;span&gt;-30&lt;/span&gt;)&lt;br/&gt;  &lt;span&gt;return&lt;/span&gt; {&lt;span&gt;&quot;dtm_result&quot;&lt;/span&gt;: &lt;span&gt;&quot;SUCCESS&quot;&lt;/span&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;@app.post(&quot;/api/TransOutCompensate&quot;)&lt;/span&gt;&lt;br/&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;trans_out_compensate&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;:&lt;br/&gt;  saga_adjust_balance(c, out_uid, &lt;span&gt;30&lt;/span&gt;)&lt;br/&gt;  &lt;span&gt;return&lt;/span&gt; {&lt;span&gt;&quot;dtm_result&quot;&lt;/span&gt;: &lt;span&gt;&quot;SUCCESS&quot;&lt;/span&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;@app.post(&quot;/api/TransInSaga&quot;)&lt;/span&gt;&lt;br/&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;trans_in_saga&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;:&lt;br/&gt;  saga_adjust_balance(c, in_uid, &lt;span&gt;30&lt;/span&gt;)&lt;br/&gt;  &lt;span&gt;return&lt;/span&gt; {&lt;span&gt;&quot;dtm_result&quot;&lt;/span&gt;: &lt;span&gt;&quot;SUCCESS&quot;&lt;/span&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;@app.post(&quot;/api/TransInCompensate&quot;)&lt;/span&gt;&lt;br/&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;trans_in_compensate&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;:&lt;br/&gt;  saga_adjust_balance(c, in_uid, &lt;span&gt;-30&lt;/span&gt;)&lt;br/&gt;  &lt;span&gt;return&lt;/span&gt; {&lt;span&gt;&quot;dtm_result&quot;&lt;/span&gt;: &lt;span&gt;&quot;SUCCESS&quot;&lt;/span&gt;}&lt;br/&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;span&gt;到此各个子事务的处理函数已经 OK 了，然后是开启 SAGA 事务，进行分支调用&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;# 这是 dtm 服务地址&lt;/span&gt;&lt;br/&gt;dtm = &lt;span&gt;&quot;http://localhost:8080/api/dtmsvr&quot;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;# 这是业务微服务地址&lt;/span&gt;&lt;br/&gt;svc = &lt;span&gt;&quot;http://localhost:5000/api&quot;&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;    req = {&lt;span&gt;&quot;amount&quot;&lt;/span&gt;: &lt;span&gt;30&lt;/span&gt;}&lt;br/&gt;    s = saga.Saga(dtm, utils.gen_gid(dtm))&lt;br/&gt;    s.add(req, svc + &lt;span&gt;&quot;/TransOutSaga&quot;&lt;/span&gt;, svc + &lt;span&gt;&quot;/TransOutCompensate&quot;&lt;/span&gt;)&lt;br/&gt;    s.add(req, svc + &lt;span&gt;&quot;/TransInSaga&quot;&lt;/span&gt;, svc + &lt;span&gt;&quot;/TransInCompensate&quot;&lt;/span&gt;)&lt;br/&gt;    s.submit()&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;span&gt;至此，一个完整的 SAGA 分布式事务编写完成。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;如果您想要完整运行一个成功的示例，那么参考这个例子yedf/dtmcli-py-sample，将它运行起来非常简单&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;# 部署启动 dtm&lt;/span&gt;&lt;br/&gt;&lt;span&gt;# 需要 docker 版本 18 以上&lt;/span&gt;&lt;br/&gt;git &lt;span&gt;clone&lt;/span&gt; https://github.com/yedf/dtm&lt;br/&gt;&lt;span&gt;cd&lt;/span&gt; dtm&lt;br/&gt;docker-compose up&lt;br/&gt;&lt;br/&gt;&lt;span&gt;# 另起一个命令行&lt;/span&gt;&lt;br/&gt;git &lt;span&gt;clone&lt;/span&gt; https://github.com/yedf/dtmcli-py-sample&lt;br/&gt;&lt;span&gt;cd&lt;/span&gt; dtmcli-py-sample&lt;br/&gt;pip3 install flask dtmcli requests&lt;br/&gt;flask run&lt;br/&gt;&lt;br/&gt;&lt;span&gt;# 另起一个命令行&lt;/span&gt;&lt;br/&gt;curl localhost:5000/api/fireSaga&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2&gt;&lt;span&gt;处理网络异常&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;假设提交给 dtm 的事务中，调用转入操作时，出现短暂的故障怎么办？按照 SAGA 事务的协议，dtm 会重试未完成的操作，这时我们要如何处理？故障有可能是转入操作完成后出网络故障，也有可能是转入操作完成中出现机器宕机。如何处理才能够保障账户余额的调整是正确无问题的？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这类网络异常的妥当处理，是分布式事务中的大难题，异常情况包括三类：重复请求、空补偿、悬挂，都需要正确处理&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;DTM 提供了子事务屏障功能，保证上述异常情况下的业务逻辑，只会有一次正确顺序下的成功提交。（子事务屏障详情参考分布式事务最经典的七种解决方案的子事务屏障环节）&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们把处理函数调整为：&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;@app.post(&quot;/api/TransOutSaga&quot;)&lt;/span&gt;&lt;br/&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;trans_out_saga&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;:&lt;br/&gt;  &lt;span&gt;with&lt;/span&gt; barrier.AutoCursor(conn_new()) &lt;span&gt;as&lt;/span&gt; cursor:&lt;br/&gt;    &lt;span&gt;def&lt;/span&gt; &lt;span&gt;busi_callback&lt;/span&gt;&lt;span&gt;(c)&lt;/span&gt;:&lt;br/&gt;      saga_adjust_balance(c, out_uid, &lt;span&gt;-30&lt;/span&gt;)&lt;br/&gt;    barrier_from_req(request).call(cursor, busi_callback)&lt;br/&gt;  &lt;span&gt;return&lt;/span&gt; {&lt;span&gt;&quot;dtm_result&quot;&lt;/span&gt;: &lt;span&gt;&quot;SUCCESS&quot;&lt;/span&gt;}&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;span&gt;这里的 barrier_from_req(request).call(cursor, busi_callback)调用会使用子事务屏障技术，保证 busi_callback 回调函数仅被提交一次&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;您可以尝试多次调用这个 TransIn 服务，仅有一次余额调整。&lt;/span&gt;&lt;/p&gt;&lt;h2&gt;&lt;span&gt;处理回滚&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;假如银行将金额准备转入用户 2 时，发现用户 2 的账户异常，返回失败，会怎么样？我们调整处理函数，让转入操作返回失败&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;@app.post(&quot;/api/TransInSaga&quot;)&lt;/span&gt;&lt;br/&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;trans_in_saga&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;:&lt;br/&gt;  &lt;span&gt;return&lt;/span&gt; {&lt;span&gt;&quot;dtm_result&quot;&lt;/span&gt;: &lt;span&gt;&quot;FAILURE&quot;&lt;/span&gt;}&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;span&gt;我们给出事务失败交互的时序图&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img data-ratio=&quot;0.9514237855946399&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/9m9OfQX94VtmicKKfY1TghX3qLX9OrR6YncG3HWV2EseElpJTqCDlDlibr0D9l8efuvZbHQXibDXEB6sZ0yt8GwBw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1194&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这里有一点，TransIn 的正向操作什么都没有做，就返回了失败，此时调用 TransIn 的补偿操作，会不会导致反向调整出错了呢？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;不用担心，前面的子事务屏障技术，能够保证 TransIn 的错误如果发生在提交之前，则补偿为空操作；TransIn 的错误如果发生在提交之后，则补偿操作会将数据提交一次。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;您可以将返回错误的 TransIn 改成：&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;@app.post(&quot;/api/TransInSaga&quot;)&lt;/span&gt;&lt;br/&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;trans_in_saga&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;:&lt;br/&gt;  &lt;span&gt;with&lt;/span&gt; barrier.AutoCursor(conn_new()) &lt;span&gt;as&lt;/span&gt; cursor:&lt;br/&gt;    &lt;span&gt;def&lt;/span&gt; &lt;span&gt;busi_callback&lt;/span&gt;&lt;span&gt;(c)&lt;/span&gt;:&lt;br/&gt;      saga_adjust_balance(c, in_uid, &lt;span&gt;30&lt;/span&gt;)&lt;br/&gt;    barrier_from_req(request).call(cursor, busi_callback)&lt;br/&gt;  &lt;span&gt;return&lt;/span&gt; {&lt;span&gt;&quot;dtm_result&quot;&lt;/span&gt;: &lt;span&gt;&quot;FAILURE&quot;&lt;/span&gt;}&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;span&gt;最后的结果余额依旧会是对的，原理可以参考：分布式事务最经典的七种解决方案的子事务屏障环节&lt;/span&gt;&lt;/p&gt;&lt;h2&gt;&lt;span&gt;小结&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;在这篇文章里，我们介绍了 SAGA 的理论知识，也通过一个例子，完整给出了编写一个 SAGA 事务的过程，涵盖了正常成功完成，异常情况，以及成功回滚的情况。相信读者通过这边文章，对 SAGA 已经有了深入的理解。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;文中使用的 dtm 是新开源的 Golang 分布式事务管理框架，功能强大，支持 TCC 、SAGA 、XA 、事务消息等事务模式，支持 Go 、python 、PHP 、node 、csharp 等语言的。同时提供了非常简单易用的接口。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;阅读完此篇干货，欢迎大家访问项目https://github.com/yedf/dtm，给颗星星支持！&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;点击左下角的“阅读原文”，可以直接访问项目&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;
                 &lt;/div&gt;
 
                 
@@ -209,397 +27,155 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>0e3469c0f52ccd847a927c462cb162db</guid>
-<title>Go 编程模式：泛型编程</title>
-<link>https://toutiao.io/k/sernj2l</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entry-content&quot;&gt;
-&lt;p&gt;&lt;img loading=&quot;lazy&quot; class=&quot;alignright wp-image-21627 &quot; src=&quot;https://coolshell.cn/wp-content/uploads/2021/09/go-generics-1024x512.png&quot; alt=&quot;&quot; srcset=&quot;https://coolshell.cn/wp-content/uploads/2021/09/go-generics-1024x512.png 1024w, https://coolshell.cn/wp-content/uploads/2021/09/go-generics-300x150.png 300w, https://coolshell.cn/wp-content/uploads/2021/09/go-generics-768x384.png 768w, https://coolshell.cn/wp-content/uploads/2021/09/go-generics-540x270.png 540w, https://coolshell.cn/wp-content/uploads/2021/09/go-generics.png 1200w&quot; sizes=&quot;(max-width: 406px) 100vw, 406px&quot;/&gt;Go语言的1.17版本发布了，其中开始正式支持泛型了。虽然还有一些限制（比如，不能把泛型函数export），但是，可以体验了。我的这个《Go编程模式》的系列终于有了真正的泛型编程了，再也不需要使用反射或是go generation这些难用的技术了。周末的时候，我把Go 1.17下载下来，然后，体验了一下泛型编程，还是很不错的。下面，就让我们来看一下Go的泛型编程。（注：不过，如果你对泛型编程的重要性还不是很了解的话，你可以先看一下之前的这篇文章《&lt;a title=&quot;Go 编程模式：Go Generation&quot; href=&quot;https://coolshell.cn/articles/21179.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Go编程模式：Go Generation&lt;/a&gt;》，然后再读一下《&lt;a title=&quot;Go编程模式：Map-Reduce&quot; href=&quot;https://coolshell.cn/articles/21164.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Go编程模式：MapReduce&lt;/a&gt;》）&lt;/p&gt;
-&lt;section class=&quot;post-series&quot;&gt;&lt;h3 class=&quot;post-series-title&quot;&gt;本文是全系列中第10 / 10篇：&lt;a href=&quot;https://coolshell.cn/articles/series/go%e7%bc%96%e7%a8%8b%e6%a8%a1%e5%bc%8f&quot;&gt;Go编程模式&lt;/a&gt;&lt;/h3&gt;&lt;nav class=&quot;post-series-nav&quot;&gt;&lt;span class=&quot;post-series-nav-prev&quot;&gt;« &lt;a href=&quot;https://coolshell.cn/articles/21263.html&quot; rel=&quot;prev&quot; title=&quot;Go 编程模式：k8s Visitor 模式&quot;&gt;上一篇文章&lt;/a&gt;&lt;/span&gt;&lt;/nav&gt;&lt;/section&gt;
+<guid>59d12297ad701a713e907b604e9179fd</guid>
+<title>理解 Java 中对象基础 Object 类</title>
+<link>https://toutiao.io/k/oqq4xnq</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;p id=&quot;js_tags&quot; role=&quot;option&quot; title=&quot;链接&quot; class=&quot;article-tag__list single-tag__wrp js_single&quot; data-len=&quot;1&quot;&gt;
+                                            
+                                                                                    &lt;span class=&quot;article-tag-card__left&quot;&gt;
+                                    &lt;span class=&quot;article-tag-card__title&quot;&gt;收录于话题&lt;/span&gt;
+                                    &lt;span class=&quot;article-tag__item-wrp no-active js_tag&quot; data-url=&quot;https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzU4Njg0MzYwNw==&amp;amp;action=getalbum&amp;amp;album_id=1342230680016683009#wechat_redirect&quot; data-tag_id=&quot;&quot; data-album_id=&quot;1342230680016683009&quot; data-tag_source=&quot;4&quot;&gt;
+                                        &lt;span class=&quot;article-tag__item&quot;&gt;&lt;span aria-hidden=&quot;true&quot;&gt;#&lt;/span&gt;Java编程基础系列&lt;/span&gt;
+                                    &lt;/span&gt;
+                                &lt;/span&gt;
+                                &lt;span class=&quot;article-tag-card__right&quot;&gt;&lt;span class=&quot;weui-hidden_abs&quot;&gt;,&lt;/span&gt;29个&lt;/span&gt;
+                                                                                        &lt;/p&gt;
 
-&lt;h4&gt;&lt;span class=&quot;ez-toc-section&quot; id=&quot;%E5%88%9D%E6%8E%A2&quot;/&gt;初探&lt;span class=&quot;ez-toc-section-end&quot;/&gt;&lt;/h4&gt;
-&lt;p&gt;我们先来看一个简单的示例：&lt;/p&gt;
-&lt;p&gt;&lt;span id=&quot;more-21615&quot;/&gt;&lt;/p&gt;
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;golang&quot;&gt;package main
+                
+                                
+                
+                
 
-import &quot;fmt&quot;
+                
+                                                                
 
-func print[T any] (arr []T) {
-  for _, v := range arr {
-    fmt.Print(v)
-    fmt.Print(&quot; &quot;)
-  }
-  fmt.Println(&quot;&quot;)
-}
-
-func main() {
-  strs := []string{&quot;Hello&quot;, &quot;World&quot;,  &quot;Generics&quot;}
-  decs := []float64{3.14, 1.14, 1.618, 2.718 }
-  nums := []int{2,4,6,8}
-
-  print(strs)
-  print(decs)
-  print(nums)
-}&lt;/pre&gt;
-&lt;p&gt;上面这个例子中，有一个 &lt;code&gt;print()&lt;/code&gt; 函数，这个函数就是想输出数组的值，如果没有泛型的话，这个函数需要写出 &lt;code&gt;int&lt;/code&gt; 版，&lt;code&gt;float&lt;/code&gt;版，&lt;code&gt;string&lt;/code&gt; 版，以及我们的自定义类型（&lt;code&gt;struct&lt;/code&gt;）的版本。现在好了，有了泛型的支持后，我们可以使用 &lt;code&gt;[T any]&lt;/code&gt; 这样的方式来声明一个泛型类型（有点像C++的 &lt;code&gt;typename T&lt;/code&gt;），然后面都使用 &lt;code&gt;T&lt;/code&gt; 来声明变量就好。&lt;/p&gt;
-&lt;p&gt;上面这个示例中，我们泛型的 &lt;code&gt;print()&lt;/code&gt; 支持了三种类型的适配—— &lt;code&gt;int&lt;/code&gt;型，&lt;code&gt;float64&lt;/code&gt;型，和 &lt;code&gt;string&lt;/code&gt;型。要让这段程序跑起来需要在编译行上加上 &lt;code&gt;-gcflags=-G=3&lt;/code&gt;编译参数（这个编译参数会在1.18版上成为默认参数），如下所示：&lt;/p&gt;
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;shell&quot;&gt;$ go run -gcflags=-G=3 ./main.go&lt;/pre&gt;
-&lt;p&gt;有了个操作以后，我们就可以写一些标准的算法了，比如，一个查找的算法&lt;/p&gt;
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;golang&quot;&gt;func find[T comparable] (arr []T, elem T) int {
-  for i, v := range arr {
-    if  v == elem {
-      return i
-    }
-  }
-  return -1
-}&lt;/pre&gt;
-&lt;p&gt;我们注意到，我们没有使用 &lt;code&gt;[T any]&lt;/code&gt;的形式，而是使用 &lt;code&gt;[T comparable]&lt;/code&gt;的形式，&lt;code&gt;comparable&lt;/code&gt;是一个接口类型，其约束了我们的类型需要支持 &lt;code&gt;==&lt;/code&gt; 的操作， 不然就会有类型不对的编译错误。上面的这个 &lt;code&gt;find()&lt;/code&gt; 函数同样可以使用于 &lt;code&gt;int&lt;/code&gt;, &lt;code&gt;float64&lt;/code&gt;或是&lt;code&gt;string&lt;/code&gt;类型。&lt;/p&gt;
-&lt;p&gt;从上面的这两个小程序来看，Go语言的泛型已基本可用了，只不过，还有三个问题：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;一个是 &lt;code&gt;fmt.Printf()&lt;/code&gt;中的泛型类型是 &lt;code&gt;%v&lt;/code&gt; 还不够好，不能像c++ &lt;code&gt;iostream&lt;/code&gt;重载 &lt;code&gt;&amp;gt;&amp;gt;&lt;/code&gt; 来获得程序自定义的输出。&lt;/li&gt;
-&lt;li&gt;另外一个是，go不支持操作符重载，所以，你也很难在泛型算法中使用“泛型操作符”如：&lt;code&gt;==&lt;/code&gt; 等&lt;/li&gt;
-&lt;li&gt;最后一个是，上面的 &lt;code&gt;find()&lt;/code&gt; 算法依赖于“数组”，对于hash-table、tree、graph、link等数据结构还要重写。也就是说，没有一个像C++ STL那样的一个泛型迭代器（这其中的一部分工作当然也需要通过重载操作符（如：&lt;code&gt;++&lt;/code&gt; 来实现）&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;不过，这个已经很好了，让我们来看一下，可以干哪些事了。&lt;/p&gt;
-&lt;h4&gt;&lt;span class=&quot;ez-toc-section&quot; id=&quot;%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84&quot;/&gt;数据结构&lt;span class=&quot;ez-toc-section-end&quot;/&gt;&lt;/h4&gt;
-&lt;h5&gt;&lt;span class=&quot;ez-toc-section&quot; id=&quot;Stack_%E6%A0%88&quot;/&gt;Stack 栈&lt;span class=&quot;ez-toc-section-end&quot;/&gt;&lt;/h5&gt;
-&lt;p&gt;编程支持泛型最大的优势就是可以实现类型无关的数据结构了。下面，我们用Slices这个结构体来实现一个Stack的数结构。&lt;/p&gt;
-&lt;p&gt;首先，我们可以定义一个泛型的Stack&lt;/p&gt;
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;golang&quot;&gt;type stack [T any] []T&lt;/pre&gt;
-&lt;p&gt;看上去很简单，还是 &lt;code&gt;[T any]&lt;/code&gt; ，然后 &lt;code&gt;[]T&lt;/code&gt; 就是一个数组，接下来就是实现这个数据结构的各种方法了。下面的代码实现了 &lt;code&gt;push()&lt;/code&gt; ，&lt;code&gt;pop()&lt;/code&gt;，&lt;code&gt;top()&lt;/code&gt;，&lt;code&gt;len()&lt;/code&gt;，&lt;code&gt;print()&lt;/code&gt;这几个方法，这几个方法和 C++的STL中的 Stack很类似。（注：目前Go的泛型函数不支持 export，所以只能使用第一个字符是小写的函数名）&lt;/p&gt;
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;golang&quot;&gt;func (s *stack[T]) push(elem T) {
-  *s = append(*s, elem)
-}
-
-func (s *stack[T]) pop() {
-  if len(*s) &amp;gt; 0 {
-    *s = (*s)[:len(*s)-1]
-  } 
-}
-func (s *stack[T]) top() *T{
-  if len(*s) &amp;gt; 0 {
-    return &amp;amp;(*s)[len(*s)-1]
-  } 
-  return nil
-}
-
-func (s *stack[T]) len() int{
-  return len(*s)
-}
-
-func (s *stack[T]) print() {
-  for _, elem := range *s {
-    fmt.Print(elem)
-    fmt.Print(&quot; &quot;)
-  }
-  fmt.Println(&quot;&quot;)
-}&lt;/pre&gt;
-&lt;p&gt;上面的这个例子还是比较简单的，不过在实现的过程中，对于一个如果栈为空，那么 &lt;code&gt;top()&lt;/code&gt;要么返回&lt;code&gt;error&lt;/code&gt;要么返回空值，在这个地方卡了一下。因为，之前，我们返回的“空”值，要么是 int 的&lt;code&gt;0&lt;/code&gt;，要么是 string 的 &lt;code&gt;“”&lt;/code&gt;，然而在泛型的&lt;code&gt;T&lt;/code&gt;下，这个值就不容易搞了。也就是说，除了类型泛型后，还需要有一些“值的泛型”（注：在C++中，如果你要用一个空栈进行 &lt;code&gt;top()&lt;/code&gt; 操作，你会得到一个 segmentation fault），所以，这里我们返回的是一个指针，这样可以判断一下指针是否为空。&lt;/p&gt;
-&lt;p&gt;下面是如何使用这个stack的代码。&lt;/p&gt;
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;golang&quot;&gt;func main() {
-
-  ss := stack[string]{}
-  ss.push(&quot;Hello&quot;)
-  ss.push(&quot;Hao&quot;)
-  ss.push(&quot;Chen&quot;)
-  ss.print()
-  fmt.Printf(&quot;stack top is - %v\n&quot;, *(ss.top()))
-  ss.pop()
-  ss.pop()
-  ss.print()
-
-  
-  ns := stack[int]{}
-  ns.push(10)
-  ns.push(20)
-  ns.print()
-  ns.pop()
-  ns.print()
-  *ns.top() += 1
-  ns.print()
-  ns.pop()
-  fmt.Printf(&quot;stack top is - %v\n&quot;, ns.top())
-
-}&lt;/pre&gt;
-&lt;p&gt; &lt;/p&gt;
-&lt;h5&gt;&lt;span class=&quot;ez-toc-section&quot; id=&quot;LinkList_%E5%8F%8C%E5%90%91%E9%93%BE%E8%A1%A8&quot;/&gt;LinkList 双向链表&lt;span class=&quot;ez-toc-section-end&quot;/&gt;&lt;/h5&gt;
-&lt;p&gt;下面我们再来看一个双向链表的实现。下面这个实现中实现了 这几个方法：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;add()&lt;/code&gt; – 从头插入一个数据结点&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;push()&lt;/code&gt; – 从尾插入一个数据结点&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;del()&lt;/code&gt; – 删除一个结点（因为需要比较，所以使用了 &lt;code&gt;compareable&lt;/code&gt; 的泛型）&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;print()&lt;/code&gt; – 从头遍历一个链表，并输出值。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;golang&quot;&gt;type node[T comparable] struct {
-  data T
-  prev *node[T]
-  next *node[T]
-}
-
-type list[T comparable] struct {
-  head, tail *node[T]
-  len int
-}
-
-func (l *list[T]) isEmpty() bool {
-  return l.head == nil &amp;amp;&amp;amp; l.tail == nil
-}
-
-func (l *list[T]) add(data T) {
-  n := &amp;amp;node[T] {
-    data : data,
-    prev : nil,
-    next : l.head,
-  }
-  if l.isEmpty() {
-    l.head = n
-    l.tail = n
-  }
-  l.head.prev = n
-  l.head = n
-}
-
-func (l *list[T]) push(data T) { 
-  n := &amp;amp;node[T] {
-    data : data,
-    prev : l.tail,
-    next : nil,
-  }
-  if l.isEmpty() {
-    l.head = n
-    l.tail = n
-  }
-  l.tail.next = n
-  l.tail = n
-}
-
-func (l *list[T]) del(data T) { 
-  for p := l.head; p != nil; p = p.next {
-    if data == p.data {
-      
-      if p == l.head {
-        l.head = p.next
-      }
-      if p == l.tail {
-        l.tail = p.prev
-      }
-      if p.prev != nil {
-        p.prev.next = p.next
-      }
-      if p.next != nil {
-        p.next.prev = p.prev
-      }
-      return 
-    }
-  } 
-}
-
-func (l *list[T]) print() {
-  if l.isEmpty() {
-    fmt.Println(&quot;the link list is empty.&quot;)
-    return 
-  }
-  for p := l.head; p != nil; p = p.next {
-    fmt.Printf(&quot;[%v] -&amp;gt; &quot;, p.data)
-  }
-  fmt.Println(&quot;nil&quot;)
-}&lt;/pre&gt;
-&lt;p&gt;上面这个代码都是一些比较常规的链表操作，学过链表数据结构的同学应该都不陌生，使用的代码也不难，如下所示，都很简单，看代码就好了。&lt;/p&gt;
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;golang&quot;&gt;func main(){
-  var l = list[int]{}
-  l.add(1)
-  l.add(2)
-  l.push(3)
-  l.push(4)
-  l.add(5)
-  l.print() //[5] -&amp;gt; [2] -&amp;gt; [1] -&amp;gt; [3] -&amp;gt; [4] -&amp;gt; nil
-  l.del(5)
-  l.del(1)
-  l.del(4)
-  l.print() //[2] -&amp;gt; [3] -&amp;gt; nil
-  
-}&lt;/pre&gt;
-&lt;h4&gt;&lt;span class=&quot;ez-toc-section&quot; id=&quot;%E5%87%BD%E6%95%B0%E5%BC%8F%E8%8C%83%E5%9E%8B&quot;/&gt;函数式范型&lt;span class=&quot;ez-toc-section-end&quot;/&gt;&lt;/h4&gt;
-&lt;p&gt;接下来，我们就要来看一下我们函数式编程的三大件 &lt;code&gt;map()&lt;/code&gt; 、 &lt;code&gt;reduce()&lt;/code&gt; 和 &lt;code&gt;filter()&lt;/code&gt; 在之前的《&lt;a title=&quot;Go编程模式：Map-Reduce&quot; href=&quot;https://coolshell.cn/articles/21164.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Go编程模式：Map-Reduce&lt;/a&gt;》文章中，我们可以看到要实现这样的泛型，需要用到反射，代码复杂到完全读不懂。下面来看一下真正的泛型版本。&lt;/p&gt;
-&lt;h5&gt;&lt;span class=&quot;ez-toc-section&quot; id=&quot;%E6%B3%9B%E5%9E%8BMap&quot;/&gt;泛型Map&lt;span class=&quot;ez-toc-section-end&quot;/&gt;&lt;/h5&gt;
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;golang&quot;&gt;func gMap[T1 any, T2 any] (arr []T1, f func(T1) T2) []T2 {
-  result := make([]T2, len(arr))
-  for i, elem := range arr {
-    result[i] = f(elem)
-  }
-  return result
-}&lt;/pre&gt;
-&lt;p&gt;在上面的这个 map函数中我使用了两个类型 – &lt;code&gt;T1&lt;/code&gt; 和 &lt;code&gt;T2&lt;/code&gt; ，&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;T1&lt;/code&gt; – 是需要处理数据的类型&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;T2&lt;/code&gt; – 是处理后的数据类型&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;code&gt;T1&lt;/code&gt; 和 &lt;code&gt;T2&lt;/code&gt; 可以一样，也可以不一样。&lt;/p&gt;
-&lt;p&gt;我们还有一个函数参数 –  &lt;code&gt;func(T1) T2&lt;/code&gt; 意味着，进入的是 &lt;code&gt;T1&lt;/code&gt; 类型的，出来的是 &lt;code&gt;T2&lt;/code&gt; 类型的。&lt;/p&gt;
-&lt;p&gt;然后，整个函数返回的是一个 &lt;code&gt;[]T2&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;好的，我们来看一下怎么使用这个map函数：&lt;/p&gt;
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;golang&quot;&gt;nums := []int {0,1,2,3,4,5,6,7,8,9}
-squares := gMap(nums, func (elem int) int {
-  return elem * elem
-})
-print(squares)  //0 1 4 9 16 25 36 49 64 81 
-
-strs := []string{&quot;Hao&quot;, &quot;Chen&quot;, &quot;MegaEase&quot;}
-upstrs := gMap(strs, func(s string) string  {
-  return strings.ToUpper(s)
-})
-print(upstrs) // HAO CHEN MEGAEASE 
+                
+                                
 
 
-dict := []string{&quot;零&quot;, &quot;壹&quot;, &quot;贰&quot;, &quot;叁&quot;, &quot;肆&quot;, &quot;伍&quot;, &quot;陆&quot;, &quot;柒&quot;, &quot;捌&quot;, &quot;玖&quot;}
-strs =  gMap(nums, func (elem int) string  {
-  return  dict[elem]
-})
-print(strs) // 零 壹 贰 叁 肆 伍 陆 柒 捌 玖&lt;/pre&gt;
-&lt;h5&gt;&lt;span class=&quot;ez-toc-section&quot; id=&quot;%E6%B3%9B%E5%9E%8B_Reduce&quot;/&gt;泛型 Reduce&lt;span class=&quot;ez-toc-section-end&quot;/&gt;&lt;/h5&gt;
-&lt;p&gt;接下来，我们再来看一下我们的Reduce函数，reduce函数是把一堆数据合成一个。&lt;/p&gt;
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;golang&quot;&gt;func gReduce[T1 any, T2 any] (arr []T1, init T2, f func(T2, T1) T2) T2 {
-  result := init
-  for _, elem := range arr {
-    result = f(result, elem)
-  }
-  return result
-}&lt;/pre&gt;
-&lt;p&gt;函数实现起来很简单，但是感觉不是很优雅。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;也是有两个类型 &lt;code&gt;T1&lt;/code&gt; 和 &lt;code&gt;T2&lt;/code&gt;，前者是输出数据的类型，后者是佃出数据的类型。&lt;/li&gt;
-&lt;li&gt;因为要合成一个数据，所以需要有这个数据的初始值 &lt;code&gt;init&lt;/code&gt;，是 &lt;code&gt;T2&lt;/code&gt; 类型&lt;/li&gt;
-&lt;li&gt;而自定义函数 &lt;code&gt;func(T2, T1) T2&lt;/code&gt;，会把这个init值传给用户，然后用户处理完后再返回出来。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;下面是一个使用上的示例——求一个数组的和&lt;/p&gt;
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot;&gt;nums := []int {0,1,2,3,4,5,6,7,8,9}
-sum := gReduce(nums, 0, func (result, elem int) int  {
-    return result + elem
-})
-fmt.Printf(&quot;Sum = %d \n&quot;, sum)&lt;/pre&gt;
-&lt;h5&gt;&lt;span class=&quot;ez-toc-section&quot; id=&quot;%E6%B3%9B%E5%9E%8B_filter&quot;/&gt;泛型 filter&lt;span class=&quot;ez-toc-section-end&quot;/&gt;&lt;/h5&gt;
-&lt;p&gt;filter函数主要是用来做过滤的，把数据中一些符合条件（filter in）或是不符合条件（filter out）的数据过滤出来，下面是相关的代码示例&lt;/p&gt;
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;golang&quot;&gt;func gFilter[T any] (arr []T, in bool, f func(T) bool) []T {
-  result := []T{}
-  for _, elem := range arr {
-    choose := f(elem)
-    if (in &amp;amp;&amp;amp; choose) || (!in &amp;amp;&amp;amp; !choose) {
-      result = append(result, elem)
-    }
-  }
-  return result
-}
+                
+                
+                
+                
+                                                
+                                                                
+                                
+                                
+                
+                &lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
 
-func gFilterIn[T any] (arr []T, f func(T) bool) []T {
-  return gFilter(arr, true, f)
-}
+                    
+                    
+                    
+                    &lt;h1&gt;&lt;span&gt;一、Object简述&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;源码注释：Object类是所有类层级关系的Root节点，作为所有类的超类，包括数组也实现了该类的方法，注意这里说的很明确，指类层面。&lt;/p&gt;&lt;p&gt;所以在Java中有一句常说的话，一切皆对象，这话并不离谱。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;1、显式扩展&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;结论验证&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;既然Object作为所有类的父级别的类，则不需要在显式的添加继承关系，&lt;code&gt;Each01&lt;/code&gt;编译期就会提示移除冗余。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Each01&lt;/span&gt; &lt;span&gt;extends&lt;/span&gt; &lt;span&gt;Object&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;(String[] args)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;new&lt;/span&gt; Each01().hashCode()+&lt;span&gt;&quot;;&quot;&lt;/span&gt;+&lt;span&gt;new&lt;/span&gt; ObjEa02().hashCode());&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;ObjEa02&lt;/span&gt; &lt;/span&gt;{}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;ObjEa03&lt;/span&gt; &lt;span&gt;extends&lt;/span&gt; &lt;span&gt;ObjEa02&lt;/span&gt;&lt;/span&gt;{}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这里&lt;code&gt;Each01&lt;/code&gt;与&lt;code&gt;ObjEa02&lt;/code&gt;对象实例都有Object类中的&lt;code&gt;hashCode&lt;/code&gt;方法，这里对既有结论的验证。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;编译文件&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;再从JVM编译层面看下字节码文件，是如何加载，使用&lt;code&gt;javap -c&lt;/code&gt;命令查看编译后的文件，注意Jdk版本&lt;code&gt;1.8&lt;/code&gt;；&lt;/p&gt;&lt;pre&gt;&lt;code&gt;javap -c Each01.class&lt;br/&gt;Compiled from &lt;span&gt;&quot;Each01.java&quot;&lt;/span&gt;&lt;br/&gt;public class com.base.object.each.Each01 {&lt;br/&gt;  public com.base.object.each.Each01();&lt;br/&gt;    Code:&lt;br/&gt;       0: aload_0&lt;br/&gt;       1: invokespecial &lt;span&gt;#1 // Method java/lang/Object.&quot;&amp;lt;init&amp;gt;&quot;:()V&lt;/span&gt;&lt;br/&gt;       4: &lt;span&gt;return&lt;/span&gt;&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;javap -c ObjEa02.class &lt;br/&gt;Compiled from &lt;span&gt;&quot;Each01.java&quot;&lt;/span&gt;&lt;br/&gt;class com.base.object.each.ObjEa02 {&lt;br/&gt;  com.base.object.each.ObjEa02();&lt;br/&gt;    Code:&lt;br/&gt;       0: aload_0&lt;br/&gt;       1: invokespecial &lt;span&gt;#1 // Method java/lang/Object.&quot;&amp;lt;init&amp;gt;&quot;:()V&lt;/span&gt;&lt;br/&gt;       4: &lt;span&gt;return&lt;/span&gt;&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;javap -c ObjEa03.class &lt;br/&gt;Compiled from &lt;span&gt;&quot;Each01.java&quot;&lt;/span&gt;&lt;br/&gt;class com.base.object.each.ObjEa03 extends com.base.object.each.ObjEa02 {&lt;br/&gt;  com.base.object.each.ObjEa03();&lt;br/&gt;    Code:&lt;br/&gt;       0: aload_0&lt;br/&gt;       1: invokespecial &lt;span&gt;#1 // Method com/base/object/each/ObjEa02.&quot;&amp;lt;init&amp;gt;&quot;:()V&lt;/span&gt;&lt;br/&gt;       4: &lt;span&gt;return&lt;/span&gt;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;strong&gt;invokespecial命令&lt;/strong&gt;：可以查看Jvm的官方文档中的指令说明，调用实例化方法，和父类的初始化方法调用等，这里通过三个类的层级关系，再次说明Object超类不需要显式继承，即使显式声明但编译后源码依旧会清除冗余。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;2、引用与对象&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;通常把下面过程称为：创建一个object对象；&lt;/p&gt;&lt;pre&gt;&lt;code&gt;Object object = &lt;span&gt;new&lt;/span&gt; Object() ;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;细节描述：声明对象引用&lt;code&gt;object&lt;/code&gt;；通过&lt;code&gt;new&lt;/code&gt;关键字创建对象并基于默认构造方法初始化；将对象引用&lt;code&gt;object&lt;/code&gt;指向创建的对象。&lt;/p&gt;&lt;p&gt;这一点可以基于Jvm运行流程去理解，所以当对象一旦失去全部引用时，会被标记为垃圾对象，在垃圾收集器运行时清理。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;接受任意数据类型对象的引用&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;既然Object作为Java中所有对象的超类，则根据继承关系的特点，以及向上转型机制，Object可以接受任意数据类型对象的引用，例如在集合容器或者传参过程，不确定对象类型时可以使用Object：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Each02&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;(String[] args)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;// 向上转型&lt;/span&gt;&lt;br/&gt;        Object obj01 = &lt;span&gt;new&lt;/span&gt; Each02Obj01(&lt;span&gt;&quot;java&quot;&lt;/span&gt;) ;&lt;br/&gt;        System.out.println(obj01);&lt;br/&gt;        &lt;span&gt;// 向下转型&lt;/span&gt;&lt;br/&gt;        Each02Obj01 each02Obj01 = (Each02Obj01)obj01;&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;name=&quot;&lt;/span&gt;+each02Obj01.getName());&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Each02Obj01&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; String name ;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;Each02Obj01&lt;/span&gt;&lt;span&gt;(String name)&lt;/span&gt; &lt;/span&gt;{ &lt;span&gt;this&lt;/span&gt;.name = name; }&lt;br/&gt;    &lt;span&gt;@Override&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; String &lt;span&gt;toString&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; &lt;span&gt;&quot;Each02Obj01{&quot;&lt;/span&gt; +&lt;span&gt;&quot;name=&#x27;&quot;&lt;/span&gt; + name +&lt;span&gt;&#x27;}&#x27;&lt;/span&gt;;&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; String &lt;span&gt;getName&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{ &lt;span&gt;return&lt;/span&gt; name; }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这里要强调一下这个向上转型的过程：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;Object obj01 = &lt;span&gt;new&lt;/span&gt; Each02Obj01(&lt;span&gt;&quot;java&quot;&lt;/span&gt;) ;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;通过上面流程分析，这里创建一个父类引用&lt;code&gt;obj01&lt;/code&gt;，并指向子类&lt;code&gt;Each02Obj01&lt;/code&gt;对象，所以在输出的时候，调用的是子类的&lt;code&gt;toString&lt;/code&gt;方法。&lt;/p&gt;&lt;h1&gt;&lt;span&gt;二、基础方法&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;p&gt;&lt;strong&gt;1、getClass&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;在程序运行时获取对象的实例类，进而可以获取详细的结构信息并进行操作：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;final&lt;/span&gt; &lt;span&gt;native&lt;/span&gt; Class&amp;lt;?&amp;gt; getClass();&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;该方法在泛型，反射，动态代理等机制中有很多场景应用。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;2、toString&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;返回对象的字符串描述形式，Object提供的是类名与无符号十六进制的哈希值组合表示，为了能返回一个信息明确的字符串，子类通常会覆盖该方法：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; String &lt;span&gt;toString&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; getClass().getName()+&lt;span&gt;&quot;@&quot;&lt;/span&gt;+Integer.toHexString(hashCode());&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;在Java中，打印对象的时候，会执行&lt;code&gt;String.valueOf&lt;/code&gt;转换为字符串，该方法的底层依旧是对象的&lt;code&gt;toString&lt;/code&gt;方法：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;println&lt;/span&gt;&lt;span&gt;(Object x)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    String s = String.valueOf(x);&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; String &lt;span&gt;valueOf&lt;/span&gt;&lt;span&gt;(Object obj)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; (obj == &lt;span&gt;null&lt;/span&gt;) ? &lt;span&gt;&quot;null&quot;&lt;/span&gt; : obj.toString();&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;strong&gt;3、equals与hashCode&lt;/strong&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;equals：判断两个对象是否相等；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;hashCode：返回对象的哈希码值；&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;native&lt;/span&gt; &lt;span&gt;int&lt;/span&gt; &lt;span&gt;hashCode&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt;;&lt;br/&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;boolean&lt;/span&gt; &lt;span&gt;equals&lt;/span&gt;&lt;span&gt;(Object obj)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; (&lt;span&gt;this&lt;/span&gt; == obj);&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;code&gt;equals&lt;/code&gt;判断方法需要考量实际的场景与策略，例如常见的公民注册后分配的身份ID是不能修改的，但是名字可以修改，那么就可能存在这样的场景：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;EachUser eachUser01 = &lt;span&gt;new&lt;/span&gt; EachUser(&lt;span&gt;1&lt;/span&gt;,&lt;span&gt;&quot;A&quot;&lt;/span&gt;) ;&lt;br/&gt;EachUser eachUser02 = &lt;span&gt;new&lt;/span&gt; EachUser(&lt;span&gt;1&lt;/span&gt;,&lt;span&gt;&quot;B&quot;&lt;/span&gt;) ;&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;EachUser&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; Integer cardId ;&lt;br/&gt;    &lt;span&gt;private&lt;/span&gt; String name ;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;从程序本身看，这确实是创建两个对象，但是放在场景下，这的确是描述同一个人，所以这时候可以在&lt;code&gt;equals&lt;/code&gt;方法中定义比较规则，如果ID相同则视为同一个对象：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;@Override&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;boolean&lt;/span&gt; &lt;span&gt;equals&lt;/span&gt;&lt;span&gt;(Object obj)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; (obj != &lt;span&gt;null&lt;/span&gt;){&lt;br/&gt;        EachUser compareObj = (EachUser)obj ;&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; &lt;span&gt;this&lt;/span&gt;.cardId.intValue()==compareObj.cardId ;&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; Boolean.FALSE ;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这里还要注意值类型和引用类型的区别，如果出现&lt;code&gt;null&lt;/code&gt;比较情况，要返回false。&lt;/p&gt;&lt;p&gt;通常在子类中会同时覆盖这两个方法，这样做法在集合容器的设计上已经体现的淋漓尽致。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;4、thread相关&lt;/strong&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;wait：线程进入waiting等待状态，不会争抢锁对象&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;notify：随机通知一个在该对象上等待的线程；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;notifyAll：唤醒在该对象上所有等待的线程；&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;final&lt;/span&gt; &lt;span&gt;native&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;wait&lt;/span&gt;&lt;span&gt;(&lt;span&gt;long&lt;/span&gt; timeout)&lt;/span&gt; &lt;span&gt;throws&lt;/span&gt; InterruptedException&lt;/span&gt;;&lt;br/&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;final&lt;/span&gt; &lt;span&gt;native&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;notify&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt;;&lt;br/&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;final&lt;/span&gt; &lt;span&gt;native&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;notifyAll&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt;;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;注意这里：&lt;code&gt;native&lt;/code&gt;关键字修饰的方法，即调用的是原生函数，也就是常说的基于C/C++实现的本地方法，以此提高和系统层面的交互效率降低交互复杂程度。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;5、clone&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;返回当前对象的拷贝：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;protected&lt;/span&gt; &lt;span&gt;native&lt;/span&gt; Object &lt;span&gt;clone&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;span&gt;throws&lt;/span&gt; CloneNotSupportedException&lt;/span&gt;;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;关于该方法的细节规则极度复杂，要注意下面几个核心点：&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;对象必须实现Cloneable接口才可以被克隆；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;数据类型：值类型，String类型，引用类型；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;深浅拷贝的区别和与之对应的实现流程；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;在复杂的包装类型中，组合的不同变量类型；&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;strong&gt;6、finalize&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;当垃圾收集器确认该对象上没有引用时，会调用finalize方法，即清理内存释放资源：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;protected&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;finalize&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;span&gt;throws&lt;/span&gt; Throwable &lt;/span&gt;{ }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;通常子类不会覆盖该方法，除非在子类中有一些其他必要的资源清理动作。&lt;/p&gt;&lt;h1&gt;&lt;span&gt;三、生命周期&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;p&gt;&lt;strong&gt;1、作用域&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;在下面main方法执行结束之后，无法再访问&lt;code&gt;Each05Obj01&lt;/code&gt;的实例对象，因为对象的引用&lt;code&gt;each05&lt;/code&gt;丢失：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Each05&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;(String[] args)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        Each05Obj01 each05 = &lt;span&gt;new&lt;/span&gt; Each05Obj01 (&lt;span&gt;99&lt;/span&gt;) ;&lt;br/&gt;        System.out.println(each05);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这里就会存在一个问题，引用丢失导致对象无法访问，但是对象在此时可能还是存在的，并没有释放内存的占用。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;2、垃圾回收机制&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;Java通过new创建的对象会在堆中开辟内存空间存储，当对象失去所有引用时会被标记为垃圾对象，进而被回收；&lt;/p&gt;&lt;p&gt;这里涉及下面几个关键点：&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;Jvm中垃圾收集器会监控创建的对象 ；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;当判断对象不存在引用时，会执行清理动作；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;完成对象清理后会重新整理内存空间；&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;这里存在一个很难理解的概念，即&lt;strong&gt;对象不存在引用的判断&lt;/strong&gt;，也就是常说的&lt;strong&gt;可达性分析算法&lt;/strong&gt;：基于对象到根对象的引用链是否可达来判断对象是否可以被回收；GC-Roots根引用集合，也可以变相理解为存活对象的集合。(详见JVM系列)&lt;/p&gt;&lt;p&gt;通过Object对象的分析，结合Java方方面面的机制和设计，可以去意会一些所谓的编程思想。&lt;/p&gt;&lt;p&gt;&lt;span&gt;同系列&lt;/span&gt;： &lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzU4Njg0MzYwNw==&amp;amp;mid=2247485361&amp;amp;idx=1&amp;amp;sn=02df70811415c226e59d85c3b525ee04&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;List分析&lt;/a&gt; | &lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzU4Njg0MzYwNw==&amp;amp;mid=2247485374&amp;amp;idx=1&amp;amp;sn=2371c8682f059031b6ffd23c5c412202&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;Map分析&lt;/a&gt; | &lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzU4Njg0MzYwNw==&amp;amp;mid=2247485441&amp;amp;idx=1&amp;amp;sn=108c562fea4866828059aadfc9225969&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;IO流核心&lt;/a&gt; | &lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzU4Njg0MzYwNw==&amp;amp;mid=2247485423&amp;amp;idx=1&amp;amp;sn=184ff3fd0e4f19db54e1487a076fd9df&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;动态代理&lt;/a&gt; | &lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzU4Njg0MzYwNw==&amp;amp;mid=2247485449&amp;amp;idx=1&amp;amp;sn=adc58b6641d8cd486f05b8aa3904ce65&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;面向对象&lt;/a&gt;&lt;/p&gt;&lt;h1&gt;&lt;span&gt;四、源代码地址&lt;/span&gt;&lt;span/&gt;&lt;/h1&gt;&lt;pre&gt;&lt;code&gt;GitEE·地址&lt;br/&gt;https://gitee.com/cicadasmile/java-base-parent&lt;br/&gt;Wiki·地址&lt;br/&gt;https://gitee.com/cicadasmile/butte-java-note/wikis&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzU4Njg0MzYwNw==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/uUIibyNXbAvBCuF3zfJnqPKpUia4wfn1FUtTHpxxkR5HvbicPgOjibPicX0goMOkny1NdkLAJvBaqrYh3UdwMjiaDQMA/0?wx_fmt=png&quot; data-nickname=&quot;知了一笑&quot; data-alias=&quot;cicada_smile&quot; data-signature=&quot;积累是一个孤独且枯燥的过程&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;
+                &lt;/div&gt;
 
-func gFilterOut[T any] (arr []T, f func(T) bool) []T {
-  return gFilter(arr, false, f)
-}&lt;/pre&gt;
-&lt;p&gt;其中，用户需要提从一个 &lt;code&gt;bool&lt;/code&gt; 的函数，我们会把数据传给用户，然后用户只需要告诉我行还是不行，于是我们就会返回一个过滤好的数组给用户。&lt;/p&gt;
-&lt;p&gt;比如，我们想把数组中所有的奇数过滤出来&lt;/p&gt;
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;golang&quot;&gt;nums := []int {0,1,2,3,4,5,6,7,8,9}
-odds := gFilterIn(nums, func (elem int) bool  {
-    return elem % 2 == 1
-})
-print(odds)&lt;/pre&gt;
-&lt;h4&gt;&lt;span class=&quot;ez-toc-section&quot; id=&quot;%E4%B8%9A%E5%8A%A1%E7%A4%BA%E4%BE%8B&quot;/&gt;业务示例&lt;span class=&quot;ez-toc-section-end&quot;/&gt;&lt;/h4&gt;
-&lt;p&gt;正如《&lt;a title=&quot;Go编程模式：Map-Reduce&quot; href=&quot;https://coolshell.cn/articles/21164.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Go编程模式：Map-Reduce&lt;/a&gt;》中的那个业务示例，我们在这里再做一遍。&lt;/p&gt;
-&lt;p&gt;首先，我们先声明一个员工对象和相关的数据&lt;/p&gt;
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;golang&quot;&gt;type Employee struct {
-  Name     string
-  Age      int
-  Vacation int
-  Salary   float32
-}
+                
 
-var employees = []Employee{
-  {&quot;Hao&quot;, 44, 0, 8000.5},
-  {&quot;Bob&quot;, 34, 10, 5000.5},
-  {&quot;Alice&quot;, 23, 5, 9000.0},
-  {&quot;Jack&quot;, 26, 0, 4000.0},
-  {&quot;Tom&quot;, 48, 9, 7500.75},
-  {&quot;Marry&quot;, 29, 0, 6000.0},
-  {&quot;Mike&quot;, 32, 8, 4000.3},
-}&lt;/pre&gt;
-&lt;p&gt;然后，我们想统一下所有员工的薪水，我们就可以使用前面的reduce函数&lt;/p&gt;
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;golang&quot;&gt;total_pay := gReduce(employees, 0.0, func(result float32, e Employee) float32 {
-  return result + e.Salary
-})
-fmt.Printf(&quot;Total Salary: %0.2f\n&quot;, total_pay) // Total Salary: 43502.05&lt;/pre&gt;
-&lt;p&gt;我们函数这个 &lt;code&gt;gReduce&lt;/code&gt; 函数有点啰嗦，还需要传一个初始值，在用户自己的函数中，还要关心 &lt;code&gt;result&lt;/code&gt; 我们还是来定义一个更好的版本。&lt;/p&gt;
-&lt;p&gt;一般来说，我们用 reduce 函数大多时候基本上是统计求和或是数个数，所以，是不是我们可以定义的更为直接一些？比如下面的这个 &lt;code&gt;CountIf()&lt;/code&gt;，就比上面的 Reduce 干净了很多。&lt;/p&gt;
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;golang&quot;&gt;func gCountIf[T any](arr []T, f func(T) bool) int {
-  cnt := 0
-  for _, elem := range arr {
-    if f(elem) {
-      cnt += 1
-    }
-  }
-  return cnt;
-}&lt;/pre&gt;
-&lt;p&gt;我们做求和，我们也可以写一个Sum的泛型。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;处理 &lt;code&gt;T&lt;/code&gt; 类型的数据，返回 &lt;code&gt;U&lt;/code&gt;类型的结果&lt;/li&gt;
-&lt;li&gt;然后，用户只需要给我一个需要统计的 &lt;code&gt;T&lt;/code&gt; 的 &lt;code&gt;U&lt;/code&gt; 类型的数据就可以了。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;代码如下所示：&lt;/p&gt;
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;golang&quot;&gt;type Sumable interface {
-  type int, int8, int16, int32, int64,
-        uint, uint8, uint16, uint32, uint64,
-        float32, float64
-}
-
-func gSum[T any, U Sumable](arr []T, f func(T) U) U {
-  var sum U
-  for _, elem := range arr {
-    sum += f(elem)
-  }
-  return sum
-}&lt;/pre&gt;
-&lt;p&gt;上面的代码我们动用了一个叫 Sumable 的接口，其限定了 U 类型，只能是 Sumable里的那些类型，也就是整型或浮点型，这个支持可以让我们的泛型代码更健壮一些。&lt;/p&gt;
-&lt;p&gt;于是，我们就可以完成下面的事了。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;1）统计年龄大于40岁的员工数&lt;/strong&gt;&lt;/p&gt;
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;golang&quot;&gt;old := gCountIf(employees, func (e Employee) bool  {
-    return e.Age &amp;gt; 40
-})
-fmt.Printf(&quot;old people(&amp;gt;40): %d\n&quot;, old) 
-// ld people(&amp;gt;40): 2&lt;/pre&gt;
-&lt;p&gt;&lt;strong&gt;2）统计薪水超过 6000元的员工数&lt;/strong&gt;&lt;/p&gt;
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;generic&quot;&gt;high_pay := gCountIf(employees, func(e Employee) bool {
-  return e.Salary &amp;gt;= 6000
-})
-fmt.Printf(&quot;High Salary people(&amp;gt;6k): %d\n&quot;, high_pay) 
-//High Salary people(&amp;gt;6k): 4&lt;/pre&gt;
-&lt;p&gt;&lt;strong&gt;3）统计年龄小于30岁的员工的薪水&lt;/strong&gt;&lt;/p&gt;
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;golang&quot;&gt;younger_pay := gSum(employees, func(e Employee) float32 {
-  if e.Age &amp;lt; 30 {
-      return e.Salary
-  } 
-  return 0
-})
-fmt.Printf(&quot;Total Salary of Young People: %0.2f\n&quot;, younger_pay)
-//Total Salary of Young People: 19000.00&lt;/pre&gt;
-&lt;p&gt;&lt;strong&gt;4）统计全员的休假天数&lt;/strong&gt;&lt;/p&gt;
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;golang&quot;&gt;total_vacation := gSum(employees, func(e Employee) int {
-  return e.Vacation
-})
-fmt.Printf(&quot;Total Vacation: %d day(s)\n&quot;, total_vacation)
-//Total Vacation: 32 day(s)&lt;/pre&gt;
-&lt;p&gt;&lt;strong&gt;5）把没有休假的员工过滤出来&lt;/strong&gt;&lt;/p&gt;
-&lt;pre class=&quot;EnlighterJSRAW&quot; data-enlighter-language=&quot;golang&quot;&gt;no_vacation := gFilterIn(employees, func(e Employee) bool {
-  return e.Vacation == 0
-})
-print(no_vacation)
-//{Hao 44 0 8000.5} {Jack 26 0 4000} {Marry 29 0 6000}&lt;/pre&gt;
-&lt;p&gt;怎么样，你大概了解了泛型编程的意义了吧。&lt;/p&gt;
-&lt;p&gt;（全文完）&lt;/p&gt;
-&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;https://coolshell.cn/wp-content/uploads/2020/03/coolshell.weixin.jpg&quot;/&gt; &lt;img loading=&quot;lazy&quot; src=&quot;https://coolshell.cn/wp-content/uploads/2020/03/coolshell.mini_.jpg&quot;/&gt; &lt;br/&gt;关注CoolShell微信公众账号和微信小程序&lt;/p&gt;
+                
 
 
 
-&lt;div id=&quot;post-ratings-21615-loading&quot; class=&quot;post-ratings-loading&quot;&gt;&lt;img src=&quot;https://coolshell.cn/wp-content/plugins/wp-postratings/images/loading.gif&quot; class=&quot;post-ratings-image&quot;/&gt;&lt;p&gt;Loading...&lt;/p&gt;&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;/div&gt;</content:encoded>
+                
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>6c0ee13bec73862989e38b91a997e2f0</guid>
+<title>服务运行过程中磁盘坏道引起的思考</title>
+<link>https://toutiao.io/k/jmqq86o</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
+
+                    
+                    
+                    
+                    &lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;背景&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;同事发现一个有重要服务在运行的物理机上，一个目录&lt;span&gt;虽&lt;/span&gt;&lt;span&gt;然&lt;/span&gt;&lt;span&gt;够用，&lt;/span&gt;但是比另一台同样服务的机器相比，空间很小。我们还是跟SA沟通了此事。最终SA跟厂商确认是因为磁盘有坏道引起。因为我们磁盘阵列采用的是RAID1模式，所以并不影响服务运行，但是为了保证服务的稳定性，我们还是决定对磁盘进行修复。&lt;br/&gt;&lt;/section&gt;&lt;section&gt;结果呢，在约好的时间点，大家按照操作流程很轻松的修复了。但是前期我们做了很多工作。如果实际操作的时候并不轻松，而是突然出现了意外的情况或者没有考虑到的步骤，虽然最终结果是有惊无险，那也说明我们的前期准备是非常失败的。如果是一次飞机飞行，那就是在拿着生命开玩笑了。而轻松完成也只是入门等级，整个过程，我给自己打60分。&lt;br/&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;涉及的一些基本硬件知识&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;RAID&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;RAID是磁盘阵列，常用的模式有RAID0、RAID1、RAID5、RAID6、RAID10（这里读RAID一零）。&lt;br/&gt;&lt;/section&gt;&lt;section&gt;RAID0是机器使用两块硬盘，写文件的时候，采用分片模式，就是把文件拆成均等的两块，同时写入，这样速度比使用一块硬盘提高一倍。可用容量为硬盘容量之和。&lt;br/&gt;&lt;/section&gt;&lt;section&gt;RAID1是机器使用两块硬盘，写文件的时候，采用镜像模式，就是把文件写入一块硬盘，之后再复制一份到另一块硬盘。这样速度和一块硬盘基本相同，两块硬盘容量其实只能用一半。但是通过冗余进行容灾，可以允许一块硬盘损坏，不影响服务的运行。我们这次就是这种情况。&lt;/section&gt;&lt;p&gt;RAID5又称为分布式磁盘，是兼顾容量、速度和容灾的一个方案。至少要有3块硬盘组成，采用单校验机制(XOR校验)。原数据和校验数据会分开均匀保存到各块磁盘上。可允许一块硬盘损坏。举个例子，我有一段数据要保存，内容是：&lt;/p&gt;&lt;p&gt;&lt;span&gt;1 2 3 4 5 6  &lt;/span&gt;&lt;/p&gt;&lt;p&gt;则：&lt;/p&gt;&lt;section&gt;RAID6是在RAID5的基础上又增加一种校验方式，至少要有4块盘，从而可以允许两块硬盘损坏。由于复杂度高，功能比不高，所以一般RAID10或者RAID01这样的组合模式更常用。&lt;/section&gt;&lt;section&gt;RAID10是组合RAID1和RAID0，用4块硬盘。数据有一块盘做镜像模式，一块盘做分片模式，虽然容量还是只有一半，但是速度提高了一倍，也可以容灾。&lt;/section&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;rebuild&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;采用RAID1模式，一块硬盘损坏，要更换可以采用热插拔，之后会执行2到3小时的rebuild操作。rebuild过程重要做：磁盘检查和数据复制两件事情。&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;1.5706214689265536&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRlib4hNibbAMK8XYKAOAibmZVrgm8rPOT8icOpHyQc7Eh23NzcAzRjyQskECqD5mQAJ9BqmrQpdvZOJcNw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;354&quot;/&gt;&lt;/p&gt;&lt;section&gt;根据不同的硬件型号，rebuild过程中会有指示灯显示磁盘状态。比如有的rebuild过程中显示黄色，完成后显示绿色，代表状态是online。&lt;br/&gt;&lt;/section&gt;&lt;section&gt;rebuild过程实际不影响服务运行，但是这个过程中读写硬盘会比较频繁，通常建议隔离业务。&lt;br/&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;事件处理过程&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;事件处理开始，我们看到的现象就是根目录的空间很小，其他目录都是好几百G，这个目录只有十几G。经过层层追问，最终和厂商一起查出是磁盘坏道引起。SA希望我们把业务隔离1天。而这个服务比较特殊，受外部制约，使用了一个十几年前架构的闭源MQ。我们只有两机房部署，每个机房都是单机运行，其他备份都是冷备。所以整体而言，磁盘修复过程中是单机运行的。所以我们和SA沟通，尽量缩短修复时间。最终我们的整个包含隔离和恢复业务耗时缩短为7个小时。&lt;/section&gt;&lt;section&gt;做好准备之后，我们把整个处理过程整理成完整的时序；设计好异常处理流程；为了应对磁盘修复不好这种场景，我们制定了磁盘回退的异常处理；为了应对不但磁盘没有修好，反而整个物理机不能用的场景，我们制定了不得已启用冷备机器的异常处理，这个处理需要进行网络变更，流程复杂，所以更要提前沟通好；然后我们统计好处理当天的业务量，估算好最坏影响时的影响的交易；还带上厂商的分析等数据。总共打印出四张纸，我带着去找领导汇报。&lt;br/&gt;&lt;/section&gt;&lt;section&gt;结果领导的两个问题，证明我没有把事情彻底搞清楚。一个是每个机房真的只能一台机器运行吗？因为用的MQ是闭源的，对接方也不清楚到底是为什么只能一台机器运行。确认的事情是对接方一个机房只给了一个IP，之前也咨询过网络，是否可以使用虚拟IP。网络说不可以，但是具体的理由说的不是很清楚。另外一个说RAID1应该是热插拔的，应该是插上就能用。&lt;span&gt;建议说是否rebuild过程中就灰度一点点流量进来。这样主要目的是如果另外一台机器故障，流量可以自动全切到这个机房，达到容灾的目的。领导还强调了一个关键词：概率。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;带着这个问题，我又和同事调研了一下。同事调研到不能用VIP的根本原因是通道消息序列号问题。通道消息序列号是内存计算的，每发送或收到一条消息，消息序列号自动加1.通道两端的序列号相差大于1，通道的状态则从running变成fail。&lt;br/&gt;&lt;/section&gt;&lt;section&gt;另外一件事是概率的问题：我们认为单机运行7个小时是没有问题的，是因为按照之前的运行情况，这7个小时发生事情的概率很小。所以我们认为这7个小时过程中完全隔离业务是无损的方案。实际情况是没有发生问题是概率性的，不是确定的。而事情上rebuild过程中发生问题的概率也很低。SA制定的流程是从修复过程不出问题出发，因为他们做的是IAAS层的工作。而我们作为SAAS层，应该从整体对业务影响角度出发。领导还提了一个问题：7个小时能确保人会一点不走神的在那里盯着吗？如果另一台服务器一旦出现故障，从发现到处理，中间处理时间会很长。因为手动处理是需要沟通，并且操作要走审批。恢复不会很快。&lt;br/&gt;&lt;/section&gt;&lt;section&gt;针对这个问题，我让同事在修复开始前，调整告警调整阈值，一笔失败或者超时则短信告警。同时，我们又反思了在制定时序时的目标设定：无损交易下进行修复。但是没有仔细考虑一旦单机运行时，运行机器发生问题时，必然交易损失，要手动来启用EOP，那就是故障。而只是在硬盘插拔时隔离流量，rebuild过程手动验证服务正常之后，切一点点流量，实际也是无损的，而且很可能rebuild过程中，一点正式流量都不会达到这台rebuild中的机器。只是一旦另一台机器出现问题，服务可以自动走这台机器，不会造成故障(实际还有别的因素，实际自动容灾行不通，这里说明避免给我们自己的同事造成误导，不影响对问题的说明)。所以我们最终决定rebuild过程中切一点点流量，实际证明确实是无损的。&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;总结思考&lt;/span&gt;&lt;/strong&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;实际操作是整个处理过程的冰山一角，有惊无险就已经输了。&lt;/section&gt;&lt;section&gt;一次把所有事情做对是最高效的。&lt;br/&gt;&lt;/section&gt;&lt;section&gt;再早几年的时候，我发现自己会经常想出来一些生活中的句子，觉得不亚于电影里的经典台词。而在工作中，我经常需要发表一些自己的论点或者总结思考。而这时候，我总觉得自己说的是陈词滥调。我总结了原因，从记事起，为生活思考是一种习惯，当我晚上在校园里一圈圈的走，当我坐车上，在车窗的玻璃哈气上涂鸦，我都在思考。而自己为工作又思考了多少，思考了多久。&lt;br/&gt;&lt;/section&gt;&lt;section&gt;大学的时候，有个韩剧叫《黄真伊》，女主说：“艺术最需要的是痛苦。&lt;span&gt;”&lt;/span&gt;从方法学的角度，痛苦起的作用是触发人的深度思考。所谓兴趣是最好的老师原理也是因为有兴趣所以自然而然的会多为此思考。而现在我在事情的处理过程中思考还远远不够。&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;推荐阅读&lt;/span&gt;&lt;/strong&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;
+                &lt;/div&gt;
+
+                
+
+                
+
+
+
+                
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>1b1a6d449be7ac7487634e54e8818621</guid>
+<title>实现 LRU 缓存机制</title>
+<link>https://toutiao.io/k/3kvcfbi</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
+
+                    
+                    
+                    
+                    &lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;LRU&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;LRU&lt;/code&gt;, Least Recently Used，即最近最少使用，当容量不足时，优先淘汰最久未使用的数据。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;核心方法&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;用一个队列来存储数据，最近使用的数据存在队尾，最久未使用的数据存在队首。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;1、get (key)&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当对某个 &lt;code&gt;key&lt;/code&gt; 进行访问时，将数据移至队尾。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;2、put (key, value)&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当添加一个元素时&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;如果 &lt;code&gt;key&lt;/code&gt; 存在，则覆盖 &lt;code&gt;value&lt;/code&gt; ，并将数据移至队尾&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如果 &lt;code&gt;key&lt;/code&gt; 不存在，则直接插入到队尾&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如果容量不足时，则删除队首的数据&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;实现方法&lt;/h2&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;实现方法1，双链表 + 哈希表&lt;span/&gt;&lt;/h3&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;public class LruCache {&lt;br/&gt;&lt;br/&gt;    private HashMap&amp;lt;Integer, Node&amp;gt; map;&lt;br/&gt;&lt;br/&gt;    private DoubleList cache;&lt;br/&gt;&lt;br/&gt;    private final int &lt;span&gt;cap&lt;/span&gt;;&lt;br/&gt;&lt;br/&gt;    public LruCache(int &lt;span&gt;cap&lt;/span&gt;) {&lt;br/&gt;        this.map = new HashMap&amp;lt;&amp;gt;();&lt;br/&gt;        this.cache = new DoubleList();&lt;br/&gt;        this.cap = &lt;span&gt;cap&lt;/span&gt;;&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    public int get(int key) {&lt;br/&gt;        Node node = map.get(key);&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; (node == null) {&lt;br/&gt;            &lt;span&gt;return&lt;/span&gt; -1;&lt;br/&gt;        }&lt;br/&gt;        // 将元素移至队尾&lt;br/&gt;        makeRecently(key);&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; node.val;&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    public void put(int key, int value) {&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; (map.containsKey(key)) {&lt;br/&gt;            //先删除，再添加&lt;br/&gt;            deleteKey(key);&lt;br/&gt;            addRecently(key, value);&lt;br/&gt;            &lt;span&gt;return&lt;/span&gt;;&lt;br/&gt;        }&lt;br/&gt;        //如果达到容量最大值，则删除队首元素&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; (cache.size() == &lt;span&gt;cap&lt;/span&gt;) {&lt;br/&gt;            removeLatestRecently();&lt;br/&gt;        }&lt;br/&gt;        addRecently(key, value);&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    private void makeRecently(int key) {&lt;br/&gt;        Node node = map.get(key);&lt;br/&gt;        //删除当前元素&lt;br/&gt;        cache.remove(node);&lt;br/&gt;        //将元素加至队尾&lt;br/&gt;        cache.addLast(node);&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    /**&lt;br/&gt;     * 新增一个元素，加至队尾&lt;br/&gt;     */&lt;br/&gt;    private void addRecently(int key, int value) {&lt;br/&gt;        Node node = new Node(key, value);&lt;br/&gt;        map.put(key, node);&lt;br/&gt;        cache.addLast(node);&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    private void deleteKey(int key) {&lt;br/&gt;        Node node = map.get(key);&lt;br/&gt;        map.remove(key);&lt;br/&gt;        cache.remove(node);&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    private void &lt;span&gt;&lt;span&gt;removeLatestRecently&lt;/span&gt;&lt;/span&gt;() {&lt;br/&gt;        Node node = cache.removeFirst();&lt;br/&gt;        map.remove(node.key);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;class DoubleList {&lt;br/&gt;&lt;br/&gt;    /**&lt;br/&gt;     * 两个首位虚节点&lt;br/&gt;     */&lt;br/&gt;    Node head, tail;&lt;br/&gt;&lt;br/&gt;    int size;&lt;br/&gt;&lt;br/&gt;    public &lt;span&gt;&lt;span&gt;DoubleList&lt;/span&gt;&lt;/span&gt;() {&lt;br/&gt;        head = new Node(0, 0);&lt;br/&gt;        tail = new Node(0, 0);&lt;br/&gt;        head.next = tail;&lt;br/&gt;        tail.pre = head;&lt;br/&gt;        size = 0;&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    /**&lt;br/&gt;     * 队尾是新元素&lt;br/&gt;     */&lt;br/&gt;    public void addLast(Node node) {&lt;br/&gt;        node.next = tail;&lt;br/&gt;        node.pre = tail.pre;&lt;br/&gt;        tail.pre.next = node;&lt;br/&gt;        tail.pre = node;&lt;br/&gt;        size++;&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    /**&lt;br/&gt;     * 删除节点&lt;br/&gt;     */&lt;br/&gt;    public void remove(Node node) {&lt;br/&gt;        node.pre.next = node.next;&lt;br/&gt;        node.next.pre = node.pre;&lt;br/&gt;        size--;&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    /**&lt;br/&gt;     * 删除队首最老的元素&lt;br/&gt;     */&lt;br/&gt;    public Node &lt;span&gt;&lt;span&gt;removeFirst&lt;/span&gt;&lt;/span&gt;() {&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; (head.next == tail) {&lt;br/&gt;            &lt;span&gt;return&lt;/span&gt; null;&lt;br/&gt;        }&lt;br/&gt;        Node first = head.next;&lt;br/&gt;        remove(first);&lt;br/&gt;        size--;&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; first;&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    public int &lt;span&gt;&lt;span&gt;size&lt;/span&gt;&lt;/span&gt;() {&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; size;&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;class Node {&lt;br/&gt;&lt;br/&gt;    int key;&lt;br/&gt;&lt;br/&gt;    int val;&lt;br/&gt;&lt;br/&gt;    Node pre;&lt;br/&gt;&lt;br/&gt;    Node next;&lt;br/&gt;&lt;br/&gt;    public Node(int key, int val) {&lt;br/&gt;        this.key = key;&lt;br/&gt;        this.val = val;&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;实现方法2，借助 LinkedHashMap&lt;span/&gt;&lt;/h3&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;public class LinkedLruCache {&lt;br/&gt;&lt;br/&gt;    private LinkedHashMap&amp;lt;Integer, Integer&amp;gt; cacheMap = new LinkedHashMap&amp;lt;&amp;gt;();&lt;br/&gt;&lt;br/&gt;    private int &lt;span&gt;cap&lt;/span&gt;;&lt;br/&gt;&lt;br/&gt;    public LinkedLruCache(int &lt;span&gt;cap&lt;/span&gt;) {&lt;br/&gt;        this.cap = &lt;span&gt;cap&lt;/span&gt;;&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    public int get(int key) {&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; (!cacheMap.containsKey(key)) {&lt;br/&gt;            &lt;span&gt;return&lt;/span&gt; -1;&lt;br/&gt;        }&lt;br/&gt;        Integer val = cacheMap.get(key);&lt;br/&gt;        //先删除，再添加&lt;br/&gt;        cacheMap.remove(key);&lt;br/&gt;        cacheMap.put(key, val);&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; val;&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    public void put(int key, int val) {&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; (cacheMap.containsKey(key)) {&lt;br/&gt;            //先删除，再添加&lt;br/&gt;            cacheMap.remove(key);&lt;br/&gt;            cacheMap.put(key, val);&lt;br/&gt;            &lt;span&gt;return&lt;/span&gt;;&lt;br/&gt;        }&lt;br/&gt;        //达到容量后，删除第一个元素&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; (cacheMap.size() == &lt;span&gt;cap&lt;/span&gt;) {&lt;br/&gt;            Integer firstKey = cacheMap.keySet().iterator().next();&lt;br/&gt;            cacheMap.remove(firstKey);&lt;br/&gt;        }&lt;br/&gt;        cacheMap.put(key, val);&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;实现方式3，继承 LinkedHashMap&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;需要设置 &lt;code&gt;accessOrder = true&lt;/code&gt;，在元素被访问后会被移至队尾。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;public class LinkedHashMapCache extends LinkedHashMap {&lt;br/&gt;&lt;br/&gt;    private int &lt;span&gt;cap&lt;/span&gt;;&lt;br/&gt;&lt;br/&gt;    public LinkedHashMapCache(int &lt;span&gt;cap&lt;/span&gt;) {&lt;br/&gt;        super(16, 0.75f, &lt;span&gt;true&lt;/span&gt;);&lt;br/&gt;        this.cap = &lt;span&gt;cap&lt;/span&gt;;&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    @Override&lt;br/&gt;    public boolean removeEldestEntry(Map.Entry eldest) {&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; this.cap &amp;lt; size();&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;总结&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;LRU 算法经常被用于缓存淘汰的策略，例如 MySQL、Redis 都有用到 LRU，当我们需要自己实现一个类似缓存时，也可以采用以上的方式实现。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MjM5OTk5NjkyNA==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/RMOHqs13Zw3wjzRJyMM7TENNicGjdtoeFTc5tia1QBBib9j5pujtHdjmia5LHwib9Dm5sIhD70tRyecllBK65hWcD7w/0?wx_fmt=png&quot; data-nickname=&quot;郭儿的跋涉&quot; data-alias=&quot;WE_LINE&quot; data-signature=&quot;30岁的郭儿的跋涉。&quot; data-from=&quot;1&quot;/&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;
+                &lt;/div&gt;
+
+                
+
+                
+
+
+
+                
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>b98e79241a965fcfda56501c922d5d59</guid>
+<title>亿级流量治理系列：常用的限流算法有哪些？</title>
+<link>https://toutiao.io/k/vmyvgf0</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;p id=&quot;js_tags&quot; role=&quot;option&quot; title=&quot;链接&quot; class=&quot;article-tag__list single-tag__wrp js_single&quot; data-len=&quot;1&quot;&gt;
+                                            
+                                                                                    &lt;span class=&quot;article-tag-card__left&quot;&gt;
+                                    &lt;span class=&quot;article-tag-card__title&quot;&gt;收录于话题&lt;/span&gt;
+                                    &lt;span class=&quot;article-tag__item-wrp no-active js_tag&quot; data-url=&quot;https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzU5MzY4NTMwOQ==&amp;amp;action=getalbum&amp;amp;album_id=2002502353043668996#wechat_redirect&quot; data-tag_id=&quot;&quot; data-album_id=&quot;2002502353043668996&quot; data-tag_source=&quot;4&quot;&gt;
+                                        &lt;span class=&quot;article-tag__item&quot;&gt;&lt;span aria-hidden=&quot;true&quot;&gt;#&lt;/span&gt;流量治理系列&lt;/span&gt;
+                                    &lt;/span&gt;
+                                &lt;/span&gt;
+                                &lt;span class=&quot;article-tag-card__right&quot;&gt;&lt;span class=&quot;weui-hidden_abs&quot;&gt;,&lt;/span&gt;2个&lt;/span&gt;
+                                                                                        &lt;/p&gt;
+
+                
+                                
+                
+                
+
+                
+                                                                
+
+                
+                                
+
+
+                
+                
+                
+                
+                                                
+                                                                
+                                
+                                
+                
+                &lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
+
+                    
+                    
+                    
+                    &lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;p data-mid=&quot;&quot;&gt;&lt;span&gt;点击上方蓝字“设为星标”&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzU5MzY4NTMwOQ==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/JReUsicfmEPZJL75J8t2KRIBkH377m1xmSasTiaZkbH1ALNn1tSgbMVyY7KnTpGO9A0Bnzh8IOYhmckmib9U5SgpQ/0?wx_fmt=png&quot; data-nickname=&quot;架构摆渡人&quot; data-alias=&quot;jiagoubaiduren&quot; data-signature=&quot;架构摆渡人，助你通往架构师方向的领路人。本号会定期分享架构相关的文章，专注于架构方向，关注我们，下一个架构师就是你。&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;img data-ratio=&quot;0.5714285714285714&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_png/5mcydv0qFicXzFsgOt7fWRZ6jAeG9zhzouNZNH0VxZKHibuVlq9U111AVmg9d4fDy86NhewMnfrSCKf3ia0EBf0zA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;42&quot;/&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;p data-mid=&quot;&quot;&gt;前言&lt;/p&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;上篇文章&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzU5MzY4NTMwOQ==&amp;amp;mid=2247485271&amp;amp;idx=1&amp;amp;sn=cd0e67ebe92b534dcc9635fc1c6fcc54&amp;amp;chksm=fe0df905c97a701305c885f8f5b15bc03efbff3bedc4322dc53d9f49a796035481ffee12af16&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;《为什么大公司都要做流量治理？》&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;《为什么大公司都要做流量治理？》&lt;/a&gt;跟大家聊了下做流量治理的真正目的是什么。如果你要开发一个流量治理的平台或者一个限流的框架，那么必不可少的就是要选择一种合适的限流算法。本篇文章就跟大家聊聊目前常用的限流算法有哪些。&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;img data-ratio=&quot;0.5714285714285714&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_png/5mcydv0qFicXzFsgOt7fWRZ6jAeG9zhzouNZNH0VxZKHibuVlq9U111AVmg9d4fDy86NhewMnfrSCKf3ia0EBf0zA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;42&quot;/&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;p data-mid=&quot;&quot;&gt;计数器&lt;/p&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;计数器是最简单，最直接明了的限流算法。说白了就是进行数字累加操作，也就是count++ 这你总能看懂吧！&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt; &lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;单机限流可以直接使用LongAdder或者&lt;span&gt;AtomicLong这些原子类进行计数操作即可。用&lt;/span&gt;Semaphore也可以，Semaphore内部本身就是计数器的方式实现。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt; &lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;集群限流可以使用Redis的incr进行计数累加即可，用其他的存储也可以，核心就是要有集中存储计数的地方。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt; &lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;计数器算法也分为两种形式，一种是有时间段的限制，另一种是没有时间段的限制。&lt;/span&gt;&lt;/section&gt;&lt;p line=&quot;faJw&quot;&gt; &lt;/p&gt;&lt;h2 data-foldable-wrapper=&quot;&quot;&gt;&lt;section&gt;&lt;section data-mpa-template=&quot;t&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;有时间段限制&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/h2&gt;&lt;p line=&quot;fOaR&quot;&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;有时间段限制就是你限流的时长是多少，一般我们都会以秒为单位。比如限制QPS为1000。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;有时间限制会存在一个临界区的问题，假设第1秒中的第999毫秒的时候，来了800个请求，这个时候是没有超过1000 QPS的限制。然后第2秒的1毫秒来了800个请求，相隔几毫秒，很有可能前面的请求还没执行完成，这么又来了，其实这个时候的请求已经超出了你系统能够承受的范围了，也就失去了限流的效果。&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;F5IH&quot;&gt; &lt;/p&gt;&lt;p line=&quot;Ilk5&quot;&gt;&lt;img data-ratio=&quot;0.546031746031746&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JReUsicfmEPZBu30Vj1N8hKGKjUSOSXw6iavK1bibksMtaRkENiccViaKxMibGw6Hudk8WFw5shH9Wgsksk8ianib3EgOw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1260&quot;/&gt;&lt;/p&gt;&lt;p line=&quot;UrOp&quot;&gt; &lt;/p&gt;&lt;p line=&quot;hEXk&quot;&gt; &lt;/p&gt;&lt;p&gt;&lt;span&gt;如果非得要用有时间限制的计数器算法，那么可以将时间单位调的越小越好。当然还有其他的算法能够解决这个临界区的问题，下面会介绍到。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;h2 data-foldable-wrapper=&quot;&quot;&gt;&lt;section&gt;&lt;section data-mpa-template=&quot;t&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;无时间段限制&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;无时间段限制就不会存在临界区的问题，请求进来数量加一，请求结束数量减一。将并发量最高永远限制在你想要的范围内。跟Semaphore是一样的作用。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这个其实跟我们去饭店吃饭一样，饭店总共10个座位，坐满了你就得在外面等着叫号。如果有客人吃完离开了，空了一个座位出来，下一个客人才能进去。这样就能永远保证进去的人不超过饭店的座位数量，也在厨师和服务员能够服务的范围之内。&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;4c1b&quot;&gt; &lt;/p&gt;&lt;section&gt;&lt;span&gt;伪代码示列：&lt;/span&gt;&lt;/section&gt;&lt;p line=&quot;rDw6&quot;&gt; &lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;java&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;@Slf4j&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;public class RatelimitFilter implements Filter {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    private AtomicLong atomicLong = new AtomicLong();&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    @Override&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        HttpServletRequest request = (HttpServletRequest)servletRequest;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        try {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;            long currentQps = atomicLong.incrementAndGet();&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;            log.info(&quot;当前QPS: {}&quot;, currentQps);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;            if (currentQps &amp;gt; 1) {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;                throw new RuntimeException(&quot;限流中。。。。&quot;);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;            }&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;            try {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;                // 模拟业务耗时&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;                TimeUnit.SECONDS.sleep(2);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;            } catch (InterruptedException e) {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;                e.printStackTrace();&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;            }&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        } finally {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;            atomicLong.decrementAndGet();&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        }&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    }&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p line=&quot;WSbr&quot;&gt; &lt;/p&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;img data-ratio=&quot;0.5714285714285714&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_png/5mcydv0qFicXzFsgOt7fWRZ6jAeG9zhzouNZNH0VxZKHibuVlq9U111AVmg9d4fDy86NhewMnfrSCKf3ia0EBf0zA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;42&quot;/&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;p data-mid=&quot;&quot;&gt;滑动窗口&lt;/p&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;了解滑动窗口前先需要了解下固定窗口，固定窗口比较简单，也就相当于固定大小。比如限制1秒内的访问次数，那么这个1秒就是一个固定的时间窗口。&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;oKNq&quot;&gt; &lt;/p&gt;&lt;p line=&quot;Z91B&quot;&gt;&lt;img data-ratio=&quot;0.3526570048309179&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JReUsicfmEPZBu30Vj1N8hKGKjUSOSXw6OxcUrmUefNmMYusGwZ2XKtu687Z0O0zoBaV7UD6mEvS2MDrP830WgA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;828&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;滑动窗口可以将固定窗口再进行细分成多个窗口，比如将1秒中的固定窗口细分成5个窗口，那么每个窗口的时间就是200毫秒。&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;GJK2&quot;&gt; &lt;/p&gt;&lt;p line=&quot;8iRB&quot;&gt;&lt;img data-ratio=&quot;0.20950965824665677&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JReUsicfmEPZBu30Vj1N8hKGKjUSOSXw6uDjIy2JLeC2B0tic6jVqD08HYFicoScticqKTsKFbibe9tqpIEPyUg1ANg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1346&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;假设每秒钟限流100，在201ms-1000ms之间的时候来了99个请求，不满足限流条件，放行。在第2秒的100ms的时候来了999个请求，这个时候多余的请求会被限制。当前窗口的范围是1秒的201ms~2秒的200ms。&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;nNHO&quot;&gt;&lt;img data-ratio=&quot;0.42462311557788945&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JReUsicfmEPZBu30Vj1N8hKGKjUSOSXw6Cib0NKOSbgUmhmuGpq7xduGuXAU0rWgLaFyxz8iaM9nHeSyYEUkgnbSw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1592&quot;/&gt;&lt;/p&gt;&lt;p line=&quot;IJi1&quot;&gt; &lt;/p&gt;&lt;p&gt;&lt;span&gt;通过滑动窗口算法，同时也能解决了上面计数算法临界区的问题。窗口是一直滑动的，计算的数量也不是固定时间内的，而是随着窗口的滑动一直在变化。&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;26wD&quot;&gt; &lt;/p&gt;&lt;p line=&quot;EGgr&quot;&gt;&lt;img data-ratio=&quot;0.36442048517520215&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JReUsicfmEPZBu30Vj1N8hKGKjUSOSXw6DbJFklVzRTYcS2JjGpib1icyib6nc2VibdoxDBxPSibb1NLCsm95ia2B0D1w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1855&quot;/&gt;&lt;/p&gt;&lt;p line=&quot;FQmR&quot;&gt; &lt;/p&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;img data-ratio=&quot;0.5714285714285714&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_png/5mcydv0qFicXzFsgOt7fWRZ6jAeG9zhzouNZNH0VxZKHibuVlq9U111AVmg9d4fDy86NhewMnfrSCKf3ia0EBf0zA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;42&quot;/&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;p data-mid=&quot;&quot;&gt;漏桶&lt;/p&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;漏桶算法能够很好的保证稳定性，可以将突发的高流量以固定的速度流出来保证稳定性。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我记得小时候，家里每年都会酿米酒，甜甜的米酒很好喝。当然我们不是来讲米酒好不好喝的问题，而是要讲解漏洞算法。那么漏桶算法跟米有又有什么联系呢？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;酿好的米酒会装在酒坛里面，有时候村里的其他人需要用到米酒的时候，如果自己家里没有酿的话就会去别人家买，一般都是拿一个瓶子来装，比如我们的可乐瓶子。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;但是可乐瓶子的入口很小，直接往里面倒酒的话很容易洒出来。这个时候就有一个装酒的漏斗，这个东西就跟我们今天要讲的漏桶一样，下面很小，上面很大。酒就相当于流量，倒入这个漏桶里面，然后会从下面很小的口流出来，这个速度是固定的，这么说相信大家一定明白了什么是漏桶算法吧。&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;I5pa&quot;&gt; &lt;/p&gt;&lt;p line=&quot;77Rw&quot;&gt;&lt;img data-ratio=&quot;1.1224899598393574&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JReUsicfmEPZBu30Vj1N8hKGKjUSOSXw6BOrerVrXoVbSMbdtP9IxKd54xcckXgPxp44U46OAlkxQ6vMaGBJuwQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;996&quot;/&gt;&lt;/p&gt;&lt;p line=&quot;baA3&quot;&gt; &lt;/p&gt;&lt;p&gt;&lt;span&gt;漏桶算法的优点是能够以固定的速率去控制流量，稳定性比较好。缺点就是无法应对突发流量的来袭，我们来分析具体的分析下这个缺点。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;假设你的漏桶出口固定了每秒钟只能通过100个请求，如果此时有150个请求，无论你后方的系统能不能抗住这150个请求，通过漏桶算法都会将另外50个请求进行拦截，只能等前面的100个请求结束后才能继续放行剩下的50个请求。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;那么有没有什么算法既能做流量控制，又能应对突发流量的场景呢？接下来为你介绍&lt;strong&gt;令牌桶算法&lt;/strong&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;img data-ratio=&quot;0.5714285714285714&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_png/5mcydv0qFicXzFsgOt7fWRZ6jAeG9zhzouNZNH0VxZKHibuVlq9U111AVmg9d4fDy86NhewMnfrSCKf3ia0EBf0zA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;42&quot;/&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;p data-mid=&quot;&quot;&gt;令牌桶&lt;/p&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;令牌桶算法用比较官方的术语来解释就是：一个有固定容量的桶，按一定的速度往桶里面放令牌，如果桶里面装不下令牌了就不放了。有请求进来就去桶里面获取对应的令牌，能拿到令牌就可以通过，拿不到就拒绝，也就是限流了。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们还是用生活中的方式来解释下令牌桶的原理，有天你带着你的女朋友去吃自助餐，那些吃的你们可以随便拿，如果拿完了，是不是就得等待餐厅重新供应了才行，这就是限流了。同时，餐厅会定时的供应新的食物，食物供应上了，你能够拿到了那就是放行，相当于拿到了令牌。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt; &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;有令牌如下图所示：&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;hrmr&quot;&gt;&lt;img data-ratio=&quot;0.571619812583668&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JReUsicfmEPZBu30Vj1N8hKGKjUSOSXw6LP50al4XCOo6hnmyjDrrfgjuseAvV53tov2rhMQRwcvV7TaS6MibL8w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1494&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;无令牌如下图所示：&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;JLt2&quot;&gt;&lt;span line-inline=&quot;rYO4&quot;&gt;&lt;img data-ratio=&quot;0.571619812583668&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JReUsicfmEPZBu30Vj1N8hKGKjUSOSXw60XaWc6WicF9zc46FpasCuHq6mX9ick9liaib4VsOG1iafKgsWib8YADWfdjw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1494&quot;/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;1wFs&quot;&gt; &lt;/p&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;img data-ratio=&quot;0.5714285714285714&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_png/5mcydv0qFicXzFsgOt7fWRZ6jAeG9zhzouNZNH0VxZKHibuVlq9U111AVmg9d4fDy86NhewMnfrSCKf3ia0EBf0zA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;42&quot;/&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;p data-mid=&quot;&quot;&gt;总结&lt;/p&gt;&lt;/section&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;本文对目前主流的限流算法进行了讲解，相信大家有了一个初步的认识。这些算法在面试中也经常被问到，同时我也是通过各种生活中的案例来举例，希望大家能够彻底的理解这些算法的原理。&lt;/span&gt;&lt;/p&gt;&lt;p line=&quot;09s7&quot; data-folding-hover=&quot;&quot;&gt; &lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;&lt;span&gt;大家好，我是从古代穿越过来的美男子：&lt;strong&gt;架构摆渡人&lt;/strong&gt;。我将把我的武功秘籍全部传授与你们，觉得有用请分享给身边的朋友。来个三连吧，感谢各位！&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;&lt;br/&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;&lt;/p&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;p data-mid=&quot;&quot;&gt;END&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;br mpa-from-tpl=&quot;t&quot;/&gt;&lt;/p&gt;
+                &lt;/div&gt;
+
+                
+
+                
+
+
+
+                
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
