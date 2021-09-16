@@ -104,163 +104,64 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>d5ce69987ad4743d0cda0677a170371d</guid>
-<title>使用 DEM 和矢量数据绘制地图</title>
-<link>https://toutiao.io/k/re80is3</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;p&gt;要生成一副图片地图，可以使用ArcGIS、QGIS等工具，也可以使用代码实现。我这里介绍的当然是用代码实现，而且是利用开源软件。毕竟桌面版GIS工具的介绍太多了，大家的地图都做的很漂亮。&lt;/p&gt;
-
-&lt;p&gt;用代码渲染地图就不得不提到GDAL和Mapnik。GDAL是处理GIS数据最常用的库，这里我们就要用到gdaldem处理DEM数据。Mapnik是渲染地图的最基本工具，我们要使用它来生成地图。&lt;/p&gt;
-
-&lt;p&gt;要绘制一个地图首先需要定义清楚绘制什么样的地图，是地形图还是街道图还是卫星影像图，然后根据地图内容的需求将需要的各种类型空间数据准备好，有了这些数据才能绘制出地图。&lt;strong&gt;（免费中国DEM下载：&lt;a href=&quot;https://gisbook.cn/data/china-dem&quot;&gt;https://gisbook.cn/data/china-dem&lt;/a&gt; ）&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;在这里我介绍的是如何绘制一个地形图，需要使用到的是DEM（数字高程模型）数据，和矢量数据。DEM数据是用来表示地形的高低起伏，一般来说DEM数据是存储为GeoTiff格式的。矢量数据我在这里主要是绘制水系，格式是Shape file。这次的重点是如何绘制地图，因此有关数据就不多做解释了，如果对这两种数据不了解可以自行查询一下。&lt;/p&gt;
-
-&lt;p&gt;接下来就是具体的过程介绍了。&lt;/p&gt;
-
-&lt;p&gt;第一步，我们需要对DEM数据进行简单的处理。主要目的是为了得到三种数据，第一种是色彩，主要是表现地形的高低，不同的颜色代表不同的海拔高度，可以直观的看出高度情况。第二种是山影，主要是为了让渲染出来的地图更具有立体性。第三种是坡度，不同的颜色可以代表地形的陡峭程度，当然还可以叠加上坡向的表示。&lt;/p&gt;
-
-&lt;p&gt;渲染色彩图首先需要创建一个配置文件，在使用gdaldem命令生成色彩数据的时候需要用到它。&lt;/p&gt;
-
-&lt;p&gt;比如创建一个空的配置文件叫做: color-relief.cfg，内容如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;0 110 220 110
-900 240 250 160
-1300 230 220 170
-1900 220 220 220
-2500 250 250 250
-nv  255  255   255   0
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;其中每一行代表了一个海拔高度值对应的颜色是什么，第一列的数字是海拔高度值，后面3列是RGB颜色色值。这里需要注意的是最后的nv代表nodata-value，如果不配置这一项的话，没有数据的部分就会被渲染成黑色，这一行最后一列多了一个0，是它的透明度值，0代表完全透明，100代表完全不透明。&lt;/p&gt;
-
-&lt;p&gt;然后使用gdaldem创建色彩数据&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;gdaldem color-relief dem.tif color_relief.cfg color_relief.tif  -alpha
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;code&gt;color_relief.tif文件长这样:&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://img.toutiao.io/attachment/07762120f3bc4763824fd2b91a839228/w600&quot; alt=&quot;file&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;能看出来哪里高哪里低了，但是它看起来很平对吧。所以还需要多种数据叠加&lt;/p&gt;
-
-&lt;p&gt;&lt;code&gt;创建color_slope.cfg，用于产生坡度数据&lt;/code&gt;&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;0 255 255 255
-90 0 0 0
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;这个文件中每一行代表一个坡度对应什么颜色，第一列是坡度，后面3列是RGB色值。在这个例子中，产生的坡度数据会自动从0-90度填充从白色到黑色的渐变色。&lt;/p&gt;
-
-&lt;p&gt;产生坡度数据同样使用gdaldem命令&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;gdaldem slope dem.tif slope.tif
-gdaldem color-relief slope.tif color_slope.txt slopeshade.tif  -alpha
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;现在只缺少山影数据了&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;gdaldem hillshade dem.tif hillshade.tif
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;code&gt;我还准备了一个矢量数据，其中包含了河流和水库等水域信息，这个数据不需要单独处理，在Mapnik的地图样式配置文件中，可以同时使用多种不同的数据格式配图。&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;code&gt;数据准备工作都已经完成，接下来就需要创建Mapnik渲染地图所需的地图样式配置文件了，我的配置文件&lt;/code&gt;terrain_lake.xml&lt;code&gt;是这样的：&lt;/code&gt;&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;&amp;lt;Map srs=&quot;+proj=longlat +datum=WGS84 +no_defs&quot; background-color=&quot;transparent&quot;&amp;gt;
-  &amp;lt;Style name=&quot;color relief style&quot;&amp;gt;
-    &amp;lt;Rule&amp;gt;
-      &amp;lt;RasterSymbolizer mode=&quot;normal&quot; /&amp;gt;
-    &amp;lt;/Rule&amp;gt;
-  &amp;lt;/Style&amp;gt;
-  &amp;lt;Style name=&quot;slopeshade style&quot;&amp;gt;
-    &amp;lt;Rule&amp;gt;
-      &amp;lt;RasterSymbolizer opacity=&quot;0.1&quot; mode=&quot;multiply&quot; scaling=&quot;bilinear&quot; /&amp;gt;
-    &amp;lt;/Rule&amp;gt;
-  &amp;lt;/Style&amp;gt;
-  &amp;lt;Style name=&quot;hillshade style&quot;&amp;gt;
-    &amp;lt;Rule&amp;gt;
-      &amp;lt;RasterSymbolizer opacity=&quot;0.3&quot; mode=&quot;multiply&quot; scaling=&quot;bilinear&quot; /&amp;gt;
-    &amp;lt;/Rule&amp;gt;
-  &amp;lt;/Style&amp;gt;
-  &amp;lt;Style name=&quot;lake style&quot;&amp;gt;
-    &amp;lt;Rule&amp;gt;
-      &amp;lt;PolygonSymbolizer fill=&quot;rgb(180,210,230)&quot; /&amp;gt;
-      &amp;lt;Filter&amp;gt;[type] = &#x27;Waters&#x27;&amp;lt;/Filter&amp;gt;
-    &amp;lt;/Rule&amp;gt;
-  &amp;lt;/Style&amp;gt;
-
-  &amp;lt;Layer name=&quot;color relief&quot;&amp;gt;
-    &amp;lt;StyleName&amp;gt;color relief style&amp;lt;/StyleName&amp;gt;
-    &amp;lt;Datasource&amp;gt;
-      &amp;lt;Parameter name=&quot;type&quot;&amp;gt;gdal&amp;lt;/Parameter&amp;gt;
-      &amp;lt;Parameter name=&quot;file&quot;&amp;gt;color_relief.tif&amp;lt;/Parameter&amp;gt;
-    &amp;lt;/Datasource&amp;gt;
-  &amp;lt;/Layer&amp;gt;
-  &amp;lt;Layer name=&quot;slopeshade&quot;&amp;gt;
-    &amp;lt;StyleName&amp;gt;hillshade style&amp;lt;/StyleName&amp;gt;
-    &amp;lt;Datasource&amp;gt;
-      &amp;lt;Parameter name=&quot;type&quot;&amp;gt;gdal&amp;lt;/Parameter&amp;gt;
-      &amp;lt;Parameter name=&quot;file&quot;&amp;gt;slopeshade.tif&amp;lt;/Parameter&amp;gt;
-    &amp;lt;/Datasource&amp;gt;
-  &amp;lt;/Layer&amp;gt;
-  &amp;lt;Layer name=&quot;hillshade&quot;&amp;gt;
-    &amp;lt;StyleName&amp;gt;hillshade style&amp;lt;/StyleName&amp;gt;
-    &amp;lt;Datasource&amp;gt;
-      &amp;lt;Parameter name=&quot;type&quot;&amp;gt;gdal&amp;lt;/Parameter&amp;gt;
-      &amp;lt;Parameter name=&quot;file&quot;&amp;gt;hillshade.tif&amp;lt;/Parameter&amp;gt;
-    &amp;lt;/Datasource&amp;gt;
-  &amp;lt;/Layer&amp;gt;
-  &amp;lt;Layer name=&quot;lake&quot; status=&quot;on&quot; srs=&quot;+proj=longlat +datum=WGS84 +no_defs&quot;&amp;gt;
-    &amp;lt;StyleName&amp;gt;lake style&amp;lt;/StyleName&amp;gt;
-    &amp;lt;Datasource&amp;gt;
-      &amp;lt;Parameter name=&quot;type&quot;&amp;gt;shape&amp;lt;/Parameter&amp;gt;
-      &amp;lt;Parameter name=&quot;file&quot;&amp;gt;land_use_utf8.shp&amp;lt;/Parameter&amp;gt;
-    &amp;lt;/Datasource&amp;gt;
-  &amp;lt;/Layer&amp;gt;
-
-&amp;lt;/Map&amp;gt;
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;在这个配置文件中，可以针对不同数据定义多种样式和多个图层，每个图层可以指定不同的样式，非常方便使用。准备好配置文件后，我这里使用的是nodejs版本的binding调用mapnik渲染，代码如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;var mapnik = require(&quot;mapnik&quot;);
-var fs = require(&quot;fs&quot;);
-mapnik.register_default_fonts();
-mapnik.register_default_input_plugins();
-var map = new mapnik.Map(300, 300);
-map.load(&quot;./terrain_lake.xml&quot;, function(err, map) {
-    map.zoomAll();
-    var im = new mapnik.Image(300, 300);
-    map.render(im, function(err, im) {
-        im.encode(&quot;png&quot;, function(err, buffer) {
-            fs.writeFile(&quot;map.png&quot;, buffer);
-        });
-    });
-});
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;最终的结果是这样的：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://img.toutiao.io/attachment/87721db023da48e1b661988eac93646d/w600&quot; alt=&quot;file&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;最近我负责的项目中有很多地图需要渲染，使用了Mapnik进行批量处理，效果非常理想，而且Nodejs调用可以实现异步，效率也很高，圆满的完成了客户的需求。&lt;/p&gt;
-
-&lt;p&gt;Mapbox公司的开源项目中还有基于mapnik的瓦片服务，功能也很强大，如果使用编程手段生成地图的话，我认为Mapnik是比较理想的选择。&lt;strong&gt;（免费中国DEM下载：&lt;a href=&quot;https://gisbook.cn/data/china-dem&quot;&gt;https://gisbook.cn/data/china-dem&lt;/a&gt; ）&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;本作品采用&lt;a href=&quot;http://creativecommons.org/licenses/by-sa/4.0/&quot;&gt;知识共享署名-相同方式共享 4.0 国际许可协议&lt;/a&gt;进行许可。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://i.creativecommons.org/l/by-sa/4.0/88x31.png&quot; alt=&quot;https://i.creativecommons.org/l/by-sa/4.0/88x31.png&quot;/&gt;&lt;/p&gt;
-&lt;/div&gt;
-  &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
 <guid>385654db86af84fcd371ed3d176fd928</guid>
 <title>最近面试小心被问 Dubbo 3.0</title>
 <link>https://toutiao.io/k/dwx82wq</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;最近不是 Dubbo3.0 正式发布了嘛，我也推了阿里巴巴中间件发的那篇文章，但是私下还是有小伙伴让我用大白话说说和之前版本到底有哪些不同。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;今天这篇就来唠唠。对了，最近面试的小伙伴要小心被问这些新的特性或者版本，面试官用来考察你是不是“紧跟潮流”。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;就像之前我写的 &lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzkxNTE3NjQ3MA==&amp;amp;mid=2247489047&amp;amp;idx=1&amp;amp;sn=ac16366e70fce619409360a972562f28&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;Kafka 抛弃 ZooKeeper 一样&lt;/a&gt;，这种热点很容易在当下被问，特别是当候选人对相关知识点说的头头是道时，有能力的面试官会问你新的版本或者特性，一问三不知，很大程度表明你前面哪些说的就是背的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;关于 Dubbo3 的很多细节我还没深入研究，所以这篇先说说大方向上的东西。&lt;/p&gt;&lt;h1 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;Dubbo3 主基调，云原生&lt;/span&gt;&lt;/h1&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;首先&lt;span&gt;什么是云原生&lt;/span&gt; ？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;CNCF（云原生计算基金会） 定义如下：&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;云原生技术有利于各组织在公有云、私有云和混合云等新型动态环境中，构建和运行可弹性扩展的应用。云原生的代表技术包括容器、服务网格、微服务、不可变基础设施和声明式API。&lt;br/&gt;这些技术能够构建容错性好、易于管理和便于观察的松耦合系统。结合可靠的自动化手段，云原生技术使工程师能够轻松地对系统作出频繁和可预测的重大变更。&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;简单说就是服务上云，然后基于云提供的一些容器、服务网格、不可变基础设施来&lt;span&gt;隐藏分布式架构的复杂度，将一些非业务关键技术下沉&lt;/span&gt;，使得复杂的非业务的开发从程序员手中解放出来。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;你可能还不是很清晰，我拿&lt;span&gt;应用之间的通信，这个非功能性需求的发展&lt;/span&gt;来举个例子：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在最早期的时候通信是和业务耦合在一起的，由业务开发来编写通信和业务代码。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;后来就把这些通信相关的代码抽离出来，成为一个公共组件，这样业务开发们不需要编写和维护通信相关代码，只需要调用这个公共组件即可，公共组件由专门的组件开发人员来负责。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但是，虽说我们业务程序员不需要开发这些公共组件，但是使用上还是有成本的，我们需要了解公共组件的一些接口特性，并且引入使用它们。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;所以就想着把这些公共组件再剥离出来，使之不与业务应用所处同一个进程，&lt;span&gt;让它对业务完全透明(当然有些还是需要引入轻sdk的)，这个其实就叫边车代理&lt;/span&gt;。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.8583333333333333&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nE7Ip8C8LdYib4Wic2CfXAKdpjAibsI7tt1Cjx92GdSj8QdfQ0XoCcuQ6RicGXiaFKicHVsrPBQiabgra47w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;240&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在原来的车旁边挂个斗，这就是边车啦。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;由边车来进行透明可靠的通信，并进行路由、限流、容错等等&lt;/span&gt;。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.4852459016393443&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nE7Ip8C8LdYib4Wic2CfXAKdpd8zBgicMqDIBibAYaiaiaza1ucNVXasvxkXxYrEQK65YfesMdufIfwfLaw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;915&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但是呢，如果服务多了边车也会贼多，运维人员肯定顶不住分管这么多边车，所以需要把边车代理统一管理，也就是&lt;span&gt;需要有个代理管理器来管理这些边车&lt;/span&gt;，所以就组成了以下这幅图。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.84&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nE7Ip8C8LdYib4Wic2CfXAKdp4pSiaaHowIJ67I5fXVc7icxOs6UfibYzchD433xJHEyRfOy048l8jUezA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;400&quot;/&gt;&lt;figcaption&gt;图来自philcalcado.com&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这样的架构其实就是服务网格 (Service Mesh)，也称之为微服务3.0版本。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;而以上的服务网格功能由云来提供，类似这样的基础能力下沉到云上，我们平日就开发业务，其他的啥都不用管，应用直接扔到云上，便拥有了以往需要自行编程的超多非功能需求的能力，这就是云原生的目的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;至此，想必你已经明白了什么叫云原生，而 Dubbo3 的口号就是全面拥抱云原生，下一代发展的方向呀，必须得跟上!&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;所以 Dubbo3 主基调就是在不改变之前实践的前提下，遵循云原生的思想，使 Dubbo 能更好的复用云原生所提供的基础能力，抱紧时代的大腿。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;让我们来看看 Dubbo3 做了哪些升级吧。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;Dubbo 与容器生命周期对齐&lt;/span&gt;&lt;/h2&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;有些同学可能对容器、K8S这块不太熟悉，没关系，我就简略讲下，阅读应该没啥障碍。&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;云原生的发展离不开近年来容器和容器编排的起飞，K8S公认的容器调度平台一哥，而 Dubbo 想要融入云原生，就必须得支持 K8S 的调度。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Pod 的生命周期与服务调度相关，Kubernetes 底层基础设施定义了严格的组件生命周期事件(probe)，所以 Dubbo 首先得做到生命周期的对齐。&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;&lt;span&gt;Pod 是可以在 Kubernetes 中创建和管理的、最小的可部署的计算单元&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;基于 Dubbo 的 SPI 机制，内部实现了多种探针，基于 Dubbo QOS 运维模块的 HTTP 服务，使容器探针能够获取到应用内对应探针的状态。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;大白话说&lt;/span&gt;就是通过实现探针让容器知道 Dubbo 现在是否存活着、是否处于就绪状态，还有启动时的检测等，这几个状态是需要被 K8S 知道的，这样 K8S 才可以跟踪容器不同的状态来管理和编排 Pod。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;以上的操作，高级点就叫生命周期的对齐咯。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;Kubernetes Service&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们都知道 Dubbo 有注册中心，比如用 Zookeeper 来实现。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但是 K8S 自己有一套机制， K8S 为 Pods 提供自己的 IP 地址，并为一组 Pod 提供相同的 DNS 名， 并且可以在它们之间进行负载均衡，所以用户可以不需要额外搭一个注册中心，直接用 K8S 提供的这套服务发现体系即可。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;也就是通过标准的 Kubernetes Service API 定义来进行服务定义与注册，这样把非功能性需求更加下沉了。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;Proxyless Mesh&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;从前文可知，Dubbo 接入 mesh 会有边车的存在，而 Dubbo 框架自身又有一些服务治理的功能，这部分功能和边车会有所重复。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;那不好因为这个把以前实现的那些功能砍了吧？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;所以就搞了个 Proxyless Mesh，抛弃边车，直接让 Dubbo SDK 与控制面(Control Plane)交互。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当然，也有提供选择接受边车的部署的轻 SDK 模式。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;应用级服务发现&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;之前 Dubbo 的实现是&lt;span&gt;接口级别的服务发现&lt;/span&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;比如你现在有个用户服务，用户服务里面有 100 个接口，那么这 100 个接口都会被记录到注册中心里。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;假设这个用户服务部署了 100 个实例，那么注册中心就有 100*100 个用户服务接口的记录，&lt;span&gt;这还只是一个服务呢&lt;/span&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;所以成百上千个服务过来，这元数据就会膨胀的夸张，注册中心和客户端的内存压力就很大，所以&lt;span&gt;这样的实现在大规模微服务架构体系下，是有瓶颈的&lt;/span&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;所以把服务发现从接口级别改为应用级别，这样可以大大降低内存的占用。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.33905579399141633&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nE7Ip8C8LdYib4Wic2CfXAKdpRCp0DjPV23W3hx8Wl4AB7jq8kaPtlKoo4faqibZ4EMQn3CVOYd8PPxQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;699&quot;/&gt;&lt;figcaption&gt;图来组云原生微服务大会&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上图表示接口规模在平均场景和极限场景下，把服务发现粒度从接口改为应用级别，分别有 60% 和 90% 的内存优化。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;并且像 Spring Cloud 和 K8s 都是基于应用级别的注册发现，所以想要支持异构连接，就必须支持应用级别分服务发现。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;所以 3.0 版本是这样实现的：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.4096774193548387&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nE7Ip8C8LdYib4Wic2CfXAKdpsflBRAqnJD0m0xyW5Wqia3oIpgAftjRCORH1iaGXbEnewYk0aDDpibn6A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1240&quot;/&gt;&lt;figcaption&gt;图来组云原生微服务大会&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;让注册中心只保存应用-实例的关系，接口级别的元数据弄了个元数据中心。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;Triple协议&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;看到这个我在想，之后是不是就是 quadra，然后再 penta kill ？哈哈。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;言归正传，Dubbo2.0 协议在云原生时代来说，不够通用。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.36612903225806454&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nE7Ip8C8LdYib4Wic2CfXAKdpibY5HLkysia9XYcB3zaEB9CfvToEsEx2OyoSNNGH6FIvLFZzdnVhNEvQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;620&quot;/&gt;&lt;figcaption&gt;2.0协议&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;协议头没有足够的空间容纳Mesh等网关组件(网关需要识别)。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果要实现，就必须完整的解析协议才能获取到所需要的调用元数据，这样性能不佳。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;并且生态之间不互通，别人不好解析你自定义的二进制协议，简单来说就是不够通用，其他生态也没有想法来适配一个 RPC 框架。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;所以 Dubbo 3.0 选择了 HTTP2 + Protocol Buffer 的形式来实现新的协议——Triple，也基于此丰富了请求模型，除了 Request/Response 模型，还支持 Streaming 和 Bidirectional（双向流式通信），适配了更多的场景。&lt;/p&gt;&lt;h1 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;最后&lt;/span&gt;&lt;/h1&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;总结一下3.0关键几点&lt;/span&gt;：&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;section&gt;借助SPI实现相关探针，使得生命周期可以被容器感知，即生命周期与容器对齐。&lt;/section&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;section&gt;接入 Kubernetes Service API，使得注册中心相关功能下沉，而不用额外利用ZK等第三方注册中心。&lt;/section&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;section&gt;将接口级别的服务发现改成应用级别，解决了大规模微服务架构体系下，元数据膨胀的瓶颈，并对其市面常见的发现级别，便于异构的实现。&lt;/section&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;section&gt;升级通信协议为Triple，选择了 HTTP2 + Protocol Buffer 的形式，丰富了请求模型。&lt;/section&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;暂时分享到这里啦，大致过了一遍，里面很多细节我还没深入研究，等我之后研究过了再出一篇细节点的。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;不过，这篇虽说是粗略过一遍，但是前置知识点还是很多的，比如容器、K8S、HTTP2、Protocol Buffer等等。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这些东西不清楚，估计 get 不到上面 Dubbo3.0 的这些点。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;而且这些东西又不是三两句话能说清的，所以对前置知识点不清晰的小伙伴建议去查查资料，这些还是很重要的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;之后有时间我会写写相关的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果你碰上有水平的面试官，很容易问这类新特性的问题，因为他们是在一直关注着前线的，当然这也不是决定性因素，只是能答出来会比较加分~&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;参考：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;https://dubbo.apache.org/zh/docs/v3.0/&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;https://mp.weixin.qq.com/s/5loawrCyKmN4HhK1lzy0Rw&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;https://www.cnblogs.com/alisystemsoftware/p/13559704.html&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;hr data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我是yes，从一点点到亿点点，我们下篇见。&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzkxNTE3NjQ3MA==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/eSdk75TK4nEf5LN3Y4UErfNUkiaMseJPkdXA4xPD6Uicl8EqAJAEKVIKalU19xS41TO3aPmHK5bqbzGTwu3z92Kg/0?wx_fmt=png&quot; data-nickname=&quot;yes的练级攻略&quot; data-alias=&quot;yes_java&quot; data-signature=&quot;用接地气的话来分享一些后端技术或写一些想写的。&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;/section&gt;
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>521ac5ff53d3aef1c8060c12859232e3</guid>
+<title>3 分钟实现 Spring Boot 集成 RabbitMQ，实现消息队列服务</title>
+<link>https://toutiao.io/k/xwhru3a</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;p id=&quot;js_tags&quot; class=&quot;article-tag__list single-tag__wrp js_single&quot; data-len=&quot;1&quot; role=&quot;link&quot; aria-labelledby=&quot;js_article-tag-card__left&quot; aria-describedby=&quot;js_article-tag-card__right&quot;&gt;
+                                            
+                                                                                    &lt;span aria-hidden=&quot;true&quot; id=&quot;js_article-tag-card__left&quot; class=&quot;article-tag-card__left&quot;&gt;
+                                    &lt;span class=&quot;article-tag-card__title&quot;&gt;收录于话题&lt;/span&gt;
+                                    &lt;span class=&quot;article-tag__item-wrp no-active js_tag&quot; data-url=&quot;https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzAxMTY5NDAwOA==&amp;amp;action=getalbum&amp;amp;album_id=1340732282025623553#wechat_redirect&quot; data-tag_id=&quot;&quot; data-album_id=&quot;1340732282025623553&quot; data-tag_source=&quot;4&quot;&gt;
+                                        &lt;span class=&quot;article-tag__item&quot;&gt;#SpringBoot从小白到专家&lt;/span&gt;
+                                    &lt;/span&gt;
+                                &lt;/span&gt;
+                                &lt;span aria-hidden=&quot;true&quot; id=&quot;js_article-tag-card__right&quot; class=&quot;article-tag-card__right&quot;&gt;23个&lt;span class=&quot;weui-hidden_abs&quot;&gt;内容&lt;/span&gt;&lt;/span&gt;
+                                                                                        &lt;/p&gt;
+
+                
+                                
+                
+                
+
+                
+                                                                
+
+                
+                                
+
+
+                
+                
+                
+                
+                                                
+                                                                
+                                
+                                
+                
+                &lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
+
+                    
+                    
+                    
+                    &lt;p data-track=&quot;1&quot;&gt;&lt;span&gt;消息中间件在互联网公司使用的越来越多，主要用于在分布式系统中存储转发消息，在易用性、扩展性、高可用性等方面表现不俗。消息队列实现系统之间的双向解耦，生产者往消息队列中发送消息，消费者从队列中拿取消息并处理，生产者不用关心是谁来消费，消费者不用关心谁在生产消息，从而达到系统解耦的目的，也大大提高了系统的高可用性和高并发能力。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;127&quot;&gt;&lt;span&gt;接下来介绍Spring Boot对RabbitMQ的支持。如何在SpringBoot项目中使用RabbitMQ？&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;129&quot;&gt;&lt;span&gt;Spring Boot提供了spring-bootstarter-amqp组件对消息队列进行支持，使用非常简单，仅需要非常少的配置即可实现完整的消息队列服务。&lt;/span&gt;&lt;/p&gt;&lt;h1 data-track=&quot;2&quot;&gt;&lt;span&gt;一、Spring Boot集成RabbitMQ&lt;/span&gt;&lt;/h1&gt;&lt;p data-track=&quot;3&quot;&gt;&lt;span&gt;Spring Boot提供了spring-boot-starter-amqp组件，只需要简单的配置即可与Spring Boot无缝集成。下面通过示例演示集成RabbitMQ实现消息的接收和发送。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;4&quot;&gt;&lt;span&gt;第一步，配置pom包。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;5&quot;&gt;&lt;span&gt;创建Spring Boot项目并在pom.xml文件中添加spring-bootstarter-amqp等相关组件依赖：&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.springframework.boot&lt;span&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;spring-boot-starter-amqp&lt;span&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-track=&quot;10&quot;&gt;&lt;span&gt;在上面的示例中，引入Spring Boot自带的amqp组件spring-bootstarter-amqp。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;11&quot;&gt;&lt;span&gt;第二步，修改配置文件。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;12&quot;&gt;&lt;span&gt;修改application.properties配置文件，配置rabbitmq的host地址、端口以及账户信息。&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;spring.rabbitmq.host&lt;/span&gt;=&lt;span&gt;10.2&lt;/span&gt;.&lt;span&gt;1.231&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;spring.rabbitmq.port&lt;/span&gt;=&lt;span&gt;5672&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;spring.rabbitmq.username&lt;/span&gt;=zhangweizhong&lt;br/&gt;&lt;br/&gt;&lt;span&gt;spring.rabbitmq.password&lt;/span&gt;=weizhong1988&lt;br/&gt;&lt;br/&gt;&lt;span&gt;spring.rabbitmq.virtualHost&lt;/span&gt;=order&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-track=&quot;18&quot;&gt;&lt;span&gt;在上面的示例中，主要配置RabbitMQ服务的地址。RabbitMQ配置由spring.rabbitmq.*配置属性控制。virtual-host配置项指定RabbitMQ服务创建的虚拟主机，不过这个配置项不是必需的。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;19&quot;&gt;&lt;span&gt;第三步，创建消费者。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;20&quot;&gt;&lt;span&gt;消费者可以消费生产者发送的消息。接下来创建消费者类Consumer，并使用@RabbitListener注解来指定消息的处理方法。示例代码如下：&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;@Component&lt;/span&gt;&lt;br/&gt;public class Consumer {&lt;br/&gt;&lt;br/&gt;&lt;span&gt;@RabbitHandler&lt;/span&gt;&lt;br/&gt;&lt;span&gt;@RabbitListener&lt;/span&gt;(queuesToDeclare = &lt;span&gt;@Queue&lt;/span&gt;(&lt;span&gt;&quot;rabbitmq_queue&quot;&lt;/span&gt;))&lt;br/&gt;public void process(String message) {&lt;br/&gt;&lt;span&gt;System&lt;/span&gt;&lt;span&gt;.out.println&lt;/span&gt;(&lt;span&gt;&quot;消费者消费消息111=====&quot;&lt;/span&gt; + message);&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-track=&quot;31&quot;&gt;&lt;span&gt;在上面的示例中，Consumer消费者通过@RabbitListener注解创建侦听器端点，绑定rabbitmq_queue队列。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;32&quot;&gt;&lt;span&gt;（1）@RabbitListener注解提供了@QueueBinding、@Queue、@Exchange等对象，通过这个组合注解配置交换机、绑定路由并且配置监听功能等。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;33&quot;&gt;&lt;span&gt;（2）@RabbitHandler注解为具体接收的方法。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;34&quot;&gt;&lt;span&gt;第四步，创建生产者。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;35&quot;&gt;&lt;span&gt;生产者用来产生消息并进行发送，需要用到RabbitTemplate类。与之前的RedisTemplate类似，RabbitTemplate是实现发送消息的关键类。示例代码如下：&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;@Component&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;class Producer &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;&lt;span&gt;@Autowired&lt;/span&gt;&lt;br/&gt;&lt;span&gt;private&lt;/span&gt; RabbitTemplate rabbitTemplate;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;public void produce() &lt;/span&gt;{&lt;br/&gt;String message = &lt;span&gt;new&lt;/span&gt; Date() + &lt;span&gt;&quot;Beijing&quot;&lt;/span&gt;;&lt;br/&gt;System.out.println(&lt;span&gt;&quot;生产者产生消息=====&quot;&lt;/span&gt; + message);&lt;br/&gt;rabbitTemplate.convertAndSend(&lt;span&gt;&quot;rabbitmq_queue&quot;&lt;/span&gt;, message);&lt;br/&gt;}&lt;br/&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-track=&quot;47&quot;&gt;&lt;span&gt;如上面的示例所示，RabbitTemplate提供了 convertAndSend方法发送消息。convertAndSend方法有routingKey和message两个参数：&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;48&quot;&gt;&lt;span&gt;（1）routingKey为要发送的路由地址。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;49&quot;&gt;&lt;span&gt;（2）message为具体的消息内容。发送者和接收者的queuename必须一致，不然无法接收。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;50&quot;&gt;&lt;span&gt;最后，测试验证。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;51&quot;&gt;&lt;span&gt;创建对应的测试类ApplicationTests，验证消息发送和接收是否成功。&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;@RunWith&lt;/span&gt;(SpringRunner.class)&lt;br/&gt;&lt;span&gt;@SpringBootTest&lt;/span&gt;&lt;br/&gt;public class ApplicationTests {&lt;br/&gt;&lt;br/&gt;&lt;span&gt;@Autowired&lt;/span&gt;&lt;br/&gt;Producer producer;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;@Test&lt;/span&gt;&lt;br/&gt;public void contextLoads() throws InterruptedException {&lt;br/&gt;&lt;span&gt;producer&lt;/span&gt;&lt;span&gt;.produce&lt;/span&gt;();&lt;br/&gt;&lt;span&gt;Thread&lt;/span&gt;&lt;span&gt;.sleep&lt;/span&gt;(&lt;span&gt;1&lt;/span&gt;*&lt;span&gt;1000&lt;/span&gt;);&lt;br/&gt;&lt;br/&gt;}&lt;br/&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-track=&quot;63&quot;&gt;&lt;span&gt;在上面的示例中，首先注入生产者对象，然后调用produce()方法来发送消息。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;64&quot;&gt;&lt;span&gt;最后，单击Run Test或在方法上右击，选择Run &#x27;contextLoads()&#x27;，运行单元测试程序，查看后台输出情况，结果如下图所示。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.13380281690140844&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/S83FNw8zib5TobmDce5SoxyRLdeps0NFqfOibMBPwrZbHmvibPSiaSHT6esA8XgyEGoUuK45y8Vrg4f3cq9bWsH7WQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;568&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;通过上面的程序输出日志可以看到，消费者已经收到了生产者发送的消息并进行了处理。这是常用的简单使用示例。&lt;/span&gt;&lt;/p&gt;&lt;h1 data-track=&quot;125&quot;&gt;&lt;span&gt;二、发送和接收实体对象&lt;/span&gt;&lt;/h1&gt;&lt;p data-track=&quot;69&quot;&gt;&lt;span&gt;Spring Boot支持对象的发送和接收，且不需要额外的配置。下面通过一个例子来演示RabbitMQ发送和接收实体对象。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;70&quot;&gt;&lt;span&gt;1. 定义实体类&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;71&quot;&gt;&lt;span&gt;首先，定义发送与接收的对象实体User类，代码如下：&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;class User implements Serializable &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; String name;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; String password;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;// 省略get和set方法&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-track=&quot;77&quot;&gt;&lt;span&gt;在上面的示例中，定义了普通的User实体对象。需要注意的是，实体类对象必须继承Serializable序列化接口，否则会报数据无法序列化的错误。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;78&quot;&gt;&lt;span&gt;2. 定义消费者&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;79&quot;&gt;&lt;span&gt;修改Consumer类，将参数换成User对象。示例代码如下：&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;@Component&lt;/span&gt;&lt;br/&gt;public class Consumer {&lt;br/&gt;&lt;br/&gt;&lt;span&gt;@RabbitHandler&lt;/span&gt;&lt;br/&gt;&lt;span&gt;@RabbitListener&lt;/span&gt;(queuesToDeclare = &lt;span&gt;@Queue&lt;/span&gt;(&lt;span&gt;&quot;rabbitmq_queue_object&quot;&lt;/span&gt;))&lt;br/&gt;public void process(User user) {&lt;br/&gt;&lt;span&gt;System&lt;/span&gt;&lt;span&gt;.out.println&lt;/span&gt;(&lt;span&gt;&quot;消费者消费消息111user=====name：&quot;&lt;/span&gt; + user.getName()+&lt;span&gt;&quot;,password:&quot;&lt;/span&gt;+user.getPassword());&lt;br/&gt;&lt;br/&gt;}&lt;br/&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-track=&quot;89&quot;&gt;&lt;span&gt;其实，消费者类和消息处理方法和之前的类似，只不过将参数换成了实体对象，监听rabbitmq_queue_object队列。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;90&quot;&gt;&lt;span&gt;3. 定义生产者&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;91&quot;&gt;&lt;span&gt;修改Producer类，定义User实体对象，并通过convertAndSend方法发送对象消息。示例代码如下：&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;@Component&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;class Producer &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;&lt;span&gt;@Autowired&lt;/span&gt;&lt;br/&gt;&lt;span&gt;private&lt;/span&gt; RabbitTemplate rabbitTemplate;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;public void produce() &lt;/span&gt;{&lt;br/&gt;User user=&lt;span&gt;new&lt;/span&gt; User();&lt;br/&gt;user.setName(&lt;span&gt;&quot;weiz&quot;&lt;/span&gt;);&lt;br/&gt;user.setPassword(&lt;span&gt;&quot;123456&quot;&lt;/span&gt;);&lt;br/&gt;System.out.println(&lt;span&gt;&quot;生产者生产消息111=====&quot;&lt;/span&gt; + user);&lt;br/&gt;&lt;br/&gt;rabbitTemplate.convertAndSend(&lt;span&gt;&quot;rabbitmq_queue_object&quot;&lt;/span&gt;, user);&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-track=&quot;105&quot;&gt;&lt;span&gt;在上面的示例中，还是调用convertAndSend()方法发送实体对象。convertAndSend()方法支持String、Integer、Object等基础的数据类型。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;106&quot;&gt;&lt;span&gt;4. 验证测试&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;107&quot;&gt;&lt;span&gt;创建单元测试类，注入生产者对象，然后调用produceObj()方法发送实体对象消息，从而验证消息能否被成功接收。&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;@RunWith&lt;/span&gt;(SpringRunner.class)&lt;br/&gt;&lt;span&gt;@SpringBootTest&lt;/span&gt;&lt;br/&gt;public class ApplicationTests {&lt;br/&gt;&lt;br/&gt;&lt;span&gt;@Autowired&lt;/span&gt;&lt;br/&gt;Producer producer;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;@Test&lt;/span&gt;&lt;br/&gt;public void testProduceObj() throws InterruptedException {&lt;br/&gt;&lt;span&gt;producer&lt;/span&gt;&lt;span&gt;.produceObj&lt;/span&gt;();&lt;br/&gt;&lt;span&gt;Thread&lt;/span&gt;&lt;span&gt;.sleep&lt;/span&gt;(&lt;span&gt;1&lt;/span&gt;*&lt;span&gt;1000&lt;/span&gt;);&lt;br/&gt;}&lt;br/&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-track=&quot;121&quot;&gt;&lt;span&gt;最后，单击Run Test或在方法上右击，选择Run &#x27;contextLoads()&#x27;，运行单元测试程序，查看后台输出情况，运行结果如图12-8所示。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.13028169014084506&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/S83FNw8zib5TobmDce5SoxyRLdeps0NFqibSib6jPaCBxneCv8LhPvluciazShOiaYsWeCfyzjibCZqsNRve5s8hoqiaA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;568&quot;/&gt;&lt;/p&gt;&lt;p data-track=&quot;124&quot;&gt;&lt;span&gt;通过上面的示例成功实现了RabbitMQ发送和接收实体对象，使得消息的数据结构更加清晰，也更加贴合面向对象的编程思想。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;124&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section powered-by=&quot;xiumi.us&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;p&gt;&lt;span&gt;推荐阅读：&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;img data-ratio=&quot;0.0046875&quot; data-type=&quot;jpeg&quot; data-w=&quot;640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz/dDbQr8u8ibicBtyke0Ybqqmyw6rQYbbf3Vr3dTfyPpzZhwDEyXrSzKkfgGPpmUry2JyNdqIhdbib2VPVTY0kKu3Ow/640?wx_fmt=jpeg&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-copyright=&quot;0&quot; data-ratio=&quot;1&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/S83FNw8zib5SG86QE9nk7pKLJRDP6mAlcah8BXaXlr6SvKqXyEY5dok03zkicgJaFc5E0rlGkbOsA8GDBibxLKfxg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;258&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p data-track=&quot;124&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;
+                &lt;/div&gt;
+
+                
+
+                
+
+
+
+                
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
