@@ -31,6 +31,28 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
+<guid>bc77c43ef43ad246d0c548b1291cc30f</guid>
+<title>发票总库 DDD 实践</title>
+<link>https://toutiao.io/k/0d4bxmx</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
+
+                    
+                    
+                    
+                    &lt;p&gt;&lt;img class=&quot;rich_pages __bg_gif&quot; data-backh=&quot;57&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.0984375&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/UPBmkBoiaVwuh8DEJlYXXvEjNrISejeXSt7knYYiaGantXAsgOvXvxAOog7a4L9yEicM1biao6MGia2Ob4I3B77Z6Vg/640?wx_fmt=gif&quot; data-type=&quot;gif&quot; data-w=&quot;640&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;总篇117篇 2021年第8篇&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;DDD&lt;/span&gt;&lt;span&gt;是一套完善的系统设计方法，可以帮助我们在系统设计的过程中缕清思路，规范流程，降低系统建设的复杂度，同时DDD的领域建模过程也是团队成员之间形成系统通用语言、建立良好沟通机制的过程。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在电商中台研发团队内部，很早之前就对DDD有过分享和讨论，近期我们在做购车发票总库的迁移工作，经过分析，借此项目做一次DDD的落地实践，在时间和人员投入上都比较适宜。本篇文章就对我们的整个实践过程做一个总结，与大家一起学习和提升。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们先来看一张DDD的经典知识体系结构图：&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-backh=&quot;442&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.7651452282157676&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5pMQMDEwxCqPbVnMRrAiaq4zGgqZHia6o3micO8XZgqmgicKAR0NRDCiaZvZw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1205&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;span/&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;DDD的核心就是将问题范围限定在特定的边界内，在这个特定的边界内建立领域模型，进而解决相应的业务问题。领域是用来限定业务边界和范围，自然它的边界就或大或小，当一个领域过大的时候可以将其进一步拆分为子领域。而子领域按照重要性以及关注度，可以分类为：核心子域、支撑子域、通用子域，这三类子域随着时间的推移或者业务的变化，其角色也可能发生转换，我们的重点应该放在核心子域建设上。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;明确了领域（子域）其实也就定义好了边界，即：限界上下文，为了确保在限界上下文内，所有人对概念的理解一致，不产生歧义，就需要对限界上下文中的每一个事件、动作、实体等对象都要形成通用语言，统一命名。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;实体和值对象是领域模型中非常重要的两个基本概念，一起构成了领域模型中最核心的领域逻辑。实体具有唯一标识以及本身的生命周期，当实体的属性（值）发生变化时，实体还是原来的那个实体，而值对象更多的是属性（值）的描述，当属性（值）发生变化时，值对象就不在是原来的值对象了。实体在代码形态上，通常采用充血模型实现，与实体相关的所有业务逻辑都在该实体类中实现，实体自身保障事务的原子性，当需要多个实体共同实现某个逻辑时，则会在领域服务层实现跨多个实体的组合封装。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;聚合根也是实体，它用来管理聚合内所有的实体以及值对象，一个聚合内包含了聚合根、实体、值对象、领域服务等，它们按照聚合的业务规则完成聚合内的领域逻辑，一个聚合只有一个聚合根，聚合和聚合之间只能通过聚合根的唯一ID标识进行引用，对于跨聚合的服务调用，往往是在应用服务层组合编排他们之间的调用关系，实现相互之间的协同。在DDD中强调一次事务最多只修改一个聚合的数据，因此在聚合内部会采用数据强一致性，而聚合之间则采用数据最终一致性的方式实现数据一致性。&lt;/p&gt;&lt;p&gt;&lt;span&gt;通常在大部分领域模型中，有70%的聚合通常只有一个实体，即聚合根，该实体内部没有包含其他实体，只包含一些值对象；&lt;/span&gt;&lt;span&gt;另外30%的聚合中，基本上也只包含两到三个实体。&lt;/span&gt;&lt;span&gt;这意味着大部分的聚合都只是一个实体，该实体同时也是聚合根。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;领域事件是领域模型中非常重要的一环，一个个领域事件可以串联起完整的业务逻辑闭环，领域事件采用事件驱动的方式用来解耦服务与服务之间的依赖关系，在服务内部可以采用事件总线的方式实现逻辑的串联，服务与服务之间可以采用消息队列的方式实现服务间的解耦和数据最终一致性。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;工厂和仓储&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;此工厂非彼设计模式的工厂，领域驱动的工厂强调封装了所有创建对象的复杂操作过程。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;仓储就是持久化机制，比如：Dao层、Cache层等。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;span&gt;在整个发票总库DDD的实践过程中，我们也是按照战略设计和战术设计两个阶段进行：业务抽象的过程就是业务领域建模的过程，对应DDD的战略设计，而系统架构设计并落地的过程则对应DDD的战术设计。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-backh=&quot;244&quot; data-backw=&quot;448&quot; data-croporisrc=&quot;https://mmbiz.qlogo.cn/mmbiz_png/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5pLJvVZxaulib9Y96zoWYRia2RQR0kToPZm8a1Bjed9mFJUKB2PR6NQnUQ/0?wx_fmt=png&quot; data-cropx1=&quot;119.5847750865052&quot; data-cropx2=&quot;1113.9100346020762&quot; data-cropy1=&quot;121.79930795847751&quot; data-cropy2=&quot;662.1453287197232&quot; data-ratio=&quot;0.5442655935613682&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5pECsrgiaK86HIUmibaqdtEEqV5zPtVyicODzKCxe5QYCN3uRrKNC76DN7Q/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;994&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;在战略设计阶段&lt;/strong&gt;&lt;span&gt;，因为发票总库的业务逻辑相对比较清晰，也有助于我们采用事件风暴的方式，快速的找出了聚合、领域对象、领域类型，为构建领域模型奠定了基础，以下是我们梳理完成的发票域的对象清单：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-backh=&quot;325&quot; data-backw=&quot;413&quot; data-croporisrc=&quot;https://mmbiz.qlogo.cn/mmbiz_png/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5puUAQRgw9EZ2zRJoBs8K4aLqxHgXOyaM293GDaybZtJuPQw0cYM0rmQ/0?wx_fmt=png&quot; data-cropx1=&quot;179.3771626297578&quot; data-cropx2=&quot;1093.9792387543253&quot; data-cropy1=&quot;0&quot; data-cropy2=&quot;719.7231833910035&quot; data-ratio=&quot;0.787746170678337&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5pxicLKpxia1BLUVLXJjBEr1HxMth0iaicbjvm2G96eYulxggLPsg2xpNvzg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;914&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;从上图中可以看到，整个发票域我们只定义了发票这个聚合，同时它也是聚合根，在发票领域服务内部，还包含了排重规则&lt;/span&gt;&lt;span&gt;、发票日志两个实体以及发票审核状态、业务类型、入库类型、应用唯一标识四个值对象，结合发票入库这个领域事件以及发票总库的业务逻辑&lt;/span&gt;&lt;span&gt;，在发票领域服务内对外提供了发票入库、发票排重等方法，对于数据存储，则需要统一抽象了仓储接口（不受限于具体的数据存储介质）。&lt;/span&gt;&lt;span&gt;    &lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt; &lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;在战术设计阶段&lt;/strong&gt;，我们完成了分层设计、规范设计等事项，在分层设计中我们遵循了DDD的四层分层模型，如下所示：&lt;/span&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-backh=&quot;354&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.6123188405797102&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5pZySrK0GW3XvhiasaWTZEibT8v9iaAyt5fGCibnaJVeuRQDDkq7WRA6jOUA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;552&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;用户接口层主要实现后端服务与前端调用入口的接口数据适配和转换；&lt;/span&gt;&lt;span&gt;应用层主要用来协调领域层多个聚合之间的服务组合和编排，以及负责领域事件的订阅和发布等职责；&lt;/span&gt;&lt;span&gt;领域层是领域模型的核心，实现领域模型的核心业务逻辑，其内部逻辑相对稳定，不会受外界变化（如：&lt;/span&gt;&lt;span&gt;底层数据存储介质的变换、通讯方式的变化等）的影响，基础层主要用来提供通用的基础工具类或基础服务。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;结合上述四层模型，在实际代码工程的构建过程中，我们也是参考了COLA架构进行构建，具体如下：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-backh=&quot;466&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.8051063829787234&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5pH1afb38dibTC6yR7oLdydkNzDvVMC1n85Iya0KujHlGP62debLx7TFA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1175&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;作为服务的启动模块（SpringBootApplication）以及用户接口层（Controller），定义了所有对外发布的接口以及DTO到领域层实体类的转换。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;应用层模块，提供了发票领域服务的方法定义及实现，同时作为事件总线（EventBus）的接收层，提供了多个发票领域事件的Handler处理器，对领域事件做下一步处理，比如：发送MQ消息等。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;领域层模块，定义了发票领域的实体、值对象、发票事件、发票领域服务以及仓储层接口，同时包含了创建领域实体的工厂类。在发票领域服务类中，通过发票实体以及发票规则实体的协作，完成发票入库逻辑，当发票入库事件发生后，会通过事件总线（EventBus）将该领域事件发布出去。而在发票的聚合根实体内，则通过事务控制了发票实体以及发票日志实体的数据存储。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;基础设施层模块，提供了发票仓储接口、发票日志仓储接口的实现类以及从领域实体类到仓储层PO对象类的转换，同时提供了事件总线（EventBus）以及加解密等通用工具类。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;客户端模块，提供了API定义以及DTO、VO等对象的定义。&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;为了防止开发过程中的随心所欲，开发规范的制定就显得特别重要，但也是最容易被无视的点，其结果就是架构的一致性被严重破坏，代码的可维护性将急剧下降，架构将形同虚设。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;首先是分包设计，在领域驱动设计里，推荐使用了基于业务的分包，即通过软件所实现的业务功能进行模块化划分，而不是从技术的角度划分(比如首先划分出service和infrastruture等包)&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-backh=&quot;123&quot; data-backw=&quot;523&quot; data-croporisrc=&quot;https://mmbiz.qlogo.cn/mmbiz_png/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5po9gGicZtbte4H30ic1ciaSIUUEicQev6xs2ox36Hw1qLUbnkdO4icoGy2zw/0?wx_fmt=png&quot; data-cropx1=&quot;0&quot; data-cropx2=&quot;1158.2006920415226&quot; data-cropy1=&quot;0&quot; data-cropy2=&quot;272.38754325259515&quot; data-ratio=&quot;0.23575129533678757&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5pGozicLmKWfFUStYL7nSfeUJOFA9g7nYEuqKZdnbtGk8FnvnCtOYPGmA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1158&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;类名应该是自明的，也就是看到类名就知道里面是干了什么事，这也就反向要求我们的类也必须是单一职责的。为了避免团队人员对dto、bo、vo、po等这些pojo对象的二义性理解，我们制定了类名规范。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-backh=&quot;666&quot; data-backw=&quot;578&quot; data-ratio=&quot;1.1518858307849134&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5peF5JqQsD6wUhCJUvzLYlO6mj8dpc3KCAPAKZkVibZLW8YVDgypgehfw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;981&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;方法名约定&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-backh=&quot;308&quot; data-backw=&quot;450&quot; data-croporisrc=&quot;https://mmbiz.qlogo.cn/mmbiz_png/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5pptOFrR7JHOjF2vs19WvxVZ8beKsmkFd8upVYCsoNbKWqNBR73WnpDQ/0?wx_fmt=png&quot; data-cropx1=&quot;98.08650519031141&quot; data-cropx2=&quot;766.8581314878893&quot; data-cropy1=&quot;0&quot; data-cropy2=&quot;457.7370242214533&quot; data-ratio=&quot;0.6856287425149701&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5pKtEh82rzwcKwHkp8mYTl2ZAmP1FL4zkBYDMzWhiaelq8VvxbutCduBA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;668&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span/&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;经过上述过程，我们按照DDD的方式完成了购车发票总库的迁移工作，目前系统已经顺利上线，因为大家都是第一次做DDD的落地实践，在整个过程中会发现从理论到实践难免会出现一些理解的偏差和分歧，比如：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;解：创建聚合根通过Factory完成；业务逻辑优先在聚合根边界内完成；聚合根中不合适放置的业务逻辑才考虑放到DomainService中。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;解：DDD的概念提出之初，事务的层次体现在跨领域交付的应用服务层。在微服务的流行的现阶段，各领域之间通过接口交互，在实施过程中，我们要灵活根据业务逻辑和当前的架构来把事务粒度做到最小。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;解：读操作便可以根据自身所需独立设计数据结构，而不用受写模型数据结构的牵制。因此，领域驱动设计通常适用于增删改的业务操作，但不适用于分析统计。在一个系统中，增删改的业务可以采用领域驱动的设计，但在非增删改的分析汇总场景中，则不必采用领域驱动的设计，直接 SQL 查询就好了，也就不必再遵循聚合的约束了。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;解：领域实体里的方法映射的是现实世界的动作行为，改变的是状态、时间，而领域服务是实体的能力，领域服务在设计上应该是无状态的，它存在的意义就是协调领域对象共完成某个操作。业务逻辑应该放在领域实体里还是领域服务里应该根据这个原则来评估。&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在实践过程中出现这些问题其实都很正常，每一个问题都不一定会有标准答案，比如上述没有提到的问题：一个领域对象究竟是定义为实体还是值对象等，即便是上述我们有答案的问题也仅仅是我们的一些见解，仁者见仁，智者见智，面对这些问题，我们一方面需要摆脱掉之前的思维定式，再次深入的理解理论定义，一方面也需要借鉴参考一些成熟代码案例，找到适合我们自身项目的结论。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;按照DDD的模式进行项目的落地实施，相比与传统开发模式也会有一些质的提升，主要表现在以下几方面：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;DDD首先强调的是确定领域边界，领域边界确定后所有设计均会在同一个领域范围内进行开展，清晰的领域边界对应了实际系统落地过程中合理的系统边界，这对于后续系统内高内聚功能的延展起到了积极的帮助作用。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在传统的开发模式中，不同环节的人员经常会出现对于同一对象的叫法不一致、定义不一致的现象，这在一定程度上也造成了大家对于系统理解的偏差，而在DDD模式中，提出了通用语言的概念，参与其中的所有成员在系统生命周期内均采用简单清晰明了的通用语言进行交流，通用语言成为团队内外部系统交流的统一语言，既减少了信息的失真, 又确保了大家在同一领域知识体系内交流的便利性、理解的一致性。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;传统开发模式采用贫血模型，将属性与业务逻辑彻底分离，通过get / set方法改变对象属性，对象属性可以被随意的修改，在面对简单的业务场景，贫血模型还可以应对，但是在面对复杂的业务场景时，传统开发模式的贫血模型维护成本高的弊端就会被暴露。与贫血模型相对应的，DDD的开发模式强调采用充血模型，将属性和行为聚合到一个实体内，业务逻辑更加便于维护和管理，也更加符合面向对象的编程逻辑，这也是基于充血模型的 DDD 开发模式越来越被人提倡的原因。&lt;/span&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;DDD所涵盖的范围其实是比较广泛的，在具体的实践过程中是需要结合实际的项目场景和团队成员的实际情况等多方面因素，不断的摸索，经过长时间的学习和积累，逐步的在团队内部建立DDD的方法论以及对应的开发模式、技术架构。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;以上就是我们的DDD实践总结，欢迎对此感兴趣的同学与我们交流，共同进步。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-backh=&quot;434&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.75&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5p79Z4yMmTV5IAIZXtCXgYGTPpkezuAXrsV1sewb8MT7KicSrYUMK47MQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span/&gt;&lt;span&gt;王松，2015年加入汽车之家，现担任商业平台中心电商中台技术负责人；&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;方利，2016年加入汽车之家，现担任商业平台中心电商中台系统架构师，负责订单交易相关系统的架构及研发工作；&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;发票总库DDD实践小组其他成员：张凡、张林林，均担任商业平台中心电商中台软件开发工程师，拥有多年的电商交易系统研发经验。&lt;/span&gt;&lt;span/&gt;&lt;/section&gt;
+                &lt;/div&gt;
+
+                
+
+                
+
+
+
+                
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
 <guid>e4658ceeaedd5d851bb4d8faa6c22b69</guid>
 <title>重磅！Apache Kafka 3.0 发布</title>
 <link>https://toutiao.io/k/oemgb5c</link>
@@ -53,209 +75,11 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>5930cd71740e6c19fe3d78d55919079a</guid>
-<title>初识 containerd（三）：根据日志分析系统流程</title>
-<link>https://toutiao.io/k/lu7be9e</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;article-content content-container&quot; id=&quot;gallery-content&quot;&gt;
-
-            &lt;p id=&quot;original&quot;&gt;
-
-​    今天查询如何打印grpc的日志，竟然看查看到[此篇](https://www.cnblogs.com/laolieren/p/print_log_detail_in_grpc_with_golang.html) ，竟然是前同事的博客，区块链团队解散了。云部门陆续解散了。不禁唏嘘不已。人生变化太快了。闲言少叙，继续开扯。上文说到containerd中的cri实现不过就是注册在grpc中一系列服务。那么本文以containerd中中的pull image的这个服务到底是如何实现的为例展示研究的方法。
-
-### 研究方法
-
-&amp;lt;font color=&#x27;red&#x27;&amp;gt;本文的重点从日志角度探讨研究containerd运作原理&amp;lt;/font&amp;gt;
-
-1. 使用circtl 操作containerd，它可以创建pod,创建容器、管理镜像等操作。具体使用参考文档[使用 crictl 对 Kubernetes 节点进行调试](https://kubernetes.io/zh/docs/tasks/debug-application-cluster/crictl/).非常详细。本身和docker-cli操作类似。
-
-2. 开启grpc日志。查看grpc请求和相应流程。
-
-3. containerd的日志调整为debug. 这些我们通过日志可以查看详细的流程。
-
-4. 如何调试它？。。。。。。下篇文章再扯。
-
-   
-
-### 过程介绍：
-
-#### 1)安装circtl
-
-circtl不是containerd的源码编译而成的。按照使用 [crictl 对 Kubernetes 节点进行调试](https://kubernetes.io/zh/docs/tasks/debug-application-cluster/crictl/) 直接安装二进制文件安装使用即可。
-
-#### 2)开启grpc日志。
-
-查看源码可以发现containerd启动过程中执行了grpclog的日志级别的设置。关于grpc log的设置参考文章开头的 [那篇](https://www.cnblogs.com/laolieren/p/print_log_detail_in_grpc_with_golang.html)即可。代码如下：
-
-**cmd/containerd/command/main.go**
-
-```func init() {
-// Discard grpc logs so that they don&#x27;t mess with our stdio
-grpclog.SetLoggerV2(grpclog.NewLoggerV2(ioutil.Discard, ioutil.Discard, ioutil.Discard))
-
-cli.VersionPrinter = func(c *cli.Context) {
-fmt.Println(c.App.Name, version.Package, c.App.Version, version.Revision)
-}
-}
-
-```
-
-直接改成如下，然后重新编译下containerd 打印grpc日志。
-
-```func init() {
-   // Discard grpc logs so that they don&#x27;t mess with our stdio
-   grpclog.SetLoggerV2(grpclog.NewLoggerV2(os.Stdout, os.Stdout,os.Stdout))
-
-   cli.VersionPrinter = func(c *cli.Context) {
-      fmt.Println(c.App.Name, version.Package, c.App.Version, version.Revision)
-   }
-}
-
-```
-
-
-直接改成如下，然后重新编译下containerd 打印grpc日志。
-
-#### 3）containerd开启为debug模式。
-
-如何开启呢？前文记得containerd启动解析参数的的flags吗？里面有个log-level为debug就行。各位大神们可以自行看下代码containerd的默认级别是啥？如何设置的。其实很简单的。
-
-执行circtl pull busybox,circtl日志如下：
-
-```
-[root@localhost ~]# crictl pull busybox
-DEBU[0000] get image connection             
-DEBU[0000] connect using endpoint &#x27;unix:///var/run/containerd/containerd.sock&#x27; with &#x27;10s&#x27; timeout 
-DEBU[0000] connected successfully using endpoint: unix:///var/run/containerd/containerd.sock 
-DEBU[0000] PullImageRequest: &amp;amp;PullImageRequest{Image:&amp;amp;ImageSpec{Image:busybox,Annotations:map[string]string{},},Auth:nil,SandboxConfig:nil,} 
-DEBU[0017] PullImageResponse: &amp;amp;PullImageResponse{ImageRef:sha256:16ea53ea7c652456803632d67517b78a4f9075a10bfdc4fc6b7b4cbf2bc98497,} 
-Image is up to date for sha256:16ea53ea7c652456803632d67517b78a4f9075a10bfdc4fc6b7b4cbf2bc98497
-```
-
-containerd如下：慢慢看就清晰了，不过没有代码和行号挺坑的。
-
-1)拉取镜像的manifest,也就是资源清单。manifes定义[filesystem layers](https://link.segmentfault.com/?url=https%3A%2F%2Fgithub.com%2Fopencontainers%2Fimage-spec%2Fblob%2Fmaster%2Flayer.md)和[configuration](https://link.segmentfault.com/?url=https%3A%2F%2Fgithub.com%2Fopencontainers%2Fimage-spec%2Fblob%2Fmaster%2Fconfig.md) 2个部分。一个镜像可能由多个层组成。
-
-2）根据manifest拉取层文件，拉回来的时压缩格式的。
-
-3) 拉configuration文件
-
-4）拉filesystem layers各个层对应的压缩文件
-
-5）把filesystem layer 解压存储到本地
-
-6）用户可以通过circtl image list 看到。
-
-```
-DEBU[2021-09-15T20:13:06.383222619+08:00] do request                  host=fogjl973.mirror.aliyuncs.com request.header.accept=&quot;application/vnd.docker.distribution.manifest.v2+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.oci.image.manifest.v1+json, application/vnd.oci.image.index.v1+json, */*&quot; request.header.user-agent=containerd/v1.5.0-420-g61a46e9.m request.method=HEAD url=&quot;https://fogjl973.mirror.aliyuncs.com/v2/library/busybox/manifests/latest?ns=docker.io&quot;
-DEBU[2021-09-15T20:13:21.709264231+08:00] fetch response received            host=fogjl973.mirror.aliyuncs.com response.header.content-length=2295 response.header.content-type=application/vnd.docker.distribution.manifest.list.v2+json response.header.date=&quot;Wed, 15 Sep 2021 15:23:06 GMT&quot; response.header.docker-content-digest=&quot;sha256:52f73a0a43a16cf37cd0720c90887ce972fe60ee06a687ee71fb93a7ca601df7&quot; response.header.docker-distribution-api-version=registry/2.0 response.header.etag=&quot;\&quot;sha256:52f73a0a43a16cf37cd0720c90887ce972fe60ee06a687ee71fb93a7ca601df7\&quot;&quot; response.status=&quot;200 OK&quot; url=&quot;https://fogjl973.mirror.aliyuncs.com/v2/library/busybox/manifests/latest?ns=docker.io&quot;
-DEBU[2021-09-15T20:13:21.709368548+08:00] resolved                   desc.digest=&quot;sha256:52f73a0a43a16cf37cd0720c90887ce972fe60ee06a687ee71fb93a7ca601df7&quot; host=fogjl973.mirror.aliyuncs.com
-DEBU[2021-09-15T20:13:21.709493924+08:00] fetch                     digest=&quot;sha256:52f73a0a43a16cf37cd0720c90887ce972fe60ee06a687ee71fb93a7ca601df7&quot; mediatype=application/vnd.docker.distribution.manifest.list.v2+json size=2295
-DEBU[2021-09-15T20:13:21.716316657+08:00] do request                  digest=&quot;sha256:52f73a0a43a16cf37cd0720c90887ce972fe60ee06a687ee71fb93a7ca601df7&quot; mediatype=application/vnd.docker.distribution.manifest.list.v2+json request.header.accept=&quot;application/vnd.docker.distribution.manifest.list.v2+json, */*&quot; request.header.user-agent=containerd/v1.5.0-420-g61a46e9.m request.method=GET size=2295 url=&quot;https://fogjl973.mirror.aliyuncs.com/v2/library/busybox/manifests/sha256:52f73a0a43a16cf37cd0720c90887ce972fe60ee06a687ee71fb93a7ca601df7?ns=docker.io&quot;
-DEBU[2021-09-15T20:13:22.033533539+08:00] fetch response received            digest=&quot;sha256:52f73a0a43a16cf37cd0720c90887ce972fe60ee06a687ee71fb93a7ca601df7&quot; mediatype=application/vnd.docker.distribution.manifest.list.v2+json response.header.content-length=2295 response.header.content-type=application/vnd.docker.distribution.manifest.list.v2+json response.header.date=&quot;Wed, 15 Sep 2021 15:23:07 GMT&quot; response.header.docker-content-digest=&quot;sha256:52f73a0a43a16cf37cd0720c90887ce972fe60ee06a687ee71fb93a7ca601df7&quot; response.header.docker-distribution-api-version=registry/2.0 response.header.etag=&quot;\&quot;sha256:52f73a0a43a16cf37cd0720c90887ce972fe60ee06a687ee71fb93a7ca601df7\&quot;&quot; response.status=&quot;200 OK&quot; size=2295 url=&quot;https://fogjl973.mirror.aliyuncs.com/v2/library/busybox/manifests/sha256:52f73a0a43a16cf37cd0720c90887ce972fe60ee06a687ee71fb93a7ca601df7?ns=docker.io&quot;
-DEBU[2021-09-15T20:13:22.039376643+08:00] fetch                     digest=&quot;sha256:febcf61cd6e1ac9628f6ac14fa40836d16f3c6ddef3b303ff0321606e55ddd0b&quot; mediatype=application/vnd.docker.distribution.manifest.v2+json size=527
-
-DEBU[2021-09-15T20:13:22.042885888+08:00] do request                  digest=&quot;sha256:febcf61cd6e1ac9628f6ac14fa40836d16f3c6ddef3b303ff0321606e55ddd0b&quot; mediatype=application/vnd.docker.distribution.manifest.v2+json request.header.accept=&quot;application/vnd.docker.distribution.manifest.v2+json, */*&quot; request.header.user-agent=containerd/v1.5.0-420-g61a46e9.m request.method=GET size=527 url=&quot;https://fogjl973.mirror.aliyuncs.com/v2/library/busybox/manifests/sha256:febcf61cd6e1ac9628f6ac14fa40836d16f3c6ddef3b303ff0321606e55ddd0b?ns=docker.io&quot;
-
-DEBU[2021-09-15T20:13:22.154241117+08:00] fetch response received            digest=&quot;sha256:febcf61cd6e1ac9628f6ac14fa40836d16f3c6ddef3b303ff0321606e55ddd0b&quot; mediatype=application/vnd.docker.distribution.manifest.v2+json response.header.content-length=527 response.header.content-type=application/vnd.docker.distribution.manifest.v2+json response.header.date=&quot;Wed, 15 Sep 2021 15:23:07 GMT&quot; response.header.docker-content-digest=&quot;sha256:febcf61cd6e1ac9628f6ac14fa40836d16f3c6ddef3b303ff0321606e55ddd0b&quot; response.header.docker-distribution-api-version=registry/2.0 response.header.etag=&quot;\&quot;sha256:febcf61cd6e1ac9628f6ac14fa40836d16f3c6ddef3b303ff0321606e55ddd0b\&quot;&quot; response.status=&quot;200 OK&quot; size=527 url=&quot;https://fogjl973.mirror.aliyuncs.com/v2/library/busybox/manifests/sha256:febcf61cd6e1ac9628f6ac14fa40836d16f3c6ddef3b303ff0321606e55ddd0b?ns=docker.io&quot;
-
-DEBU[2021-09-15T20:13:22.161823599+08:00] fetch                     digest=&quot;sha256:16ea53ea7c652456803632d67517b78a4f9075a10bfdc4fc6b7b4cbf2bc98497&quot; mediatype=application/vnd.docker.container.image.v1+json size=1456
-
-DEBU[2021-09-15T20:13:22.167241637+08:00] do request                  digest=&quot;sha256:16ea53ea7c652456803632d67517b78a4f9075a10bfdc4fc6b7b4cbf2bc98497&quot; mediatype=application/vnd.docker.container.image.v1+json request.header.accept=&quot;application/vnd.docker.container.image.v1+json, */*&quot; request.header.user-agent=containerd/v1.5.0-420-g61a46e9.m request.method=GET size=1456 url=&quot;https://fogjl973.mirror.aliyuncs.com/v2/library/busybox/blobs/sha256:16ea53ea7c652456803632d67517b78a4f9075a10bfdc4fc6b7b4cbf2bc98497?ns=docker.io&quot;
-
-DEBU[2021-09-15T20:13:23.686497356+08:00] fetch response received            digest=&quot;sha256:16ea53ea7c652456803632d67517b78a4f9075a10bfdc4fc6b7b4cbf2bc98497&quot; mediatype=application/vnd.docker.container.image.v1+json response.header.accept-ranges=bytes response.header.connection=keep-alive response.header.content-length=1456 response.header.content-type=application/octet-stream response.header.date=&quot;Wed, 15 Sep 2021 15:23:08 GMT&quot; response.header.etag=&quot;\&quot;E36A3038410AE761F64C239EDE22765A-1\&quot;&quot; response.header.last-modified=&quot;Tue, 14 Sep 2021 01:42:10 GMT&quot; response.header.server=AliyunOSS response.header.x-oss-hash-crc64ecma=14119525851174939268 response.header.x-oss-object-type=Multipart response.header.x-oss-request-id=61420FDCEE37C830378BD21D response.header.x-oss-server-time=11 response.header.x-oss-storage-class=Standard response.status=&quot;200 OK&quot; size=1456 url=&quot;https://fogjl973.mirror.aliyuncs.com/v2/library/busybox/blobs/sha256:16ea53ea7c652456803632d67517b78a4f9075a10bfdc4fc6b7b4cbf2bc98497?ns=docker.io&quot;
-
-DEBU[2021-09-15T20:13:23.735132619+08:00] event published                ns=k8s.io topic=/snapshot/prepare type=containerd.events.SnapshotPrepare
-
-DEBU[2021-09-15T20:13:23.735173865+08:00] fetch                     digest=&quot;sha256:24fb2886d6f6c5d16481dd7608b47e78a8e92a13d6e64d87d57cb16d5f766d63&quot; mediatype=application/vnd.docker.image.rootfs.diff.tar.gzip size=767322
-
-DEBU[2021-09-15T20:13:23.739093193+08:00] do request                  digest=&quot;sha256:24fb2886d6f6c5d16481dd7608b47e78a8e92a13d6e64d87d57cb16d5f766d63&quot; mediatype=application/vnd.docker.image.rootfs.diff.tar.gzip request.header.accept=&quot;application/vnd.docker.image.rootfs.diff.tar.gzip, */*&quot; request.header.user-agent=containerd/v1.5.0-420-g61a46e9.m request.method=GET size=767322 url=&quot;https://fogjl973.mirror.aliyuncs.com/v2/library/busybox/blobs/sha256:24fb2886d6f6c5d16481dd7608b47e78a8e92a13d6e64d87d57cb16d5f766d63?ns=docker.io&quot;
-
-DEBU[2021-09-15T20:13:23.996164246+08:00] fetch response received            digest=&quot;sha256:24fb2886d6f6c5d16481dd7608b47e78a8e92a13d6e64d87d57cb16d5f766d63&quot; mediatype=application/vnd.docker.image.rootfs.diff.tar.gzip response.header.accept-ranges=bytes response.header.connection=keep-alive response.header.content-length=767322 response.header.content-type=application/octet-stream response.header.date=&quot;Wed, 15 Sep 2021 15:23:09 GMT&quot; response.header.etag=&quot;\&quot;B1B09AB1B0F8C357E234D1881F2AF011-1\&quot;&quot; response.header.last-modified=&quot;Tue, 14 Sep 2021 01:42:11 GMT&quot; response.header.server=AliyunOSS response.header.x-oss-hash-crc64ecma=6303775372767827929 response.header.x-oss-object-type=Multipart response.header.x-oss-request-id=61420FDDEE37C8303718D41D response.header.x-oss-server-time=15 response.header.x-oss-storage-class=Standard response.status=&quot;200 OK&quot; size=767322 url=&quot;https://fogjl973.mirror.aliyuncs.com/v2/library/busybox/blobs/sha256:24fb2886d6f6c5d16481dd7608b47e78a8e92a13d6e64d87d57cb16d5f766d63?ns=docker.io&quot;
-
-DEBU[2021-09-15T20:13:24.389562171+08:00] unpigz not found, falling back to go gzip   error=&quot;exec: \&quot;unpigz\&quot;: executable file not found in $PATH&quot;
-
-DEBU[2021-09-15T20:13:24.463667779+08:00] diff applied                 d=74.183318ms digest=&quot;sha256:24fb2886d6f6c5d16481dd7608b47e78a8e92a13d6e64d87d57cb16d5f766d63&quot; media=application/vnd.docker.image.rootfs.diff.tar.gzip size=767322
-
-DEBU[2021-09-15T20:13:24.469707735+08:00] event published                ns=k8s.io topic=/snapshot/commit type=containerd.events.SnapshotCommit
-
-DEBU[2021-09-15T20:13:24.471676978+08:00] image unpacked                chainID=&quot;sha256:cfd97936a58000adc09a9f87adeeb7628a2c71d11c4998e6e7f26935fa0cd713&quot; config=&quot;sha256:16ea53ea7c652456803632d67517b78a4f9075a10bfdc4fc6b7b4cbf2bc98497&quot;
-
-DEBU[2021-09-15T20:13:24.471754852+08:00] create image                 name=&quot;docker.io/library/busybox:latest&quot; target=&quot;sha256:52f73a0a43a16cf37cd0720c90887ce972fe60ee06a687ee71fb93a7ca601df7&quot;
-
-DEBU[2021-09-15T20:13:24.473279515+08:00] event published                ns=k8s.io topic=/images/create type=containerd.services.images.v1.ImageCreate
-
-DEBU[2021-09-15T20:13:24.473878601+08:00] Received containerd event timestamp - 2021-09-15 12:13:24.473263515 +0000 UTC, namespace - &quot;k8s.io&quot;, topic - &quot;/images/create&quot; 
-
-INFO[2021-09-15T20:13:24.473908645+08:00] ImageCreate event &amp;amp;ImageCreate{Name:docker.io/library/busybox:latest,Labels:map[string]string{io.cri-containerd.image: managed,},XXX_unrecognized:[],} 
-
-DEBU[2021-09-15T20:13:24.475775669+08:00] create image                 name=&quot;sha256:16ea53ea7c652456803632d67517b78a4f9075a10bfdc4fc6b7b4cbf2bc98497&quot; target=&quot;sha256:52f73a0a43a16cf37cd0720c90887ce972fe60ee06a687ee71fb93a7ca601df7&quot;
-
-DEBU[2021-09-15T20:13:24.477186173+08:00] event published                ns=k8s.io topic=/images/create type=containerd.services.images.v1.ImageCreate
-
-DEBU[2021-09-15T20:13:24.477468075+08:00] Received containerd event timestamp - 2021-09-15 12:13:24.477181428 +0000 UTC, namespace - &quot;k8s.io&quot;, topic - &quot;/images/create&quot; 
-
-INFO[2021-09-15T20:13:24.477485398+08:00] ImageCreate event &amp;amp;ImageCreate{Name:sha256:16ea53ea7c652456803632d67517b78a4f9075a10bfdc4fc6b7b4cbf2bc98497,Labels:map[string]string{io.cri-containerd.image: managed,},XXX_unrecognized:[],} 
-
-DEBU[2021-09-15T20:13:24.477657404+08:00] create image                 name=&quot;docker.io/library/busybox:latest&quot; target=&quot;sha256:52f73a0a43a16cf37cd0720c90887ce972fe60ee06a687ee71fb93a7ca601df7&quot;
-
-DEBU[2021-09-15T20:13:24.479522085+08:00] event published                ns=k8s.io topic=/images/update type=containerd.services.images.v1.ImageUpdate
-
-DEBU[2021-09-15T20:13:24.480492714+08:00] Received containerd event timestamp - 2021-09-15 12:13:24.479510199 +0000 UTC, namespace - &quot;k8s.io&quot;, topic - &quot;/images/update&quot; 
-
-INFO[2021-09-15T20:13:24.480546611+08:00] ImageUpdate event &amp;amp;ImageUpdate{Name:docker.io/library/busybox:latest,Labels:map[string]string{io.cri-containerd.image: managed,},XXX_unrecognized:[],} 
-
-DEBU[2021-09-15T20:13:24.481046301+08:00] create image                 name=&quot;docker.io/library/busybox@sha256:52f73a0a43a16cf37cd0720c90887ce972fe60ee06a687ee71fb93a7ca601df7&quot; target=&quot;sha256:52f73a0a43a16cf37cd0720c90887ce972fe60ee06a687ee71fb93a7ca601df7&quot;
-
-DEBU[2021-09-15T20:13:24.482940926+08:00] event published                ns=k8s.io topic=/images/create type=containerd.services.images.v1.ImageCreate
-
-DEBU[2021-09-15T20:13:24.483236077+08:00] Received containerd event timestamp - 2021-09-15 12:13:24.482936401 +0000 UTC, namespace - &quot;k8s.io&quot;, topic - &quot;/images/create&quot; 
-
-INFO[2021-09-15T20:13:24.483254954+08:00] ImageCreate event &amp;amp;ImageCreate{Name:docker.io/library/busybox@sha256:52f73a0a43a16cf37cd0720c90887ce972fe60ee06a687ee71fb93a7ca601df7,Labels:map[string]string{io.cri-containerd.image: managed,},XXX_unrecognized:[],} 
-
-DEBU[2021-09-15T20:13:24.483427294+08:00] Pulled image &quot;busybox&quot; with image id &quot;sha256:16ea53ea7c652456803632d67517b78a4f9075a10bfdc4fc6b7b4cbf2bc98497&quot;, repo tag &quot;docker.io/library/busybox:latest&quot;, repo digest &quot;docker.io/library/busybox@sha256:52f73a0a43a16cf37cd0720c90887ce972fe60ee06a687ee71fb93a7ca601df7&quot; 
-
-INFO[2021-09-15T20:13:24.483441180+08:00] PullImage &quot;busybox&quot; returns image reference &quot;sha256:16ea53ea7c652456803632d67517b78a4f9075a10bfdc4fc6b7b4cbf2bc98497&quot; 
-
-DEBU[2021-09-15T20:13:24.666373994+08:00] garbage collected               d=3.243398ms
-
-```
-
-下文结合代码过镜像搞透彻。其实也就是oci规范搞透彻。
-
-参考
-
-【1】[深入理解镜像](https://segmentfault.com/a/1190000009309347?utm_source=sf-similar-article)
-
- 【2】https://www.cnblogs.com/52fhy/p/12376940.htm&lt;/p&gt;
-            &lt;p class=&quot;container mx-auto px-4 md-content mt-8 max-w-6xl tracking-wider md:leading-relaxed sm:leading-normal cn-pd ct-container loading&quot; id=&quot;write&quot;&gt;
-            &lt;/p&gt;
-            &lt;p id=&quot;tocFlag&quot;/&gt;
-                &lt;aside id=&quot;toc&quot; class=&quot;toc&quot;/&gt;
-        &lt;/div&gt;
-
-        &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>bc77c43ef43ad246d0c548b1291cc30f</guid>
-<title>发票总库 DDD 实践</title>
-<link>https://toutiao.io/k/0d4bxmx</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
-
-                    
-                    
-                    
-                    &lt;p&gt;&lt;img class=&quot;rich_pages __bg_gif&quot; data-backh=&quot;57&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.0984375&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/UPBmkBoiaVwuh8DEJlYXXvEjNrISejeXSt7knYYiaGantXAsgOvXvxAOog7a4L9yEicM1biao6MGia2Ob4I3B77Z6Vg/640?wx_fmt=gif&quot; data-type=&quot;gif&quot; data-w=&quot;640&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;总篇117篇 2021年第8篇&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;DDD&lt;/span&gt;&lt;span&gt;是一套完善的系统设计方法，可以帮助我们在系统设计的过程中缕清思路，规范流程，降低系统建设的复杂度，同时DDD的领域建模过程也是团队成员之间形成系统通用语言、建立良好沟通机制的过程。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在电商中台研发团队内部，很早之前就对DDD有过分享和讨论，近期我们在做购车发票总库的迁移工作，经过分析，借此项目做一次DDD的落地实践，在时间和人员投入上都比较适宜。本篇文章就对我们的整个实践过程做一个总结，与大家一起学习和提升。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们先来看一张DDD的经典知识体系结构图：&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-backh=&quot;442&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.7651452282157676&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5pMQMDEwxCqPbVnMRrAiaq4zGgqZHia6o3micO8XZgqmgicKAR0NRDCiaZvZw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1205&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;span/&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;DDD的核心就是将问题范围限定在特定的边界内，在这个特定的边界内建立领域模型，进而解决相应的业务问题。领域是用来限定业务边界和范围，自然它的边界就或大或小，当一个领域过大的时候可以将其进一步拆分为子领域。而子领域按照重要性以及关注度，可以分类为：核心子域、支撑子域、通用子域，这三类子域随着时间的推移或者业务的变化，其角色也可能发生转换，我们的重点应该放在核心子域建设上。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;明确了领域（子域）其实也就定义好了边界，即：限界上下文，为了确保在限界上下文内，所有人对概念的理解一致，不产生歧义，就需要对限界上下文中的每一个事件、动作、实体等对象都要形成通用语言，统一命名。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;实体和值对象是领域模型中非常重要的两个基本概念，一起构成了领域模型中最核心的领域逻辑。实体具有唯一标识以及本身的生命周期，当实体的属性（值）发生变化时，实体还是原来的那个实体，而值对象更多的是属性（值）的描述，当属性（值）发生变化时，值对象就不在是原来的值对象了。实体在代码形态上，通常采用充血模型实现，与实体相关的所有业务逻辑都在该实体类中实现，实体自身保障事务的原子性，当需要多个实体共同实现某个逻辑时，则会在领域服务层实现跨多个实体的组合封装。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;聚合根也是实体，它用来管理聚合内所有的实体以及值对象，一个聚合内包含了聚合根、实体、值对象、领域服务等，它们按照聚合的业务规则完成聚合内的领域逻辑，一个聚合只有一个聚合根，聚合和聚合之间只能通过聚合根的唯一ID标识进行引用，对于跨聚合的服务调用，往往是在应用服务层组合编排他们之间的调用关系，实现相互之间的协同。在DDD中强调一次事务最多只修改一个聚合的数据，因此在聚合内部会采用数据强一致性，而聚合之间则采用数据最终一致性的方式实现数据一致性。&lt;/p&gt;&lt;p&gt;&lt;span&gt;通常在大部分领域模型中，有70%的聚合通常只有一个实体，即聚合根，该实体内部没有包含其他实体，只包含一些值对象；&lt;/span&gt;&lt;span&gt;另外30%的聚合中，基本上也只包含两到三个实体。&lt;/span&gt;&lt;span&gt;这意味着大部分的聚合都只是一个实体，该实体同时也是聚合根。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;领域事件是领域模型中非常重要的一环，一个个领域事件可以串联起完整的业务逻辑闭环，领域事件采用事件驱动的方式用来解耦服务与服务之间的依赖关系，在服务内部可以采用事件总线的方式实现逻辑的串联，服务与服务之间可以采用消息队列的方式实现服务间的解耦和数据最终一致性。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;工厂和仓储&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;此工厂非彼设计模式的工厂，领域驱动的工厂强调封装了所有创建对象的复杂操作过程。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;仓储就是持久化机制，比如：Dao层、Cache层等。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;span&gt;在整个发票总库DDD的实践过程中，我们也是按照战略设计和战术设计两个阶段进行：业务抽象的过程就是业务领域建模的过程，对应DDD的战略设计，而系统架构设计并落地的过程则对应DDD的战术设计。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-backh=&quot;244&quot; data-backw=&quot;448&quot; data-croporisrc=&quot;https://mmbiz.qlogo.cn/mmbiz_png/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5pLJvVZxaulib9Y96zoWYRia2RQR0kToPZm8a1Bjed9mFJUKB2PR6NQnUQ/0?wx_fmt=png&quot; data-cropx1=&quot;119.5847750865052&quot; data-cropx2=&quot;1113.9100346020762&quot; data-cropy1=&quot;121.79930795847751&quot; data-cropy2=&quot;662.1453287197232&quot; data-ratio=&quot;0.5442655935613682&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5pECsrgiaK86HIUmibaqdtEEqV5zPtVyicODzKCxe5QYCN3uRrKNC76DN7Q/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;994&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;在战略设计阶段&lt;/strong&gt;&lt;span&gt;，因为发票总库的业务逻辑相对比较清晰，也有助于我们采用事件风暴的方式，快速的找出了聚合、领域对象、领域类型，为构建领域模型奠定了基础，以下是我们梳理完成的发票域的对象清单：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-backh=&quot;325&quot; data-backw=&quot;413&quot; data-croporisrc=&quot;https://mmbiz.qlogo.cn/mmbiz_png/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5puUAQRgw9EZ2zRJoBs8K4aLqxHgXOyaM293GDaybZtJuPQw0cYM0rmQ/0?wx_fmt=png&quot; data-cropx1=&quot;179.3771626297578&quot; data-cropx2=&quot;1093.9792387543253&quot; data-cropy1=&quot;0&quot; data-cropy2=&quot;719.7231833910035&quot; data-ratio=&quot;0.787746170678337&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5pxicLKpxia1BLUVLXJjBEr1HxMth0iaicbjvm2G96eYulxggLPsg2xpNvzg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;914&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;从上图中可以看到，整个发票域我们只定义了发票这个聚合，同时它也是聚合根，在发票领域服务内部，还包含了排重规则&lt;/span&gt;&lt;span&gt;、发票日志两个实体以及发票审核状态、业务类型、入库类型、应用唯一标识四个值对象，结合发票入库这个领域事件以及发票总库的业务逻辑&lt;/span&gt;&lt;span&gt;，在发票领域服务内对外提供了发票入库、发票排重等方法，对于数据存储，则需要统一抽象了仓储接口（不受限于具体的数据存储介质）。&lt;/span&gt;&lt;span&gt;    &lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt; &lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;在战术设计阶段&lt;/strong&gt;，我们完成了分层设计、规范设计等事项，在分层设计中我们遵循了DDD的四层分层模型，如下所示：&lt;/span&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-backh=&quot;354&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.6123188405797102&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5pZySrK0GW3XvhiasaWTZEibT8v9iaAyt5fGCibnaJVeuRQDDkq7WRA6jOUA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;552&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;用户接口层主要实现后端服务与前端调用入口的接口数据适配和转换；&lt;/span&gt;&lt;span&gt;应用层主要用来协调领域层多个聚合之间的服务组合和编排，以及负责领域事件的订阅和发布等职责；&lt;/span&gt;&lt;span&gt;领域层是领域模型的核心，实现领域模型的核心业务逻辑，其内部逻辑相对稳定，不会受外界变化（如：&lt;/span&gt;&lt;span&gt;底层数据存储介质的变换、通讯方式的变化等）的影响，基础层主要用来提供通用的基础工具类或基础服务。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;结合上述四层模型，在实际代码工程的构建过程中，我们也是参考了COLA架构进行构建，具体如下：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-backh=&quot;466&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.8051063829787234&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5pH1afb38dibTC6yR7oLdydkNzDvVMC1n85Iya0KujHlGP62debLx7TFA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1175&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;作为服务的启动模块（SpringBootApplication）以及用户接口层（Controller），定义了所有对外发布的接口以及DTO到领域层实体类的转换。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;应用层模块，提供了发票领域服务的方法定义及实现，同时作为事件总线（EventBus）的接收层，提供了多个发票领域事件的Handler处理器，对领域事件做下一步处理，比如：发送MQ消息等。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;领域层模块，定义了发票领域的实体、值对象、发票事件、发票领域服务以及仓储层接口，同时包含了创建领域实体的工厂类。在发票领域服务类中，通过发票实体以及发票规则实体的协作，完成发票入库逻辑，当发票入库事件发生后，会通过事件总线（EventBus）将该领域事件发布出去。而在发票的聚合根实体内，则通过事务控制了发票实体以及发票日志实体的数据存储。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;基础设施层模块，提供了发票仓储接口、发票日志仓储接口的实现类以及从领域实体类到仓储层PO对象类的转换，同时提供了事件总线（EventBus）以及加解密等通用工具类。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;客户端模块，提供了API定义以及DTO、VO等对象的定义。&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;为了防止开发过程中的随心所欲，开发规范的制定就显得特别重要，但也是最容易被无视的点，其结果就是架构的一致性被严重破坏，代码的可维护性将急剧下降，架构将形同虚设。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;首先是分包设计，在领域驱动设计里，推荐使用了基于业务的分包，即通过软件所实现的业务功能进行模块化划分，而不是从技术的角度划分(比如首先划分出service和infrastruture等包)&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-backh=&quot;123&quot; data-backw=&quot;523&quot; data-croporisrc=&quot;https://mmbiz.qlogo.cn/mmbiz_png/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5po9gGicZtbte4H30ic1ciaSIUUEicQev6xs2ox36Hw1qLUbnkdO4icoGy2zw/0?wx_fmt=png&quot; data-cropx1=&quot;0&quot; data-cropx2=&quot;1158.2006920415226&quot; data-cropy1=&quot;0&quot; data-cropy2=&quot;272.38754325259515&quot; data-ratio=&quot;0.23575129533678757&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5pGozicLmKWfFUStYL7nSfeUJOFA9g7nYEuqKZdnbtGk8FnvnCtOYPGmA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1158&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;类名应该是自明的，也就是看到类名就知道里面是干了什么事，这也就反向要求我们的类也必须是单一职责的。为了避免团队人员对dto、bo、vo、po等这些pojo对象的二义性理解，我们制定了类名规范。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-backh=&quot;666&quot; data-backw=&quot;578&quot; data-ratio=&quot;1.1518858307849134&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5peF5JqQsD6wUhCJUvzLYlO6mj8dpc3KCAPAKZkVibZLW8YVDgypgehfw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;981&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;方法名约定&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-backh=&quot;308&quot; data-backw=&quot;450&quot; data-croporisrc=&quot;https://mmbiz.qlogo.cn/mmbiz_png/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5pptOFrR7JHOjF2vs19WvxVZ8beKsmkFd8upVYCsoNbKWqNBR73WnpDQ/0?wx_fmt=png&quot; data-cropx1=&quot;98.08650519031141&quot; data-cropx2=&quot;766.8581314878893&quot; data-cropy1=&quot;0&quot; data-cropy2=&quot;457.7370242214533&quot; data-ratio=&quot;0.6856287425149701&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5pKtEh82rzwcKwHkp8mYTl2ZAmP1FL4zkBYDMzWhiaelq8VvxbutCduBA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;668&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span/&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;经过上述过程，我们按照DDD的方式完成了购车发票总库的迁移工作，目前系统已经顺利上线，因为大家都是第一次做DDD的落地实践，在整个过程中会发现从理论到实践难免会出现一些理解的偏差和分歧，比如：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;解：创建聚合根通过Factory完成；业务逻辑优先在聚合根边界内完成；聚合根中不合适放置的业务逻辑才考虑放到DomainService中。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;解：DDD的概念提出之初，事务的层次体现在跨领域交付的应用服务层。在微服务的流行的现阶段，各领域之间通过接口交互，在实施过程中，我们要灵活根据业务逻辑和当前的架构来把事务粒度做到最小。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;解：读操作便可以根据自身所需独立设计数据结构，而不用受写模型数据结构的牵制。因此，领域驱动设计通常适用于增删改的业务操作，但不适用于分析统计。在一个系统中，增删改的业务可以采用领域驱动的设计，但在非增删改的分析汇总场景中，则不必采用领域驱动的设计，直接 SQL 查询就好了，也就不必再遵循聚合的约束了。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;解：领域实体里的方法映射的是现实世界的动作行为，改变的是状态、时间，而领域服务是实体的能力，领域服务在设计上应该是无状态的，它存在的意义就是协调领域对象共完成某个操作。业务逻辑应该放在领域实体里还是领域服务里应该根据这个原则来评估。&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在实践过程中出现这些问题其实都很正常，每一个问题都不一定会有标准答案，比如上述没有提到的问题：一个领域对象究竟是定义为实体还是值对象等，即便是上述我们有答案的问题也仅仅是我们的一些见解，仁者见仁，智者见智，面对这些问题，我们一方面需要摆脱掉之前的思维定式，再次深入的理解理论定义，一方面也需要借鉴参考一些成熟代码案例，找到适合我们自身项目的结论。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;按照DDD的模式进行项目的落地实施，相比与传统开发模式也会有一些质的提升，主要表现在以下几方面：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;DDD首先强调的是确定领域边界，领域边界确定后所有设计均会在同一个领域范围内进行开展，清晰的领域边界对应了实际系统落地过程中合理的系统边界，这对于后续系统内高内聚功能的延展起到了积极的帮助作用。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在传统的开发模式中，不同环节的人员经常会出现对于同一对象的叫法不一致、定义不一致的现象，这在一定程度上也造成了大家对于系统理解的偏差，而在DDD模式中，提出了通用语言的概念，参与其中的所有成员在系统生命周期内均采用简单清晰明了的通用语言进行交流，通用语言成为团队内外部系统交流的统一语言，既减少了信息的失真, 又确保了大家在同一领域知识体系内交流的便利性、理解的一致性。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;传统开发模式采用贫血模型，将属性与业务逻辑彻底分离，通过get / set方法改变对象属性，对象属性可以被随意的修改，在面对简单的业务场景，贫血模型还可以应对，但是在面对复杂的业务场景时，传统开发模式的贫血模型维护成本高的弊端就会被暴露。与贫血模型相对应的，DDD的开发模式强调采用充血模型，将属性和行为聚合到一个实体内，业务逻辑更加便于维护和管理，也更加符合面向对象的编程逻辑，这也是基于充血模型的 DDD 开发模式越来越被人提倡的原因。&lt;/span&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;DDD所涵盖的范围其实是比较广泛的，在具体的实践过程中是需要结合实际的项目场景和团队成员的实际情况等多方面因素，不断的摸索，经过长时间的学习和积累，逐步的在团队内部建立DDD的方法论以及对应的开发模式、技术架构。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;以上就是我们的DDD实践总结，欢迎对此感兴趣的同学与我们交流，共同进步。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-backh=&quot;434&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.75&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/UPBmkBoiaVwvXPMZLLx7toI4AvneeOn5p79Z4yMmTV5IAIZXtCXgYGTPpkezuAXrsV1sewb8MT7KicSrYUMK47MQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span/&gt;&lt;span&gt;王松，2015年加入汽车之家，现担任商业平台中心电商中台技术负责人；&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;方利，2016年加入汽车之家，现担任商业平台中心电商中台系统架构师，负责订单交易相关系统的架构及研发工作；&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;发票总库DDD实践小组其他成员：张凡、张林林，均担任商业平台中心电商中台软件开发工程师，拥有多年的电商交易系统研发经验。&lt;/span&gt;&lt;span/&gt;&lt;/section&gt;
-                &lt;/div&gt;
-
-                
-
-                
-
-
-
-                
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>a96089b6ee9a4dc42ab63c68dde452a5</guid>
+<title>WebRTC Mesh 架构</title>
+<link>https://toutiao.io/k/xxezcd8</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;
+&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
 <guid>d9748992c36f1dd0b4578476dfbd997a</guid>
