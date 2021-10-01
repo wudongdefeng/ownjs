@@ -228,25 +228,77 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>9259d0ebe1d5486431f2a57255ffcb27</guid>
-<title>ToTTo：受控表到文本生成数据集</title>
-<link>https://toutiao.io/k/6k5ve1v</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
-
-                    
-                    
-                    
-                    &lt;p&gt;在过去几年中，用于文本摘要等任务的自然语言生成研究取得了巨大进展。然而，尽管实现了高水平的流畅性，神经系统仍然容易产生幻觉（即生成可理解但不忠实于来源的文本），这可能会阻止这些系统用于许多需要高度准确性的应用程序。考虑来自Wikibio 数据集的一个示例，其中负责总结比利时足球运动员Constant Vanden Stock的 Wikipedia 信息框条目的神经基线模型错误地总结了他是美国花样滑冰运动员。&lt;/p&gt;&lt;p&gt;&lt;img data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eG1jA7faiceGicwTeJAV5ibC3eoNiaNRffCDqUa3SUFUkGMTbIaOSQYp3wQSjqHLBepAYN981kgSAmk1T5TliaJ0aAg/640?wx_fmt=png&quot; data-type=&quot;png&quot;/&gt;&lt;/p&gt;&lt;p&gt;虽然评估生成的文本对源内容的忠实度的过程可能具有挑战性，但当源内容是结构化的（例如，以表格格式）时，通常会更容易。此外，结构化数据还可以测试模型的推理和数值推理能力。然而，现有的大规模结构化数据集通常是嘈杂的（即无法从表格数据中完全推断出参考句子），这使得它们在模型开发中用于测量幻觉是不可靠的。&lt;/p&gt;&lt;p&gt;在“ ToTTo: A Controlled Table-To-Text Generation Dataset ”中，我们展示了一个开放域表到文本生成数据集，该数据集使用一种新颖的注释过程（通过句子修订）以及一个受控文本生成任务来创建，该任务可用于评估模型幻觉。ToTTo（“Table-To-Text”的简写）包含 121,000 个训练示例，以及每个用于开发和测试的 7,500 个示例。由于注释的准确性，该数据集适合作为高精度文本生成研究的具有挑战性的基准。数据集和代码在我们的 GitHub 存储库上开源。&lt;/p&gt;&lt;h2&gt;&lt;strong&gt;&lt;em&gt;Table-to-Text 生成&lt;/em&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;p&gt;ToTTo 引入了一个受控生成任务，其中包含一组选定单元格的给定 Wikipedia 表格用作生成单个句子描述任务的源材料，该描述总结表格上下文中的单元格内容. 下面的示例演示了该任务带来的许多挑战中的一些，例如数值推理、大量的开放域词汇表和不同的表结构。&lt;/p&gt;&lt;p&gt;&lt;img data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eG1jA7faiceGicwTeJAV5ibC3eoNiaNRffCDqmQxCIhmsUMqY9qGPdQwt3QO0zSSkYStiaqnOeC0GzBBcxgK2dSpogg/640?wx_fmt=png&quot; data-type=&quot;png&quot;/&gt;&lt;/p&gt;&lt;h2&gt;&lt;strong&gt;&lt;em&gt;注释过程&lt;/em&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;p&gt;设计注释过程以从表格数据中获得自然但干净的目标句子是一项重大挑战。许多数据集（如Wikibio和RotoWire）将自然出现的文本与表格配对，这是一个嘈杂的过程，很难确定幻觉主要是由数据噪声还是模型缺陷引起的。另一方面，可以引出注释者从头开始编写句子目标，这些目标忠实于表格，但生成的目标在结构和风格方面往往缺乏多样性。&lt;/p&gt;&lt;p&gt;相比之下，ToTTo 是使用一种新颖的数据注释策略构建的，其中注释者分阶段修改现有的维基百科句子。这导致目标句子既干净又自然，包含有趣且多样的语言特性。数据收集和注释过程从从维基百科收集表格开始，其中根据启发式将给定的表格与从支持页面上下文收集的摘要句子配对，例如页面文本和表格之间的单词重叠以及引用表格数据的超链接。此摘要句子可能包含表格不支持的信息，并且可能包含仅在表格中找到先行词的代词，而不是句子本身。&lt;/p&gt;&lt;p&gt;注释器然后突出显示表中支持该句子的单元格并删除该表中不支持的句子中的短语。在必要时，他们还对句子进行去上下文化，使其独立（例如，具有正确的代词解析）和正确的语法。&lt;/p&gt;&lt;p&gt;&lt;img data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eG1jA7faiceGicwTeJAV5ibC3eoNiaNRffCD2qIOfPtoGksyYW64OgNWoB2wspJZ08AJ81c2tLrZK159sibcVXYGfFg/640?wx_fmt=png&quot; data-type=&quot;png&quot;/&gt;&lt;/p&gt;&lt;p&gt;我们表明注释者在上述任务上获得了很高的一致性：0.856 Fleiss Kappa用于单元格突出显示，以及 67.0 BLEU用于最终目标句子。&lt;/p&gt;&lt;h2&gt;&lt;strong&gt;&lt;em&gt;数据集分析&lt;/em&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;p&gt;我们对 ToTTo 数据集进行了超过 44 个类别的主题分析，发现 Sports 和 Country 主题，每个主题都包含一系列细粒度的主题，例如，体育的足球/奥运会和国家的人口/建筑，共占数据集的 56.4%。其余 44% 的主题范围更广，包括表演艺术、交通和娱乐。&lt;/p&gt;&lt;p&gt;&lt;img data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eG1jA7faiceGicwTeJAV5ibC3eoNiaNRffCD6Ct5AK5EM8cFt3Ds2FhnBcuHqy3vn8Or4ebDlxAnl4OaOibRRHyrQ2w/640?wx_fmt=png&quot; data-type=&quot;png&quot;/&gt;&lt;/p&gt;&lt;p&gt;此外，我们对超过 100 个随机选择的示例数据集中不同类型的语言现象进行了手动分析。下表总结了需要参考页面和章节标题的部分示例，以及数据集中可能对当前系统构成新挑战的一些语言现象。&lt;/p&gt;&lt;p&gt;语言现象 百分比&lt;/p&gt;&lt;p&gt;需要参考页面标题 82%&lt;/p&gt;&lt;p&gt;需要参考章节标题 19%&lt;/p&gt;&lt;p&gt;需要参考表格说明 3%&lt;/p&gt;&lt;p&gt;推理（逻辑、数字、时间等） 21%&lt;/p&gt;&lt;p&gt;跨行/列/单元格的比较 13%&lt;/p&gt;&lt;p&gt;需要背景资料 12%&lt;/p&gt;&lt;h2&gt;&lt;strong&gt;&lt;em&gt;基线结果&lt;/em&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;p&gt;我们展示了文献中的三个最先进模型（BERT-to-BERT、Pointer Generator和Puduppully 2019 模型）在两个评估指标BLEU和PARENT上的一些基线结果。除了报告整体测试集的分数之外，我们还在由域外示例组成的更具挑战性的子集上评估每个模型。如下表所示，BERT-to-BERT 模型在 BLEU 和 PARENT 方面表现最佳。此外，所有模型在挑战集上的表现都相当低，表明域外泛化的挑战。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;蓝色&lt;/span&gt;  &lt;span&gt;家长&lt;/span&gt;  &lt;span&gt;蓝色&lt;/span&gt;  &lt;span&gt;家长&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;模型 （总体） （总体） （挑战） （挑战）&lt;/p&gt;&lt;p&gt;BERT 到 BERT 43.9 52.6 34.8 46.7&lt;/p&gt;&lt;p&gt;指针生成器 41.6 51.6 32.2 45.2&lt;/p&gt;&lt;p&gt;Puduppully 等人。2019年 19.2 29.2 13.9 25.8&lt;/p&gt;&lt;p&gt;虽然自动指标可以给出一些性能指标，但它们目前不足以评估文本生成系统中的幻觉。为了更好地理解幻觉，我们手动评估表现最好的基线，以确定它对源表中内容的忠实度，假设差异表明幻觉。为了计算“专家”性能，对于我们多参考测试集中的每个示例，我们提供一个参考并要求注释者将其与其他参考进行比较以确保其忠实度。结果显示，表现最好的基线似乎在大约 20% 的时间里产生幻觉信息。&lt;/p&gt;&lt;p&gt;模型 （总体） （挑战）&lt;/p&gt;&lt;p&gt;专家 93.6 91.4&lt;/p&gt;&lt;p&gt;BERT 到 BERT 76.2 74.2&lt;/p&gt;&lt;h2&gt;&lt;strong&gt;&lt;em&gt;模型错误和挑战&lt;/em&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;p&gt;在下表中，我们展示了一些观察到的模型错误，以突出 ToTTo 数据集的一些更具挑战性的方面。我们发现最先进的模型在幻觉、数值推理和稀有主题中挣扎，即使使用干净的引用（红色错误）。最后一个例子表明，即使模型输出是正确的，它有时也不如包含更多关于表格的推理的原始参考（以蓝色显示）提供信息。&lt;/p&gt;&lt;h2&gt;&lt;strong&gt;&lt;em&gt;参考 模型预测&lt;/em&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;p&gt;在 1939 年的咖喱杯中，西部省份在开普敦以 17-6 输给了德兰士瓦。在第一Currie杯子在1939年发挥transvaal1在新-土地，与西部省份赢得17-6。&lt;/p&gt;&lt;p&gt;ibm 于 2000 年发布了第二代微型驱动器，容量增加到 512 mb 和 1 gb。2000 年有512 个微驱动器型号：1 GB。1956 年的摩托车大奖赛赛季包括 5 个级别的 6 场大奖赛：500cc、350cc、250cc、125cc 和 sidecars 500cc。1956 年大奖赛摩托车赛季包括8场大奖赛，分为五个级别：500cc、350cc、250cc、125cc 和 sidecars 500cc。&lt;/p&gt;&lt;p&gt;在特拉维斯·凯尔斯 (travis kelce) 的最后一个大学赛季中，他在接球 (45)、接球码数 (722)、每次接球码数 (16.0) 和接球达阵 (8) 方面均创下个人职业生涯新高。travis kelce 完成了 2012 赛季，完成了 45 次接球，传球 722 码（场均 16.0 次）和 8 次达阵。&lt;/p&gt;&lt;h2&gt;&lt;strong&gt;&lt;em&gt;结论&lt;/em&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;p&gt;在这项工作中，我们展示了 ToTTo，这是一个大型的英文表格到文本数据集，它提供了一个受控的生成任务和一个基于迭代句子修订的数据注释过程。我们还提供了几个最先进的基线，并证明了 ToTTo 可能是一个有用的数据集，用于建模研究以及开发可以更好地检测模型改进的评估指标。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;
-                &lt;/div&gt;
-
-                
-
-                
-
-
-
-                
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>25033387f5984cb54f62b4e9b4669f22</guid>
+<title>如何合理地选型工具</title>
+<link>https://toutiao.io/k/bue7e8t</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entry-content&quot; itemprop=&quot;articleBody&quot;&gt;&amp;#13;
+&lt;h3&gt;背景&lt;/h3&gt;
+&lt;p&gt;在最近的项目上，我有机会和团队完成了几次重要的工具选型。它们分别是在让在建的SaaS 系统具备表单能力；让该SaaS 系统能够为接线员用户提供软电话能力；让用户的不同角色能够看到和自己相关的报表。在这几次选型过程中，有些是在商业软件和商业软件之间做出选择，有些是在商业软件和开源软件间做出选择。回头看来，每次选择的过程都不尽相同，但大致可以总结为以下几个过程。&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;为了方便读者理解后面的例子，简单介绍一下项目背景。CD公司是一家为中小型家政服务公司提供ERP软件的公司，在行业内已经积累了20多年。目前该公司正在将其老旧的基于C/S 架构的传统ERP软件0改造为云上SaaS 平台来持续为客户创造价值，并通过其20年积累的行业最佳实践来吸引新的客户群体。&lt;/em&gt;&lt;/p&gt;
+&lt;h3&gt;清晰定义问题&lt;/h3&gt;
+&lt;p&gt;在考虑其他因素之前，最重要的是清晰地理解问题本身。而且当涉及到工具选型这类重大决策时，干系人都期望所采用的方案能解决的不仅是当前的问题，还需要能解决将来可能会遇到的问题。那么如何确定需求的优先级的同时兼顾系统的业务愿景就特别重要。毕竟有人说过 “A Problem Well-Defined is a Problem Half-Solved”。这一步不是本文的重点，但是会直接影响到选型结果的正确性。&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;在前面提到的报表的例子中。团队在和客户进行了多轮访谈并对竞争对手产品中报表功能的分析后，最终获得了理解一致的需求 —— “客户希望根据行业最佳实践为最终用户提供预定义的报表功能，并能随着客户反馈提供简单的自定义功能，让用户可以在预设的数据集内通过不同的维度从其业务数据中获得洞见。”&lt;/em&gt;&lt;/p&gt;
+&lt;h3&gt;确定候选技术&lt;/h3&gt;
+&lt;p&gt;接下来你需要想方设法获得一个备选方案的工具清单，那么清单能从哪来呢？&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;从客户那里来&lt;br/&gt;
+客户通常会有一些备选方案，可能是已经在其组织内部被采用的技术，或者是客户方的技术人员所了解的技术。这时你只需要询问客户即可，你很可能还可以获得一些商用软件的官方支持，这将为后面的调研工作提供便利。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;从竞争对手那里来&lt;br/&gt;
+可能你有机会可以窥探到竞争对手在该领域所使用的技术。那么不妨将该技术也放入列表中，特别是在当前领域处于DDD中的通用域时。（在DDD中我们了解到，通用域是那些不需要具备竞争优势的领域，那么和竞争对手打个平手也是可以接受的）&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;日常的积累&lt;br/&gt;
+如果你曾经解决过（或参与解决过）类似问题，那么可能会了解一些相关技术。如果没有，也不用急，类似的技术选型活动将会是积累相关技术的绝佳机会。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;em&gt;如果你正开始尝试解决方案架构师，那么可以使用5W1H 在日常工作中不断积累各类工具和技术，这里我将1H strikethrough，是因为成为架构师需要快速扩宽自己的知识范围，将未知的未知问题转换为已知的未知问题，来丰富自己的工具箱。等到需要的时候再进一步深入了解。&lt;/em&gt;&lt;/p&gt;
+&lt;div id=&quot;attachment_14818&quot; class=&quot;wp-caption aligncenter&quot;&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2021/09/1-how-to-choose-tools.png&quot;&gt;&lt;img aria-describedby=&quot;caption-attachment-14818&quot; src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2021/09/1-how-to-choose-tools-768x686.png&quot; alt=&quot;&quot; class=&quot;size-medium_large wp-image-14818&quot; srcset=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2021/09/1-how-to-choose-tools-768x686.png 768w, https://insights.thoughtworks.cn/wp-content/uploads/2021/09/1-how-to-choose-tools-300x268.png 300w, https://insights.thoughtworks.cn/wp-content/uploads/2021/09/1-how-to-choose-tools.png 916w&quot; sizes=&quot;(max-width: 700px) 100vw, 700px&quot;/&gt;&lt;/a&gt;&lt;p id=&quot;caption-attachment-14818&quot; class=&quot;wp-caption-text&quot;&gt;图片引自《Fundamentals of Software Architecture》&lt;/p&gt;&lt;/div&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;技术雷达&lt;br/&gt;
+请参考&lt;a href=&quot;https://www.thoughtworks.com/cn/radar&quot; title=&quot;Thoughtworks技术雷达&quot;&gt;Thoughtworks技术雷达&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;寻求他人帮助&lt;br/&gt;
+可以找到有经验的同事，或到相关论坛询问是否有合适的技术能适用于当前的场景。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;借助搜索引擎&lt;br/&gt;
+这里分享一个搜索的小技巧。例如，你从其他渠道得知Tableau可能能解决当前场景下的问题，那么你可以尝试搜索：Tableau alternatives或者Tableau free alternatives 又或者 Tableau open source alternatives 你会收获很多。&lt;br/&gt;
+相信综合这些选项你已经获得了可以进入到下一步的工具清单。如果到这里你都还没有一个足够你开始调研的清单，那么很可能该领域的解决方案匮乏，团队可能最终会需要自己造轮子。 &lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;em&gt;在我们报表工具的例子中，客户组织内部使用了Tableau作为内部的BI工具；团队之前接触过Jasperreport；项目的云供应商AWS 上的QuickSight 提供了类似的BI 能力；通过询问，我们了解到了Redash；通过搜索，我们了解到了Superset和 Metabase。&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;这个时候可能你已经准备好了各种纬度表，然后摩拳擦掌，准备开始针对候选产品进行深度调研和对比了。&lt;/p&gt;
+&lt;h3&gt;做出选择&lt;/h3&gt;
+&lt;p&gt;通常完成一个工具选型需要考虑的因素很多，但大致可以分为：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;满足功能性需求&lt;/li&gt;
+&lt;li&gt;满足跨功能性需求&lt;/li&gt;
+&lt;li&gt;满足成本预算&lt;/li&gt;
+&lt;li&gt;对齐技术愿景&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2021/09/2-how-to-choose-tools.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2021/09/2-how-to-choose-tools-768x505.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;虽然只包含着四个部分，但是想要通过分析快速做出决策并不简单，就单单从跨功能性需求而言，在《演进式架构》中作者就列举了74项，并还向其中增加了Evolvability （可演进性）。综合这些考量本身就是一个复杂的过程。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2021/09/3-how-to-choose-tools.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2021/09/3-how-to-choose-tools-768x568.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;从敏捷项目管理中，我们学到遇到问题时要首先将其分解，再想方法排个优先级，问题通常就能变得清晰。&lt;/p&gt;
+&lt;p&gt;在我们的例子中，架构师将整理出的跨功能需求按照其影响程度或架构的关注程度进行了优先级排序，其中处于较高优先级的有：多租户，安全合规，功能性需求，互操作性（集成复杂度），伸缩性，可维护性，技术愿景，收费模式，成本。接着我们再通过信息获取和分析的难易程度进行了简单的排列，例如，有些信息只需要阅读少量文档或者通过问询便可得到，有些信息需要阅读大量文档并进行分析才能判断候选工具间的优劣。这样就能让调研工作缩小到一定范围，同时可以观察到调研活动会分布到下图的四个象限中。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2021/09/4-how-to-choose-tools.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2021/09/4-how-to-choose-tools-768x492.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;那么针对不同象限中的因素遍可以采取对应的策略进行调研了。按照从易到难的顺序完成调研工作可以更有效地筛选备选方案。&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;开源许可协议 在进行报表工具选型的过程中，由于忽略了JasperReport Server的开源许可协议，导致了在选型过程中的反复和团队精力上的浪费。而开源许可类型是非常容易获得的信息，并且不需要过多的分析就能就可以获得结果，它处于Fast Fail象限。如果可以准确的识别出处于该象限中的因素将极大增加选型的效率。&lt;/em&gt;&lt;/p&gt;
+&lt;h3&gt;结合技术愿景&lt;/h3&gt;
+&lt;p&gt;在作出工具选型时需要结合组织的技术愿景，例如，如果我们希望系统可以具有高度的移植性，可以不被锁定到某个云厂商，那么在技术选型时应该考虑是否由于选择某项技术而增加对云厂商的依赖，在我们的例子中，最终我们选择了Amazon Connect 作为客服电话集成方案，但是并没有采用QuickSight作为报表/BI 方案。同是Amazon所提供的服务，但是BI工具作为数据的下游，可能会导致在存储和数据管道技术上大量依赖于AWS提供的其他服务，使将来可能的迁移更加困难，最终锁定到供应商。而电话系统作为客户触点，则更容易通过API的方式和后台系统解耦而独立存在，供应商锁定的风险更小。&lt;/p&gt;
+&lt;h3&gt;关于成本&lt;/h3&gt;
+&lt;p&gt;关于成本这里不想展开太多，但是当涉及到商业软件的成本的估算是通常需要客户方的大量介入。 团队则需要根据目前大致方案给出实施，集成和上线所需要的资源配置和时间。工具的提供方则会提供实际价格及后续的维护和支持的报价。&lt;/p&gt;
+&lt;p&gt;如果是自建系统，则需要为建设所需的软硬件和人力资源成本以及后续的维护及支持的成本给出大致的估算来为最终的选型提供依据。&lt;/p&gt;
+&lt;h3&gt;写在最后&lt;/h3&gt;
+&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2021/09/5-how-to-choose-tools.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2021/09/5-how-to-choose-tools-768x738.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;工具选型是一个复杂的过程，需要综合很多信息才能做出合适的选择。我们知道任何技术决策都是权衡利弊的结果。将决策上下文和最终选择的Cons &amp;amp; Pros记录下来，即便将来发现这个选择不再合适的时候，也能清楚的追溯到先前决策的细节，会为下一步决策提供更加充分的依据。希望本文能帮助到你，也希望天下没有错误的工具选型。&lt;/p&gt;
+&amp;#13;
+&lt;/div&gt;&amp;#13;
+&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
