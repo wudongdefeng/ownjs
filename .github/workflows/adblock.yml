@@ -37,9 +37,9 @@ jobs:
         
         cd ~/ad
         chmod +x diy.sh
-        cp -rf scripts ~/anti-AD
-        cp -f diy.sh ~/ad/diy.sh
-        cp -f writerFormat.class.php ~/ad/scripts/lib/writerFormat.class.php
+        cp -r scripts ~/anti-AD
+        cp -r diy.sh ~/ad/diy.sh
+        cp -r writerFormat.class.php ~/ad/scripts/lib/writerFormat.class.php
         sudo ~/ad/diy.sh
 
     - name: copy some list files 复制文件
