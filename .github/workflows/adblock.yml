@@ -38,15 +38,15 @@ jobs:
         cd ~/ad
         chmod +x diy.sh
         cp -r scripts ~/anti-AD
-        cp -r diy.sh ~/ad/diy.sh
-        cp -r writerFormat.class.php ~/ad/scripts/lib/writerFormat.class.php
-        sudo ~/ad/diy.sh
+        cp -r diy.sh ~/anti-AD/diy.sh
+        cp -r writerFormat.class.php ~/anti-AD/scripts/lib/writerFormat.class.php
+        sudo ~/anti-AD/diy.sh
 
     - name: copy some list files 复制文件
       run: |
         echo "https://wudongdefeng:${{ secrets.aliyun }}@code.aliyun.com">~/.git-credentials
-        cp ~/ad/anti-ad-easylist.txt ~/aliyun/ad.txt
-        cp ~/ad/anti-ad-easylist.txt ~/gitlab/ad.txt    
+        cp ~/anti-AD/anti-ad-easylist.txt ~/aliyun/ad.txt
+        cp ~/anti-AD/anti-ad-easylist.txt ~/gitlab/ad.txt    
     
         
     - name: Commit files 提交文件
