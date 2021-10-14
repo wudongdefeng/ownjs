@@ -1,0 +1,64 @@
+name: aliyun推送 
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 9 * * *"
+  watch:
+    types: started
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+
+    steps:
+    - uses: actions/checkout@main
+      
+    - name: time GMT+8 北京时间
+      run: |
+        sudo timedatectl set-timezone 'Asia/Shanghai' 
+     
+    - name: Clone source code 克隆源码
+      run: |
+        git clone git@github.com/wudongdefeng/anti-AD.git ~/anti-AD    
+        git clone git@github.com:dancing-wind/ownadblock.git ~/ad
+        git clone https://code.aliyun.com/wudongdefeng/ownadblock.git ~/aliyun
+        git clone https://gitlab.com/wudongdefeng/ownadblock.git ~/gitlab
+
+    - name: Run diy.sh 开始定制
+      run: |
+        
+        cd ~/ad
+        chmod +x diy.sh
+        cp -rf scripts ~/anti-AD
+        cp -f diy.sh ~/ad/diy.sh
+        cp -f writerFormat.class.php ~/ad/scripts/lib/writerFormat.class.php
+        sudo ~/ad/diy.sh
+
+    - name: copy some list files 复制文件
+      run: |
+        echo "https://wudongdefeng:${{ secrets.aliyun }}@code.aliyun.com">~/.git-credentials
+        cp ~/ad/anti-ad-easylist.txt ~/aliyun/ad.txt
+        cp ~/ad/anti-ad-easylist.txt ~/gitlab/ad.txt    
+    
+        
+    - name: Commit files 提交文件
+      run: |
+        cd ~/aliyun
+        git config --global credential.helper store
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git add .
+        git commit -m "空投已送达" -a
+        git push -u origin master
+        rm ~/.git-credentials
+        cd ~/gitlab
+        echo "https://wudongdefeng:${{ secrets.gitlab }}@gitlab.com">~/.git-credentials
+        git config --global credential.helper store
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git add .
+        git commit -m "空投已送达" -a
+        git push -u origin master
