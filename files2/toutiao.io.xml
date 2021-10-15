@@ -966,51 +966,6 @@ function newContext(contextName) {
             &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>6d36a9305cb718070d8bae20d3b15ee3</guid>
-<title>前端项目打包版本维护命令 npm version 完全解析</title>
-<link>https://toutiao.io/k/tr2itmn</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entryContent&quot;&gt;&amp;#13;
-        &lt;p&gt;前端项目版本的维护，通常在 &lt;code&gt;package.json&lt;/code&gt; 文件中的 &lt;code&gt;version &lt;/code&gt; 属性进行配置，当我们要在前端页面中显示的时候，可以按如下操作：&lt;/p&gt;
-&lt;pre&gt;&amp;lt;script&amp;gt;&amp;#13;
-import config from &#x27;../../package.json&#x27;&amp;#13;
-export default {&amp;#13;
-  name: &#x27;Footer&#x27;,&amp;#13;
-  data() {&amp;#13;
-    return {&amp;#13;
-      appVersion: config.version&amp;#13;
-    }&amp;#13;
-  }&amp;#13;
-}&amp;#13;
-&amp;lt;/script&amp;gt;&lt;/pre&gt;
-&lt;p&gt;那么项目迭代中，如何来维护我们的版本号？只能手动在 &lt;code&gt;package.json&lt;/code&gt; 中修改么？&lt;/p&gt;
-&lt;p&gt;其实可以在打包执行命令的时候，通过命令及参数帮助我们实现自动升级版本号的目的。比如我们在打测试环境包的时候可以使用（&lt;code&gt;cross-env&lt;/code&gt; 用来指定变量 &lt;code&gt;NODE_ENV&lt;/code&gt; 的值）&lt;/p&gt;
-&lt;pre&gt;&quot;scripts&quot;: {&amp;#13;
-  &quot;test&quot;: &quot;npm version patch &amp;amp;&amp;amp; cross-env NODE_ENV=testing node build/build.js&quot;&amp;#13;
-}&lt;/pre&gt;
-&lt;p&gt;下面我们来看看 &lt;code&gt;npm version&lt;/code&gt; 命令具体的使用方式：&lt;code&gt;npm&lt;/code&gt; 采用了 &lt;code&gt;semver&lt;/code&gt; 规范作为依赖版本管理方案。&lt;code&gt;semver&lt;/code&gt; 约定一个包的版本号必须包含3个数字&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;MAJOR.MINOR.PATCH&lt;/code&gt; 意思是 &lt;code&gt;主版本号.小版本号.修订版本号&lt;/code&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;MAJOR 对应大的版本号迭代，做了不兼容旧版的修改时要更新 MAJOR 版本号&lt;/li&gt;
-&lt;li&gt;MINOR 对应小版本迭代，发生兼容旧版 API 的修改或功能更新时，更新 MINOR 版本号&lt;/li&gt;
-&lt;li&gt;PATCH 对应修订版本号，一般针对修复 BUG 的版本号&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;当我们每次发布包的时候都需要升级版本号：&lt;/p&gt;
-&lt;pre&gt;npm version major  # 大版本号加 1，其余版本号归 0&amp;#13;
-npm version minor  # 小版本号加 1，修订号归 0&amp;#13;
-npm version patch  # 修订号加 1&lt;/pre&gt;
-&lt;p&gt;另外还有其它一些参数需要注意&lt;/p&gt;
-&lt;h4&gt;&lt;code class=&quot;inline-code__InlineCode-sc-6w7ni7-0 cfZKRM&quot;&gt;allow-same-version&lt;/code&gt;&lt;/h4&gt;
-
-&lt;p&gt;该配置项用于防止我们的升级后的版本号和升级前一样时抛出错误&lt;/p&gt;
-&lt;h4&gt;&lt;code class=&quot;inline-code__InlineCode-sc-6w7ni7-0 cfZKRM&quot;&gt;git-tag-version&lt;/code&gt;&lt;/h4&gt;
-
-&lt;p&gt;这个配置项用来是否在升级版本号后自动给该版本号打 Tag&lt;/p&gt;
-&lt;pre&gt;npm version patch --allow-same-version=false --git-tag-version=true&lt;/pre&gt;
-    &lt;/div&gt;&amp;#13;
-&amp;#13;
-    &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
 <guid>6f3b191bd536eda3e412e232425358f6</guid>
 <title>一文学会 Java 事件机制</title>
 <link>https://toutiao.io/k/44t0udv</link>
@@ -1153,6 +1108,51 @@ npm version patch  # 修订号加 1&lt;/pre&gt;
 
       &lt;/div&gt;
      
+    &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>6d36a9305cb718070d8bae20d3b15ee3</guid>
+<title>前端项目打包版本维护命令 npm version 完全解析</title>
+<link>https://toutiao.io/k/tr2itmn</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entryContent&quot;&gt;&amp;#13;
+        &lt;p&gt;前端项目版本的维护，通常在 &lt;code&gt;package.json&lt;/code&gt; 文件中的 &lt;code&gt;version &lt;/code&gt; 属性进行配置，当我们要在前端页面中显示的时候，可以按如下操作：&lt;/p&gt;
+&lt;pre&gt;&amp;lt;script&amp;gt;&amp;#13;
+import config from &#x27;../../package.json&#x27;&amp;#13;
+export default {&amp;#13;
+  name: &#x27;Footer&#x27;,&amp;#13;
+  data() {&amp;#13;
+    return {&amp;#13;
+      appVersion: config.version&amp;#13;
+    }&amp;#13;
+  }&amp;#13;
+}&amp;#13;
+&amp;lt;/script&amp;gt;&lt;/pre&gt;
+&lt;p&gt;那么项目迭代中，如何来维护我们的版本号？只能手动在 &lt;code&gt;package.json&lt;/code&gt; 中修改么？&lt;/p&gt;
+&lt;p&gt;其实可以在打包执行命令的时候，通过命令及参数帮助我们实现自动升级版本号的目的。比如我们在打测试环境包的时候可以使用（&lt;code&gt;cross-env&lt;/code&gt; 用来指定变量 &lt;code&gt;NODE_ENV&lt;/code&gt; 的值）&lt;/p&gt;
+&lt;pre&gt;&quot;scripts&quot;: {&amp;#13;
+  &quot;test&quot;: &quot;npm version patch &amp;amp;&amp;amp; cross-env NODE_ENV=testing node build/build.js&quot;&amp;#13;
+}&lt;/pre&gt;
+&lt;p&gt;下面我们来看看 &lt;code&gt;npm version&lt;/code&gt; 命令具体的使用方式：&lt;code&gt;npm&lt;/code&gt; 采用了 &lt;code&gt;semver&lt;/code&gt; 规范作为依赖版本管理方案。&lt;code&gt;semver&lt;/code&gt; 约定一个包的版本号必须包含3个数字&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;MAJOR.MINOR.PATCH&lt;/code&gt; 意思是 &lt;code&gt;主版本号.小版本号.修订版本号&lt;/code&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;MAJOR 对应大的版本号迭代，做了不兼容旧版的修改时要更新 MAJOR 版本号&lt;/li&gt;
+&lt;li&gt;MINOR 对应小版本迭代，发生兼容旧版 API 的修改或功能更新时，更新 MINOR 版本号&lt;/li&gt;
+&lt;li&gt;PATCH 对应修订版本号，一般针对修复 BUG 的版本号&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;当我们每次发布包的时候都需要升级版本号：&lt;/p&gt;
+&lt;pre&gt;npm version major  # 大版本号加 1，其余版本号归 0&amp;#13;
+npm version minor  # 小版本号加 1，修订号归 0&amp;#13;
+npm version patch  # 修订号加 1&lt;/pre&gt;
+&lt;p&gt;另外还有其它一些参数需要注意&lt;/p&gt;
+&lt;h4&gt;&lt;code class=&quot;inline-code__InlineCode-sc-6w7ni7-0 cfZKRM&quot;&gt;allow-same-version&lt;/code&gt;&lt;/h4&gt;
+
+&lt;p&gt;该配置项用于防止我们的升级后的版本号和升级前一样时抛出错误&lt;/p&gt;
+&lt;h4&gt;&lt;code class=&quot;inline-code__InlineCode-sc-6w7ni7-0 cfZKRM&quot;&gt;git-tag-version&lt;/code&gt;&lt;/h4&gt;
+
+&lt;p&gt;这个配置项用来是否在升级版本号后自动给该版本号打 Tag&lt;/p&gt;
+&lt;pre&gt;npm version patch --allow-same-version=false --git-tag-version=true&lt;/pre&gt;
+    &lt;/div&gt;&amp;#13;
+&amp;#13;
     &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
