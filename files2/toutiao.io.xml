@@ -76,25 +76,71 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>9b480cb1b90fa45a9d89d5764895fa13</guid>
-<title>研发考核难的本质是因为这三个特点</title>
-<link>https://toutiao.io/k/lwrr9cb</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
+<guid>7620de56aeac9b2055957690b5b4eaed</guid>
+<title>JVM 简明笔记（一）：JVM 概述</title>
+<link>https://toutiao.io/k/altj7ll</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div id=&quot;cnblogs_post_body&quot; class=&quot;blogpost-body cnblogs-markdown&quot;&gt;
+&lt;h2 id=&quot;什么是jvm&quot;&gt;什么是JVM&lt;/h2&gt;
+&lt;p&gt;JVM 即 Java Virtual Machine，中文名为 Java虚拟机。&lt;/p&gt;
+&lt;p&gt;一般情况下&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;C/C++ 程序，编译成二进制文件后，就可以直接执行了；&lt;/li&gt;
+&lt;li&gt;Java 需要使用 javac 编译成 &lt;code&gt;.class&lt;/code&gt; 文件，还需要使用 Java 命令去主动执行它。JVM 就是识别 &lt;code&gt;.class&lt;/code&gt; 后缀的文件，并且能够解析它的指令，最终调用操作系统上的函数。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Java 是一门抽象程度特别高的语言，提供了自动内存管理等一系列的特性。这些特性直接在操作系统上实现是不太可能的。而且有了 JVM 这个抽象层之后，Java 就可以实现跨平台了。Java 跨平台的意义在于一次编译，处处运行。而C/C++程序则需要对应不同的平台、架构分别编译成二进制文件。 现在的一些 JVM 的扩展语言，比如 Clojure、JRuby、Groovy 等，编译到最后都是 &lt;code&gt;.class&lt;/code&gt; 文件，Java 语言的维护者，只需要控制好 JVM 这个解析器，就可以将这些扩展语言无缝的运行在 JVM 之上了。&lt;/p&gt;
+&lt;p&gt;从官网截取几张图来理解 JVM：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://img2020.cnblogs.com/blog/1282178/202110/1282178-20211016105009462-1254967066.png&quot; alt=&quot;An overview of the software development process.&quot; loading=&quot;lazy&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://img2020.cnblogs.com/blog/1282178/202110/1282178-20211016105038057-460147112.png&quot; alt=&quot;Through the Java VM, the same application is capable of running on multiple platforms.&quot; loading=&quot;lazy&quot;/&gt;&lt;/p&gt;
+&lt;h2 id=&quot;jvm-jre-jdk的关系&quot;&gt;JVM JRE JDK的关系&lt;/h2&gt;
+&lt;p&gt;JVM不能单独搞定 class 的执行，它还需要一个基本的类库，比如怎么操作文件、怎么连接网络等。JVM加上这些基础类库，就组成&lt;br/&gt;
+了 Java 的运行时环境，也就是我们常说的 JRE（Java Runtime Environment）。&lt;/p&gt;
+&lt;p&gt;另外Java的开发者非常慷慨的实现了一些开发的工具，比如 javac、java、jar 等，是 Java 开发的核心。JRE加上这些工具就组成了 JDK（Java Development Kit)）。&lt;/p&gt;
 
-                    
-                    
-                    
-                    &lt;p&gt;&lt;strong&gt;&lt;span&gt;这里是Z哥的个人公众号&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;每周五11：45 按时送达&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;当然了，也会时不时加个餐～&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;我的第「212」篇原创敬上&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;大家好，我是Z哥。我坦白，这篇是早就写好的库存文章，包括上周的那篇也是。&lt;img data-fileid=&quot;100002717&quot; data-ratio=&quot;1&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/oB5bd6W6hI0lpRZibR0Y8IKYJoy34VCKmjj838wNLpftiaOKsN6zAbXGnqqb2Fgz1ibRTHgX5Scvia9ibAoAGKb0kBQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;20&quot;/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;原因是最近跳槽了，到新公司&lt;/span&gt;&lt;span&gt;忙得飞起，都没时间写&lt;/span&gt;&lt;span&gt;文章。还好我之前未雨绸缪准备了几篇提前写好的文章作为余量～&lt;/span&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;我尽量能保持不断更，如果实在顶不住就周五的时候给大家请假哈。&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;好了，回到这次聊的正题。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;研发考核难是整个软件开发领域众所周知的问题，甚至可以说是跨世纪的难题了（上个世纪开始至今未被有效解决）。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;近期我对这个问题有了一些新的思考，在这里和大家分享交流一下。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;很多人觉得因为研发考核很难考，所以索性就不考了。这个就有点因噎废食了。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;首先我们要搞清楚，考核存在的意义是什么？&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;我的理解是：为了达成团队的共同目标。为了更好的管理团队、驱动团队力往一处使。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;但是管理大师德鲁克又说过：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;blockquote class=&quot;js_blockquote_wrap&quot; data-type=&quot;2&quot; data-url=&quot;&quot; data-author-name=&quot;&quot; data-content-utf8-length=&quot;16&quot; data-source-title=&quot;德鲁克&quot;&gt;&lt;section class=&quot;js_blockquote_digest&quot;&gt;&lt;section&gt;你如果无法度量它，就无法管理它。&lt;/section&gt;&lt;/section&gt;&lt;section class=&quot;blockquote_info js_blockquote_source&quot; data-json=&quot;%7B%22type%22%3A%22out%22%2C%22source%22%3A%22url%22%2C%22digest%22%3A%22%22%2C%22digestLen%22%3A16%2C%22text%22%3A%22%E4%BD%A0%E5%A6%82%E6%9E%9C%E6%97%A0%E6%B3%95%E5%BA%A6%E9%87%8F%E5%AE%83%EF%BC%8C%E5%B0%B1%E6%97%A0%E6%B3%95%E7%AE%A1%E7%90%86%E5%AE%83%E3%80%82%22%2C%22article%22%3A%7B%7D%2C%22hasReportOverSize%22%3Afalse%2C%22editorReportData%22%3A%5B%7B%22id%22%3A%22122333%22%2C%22key%22%3A%2276%22%2C%22len%22%3A1%7D%5D%2C%22from%22%3A%22%E5%BE%B7%E9%B2%81%E5%85%8B%22%7D&quot;&gt;&lt;span class=&quot;blockquote_other&quot;&gt;德鲁克&lt;/span&gt;&lt;/section&gt;&lt;/blockquote&gt;&lt;p&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;这句话既然能被各个时代的管理者所追捧，存在了几十年，自然有它的道理。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;所以，不管我们是不是为了考核，都得找到度量的方式方法。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;有些团队的确找到了不少度量指标，但是大多偏向技术层面，包括我们团队之前也是如此。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;这些指标一旦在具体实施之后往往发现效果甚至不如没有考核的时候。这个背后的原因也有很多文章提到过，就是那些指标不适合考核。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;也有一些人经历了上面这个阶段后觉得研发的考核不好做，不好量化。实则是因为找不到那种直击要害的关键指标。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;从这个问题的本质上来说，大家之所以觉得研发考核难本质是由于研发工作的三个特点导致的。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;01&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;  &lt;/span&gt;&lt;strong&gt;&lt;span&gt;无法标准化&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;这里的无法标准化并不只是难以度量，而是说同样完成一个任务，不同的人会有不同的做法，最终的结果也可能会差别很大。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;比如，同一个任务，有的人做了 5 天，有的人做了 10 天；有的人喜欢花很多时间在前期的设计阶段，有的人则会花更多时间在后期的自测上。但是你也不能说一定是谁的方式更好。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;02&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;  &lt;/span&gt;&lt;strong&gt;&lt;span&gt;工作透明度低&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;实现同样一个功能，如果有合理的代码封装，可能只要 100 行代码。但是如果不花时间去构思封装，那么可能是 500 行，甚至是 1000 行。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;此时，如果没有第三者进行 codereview 的话，甚至可能会觉得写 1000 行代码的人产出更大。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;03&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;  &lt;/span&gt;&lt;strong&gt;&lt;span&gt;工作时间的碎片化&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;不得不说，大多数人的工作时间其实大部分时候很难完全由自己掌控，一会有人找你问个事，一会需要参加一个会，一会又来个电话接一下。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;这些被动的意外之事都会使得做度量这件事变得困难，甚至还会将原来的计划打乱，导致某些考核指标出现失真。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;Z哥觉得研发考核指标怎么定这件事应该分为两个问题去看。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;这两个问题之间其实没有必然联系，如果老想着一箭双雕，一次解决两个问题，就会陷入前面提到的困境中。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;我认为大部分的指标是用来作为帮助决策的信息源，而用于考核的指标不一定要多，要有业务价值。具体我来展开说说。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;/01  能够度量的指标有哪些/&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;相信有不少指标已经马上在你的脑海中跳出来了：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;很多讲考核的文章都会对这些指标嗤之以鼻，因为这些指标不适合用来考核，这是针对流水线工作性质的考核产物。这点不否认。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;但是也不能否认，这些简单的指标中也蕴含着有价值的信息。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;因此在我的理念里，认为不应该主动放弃任何能被度量的指标。正如前面所说，研发工作本身就具有无法标准化、工作透明度低、工作时间的碎片化的特点。我们好不容易找到一些指标能够帮助我们更清楚的认识我们的工作做得到底如何，为什么不要呢？&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;不适合考核不等于我们可以忽略他们。这也是我认为要将这事分为「能够度量的指标有哪些？」和「怎么考核？」的原因。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;除了这些大家都知道的指标，还有很多指标可以被度量。它们主要分为两个维度：过程指标和结果指标。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;常见的过程指标有：需求响应周期、发布前置时间、交付吞吐量、&lt;span&gt;线上问题平均解决时长&lt;/span&gt;等；结果指标有：日均新增 bug 数，日均 bug 库存数，线上问题数量等。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;如果你所在的团队对工程效率比较重视，相信还有不少指标可以被度量出来。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;这些指标有什么用呢，我们需要每天观察他们的变化，便于及时发现团队里正在发生的变化是否符合预期。&lt;/span&gt;&lt;span&gt;比如，&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;/02  怎么考核？/&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;用上面列出的这些指标来考核吗？自然不是。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;Z哥认为考核还是得从业务下手，要想办法找到与技术有一定关系的业务指标，比如，DAU、用户平均停留时长等等。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;可能很多人第一眼会觉得说，这些指标有很大比例是由业务决定的，技术在其中起不了什么作用。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;其实并不然，你想象一下。如果我们的拉新用户承接页的稳定性不好，或者核心业务链路经常出错，这对 DAU 和用户平均停留时长必然会造成不好的影响。所以，业务指标真的与技术无关吗？其实并不然。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;怎么落地为考核呢？我的思路是建立在两个逻辑之上的：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;业务指标的移动平均值在一段时间里是一条趋势向上或向下的曲线。平均范围越长，曲线越平滑。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;技术在短期不能显著提高业务指标，但可以降低业务指标。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;基于这两个逻辑在落地为考核的时候有两种方案。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;一种是长周期考核，比如每半年或者每年一次的 OKR 考核。这种考核直接用指标在开始时和结束时的差值即可，大多数的偶发性事件直接被平滑掉了。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;另一种是每个月都要进行的短期考核。这种考核建议使用环比变化作为依据。比如比上个月提升了就奖励，降低了就惩罚，这样从长期来看，偶发性事件带来的影响也被平滑掉了。当然这里的奖励和惩罚不一定是物质形式的，也可以是精神形式。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;可能有的人会觉得，这样的考核如果在业务快速发展期，不是躺赚吗？&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;是的没错，只要技术能支撑快速发展的业务，不拖业务的后腿，我认为就应该奖励。至于是不是躺赚，关键还是看选择的业务指标以及如何制定具体的奖惩尺度。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;今天就聊这么多吧。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;研发考核这事和研发工作一样，没有「Sliver Bullet」，我今天和大家聊的也只是我的一家之言，欢迎大家一起探讨。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;本质上，我们也是在讨论，如何更好地向非技术人员展示我们技术人工作成果的好坏。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;好了，总结一下。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;这篇呢，Z哥和你分享了我对研发考核这件事的看法。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;首先，我认为考核还是要考的，不考核肯定不行。研发工作性质的三个特点导致考核指标很难定。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;无法标准化&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;工作透明度低&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;工作时间的碎片化&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;所以，我的建议是找指标管找指标，考核管考核，两件事分开看。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;我们要尽可能多的收集研发过程和衡量结果的指标，它们不一定用来考核，但可以用来及时发现团队中的潜在问题。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;关于考核指标还是建议使用业务相关的指标，从中挑选有一定技术影响程度的。也分享了两种落地方案，分别是长期用 OKR，短期用环比来考核。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;希望对你有所启发。抛砖引玉，欢迎在留言区分享你的观点。&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;推荐阅读：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;原创不易，如果你觉得这篇文章还不错，就「&lt;/span&gt;&lt;span&gt;&lt;strong&gt;点赞&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;」或者「&lt;span&gt;&lt;strong&gt;在看&lt;/strong&gt;&lt;/span&gt;」一下吧，鼓励我的创作 ：）&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;也可以分享我的公众号名片给有需要的朋友们。&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzU2NzEwMDc4OQ==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/oB5bd6W6hI1ENbrFbGjEucl1Az92hEuwmUSdaNXxibiaWuO9sLTPHokw00p8ZxAYdIJJJ7FXj77Ts0YoV5KwEKCA/0?wx_fmt=png&quot; data-nickname=&quot;跨界架构师&quot; data-alias=&quot;Zachary_ZF&quot; data-signature=&quot;坚持原创。专注大型互联网技术，涉猎产品、运营。&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;如果你有关于软件架构、分布式系统、产品、运营的困惑&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;可以试试点击「&lt;strong&gt;阅读原文&lt;/strong&gt;」&lt;/span&gt;&lt;/p&gt;
-                &lt;/div&gt;
+&lt;p&gt;&lt;img src=&quot;https://img2020.cnblogs.com/blog/1282178/202110/1282178-20211016104953710-1840273568.png&quot; alt=&quot;&quot; loading=&quot;lazy&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://img2020.cnblogs.com/blog/1282178/202110/1282178-20211016105057831-851768495.png&quot; alt=&quot;JVM-JRE-JDK&quot; loading=&quot;lazy&quot;/&gt;&lt;/p&gt;
+&lt;h2 id=&quot;jvm-分块概述&quot;&gt;JVM 分块概述&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;运行时数据区 （Runtime Data Areas）：分为五大区域，方法区（Method Area）、堆（Heap）、虚拟机栈（Virtual Machine Stacks）、程序寄存器（Program Counter Registers）、本地方法栈（Native Method Stacks）&lt;/li&gt;
+&lt;li&gt;类加载器 （ClassLoader）：负责加载程序中的类和接口&lt;/li&gt;
+&lt;li&gt;执行引擎 （Execution Engine）：通过类装载器装载的，被分配到JVM的运行时数据区的字节码会被执行引擎执行&lt;/li&gt;
+&lt;li&gt;垃圾收集 （Garbage Collect）： 自动管理内存并进行垃圾回收&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;jvm-的不同实现&quot;&gt;JVM 的不同实现&lt;/h2&gt;
+&lt;p&gt;广义上来讲，JVM 是一种规范，Java发展的过程中产生了很多 VM 实现，我们现在最常用的 HotSpot VM。&lt;/p&gt;
+&lt;p&gt;下面表格是目前常见的 JVM 实现&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;虚拟机名称&lt;/th&gt;
+&lt;th&gt;介绍&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;HotSpot&lt;/td&gt;
+&lt;td&gt;Oracle JDK和OpenJDK都使用HotSpot VM的相同核心&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;JRockit&lt;/td&gt;
+&lt;td&gt;JRockit 也属 Oracle，目前为止 Oracle 一直在推进与 HotSpot 融合互补（大致上是在HotSpot的基础上，移植JRockit的优秀特性）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Azul Zulu&lt;/td&gt;
+&lt;td&gt;由Azul Systems根据HostPot为基础改进的高性能低延迟的JVM（最初针对专有硬件Vega系统，2010年发布了Zing VM面向通用x86平台）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;OpenJ9&lt;/td&gt;
+&lt;td&gt;是IBM开发的高度模块化的JVM，目前已经捐献给Eclipse基金会&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;GraalVM&lt;/td&gt;
+&lt;td&gt;基于HotSpot / OpenJDK，它具有多语言功能，可以透明地混合和匹配支持的语言。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;更多的JVM实现方案请查看 &lt;a href=&quot;https://en.wikipedia.org/wiki/List_of_Java_virtual_machines&quot; target=&quot;_blank&quot;&gt;List of Java virtual machines - Wikipedia&lt;/a&gt;&lt;/p&gt;
 
-                
-
-                
-
-
-
-                
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
