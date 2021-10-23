@@ -5,16 +5,15 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>9034a34e03d66e13f69f724d3094e887</guid>
-<title>[推荐] Go 业务开发中常用的几个开源库</title>
-<link>https://toutiao.io/k/4hr4ykg</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;前言&lt;/span&gt;&lt;/h2&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;哈喽，大家好，我是&lt;code&gt;asong&lt;/code&gt;。拖更了好久，这周开始更新。&lt;/p&gt;&lt;p&gt;最近总有一些初学&lt;code&gt;Go&lt;/code&gt;语言的小伙伴问我在业务开发中一般都使用什么web框架、开源中间件；所以我总结了我在日常开发中使用到的库，这些库不一定是特别完美的，但是基本可以解决日常工作需求，接下来我们就来看一下。&lt;/p&gt;&lt;/blockquote&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;code&gt;Gin&lt;/code&gt;&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Gin&lt;/code&gt;是一个用&lt;code&gt;Go&lt;/code&gt;编写的&lt;code&gt;Web&lt;/code&gt;框架，它是一个类似于&lt;code&gt;martini&lt;/code&gt;但拥有更好性能的&lt;code&gt;API&lt;/code&gt;框架。基本现在每个&lt;code&gt;Go&lt;/code&gt;初学者学习的第一个&lt;code&gt;web&lt;/code&gt;框架都是&lt;code&gt;Gin&lt;/code&gt;。在网上看到一个关于对各个Go-web框架受欢迎的对比：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-fileid=&quot;100001887&quot; data-ratio=&quot;0.3218283582089552&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/CqB2u93NwB8wnpZqk8mDTibMyUsE0bhGEOyI5V43z5WAshfFx69VwbI8uia30qSLQXtePLBIhJic9BM3gK6mBiajicQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1072&quot;/&gt;&lt;figcaption&gt;来自网络&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们可以看到&lt;code&gt;Gin&lt;/code&gt;在社区受欢迎排第一，Gin 框架往往是进行 Web 应用开发的首选框架，许多公司都会选择采用&lt;code&gt;Gin&lt;/code&gt;框架进行二次开发，加入日志，服务发现等功能，像Bilibili 开源的一套 Go 微服务框架 Kratos 就采用 Gin 框架进行了二次开发。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;学习&lt;code&gt;Gin&lt;/code&gt;通过他的官方文档就可以很快入手，不过文档时英文的，这个不用担心，我曾翻译了一份中文版，可以到我的公众号后台获取，回复【gin】即可获取。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;github地址：https://github.com/gin-gonic/gin&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;code&gt;zap&lt;/code&gt;&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;zap&lt;/code&gt;是&lt;code&gt;uber&lt;/code&gt;开源的日志库，选择&lt;code&gt;zap&lt;/code&gt;他有两个优势：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;它非常的快&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;它同时提供了结构化日志记录和printf风格的日志记录&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;大多数日志库基本都是基于反射的序列化和字符串格式化的，这样会导致在日志上占用大量&lt;code&gt;CPU&lt;/code&gt;资源，不适用于业务开发场景，业务对性能敏感还是挺高的。&lt;code&gt;zap&lt;/code&gt;采用了不同的方法，它设计了一个无反射、零分配的 JSON 编码器，并且基础 Logger 力求尽可能避免序列化开销和分配。通过在此基础上构建高级 SugaredLogger，zap 允许用户选择何时需要计算每次分配以及何时更喜欢更熟悉的松散类型的 API。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;zap&lt;/code&gt;的基准测试如下：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-fileid=&quot;100001885&quot; data-ratio=&quot;0.5942275042444821&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/CqB2u93NwB8wnpZqk8mDTibMyUsE0bhGEibhiattTHJRP6aXQOAYyqTUScGmfDICWABrwOPOpL0UtMBG32Nib8JiaTQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;589&quot;/&gt;&lt;figcaption&gt;来自官方文档&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;可以看出&lt;code&gt;zap&lt;/code&gt;的效率完全高于其他日志库，选谁不用我明说了吧！！！&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;github地址：https://github.com/uber-go/zap&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;code&gt;jsoniter&lt;/code&gt;&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;做业务开发离不开&lt;code&gt;json&lt;/code&gt;的序列化与反序列化，标准库虽然提供了&lt;code&gt;encoding/json&lt;/code&gt;，但是它主要是通过反射来实现的，所以性能消耗比较大。&lt;code&gt;jsoniter&lt;/code&gt;可以解决这个痛点，其是一款快且灵活的 JSON 解析器，具有良好的性能并能100%兼容标准库，我们可以使用jsoniter替代encoding/json，官方文档称可以比标准库&lt;strong&gt;快6倍&lt;/strong&gt;多，后来Go官方在go1.12版本对 json.Unmarshal 函数使用 sync.Pool 缓存了 decoder，性能较之前的版本有所提升，所以现在达不到&lt;strong&gt;快6倍&lt;/strong&gt;多。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-fileid=&quot;100001884&quot; data-ratio=&quot;0.6072144288577155&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/CqB2u93NwB8wnpZqk8mDTibMyUsE0bhGEMgjb8KDsdAoDnYTRRhS8AowMS6vVL7Q0DsnVaCOzSg7DBrSicKvkZJg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;499&quot;/&gt;&lt;figcaption&gt;来自官方文档&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;github地址：https://github.com/json-iterator/go&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;对于&lt;code&gt;jsoniter&lt;/code&gt;优化原理感兴趣的可以移步这里：http://jsoniter.com/benchmark.html#optimization-used&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;code&gt;gorm&lt;/code&gt;&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;gorm&lt;/code&gt;是一个使用&lt;code&gt;Go&lt;/code&gt;语言编写的&lt;code&gt;ORM&lt;/code&gt;框架，文档齐全，对开发者友好，并且支持主流的数据库：&lt;code&gt;MySQL&lt;/code&gt;, &lt;code&gt;PostgreSQL&lt;/code&gt;, &lt;code&gt;SQlite&lt;/code&gt;, &lt;code&gt;SQL Server&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;个人觉得使用&lt;code&gt;gorm&lt;/code&gt;最大的好处在于它是由国人开发，中文文档齐全，上手很快，目前大多数企业也都在使用&lt;code&gt;gorm&lt;/code&gt;。我们来一下&lt;code&gt;gorm&lt;/code&gt;的特性：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;全功能 ORM&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;关联 (Has One，Has Many，Belongs To，Many To Many，多态，单表继承)&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Create，Save，Update，Delete，Find 中钩子方法&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;支持 &lt;code&gt;Preload&lt;/code&gt;、&lt;code&gt;Joins&lt;/code&gt; 的预加载&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;事务，嵌套事务，Save Point，Rollback To Saved Point&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Context、预编译模式、DryRun 模式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;批量插入，FindInBatches，Find/Create with Map，使用 SQL 表达式、Context Valuer 进行 CRUD&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;SQL 构建器，Upsert，数据库锁，Optimizer/Index/Comment Hint，命名参数，子查询&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;复合主键，索引，约束&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Auto Migration&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;自定义 Logger&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;灵活的可扩展插件 API：Database Resolver（多数据库，读写分离）、Prometheus…&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;每个特性都经过了测试的重重考验&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;开发者友好&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;github地址：https://github.com/go-gorm/gorm&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;官方文档：https://gorm.io/zh_CN/docs/index.html&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;code&gt;robfig/cron&lt;/code&gt;&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;github地址：https://github.com/robfig/cron&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;业务开发更离不开定时器的使用了，&lt;code&gt;cron&lt;/code&gt;就是一个用于管理定时任务的库，用 Go 实现 Linux 中&lt;code&gt;crontab&lt;/code&gt;这个命令的效果，与Linux 中&lt;code&gt;crontab&lt;/code&gt;命令相似，&lt;code&gt;cron&lt;/code&gt;库支持用 &lt;strong&gt;5&lt;/strong&gt; 个空格分隔的域来表示时间。&lt;code&gt;cron&lt;/code&gt;上手也是非常容易的，看一个官方的例子：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;package&lt;/span&gt; main&lt;br/&gt;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; (&lt;br/&gt;  &lt;span&gt;&quot;fmt&quot;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&quot;time&quot;&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;  &lt;span&gt;&quot;github.com/robfig/cron/v3&quot;&lt;/span&gt;&lt;br/&gt;)&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;  c := cron.New()&lt;br/&gt;&lt;br/&gt;  c.AddFunc(&lt;span&gt;&quot;@every 1s&quot;&lt;/span&gt;, &lt;span&gt;&lt;span&gt;func&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt;    fmt.Println(&lt;span&gt;&quot;tick every 1 second run once&quot;&lt;/span&gt;)&lt;br/&gt;  })&lt;br/&gt;  c.Start()&lt;br/&gt;  time.Sleep(time.Second * &lt;span&gt;10&lt;/span&gt;)&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;针对&lt;code&gt;cron&lt;/code&gt;的使用可以参考这篇文章：https://segmentfault.com/a/1190000023029219&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;之前我也写了一篇&lt;code&gt;cron&lt;/code&gt;的基本使用，可以参考下：https://mp.weixin.qq.com/s/Z4B7Tn8ikFIkXVGhXNbsVA&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;code&gt;wire&lt;/code&gt;&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;都&lt;code&gt;1202&lt;/code&gt;年了，应该不会有人不知道依赖注入的作用了吧。我们本身也可以自己实现依赖注入，但是这是在代码量少、结构不复杂的情况下，当结构之间的关系变得非常复杂的时候，这时候手动创建依赖，然后将他们组装起来就会变的异常繁琐，并且很容出错。Go语言社区有很多依赖注入的框架，可以分为两个类别：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;依赖反射实现的运行时依赖注入：inject、uber、dig&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;使用代码生成实现的依赖注入：wire&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;个人觉的使用&lt;code&gt;wire&lt;/code&gt;进行项目管理是最好的，在代码编译阶段就可以发现依赖注入的问题，在代码生成时即可报出来，不会拖到运行时才报，更便于&lt;code&gt;debug&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;wire&lt;/code&gt;的使用也是非常的简单，关于&lt;code&gt;wire&lt;/code&gt;的使用我之前也写了一篇文章，可以参考一下：https://mp.weixin.qq.com/s/Z4B7Tn8ikFIkXVGhXNbsVA&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;github地址：https://github.com/google/wire&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;code&gt;ants&lt;/code&gt;&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;某些业务场景还会使用到&lt;code&gt;goroutine&lt;/code&gt;池，&lt;code&gt;ants&lt;/code&gt;就是一个广泛使用的goroute池，可以有效控制协程数量，防止协程过多影响程序性能。&lt;code&gt;ants&lt;/code&gt;也是国人开发的，设计博文写的也很详细的，目前很多大厂也都在使用&lt;code&gt;ants&lt;/code&gt;，经历过线上业务检验的，所以可以放心使用。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;github地址：https://github.com/panjf2000/ants&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;ants&lt;/code&gt;源码不到&lt;code&gt;1k&lt;/code&gt;行，建议大家赏析一下源码～。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;总结&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;本文列举的几个库都是经常被使用的开源库，这几个库你都掌握了，基本的业务开发都没有啥问题了，一些初学者完全可以通过这几个库达到入门水平。还有一些库，比如：&lt;code&gt;go-redis&lt;/code&gt;、&lt;code&gt;go-sql-driver&lt;/code&gt;、&lt;code&gt;didi/gendry&lt;/code&gt;、&lt;code&gt;golang/groupcache&lt;/code&gt;、&lt;code&gt;olivere/elastic/v7&lt;/code&gt;等等，这些库也是经常使用的，入门都比较简单，就不这里详细介绍了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果大家也有经常使用的，比较好的开源库，欢迎推荐给我，我也学习学习！！！&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;好啦，本文就到这里了，素质三连（分享、点赞、在看）都是笔者持续创作更多优质内容的动力！我是&lt;code&gt;asong&lt;/code&gt;，我们下期见。&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;创建了读者交流群，欢迎各位大佬们踊跃入群，一起学习交流。入群方式：关注公众号获取。更多学习资料请到公众号领取。&lt;/strong&gt;&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzkyNzI1NzM5NQ==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/CqB2u93NwB96zTfSmymj9jWokyhvSIXMRcLRAfFJsrB4uz6HBsml4T6iaia3yyCSB4aicX97icT7xBUCgw4O1PsKFQ/0?wx_fmt=png&quot; data-nickname=&quot;Golang梦工厂&quot; data-alias=&quot;AsongDream&quot; data-signature=&quot;asong是一名后端程序员，目前就职于一家电商公司，专注于Golang技术，定期分享Go语言、MySQL、Redis、Elasticsearch、计算机基础、微服务架构设计、面试等知识。这里不仅有技术，还有故事！&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;推荐往期文章：&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>63cd46124676d11264c5688eaec8dd68</guid>
-<title>[推荐] Kafka 为什么要放弃 Zookeeper</title>
-<link>https://toutiao.io/k/98g49tv</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;最近，&lt;code&gt;confluent&lt;/code&gt;社区发表了一篇文章，主要讲述了&lt;code&gt;Kafka&lt;/code&gt;未来的&lt;code&gt;2.8&lt;/code&gt;版本将要放弃&lt;code&gt;Zookeeper&lt;/code&gt;，这对于&lt;code&gt;Kafka&lt;/code&gt;用户来说，是一个重要的改进。之前部署&lt;code&gt;Kafka&lt;/code&gt;就必须得部署&lt;code&gt;Zookeeper&lt;/code&gt;，而之后就只要单独部署&lt;code&gt;Kafka&lt;/code&gt;就行了。&lt;span/&gt;&lt;sup&gt;[1]&lt;/sup&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;1.Kafka简介&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Apache Kafka&lt;/code&gt;最早是由&lt;code&gt;Linkedin&lt;/code&gt;公司开发，后来捐献给了&lt;code&gt;Apack&lt;/code&gt;基金会。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Kafka&lt;/code&gt;被官方定义为分布式流式处理平台，因为具备高吞吐、可持久化、可水平扩展等特性而被广泛使用。目前&lt;code&gt;Kafka&lt;/code&gt;具体如下功能：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;消息队列,&lt;code&gt;Kafka&lt;/code&gt;具有系统解耦、流量削峰、缓冲、异步通信等消息队列的功能。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;分布式存储系统，&lt;code&gt;Kafka&lt;/code&gt;可以把消息持久化，同时用多副本来实现故障转移，可以作为数据存储系统来使用。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;实时数据处理，&lt;code&gt;Kafka&lt;/code&gt;提供了一些和数据处理相关的组件，比如&lt;code&gt;Kafka Streams&lt;/code&gt;、&lt;code&gt;Kafka Connect&lt;/code&gt;，具备了实时数据的处理功能。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;下面这张图是&lt;code&gt;Kafka&lt;/code&gt;的消息模型：&lt;span/&gt;&lt;sup&gt;[2]&lt;/sup&gt;&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.44819819819819817&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/a1gicTYmvicdibP9zVMt4EJuWHtOGM2hVJ0DYO5Ln2ASVW1XuQU4X4P5Mhm7dI1sWPGd1MnSpGGolZ5XDxfc5JKfQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;888&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;通过上面这张图，介绍一下&lt;code&gt;Kafka&lt;/code&gt;中的几个主要概念：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;producer&lt;/code&gt;和&lt;code&gt;consumer&lt;/code&gt;: 消息队列中的生产者和消费者，生产者将消息推送到队列，消费者从队列中拉取消息。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;consumer group&lt;/code&gt;:消费者集合，这些消费者可以并行消费同一个&lt;code&gt;topic&lt;/code&gt;下不同&lt;code&gt;partition&lt;/code&gt;中的消息。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;broker&lt;/code&gt;：&lt;code&gt;Kafka&lt;/code&gt;集群中的服务器。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;topic&lt;/code&gt;：消息的分类。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;partition&lt;/code&gt;：&lt;code&gt;topic&lt;/code&gt;物理上的分组，一个&lt;code&gt;topic&lt;/code&gt;可以有&lt;code&gt;partition&lt;/code&gt;，每个&lt;code&gt;partition&lt;/code&gt;中的消息会被分配一个有序的&lt;code&gt;id&lt;/code&gt;作为&lt;code&gt;offset&lt;/code&gt;。每个&lt;code&gt;consumer group&lt;/code&gt;只能有一个消费者来消费一个&lt;code&gt;partition&lt;/code&gt;。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;2.Kafka和Zookeeper关系&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Kafka架构如下图：&lt;img data-ratio=&quot;0.5727554179566563&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/a1gicTYmvicdibP9zVMt4EJuWHtOGM2hVJ0Ebx6ta9P0zRGZO5vSbuJBQWiczib1VlHrTBuvFFrFP7J1H4gZfmrJZibQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;646&quot;/&gt;从图中可以看到，&lt;code&gt;Kafka&lt;/code&gt;的工作需要&lt;code&gt;Zookeeper&lt;/code&gt;的配合。那他们到底是怎么配合工作呢？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;看下面这张图：&lt;img data-ratio=&quot;0.5760095011876485&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/a1gicTYmvicdibP9zVMt4EJuWHtOGM2hVJ025Qu7ImfmseZVho9ibAHEJnYXyTj4iciaMDHnervzFTEWVbBLWLKBBQnQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;842&quot;/&gt;&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;2.1 注册中心&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;2.1.1 broker注册&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;从上面的图中可以看到，&lt;code&gt;broker&lt;/code&gt;分布式部署，就需要一个注册中心来进行统一管理。&lt;code&gt;Zookeeper&lt;/code&gt;用一个专门节点保存&lt;code&gt;Broker&lt;/code&gt;服务列表，也就是 &lt;code&gt;/brokers/ids&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;broker&lt;/code&gt;在启动时，向&lt;code&gt;Zookeeper&lt;/code&gt;发送注册请求，&lt;code&gt;Zookeeper&lt;/code&gt;会在&lt;code&gt;/brokers/ids&lt;/code&gt;下创建这个&lt;code&gt;broker&lt;/code&gt;节点，如&lt;code&gt;/brokers/ids/[0...N]&lt;/code&gt;，并保存&lt;code&gt;broker&lt;/code&gt;的&lt;code&gt;IP&lt;/code&gt;地址和端口。&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;❝&lt;/span&gt;&lt;p&gt;这个节点临时节点，一旦&lt;code&gt;broker&lt;/code&gt;宕机，这个临时节点会被自动删除。&lt;/p&gt;&lt;span&gt;❞&lt;/span&gt;&lt;/blockquote&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;2.1.2 topic注册&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Zookeeper&lt;/code&gt;也会为&lt;code&gt;topic&lt;/code&gt;分配一个单独节点，每个&lt;code&gt;topic&lt;/code&gt;都会以&lt;code&gt;/brokers/topics/[topic_name]&lt;/code&gt;的形式记录在&lt;code&gt;Zookeeper&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;一个&lt;code&gt;topic&lt;/code&gt;的消息会被保存到多个&lt;code&gt;partition&lt;/code&gt;，这些&lt;code&gt;partition&lt;/code&gt;跟&lt;code&gt;broker&lt;/code&gt;的对应关系也需要保存到&lt;code&gt;Zookeeper&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;partition&lt;/code&gt;是多副本保存的，上图中红色&lt;code&gt;partition&lt;/code&gt;是&lt;code&gt;leader&lt;/code&gt;副本。当&lt;code&gt;leader&lt;/code&gt;副本所在的broker发生故障时，&lt;code&gt;partition&lt;/code&gt;需要重新选举&lt;code&gt;leader&lt;/code&gt;，这个需要由&lt;code&gt;Zookeeper&lt;/code&gt;主导完成。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;broker&lt;/code&gt;启动后，会把自己的&lt;code&gt;Broker ID&lt;/code&gt;注册到到对应&lt;code&gt;topic&lt;/code&gt;节点的分区列表中。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们查看一个&lt;code&gt;topic&lt;/code&gt;是&lt;code&gt;xxx&lt;/code&gt;，分区编号是&lt;code&gt;1&lt;/code&gt;的信息，命令如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;[root@master] get /brokers/topics/xxx/partitions/1/state&lt;br/&gt;{&lt;span&gt;&quot;controller_epoch&quot;&lt;/span&gt;:15,&lt;span&gt;&quot;leader&quot;&lt;/span&gt;:11,&lt;span&gt;&quot;version&quot;&lt;/span&gt;:1,&lt;span&gt;&quot;leader_epoch&quot;&lt;/span&gt;:2,&lt;span&gt;&quot;isr&quot;&lt;/span&gt;:[11,12,13]}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;❝&lt;/span&gt;&lt;p&gt;当&lt;code&gt;broker&lt;/code&gt;退出后，&lt;code&gt;Zookeeper&lt;/code&gt;会更新其对应&lt;code&gt;topic&lt;/code&gt;的分区列表。&lt;/p&gt;&lt;span&gt;❞&lt;/span&gt;&lt;/blockquote&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;2.1.3 consumer注册&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;消费者组也会向&lt;code&gt;Zookeeper&lt;/code&gt;进行注册，&lt;code&gt;Zookeeper&lt;/code&gt;会为其分配节点来保存相关数据，节点路径为&lt;code&gt;/consumers/{group_id}&lt;/code&gt;，有&lt;code&gt;3&lt;/code&gt;个子节点，如下图:&lt;img data-ratio=&quot;0.24280701754385964&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/a1gicTYmvicdibP9zVMt4EJuWHtOGM2hVJ0JZNlfibAnWsLGeDVeoUa53I9r51YgicBp4UO3VVweoJaaB5kUb5XoAiaQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1425&quot;/&gt;这样&lt;code&gt;Zookeeper&lt;/code&gt;可以记录分区跟消费者的关系，以及分区的&lt;code&gt;offset&lt;/code&gt;。&lt;span&gt;[3]&lt;/span&gt;&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;2.2 负载均衡&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;broker&lt;/code&gt;向&lt;code&gt;Zookeeper&lt;/code&gt;进行注册后，生产者根据&lt;code&gt;broker&lt;/code&gt;节点来感知&lt;code&gt;broker&lt;/code&gt;服务列表变化，这样可以实现动态负载均衡。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;consumer group&lt;/code&gt;中的消费者，可以根据&lt;code&gt;topic&lt;/code&gt;节点信息来拉取特定分区的消息,实现负载均衡。&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;❝&lt;/span&gt;&lt;p&gt;实际上，&lt;code&gt;Kafka&lt;/code&gt;在&lt;code&gt;Zookeeper&lt;/code&gt;中保存的元数据非常多，看下面这张图：&lt;img data-ratio=&quot;0.3340184994861254&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/a1gicTYmvicdibP9zVMt4EJuWHtOGM2hVJ020I0WTKudqm8Y20XnqrjShadfkM8jhdmAE3WMYOnNkicz6OlFkiaX6og/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;973&quot;/&gt;随着broker、topic和partition增多，保存的数据量会越来越大。&lt;/p&gt;&lt;span&gt;❞&lt;/span&gt;&lt;/blockquote&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;3.Controller介绍&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;经过上一节的讲述，我们看到了&lt;code&gt;Kafka&lt;/code&gt;对&lt;code&gt;Zookeeper&lt;/code&gt;的依赖非常大，&lt;code&gt;Kafka&lt;/code&gt;离开&lt;code&gt;Zookeeper&lt;/code&gt;是没有办法独立运行的。那&lt;code&gt;Kafka&lt;/code&gt;是怎么跟&lt;code&gt;Zookeeper&lt;/code&gt;进行交互的呢？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如下图：&lt;span/&gt;&lt;sup&gt;[4]&lt;/sup&gt;&lt;img data-ratio=&quot;0.47101449275362317&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/a1gicTYmvicdibP9zVMt4EJuWHtOGM2hVJ0Get1O7LNMia7h6KUR1vtSGL9WVcoJy7JeobdkkC0TpQYCyKeOIhzKjg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;690&quot;/&gt;&lt;code&gt;Kafka&lt;/code&gt;集群中会有一个&lt;code&gt;broker&lt;/code&gt;被选举为&lt;code&gt;Controller&lt;/code&gt;负责跟&lt;code&gt;Zookeeper&lt;/code&gt;进行交互，它负责管理整个&lt;code&gt;Kafka&lt;/code&gt;集群中所有分区和副本的状态。其他&lt;code&gt;broker&lt;/code&gt;监听&lt;code&gt;Controller&lt;/code&gt;节点的数据变化。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Controller&lt;/code&gt;的选举工作依赖于&lt;code&gt;Zookeeper&lt;/code&gt;，选举成功后，&lt;code&gt;Zookeeper&lt;/code&gt;会创建一个&lt;code&gt;/controller&lt;/code&gt;临时节点。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Controller&lt;/code&gt;具体职责如下：&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;❝&lt;/span&gt;&lt;p&gt;比如当某个分区的leader出现故障时，Controller会为该分区选举新的leader。当检测到分区的ISR集合发生变化时，Controller会通知所有broker更新元数据。当某个topic增加分区时，Controller会负责重新分配分区。&lt;/p&gt;&lt;span&gt;❞&lt;/span&gt;&lt;/blockquote&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;监听&lt;code&gt;topic&lt;/code&gt;相关的变化&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;监听&lt;code&gt;broker&lt;/code&gt;相关的变化&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;集群元数据管理&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;下面这张图展示了Controller、Zookeeper和broker的交互细节：&lt;img data-ratio=&quot;0.720558882235529&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/a1gicTYmvicdibP9zVMt4EJuWHtOGM2hVJ00al8icc8fR5ibV5o0vkoH5Dicy1G9COiaibxLyWJsfaM6tr5aqmOIu35LEA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1002&quot;/&gt;&lt;code&gt;Controller&lt;/code&gt;选举成功后，会从&lt;code&gt;Zookeeper&lt;/code&gt;集群中拉取一份完整的元数据初始化&lt;code&gt;ControllerContext&lt;/code&gt;，这些元数据缓存在&lt;code&gt;Controller&lt;/code&gt;节点。当集群发生变化时，比如增加&lt;code&gt;topic&lt;/code&gt;分区，&lt;code&gt;Controller&lt;/code&gt;不仅需要变更本地的缓存数据，还需要将这些变更信息同步到其他&lt;code&gt;Broker&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Controller&lt;/code&gt;监听到&lt;code&gt;Zookeeper&lt;/code&gt;事件、定时任务事件和其他事件后，将这些事件按照先后顺序暂存到&lt;code&gt;LinkedBlockingQueue&lt;/code&gt;中，由事件处理线程按顺序处理，这些处理多数需要跟&lt;code&gt;Zookeeper&lt;/code&gt;交互，&lt;code&gt;Controller&lt;/code&gt;则需要更新自己的元数据。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;4.Zookeeper带来的问题&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Kafka&lt;/code&gt;本身就是一个分布式系统，但是需要另一个分布式系统来管理，复杂性无疑增加了。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;4.1 运维复杂度&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;使用了&lt;code&gt;Zookeeper&lt;/code&gt;，部署&lt;code&gt;Kafka&lt;/code&gt;的时候必须要部署两套系统，&lt;code&gt;Kafka&lt;/code&gt;的运维人员必须要具备&lt;code&gt;Zookeeper&lt;/code&gt;的运维能力。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;4.2 Controller故障处理&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Kafaka&lt;/code&gt;依赖一个单一&lt;code&gt;Controller&lt;/code&gt;节点跟&lt;code&gt;Zookeeper&lt;/code&gt;进行交互，如果这个&lt;code&gt;Controller&lt;/code&gt;节点发生了故障，就需要从&lt;code&gt;broker&lt;/code&gt;中选择新的&lt;code&gt;Controller&lt;/code&gt;。如下图,新的&lt;code&gt;Controller&lt;/code&gt;变成了&lt;code&gt;broker3&lt;/code&gt;。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.4723076923076923&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/a1gicTYmvicdibP9zVMt4EJuWHtOGM2hVJ0qic3b3bfvqD4BfZeiaPBibDBPk2JZMIEk5KApPYxV5AP8gKux2KoozBYw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;650&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;新的&lt;code&gt;Controller&lt;/code&gt;选举成功后，会重新从&lt;code&gt;Zookeeper&lt;/code&gt;拉取元数据进行初始化，并且需要通知其他所有的&lt;code&gt;broker&lt;/code&gt;更新&lt;code&gt;ActiveControllerId&lt;/code&gt;。老的&lt;code&gt;Controller&lt;/code&gt;需要关闭监听、事件处理线程和定时任务。分区数非常多时，这个过程非常耗时，而且这个过程中&lt;code&gt;Kafka&lt;/code&gt;集群是不能工作的。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;4.3 分区瓶颈&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当分区数增加时，&lt;code&gt;Zookeeper&lt;/code&gt;保存的元数据变多，&lt;code&gt;Zookeeper&lt;/code&gt;集群压力变大，达到一定级别后，监听延迟增加，给&lt;code&gt;Kafaka&lt;/code&gt;的工作带来了影响。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;所以，&lt;code&gt;Kafka&lt;/code&gt;单集群承载的分区数量是一个瓶颈。而这又恰恰是一些业务场景需要的。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;5.升级&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;升级前后的架构图对比如下：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.9238578680203046&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/a1gicTYmvicdibP9zVMt4EJuWHtOGM2hVJ0pibFmEEYyNSeh9wDibbmdFBVWToVJziaFyLicFqaEITWMKib61yekVsXs9Q/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;591&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;KIP-500&lt;/code&gt;用&lt;code&gt;Quorum Controller&lt;/code&gt;代替之前的&lt;code&gt;Controller&lt;/code&gt;，&lt;code&gt;Quorum&lt;/code&gt;中每个&lt;code&gt;Controller&lt;/code&gt;节点都会保存所有元数据，通过&lt;code&gt;KRaft&lt;/code&gt;协议保证副本的一致性。这样即使&lt;code&gt;Quorum Controller&lt;/code&gt;节点出故障了，新的&lt;code&gt;Controller&lt;/code&gt;迁移也会非常快。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;官方介绍，升级之后，&lt;code&gt;Kafka&lt;/code&gt;可以轻松支持百万级别的分区。&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;❝&lt;/span&gt;&lt;p&gt;Kafak团队把通过Raft协议同步数据的方式Kafka Raft Metadata mode,简称KRaft&lt;/p&gt;&lt;span&gt;❞&lt;/span&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Kafka&lt;/code&gt;的用户体量非常大，在不停服的情况下升级是必要的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;目前去除&lt;code&gt;Zookeeper&lt;/code&gt;的&lt;code&gt;Kafka&lt;/code&gt;代码&lt;code&gt;KIP-500&lt;/code&gt;已经提交到&lt;code&gt;trunk&lt;/code&gt;分支，并且已经在的&lt;code&gt;2.8&lt;/code&gt;版本发布。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Kafaka&lt;/code&gt;计划在&lt;code&gt;3.0&lt;/code&gt;版本会兼容&lt;code&gt;Zookeeper Controller&lt;/code&gt;和&lt;code&gt;Quorum Controller&lt;/code&gt;，这样用户可以进行灰度测试。&lt;span/&gt;&lt;sup&gt;[5]&lt;/sup&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;6.总结&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在大规模集群和云原生的背景下，使用&lt;code&gt;Zookeeper&lt;/code&gt;给&lt;code&gt;Kafka&lt;/code&gt;的运维和集群性能造成了很大的压力。去除&lt;code&gt;Zookeeper&lt;/code&gt;是必然趋势，这也符合大道至简的架构思想。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;Reference&lt;/span&gt;&lt;/h3&gt;&lt;section data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;span&gt;[1]&lt;/span&gt;&lt;p&gt;参考1: &lt;span&gt;https://www.confluent.io/blog/kafka-without-zookeeper-a-sneak-peek/&lt;/span&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[2]&lt;/span&gt;&lt;p&gt;参考2: &lt;span&gt;https://blog.csdn.net/Zidingyi_367/article/details/110490910&lt;/span&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[3]&lt;/span&gt;&lt;p&gt;参考3: &lt;span&gt;https://www.jianshu.com/p/a036405f989c&lt;/span&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[4]&lt;/span&gt;&lt;p&gt;参考4: &lt;span&gt;https://honeypps.com/mq/kafka-controller-analysis/&lt;/span&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[5]&lt;/span&gt;&lt;p&gt;参考5: &lt;span&gt;https://mp.weixin.qq.com/s/ev6NM6hptltQBuTaCHJCQQ&lt;/span&gt;&lt;/p&gt;&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>51beb20245df83c3fa5387f11dfceaa1</guid>
+<title>[推荐] ElasticSearch 存储成本省 60%，稿定科技干货分享</title>
+<link>https://toutiao.io/k/oy304tv</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;post_content markdown&quot;&gt;&lt;h1 id=&quot;背景&quot;&gt;背景&lt;/h1&gt;&lt;p&gt;稿定科技旗下稿定设计产品是一个聚焦商业设计的多场景在线设计平台，打破了软硬件间的技术限制，汇集创意内容与设计工具于一体，为不同场景下的设计需求提供优质的解决方案，满足图片、视频等全类型媒介的设计需求，让设计更简单。&lt;/p&gt;&lt;p&gt;我们使用 Elasticsearch（下文中简称为 ES） 作为日志检索组件，随着业务量的增长，每天有 2T 左右的新增数据，需要保存 15~30 天，给磁盘和系统带来了不小的压力。在 ES 中为了保证日志的写入和查询的性能，大多使用单位存储成本更高的高性能云盘。但是，在实际的业务场景中，超过 7 天的数据仅作低频使用，全部存储在高性能云盘必然会导致过高的成本和空间的浪费。&lt;/p&gt;&lt;h1 id=&quot;方案&quot;&gt;方案&lt;/h1&gt;&lt;p&gt;ElasticSearch 7.10 版本推出了索引生命周期概念，开始支持数据分层存储，可以指定不同节点使用不同的磁盘介质来区分冷热数据，比如使用 HDD 磁盘来存储温冷数据，能获得更大的使用空间和更低的成本。这个特性非常适合日志索引场景。&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;在温冷数据的存储介质上，使用 JuiceFS 替代 HDD 磁盘，相当于获得了无限容量的存储空间。通过 ES 的索引生命周期管理，可以自动完成索引的创建 - 迁移 - 销毁整个生命周期管理，无需手工干预。&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;在实践中，首先将 ES 集群升级到目前最新的 7.13 版本。然后拆分冷热节点，热节点优先考虑性能，冷节点优先考虑存储的容量和成本。同时，调整索引和模板方式，配置数据生命周期、索引模板和数据流，完成索引数据写入。&lt;/p&gt;&lt;p&gt;调整后整个索引的流转如下图所示：&lt;/p&gt;&lt;ol&gt;&lt;li&gt;在索引创建时，配置 &lt;code&gt;index.routing.allocation.require.box_type:hot&lt;/code&gt; 进行节点筛选；&lt;/li&gt;&lt;li&gt;等待索引进入 warm 周期时，调整 &lt;code&gt;index.routing.allocation.require.box_type:warm&lt;/code&gt;，并迁移到 warm 节点后，数据进入冷节点存储，实际存储于 JuiceFS 中；&lt;/li&gt;&lt;li&gt;等待索引进入 delete 周期时，ES 会自动把索引数据删除。&lt;/li&gt;&lt;/ol&gt;&lt;h1 id=&quot;客户收益&quot;&gt;客户收益&lt;/h1&gt;&lt;p&gt;方案中使用的 JuiceFS 是什么呢？&lt;/p&gt;&lt;p&gt;JuiceFS 是一款面向云环境设计的企业级分布式文件系统。提供完备的 POSIX 兼容性，为应用提供一个低成本、空间无限的共享文件系统。使用 JuiceFS 存储数据，数据本身会被持久化在对象存储（例如，Amazon S3、阿里云 OSS 等)，结合 JuiceFS 的元数据服务来提供高性能文件存储。JuiceFS 在全球公有云服务中都提供有全托管服务，只需点点鼠标，十分钟配置好。同时 JuiceFS 在 2021年初在 GitHub 开源，受到全球开发者的关注和参与，目前已经获得 3700+ stars。&lt;/p&gt;&lt;p&gt;在本方案中 ES 集群 warm 节点使用 JuiceFS 做存储之后，我们不用再对这些节点做容量规划和扩容工作，也省去了节点故障时的数据迁移，降成本的同时还为运维带来很大的便利。&lt;/p&gt;&lt;p&gt;JuiceFS 的持久层使用对象存储，弹性计费，TCO 比使用普通云盘还要低。在本方案的 ES 集群中，Hot 节点使用的云盘价格为 1000元/TB/月，使用全托管的 JuiceFS 服务加上对象存储的开销，价格约为 250元/TB/月。ES 集群总容量 60TB+，通过冷热分层处理，&lt;strong&gt;75% 的数据存在 JuiceFS 中，仅存储成本已经节省近 60%。如果再加上运维团队介绍的时间精力，这个方案为客户的数据存储带来的 TCO 下降至少有 70%。&lt;/strong&gt;&lt;/p&gt;&lt;h1 id=&quot;实践&quot;&gt;实践&lt;/h1&gt;&lt;h2 id=&quot;集群配置&quot;&gt;集群配置&lt;/h2&gt;&lt;p&gt;集群共 9 个节点，⼀个独⽴的 master 节点（elastic_001），另外 8 个数据节点，其中有 5 个热数据节点（elastic_002 ~ elastic_006），3 个冷数据节点（elastic_007 ~ elastic_009）。&lt;/p&gt;&lt;h2 id=&quot;目录挂载与配置&quot;&gt;目录挂载与配置&lt;/h2&gt;&lt;p&gt;JuiceFS 挂载在 ES 冷数据节点，提供 ES 的数据⽬录。&lt;/p&gt;&lt;p&gt;节点配置有⼀块 2T 的数据盘，挂载在 /data ⽬录，ES 进程以容器的⽅式启动，数据盘挂载的是系统的 &lt;code&gt;/data/elastic&lt;/code&gt; ⽬录，由于使⽤的容器挂载系统⽬录的⽅式，不能通过 &lt;strong&gt;&lt;em&gt;*软链*&lt;/em&gt;&lt;/strong&gt; 的⽅式将 ES 数据⽬录 ( &lt;code&gt;/data/elastic&lt;/code&gt; ) 指向 JuiceFS 挂载的某个⼦⽬录，使⽤了 Linux 系统的 bind mount 将 JuiceFS 的⼦⽬录挂载到 &lt;code&gt;/data/elastic&lt;/code&gt; 这个路径上。⽐如在 007 节点上：&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;language-shell&quot;&gt;# ./juicefs mount gd-elasticsearch-jfs --attrcacheto=1 --entrycacheto=1 \ 
+--cache-dir=/data/jfsCache --cache-size=307200 \
+--upload-limit=800 --writeback /jfs
+# mount -o bind /jfs/data-elastic-pro-007 /data/elastic
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这样在 &lt;code&gt;/data/elastic&lt;/code&gt; ⽬录看到 &lt;code&gt;/jfs/data-elastic-pro-007&lt;/code&gt; 的内容。&lt;/p&gt;&lt;p&gt;在 008 和 009 节点上也做类似挂载操作。&lt;/p&gt;&lt;p&gt;如果您还不熟悉 JuiceFS 的初始化、挂载等基本操作，请参考 &lt;a href=&quot;https://github.com/juicedata/juicefs/blob/main/docs/zh_cn/README.md&quot;&gt;JuiceFS 官方文档&lt;/a&gt;。&lt;/p&gt;&lt;p&gt;本地磁盘⽬录使⽤的是 &lt;code&gt;/data/jfsCache/gd-elasticsearch-jfs/rawstaging/&lt;/code&gt; ，请注意不要删除这个⽬录中的任何⽂件，否则可能出现数据丢失。
+&lt;code&gt;cache-size&lt;/code&gt; 和 &lt;code&gt;upload-limit&lt;/code&gt; 分别⽤来限制本地的读缓存使⽤空间为 300GiB，写对象存储的带宽不超过 800Mbps。&lt;code&gt;attrcacheto&lt;/code&gt; 和 &lt;code&gt;entrycacheto&lt;/code&gt; 分别表示内核的 attr cache 和 entry cache 的缓存超时时间，单位是秒。&lt;/p&gt;&lt;h1 id=&quot;性能优化&quot;&gt;性能优化&lt;/h1&gt;&lt;h2 id=&quot;降低节点负载&quot;&gt;降低节点负载&lt;/h2&gt;&lt;p&gt;在采用 JuiceFS 之前，ES 集群生命周期中配置了 Force Merge，具体配置项为 warm.actions.forcemerge.max_num_segments: 1，它会导致数据在 Rollover 时重新 Merge，给 CPU 带来极大的压力。而这步动作是完全没必要的，关闭 Force Merge 配置即可避免不必要的性能开销，降低节点负载。&lt;/p&gt;&lt;h2 id=&quot;rollover-参数配置优化&quot;&gt;Rollover 参数配置优化&lt;/h2&gt;&lt;p&gt;由于 warm 阶段数据写入 JuiceFS，最终会持久化到对象存储上，应用层不用再存储多副本，可以在索引 Rollover 过程中，设置 replicas 为 0，即 &lt;code&gt;warm.actions.number_of_replicas: 0&lt;/code&gt;。&lt;/p&gt;&lt;p&gt;另外，考虑当索引数据迁移到 warm 阶段后，数据并不再写入，可以设置 warm 阶段索引只读，即 &lt;code&gt;warm.actions.readonly: {}&lt;/code&gt;，关闭索引的数据写入可以减少内存占用量。&lt;/p&gt;&lt;h1 id=&quot;总结&quot;&gt;总结&lt;/h1&gt;&lt;p&gt;随着时间的推移和业务量的增长，企业势必面临更大规模的数据存储和管理上的双重挑战。在本案中，稿定科技充分发挥 ElasticSearch 的生命周期管理能力，根据业务需要将日志数据进行分层存储。将需要频繁使用的热数据保存在 SSD，而超过 7 天的低频使用数据则存储在性价比更高的 JuiceFS，为客户节省存储成本 60%。同时，JuiceFS 还为应用提供近乎无限的弹性空间，省去了容量规划、扩容、数据迁移等一系列的运维工作，提升了企业 IT 架构的效率。&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
 <guid>7cff58d8347fb119a5ed37e06258523c</guid>
@@ -39,116 +38,1679 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>53dd62fea182bf9ab66d52a21aed389e</guid>
-<title>[推荐] 如何高效刷 LeetCode</title>
-<link>https://toutiao.io/k/ws2do5o</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;span class=&quot;RichText ztext CopyrightRichText-richText css-hnrfcf&quot; options=&quot;[object Object]&quot; itemprop=&quot;text&quot;&gt;&lt;h2 id=&quot;h_2177365491_0&quot; data-into-catalog-status=&quot;&quot;&gt;心理建设篇&lt;/h2&gt;&lt;p&gt;在讲述具体的方法之前，先要明白一件事。凡事都分『道』与『术』。本问题下面大部分回答介绍的都是『术』。而对于刷LeetCode这件事，无论你看到多少高明的的方法，如果你不能持之以恒，都没有用。所有在刷LeetCode这件事上，他的『道』就是：如何能持之以恒的保持刷题热情。我认为『道』更重要。我先谈一下这部分。&lt;/p&gt;&lt;h3 id=&quot;h_2177365491_1&quot; data-into-catalog-status=&quot;&quot;&gt;寻找标尺，让进步可衡量&lt;/h3&gt;&lt;p&gt;为什么王者荣耀有段位，有青铜、白银、黄金。以我个人的经验来看，这些都是刺激你持续玩游戏的游戏机制。通过段位，彰显个人的实力，没错，装逼是人类进步的一大动力。同时也让进步可以衡量。刷LeetCode也是同样，一般刚开始我们会关注解决了多少道题。更进一步，我们需要关心自己的排名。LeetCode也有排名机制。每刷一道题，就前进一点点。可以每周给自己做一个记录，记一下自己的排名。让自己重视排名。逐渐的自己就会把积极性调动起来，想让自己的排名越来越高，就是打排位一样。&lt;/p&gt;&lt;p&gt;除了排名，你还可以每周记录一下&lt;b&gt;通过率。&lt;/b&gt;&lt;/p&gt;&lt;h3 id=&quot;h_2177365491_2&quot; data-into-catalog-status=&quot;&quot;&gt;寻找小惊喜，给自己正反馈&lt;/h3&gt;&lt;p&gt;坚持做每日一题，LeetCode每天都有一道题，完成后，你的打卡日历就会勾上一个圈。&lt;/p&gt;&lt;figure data-size=&quot;small&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pica.zhimg.com/50/v2-4ff4085cc4284d82382f7274896ced6b_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;small&quot; data-rawwidth=&quot;658&quot; data-rawheight=&quot;709&quot; data-default-watermark-src=&quot;https://pic3.zhimg.com/50/v2-62841d2ea95c64d5723c118fe15667e7_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic3.zhimg.com/v2-4ff4085cc4284d82382f7274896ced6b_r.jpg?source=1940ef5c&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;small&quot; data-rawwidth=&quot;658&quot; data-rawheight=&quot;709&quot; data-default-watermark-src=&quot;https://pic3.zhimg.com/50/v2-62841d2ea95c64d5723c118fe15667e7_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic3.zhimg.com/v2-4ff4085cc4284d82382f7274896ced6b_r.jpg?source=1940ef5c&quot; data-actualsrc=&quot;https://pica.zhimg.com/50/v2-4ff4085cc4284d82382f7274896ced6b_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p&gt;如果打满一个月就会获得一个月度徽章。另外LeetCode有很多“学习计划”，每个学习计划完成后也会有一个徽章。我有段时间就喜欢收集徽章，为了收集这些小玩意，会刺激自己持续解题。其实和游戏里面也差不多。学会游戏化学习。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pica.zhimg.com/50/v2-06d7085bd091a82ba07c35ce9029feac_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;936&quot; data-rawheight=&quot;189&quot; data-default-watermark-src=&quot;https://pic3.zhimg.com/50/v2-78b5ea39d29bd51501fafe96b6bbbb7e_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic3.zhimg.com/v2-06d7085bd091a82ba07c35ce9029feac_r.jpg?source=1940ef5c&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;936&quot; data-rawheight=&quot;189&quot; data-default-watermark-src=&quot;https://pic3.zhimg.com/50/v2-78b5ea39d29bd51501fafe96b6bbbb7e_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic3.zhimg.com/v2-06d7085bd091a82ba07c35ce9029feac_r.jpg?source=1940ef5c&quot; data-actualsrc=&quot;https://pica.zhimg.com/50/v2-06d7085bd091a82ba07c35ce9029feac_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;h3 id=&quot;h_2177365491_3&quot; data-into-catalog-status=&quot;&quot;&gt;不要死磕，学会放弃&lt;/h3&gt;&lt;p&gt;开始刷LeetCode感到吃力是正常的。我这里说的学会放弃，不是说放弃刷力扣，而是说碰到自己无法解决的题目，不要死磕。赶紧看一下题解去学习，这没有什么丢人的。每个人都是从这个阶段过来的。就比如小学生无法做出高中生的题目，并不是因为小学生笨，而是因为中间有很多知识，小学生没学过。对于算法而言，自然也是如此。靠自己死磕，是很难想到很多前辈科学家们总结出来的算法。这时候去看题解学习也不为过。&lt;/p&gt;&lt;p&gt;如果遇到特别难的题，看题解也不理解。也不用纠结。就隔着它。可以把题号记下来。过段时间再回顾。&lt;/p&gt;&lt;h3 id=&quot;h_2177365491_4&quot; data-into-catalog-status=&quot;&quot;&gt;好记性不如烂笔头&lt;/h3&gt;&lt;p&gt;我是笔记强迫症患者……我现在刷LeetCode，每道做过的题，我都会记到Notion里。打上几个标签，方便回顾。记忆是有遗忘曲线的，不能因为你现在能做出一道题，就认为自己能永远做出来。小学时，老师就教导我们：&lt;/p&gt;&lt;blockquote&gt;好记性不如烂笔头&lt;/blockquote&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic2.zhimg.com/50/v2-be3b36b257cbe2e34a133788d8f3f693_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1938&quot; data-rawheight=&quot;1194&quot; data-default-watermark-src=&quot;https://pic1.zhimg.com/50/v2-2fd8b5a9009e33b0ef4e999159780a69_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic2.zhimg.com/v2-be3b36b257cbe2e34a133788d8f3f693_r.jpg?source=1940ef5c&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1938&quot; data-rawheight=&quot;1194&quot; data-default-watermark-src=&quot;https://pic1.zhimg.com/50/v2-2fd8b5a9009e33b0ef4e999159780a69_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic2.zhimg.com/v2-be3b36b257cbe2e34a133788d8f3f693_r.jpg?source=1940ef5c&quot; data-actualsrc=&quot;https://pic2.zhimg.com/50/v2-be3b36b257cbe2e34a133788d8f3f693_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;p&gt;&lt;b&gt;讲完『道』，我也谈一下我的『术』。我这里不对具体的算法和数据结构题型做解析了，我主要给你指路。&lt;/b&gt;&lt;/p&gt;&lt;blockquote&gt;&lt;b&gt;我伸手给你指路，希望你看见的是路，而不是我的手&lt;/b&gt;&lt;/blockquote&gt;&lt;h2 id=&quot;h_2177365491_5&quot; data-into-catalog-status=&quot;&quot;&gt;刷题顺序篇&lt;/h2&gt;&lt;p&gt;当然我不建议从头按顺序刷，我分为“正排”刷题和“倒排”刷题，两种策略。&lt;/p&gt;&lt;p&gt;所谓“正排刷题”可以刷LeetCode上面的题单。&lt;/p&gt;&lt;figure data-size=&quot;small&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic1.zhimg.com/50/v2-7bd833f94705ad016aa7df711d131122_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;small&quot; data-rawwidth=&quot;631&quot; data-rawheight=&quot;1083&quot; data-default-watermark-src=&quot;https://pic2.zhimg.com/50/v2-7bc22ddfa13e873db0ba039316ec26c4_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic1.zhimg.com/v2-7bd833f94705ad016aa7df711d131122_r.jpg?source=1940ef5c&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;small&quot; data-rawwidth=&quot;631&quot; data-rawheight=&quot;1083&quot; data-default-watermark-src=&quot;https://pic2.zhimg.com/50/v2-7bc22ddfa13e873db0ba039316ec26c4_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic1.zhimg.com/v2-7bd833f94705ad016aa7df711d131122_r.jpg?source=1940ef5c&quot; data-actualsrc=&quot;https://pic1.zhimg.com/50/v2-7bd833f94705ad016aa7df711d131122_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p&gt;我个人建议从《剑指Offer》开始刷。《剑指Offer》现有出了两册，在LeetCode上都有题单。建议从《剑指Offer》刷起，碰到不会的，可以看书中的讲解。&lt;/p&gt;&lt;a data-draft-node=&quot;block&quot; data-draft-type=&quot;mcn-link-card&quot; data-mcn-id=&quot;1433578379710324736&quot;/&gt;&lt;a data-draft-node=&quot;block&quot; data-draft-type=&quot;mcn-link-card&quot; data-mcn-id=&quot;1433578591381000192&quot;/&gt;&lt;p&gt;根据书来刷题，当你刷完一本书后，常见的题目类型几乎都覆盖到了。当然同一种类型的题目数不胜数，重要是培养一下各种题型大概的思路。这属于“正排”刷题。&lt;/p&gt;&lt;p&gt;“倒排”刷题，是打破常规，不根据题目类型或按照某种顺序来做题。玩的就是措手不及。比如坚持做&lt;b&gt;每日一题&lt;/b&gt;。坚持一个月你就会见到各种各样的题型，有的甚至很刁钻。方便查漏补缺。另外如果有信心的话，可以参加一下周赛，进一步给自己惊喜。&lt;/p&gt;&lt;h2 id=&quot;h_2177365491_6&quot; data-into-catalog-status=&quot;&quot;&gt;网站/APP使用篇&lt;/h2&gt;&lt;h3 id=&quot;h_2177365491_7&quot; data-into-catalog-status=&quot;&quot;&gt;自定义测试用例&lt;/h3&gt;&lt;p&gt;不要着急提交代码。多用测试用例自测。如果是提交之后发现某个case不过，调试的时候一定要在测试用例这里调试。不要用重复提交代码的方式调试。每次提交代码都会跑N多个case，时间慢。另外就是会降低你在LeetCode上的“通过率”&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic1.zhimg.com/50/v2-2c63c5e6f80eacc55e808ec74eb1b8df_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;893&quot; data-rawheight=&quot;417&quot; data-default-watermark-src=&quot;https://pic2.zhimg.com/50/v2-e6d17fcaa87fc627ee635c82a6aba414_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pica.zhimg.com/v2-2c63c5e6f80eacc55e808ec74eb1b8df_r.jpg?source=1940ef5c&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;893&quot; data-rawheight=&quot;417&quot; data-default-watermark-src=&quot;https://pic2.zhimg.com/50/v2-e6d17fcaa87fc627ee635c82a6aba414_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pica.zhimg.com/v2-2c63c5e6f80eacc55e808ec74eb1b8df_r.jpg?source=1940ef5c&quot; data-actualsrc=&quot;https://pic1.zhimg.com/50/v2-2c63c5e6f80eacc55e808ec74eb1b8df_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;h3 id=&quot;h_2177365491_8&quot; data-into-catalog-status=&quot;&quot;&gt;高效安排刷题时间&lt;/h3&gt;&lt;p&gt;如果你是学生，那么恭喜你有一大把的时间用来刷题。但是如果你是已工作人士，则需要高效利用时间了。由于我经常做每日一题，而每日一题，是零点更新。有时候躺在床上没睡，就用力扣APP打开看一眼题目，如果题目不难，就直接用APP刷了。另外你也可以利用上下班通勤的时间、出去玩乘坐地铁、公交的时间来用手机看看题解，或者直接用手机刷。比如我坐长途车从家里回北京的路上就用手机刷过题。&lt;/p&gt;&lt;p&gt;手机刷题，其实官方APP，有很多编程语言中的特殊符号的候选功能，提升不少速度。&lt;/p&gt;&lt;figure data-size=&quot;small&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic3.zhimg.com/50/v2-38d952f62f964c3d70392fc8d8f5bed3_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;small&quot; data-rawwidth=&quot;1242&quot; data-rawheight=&quot;1443&quot; data-default-watermark-src=&quot;https://pic2.zhimg.com/50/v2-217862778bed21dfed649ba32a4820e8_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic2.zhimg.com/v2-38d952f62f964c3d70392fc8d8f5bed3_r.jpg?source=1940ef5c&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;small&quot; data-rawwidth=&quot;1242&quot; data-rawheight=&quot;1443&quot; data-default-watermark-src=&quot;https://pic2.zhimg.com/50/v2-217862778bed21dfed649ba32a4820e8_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic2.zhimg.com/v2-38d952f62f964c3d70392fc8d8f5bed3_r.jpg?source=1940ef5c&quot; data-actualsrc=&quot;https://pic3.zhimg.com/50/v2-38d952f62f964c3d70392fc8d8f5bed3_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p&gt;另外你可以给你的输入法用自定义，加入一些常用的代码。&lt;/p&gt;&lt;figure data-size=&quot;small&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic3.zhimg.com/50/v2-1bfe4dba7115a5cd1e021f42bc4c1f1a_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;small&quot; data-rawwidth=&quot;1242&quot; data-rawheight=&quot;698&quot; data-default-watermark-src=&quot;https://pic2.zhimg.com/50/v2-5b478c5285431ac108cde03896209037_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic2.zhimg.com/v2-1bfe4dba7115a5cd1e021f42bc4c1f1a_r.jpg?source=1940ef5c&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;small&quot; data-rawwidth=&quot;1242&quot; data-rawheight=&quot;698&quot; data-default-watermark-src=&quot;https://pic2.zhimg.com/50/v2-5b478c5285431ac108cde03896209037_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic2.zhimg.com/v2-1bfe4dba7115a5cd1e021f42bc4c1f1a_r.jpg?source=1940ef5c&quot; data-actualsrc=&quot;https://pic3.zhimg.com/50/v2-1bfe4dba7115a5cd1e021f42bc4c1f1a_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;h2 id=&quot;h_2177365491_9&quot; data-into-catalog-status=&quot;&quot;&gt;Trick篇&lt;/h2&gt;&lt;h3 id=&quot;h_2177365491_10&quot; data-into-catalog-status=&quot;&quot;&gt;修改函数参数&lt;/h3&gt;&lt;p&gt;leetcode的参数名，有时候很长，你可以改名字，减少输入的字符数。当然正常在网站上刷题有补全功能。但是改一下名字，还是简化不少。另外就是有两个例外情况是没有补全的：&lt;/p&gt;&lt;ol&gt;&lt;li&gt;手机刷题（力扣手机APP可以刷题，但是没有补全功能）&lt;/li&gt;&lt;li&gt;参加周赛（周赛IDE，无自动补全功能）&lt;/li&gt;&lt;/ol&gt;&lt;h3 id=&quot;h_2177365491_11&quot; data-into-catalog-status=&quot;&quot;&gt;调用待补全函数自身&lt;/h3&gt;&lt;p&gt;如果函数的参数是等价的，但是你根据某种策略，把他们分出来差别。但是你不确定哪个参数是满足的。比如这道：415. 字符串相加&lt;/p&gt;&lt;a target=&quot;_blank&quot; href=&quot;https://link.zhihu.com/?target=https%3A//leetcode-cn.com/problems/add-strings/&quot; data-draft-node=&quot;block&quot; data-draft-type=&quot;link-card&quot; data-text=&quot;力扣&quot; class=&quot;LinkCard new&quot;&gt;&lt;span class=&quot;LinkCard-contents&quot;&gt;&lt;span class=&quot;LinkCard-title loading&quot; data-text=&quot;true&quot;/&gt;&lt;span class=&quot;LinkCard-desc loading&quot;/&gt;&lt;/span&gt;&lt;span class=&quot;LinkCard-image LinkCard-image--default&quot;/&gt;&lt;/a&gt;&lt;p&gt;官方给出的代码是这样：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-cpp&quot;&gt;&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Solution&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;addStrings&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+<guid>83703796f5da7e45e9f25288be02371a</guid>
+<title>[推荐] [译] 写给工程师：关于证书和公钥基础设施的一切 (SmallStep, 2018)</title>
+<link>https://toutiao.io/k/qnglkcl</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;post&quot;&gt;
+  
+  &lt;h1 class=&quot;postTitle&quot;&gt;[译] 写给工程师：关于证书（certificate）和公钥基础设施（PKI）的一切（SmallStep, 2018）&lt;/h1&gt;
+  &lt;p class=&quot;meta&quot;&gt;Published at 2021-10-07 | Last Update 2021-10-07&lt;/p&gt;
 
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;num1和num2在题目中含义是等价的。但是我们希望以长度长的那个num作为base，来叠加长度短的那个num。这样可以方便处理。你可以直接去判断长度，然后再搞两个变量出来。比如：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-cpp&quot;&gt;&lt;span class=&quot;k&quot;&gt;auto&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;base&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nl&quot;&gt;num1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;auto&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;delta&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;base&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;num1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nl&quot;&gt;num2&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后让base再去加delta。。但其实没必要这么麻烦，直接这样：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-cpp&quot;&gt;&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Solution&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;addStrings&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;num1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;addStrings&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;num2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 调用自身
-&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;reverse&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;num1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;begin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;end&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;());&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;reverse&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;num2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;begin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;end&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;());&lt;/span&gt;
-        &lt;span class=&quot;c1&quot;&gt;// num1长度 肯定大于等于num2
-&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;        &lt;span class=&quot;n&quot;&gt;stringstream&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ss&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-        &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;sc&quot;&gt;&#x27;0&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-            &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;sc&quot;&gt;&#x27;0&#x27;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-            &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-            &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;%&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;ss&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; 
-        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;ss&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ss&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;reverse&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;begin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;end&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;());&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;h3 id=&quot;h_2177365491_12&quot; data-into-catalog-status=&quot;&quot;&gt;给解题函数增加默认值&lt;/h3&gt;&lt;p&gt;每道题，LeetCode都会给出一个待补全的函数，这个函数，你是可以增加默认值的。&lt;/p&gt;&lt;p&gt;对于某些递归的解法，可以少定义一个函数.&lt;/p&gt;&lt;h2 id=&quot;h_2177365491_13&quot; data-into-catalog-status=&quot;&quot;&gt;官方库提升刷题效率（C++）&lt;/h2&gt;&lt;p&gt;因为我是C++程序员所以下面就值介绍C++了。&lt;/p&gt;&lt;p&gt;一定要学好STL！&lt;/p&gt;&lt;h3 id=&quot;h_2177365491_14&quot; data-into-catalog-status=&quot;&quot;&gt;swap替代手写交换&lt;/h3&gt;&lt;p&gt;不要在自己写三行式去写交换了。直接用swap。&lt;/p&gt;&lt;p&gt;针对链表的Node也使用哦。比如，226. 翻转二叉树：&lt;/p&gt;&lt;a target=&quot;_blank&quot; href=&quot;https://link.zhihu.com/?target=https%3A//leetcode-cn.com/problems/invert-binary-tree/&quot; data-draft-node=&quot;block&quot; data-draft-type=&quot;link-card&quot; data-text=&quot;力扣&quot; class=&quot;LinkCard new&quot;&gt;&lt;span class=&quot;LinkCard-contents&quot;&gt;&lt;span class=&quot;LinkCard-title loading&quot; data-text=&quot;true&quot;/&gt;&lt;span class=&quot;LinkCard-desc loading&quot;/&gt;&lt;/span&gt;&lt;span class=&quot;LinkCard-image LinkCard-image--default&quot;/&gt;&lt;/a&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-cpp&quot;&gt;&lt;span class=&quot;cm&quot;&gt;/**
-&lt;/span&gt;&lt;span class=&quot;cm&quot;&gt; * Definition for a binary tree node.
-&lt;/span&gt;&lt;span class=&quot;cm&quot;&gt; * struct TreeNode {
-&lt;/span&gt;&lt;span class=&quot;cm&quot;&gt; *     int val;
-&lt;/span&gt;&lt;span class=&quot;cm&quot;&gt; *     TreeNode *left;
-&lt;/span&gt;&lt;span class=&quot;cm&quot;&gt; *     TreeNode *right;
-&lt;/span&gt;&lt;span class=&quot;cm&quot;&gt; *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
-&lt;/span&gt;&lt;span class=&quot;cm&quot;&gt; * };
-&lt;/span&gt;&lt;span class=&quot;cm&quot;&gt; */&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Solution&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;TreeNode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mirrorTree&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TreeNode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;root&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;root&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;root&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+  
+  
+  &lt;h3 id=&quot;译者序&quot;&gt;译者序&lt;/h3&gt;
 
-        &lt;span class=&quot;n&quot;&gt;swap&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;root&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;left&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;root&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;right&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;p&gt;本文翻译自 2018 年的一篇英文博客：
+&lt;a href=&quot;https://smallstep.com/blog/everything-pki/&quot;&gt;Everything you should know about certificates and PKI but are too afraid to ask&lt;/a&gt;，
+作者 MIKE MALONE。&lt;/p&gt;
 
-        &lt;span class=&quot;n&quot;&gt;mirrorTree&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;root&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;left&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;mirrorTree&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;root&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;right&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;p&gt;这篇长文并不是枯燥、零碎地介绍 PKI、X.509、OID 等概念，而是从前因后果、历史沿革
+的角度把这些东西串联起来，逻辑非常清晰，让读者知其然，更知其所以然。&lt;/p&gt;
 
-        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;root&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&quot;h_2177365491_15&quot; data-into-catalog-status=&quot;&quot;&gt;pair替代二元数据结构&lt;/h3&gt;&lt;p&gt;有时候我们可能需要一些临时的数据结构。如果这个数据结构只有两个成员变量，那么你大可不必定义出来一个struct或class。直接上pair！&lt;/p&gt;&lt;p&gt;比如这道：38. 外观数列&lt;br/&gt; &lt;/p&gt;&lt;a target=&quot;_blank&quot; href=&quot;https://link.zhihu.com/?target=https%3A//leetcode-cn.com/problems/count-and-say/&quot; data-draft-node=&quot;block&quot; data-draft-type=&quot;link-card&quot; data-text=&quot;力扣&quot; class=&quot;LinkCard new&quot;&gt;&lt;span class=&quot;LinkCard-contents&quot;&gt;&lt;span class=&quot;LinkCard-title loading&quot; data-text=&quot;true&quot;/&gt;&lt;span class=&quot;LinkCard-desc loading&quot;/&gt;&lt;/span&gt;&lt;span class=&quot;LinkCard-image LinkCard-image--default&quot;/&gt;&lt;/a&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-cpp&quot;&gt;&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Solution&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;countAndSay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;1&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;auto&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;say&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;num&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;num&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;swap&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;say&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;vector&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pair&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;  &lt;span class=&quot;c1&quot;&gt;// 直接用pair
-&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;        &lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;emplace_back&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;num&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;back&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;first&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-                &lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;back&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;second&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-                &lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;emplace_back&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;num&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// pair对emplace友好
-&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;hr/&gt;
 
-        &lt;span class=&quot;n&quot;&gt;stringstream&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ss&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;auto&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nl&quot;&gt;pa&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;ss&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pa&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;second&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pa&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;first&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;sc&quot;&gt;&#x27;0&#x27;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ss&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;p&gt;pair还有其他好处，那就是它自带 operator&amp;lt; 比较运算符。如果你的自定义类型需要排序的话，那么pair就不需要你自己写这个比较函数了。而自定义类型则需要。&lt;/p&gt;&lt;p&gt;而且pair的构造函数可以直接接受first和second的值做参数。这对于emplace或者emplace_back都很友好！&lt;/p&gt;&lt;h3 id=&quot;h_2177365491_16&quot; data-into-catalog-status=&quot;&quot;&gt;accumulate求数组的和&lt;/h3&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-cpp&quot;&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sum&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;accumulate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nums&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;begin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nums&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;end&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&quot;h_2177365491_17&quot; data-into-catalog-status=&quot;&quot;&gt;partial_sum 部分求和&lt;/h3&gt;&lt;p&gt;对于某些“前缀和”相关的题目，可以简化代码&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-cpp&quot;&gt;    &lt;span class=&quot;n&quot;&gt;vector&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;v&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;6&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;7&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;vector&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pre&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;partial_sum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;begin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;end&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;back_inserter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pre&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nl&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pre&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;cout&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;endl&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;输出：&lt;/p&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;h3 id=&quot;h_2177365491_18&quot; data-into-catalog-status=&quot;&quot;&gt;min()和max()&lt;/h3&gt;&lt;p&gt;比如我们一般怎么求最小值呢？&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-cpp&quot;&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;price&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;price&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;可以直接用std::min()来简化if else：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-cpp&quot;&gt;&lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;min&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;price&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;工作中不太需要，刷题适合。如果你需要从三个数字中求最小值呢？加一层{}&lt;/p&gt;&lt;p&gt;&lt;b&gt;如果求最大值就用std::max()&lt;/b&gt;&lt;/p&gt;&lt;h3 id=&quot;h_2177365491_19&quot; data-into-catalog-status=&quot;&quot;&gt;max_element()和min_element()&lt;/h3&gt;&lt;p&gt;如果要从一个数组中找出最大值呢？&lt;/p&gt;&lt;p&gt;一般我们可能这么写：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-cpp&quot;&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 假设-1是肯定小于dp[i]的
-&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;&lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nl&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// dp是vector&amp;lt;int&amp;gt; 类型
-&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;v&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;val&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;v&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;val&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;val&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;太长了，可以直接：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-cpp&quot;&gt;&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;max_element&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;begin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;end&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;());&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 这样写的前提是能保证dp不是空的，否则段错误！
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&quot;h_2177365491_20&quot; data-into-catalog-status=&quot;&quot;&gt;二分查找相关&lt;/h3&gt;&lt;p&gt;upper_bound()和lower_bound()有时可以极大简化你手写二分法。&lt;/p&gt;&lt;h3 id=&quot;h_2177365491_21&quot; data-into-catalog-status=&quot;&quot;&gt;持续更新……&lt;/h3&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+&lt;p&gt;证书和 PKI 的目标其实很简单：&lt;strong&gt;&lt;mark&gt;将名字关联到公钥&lt;/mark&gt;&lt;/strong&gt;（bind names to public keys）。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;mark&gt;加密方式的演进&lt;/mark&gt;&lt;/strong&gt;：&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; MAC         最早的验证消息是否被篡改的方式，发送消息时附带一段验证码
+  |          双方共享同一密码，做哈希；最常用的哈希算法：HMAC
+  |
+  \/
+ Signature   解决 MAC 存在的一些问题；双方不再共享同一密码，而是使用密钥对
+  |
+  |
+  \/
+ PKC         公钥加密，或称非对称加密，最常用的一种 Signature 方式
+  |          公钥给别人，私钥自己留着；
+  |          发送给我的消息：别人用 *我的公钥* 加密；我用我的私钥解密
+  \/
+ Certificate   公钥加密的基础，概念：CA/issuer/subject/relying-party/...
+    |          按功能来说，分为两种
+    |
+    |---用于 *签名*（签发其他证书） 的证书
+    |---用于 *加解密* 的证书
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;mark&gt;证书（certificate）相关格式及其关系&lt;/mark&gt;&lt;/strong&gt;（沉重的历史负担）：&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  最常用的格式   |      信息比 X.509 更丰富的格式       |       其他格式
+
+  mTLS 等常用        Java 常用            微软常用
+                     .p7b .p7c          .pfx .p12
+
+  X.509 v3            PKCS#7               PKCS#12        SSH 证书    PGP 证书     =====&amp;gt;  证书格式
+      \                 |                    /                                           （封装格式，证书结构体）
+       \                |                   /
+        \               |                  /
+         \              |                 /
+          \-------------+----------------/
+                        |
+                       ASN.1 （类似于 JSON、ProtoBuf 等）                          =====&amp;gt;  描述格式
+                        |
+          /-------------+----------------\
+         /              |                 \
+        /               |                  \
+       /                |                   \
+      /                 |                    \
+   DER                 PEM                                                         =====&amp;gt;  编码格式
+二进制格式           文本格式                                                             （序列化）
+  .der            .pem .crt .cer
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;一些解释：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;X.509 从结构上定义证书中应该包含的信息，例如签发者、秘钥等等；但使用哪个格式
+（例如 JSON 还是 YAML 还是 ASN.1）来描述，并不属于 X.509 的内容；&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;ASN.1 是 X.509 的描述格式（或者说用 ASN.1 格式来定义 X.509），类似于现在的 protobuf；&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;ASN 中有很多数据类型，除了常见的整形、字符串等类型，还有一个称为 OID 的特殊类型，用点分整数表示，例如
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;2.5.4.3&lt;/code&gt;，有点像 URI 或 IP 地址，在设计上是全球唯一标识符，&lt;/li&gt;
+      &lt;li&gt;ASN.1 只是一种描述格式，并未定义如何序列化为比特流，因此又引出了 ASN.1 的编码格式。&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;ASN.1 与其编码格式的关系，与 &lt;strong&gt;&lt;mark&gt;unicode 与 utf8 的关系&lt;/mark&gt;&lt;/strong&gt;类似。&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;DER：一种二进制编码格式&lt;/li&gt;
+      &lt;li&gt;PEM：一种文本编码格式，通常以 &lt;strong&gt;&lt;mark&gt;&lt;code&gt;.pem&lt;/code&gt;、&lt;code&gt;.crt&lt;/code&gt; 或 &lt;code&gt;.cer&lt;/code&gt;&lt;/mark&gt;&lt;/strong&gt; 为后缀。&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;某些场景下，X.509 信息不够丰富，因此又设计了一些信息更丰富（例如可以包含证书
+链、秘钥）的证书封装格式，包括 PKCS #7 和 #12。&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;仍然用 ASN.1 格式描述&lt;/li&gt;
+      &lt;li&gt;基本都是用 DER 编码&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;以上提到的东西，再加上 CA、信任仓库、信任链、certificate path validation、CSR、证书生命周期管理、
+SPIFFE 等还没有提到但也与加密相关的东西，统称为&lt;strong&gt;&lt;mark&gt;公钥基础设施（PKI）&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;hr/&gt;
+
+&lt;p&gt;翻译时调整了一些配图，也加了几张新图，以方便展示和理解。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;由于译者水平有限，本文不免存在遗漏或错误之处。如有疑问，请查阅原文。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;以下是译文。&lt;/p&gt;
+
+&lt;hr/&gt;
+
+
+
+&lt;hr/&gt;
+
+&lt;h1 id=&quot;1-前言&quot;&gt;1 前言&lt;/h1&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;mark&gt;证书&lt;/mark&gt;&lt;/strong&gt;（certificates）与 &lt;strong&gt;&lt;mark&gt;PKI&lt;/mark&gt;&lt;/strong&gt;（public key
+infrastructure，公钥基础设施）很难。我认识的很多非常聪明的人也会绕过这一主题。
+我个人也很长时间没去碰这些内容，但说起来很讽刺，我没去碰的原因是
+&lt;strong&gt;&lt;mark&gt;不懂，所以不好意思问 —— 然后更不懂，自然更不好意思问&lt;/mark&gt;&lt;/strong&gt; ——
+如此形成恶性循环。&lt;/p&gt;
+
+&lt;h2 id=&quot;11-为什么要学习-pki&quot;&gt;1.1 为什么要学习 PKI&lt;/h2&gt;
+
+&lt;p&gt;最终我还是硬着头皮学习了这些东西，因为我觉得
+&lt;strong&gt;&lt;mark&gt;PKI 能使一个人在加解密层面（乃至更大的安全层面）去思考如何定义一个系统&lt;/mark&gt;&lt;/strong&gt;。
+具体来说，PKI 技术，&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;都是&lt;strong&gt;&lt;mark&gt;通用的、厂商无关的&lt;/mark&gt;&lt;/strong&gt;（universal and vendor neutral）；&lt;/li&gt;
+  &lt;li&gt;适用于任何地方，因此即使系统可分布在世界各地，彼此之间也能安全地通信；&lt;/li&gt;
+  &lt;li&gt;在概念上很简单，并且非常灵活；如果使用我们的 &lt;a href=&quot;https://smallstep.com/blog/use-tls.html&quot;&gt;TLS everywhere&lt;/a&gt; 模型，
+那甚至连 VPN 都不需要了。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;总之一句话：&lt;strong&gt;&lt;mark&gt;非常强大！&lt;/mark&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;12-本文目的&quot;&gt;1.2 本文目的&lt;/h2&gt;
+
+&lt;p&gt;在深入理解了 PKI 之后，我很&lt;strong&gt;&lt;mark&gt;后悔没有早点学这些东西&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;PKI 非常强大且有趣，虽然它背后的数学原理很复杂，&lt;strong&gt;&lt;mark&gt;一些相关标准也设计地非常愚蠢&lt;/mark&gt;&lt;/strong&gt;
+  （巴洛克式的复杂），但其 &lt;strong&gt;&lt;mark&gt;核心概念其实非常简单&lt;/mark&gt;&lt;/strong&gt;；&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;mark&gt;证书是识别（identify）代码和设备的最佳方式&lt;/mark&gt;&lt;/strong&gt;，
+  而 identity（身份）对安全、监控、指标等很多东西都非常有用；&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;mark&gt;使用证书并不是太难&lt;/mark&gt;&lt;/strong&gt;，不会难于学习一门新语言或一种新数据库。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;那为什么大家对这些内容望而却步呢？我认为主要是&lt;strong&gt;&lt;mark&gt;缺少很好的文档&lt;/mark&gt;&lt;/strong&gt;，所以经常看地云里雾里，半途而弃。&lt;/p&gt;
+
+&lt;p&gt;本文试图弥补这一缺失。我认为大部分工程师花一个小时读完本文后，头脑中都将有具备了那些
+&lt;strong&gt;&lt;mark&gt;关于加解密的最重要概念和最常见使用场景&lt;/mark&gt;&lt;/strong&gt; —— 这正是本文的目的 ——
+一小时只是很小的一个投资，而且这些内容是无法通过其他途径学到的。&lt;/p&gt;
+
+&lt;p&gt;本文将用到以下两个开源工具：&lt;/p&gt;
+
+
+
+&lt;h2 id=&quot;13-极简-tl-dr太长不读&quot;&gt;1.3 极简 TL; DR（太长不读）&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;mark&gt;证书和 PKI 的目的是：将名字关联到公钥（bind names to public keys）&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;这是关于证书和 PKI 的最高抽象，其他都属于实现细节。&lt;/p&gt;
+
+&lt;h1 id=&quot;2-术语&quot;&gt;2 术语&lt;/h1&gt;
+
+&lt;p&gt;本文将用到以下术语。&lt;/p&gt;
+
+&lt;h2 id=&quot;21-entity实体&quot;&gt;2.1 Entity（实体）&lt;/h2&gt;
+
+&lt;p&gt;Entity 是&lt;strong&gt;&lt;mark&gt;任何存在的东西&lt;/mark&gt;&lt;/strong&gt;（anything that exists） —— 即使
+&lt;strong&gt;&lt;mark&gt;只在逻辑或概念上存在&lt;/mark&gt;&lt;/strong&gt;（even if only exists logically or conceptually）。
+例如，&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;你的计算机是一个 entity，&lt;/li&gt;
+  &lt;li&gt;你写的代码也是一个 entity，&lt;/li&gt;
+  &lt;li&gt;你自己也是一个 entity，&lt;/li&gt;
+  &lt;li&gt;你吃的杂粮饼也是一个 entity，&lt;/li&gt;
+  &lt;li&gt;你六岁时见过的&lt;strong&gt;&lt;mark&gt;幽灵&lt;/mark&gt;&lt;/strong&gt;也是一个 entity —— 即使你妈告诉你幽灵并不存在，这只是你的臆想。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;22-identity身份&quot;&gt;2.2 Identity（身份）&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;mark&gt;每个 entity（实体）都有一个 identity（身份）&lt;/mark&gt;&lt;/strong&gt;。
+要精确定义这个概念比较困难，这么来说吧：identity 是&lt;strong&gt;&lt;mark&gt;使你之所以为你&lt;/mark&gt;&lt;/strong&gt;
+（what makes you you）的东西，懂吗？&lt;/p&gt;
+
+&lt;p&gt;具体到计算机领域，identity 通常&lt;strong&gt;&lt;mark&gt;用一系列属性来表示，描述某个具体的 entity&lt;/mark&gt;&lt;/strong&gt;，
+这里的属性包括 group、age、location、favorite color、shoe size 等等。&lt;/p&gt;
+
+&lt;h2 id=&quot;23-identifier身份标识符&quot;&gt;2.3 Identifier（身份标识符）&lt;/h2&gt;
+
+&lt;p&gt;Identifier 跟 identity 还不是一个东西：每个 identifier 都是一个&lt;strong&gt;&lt;mark&gt;唯一标识符&lt;/mark&gt;&lt;/strong&gt;，
+也&lt;strong&gt;&lt;mark&gt;唯一地关联到某个有 identity 的 entity&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;例如，我是 Mike，但 Mike 并不是我的 identity，而只是个 name —— 虽然二者在我们
+小范围的讨论中是同义的。&lt;/p&gt;
+
+&lt;h2 id=&quot;24-claim声明--authentication认证&quot;&gt;2.4 Claim（声明） &amp;amp; Authentication（认证）&lt;/h2&gt;
+
+
+
+&lt;h2 id=&quot;25-subscriber--ca--relying-party-rp&quot;&gt;2.5 Subscriber &amp;amp; CA &amp;amp; relying party (RP)&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;&lt;mark&gt;能作为一个证书的 subject 的 entity&lt;/mark&gt;&lt;/strong&gt;，称为 &lt;strong&gt;&lt;mark&gt;subscriber&lt;/mark&gt;&lt;/strong&gt;（证书 owner）或 &lt;strong&gt;&lt;mark&gt;end entity&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+    &lt;p&gt;对应地，subscriber 的证书有时也称为 end entity certificates 或 leaf certificates，
+  原因在后面讨论 certificate chains 时会介绍。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;CA（certificate authority，证书权威）是&lt;strong&gt;&lt;mark&gt;给 subscriber 颁发证书的 entity&lt;/mark&gt;&lt;/strong&gt;，是一种 certificate issuer（证书颁发者）。&lt;/p&gt;
+
+    &lt;p&gt;CA 的证书，通常称为 &lt;strong&gt;&lt;mark&gt;root certificate&lt;/mark&gt;&lt;/strong&gt; 或 intermediate certificate，具体取决于 CA 类型。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Relying party 是 &lt;strong&gt;&lt;mark&gt;使用证书的用户&lt;/mark&gt;&lt;/strong&gt;（certificate user），它验证由 CA 颁发（给 subscriber）的证书是否合法。&lt;/p&gt;
+
+    &lt;p&gt;一个 entity 可以同时是一个 subscriber 和一个 relying party。
+  也就是说，单个 entity 既有自己的证书，又使用其他证书来认证 remote peers，
+  例如双向 TLS（mutual TLS，&lt;strong&gt;&lt;mark&gt;mTLS&lt;/mark&gt;&lt;/strong&gt;）场景。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;26-小结&quot;&gt;2.6 小结&lt;/h2&gt;
+
+&lt;p&gt;对于我们接下来的讨论，这些术语就够了。下面将进入正题，看如何在实际中实现
+&lt;strong&gt;&lt;mark&gt;证书的声明和认证&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;想了解更多相关术语，可参考 &lt;a href=&quot;https://tools.ietf.org/html/rfc4949&quot;&gt;RFC 4949&lt;/a&gt;。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h1 id=&quot;3-mac消息认证码和-signature签名&quot;&gt;3 MAC（消息认证码）和 signature（签名）&lt;/h1&gt;
+
+&lt;h2 id=&quot;31-macmessage-authentication-code和-hmachash-based-mac&quot;&gt;3.1 MAC（message authentication code）和 HMAC（hash-based MAC）&lt;/h2&gt;
+
+&lt;p&gt;MAC（消息认证码）是一&lt;strong&gt;&lt;mark&gt;小段数据&lt;/mark&gt;&lt;/strong&gt;，用于验证某个 entity 发送的消息&lt;strong&gt;&lt;mark&gt;未被篡改&lt;/mark&gt;&lt;/strong&gt;。
+其基本原理如下图所示：&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;/assets/img/everything-about-pki/HMAC.png&quot;/&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot;&gt;MAC/HMAC 原理。图片来自：&lt;a href=&quot;https://www.okta.com/identity-101/hmac/&quot;&gt;okta.com&lt;/a&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;对&lt;strong&gt;&lt;mark&gt;消息&lt;/mark&gt;&lt;/strong&gt;（message）和双方都知道的一个&lt;strong&gt;&lt;mark&gt;密码&lt;/mark&gt;&lt;/strong&gt;
+（shared secret，a password）做哈希，&lt;strong&gt;&lt;mark&gt;得到的哈希值&lt;/mark&gt;&lt;/strong&gt;就是 MAC；&lt;/li&gt;
+  &lt;li&gt;发送方将消息连带 MAC 一起发给接收方；&lt;/li&gt;
+  &lt;li&gt;接收方收到消息之后，用同一个密码来计算 MAC，然后跟消息中提供的 MAC 对比。如果相同，就证明未被篡改。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;关于哈希：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;哈希是单向的，因此无法从输出反推输入。这一点至关重要：否则截获消息的人就可以根据 MAC 和哈希函数反推出你的 secrets。&lt;/li&gt;
+  &lt;li&gt;此外，生成 MAC 的&lt;strong&gt;&lt;mark&gt;哈希算法选择也至关重要&lt;/mark&gt;&lt;/strong&gt;，本文不会展开，但
+提醒一点：不要试图用自己设计的 MAC 算法。&lt;/li&gt;
+  &lt;li&gt;最常用的 MAC 算法是 &lt;a href=&quot;https://en.wikipedia.org/wiki/HMAC&quot;&gt;HMAC&lt;/a&gt;（&lt;strong&gt;&lt;mark&gt;hash-based message authentication code&lt;/mark&gt;&lt;/strong&gt;）。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;32-signature签名&quot;&gt;3.2 Signature（签名）&lt;/h2&gt;
+
+&lt;p&gt;讨论 MAC 其实是&lt;strong&gt;&lt;mark&gt;为了引出 signature（签名）&lt;/mark&gt;&lt;/strong&gt;这一主题。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;mark&gt;签名在概念上与 MAC 类似&lt;/mark&gt;&lt;/strong&gt;，但&lt;strong&gt;&lt;mark&gt;不是用共享 secret 的方式&lt;/mark&gt;&lt;/strong&gt;，
+而是使用一对秘钥（key pair）：&lt;/p&gt;
+
+
+
+&lt;p&gt;如果只有一个 entity 知道秘钥，那这种特性称为 &lt;strong&gt;&lt;mark&gt;non-repudiation&lt;/mark&gt;&lt;/strong&gt;
+（不可否认性）：持有私钥的人无法否认（repudiate）数据是由他签名的这一事实。&lt;/p&gt;
+
+&lt;h2 id=&quot;33-小结&quot;&gt;3.3 小结&lt;/h2&gt;
+
+&lt;p&gt;MAC 与 signature 都叫做签名，是因为它们和现实世界中的签名是很像的。例如，如果想
+让某人同意某事，并且事后还能证明他们当时的确同意了，就把问题写下来，然后让他们
+手写签字（签名）。&lt;/p&gt;
+
+&lt;h1 id=&quot;4-public-key-cryptography公钥加密或称非对称加密&quot;&gt;4 Public key cryptography（公钥加密，或称非对称加密）&lt;/h1&gt;
+
+&lt;p&gt;证书和 PKI 的基础是&lt;strong&gt;&lt;mark&gt;公钥加密&lt;/mark&gt;&lt;/strong&gt;（public key cryptography），
+也叫&lt;strong&gt;&lt;mark&gt;非对称加密&lt;/mark&gt;&lt;/strong&gt;（asymmetric cryptography）。&lt;/p&gt;
+
+&lt;h2 id=&quot;41-秘钥对&quot;&gt;4.1 秘钥对&lt;/h2&gt;
+
+&lt;p&gt;公钥加密系统使用秘钥对（key pair）加解密。一个秘钥对包含：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;一个私钥（private key）：owner 持有，&lt;strong&gt;&lt;mark&gt;解密用，不要分享给任何人&lt;/mark&gt;&lt;/strong&gt;；&lt;/p&gt;
+
+    &lt;p&gt;这一点非常重要，值得重复一遍：&lt;strong&gt;&lt;mark&gt;公钥加密系统的安全性取决于私钥（private key）的机密性&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;一个公钥（public key）：&lt;strong&gt;&lt;mark&gt;加密用&lt;/mark&gt;&lt;/strong&gt;，可分发和共享给别人；&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;秘钥可以做的事情：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;加解密：公钥（public key）加密，私钥（private key）解密。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;mark&gt;签名&lt;/mark&gt;&lt;/strong&gt;：&lt;strong&gt;&lt;mark&gt;私钥（private key）对数据进行签名&lt;/mark&gt;&lt;/strong&gt;（sign some data）；
+任何有公钥的人都可以&lt;strong&gt;&lt;mark&gt;对签名进行验证&lt;/mark&gt;&lt;/strong&gt;，证明这个签名确实是私钥生成的。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;42-公钥加密系统使计算机能看到对方&quot;&gt;4.2 公钥加密系统使计算机能“看到”对方&lt;/h2&gt;
+
+&lt;p&gt;公钥加密是数学给计算机科学的神秘礼物，
+&lt;a href=&quot;https://www.math.auckland.ac.nz/~sgal018/crypto-book/crypto-book.html&quot;&gt;其数学基础&lt;/a&gt;
+显然很复杂，但如果只是使用，那并不理解它的每一步数学原理。
+公钥加密使计算机能做一些之前无法做的事情：它们现在能看到对方是谁了。&lt;/p&gt;
+
+&lt;p&gt;这句话的意思是说，公钥加密使一台计算（或代码）能向其他计算机或程序证明，
+&lt;strong&gt;&lt;mark&gt;不用直接分享某些信息，它也能知道该信息&lt;/mark&gt;&lt;/strong&gt;。更具体来说，&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;以前要证明你有密码，就必须向别人展示这个密码。但展示之后，任何有这个密码的人就都能使用它了。&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;私钥却与此不同。你能通过私钥对我的身份进行认证（authenticate my identity），但却无法假冒我。&lt;/p&gt;
+
+    &lt;p&gt;例如，你发给我一个大随机数，我对这个随机数进行签名，然后将再发送给你。
+  你能用公钥对这个签名进行认证，确认这个签名（消息）确实来自我。
+  这就是一种证明你在和我（而不是别的其他的人）通信的很好证据。这使得网络上的
+  计算机能有效地知道它们在和谁通信。&lt;/p&gt;
+
+    &lt;p&gt;这听起来是一件如此理所当然的事情，但仔细地想一下，网络上只有流动的 0 和 1，
+  你怎么知道消息来自谁，在和谁通信？因此公钥加密系统是一个非常伟大的发明。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;5-证书certificate计算机和代码的驾驶证&quot;&gt;5 证书（certificate）：计算机和代码的驾驶证&lt;/h1&gt;
+
+&lt;p&gt;前面说道，公钥加密系统使我们能知道和谁在通信，但这个的前提是：
+&lt;strong&gt;&lt;mark&gt;要知道（有）对方的公钥&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;那么，如果&lt;strong&gt;&lt;mark&gt;对方不知道我的公钥怎么办&lt;/mark&gt;&lt;/strong&gt;？
+这就轮到证书出场了。&lt;/p&gt;
+
+&lt;p&gt;想一下，我们需求其实非常简单：&lt;/p&gt;
+
+
+
+&lt;h2 id=&quot;51-证书的内容subscriber-的公钥名字&quot;&gt;5.1 证书的内容：（subscriber 的）公钥+名字&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;证书是一个数据结构，其中包含一个 public key 和一个 name；&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;&lt;mark&gt;权威机构&lt;/mark&gt;&lt;/strong&gt;对证书进行&lt;strong&gt;&lt;mark&gt;签名&lt;/mark&gt;&lt;/strong&gt;，签名的大概意思是：public key xxx 关联到了 name xx；&lt;/p&gt;
+
+    &lt;p&gt;对证书进行签名的 entity 称为 &lt;strong&gt;&lt;mark&gt;issuer&lt;/mark&gt;&lt;/strong&gt;（或 certificate authority, CA），
+ 证书中的 entity 称为 &lt;strong&gt;&lt;mark&gt;subject&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;举个例子，如果某个 Issuer 为 Bob 签发了一张证书，其中的内容就可以解读如下：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;em&gt;Some Issuer&lt;/em&gt; says &lt;em&gt;Bob&lt;/em&gt;’s public key is 01:23:42…&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;/assets/img/everything-about-pki/drivers-license-cert.jpg&quot;/&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot;&gt;证书是权威机构颁发的身份证明，&lt;mark&gt;并没有什么神奇之处&lt;/mark&gt;&lt;/p&gt;
+
+&lt;p&gt;其中 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Some Issuer&lt;/code&gt; 是证书的签发者（证书权威），证书是为了证明这是 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Bob&lt;/code&gt; 的公钥，
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Some Issuer&lt;/code&gt; 也是这个声明的签字方。&lt;/p&gt;
+
+&lt;h2 id=&quot;52-证书的本质基于对-issuer-公钥的信任来学习其他公钥&quot;&gt;5.2 证书的本质：基于对 issuer 公钥的信任来学习其他公钥&lt;/h2&gt;
+
+&lt;p&gt;由上可知，如果知道 &lt;em&gt;Some Issuer&lt;/em&gt; 的公钥，就可以通过&lt;strong&gt;&lt;mark&gt;验证签名&lt;/mark&gt;&lt;/strong&gt;的方式来
+&lt;strong&gt;&lt;mark&gt;对它（用私钥）签发的证书&lt;/mark&gt;&lt;/strong&gt;进行认证（authenticate）。
+如果如果你信任 &lt;em&gt;Some Issuer&lt;/em&gt;，那你就可以信任这个声明。&lt;/p&gt;
+
+&lt;p&gt;因此，证书使大家能&lt;strong&gt;&lt;mark&gt;基于对 issuer 公钥的信任和知识，来学习到其他 entity 的公钥&lt;/mark&gt;&lt;/strong&gt;
+（上面的例子中就是 Bob）。这就是证书的本质。&lt;/p&gt;
+
+&lt;h2 id=&quot;53-与驾照的类比&quot;&gt;5.3 与驾照的类比&lt;/h2&gt;
+
+&lt;p&gt;证书就像是计算机/代码的驾照或护照。如果你之前从未见过我，但信任车管局，那你可以
+用我的驾照做认证：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;首先验证驾照是真的（检查 hologram 等），&lt;/li&gt;
+  &lt;li&gt;然后人脸和照片上对的上，&lt;/li&gt;
+  &lt;li&gt;然后看名字是我，等等。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;/assets/img/everything-about-pki/license-vs-cert.jpg&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;计算机用&lt;strong&gt;&lt;mark&gt;证书做类似的事情&lt;/mark&gt;&lt;/strong&gt;：如果之前从未和其他电脑通信，但信任
+一些证书权威，那可以用证书来认证：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;首先验证证书是合法的（用证书签发者的公钥检查签名等），&lt;/li&gt;
+  &lt;li&gt;然后提取证书中的（subscriber 的）公钥和名字，&lt;/li&gt;
+  &lt;li&gt;然后用 subscriber 的公钥，通过网络验证该 subscriber 的签名；&lt;/li&gt;
+  &lt;li&gt;查看名字是否正确等等。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;54-证书内容解析举例&quot;&gt;5.4 证书内容解析举例&lt;/h2&gt;
+
+&lt;p&gt;下面是个真实的证书：&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;/assets/img/everything-about-pki/step-certificate-inspect.png&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;还是与驾照类比：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;驾照：描述了你是否有资格开车；&lt;/li&gt;
+  &lt;li&gt;证书：描述你是否是一个 CA，你的公钥能否用来签名或加密。&lt;/li&gt;
+  &lt;li&gt;二者都有有效期。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;上图中有大量的细节，很多东西将在下面讨论到。但归根结底还是本文最开始总结的那句话
+：&lt;strong&gt;&lt;mark&gt;证书不过是一个将名字关联到公钥（bind names to public keys）的东西&lt;/mark&gt;&lt;/strong&gt;。
+其他都是实现细节。&lt;/p&gt;
+
+&lt;h1 id=&quot;6-证书编码格式及历史演进&quot;&gt;6 证书编码格式及历史演进&lt;/h1&gt;
+
+&lt;p&gt;接下来看一看证书在底层的表示（represented as bits and bytes）。&lt;/p&gt;
+
+&lt;p&gt;这部分内容&lt;strong&gt;&lt;mark&gt;复杂且相当令人沮丧&lt;/mark&gt;&lt;/strong&gt;。事实上，我怀疑&lt;strong&gt;&lt;mark&gt;证书和秘钥诡异的编码方式&lt;/mark&gt;&lt;/strong&gt;
+是导致 PKI 如此混乱和令人沮丧的根源。&lt;/p&gt;
+
+&lt;h2 id=&quot;61-x509-证书&quot;&gt;6.1 X.509 证书&lt;/h2&gt;
+
+&lt;p&gt;一般来说，人们&lt;strong&gt;&lt;mark&gt;提到“证书”而没有加额外限定词时&lt;/mark&gt;&lt;/strong&gt;，指的都是 X.509 v3
+证书。&lt;/p&gt;
+
+
+
+&lt;p&gt;也有其他的证书格式，例如著名的 &lt;strong&gt;&lt;mark&gt;SSH 和 PGP 都有它们各自的格式&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;本文主要关注 X.509，理解了 X.509，其他格式都是类似的。
+由于这些证书使用广泛，因此有很好的函数库，而且也用在浏览器之外的场景。毫无疑问，它们是
+internal PKI 颁发的最常见证书格式。重要的是，这些证书在很多 TLS/HTTPS 客户端/服
+务端程序中都是开箱即用的。&lt;/p&gt;
+
+&lt;h3 id=&quot;x509-起源电信领域&quot;&gt;X.509 起源：电信领域&lt;/h3&gt;
+
+&lt;p&gt;了解一点 X.509 的历史对理解它会有很大帮助。&lt;/p&gt;
+
+&lt;p&gt;X.509 在 &lt;strong&gt;&lt;mark&gt;1988&lt;/mark&gt;&lt;/strong&gt; 年作为国际电信联盟（ITU）X.500 项目的一部分首次标准化。
+这是通信（telecom）领域的标准，想通过它构建一个&lt;strong&gt;&lt;mark&gt;全球电话簿&lt;/mark&gt;&lt;/strong&gt;（global telephone book）。
+虽然这个项目没有成功，但却留下了一些遗产，X.509 就是其中之一。&lt;/p&gt;
+
+&lt;p&gt;如果查看 X.509 的证书，会看到其中包含了 locality、state、country 等信息，
+之前可能会有疑问为什么为 web 设计的证书会有这些东西，现在应该明白了，因为
+&lt;strong&gt;&lt;mark&gt;X.509 并不是为 web 设计的&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;/assets/img/everything-about-pki/cert-dn.png&quot;/&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;62-asn1数据抽象格式&quot;&gt;6.2 ASN.1：数据抽象格式&lt;/h2&gt;
+
+&lt;p&gt;X.509 构建在 ASN.1 （Abstract Syntax Notation，抽象语法标注）之上，后者是另一个
+ITU-T 标准 (X.208 and X.680)。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;mark&gt;ASN.1 定义数据类型&lt;/mark&gt;&lt;/strong&gt;，&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;可以将 ASN.1 理解成 &lt;strong&gt;&lt;mark&gt;X.509 的 JSON&lt;/mark&gt;&lt;/strong&gt;，&lt;/li&gt;
+  &lt;li&gt;但实际上&lt;strong&gt;&lt;mark&gt;更像 protobuf&lt;/mark&gt;&lt;/strong&gt;、thrift 或 SQL DDL。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;RFC 5280 &lt;strong&gt;&lt;mark&gt;用 ASN.1 来定义 X.509 证书&lt;/mark&gt;&lt;/strong&gt;，其中包括名字、秘钥、签名等信息。&lt;/p&gt;
+
+&lt;h2 id=&quot;63-oid-object-identitfier&quot;&gt;6.3 OID (object identitfier)&lt;/h2&gt;
+
+&lt;p&gt;ASN.1 除了有常见的数据类型，如整形、字符串、集合、列表等，
+还有一个&lt;strong&gt;&lt;mark&gt;不常见但很重要的类型：OID&lt;/mark&gt;&lt;/strong&gt;（object identifier，&lt;strong&gt;&lt;mark&gt;对象标识符&lt;/mark&gt;&lt;/strong&gt;）。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;OID &lt;strong&gt;&lt;mark&gt;与 URI 有些像&lt;/mark&gt;&lt;/strong&gt;，但比 URI 要怪。&lt;/li&gt;
+  &lt;li&gt;OID （在设计上）是&lt;strong&gt;&lt;mark&gt;全球唯一标识符&lt;/mark&gt;&lt;/strong&gt;。&lt;/li&gt;
+  &lt;li&gt;在结构上，OID 是在一个 hierarchical namespace 中的一个整数序列（例如 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;2.5.4.3&lt;/code&gt;）。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;可以用 OID 来 tag 一段数据的类型。例如，一个 string 本来只是一个 string，但可
+以 tag 一个 OID &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;2.5.4.3&lt;/code&gt;，然后就&lt;strong&gt;&lt;mark&gt;变成了一个特殊 string&lt;/mark&gt;&lt;/strong&gt;：这是
+&lt;strong&gt;&lt;mark&gt;X.509 的通用名字（common name）&lt;/mark&gt;&lt;/strong&gt; 字段。&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;/assets/img/everything-about-pki/oids.png&quot;/&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;64-asn1-编码格式&quot;&gt;6.4 ASN.1 编码格式&lt;/h2&gt;
+
+&lt;p&gt;ASN.1 只是&lt;strong&gt;&lt;mark&gt;抽象&lt;/mark&gt;&lt;/strong&gt;（abstract），因为这个标准并未定义在数据层应该如何表示（represented as bits and bytes）。
+ASN.1 与其编码格式的关系，就像 &lt;strong&gt;&lt;mark&gt;unicode 与 utf8 的区别&lt;/mark&gt;&lt;/strong&gt;。
+因此，有很多种&lt;strong&gt;&lt;mark&gt;编码规则&lt;/mark&gt;&lt;/strong&gt;（encoding rules），描述具体如何表示 ASN.1 数据。
+原以为增加这层额外的抽象会有所帮助，但实际证明大部分情况下反而&lt;strong&gt;&lt;mark&gt;徒增烦恼&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;h3 id=&quot;der-distinguished-encoding-rules二进制格式&quot;&gt;DER (distinguished encoding rules)：二进制格式&lt;/h3&gt;
+
+&lt;p&gt;ASN.1 有&lt;a href=&quot;https://en.wikipedia.org/wiki/Abstract_Syntax_Notation_One#Encodings&quot;&gt;很多种编码规则&lt;/a&gt;，
+但用于 X.509 和其他加密相关的，&lt;strong&gt;&lt;mark&gt;只有一种&lt;/mark&gt;&lt;/strong&gt;常见格式：DER —— 虽然有时也会用到 non-canonical
+的 basic encoding rules (BER，基础编码规则) 。&lt;/p&gt;
+
+&lt;p&gt;DER 是&lt;strong&gt;&lt;mark&gt;非常简单的 TLV&lt;/mark&gt;&lt;/strong&gt;（type-length-value）编码，但实际上用户无需
+关心这些，因为函数库封装好了。但不要高兴得太早 —— 虽然我们不必关心 DER 的编解码，
+但要能判断给定的某个 X.509 证书是 DER 还是其他类型编码的。这里的其他类型包括：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;一些比 DER 更友好的格式，&lt;/li&gt;
+  &lt;li&gt;封装了证书及其他额外信息的格式（something more than just a certificate）。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;DER 编码的证书通常以 &lt;strong&gt;&lt;mark&gt;&lt;code&gt;.der&lt;/code&gt;&lt;/mark&gt;&lt;/strong&gt; 为后缀。&lt;/p&gt;
+
+&lt;h3 id=&quot;pem-privacy-enhanced-email文本格式&quot;&gt;PEM (privacy enhanced email)：文本格式&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;mark&gt;DER 是二进制格式，不便复制粘贴&lt;/mark&gt;&lt;/strong&gt;。因此&lt;strong&gt;&lt;mark&gt;大部分证书都是以&lt;/mark&gt;&lt;/strong&gt;
+&lt;a href=&quot;https://en.wikipedia.org/wiki/Privacy-Enhanced_Mail&quot;&gt;PEM&lt;/a&gt; 格式打包的，这是
+&lt;strong&gt;&lt;mark&gt;另一个历史怪胎&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;如果你熟悉 &lt;a href=&quot;https://en.wikipedia.org/wiki/MIME&quot;&gt;MIME&lt;/a&gt; 的话，二者是比较类似的：
+由 header、base64 编码的 payload、footer 三部分组成。
+header 中有标签（label）来描述 payload。例如下面是一个 &lt;strong&gt;&lt;mark&gt;PEM 编码的 X.509 证书&lt;/mark&gt;&lt;/strong&gt;：&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;-----BEGIN CERTIFICATE-----
+MIIBwzCCAWqgAwIBAgIRAIi5QRl9kz1wb+SUP20gB1kwCgYIKoZIzj0EAwIwGzEZ
+MBcGA1UEAxMQTDVkIFRlc3QgUm9vdCBDQTAeFw0xODExMDYyMjA0MDNaFw0yODEx
+BgNVHRMBAf8ECDAGAQH/AgEAMB0GA1UdDgQWBBRc+LHppFk8sflIpm/XKpbNMwx3
+SDAfBgNVHSMEGDAWgBTirEpzC7/gexnnz7ozjWKd71lz5DAKBggqhkjOPQQDAgNH
+ADBEAiAejDEfua7dud78lxWe9eYxYcM93mlUMFIzbWlOJzg+rgIgcdtU9wIKmn5q
+FU3iOiRP5VyLNmrsQD3/ItjUN1f1ouY=
+-----END CERTIFICATE-----
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;但令人震惊的时，即便如此简单的功能，在实现上也已经出现混乱：PEM labels 在不同工具之间是不一致的。
+&lt;a href=&quot;https://tools.ietf.org/html/rfc7468&quot;&gt;RFC 7468&lt;/a&gt; 试图标准化 PEM 的使用规范，
+但也并不完整，不是所有工具都遵循这个规范。&lt;/p&gt;
+
+&lt;p&gt;PEM 编码的证书通常以 &lt;strong&gt;&lt;mark&gt;&lt;code&gt;.pem&lt;/code&gt;、&lt;code&gt;.crt&lt;/code&gt; 或 &lt;code&gt;.cer&lt;/code&gt;&lt;/mark&gt;&lt;/strong&gt; 为后缀。
+再次提醒，这只是“通常”情况，实际上某些工具可能并不遵循这些惯例。&lt;/p&gt;
+
+&lt;p&gt;下面介绍几个前面提到的“其他类型的打包格式”。&lt;/p&gt;
+
+&lt;h2 id=&quot;65-比-x509-信息更丰富的证书打包封装格式&quot;&gt;6.5 比 X.509 信息更丰富的证书打包（封装）格式&lt;/h2&gt;
+
+&lt;p&gt;X.509 只是一种常用的证书格式，但有人觉得这种格式能装的信息不够多，因此
+又定义了一些比 X.509 &lt;strong&gt;&lt;mark&gt;更大的数据结构&lt;/mark&gt;&lt;/strong&gt;（但&lt;strong&gt;&lt;mark&gt;仍然用 ASN.1&lt;/mark&gt;&lt;/strong&gt;），
+能将证书、秘钥以及其他东西封装（打包）到一起。因此，有时说我需要“一个证书”时，其
+实真正说的是包（package）中包含的那个“证书”（a certificate in one of these
+envelopes），而不是这个包本身。&lt;/p&gt;
+
+&lt;h3 id=&quot;pkcs-7java-中常用&quot;&gt;PKCS #7：Java 中常用&lt;/h3&gt;
+
+&lt;p&gt;你可能会遇到的是一个称为 PKCS（Public Key Cryptography Standards，&lt;strong&gt;&lt;mark&gt;公钥加密标准&lt;/mark&gt;&lt;/strong&gt;）的标准的一部分，
+它由 RSA labs 发布（真实历史要 &lt;a href=&quot;https://security.stackexchange.com/questions/73156/whats-the-difference-between-x-509-and-pkcs7-certificate&quot;&gt;更加复杂一些&lt;/a&gt;，本文不展开）。&lt;/p&gt;
+
+&lt;p&gt;其中的第一个标准是 &lt;a href=&quot;https://tools.ietf.org/html/rfc2315&quot;&gt;PKCS#7&lt;/a&gt;，后面被
+IETF 重新冠名为 &lt;a href=&quot;https://tools.ietf.org/html/rfc5652&quot;&gt;Cryptographic Message Syntax&lt;/a&gt; (CMS)
+，其中可以包含多个证书（以 full certificate chain 方式编码，后面会看到）。&lt;/p&gt;
+
+&lt;p&gt;PKCS#7 &lt;strong&gt;&lt;mark&gt;在 Java 中使用广泛&lt;/mark&gt;&lt;/strong&gt;。常见扩展名是 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.p7b&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.p7c&lt;/code&gt;。&lt;/p&gt;
+
+&lt;h3 id=&quot;pkcs-12微软常用&quot;&gt;PKCS #12：微软常用&lt;/h3&gt;
+
+&lt;p&gt;另一个常见的打包格式 &amp;lt;a href=https://tools.ietf.org/html/rfc7292&amp;gt;PKCS#12&amp;lt;/a&amp;gt;，
+它能将一个&lt;strong&gt;&lt;mark&gt;证书链&lt;/mark&gt;&lt;/strong&gt;（这一点与 PKCS#7 类似）连同一个（加密之后的）&lt;strong&gt;&lt;mark&gt;私钥&lt;/mark&gt;&lt;/strong&gt;打包到一起。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;mark&gt;微软的产品多用这种格式&lt;/mark&gt;&lt;/strong&gt;，常见后缀&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.pfx&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.p12&lt;/code&gt;。&lt;/p&gt;
+
+&lt;p&gt;再次说明，PKCS#7 和 PKCS#12 envelopes &lt;strong&gt;&lt;mark&gt;仍然使用 ASN.1&lt;/mark&gt;&lt;/strong&gt;，这意味着
+它们都能以原始 DER、BER 或 PEM 的格式编码。
+从我个人的经验来看，二者&lt;strong&gt;&lt;mark&gt;几乎都是 DER 编码的&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;h2 id=&quot;66-秘钥编解码&quot;&gt;6.6 秘钥编解码&lt;/h2&gt;
+
+&lt;p&gt;秘钥编码（Key encoding）的过程与以上描述的类似（复杂）：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;用某种 ASN.1 数据结构描述秘钥（key）；&lt;/li&gt;
+  &lt;li&gt;用 DER 做二进制编码，或用 PEM (hopefully with a useful header) 做一些稍微友好一些的表示。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;mark&gt;秘钥的解密过程（deciphering），一半是是科学，一半是艺术&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;如果足够幸运，根据 &lt;a href=&quot;https://tools.ietf.org/html/rfc7468&quot;&gt;RFC 7468&lt;/a&gt; 就能找到其中的 PEM payload；&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;椭圆曲线秘钥通常符合 RFC 7468 规范，虽然
+  &lt;a href=&quot;https://tools.ietf.org/html/rfc5915#section-4&quot;&gt;这里看起来似乎也并没有什么标准&lt;/a&gt;。&lt;/p&gt;
+
+    &lt;p&gt;下面是一个 &lt;strong&gt;&lt;mark&gt;PEM 编码的椭圆曲线秘钥&lt;/mark&gt;&lt;/strong&gt;（PEM-encoded elliptic curve key）：&lt;/p&gt;
+
+    &lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;step crypto keypair &lt;span class=&quot;nt&quot;&gt;--kty&lt;/span&gt; EC &lt;span class=&quot;nt&quot;&gt;--no-password&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--insecure&lt;/span&gt; ec.pub ec.prv
+
+ &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;ec.pub ec.prv
+ &lt;span class=&quot;nt&quot;&gt;-----BEGIN&lt;/span&gt; PUBLIC KEY-----
+ MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEc73/+JOESKlqWlhf0UzcRjEe7inF
+ uu2z1DWxr+2YRLfTaJOm9huerJCh71z5lugg+QVLZBedKGEff5jgTssXHg&lt;span class=&quot;o&quot;&gt;==&lt;/span&gt;
+ &lt;span class=&quot;nt&quot;&gt;-----END&lt;/span&gt; PUBLIC KEY-----
+ &lt;span class=&quot;nt&quot;&gt;-----BEGIN&lt;/span&gt; EC PRIVATE KEY-----
+ MHcCAQEEICjpa3i7ICHSIqZPZfkJpcRim/EAmUtMFGJg6QjkMqDMoAoGCCqGSM49
+ AwEHoUQDQgAEc73/+JOESKlqWlhf0UzcRjEe7inFuu2z1DWxr+2YRLfTaJOm9hue
+ rJCh71z5lugg+QVLZBedKGEff5jgTssXHg&lt;span class=&quot;o&quot;&gt;==&lt;/span&gt;
+ &lt;span class=&quot;nt&quot;&gt;-----END&lt;/span&gt; EC PRIVATE KEY-----
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;其他秘钥，通常用 PEM label “PRIVATE KEY” 描述&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;pem-编码的-pkcs8-格式私钥&quot;&gt;PEM 编码的 PKCS#8 格式私钥&lt;/h3&gt;
+
+&lt;p&gt;PEM label “PRIVATE KEY” 描述的秘钥，通常暗示这是一个
+&lt;a href=&quot;https://tools.ietf.org/html/rfc5208&quot;&gt;PKCS#8&lt;/a&gt; payload，
+这是一种私钥（private key）封装格式，其中包含秘钥类型和其他 metadata。&lt;/p&gt;
+
+&lt;h3 id=&quot;密码加密的私钥&quot;&gt;密码加密的私钥&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;mark&gt;用密码来加密私钥&lt;/mark&gt;&lt;/strong&gt;也很常见（private keys encrypted using a
+password），这里的密码可以是 a shared secret or symmetric key。
+看起来大致如下（&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Proc-Type&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DEK-Info&lt;/code&gt; 是 PEM 的一部分，表示这个 PEM 的 payload 是用 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AES-256-CBC&lt;/code&gt; 加密的）：&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;-----BEGIN EC PRIVATE KEY-----
+Proc-Type: 4,ENCRYPTED
+DEK-Info: AES-256-CBC,b3fd6578bf18d12a76c98bda947c4ac9
+
+qdV5u+wrywkbO0Ai8VUuwZO1cqhwsNaDQwTiYUwohvot7Vw851rW/43poPhH07So
+sdLFVCKPd9v6F9n2dkdWCeeFlI4hfx+EwzXLuaRWg6aoYOj7ucJdkofyRyd4pEt+
+Mj60xqLkaRtphh9HWKgaHsdBki68LQbObLOz4c6SyxI=
+-----END EC PRIVATE KEY-----
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;PKCS#8 对象也能被加密，这种情况下 header label 应该是 &lt;strong&gt;&lt;mark&gt;&quot;ENCRYPTED PRIVATE KEY&quot;&lt;/mark&gt;&lt;/strong&gt; per RFC 7468。
+这种情况下不会看到 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Proc-Type&lt;/code&gt; 和 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Dek-Info&lt;/code&gt; headers，因为这些信息此时编码到了 payload 中。&lt;/p&gt;
+
+&lt;h3 id=&quot;公钥私钥常见扩展名&quot;&gt;公钥、私钥常见扩展名&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;公钥：&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.pub&lt;/code&gt; or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.pem&lt;/code&gt;，&lt;/li&gt;
+  &lt;li&gt;私钥：&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.prv,&lt;/code&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.key&lt;/code&gt;, or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.pem&lt;/code&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;但再次说明，有些工具或组织可能并不遵循业界惯例。&lt;/p&gt;
+
+&lt;h2 id=&quot;67-小结&quot;&gt;6.7 小结&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;mark&gt;ASN.1 用于定义数据类型&lt;/mark&gt;&lt;/strong&gt;，例如证书（certificate）和秘钥（key）——
+就像用 JSON 定义一个 request body —— X.509 用 ASN.1  定义。&lt;/li&gt;
+  &lt;li&gt;DER 是一组将 ASN.1 编码成二进制（比特和字节）的编码规则（encoding rules）。&lt;/li&gt;
+  &lt;li&gt;PKCS#7 and PKCS#12 是比 X.509 更大的数据结构（封装格式），也用 ASN.1 定义，其
+中能包含除了证书之外的其他东西。二者分别在 Java 和 Microsoft 产品中使用较多。&lt;/li&gt;
+  &lt;li&gt;DER 编码之后是二进制数据，不方便复制粘贴，因此大部分证书都是用 PEM 编码的，它
+用 base64 对 DER 进行编码，然后再加上自己的 label。&lt;/li&gt;
+  &lt;li&gt;私钥通常用是 PEM 编码的 PKCS#8 对象，但有时也会用密码来加密。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;如果觉得以上内容理解起来很杂乱，那并不是你的问题，而是加密领域的现状就是如此。我已经尽力了。&lt;/p&gt;
+
+&lt;h1 id=&quot;7-pki-public-key-infrastructure&quot;&gt;7 PKI (Public Key Infrastructure)&lt;/h1&gt;
+
+&lt;p&gt;至此我们已经知道了证书的来历和样子，但这仅仅是本文的一半。
+下面看&lt;strong&gt;&lt;mark&gt;证书是如何创建和使用&lt;/mark&gt;&lt;/strong&gt;的。&lt;/p&gt;
+
+&lt;p&gt;&lt;mark&gt;Public key infrastructure&lt;/mark&gt; (PKI) 是一个统称，包括了我们在
+如下与证书和秘钥管理及交互操作时需要用到的所有东西：签发、分发、存放、使用、验证、撤回等等。
+就像“数据库基础设施” 一样，这个名词是有意取的这样模糊的。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;mark&gt;证书是大部分 PKI 的构建模块&lt;/mark&gt;&lt;/strong&gt;，而证书权威是其基础。&lt;/li&gt;
+  &lt;li&gt;PKI 包括了 libraries, cron jobs, protocols, conventions, clients, servers,
+people, processes, names, discovery mechanisms, and all the other stuff
+you’ll need to use public key cryptography effectively。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;自己从头开始构建一个 PKI 是一件极其庞大的工作，
+但实际上 &lt;strong&gt;&lt;mark&gt;一些简单的 PKI 甚至并不使用证书&lt;/mark&gt;&lt;/strong&gt;。例如，&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;编辑 &lt;strong&gt;&lt;mark&gt;&lt;code&gt;~/.ssh/authorized_keys&lt;/code&gt;&lt;/mark&gt;&lt;/strong&gt; 文件时，就是在配置
+一个简单的无证书形式的（certificate-less）PKI，SSH 通过这种方式在扁平文件内
+&lt;strong&gt;&lt;mark&gt;实现 public key 和 name 的绑定&lt;/mark&gt;&lt;/strong&gt;；&lt;/li&gt;
+  &lt;li&gt;PGP 用证书，但不用 CA，而是用一个 &lt;a href=&quot;https://en.wikipedia.org/wiki/Web_of_trust&quot;&gt;web-of-trust&lt;/a&gt; model；&lt;/li&gt;
+  &lt;li&gt;甚至可以 &lt;a href=&quot;http://www.aaronsw.com/weblog/squarezooko&quot;&gt;用区块链&lt;/a&gt; 来 assign name 并将它们 bind 到 public key。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;如果从头开始构建一个 PKI，&lt;strong&gt;&lt;mark&gt;唯一确定的事情是：你需要用到公钥&lt;/mark&gt;&lt;/strong&gt;（public keys），
+其他东西都随设计而异。&lt;/p&gt;
+
+&lt;p&gt;下文将&lt;strong&gt;&lt;mark&gt;主要关注 web 领域使用的 PKI&lt;/mark&gt;&lt;/strong&gt;，以及基于 Web PKI 技术、遵循现有标准的 internal PKI。&lt;/p&gt;
+
+&lt;p&gt;证书和 PKI 的目标其实很简单：&lt;strong&gt;&lt;mark&gt;将名字关联到公钥&lt;/mark&gt;&lt;/strong&gt;（bind names to public keys）。
+在下面的内容中，不要忘了这一点。&lt;/p&gt;
+
+&lt;h2 id=&quot;71-web-pki-vs-internal-pki&quot;&gt;7.1 Web PKI vs Internal PKI&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;mark&gt;浏览器访问 HTTPS 链接时&lt;/mark&gt;&lt;/strong&gt;会用到 Web PKI。虽然也有一些问题，但它大大提升了 web
+的安全性，而且基本上对用户透明。在访问互联网 web 服务时，应该在所有可能的情
+况下都启用它。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Web PKI 由 &lt;a href=&quot;https://tools.ietf.org/html/rfc5280&quot;&gt;RFC 5280&lt;/a&gt; 定义，
+&lt;a href=&quot;https://cabforum.org/&quot;&gt;CA/Browser Forum&lt;/a&gt; (a.k.a., CA/B or CAB Forum) 对其进行了进一步完善。&lt;/li&gt;
+  &lt;li&gt;有时也称为 “Internet PKI” 或 &lt;strong&gt;&lt;mark&gt;PKIX&lt;/mark&gt;&lt;/strong&gt; (after the working group that created it).&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;PKIX 和 CAB Forum 文档涵盖了很大内容。
+它们定义了前面讨论的各种证书、还定义什么是 “name” 以及位于证书中什么位置、能使用什么签名算法、
+RP 如何判断 issuer 的证书、如何指定证书的 validity period (issue and expiry dates)、
+撤回、certificate path validation、CA 判断某人是否拥有一个域名等等。&lt;/p&gt;
+
+&lt;p&gt;Web PKI 很重要，是因为浏览器默认使用 Web PKI 证书。&lt;/p&gt;
+
+&lt;p&gt;&lt;mark&gt;Internal PKI&lt;/mark&gt; 是&lt;strong&gt;&lt;mark&gt;用户为自己的产品基础设施使用的 PKI&lt;/mark&gt;&lt;/strong&gt;，这些产品包括&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;服务、容器、虚拟机等；&lt;/li&gt;
+  &lt;li&gt;企业 IT 应用；&lt;/li&gt;
+  &lt;li&gt;公司终端设备，例如笔记本电脑、手机等；&lt;/li&gt;
+  &lt;li&gt;其他需要识别的代码或设备。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Internal PKI 使你能认证和建立加密通道，这样你的服务就可以安全地在公网上的任意位置互相通信了。&lt;/p&gt;
+
+&lt;h2 id=&quot;72-有了-web-pki为什么还要使用自己的-internal-pki&quot;&gt;7.2 有了 Web PKI，为什么还要使用自己的 internal PKI？&lt;/h2&gt;
+
+&lt;p&gt;首先，简单来说：&lt;strong&gt;&lt;mark&gt;Web PKI 设计中并没有考虑内部使用场景&lt;/mark&gt;&lt;/strong&gt;。
+即使有了 &lt;a href=&quot;https://letsencrypt.org/&quot;&gt;Let’s Encrypt&lt;/a&gt; 这样的提供免费证书和自动化交付的 CA，
+用户还是需要自己处理 &lt;a href=&quot;https://letsencrypt.org/docs/rate-limits/&quot;&gt;rate limits&lt;/a&gt; 和
+&lt;a href=&quot;https://statusgator.com/services/lets-encrypt&quot;&gt;availability&lt;/a&gt; 之类的事情。
+如果有很多 service，部署很频繁，就非常不方便。&lt;/p&gt;
+
+&lt;p&gt;另外，Web PKI 中，用户对证书生命周期、撤回机制、续约过程、秘钥类型、算法等等很
+多重要的细节都没有控制权，或只有很少控制权。而下文将会看到，这些都是非常重要的东西。&lt;/p&gt;
+
+&lt;p&gt;最后，CA/Browser Forum Baseline Requirements
+实际上&lt;strong&gt;&lt;mark&gt;禁止将 Web PKI CA 关联到 internal IPs&lt;/mark&gt;&lt;/strong&gt; (e.g., &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;10.0.0.0/8&lt;/code&gt;)
+及 &lt;strong&gt;&lt;mark&gt;internal DNS names&lt;/mark&gt;&lt;/strong&gt; that aren’t fully-qualified and
+resolvable in public global DNS (e.g., you can’t bind a kubernetes cluster DNS
+name like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;foo.ns.svc.cluster.local&lt;/code&gt;)。
+如果需要在证书中绑定到这些 name，或者签发大量证书，或者控制证书细节，就需要自己的 internal PKI.&lt;/p&gt;
+
+&lt;p&gt;下面一节将看到，信任（或缺乏信任）是避免将 Web PKI 用于内部场景的另一个原因。&lt;/p&gt;
+
+&lt;p&gt;总结起来，建议：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;mark&gt;面向公网的服务或 API&lt;/mark&gt;&lt;/strong&gt;，使用 Web PKI；&lt;/li&gt;
+  &lt;li&gt;其他所有场景，都使用 internal PKI。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;8-trust--trustworthiness&quot;&gt;8 Trust &amp;amp; Trustworthiness&lt;/h1&gt;
+
+&lt;h2 id=&quot;81-trust-stores信任仓库&quot;&gt;8.1 Trust Stores（信任仓库）&lt;/h2&gt;
+
+&lt;p&gt;前面介绍到，证书可解读为一个 statement 或 claim，例如：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Issuer（签发者）说，该 subject 的公钥是 xxx。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Issuer 会对这份声明进行签名，relying party 能（通过 issuer 的公钥）验证（authenticate）签名是否合法。
+但这里其实跳过了一个重要问题：&lt;strong&gt;&lt;mark&gt;relying party 是如何知道 issuer 的公钥的&lt;/mark&gt;&lt;/strong&gt;？&lt;/p&gt;
+
+&lt;h3 id=&quot;预配置信任的根证书&quot;&gt;预配置信任的根证书&lt;/h3&gt;
+
+&lt;p&gt;答案其实很简单：relying parties 在自己的 trust store（信任库）预先配置了一个它
+&lt;strong&gt;&lt;mark&gt;信任的根证书&lt;/mark&gt;&lt;/strong&gt;（trusted root certificates，也称为 trust anchors）列表，&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;mark&gt;预配置的具体方式&lt;/mark&gt;&lt;/strong&gt;（the manner in which this pre-configuration occurs），
+是 PKI 非常重要的一面：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;一种方式是从另一个 PKI 来 bootstrap：可以用一些自动化工具，通过 SSH 将 root 证
+书拷贝到 relying party。这里用到里前面提到的 SSH PKI。&lt;/li&gt;
+  &lt;li&gt;如果是在 cloud 上，那 PKI 依赖层次（信任链）又深了一步：SSH PKI 是由 Web PKI 加上认证方式
+来 bootstrap 的，这里的认证是你创建 cloud 账户时选择的认证方式。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;信任链&quot;&gt;信任链&lt;/h3&gt;
+
+&lt;p&gt;如果沿着这个信任链（chain of trust）回溯足够远，最后总能找到人（people）：每个
+信任链都终结在现实世界（meatspace）。&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;/assets/img/everything-about-pki/chain-of-trust.jpg&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;下面这个图画地更清楚一些，&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;/assets/img/everything-about-pki/trust-chain.png&quot;/&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot;&gt;Image credit: &lt;a href=&quot;https://brainbit.io/posts/cilium-tls-inspection/&quot;&gt;Cilium TLS inspection&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;根证书自签名&quot;&gt;根证书自签名&lt;/h3&gt;
+
+&lt;p&gt;信任仓库中的&lt;strong&gt;&lt;mark&gt;根证书是自签名的（self-signed）&lt;/mark&gt;&lt;/strong&gt;：issuer 和 subject
+相同。逻辑上，这种 statement 表示的是：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Mike 说：Mike 的公钥是 xxx。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;自签名的证书保证了该证书的 subject/issuer 知道对应的私钥，
+但任何人都可以生成一个自签名的证书，这个证书中可以写任何他们想写的名字（name）。&lt;/p&gt;
+
+&lt;p&gt;因此&lt;strong&gt;&lt;mark&gt;证书的起源（provenance）就非常关键&lt;/mark&gt;&lt;/strong&gt;：一个自签名的证书，只有
+当它&lt;strong&gt;&lt;mark&gt;进入信任仓库的过程是可信任时&lt;/mark&gt;&lt;/strong&gt;，才应该信任这个根证书。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;在 macOS 上，信任仓库是由 Keychain 管理的。&lt;/li&gt;
+  &lt;li&gt;在一些 Linux 发行版上，可能只是 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/etc&lt;/code&gt; 或其他路径下面的一些文件。&lt;/li&gt;
+  &lt;li&gt;如果你的用户能修改这些文件，那最好先确认是你信任这些用户的。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;信任仓库的来源&quot;&gt;信任仓库的来源&lt;/h3&gt;
+
+&lt;p&gt;所以，信任仓库又从哪里来？对于 Web PKI 来说，最重要的
+relying parties 就是浏览器。&lt;strong&gt;&lt;mark&gt;主流浏览器默认使用的信任仓库&lt;/mark&gt;&lt;/strong&gt; ——
+及其他任何使用 TLS 的东西 —— 都是&lt;strong&gt;&lt;mark&gt;由四个组织维护&lt;/mark&gt;&lt;/strong&gt;的：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;a href=&quot;http://www.apple.com/certificateauthority/ca_program.html&quot;&gt;Apple’s root certificate&lt;/a&gt;：iOS/macOS 程序&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://social.technet.microsoft.com/wiki/contents/articles/31633.microsoft-trusted-root-program-requirements.aspx&quot;&gt;Microsoft’s root certificate program&lt;/a&gt;：Windows 使用&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.mozilla.org/en-US/about/governance/policies/security-group/certs/&quot;&gt;Mozilla’s root certificate program&lt;/a&gt;：
+  Mozilla 产品使用，由于其开放和透明，也作为其他一些信任仓库从基础 (e.g., for many Linux distributions)&lt;/li&gt;
+  &lt;li&gt;Google &lt;a href=&quot;https://www.chromium.org/Home/chromium-security/root-ca-policy&quot;&gt;未维护 root certificate program&lt;/a&gt;
+  （Chrome 通常使用所在计算的操作系统的信任仓库），但
+&lt;a href=&quot;https://chromium.googlesource.com/chromium/src/+/master/net/data/ssl/blacklist/README.md&quot;&gt;维护了自己的黑名单&lt;/a&gt;，
+列出了自己不信任的根证书或特定证书。
+(&lt;a href=&quot;https://chromium.googlesource.com/chromiumos/docs/+/master/ca_certs.md&quot;&gt;ChromeOS builds off of Mozilla’s certificate program&lt;/a&gt;)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;操作系统的信任仓库&quot;&gt;操作系统的信任仓库&lt;/h3&gt;
+
+&lt;p&gt;操作系统中的信任仓库通常都是&lt;strong&gt;&lt;mark&gt;系统自带&lt;/mark&gt;&lt;/strong&gt;的。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Firefox 自带了自己的信任仓库（通过 TLS 从 mozilla.org 分发 ——
+bootstrapping off of Web PKI using some other trust store）。&lt;/li&gt;
+  &lt;li&gt;编程语言和其他非浏览器的东西例如 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;curl&lt;/code&gt;，通过默认用操作系统的信任仓库。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;因此，这个信任仓库通常情况下，会被该系统上预装的很多东西默认使用；通过软件更新（
+通常使用另一个 PKI 来签名）而更新。&lt;/p&gt;
+
+&lt;p&gt;信任仓库中通常包含了超过 100 个由这些程序维护的&lt;strong&gt;&lt;mark&gt;常见证书权威&lt;/mark&gt;&lt;/strong&gt;（certificate authorities）。
+其中一些著名的：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Let’s Encrypt&lt;/li&gt;
+  &lt;li&gt;Symantec&lt;/li&gt;
+  &lt;li&gt;DigiCert&lt;/li&gt;
+  &lt;li&gt;Entrust&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;如果想编程控制：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Cloudflare’s
+&lt;a href=&quot;https://github.com/cloudflare/cfssl&quot;&gt;cfssl&lt;/a&gt; project maintains a
+&lt;a href=&quot;https://github.com/cloudflare/cfssl_trust&quot;&gt;github repository&lt;/a&gt; that
+includes the trusted certificates from various trust stores to assist with
+certificate bundling (which we’ll discuss momentarily).&lt;/li&gt;
+  &lt;li&gt;For a more human-friendly experience you can query &lt;a href=&quot;https://censys.io/&quot;&gt;Censys&lt;/a&gt;
+to see which certificates are trusted by &lt;a href=&quot;https://censys.io/certificates?q=validation.nss.valid%3A+true+AND+parsed.extensions.basic_constraints.is_ca%3A+true&quot;&gt;Mozilla&lt;/a&gt;,
+&lt;a href=&quot;https://censys.io/certificates?q=validation.apple.valid%3A+true+AND+parsed.extensions.basic_constraints.is_ca%3A+true&quot;&gt;Apple&lt;/a&gt;,
+and &lt;a href=&quot;https://censys.io/certificates?q=validation.microsoft.valid%3A+true+AND+parsed.extensions.basic_constraints.is_ca%3A+true&quot;&gt;Microsoft&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;82-trustworthiness可靠性&quot;&gt;8.2 Trustworthiness（可靠性）&lt;/h2&gt;
+
+&lt;p&gt;这 100 多个证书权威在理论上是&lt;strong&gt;&lt;mark&gt;可信的&lt;/mark&gt;&lt;/strong&gt;（trusted） —— 浏览器和其他
+一些软件默认情况下信任由这些权威颁发的证书。&lt;/p&gt;
+
+&lt;p&gt;但是，这并不意味着它们是&lt;strong&gt;&lt;mark&gt;可靠的&lt;/mark&gt;&lt;/strong&gt;（trustworthy）。
+已经出现过 Web PKI 证书权威向政府机构&lt;strong&gt;&lt;mark&gt;提供假证书&lt;/mark&gt;&lt;/strong&gt;的事故，以便
+窥探流量（snoop on traffic）或仿冒某些网站。
+这类“受信任的” CA 中，其中在司法管辖权之外的地方运营 —— 包括民主国家和专制国家。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;NSA 利用每个可能的机会来削弱 Web PKI。2011 年，两个“受信任的”证书权威
+DigiNotar and Comodo  &lt;a href=&quot;https://en.wikipedia.org/wiki/DigiNotar&quot;&gt;都&lt;/a&gt;
+&lt;a href=&quot;https://en.wikipedia.org/wiki/Comodo_Group#Certificate_hacking&quot;&gt;被攻陷了&lt;/a&gt;。
+DigiNotar 证书泄露可能与 NSA 相关。&lt;/li&gt;
+  &lt;li&gt;此外，还有大量 CA 签发格式不对或不兼容的证书。因此，虽然按业界规范来说
+这些 CA 是受信的，但&lt;strong&gt;&lt;mark&gt;按照经验来说它们是不可靠（不靠谱）的&lt;/mark&gt;&lt;/strong&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;我们很快就会看到，&lt;strong&gt;&lt;mark&gt;Web PKI 的安全性取决于安全性最弱的权威&lt;/mark&gt;&lt;/strong&gt;（the least secure CA）的安全性。
+这显然不是我们希望的。&lt;/p&gt;
+
+&lt;p&gt;浏览器社区已经在采取行动来解决这些问题。
+CA/Browser Forum Baseline Requirements 规定了这些受信的证书权威在签发证书时应该遵守的规则。
+作为 WebTrust audit 项目的一部分，在将 CA 加入到某些信任仓库（例如 Mozilla 的）之前，会对 CA 合规性进行审计。&lt;/p&gt;
+
+&lt;p&gt;如果&lt;strong&gt;&lt;mark&gt;内部场景&lt;/mark&gt;&lt;/strong&gt;（internal stuff）已经在使用 TLS，你可能大部分情况下
+&lt;strong&gt;&lt;mark&gt;并不需要信任这些 public CA&lt;/mark&gt;&lt;/strong&gt;。
+如果信任了，就为 NSA 和其他组织打开了一扇地狱之门：你的系统安全性将取决于 100 多
+个组织中安全性最弱的那一个。&lt;/p&gt;
+
+&lt;h2 id=&quot;83-federation&quot;&gt;8.3 Federation&lt;/h2&gt;
+
+&lt;h3 id=&quot;证书欺骗的风险&quot;&gt;证书欺骗的风险&lt;/h3&gt;
+
+&lt;p&gt;令事情更糟糕的是，Web PKI relying parties (RPs) 信任它们的信任仓库中任何 CA
+签发给任何 subscriber 的证书。结果是 Web PKI 整体的安全性取决于所有 Web PKI CA 中最弱的那个。
+&lt;strong&gt;&lt;mark&gt;2011 DigiNotar 攻击&lt;/mark&gt;&lt;/strong&gt;就说明了这个问题：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;作为攻击的一部分，&lt;strong&gt;&lt;mark&gt;给 google.com 签发了一个假证书&lt;/mark&gt;&lt;/strong&gt;，
+这个证书&lt;strong&gt;&lt;mark&gt;被大部分浏览器和操作系统信任&lt;/mark&gt;&lt;/strong&gt;，而它们不管 google 和
+DigiNotar 没有任何关系这一事实。&lt;/li&gt;
+  &lt;li&gt;还有类似的欺骗证书颁发给了 Yahoo!, Mozilla, The Tor Project。&lt;/li&gt;
+  &lt;li&gt;最终的解决方式是将 DigiNotar 的根证书从主流信任仓库中移除，但显然在此期间已经造成了大量破坏。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;最近，&lt;strong&gt;&lt;mark&gt;森海塞尔&lt;/mark&gt;&lt;/strong&gt;（Sennheiser）因为在它们的 HeadSetup APP 信任仓库中
+&lt;a href=&quot;https://medium.com/asecuritysite-when-bob-met-alice/your-headphones-might-break-the-security-of-your-computer-4f304ed86611&quot;&gt;安装了一个自签名的根证书&lt;/a&gt;
+引起了一次重大安全事故，&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;他们将相应的私钥（private key）嵌入在了 app 的配置中，&lt;/li&gt;
+  &lt;li&gt;任何人都能从中提取这个私钥，然后颁发证书给任何 domain，&lt;/li&gt;
+  &lt;li&gt;因此，任何在自己的信任仓库中添加了 Sennheiser 证书的，都将会信任这些欺骗证书。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;这完全摧毁了 TLS 带来的好处，太糟糕了！&lt;/p&gt;
+
+&lt;h3 id=&quot;改进措施&quot;&gt;改进措施&lt;/h3&gt;
+
+&lt;p&gt;已经有一些机制来减少此类风险：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;a href=&quot;https://tools.ietf.org/html/rfc6844&quot;&gt;Certificate Authority Authorization&lt;/a&gt; (CAA) allows you to restrict which CAs can issue certificates
+for your domain using a special DNS record.&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.certificate-transparency.org/&quot;&gt;Certificate Transparency&lt;/a&gt;
+ (CT) (&lt;a href=&quot;https://tools.ietf.org/html/rfc6962&quot;&gt;RFC 6962&lt;/a&gt;) mandates
+ that CAs submit every certificate they issue to an impartial observer that
+ maintains a &lt;a href=&quot;https://crt.sh/?Identity=smallstep.com&quot;&gt;public
+ certificate log&lt;/a&gt; to detect fraudulently issued certificates.
+ Cryptographic proof of CT submission is included in issued certificate&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://tools.ietf.org/html/rfc7469&quot;&gt;HTTP Public Key Pinning&lt;/a&gt; (HPKP
+ or just “pinning”) lets a subscriber (a website) tell an RP (a browser) to
+ only accept certain public keys in certificates for a particular domain.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;这里存在的问题是：&lt;strong&gt;&lt;mark&gt;缺少 RP 端的支持&lt;/mark&gt;&lt;/strong&gt;。CAB Forum now mandates CAA
+checks in browsers. Some browsers also have some support for CT and HPKP. 但对于
+其他 RPs (e.g., most TLS standard library implementations) &lt;strong&gt;&lt;mark&gt;这些东西几乎都是没有
+贯彻执行的&lt;/mark&gt;&lt;/strong&gt;。This issue will come up repeatedly: a lot of certificate policy must
+be enforced by RPs, and RPs can rarely be bothered. If RPs don’t check CAA
+records and don’t require proof of CT submission this stuff doesn’t do much
+good.&lt;/p&gt;
+
+&lt;h3 id=&quot;internal-pki-使用单独的信任仓库&quot;&gt;Internal PKI 使用单独的信任仓库&lt;/h3&gt;
+
+&lt;p&gt;在任何情况下，如果使用自己的 internal PKI，都应该为 internal 服务&lt;strong&gt;&lt;mark&gt;维护一个单独的信任仓库&lt;/mark&gt;&lt;/strong&gt;。
+即，&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;不要将你的根证书直接加到系统已有的信任仓库，&lt;/li&gt;
+  &lt;li&gt;而应该配置 internal TLS 只使用你自己的根证书。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;internal-pki-细粒度控制caa--spiffe&quot;&gt;Internal PKI 细粒度控制：CAA &amp;amp; SPIFFE&lt;/h3&gt;
+
+&lt;p&gt;如果想在内部实现更好的联邦（federation） —— 例如限制 internal CA 能签发哪些证书，&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;可以试试 CAA records 然后对 RPs 进行恰当配置。&lt;/li&gt;
+  &lt;li&gt;还可以看看 &lt;a href=&quot;https://spiffe.io/&quot;&gt;&lt;mark&gt;SPIFFE&lt;/mark&gt;&lt;/a&gt;，这是一个还在不断发展的项目，
+目标是对一些 internal PKI 相关的问题进行标准化。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;9-什么是证书权威certificate-authority&quot;&gt;9 什么是证书权威（Certificate Authority）？&lt;/h1&gt;
+
+&lt;p&gt;前面已经讨论了很多 CA 相关的东西，但我们还没定义什么是 CA。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;一个证书权威（CA）就是一个&lt;strong&gt;&lt;mark&gt;受信任的证书颁发者&lt;/mark&gt;&lt;/strong&gt;。&lt;/li&gt;
+  &lt;li&gt;CA 通过对一个证书进行签名，对一个&lt;strong&gt;&lt;mark&gt;公钥和名字之间的绑定关系（binding）做担保&lt;/mark&gt;&lt;/strong&gt;。&lt;/li&gt;
+  &lt;li&gt;本质上来说，一个 CA 只不过是另一个证书加上用来签其他证书的相应私钥。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;显然需要一些逻辑和过程来将这些东西串联起来。CA 需要将它的证书分发到信任仓库，接受和处理
+证书请求，颁发证书给 subscriber。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;一个暴露此类 API 给外部调用、自动化这些过程的 CA 称为&lt;strong&gt;&lt;mark&gt;在线证书权威&lt;/mark&gt;&lt;/strong&gt;（&lt;strong&gt;&lt;mark&gt;online CA&lt;/mark&gt;&lt;/strong&gt;）。&lt;/li&gt;
+  &lt;li&gt;在信任仓库中那些自签名的根证书 称为根证书权威（&lt;strong&gt;&lt;mark&gt;root CA&lt;/mark&gt;&lt;/strong&gt;）。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;91-web-pki-不能自动化签发证书&quot;&gt;9.1 Web PKI 不能自动化签发证书&lt;/h2&gt;
+
+&lt;p&gt;CAB Forum Baseline Requirements 4.3.1 明确规定：一个 Web PKI CA 的 root private key
+只能通过 issue a direct command 来签发证书。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;换句话说，&lt;strong&gt;&lt;mark&gt;Web PKI root CA 不能自动化证书签名（certificate signing）过程&lt;/mark&gt;&lt;/strong&gt;。&lt;/li&gt;
+  &lt;li&gt;对于任何大的 CA operation 来说，无法在线完成都是一个问题。
+不可能每次签发一个证书时，都人工敲一个命令。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;这样规定是出于&lt;strong&gt;&lt;mark&gt;安全考虑&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Web PKI root certificates 广泛存在于信任仓库中，很难被撤回。截获一个
+root CA private key 理论上将影响几十亿的人和设备。&lt;/li&gt;
+  &lt;li&gt;因此，最佳实践就是，确保 root private keys 是离线的（offline），理想情况下在一些
+&lt;a href=&quot;https://en.wikipedia.org/wiki/Hardware_security_module&quot;&gt;专用硬件&lt;/a&gt;
+上，连接到某些物理空间隔离的设备上，有很好的物理安全性，有严格的使用流程。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;mark&gt;一些 internal PKI 也遵循类似的实践，但实际上并没有这个必要&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;如果能自动化 root certificate rotation （例如，通过配置管理或编排工具，更新信任仓库），
+你就能轻松地 rotate 一个 compromised root key。&lt;/li&gt;
+  &lt;li&gt;由于人们如此沉迷于 internal PKI 的根秘钥管理，导致 internal PKI 的部署效率大大
+降低。你的 AWS root account credentials 至少也是机密信息，你又是如何管理它的呢？&lt;/li&gt;
+&lt;/ul&gt;
+
+
+
+&lt;p&gt;在 root CA offline 的前提下，为使证书 issuance 可扩展（例如，使自动化成为可能），
+root private key 只在很少情况下使用，&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;用来签发几个&lt;em&gt;intermediate certificates&lt;/em&gt;。&lt;/li&gt;
+  &lt;li&gt;然后 intermediate CA（也称为 subordinate CAs）用相应的 intermediate private keys 来签发 leaf certificates to subscribers。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;如下图所示：&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;/assets/img/everything-about-pki/cert-path.png&quot;/&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot;&gt;Image credit: &lt;a href=&quot;https://brainbit.io/posts/cilium-tls-inspection/&quot;&gt;Cilium TLS inspection&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;下面这张图把签发关系展示地更清楚，&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;/assets/img/everything-about-pki/trust-chain.png&quot;/&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot;&gt;Image credit: &lt;a href=&quot;https://brainbit.io/posts/cilium-tls-inspection/&quot;&gt;Cilium TLS inspection&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;mark&gt;Intermediates 通常并不包含在信任仓库中，所以撤回或 roate 比较容易&lt;/mark&gt;&lt;/strong&gt;，
+因此通过 intermediate CA，就实现了 certificate issuance 的在线和自动化（online and automated）。&lt;/p&gt;
+
+&lt;p&gt;这种 leaf、intermediate、root 组成的证书捆绑（bundle）机制，
+形成了一个&lt;strong&gt;&lt;mark&gt;证书链&lt;/mark&gt;&lt;/strong&gt;（certificate chain）。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;leaf 由 intermediate 签发，&lt;/li&gt;
+  &lt;li&gt;intermediate 又由 root 签发，&lt;/li&gt;
+  &lt;li&gt;root 自签名（signs itself）。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;技术上来说，上面都是简化的例子，你可以创建更长的 chain 和更复杂的图（例如，
+&lt;a href=&quot;https://docs.microsoft.com/en-us/windows/desktop/seccertenroll/about-cross-certification&quot;&gt;cross-certification&lt;/a&gt;）。
+但不推荐这么做，因为复杂性很快会失控。在任何情况下，
+end entity certificates 都是叶子节点，这也是称为叶子证书（leaf certificate）的原因。&lt;/p&gt;
+
+&lt;p&gt;当配置一个 &lt;strong&gt;&lt;mark&gt;subscriber&lt;/mark&gt;&lt;/strong&gt; 时（例如，Apache、Nginx、Linkderd、&lt;strong&gt;&lt;mark&gt;Envoy&lt;/mark&gt;&lt;/strong&gt;），
+通常不仅需要叶子证书，还需要一个&lt;strong&gt;&lt;mark&gt;包含了 intermediates 的 certificate bundle&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;有时会用 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;PKCS#7&lt;/code&gt; 和 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;PKCS#12&lt;/code&gt;，因为它们能包含一个完整的证书链（certificate chain）。&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;更多情况下，证书链编码成一个简单的空行隔开的 PEM 对象（sequence of line-separated PEM objects）。&lt;/p&gt;
+
+    &lt;p&gt;Some stuff expects the certs to be ordered from leaf to root, other stuff expects root to leaf, and some stuff doesn’t care.
+  More annoying inconsistency. Google and Stack Overflow help here. Or trial and error.&lt;/p&gt;
+
+    &lt;p&gt;下面是一个例子：&lt;/p&gt;
+
+    &lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;server.crt
+  &lt;span class=&quot;nt&quot;&gt;-----BEGIN&lt;/span&gt; CERTIFICATE-----
+  MIICFDCCAbmgAwIBAgIRANE187UXf5fn5TgXSq65CMQwCgYIKoZIzj0EAwIwHzEd
+  ...
+  MBsGA1UEAxMUVGVzdCBJbnRlcm1lZGlhdGUgQ0EwHhcNMTgxMjA1MTc0OTQ0WhcN
+  HO3iTsozZsCuqA34HMaqXveiEie4AiEAhUjjb7vCGuPpTmn8HenA5hJplr+Ql8s1
+  d+SmYsT0jDU&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;-----END&lt;/span&gt; CERTIFICATE-----
+  &lt;span class=&quot;nt&quot;&gt;-----BEGIN&lt;/span&gt; CERTIFICATE-----
+  MIIBuzCCAWKgAwIBAgIRAKBv/7Xs6GPAK4Y8z4udSbswCgYIKoZIzj0EAwIwFzEV
+  ...
+  BRvPAJZb+soYP0tnObqWdplmO+krWmHqCWtK8hcCIHS/es7GBEj3bmGMus+8n4Q1
+  x8YmK7ASLmSCffCTct9Y
+  &lt;span class=&quot;nt&quot;&gt;-----END&lt;/span&gt; CERTIFICATE-----
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+
+    &lt;p&gt;Again, annoying and baroque, but not rocket science.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;93-rpcertificate-path-validation&quot;&gt;9.3 RP：Certificate path validation&lt;/h2&gt;
+
+&lt;p&gt;由于 &lt;strong&gt;&lt;mark&gt;intermediate certificates 并未包含在信任仓库中，因此需要与
+leaf certificates 一样分发和验证&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;前面已经介绍，配置 subscriber 时需要提供这些 intermediates，&lt;strong&gt;&lt;mark&gt;subscribers 随后再将它们传给 RP&lt;/mark&gt;&lt;/strong&gt;。&lt;/li&gt;
+  &lt;li&gt;如果使用 TLS，那这个过程发生在 &lt;strong&gt;&lt;mark&gt;TLS 握手时&lt;/mark&gt;&lt;/strong&gt;。&lt;/li&gt;
+  &lt;li&gt;当一个 subscriber 将它的证书发给 relying party 时，其中会包含所有能证明来自信任的根证书的 intermediates。&lt;/li&gt;
+  &lt;li&gt;relying party 通过一个称为 &lt;strong&gt;&lt;mark&gt;certificate path validation&lt;/mark&gt;&lt;/strong&gt; 的过程来验证 leaf 和 intermediate certificates 。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;/assets/img/everything-about-pki/cert-path-validation.jpg&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;完整的 &lt;a href=&quot;https://tools.ietf.org/html/rfc5280#section-6&quot;&gt;certificate path validation&lt;/a&gt;
+算法比较复杂。包括了&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;checking certificate expirations&lt;/li&gt;
+  &lt;li&gt;revocation status&lt;/li&gt;
+  &lt;li&gt;various certificate policies&lt;/li&gt;
+  &lt;li&gt;key use restrictions&lt;/li&gt;
+  &lt;li&gt;a bunch of other stuff&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;显然，PKI RP 准确实现这个算法是非常关键的。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;如果&lt;strong&gt;&lt;mark&gt;关闭 certificate path validation&lt;/mark&gt;&lt;/strong&gt;
+(例如，&lt;strong&gt;&lt;mark&gt;&lt;code&gt;curl -k&lt;/code&gt;&lt;/mark&gt;&lt;/strong&gt;)，用户将面临重大风险，所以不要关闭。&lt;/li&gt;
+  &lt;li&gt;完成正确的 TLS 并没有那么难，certificate path validation 是
+&lt;strong&gt;&lt;mark&gt;TLS 中完成认证（authentication）的部分&lt;/mark&gt;&lt;/strong&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;可能有人会说，channel 已经是加密的了，因此关闭没关系 —— 错，有关系。
+&lt;strong&gt;&lt;mark&gt;没有认证（authentication）的加密是毫无价值的&lt;/mark&gt;&lt;/strong&gt; —— 这就像在教堂忏悔：
+你说的话都是私密的，但却并不知道帘幕后面的人是谁 —— 只不过这里不是教堂，而是互联网。&lt;/p&gt;
+
+&lt;h1 id=&quot;10-秘钥和证书的生命周期&quot;&gt;10 秘钥和证书的生命周期&lt;/h1&gt;
+
+&lt;p&gt;在能通过 TLS 等协议使用证书之前，要先&lt;strong&gt;&lt;mark&gt;配置如何从 CA 获取一个证书&lt;/mark&gt;&lt;/strong&gt;。
+逻辑上来说这是一个相当简单的过程：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;需要证书的 subscriber 自己先生成一个 key pair，然后通过请求发送给 CA，&lt;/li&gt;
+  &lt;li&gt;CA 检查其中关联的 name 是否正确，如果正确就签名并返回一个证书。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;证书会过期，过期的证书就不会被 RP 信任了。如果证书快过期了而还想继续用它，就需要
+续期（renew ）并轮转（rotate）它。如果想在一个证书过期之前就让 RP 停止信任它，就需要执行撤销（revoke）。&lt;/p&gt;
+
+&lt;p&gt;与 PKI 相关的大部分东西一样，&lt;strong&gt;&lt;mark&gt;这些看似简单的过程实际上都充满坑&lt;/mark&gt;&lt;/strong&gt;。
+其中也隐藏了计算机科学中最难的两个问题：缓存一致性和命名（naming）。
+但另一方面，一旦理解了背后的原来，再反过来看实际在用的一些东西就简单多了。&lt;/p&gt;
+
+&lt;h2 id=&quot;101-naming-things命名相关&quot;&gt;10.1 Naming things（命名相关）&lt;/h2&gt;
+
+&lt;h3 id=&quot;dn-distinguished-names&quot;&gt;DN (distinguished names)&lt;/h3&gt;
+
+&lt;p&gt;历史上，X.509 使用 X.500 distinguished names (DN) 来命名证书的使用者（name the subject of a certificate），即 subscriber。
+一个 DN 包含了一个 common name （对作者我来说，就是 “Mike Malone”），此外还可以包含
+locality、country、organization、organizational unit 及其他一些东西（数字电话簿相关）。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;mark&gt;没人理解 DN，它在互联网上也没什么意义&lt;/mark&gt;&lt;/strong&gt;。&lt;/li&gt;
+  &lt;li&gt;应该避免使用 DN。如果真的要用，也要尽量保持简单。&lt;/li&gt;
+  &lt;li&gt;无需使用全部字段，实际上，也不应该使用全部字段。&lt;/li&gt;
+  &lt;li&gt;common name 可能就是&lt;strong&gt;&lt;mark&gt;需要用到的全部字段&lt;/mark&gt;&lt;/strong&gt;了，如果你是一个 thrill seeker ，可以在用上一个 organization name。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;PKIX 规定一个网站的 DNS hostname 应该关联到 DN &lt;em&gt;common name&lt;/em&gt;。最近，CAB Forum 已
+经废弃了这个规定，使整个 DN 字段变成可选的（Baseline Requirements, sections
+7.1.4.2）。&lt;/p&gt;
+
+&lt;h3 id=&quot;san-subject-alternative-name&quot;&gt;SAN (subject alternative name)&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;mark&gt;现代最佳实践&lt;/mark&gt;&lt;/strong&gt;使用
+&lt;a href=&quot;https://tools.ietf.org/html/rfc5280#section-4.2.1.6&quot;&gt;subject alternative name (SAN) X.509 extension&lt;/a&gt;
+来 &lt;strong&gt;&lt;mark&gt;bind 证书中的 name&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;常用的 SAN 有四种类型，绑定的都是广泛使用的名字：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;domain names (DNS)&lt;/li&gt;
+  &lt;li&gt;email addresse&lt;/li&gt;
+  &lt;li&gt;IP addresse&lt;/li&gt;
+  &lt;li&gt;URI&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;在我们讨论的上下文中，这些&lt;strong&gt;&lt;mark&gt;都是唯一的&lt;/mark&gt;&lt;/strong&gt;，而且它们&lt;strong&gt;&lt;mark&gt;能很好地映射到我们想识别的东西&lt;/mark&gt;&lt;/strong&gt;：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;email addresses for people&lt;/li&gt;
+  &lt;li&gt;domain names and IP addresses for machines and code,&lt;/li&gt;
+  &lt;li&gt;URIs if you want to get fancy&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;应该使用 SAN。&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;/assets/img/everything-about-pki/inspect-san-dns.png&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;注意，Web PKI 允许在一个证书内 bind 多个 name，name 也也允许通配符。也就是说，&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;一个证书可以有多个 SNA，也可以有类似 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*.smallstep.com&lt;/code&gt; 这样的 SAN。&lt;/li&gt;
+  &lt;li&gt;这对有多个域名的的网站来说很有用。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;102-生成-key-pairs&quot;&gt;10.2 生成 key pairs&lt;/h2&gt;
+
+&lt;p&gt;有了 name 之后，需要先生成一个密钥对，然后才能创建证书。前面提到：PKI 的安全性
+在根本上取决于一个简单的事实：&lt;strong&gt;&lt;mark&gt;只有与证书中的 subscriber name 对应的 entity，才应该拥有与该证书对应的私钥&lt;/mark&gt;&lt;/strong&gt;。
+为确保这个条件成立，&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;最佳实践是&lt;strong&gt;&lt;mark&gt;让 subscriber 生成它自己的密钥对，这样就只有它自己知道私钥&lt;/mark&gt;&lt;/strong&gt;。&lt;/li&gt;
+  &lt;li&gt;绝对应该避免通过网络发送私钥。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;生成证书时&lt;strong&gt;&lt;mark&gt;使用什么类型的秘钥&lt;/mark&gt;&lt;/strong&gt;？这一主题值得单独写一篇文章，这里
+只提供一点快速指导（截止 2018.12）。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;如今有一个缓慢但清晰的&lt;strong&gt;&lt;mark&gt;从 RSA 转向椭圆曲线秘钥的趋势&lt;/mark&gt;&lt;/strong&gt;（
+&lt;a href=&quot;https://blog.cloudflare.com/ecdsa-the-digital-signature-algorithm-of-a-better-internet&quot;&gt;ECDSA&lt;/a&gt;
+或 &lt;a href=&quot;https://tools.ietf.org/html/rfc8032&quot;&gt;EdDSA&lt;/a&gt;）。&lt;/li&gt;
+  &lt;li&gt;如果决定使用 RSA 秘钥，确保它们至少是 2048 比特长，但也不要超过 4096 比特。&lt;/li&gt;
+  &lt;li&gt;如果使用 ECDSA，那 P-256 曲线可能是最好选择（&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;secp256k1&lt;/code&gt; or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;prime256v1&lt;/code&gt; in openssl），
+除非你担心 NSA，这种情况下你可以选择更 fancier 一些的东西，例如 EdDSA with Curve25519（但对这些秘钥的支持还不是太好）。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;下面是用 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;openssl&lt;/code&gt; 生成一个椭圆曲线 P-256 key pair 的例子：&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;openssl ecparam &lt;span class=&quot;nt&quot;&gt;-name&lt;/span&gt; prime256v1 &lt;span class=&quot;nt&quot;&gt;-genkey&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-out&lt;/span&gt; k.prv
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;openssl ec &lt;span class=&quot;nt&quot;&gt;-in&lt;/span&gt; k.prv &lt;span class=&quot;nt&quot;&gt;-pubout&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-out&lt;/span&gt; k.pub
+
+&lt;span class=&quot;c&quot;&gt;# 也可以用 step 生成&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;step crypto keypair &lt;span class=&quot;nt&quot;&gt;--kty&lt;/span&gt; EC &lt;span class=&quot;nt&quot;&gt;--curve&lt;/span&gt; P-256 k.pub k.prv
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;还可以通过编程来生成这些证书，这样能做到证书不落磁盘。&lt;/p&gt;
+
+&lt;h2 id=&quot;103-issuance确保证书中的信息都是对的&quot;&gt;10.3 Issuance（确保证书中的信息都是对的）&lt;/h2&gt;
+
+&lt;p&gt;subscriber 有了一个 name 和一对 key 之后，下一步就是&lt;strong&gt;&lt;mark&gt;从 CA 获取一个 leaf certificate&lt;/mark&gt;&lt;/strong&gt;。
+对 CA 来说，它需要认证（证明）两件事情：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;subscriber 证书中的公钥，确实是该 subscriber 的公钥（例如，验证该 subscriber 知道对应的私钥）；&lt;/p&gt;
+
+    &lt;p&gt;这一步通常通过一个简单的技术机制实现：&lt;strong&gt;&lt;mark&gt;证书签名请求&lt;/mark&gt;&lt;/strong&gt;（certificate signing request, CSR）。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;证书中将要绑定的 name，确实是该 subscriber 的 name。&lt;/p&gt;
+
+    &lt;p&gt;这一步要难很多。抽象来说，这个过程称为 &lt;strong&gt;&lt;mark&gt;identity proofing（身份证明）或 registration（注册）&lt;/mark&gt;&lt;/strong&gt;.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;1031-certificate-signing-requests证书签名请求pkcs10&quot;&gt;10.3.1 Certificate signing requests（证书签名请求，PKCS#10）&lt;/h3&gt;
+
+&lt;p&gt;Subscriber 请求一个证书时，会向 CA 会提交一个 certificate signing request (CSR)。&lt;/p&gt;
+
+
+
+&lt;p&gt;用 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;step&lt;/code&gt; 命令创建一个密钥对和 CSR 的例子：&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;step certificate create &lt;span class=&quot;nt&quot;&gt;-csr&lt;/span&gt; test.smallstep.com test.csr test.key
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;OpenSSL 功能也非常强大，但 &lt;a href=&quot;https://www.openssl.org/docs/manmaster/man1/openssl-req.html&quot;&gt;用起来不够方便&lt;/a&gt;。&lt;/p&gt;
+
+&lt;h3 id=&quot;1032-identity-proofing身份证明过程&quot;&gt;10.3.2 Identity proofing（身份证明过程）&lt;/h3&gt;
+
+&lt;p&gt;CA 收到一个 CSR 并验证签名之后，接下来需要确认证书中绑定的 name 是否真的
+是这个 subscriber 的 name。这项工作很棘手。
+证书的核心功能是&lt;strong&gt;&lt;mark&gt;能让 RP 对 subscriber 进行认证&lt;/mark&gt;&lt;/strong&gt;。因此，
+如果一个&lt;strong&gt;&lt;mark&gt;证书都还没有颁发，CA 如何对这个 subscriber 进行认证呢&lt;/mark&gt;&lt;/strong&gt;？&lt;/p&gt;
+
+&lt;p&gt;答案是：分情况。&lt;/p&gt;
+
+&lt;h4 id=&quot;web-pki-证明身份过程&quot;&gt;Web PKI 证明身份过程&lt;/h4&gt;
+
+&lt;p&gt;Web PKI 有三种类型的证书，它们&lt;strong&gt;&lt;mark&gt;最大的区别就是如何识别 subscriber&lt;/mark&gt;&lt;/strong&gt;，
+以及它们所用到的 &lt;strong&gt;&lt;mark&gt;identity proofing 机制&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;这三种证书是：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;domain validation (DV，域验证)&lt;/p&gt;
+
+    &lt;p&gt;DV 证书绑定的是 &lt;strong&gt;&lt;mark&gt;DNS name&lt;/mark&gt;&lt;/strong&gt;，CA 在颁发时需要验证的这个 domain name 确实是由该 subscriber 控制的。&lt;/p&gt;
+
+    &lt;p&gt;证明过程通常是通过一个简单的流程，例如&lt;/p&gt;
+
+    &lt;ol&gt;
+      &lt;li&gt;给 WHOIS 记录中该 domain name 的管理员发送一封确认邮件。&lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;&lt;a href=&quot;https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html&quot;&gt;ACME protocol&lt;/a&gt;
+   （最初由 Let’s Encrypt 开发和使用）改进了这种方式，更加自动化：不再用邮件验证
+   ，而是由 ACME CA 提出一个 challenge，该 subscriber 通过完成这个问题来证明它拥有
+   这个域名。challenge 部分属于 ACME 规范的扩展部门，常见的包括：&lt;/p&gt;
+
+        &lt;ul&gt;
+          &lt;li&gt;在指定的 URL 上提供一个随机数（HTTP challenge）&lt;/li&gt;
+          &lt;li&gt;在 DNS TXT 记录中放置一个随机数（DNS challenge）&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;organization validation (OV，组织验证)&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;OV 和下面将介绍的 EV 证书构建在 DV 证书之上，它们包括了 name 和域名
+&lt;strong&gt;&lt;mark&gt;所属组织的位置信息（location）&lt;/mark&gt;&lt;/strong&gt;。&lt;/li&gt;
+      &lt;li&gt;OV 和 EV 证书不仅仅将证书关联到域名，还关联到控制这个域名的法律实体（legal entity）。&lt;/li&gt;
+      &lt;li&gt;OV 证书的验证过程，不同的 CA 并不统一。为解决这个问题，CAB Forum 引入了 EV 证书。&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;&lt;mark&gt;extended validation&lt;/mark&gt;&lt;/strong&gt; (EV，扩展验证)&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;EV 证书包含的基本信息与 OV 是一样的，但强制要求严格验证（identity proofing）。&lt;/li&gt;
+      &lt;li&gt;EV 过程需要几天或几个星期，其中可能包括公网记录搜索（public records searches）和公司人员（用笔）签署的（纸质）证词。&lt;/li&gt;
+    &lt;/ul&gt;
+
+    &lt;p&gt;这些完成之后，当相应网站时，&lt;strong&gt;&lt;mark&gt;某些浏览器会在 URL 栏中显示该组织的名称&lt;/mark&gt;&lt;/strong&gt;。例如：&lt;/p&gt;
+
+    &lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;/assets/img/everything-about-pki/github-ev.png&quot;/&gt;&lt;/p&gt;
+
+    &lt;p&gt;但除了这个场景之外，EV certificates 并未得到广泛使用，Web PKI RP 也未强依赖它。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;mark&gt;本质上来说，每个 Web PKI RP 只需要 DV 级别的 assurance&lt;/mark&gt;&lt;/strong&gt; 就行了，
+也就是确保域名是被该 subscriber 控制的。重要的是能理解一个 DV 证书在设计上的意思和在实际上做了什么：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;在设计上，希望通过它证明：请求这个证书的 entity 拥有对应的域名；&lt;/li&gt;
+  &lt;li&gt;在实际上，真正完成的操作是：在某个时间，请求这个证书的 entity 能读一封邮件，或配置一条 DNS 记录，或能通过 HTTP serve 一个指定随机数等等。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;但话说回来，DNS、电子邮件和 BGP 这些底层基础设施本身的安全性也并没有做到足够好，
+针对这些基础设施的攻击还是
+&lt;a href=&quot;https://doublepulsar.com/hijack-of-amazons-internet-domain-service-used-to-reroute-web-traffic-for-two-hours-unnoticed-3a6f0dda6a6f&quot;&gt;时有发生&lt;/a&gt;，
+目的之一就是获取证书。&lt;/p&gt;
+
+&lt;h4 id=&quot;internal-pki-证明身份过程&quot;&gt;Internal PKI 证明身份过程&lt;/h4&gt;
+
+&lt;p&gt;上面是 Web PKI 的身份证明过程，再来看 internal PKI 的身份证明过程。&lt;/p&gt;
+
+&lt;p&gt;实际上，用户可以使用&lt;strong&gt;&lt;mark&gt;任何方式&lt;/mark&gt;&lt;/strong&gt;来做 internal PKI 的 identity proofing，
+并且效果可能比 Web PKI 依赖 DNS 或邮件方式的效果更好。&lt;/p&gt;
+
+&lt;p&gt;乍听起来好像很难，但其实不难，因为可以&lt;strong&gt;&lt;mark&gt;利用已有的受信基础设施&lt;/mark&gt;&lt;/strong&gt;：
+用来搭建基础设施的工具，也能用来为这些基础设施之上的服务创建和证明安全身份。&lt;/p&gt;
+
+
+
+&lt;p&gt;provisioning infrastructure 必须理解 identity 的概念，这样才能将正确的代码放到正确的位置。
+此外，用户必须信任这套机制。基于这些知识和信任，才能配置 RP 信任仓库、将 subscribers 纳入你的 internal PKI 管理范围。
+而完成这些功能全部所需做的就是：设计和实现某种方式，能让
+provisioning infrastructure 在每个服务启动时，能将它们的 identity 告诉你的 CA。
+顺便说一句，这正是
+&lt;a href=&quot;https://smallstep.com/certificates/&quot;&gt;step certificates&lt;/a&gt; 解决的事情。&lt;/p&gt;
+
+&lt;h2 id=&quot;104-expiration过期&quot;&gt;10.4 Expiration（过期）&lt;/h2&gt;
+
+&lt;p&gt;证书通常都会过期。虽然这不是强制规定，但一般都这么做。设置一个过期时间非常重要，&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;mark&gt;证书都是分散在各处的&lt;/mark&gt;&lt;/strong&gt;：通常 RP 在验证一个证书时，并没有某个中心式权威能感知到（这个操作）。&lt;/li&gt;
+  &lt;li&gt;如果没有过期时间，证书将永久有效。&lt;/li&gt;
+  &lt;li&gt;安全领域的一条经验就是：&lt;strong&gt;&lt;mark&gt;时间过的越久，凭证被泄露的概率就越接近 100%&lt;/mark&gt;&lt;/strong&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;因此，设置过期时间非常重要。具体来说，X.509 证书中包含一个有效时间范围：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;em&gt;issued at&lt;/em&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;not before&lt;/em&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;not after&lt;/em&gt;：过了这个时间，证书就过期了。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;这个机制看起来设计良好，但实际上也是有一些不足的：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;首先，&lt;strong&gt;&lt;mark&gt;没有什么能阻止 RP&lt;/mark&gt;&lt;/strong&gt; 错误地（或因为糟糕的设计）&lt;strong&gt;&lt;mark&gt;接受一个过期证书&lt;/mark&gt;&lt;/strong&gt;；&lt;/li&gt;
+  &lt;li&gt;其次，证书是分散的。验证证书是否过期是每个 RP 的责任，而有时它们会出乱子。例如，&lt;strong&gt;&lt;mark&gt;RP 依赖的系统时钟不对&lt;/mark&gt;&lt;/strong&gt;时。
+&lt;strong&gt;&lt;mark&gt;最坏的情况就是系统时钟被重置为了 unix epoch&lt;/mark&gt;&lt;/strong&gt;（&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1970.1.1&lt;/code&gt;），此时它无法信任任何证书。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;在 subscriber 侧，证书过期后，私钥要处理得当：&lt;/p&gt;
+
+
+
+&lt;p&gt;这就是为什么很多人会说，&lt;strong&gt;&lt;mark&gt;不要用同一组秘钥来同时做签名和加密&lt;/mark&gt;&lt;/strong&gt;（signing and encryption）。
+因为当一个用于签名的私钥过期时，&lt;strong&gt;&lt;mark&gt;无法实现秘钥生命周期的最佳管理&lt;/mark&gt;&lt;/strong&gt;：
+最终不得不保留着这个私钥，因为解密还要用它。&lt;/p&gt;
+
+&lt;h2 id=&quot;105-renewal续期&quot;&gt;10.5 Renewal（续期）&lt;/h2&gt;
+
+&lt;p&gt;证书快过期时，如果还想继续使用，就需要续期。&lt;/p&gt;
+
+&lt;h3 id=&quot;1051-web-pki-证书续期&quot;&gt;10.5.1 Web PKI 证书续期&lt;/h3&gt;
+
+&lt;p&gt;Web PKI 实际上并&lt;strong&gt;&lt;mark&gt;没有标准的续期过期&lt;/mark&gt;&lt;/strong&gt;：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;没有一个标准方式来延长证书的合法时间，&lt;/li&gt;
+  &lt;li&gt;一般是&lt;strong&gt;&lt;mark&gt;直接用一个新证书替换过期的&lt;/mark&gt;&lt;/strong&gt;。&lt;/li&gt;
+  &lt;li&gt;因此续期过程和 issuance 过程是一样的：&lt;strong&gt;&lt;mark&gt;生成并提交一个 CSR&lt;/mark&gt;&lt;/strong&gt;，然后完成 identity proofing。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;1052-internal-pki-证书续期&quot;&gt;10.5.2 Internal PKI 证书续期&lt;/h3&gt;
+
+&lt;p&gt;对于 internal PKI 我们能做的更好。&lt;/p&gt;
+
+&lt;p&gt;最简单的方式是：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;mark&gt;用 mTLS 之类的协议对老证书续期&lt;/mark&gt;&lt;/strong&gt;。&lt;/li&gt;
+  &lt;li&gt;CA 能对 subscriber 提供的客户端证书进行认证（authenticate），&lt;strong&gt;&lt;mark&gt;重签一个更长的时间&lt;/mark&gt;&lt;/strong&gt;，然后返回这个证书。&lt;/li&gt;
+  &lt;li&gt;这使得续期过程&lt;strong&gt;&lt;mark&gt;很容易自动化&lt;/mark&gt;&lt;/strong&gt;，而且强制 subscriber 定期与中心权威保持沟通。&lt;/li&gt;
+  &lt;li&gt;基于这种机制能轻松&lt;strong&gt;&lt;mark&gt;构建一个证书的监控和撤销基础设施&lt;/mark&gt;&lt;/strong&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;1053-小结&quot;&gt;10.5.3 小结&lt;/h3&gt;
+
+&lt;p&gt;证书的续期过程其实并不是太难，&lt;strong&gt;&lt;mark&gt;最难的是记得续期这件事&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;几乎每个管理过公网证书的人，都经历过证书过期导致的生产事故，&lt;a href=&quot;https://expired.badssl.com/&quot;&gt;例如这个&lt;/a&gt;。
+我的建议是：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;发现问题之后，一定要全面排查，解决能发现的所有此类问题。&lt;/li&gt;
+  &lt;li&gt;另外，使用生命周期比较短的证书。这会反过来逼迫你们优化和自动化整个流程。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Let’s Encrypt 使自动化非常容易，它签发 90 天有效期的证书，因此对 Web PKI 来说非常合适。
+对于 internal PKI，建议有效期签的更短：24 小时或更短。有一些实现上的挑战 ——
+&lt;a href=&quot;https://diogomonica.com/2017/01/11/hitless-tls-certificate-rotation-in-go/&quot;&gt;hitless certificate rotation&lt;/a&gt;
+可能比较棘手 —— 但这些工作是值得的。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;用 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;step&lt;/code&gt; 检查证书过期时间：&lt;/p&gt;
+
+  &lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;step certificate inspect cert.pem &lt;span class=&quot;nt&quot;&gt;--format&lt;/span&gt; json | jq .validity.end
+step certificate inspect https://smallstep.com &lt;span class=&quot;nt&quot;&gt;--format&lt;/span&gt; json | jq .validity.end
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+
+  &lt;p&gt;将这种命令行封装到监控采集脚本，就可以实现某种程度的监控和自动化。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;106-revocation撤销&quot;&gt;10.6 Revocation（撤销）&lt;/h2&gt;
+
+&lt;p&gt;如果一个私钥泄露了，或者一个证书已经不再用了，就需要撤销它。即希望：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;明确地将其标记为非法的，&lt;/li&gt;
+  &lt;li&gt;所有 RP 都不再信任这个证书了，即使它还未过期。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;但实际上，&lt;strong&gt;&lt;mark&gt;撤销证书过程也是一团糟&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;h3 id=&quot;1061--主动撤销的困难&quot;&gt;10.6.1  主动撤销的困难&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;与过期类似，&lt;strong&gt;&lt;mark&gt;执行撤回的职责在 RP&lt;/mark&gt;&lt;/strong&gt;。&lt;/li&gt;
+  &lt;li&gt;与过期不同的是，&lt;strong&gt;&lt;mark&gt;撤销状态无法编码在证书中&lt;/mark&gt;&lt;/strong&gt;。RP 只能依靠某些带外过程（out-of-band process）
+来判断证书的撤销状态。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;除非显式配置，否则大部分 Web PKI TLS RP 并不关注撤销状态。换句话说，默认情况下，
+大部分 TLS 实现都乐于接受已经撤销的证书。&lt;/p&gt;
+
+&lt;h3 id=&quot;1062-internal-pki被动撤销机制&quot;&gt;10.6.2 Internal PKI：被动撤销机制&lt;/h3&gt;
+
+&lt;p&gt;Internal PKI 的趋势是接受这个现实，然后试图通过&lt;strong&gt;&lt;mark&gt;被动撤销&lt;/mark&gt;&lt;/strong&gt;（passive revocation）机制来弥补，
+具体来说就是&lt;strong&gt;&lt;mark&gt;签发生命周期很短的证书&lt;/mark&gt;&lt;/strong&gt;，这样就使撤销过程变得不再那么重要了。
+想撤销一个证书时，直接不给它续期就行了，过一段时间就会自动过期。&lt;/p&gt;
+
+&lt;p&gt;可以看到，&lt;strong&gt;&lt;mark&gt;这个机制有效的前提&lt;/mark&gt;&lt;/strong&gt;就是使用生命周期很短的证书。具体有多短？&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;取决于你的威胁模型（安全专家说了算）。&lt;/li&gt;
+  &lt;li&gt;24 小时是很常见的，但也有短到 5 分钟的。&lt;/li&gt;
+  &lt;li&gt;如果生命周期太短，显然也会给可扩展性和可用性带来挑战：&lt;strong&gt;&lt;mark&gt;每次续期都需要与 online CA 交互&lt;/mark&gt;&lt;/strong&gt;，
+  因此 CA 有性能压力。&lt;/li&gt;
+  &lt;li&gt;如果缩短了证书的生命周期，记得&lt;strong&gt;&lt;mark&gt;确保你的时钟是同步的&lt;/mark&gt;&lt;/strong&gt;，否则就有罪受了。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;对于 web 和其他的被动撤销不适合的场景，如果认真思考之后发现&lt;strong&gt;&lt;mark&gt;真的&lt;/mark&gt;&lt;/strong&gt;
+需要撤销功能，那有两个选择：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;CRL（，&lt;strong&gt;&lt;mark&gt;证书撤销列表&lt;/mark&gt;&lt;/strong&gt;，RFC 5280）&lt;/li&gt;
+  &lt;li&gt;OCSP（Online Certificate Signing Protocol，&lt;strong&gt;&lt;mark&gt;在线证书签名协议&lt;/mark&gt;&lt;/strong&gt;，RFC 2560）&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;1063-主动检查机制crlcertificate-revocation-lists&quot;&gt;10.6.3 主动检查机制：CRL（Certificate Revocation Lists）&lt;/h3&gt;
+
+&lt;p&gt;CRL 定义在 RFC 5280 中，这是一个相当庞杂的 RFC，还定义了很多其他东西。
+简单来是，CRL 是一个&lt;strong&gt;&lt;mark&gt;有符号整数序列，用来识别已撤销的证书&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;这个维护在一个 &lt;strong&gt;&lt;mark&gt;CRL distribution point&lt;/mark&gt;&lt;/strong&gt; 服务中，每个证书中都包含指向这个服务的 URL。
+工作流程：每个 RP 下载这个列表并缓存到本地，在对证书进行验证时，从本地缓存查询撤销状态。
+但这里也有一些明显的问题：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;mark&gt;CRL 可能很大&lt;/mark&gt;&lt;/strong&gt;，&lt;/li&gt;
+  &lt;li&gt;distribution point 也可能失效。&lt;/li&gt;
+  &lt;li&gt;RP 的 CRL 缓存同步经常是天级的，因此如果一个证书撤销了，可能要几天之后才能同步到这个状态。&lt;/li&gt;
+  &lt;li&gt;此外，RP &lt;em&gt;fail open&lt;/em&gt; 也很常见 —— CRL distribution point 挂了之后，就接受这个证书。
+  这显然是一个安全问题：只要对 CRL distribution point 发起 DDoS 攻击，就能让 RP 接受一个已经撤销的证书。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;因此，即使已经在用 CRL，也应该考虑使用短时证书来保持 CRL size 比较小。
+CRL 只需要包含&lt;strong&gt;&lt;mark&gt;已撤销但还未过期的证书&lt;/mark&gt;&lt;/strong&gt;的 serial numbers，因此
+证书生命周期越短，CRL 越短。&lt;/p&gt;
+
+&lt;h3 id=&quot;1064-主动检查机制ocsponline-certificate-signing-protocol&quot;&gt;10.6.4 主动检查机制：OCSP（Online Certificate Signing Protocol）&lt;/h3&gt;
+
+&lt;p&gt;主动检查机制除了 CRL 之外，另一个选择是 OCSP，它允许 RP 实时查询一个 &lt;em&gt;OCSP responder&lt;/em&gt;：
+指定证书的 serial number 来获取这个证书的撤销状态。&lt;/p&gt;
+
+&lt;p&gt;与 CRL distribution point 类似，OCSP responder URL 也包含在证书中。
+这样看，OCSP 似乎更加友好，但实际上它也有自己的问题。对于 Web PKI，它引入了验证的隐私问题：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;每次查询 OCSP responder，使得它能看到我正在访问哪个网站。&lt;/li&gt;
+  &lt;li&gt;此外，它还增加了每个 TLS 连接的开销：需要一个额外请求来检查证实的撤销状态。&lt;/li&gt;
+  &lt;li&gt;与 CRL 一样，很多 RPs (including browsers) 会在 OCSP responder 失效时直接认为证书有效（未撤销）。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;1065-主动检查机制ocsp-stapling合订绑定&quot;&gt;10.6.5 主动检查机制：OCSP stapling（合订，绑定）&lt;/h3&gt;
+
+&lt;p&gt;OCSP stapling 是 OCSP 的一个变种，目的是解决以上提到的那些问题。&lt;/p&gt;
+
+&lt;p&gt;相比于让 RP 每次都去查询 OCSP responder，OCSP stapling 中让证书的 subscriber 来做这件事情。
+OCSP response 是一个经过签名的、时间较短的证词（signed attestation），证明这个证书未被撤销。&lt;/p&gt;
+
+&lt;p&gt;attestation 包含在 subscriber 和 RP 的 TLS handshake (“stapled to” the certificate) 中。
+这给 RP 提供了相对比较及时的撤销状态，而不用每次都去查询 OCSP responder。
+subscriber 可以在 signed OCSP response 过期之前多次使用它。这减少了 OCSP 的负担，也解决了 OCSP 的隐私问题。&lt;/p&gt;
+
+&lt;p&gt;但是，所有这些东西其实最终都像是一个 &lt;strong&gt;&lt;mark&gt;鲁布·戈德堡装置（Rube Goldberg Device） &lt;/mark&gt;&lt;/strong&gt;，&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;鲁布·戈德堡机械（Rube Goldberg machine）是一种被设计得过度复杂的机械组合，以
+迂回曲折的方法去完成一些其实是非常简单的工作，例如倒一杯茶，或打一只蛋等等。
+设计者必须计算精确，令机械的每个部件都能够准确发挥功用，因为任何一个环节出错
+，都极有可能令原定的任务不能达成。&lt;/p&gt;
+
+  &lt;p&gt;解释来自 &lt;a href=&quot;https://www.zhihu.com/topic/20017497/intro&quot;&gt;知乎&lt;/a&gt;。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;如果让 subscribers 去 CA 获取一些生命周期很短的证词（signed attestation）来证明对应的证书并没有过期，
+为什么不直接干掉中间环节，直接使用生命周期很短的证书呢？&lt;/p&gt;
+
+&lt;h1 id=&quot;11-使用证书&quot;&gt;11 使用证书&lt;/h1&gt;
+
+&lt;p&gt;虽然理解 PKI 需要以上长篇大论，但在实际中用证书其实是非常简单的。&lt;/p&gt;
+
+&lt;p&gt;下面以 TLS 为例，其他方式也是类似的：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;配置 PKI relying party 使用哪个根证书；&lt;/p&gt;
+
+    &lt;p&gt;对于 Web PKI，通常已经默认配置了正确的根证书，这一步可以跳过。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;配置 PKI subscriber 使用哪个证书和私钥（或如何生成自己的密钥对、如何提交 CSR）；&lt;/p&gt;
+
+    &lt;p&gt;某个 entity (code, device, server, etc) 既是 RP 又是 subscriber 是很常见的。
+ 这样的 entities 需要同时配置根证书、证书和私钥。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;下面是个完整例子，展示 certificate issuance, root certificate
+distribution, and TLS client (RP) and server (subscriber) configuration:&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;/assets/img/everything-about-pki/step-ca-certificate-flow.jpg&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;希望这展示了&lt;strong&gt;&lt;mark&gt;使用 internal PKI 和 TLS 是如何简单直接&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;有了这样的基础，就无需使用自签名的证书或做一些危险的事情，例如禁用 certificate path validation（&lt;strong&gt;&lt;mark&gt;&lt;code&gt;curl -k&lt;/code&gt;&lt;/mark&gt;&lt;/strong&gt;）。&lt;/li&gt;
+  &lt;li&gt;几乎每个 TLS client/server 都支持这些参数；但是，它们又几乎都不关注秘钥和证书
+的声明周期：都假设证书会出现在磁盘上的恰当位置，有人或服务会帮它们完成 rotate
+等工作。这项生命周期相关的工作才是难点。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;12-结束语&quot;&gt;12 结束语&lt;/h1&gt;
+
+&lt;p&gt;公钥加密系统使计算机能在网络上看到对方（”see” across networks）。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;如果我有公钥，就能“看到”你有对应的私钥，但我自己是无法使用这个私钥的。&lt;/li&gt;
+  &lt;li&gt;如果还没有对方的公钥，就需要证书来帮忙。证书将公钥和私钥拥有者的名字（name）相关联，
+它们就像是计算机和代码的驾照。&lt;/li&gt;
+  &lt;li&gt;证书权威（CA）用它们的私钥对证书进行签名，对这些绑定关系作出担保，它们就像是车管局（DMV），&lt;/li&gt;
+  &lt;li&gt;如果你出示一张车管局颁发的驾照，脸长得也和驾照上的照片一样，那别人就可以认为你就是驾照上这个人（名字）。
+同理，如果你是唯一知道某个秘钥的 entity，你给我的证书也是从我信任的某个 CA 来的，那我就认为证书中的 name 就是你。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;现实中，&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;大部分证书都是 X.509 v3 证书，用 ASN.1 格式定义，通常序列化为 PEM-encoded DER。&lt;/li&gt;
+  &lt;li&gt;相应的私钥通常表示为 PKCS#8 objects，也序列化为 PEM-encoded DER。&lt;/li&gt;
+  &lt;li&gt;如果你用 Java 或微软的产品，可能会遇到 PKCS#7 and PKCS#12 封装格式。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;加密领域有&lt;strong&gt;&lt;mark&gt;沉重的历史包袱&lt;/mark&gt;&lt;/strong&gt;，使当前的这些东西学起来、用起来非常让人沮丧，这比一项技术因为太难而不想学更加令人沮丧。&lt;/p&gt;
+
+&lt;p&gt;PKI 是使用公钥基础设施时涉及到的所有东西的统称：names, key types,
+certificates, CAs, cron jobs, libraries 等。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Web PKI 是浏览器默认使用的 PKI。Web PKI CA 是&lt;strong&gt;&lt;mark&gt;受信但不可靠&lt;/mark&gt;&lt;/strong&gt;的（trusted but not trustworthy）。&lt;/li&gt;
+  &lt;li&gt;Internal PKI 是用户自己构建和维护的 PKI。需要它是因为 Web PKI 并不是针对 internal 使用场景设计的，
+Internal PKI 更易于自动化和扩展，并且能让用户控制很多细节，例如 naming and certificate lifetime。&lt;/li&gt;
+  &lt;li&gt;建议公网上使用 Web PKI，内网使用自己的 internal PKI
+（例如，&lt;a href=&quot;https://smallstep.com/blog/use-tls.html&quot;&gt;use TLS&lt;/a&gt; 来替代 VPN）。&lt;/li&gt;
+  &lt;li&gt;Smallstep Certificate Manager 使构建 internal PKI 非常简单。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;要获得一个证书，需要命令和生成证书。建议 name 用 SAN：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;DNS SANs for code and machines&lt;/li&gt;
+  &lt;li&gt;EMAIL SANs for people&lt;/li&gt;
+  &lt;li&gt;如果这些都不能用，就用 URI SAN&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;mark&gt;秘钥类型（key type）&lt;/mark&gt;&lt;/strong&gt;是很大一个主题，但几乎不重要：你可以随便修改秘钥类型，
+而且实际上加密本身（crypto）并不是 PKI 中最弱的一环。&lt;/p&gt;
+
+&lt;p&gt;要从 CA 获取一个证书，需要提交一个 CSR 并证明申请者的身份（identity）。
+使用生命周期较短的证书和 passive revocation。
+自动化证书续期过程。不要禁用 certificate path validation。&lt;/p&gt;
+
+&lt;p&gt;最后还是那句话：&lt;strong&gt;&lt;mark&gt;证书和 PKI 将名字关联到公钥&lt;/mark&gt;&lt;/strong&gt;（bind names to public keys）。
+其他都是细节。&lt;/p&gt;
+
+&lt;h1 id=&quot;13-延伸阅读译注&quot;&gt;13 延伸阅读（译注）&lt;/h1&gt;
+
+&lt;p&gt;更多相关内容或实践，推荐：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;a href=&quot;https://darutk.medium.com/illustrated-x-509-certificate-84aece2c5c2e&quot;&gt;Illustrated X.509 Certificate&lt;/a&gt;，2020&lt;/p&gt;
+
+    &lt;p&gt;超详细&lt;strong&gt;&lt;mark&gt;图解 X.509 证书&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;a href=&quot;https://brainbit.io/posts/cilium-tls-inspection/&quot;&gt;Cilium TLS inspection&lt;/a&gt;，2021&lt;/p&gt;
+
+    &lt;p&gt;图解 X.509 证书、信任链，及 &lt;strong&gt;&lt;mark&gt;Cilium/hubble L7 实战&lt;/mark&gt;&lt;/strong&gt;。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+
+  
+  
+&lt;/div&gt;
+
+
+          
+
+      &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
 <guid>74b14750810ef889a0d7be802d3f1c7f</guid>
@@ -203,5 +1765,26 @@
 
                 
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>cc813e8cd2bd0c112f78feda7c52ff3e</guid>
+<title>[推荐] 开源｜5 秒内克隆您的声音并生成任意语音内容</title>
+<link>https://toutiao.io/k/87ehz9q</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;profile_inner&quot;&gt;
+                              &lt;strong class=&quot;profile_nickname&quot;&gt;开发者头条&lt;/strong&gt;
+                              &lt;img class=&quot;profile_avatar&quot; id=&quot;js_profile_qrcode_img&quot; src=&quot;&quot; alt=&quot;&quot;/&gt;
+
+                              &lt;p class=&quot;profile_meta&quot;&gt;
+                              &lt;label class=&quot;profile_meta_label&quot;&gt;Weixin ID&lt;/label&gt;
+                              &lt;span class=&quot;profile_meta_value&quot;&gt;kaifazhetoutiao&lt;/span&gt;
+                              &lt;/p&gt;
+
+                              &lt;p class=&quot;profile_meta&quot;&gt;
+                              &lt;label class=&quot;profile_meta_label&quot;&gt;About Feature&lt;/label&gt;
+                              &lt;span class=&quot;profile_meta_value&quot;&gt;程序员分享平台 | 官方应用下载地址：http://toutiao.io/download&lt;/span&gt;
+                              &lt;/p&gt;
+                              
+                          &lt;/div&gt;
+                          &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
