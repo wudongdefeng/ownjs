@@ -147,9 +147,159 @@
   &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>a62c44915ff9c61471627b4e5cfc09c7</guid>
-<title>[译] Flutter 2021 中的按钮</title>
-<link>https://toutiao.io/k/zwlao7b</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-fileid=&quot;529014079&quot; data-ratio=&quot;0.5856&quot; data-type=&quot;png&quot; data-w=&quot;1250&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/WYoaOn5t0AMnfFUcSKxpyLYHxJaRH1bEh0h1sRicQia7n0m14LVMxqLRRFpAxFibQTLjUaicicrsDm9LlOytQvvEbCQ/640?wx_fmt=png&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在本文中，我们将介绍令人惊叹的 Flutter 按钮，它们可以帮助所有初学者或专业人士为现代应用程序设计漂亮的 UI。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;首先让我告诉你关于 Flutter 中按钮的一件重要事情，在flutter最新版本中以下Buttons在fluter中被废弃了：&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;废弃的&lt;/th&gt;&lt;th&gt;推荐的替代&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;RaisedButton&lt;/td&gt;&lt;td&gt;ElevatedButton&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;OutlineButton&lt;/td&gt;&lt;td&gt;OutlinedButton&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;FlatButton&lt;/td&gt;&lt;td&gt;TextButton&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;那么让我们来探索一下 Flutter 中的按钮。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;Elevated Button&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;StadiumBorder&lt;/strong&gt;&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-fileid=&quot;529014078&quot; data-ratio=&quot;0.7482517482517482&quot; data-type=&quot;png&quot; data-w=&quot;143&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/WYoaOn5t0AMnfFUcSKxpyLYHxJaRH1bECYHcdibmUad4wpicqSvdrNB9YicibwG0Q0mTn2zNuVqLeghsSWb2jvKchA/640?wx_fmt=png&quot;/&gt;&lt;/figure&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;ElevatedButton(&lt;br/&gt;  onPressed: (){},&lt;br/&gt;  child: Text(&lt;span&gt;&#x27;Button&#x27;&lt;/span&gt;),&lt;br/&gt;  style: ElevatedButton.styleFrom(&lt;br/&gt;  shadowColor: Colors.green,&lt;br/&gt;  shape: StadiumBorder(),&lt;br/&gt;  padding: EdgeInsets.symmetric(horizontal: &lt;span&gt;35&lt;/span&gt;,vertical: &lt;span&gt;20&lt;/span&gt;)),&lt;br/&gt;)&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-fileid=&quot;529014077&quot; data-ratio=&quot;0.47368421052631576&quot; data-type=&quot;png&quot; data-w=&quot;190&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/WYoaOn5t0AMnfFUcSKxpyLYHxJaRH1bEQUxNQ9WoDhmicVDtficq1MucKJA6iaHjTIcgCvemfRJRBwvnKFN6lq75w/640?wx_fmt=png&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;RoundedRectangleBorder&lt;/strong&gt;&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;ElevatedButton(&lt;br/&gt;  onPressed: (){},&lt;br/&gt;  child: Text(&lt;span&gt;&#x27;Button&#x27;&lt;/span&gt;),&lt;br/&gt;  style: ElevatedButton.styleFrom(&lt;br/&gt;  shadowColor: Colors.green,&lt;br/&gt;  shape: RoundedRectangleBorder(&lt;br/&gt;  borderRadius: BorderRadius.circular(&lt;span&gt;12&lt;/span&gt;),&lt;br/&gt;      ),&lt;br/&gt;   ),&lt;br/&gt;),&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;CircleBorder&lt;/strong&gt;&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-fileid=&quot;529014075&quot; data-ratio=&quot;0.8865248226950354&quot; data-type=&quot;png&quot; data-w=&quot;141&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/WYoaOn5t0AMnfFUcSKxpyLYHxJaRH1bE7tWI8zU1Bne5voFoIIIiapPJ3gwWibX0ubicJ5sVcQSAM8le7ZuIERGicA/640?wx_fmt=png&quot;/&gt;&lt;/figure&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;ElevatedButton(&lt;br/&gt;  onPressed: () {},&lt;br/&gt;  child: Text(&lt;span&gt;&#x27;Button&#x27;&lt;/span&gt;),&lt;br/&gt;  style: ElevatedButton.styleFrom(&lt;br/&gt;    shape: CircleBorder(),&lt;br/&gt;    padding: EdgeInsets.all(&lt;span&gt;24&lt;/span&gt;),&lt;br/&gt;  ),&lt;br/&gt;)&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;BeveledRectangleBorder&lt;/strong&gt;&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-fileid=&quot;529014076&quot; data-ratio=&quot;0.5235294117647059&quot; data-type=&quot;png&quot; data-w=&quot;170&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/WYoaOn5t0AMnfFUcSKxpyLYHxJaRH1bEKUiblYtOkwyYffHFKKROWiaqrdibUXkBEAicgRTosd3RmFEtzzVcQfibKQQ/640?wx_fmt=png&quot;/&gt;&lt;/figure&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;ElevatedButton(&lt;br/&gt;  onPressed: () {},&lt;br/&gt;  child: Text(&lt;span&gt;&#x27;Button&#x27;&lt;/span&gt;),&lt;br/&gt;  style: ElevatedButton.styleFrom(&lt;br/&gt;    shape: BeveledRectangleBorder(&lt;br/&gt;      borderRadius: BorderRadius.circular(&lt;span&gt;12&lt;/span&gt;)&lt;br/&gt;    ),&lt;br/&gt;  ),&lt;br/&gt;)&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;Outlined Button&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;StadiumBorder&lt;/strong&gt;&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-fileid=&quot;529014083&quot; data-ratio=&quot;0.5869565217391305&quot; data-type=&quot;png&quot; data-w=&quot;138&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/WYoaOn5t0AMnfFUcSKxpyLYHxJaRH1bEcoL5pQYoe7RgweA6HVDTiaric6JHK2mkPraDIumqxTqrYjGiaf1T3GPfw/640?wx_fmt=png&quot;/&gt;&lt;/figure&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;OutlinedButton(&lt;br/&gt;  onPressed: () {},&lt;br/&gt;  child: Text(&lt;span&gt;&#x27;Button&#x27;&lt;/span&gt;),&lt;br/&gt;  style: OutlinedButton.styleFrom(&lt;br/&gt;    shape: StadiumBorder(),&lt;br/&gt;  ),&lt;br/&gt;)&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;RoundedRectangleBorder&lt;/strong&gt;&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-fileid=&quot;529014080&quot; data-ratio=&quot;0.5401459854014599&quot; data-type=&quot;png&quot; data-w=&quot;137&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/WYoaOn5t0AMnfFUcSKxpyLYHxJaRH1bE3or1ib0pJia5ibGJz2ISL1daEAfa3SQcbxew9lT8eHTPwkXgMzyyCpkyg/640?wx_fmt=png&quot;/&gt;&lt;/figure&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;OutlinedButton(&lt;br/&gt;  onPressed: () {},&lt;br/&gt;  child: Text(&lt;span&gt;&#x27;Button&#x27;&lt;/span&gt;),&lt;br/&gt;  style: OutlinedButton.styleFrom(&lt;br/&gt;    shape: BeveledRectangleBorder(&lt;br/&gt;      borderRadius: BorderRadius.circular(&lt;span&gt;12&lt;/span&gt;),&lt;br/&gt;    ),&lt;br/&gt;  ),&lt;br/&gt;)&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;CircleBorder&lt;/strong&gt;&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-fileid=&quot;529014081&quot; data-ratio=&quot;0.9173553719008265&quot; data-type=&quot;png&quot; data-w=&quot;121&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/WYoaOn5t0AMnfFUcSKxpyLYHxJaRH1bEPqmhrgtug3yPJYiaTupqsWyodEOfQJuTrmUiauuZgMIGNywG9ibiaibBm1g/640?wx_fmt=png&quot;/&gt;&lt;/figure&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;OutlinedButton(&lt;br/&gt;  onPressed: () {},&lt;br/&gt;  child: Text(&lt;span&gt;&#x27;Button&#x27;&lt;/span&gt;),&lt;br/&gt;  style: OutlinedButton.styleFrom(&lt;br/&gt;    shape: CircleBorder(),&lt;br/&gt;    padding: EdgeInsets.all(&lt;span&gt;24&lt;/span&gt;),&lt;br/&gt;  ),&lt;br/&gt;)&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;BeveledRectangleBorder&lt;/strong&gt;&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-fileid=&quot;529014082&quot; data-ratio=&quot;0.5955882352941176&quot; data-type=&quot;png&quot; data-w=&quot;136&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/WYoaOn5t0AMnfFUcSKxpyLYHxJaRH1bEeuuDx7y5XIJM3iaIrbavvG8fSQBhEkyYvThR975sUb9Ee5HXF819p0A/640?wx_fmt=png&quot;/&gt;&lt;/figure&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;OutlinedButton(&lt;br/&gt;  onPressed: () {},&lt;br/&gt;  child: Text(&lt;span&gt;&#x27;Button&#x27;&lt;/span&gt;),&lt;br/&gt;  style: OutlinedButton.styleFrom(&lt;br/&gt;    shape: BeveledRectangleBorder(&lt;br/&gt;      borderRadius: BorderRadius.circular(&lt;span&gt;12&lt;/span&gt;),&lt;br/&gt;    ),&lt;br/&gt;  ),&lt;br/&gt;)&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;hr data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;section&gt;&lt;span&gt;原文：https://medium.com/@waseemakram.jpb/button-cheat-sheet-in-flutter-2021-1db38501d5f2&lt;/span&gt;&lt;/section&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;section&gt;猜你喜欢&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>0cbc842a01a8be53df83985c4c0fdeeb</guid>
+<title>espanso：Rust 编写的跨平台开源文本扩展工具</title>
+<link>https://toutiao.io/k/09y7c8d</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;post-content&quot; itemprop=&quot;articleBody&quot;&gt;
+            &lt;p&gt;今天在 review tldr 提交的新命令的时候发现了一个新的工具 espanso，查看其官网发现是一个文本扩展的工具。在之前 macOS 上短暂的体验过 [[Keyboard Maestro]] 但因为其是 macOS 独占，所以之后再回到 Ubuntu 下的时候就渐渐不用了，并且其授权还挺贵的。然后就一直使用 RIME 配置自定义的短语来作为短语的快捷输入，比如输入 date 的时候自动在候选词中添加日期。但这样的问题便在于每一次更改 RIME 的配置文件都需要经历 RIME 部署这样一个漫长的过程。并且可扩展性也不强。于是想来体验一下 espanso 。&lt;/p&gt;
+
+&lt;p&gt;Espanso 是一个使用 Rust 实现的跨屏平台的 Text Expander，可以在任何编辑器中扩展短语。可以完美代替 [[Keyboard Maestro]] 的 Text Expand 功能。&lt;/p&gt;
+
+&lt;p&gt;官网地址：&lt;/p&gt;
+
+
+
+&lt;p&gt;特性：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;扩展功能强，可以通过 package 扩展&lt;/li&gt;
+  &lt;li&gt;响应速度快，我下载体验后没有任何卡顿&lt;/li&gt;
+  &lt;li&gt;支持 form 和 regex&lt;/li&gt;
+  &lt;li&gt;文档完善&lt;/li&gt;
+  &lt;li&gt;完成度高&lt;/li&gt;
+  &lt;li&gt;定义光标位置&lt;/li&gt;
+  &lt;li&gt;支持剪贴板&lt;/li&gt;
+  &lt;li&gt;可以自动填充图像&lt;/li&gt;
+  &lt;li&gt;支持扩展外部脚本（任何语言）&lt;/li&gt;
+  &lt;li&gt;用于特定程序匹配&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;安装&quot;&gt;安装&lt;/h2&gt;
+&lt;p&gt;在 macOS 上：&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;brew tap federico-terzi/espanso
+brew install espanso
+espanso --version
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;然后使用 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;espanso register&lt;/code&gt; 启用。&lt;/p&gt;
+
+&lt;p&gt;在 Linux 上：&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo snap install espanso --classic
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;安装完成后执行：&lt;/p&gt;
+
+
+
+&lt;p&gt;启动后台任务。这样在任何编辑器中输入 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;:espanso&lt;/code&gt; 会自动转变成 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Hi there!&lt;/code&gt;。&lt;/p&gt;
+
+&lt;p&gt;更多安装方式可以参考&lt;a href=&quot;https://espanso.org/install/&quot;&gt;官网&lt;/a&gt;。&lt;/p&gt;
+
+&lt;h2 id=&quot;使用&quot;&gt;使用&lt;/h2&gt;
+&lt;p&gt;其官网有一个非常生动形象的 GIF，当输入:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;:greet&lt;/code&gt; 自动变成 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;hello world&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;:date&lt;/code&gt; 自动产生日期&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;:llo&lt;/code&gt; 变成一串 Emoji&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;:ip&lt;/code&gt; 变成真实的 IP 地址&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;执行 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;espanso edit&lt;/code&gt; 会自动使用默认的编辑器创建一个默认的配置文件到 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;~/.config/espanso/default.yml&lt;/code&gt; 文件：&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;matches:
+  # Simple text replacement
+  - trigger: &quot;:espanso&quot;
+    replace: &quot;Hi there!&quot;
+
+  # Dates
+  - trigger: &quot;:date&quot;
+    replace: &quot;&quot;
+    vars:
+      - name: mydate
+        type: date
+        params:
+          format: &quot;%m/%d/%Y&quot;
+
+  # Shell commands
+  - trigger: &quot;:shell&quot;
+    replace: &quot;&quot;
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: &quot;echo Hello from your shell&quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;configuration&quot;&gt;Configuration&lt;/h2&gt;
+&lt;p&gt;espanso 基于文本的配置文件对软件的行为进行设定，在不同操作系统上的路径：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Linux: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;~/.config/espanso&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;macOS: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/Users/einverne/Library/Preferences/espanso&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;Windows: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;C:\Users\user\AppData\Roaming\espanso&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;可以通过 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;espanso path&lt;/code&gt; 来快速获知路径。&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;default.yml&lt;/code&gt; 文件是 espanso 的主要配置文件，使用 &lt;a href=&quot;/post/2015/08/yaml.html&quot;&gt;YAML&lt;/a&gt; 语法。&lt;/p&gt;
+
+&lt;p&gt;更加详细的配置文件可以参考&lt;a href=&quot;https://federicoterzi.com/&quot;&gt;官方文档&lt;/a&gt;。&lt;/p&gt;
+
+&lt;h3 id=&quot;自定义光标位置&quot;&gt;自定义光标位置&lt;/h3&gt;
+
+&lt;p&gt;在 espanso 的配置 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;replace&lt;/code&gt; 中可以使用 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$|$&lt;/code&gt; 作为占位符，表示光标。&lt;/p&gt;
+
+&lt;p&gt;比如想要输入 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;:div&lt;/code&gt; 的时候自动展开成为 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;lt;div&amp;gt;&amp;lt;/div&amp;gt;&lt;/code&gt; 然后将光标停留到中间，就可以使用：&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  - trigger: &quot;:div&quot;
+    replace: &quot;&amp;lt;div&amp;gt;$|$&amp;lt;/div&amp;gt;&quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;package&quot;&gt;Package&lt;/h2&gt;
+&lt;p&gt;Espanso 更加强大的地方在与其扩展性，通过安装其他包可以将 espanso 的能力扩展。比如从 &lt;a href=&quot;https://hub.espanso.org/&quot;&gt;espanso hub&lt;/a&gt; 安装 &lt;a href=&quot;https://hub.espanso.org/packages/basic-emojis/&quot;&gt;Basic Emojis&lt;/a&gt; :&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;espanso install basic-emojis
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;然后重启服务：&lt;/p&gt;
+
+
+
+&lt;p&gt;然后输入 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;:ok&lt;/code&gt; 就可看到文本被替换成了 Emoji。&lt;/p&gt;
+
+&lt;p&gt;![[Pasted image 20211013182143.png]]&lt;/p&gt;
+
+&lt;p&gt;更多的 package 可以看 &lt;a href=&quot;https://hub.espanso.org/&quot;&gt;espansohub&lt;/a&gt;。&lt;/p&gt;
+
+&lt;h2 id=&quot;快捷键&quot;&gt;快捷键&lt;/h2&gt;
+&lt;p&gt;一些非常有用的快捷键。&lt;/p&gt;
+
+&lt;h3 id=&quot;toggle-key&quot;&gt;Toggle Key&lt;/h3&gt;
+&lt;p&gt;可以通过连续按两次 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ALT&lt;/code&gt;(macOS 下为 Option) 按键来临时禁用 espanso。可以看到通知 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Espanso disabled&lt;/code&gt;。 再按两次可以开启。可以通过配置文件修改 &lt;a href=&quot;https://espanso.org/docs/configuration/#customizing-the-toggle-key&quot;&gt;Toggle Key&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;backspace-undo&quot;&gt;Backspace Undo&lt;/h3&gt;
+&lt;p&gt;有些时候可能无意识中触发了 expansion，但又不想要这个结果，那么可以按一下 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BACKSPACE&lt;/code&gt; 撤销这一次修改。&lt;/p&gt;
+
+&lt;h2 id=&quot;同步配置文件&quot;&gt;同步配置文件&lt;/h2&gt;
+
+&lt;p&gt;可以使用软链接的方式将配置文件放在同步文件夹，或 git 仓库中保存管理。&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ln -s &quot;/home/user/Dropbox/espanso&quot; &quot;/home/user/.config/espanso&quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;配置&quot;&gt;配置&lt;/h2&gt;
+
+
+
+&lt;h2 id=&quot;reference&quot;&gt;reference&lt;/h2&gt;
+
+
+
+        &lt;/div&gt;
+
+        &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
