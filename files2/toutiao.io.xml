@@ -95,33 +95,246 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>617921461a6cc58a5eeb16248ed22c78</guid>
-<title>Arthas 发布 3.5.5 版本，支持 macOS ARM64 架构，改进易用性</title>
-<link>https://toutiao.io/k/7wnin28</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
-                    
+<guid>7db3f439c711d925c5c532d387f91417</guid>
+<title>Spring Cloud 整合 Nacos 实现服务配置中心</title>
+<link>https://toutiao.io/k/ilvya35</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entry-content e-content&quot; itemprop=&quot;description articleBody&quot;&gt;
+            &lt;p&gt;在之前的文章 &lt;a href=&quot;https://www.bysocket.com/2021-12-05/nacos-install-mysql.html&quot;&gt;《Nacos 本地单机版部署步骤和使用》&lt;/a&gt; 中，大家应该了解了 Nacos 是什么？其中 Nacos 提供了动态配置服务功能&lt;/p&gt;
+&lt;h2&gt;一、Nacos 动态配置服务是什么？&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&quot;https://www.bysocket.com/wp-content/uploads/2021/12/nacos-config01.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;官方是这么说的：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Nacos 动态配置服务是什么?&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;动态配置服务可以以中心化、外部化和动态化的方式管理所有环境的应用配置和服务配置。&lt;/p&gt;
+&lt;p&gt;动态配置消除了配置变更时重新部署应用和服务的需要，让配置管理变得更加高效和敏捷。&lt;/p&gt;
+&lt;p&gt;配置中心化管理让实现无状态服务变得更简单，让服务按需弹性扩展变得更容易。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Nacos 控制台的功能&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Nacos 提供了一个简洁易用的 UI (控制台样例 Demo) 用来管理所有的服务和应用的配置。Nacos 还提供包括配置版本跟踪、金丝雀发布、一键回滚配置以及客户端配置更新状态跟踪在内的一系列开箱即用的配置管理特性，更安全地在生产环境中管理配置变更和降低配置变更带来的风险。&lt;/p&gt;
+&lt;h2&gt;二、实战：Nacos 实现服务配置中心&lt;/h2&gt;
+&lt;p&gt;下面通过两个大模块实现：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;在 Nacos 中新建或修改配置&lt;/li&gt;
+&lt;li&gt;在 Spring Cloud 应用中加载 Nacos 配置&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;2.1 在 Nacos 新建配置&lt;/h3&gt;
+&lt;p&gt;根据上篇文章，部署运行 Nacos ，然后打开配置管理 - 配置列表页面。地址： &lt;code&gt;http://localhost:8848/nacos/index.html#/configurationManagement&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;点击右上角创建按钮，进入新建配置页面，新建配置如图所示：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://www.bysocket.com/wp-content/uploads/2021/12/WechatIMG201.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;配置详解：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Data ID&lt;/code&gt; ：配置为 &lt;code&gt;config-service.yml&lt;/code&gt; 。Data ID 是指定配置且保证全局唯一性。 &lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Group&lt;/code&gt; ：默认配置为 &lt;code&gt;DEFAULT_GROUP&lt;/code&gt;，不需要修改。 &lt;/li&gt;
+&lt;li&gt;&lt;code&gt;配置格式&lt;/code&gt; ： 选择 YAML 配置文件格式&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;配置内容&lt;/code&gt; ： 具体配置的内容。这里简单配置了个键值对，其实实际应用场景，会配置包括存储配置、端口配置和各种中间件配置等&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Nacos &lt;code&gt;Data ID&lt;/code&gt; 标准格式如下:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-java&quot;&gt;${prefix}-${spring.profiles.active}.${file-extension}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;其中：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;prefix&lt;/code&gt; ：默认为 &lt;code&gt;spring.application.name&lt;/code&gt; 的值&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;spring.profiles.active&lt;/code&gt;：该案例为空，一般指定 dev test 等环境配置&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;file-extension&lt;/code&gt;：配置内容格式&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;2.2 创建 Spring Cloud 应用&lt;/h3&gt;
+&lt;h4&gt;1、创建应用&lt;/h4&gt;
+&lt;p&gt;新建工程，工程名为：springcloud-nacos-config-sample&lt;/p&gt;
+&lt;p&gt;工程项目地址在:&lt;/p&gt;
 
-                    
-                    
-                    
-                    &lt;section data-tool=&quot;markdown编辑器&quot; data-website=&quot;https://markdown.com.cn/editor&quot;&gt;&lt;figure data-tool=&quot;markdown.com.cn编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.328125&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2CINxh93CWR23UcTWkhcT4SjicD4cwNvraOZctFiaQr15MhBic4HNAzpsNYKBzPH3EbSafoxE69X2pQlJuUWicU22w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;320&quot;/&gt;&lt;figcaption&gt;Arthas&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;markdown.com.cn编辑器&quot;&gt;&lt;code&gt;Arthas&lt;/code&gt;是Alibaba开源的Java诊断工具，深受开发者喜爱。&lt;/p&gt;&lt;ul data-tool=&quot;markdown.com.cn编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;Github：https://github.com/alibaba/arthas&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;文档：https://arthas.aliyun.com/doc/&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;markdown.com.cn编辑器&quot;&gt;Arthas 最新发布了 3.5.5 版本，主要支持macOS ARM64架构，以及改进易用性。&lt;/p&gt;&lt;h2 data-tool=&quot;markdown.com.cn编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;vmtool 命令支持macOS ARM64架构&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;markdown.com.cn编辑器&quot;&gt;目前&lt;code&gt;vmtool&lt;/code&gt;的动态库文件是由github action构建的。但github action还不支持mac M1环境，所以&lt;code&gt;vmtool&lt;/code&gt;命令之前没支持mac M1机器。&lt;/p&gt;&lt;p data-tool=&quot;markdown.com.cn编辑器&quot;&gt;但通过交叉编译的方式，在使用clang编译时指定多个arch就可以生成所谓的&lt;code&gt;Fat Library&lt;/code&gt;，即在一个文件里同时支持多种架构。&lt;/p&gt;&lt;pre data-tool=&quot;markdown.com.cn编辑器&quot;&gt;&lt;code&gt;-arch x86_64 -arch arm64&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;markdown.com.cn编辑器&quot;&gt;使用&lt;code&gt;file&lt;/code&gt;命令可以查看&lt;code&gt;vmtool&lt;/code&gt;使用的&lt;code&gt;dylib&lt;/code&gt;已经同时支持&lt;code&gt;x86_64&lt;/code&gt;和&lt;code&gt;arm64&lt;/code&gt;：&lt;/p&gt;&lt;pre data-tool=&quot;markdown.com.cn编辑器&quot;&gt;&lt;code&gt;$ file lib/libArthasJniLibrary.dylib&lt;br/&gt;lib/libArthasJniLibrary.dylib: Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit dynamically linked shared library x86_64] [arm64:Mach-O 64-bit dynamically linked shared library arm64]&lt;br/&gt;lib/libArthasJniLibrary.dylib (for architecture x86_64):Mach-O 64-bit dynamically linked shared library x86_64&lt;br/&gt;lib/libArthasJniLibrary.dylib (for architecture arm64):Mach-O 64-bit dynamically linked shared library arm64&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2 data-tool=&quot;markdown.com.cn编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;async-profiler 升级到2.5版本，生成html结果支持查找，支持macOS ARM64架构&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;markdown.com.cn编辑器&quot;&gt;升级到2.5版本后，&lt;code&gt;profiler&lt;/code&gt;命令只支持生成&lt;code&gt;html&lt;/code&gt;格式结果，不再支持&lt;code&gt;svg&lt;/code&gt;格式了。&lt;code&gt;html&lt;/code&gt;格式可以更好的查找过滤。&lt;/p&gt;&lt;p data-tool=&quot;markdown.com.cn编辑器&quot;&gt;比如在查找&lt;code&gt;File&lt;/code&gt;关键字之后，可以看到&lt;code&gt;紫色&lt;/code&gt;的高亮结果：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5567839195979899&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2CINxh93CWR23UcTWkhcT4SjicD4cwNvrbM0wdcXFZPib7YH3Q4F7tMj3icicTQ4D9ZDkOv5jN0aLosueNs02tdT8A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1990&quot;/&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;markdown.com.cn编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;WebConsole支持配置向上回滚行数&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;markdown.com.cn编辑器&quot;&gt;目前WebConsole默认只支持向上回滚1000行，但有的命令输出结果很长，之前的结果就会被覆盖掉。因此增加&lt;code&gt;scrollback&lt;/code&gt;参数，用户可以自定义配置。比如&lt;/p&gt;&lt;ul data-tool=&quot;markdown.com.cn编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;http://localhost:8563/?scrollback=200&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;markdown.com.cn编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;改进低版本JDK attach高版本JDK支持&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;markdown.com.cn编辑器&quot;&gt;在使用低版本JDK attach高版本JDK 进程时，可能会抛出异常&lt;code&gt;IOException: Non-numeric value found - int expected&lt;/code&gt;，但实际上已经attach成功。这对用户会造成困扰。&lt;/p&gt;&lt;p data-tool=&quot;markdown.com.cn编辑器&quot;&gt;因此改进为打印提示，但仍然会成功连接，用户可以直接诊断。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.6131455399061033&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2CINxh93CWR23UcTWkhcT4SjicD4cwNvrGsZfnpcI38ouLmIQfjnhLfz1bkcyPLE0y5twaNuR3YjImNeTW5bl4Q/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2130&quot;/&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;markdown.com.cn编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;总结&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;br/&gt;&lt;/h2&gt;&lt;ul data-tool=&quot;markdown.com.cn编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;profiler wiki: https://arthas.aliyun.com/doc/jad.html&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Release 日志: https://github.com/alibaba/arthas/releases/tag/arthas-all-3.5.5&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;markdown.com.cn编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;投票&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;markdown.com.cn编辑器&quot;&gt;&lt;strong&gt;Arthas一直在进步，2021中国开源项目评选，请投Arthas一票!&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;1.6292682926829267&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2CINxh93CWR23UcTWkhcT4SjicD4cwNvruicWrJ6IouVz37iadTCVnyEibEAIdjNbXJjYjz2Gnko3jboGWSBpaL4uw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;410&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;markdown.com.cn编辑器&quot;&gt;👇 点击&lt;code&gt;阅读原文&lt;/code&gt;直达投票地址！&lt;/p&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;
-                &lt;/div&gt;
+&lt;h4&gt;2、配置 pom 依赖&lt;/h4&gt;
+&lt;p&gt;pom.xml 代码如下：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-java&quot;&gt;&amp;lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&amp;gt;
+&amp;lt;project xmlns=&quot;http://maven.apache.org/POM/4.0.0&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+         xsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&quot;&amp;gt;
+    &amp;lt;modelVersion&amp;gt;4.0.0&amp;lt;/modelVersion&amp;gt;
 
-                
+    &amp;lt;groupId&amp;gt;springcloud&amp;lt;/groupId&amp;gt;
+    &amp;lt;artifactId&amp;gt;springcloud-nacos-config-sample&amp;lt;/artifactId&amp;gt;
+    &amp;lt;version&amp;gt;0.0.1-SNAPSHOT&amp;lt;/version&amp;gt;
+    &amp;lt;name&amp;gt;springcloud-nacos-config-sample :: Nacos 服务配置中心案例&amp;lt;/name&amp;gt;
 
-                
+    &amp;lt;!-- Spring Boot 启动父依赖 --&amp;gt;
+    &amp;lt;parent&amp;gt;
+        &amp;lt;groupId&amp;gt;org.springframework.boot&amp;lt;/groupId&amp;gt;
+        &amp;lt;artifactId&amp;gt;spring-boot-starter-parent&amp;lt;/artifactId&amp;gt;
+        &amp;lt;version&amp;gt;2.3.2.RELEASE&amp;lt;/version&amp;gt;
+    &amp;lt;/parent&amp;gt;
+
+    &amp;lt;dependencies&amp;gt;
+
+        &amp;lt;!-- Nacos Config 依赖 --&amp;gt;
+        &amp;lt;dependency&amp;gt;
+            &amp;lt;groupId&amp;gt;org.springframework.cloud&amp;lt;/groupId&amp;gt;
+            &amp;lt;artifactId&amp;gt;spring-cloud-starter-alibaba-nacos-config&amp;lt;/artifactId&amp;gt;
+        &amp;lt;/dependency&amp;gt;
+
+        &amp;lt;!-- Spring Boot Web 依赖 --&amp;gt;
+        &amp;lt;dependency&amp;gt;
+            &amp;lt;groupId&amp;gt;org.springframework.boot&amp;lt;/groupId&amp;gt;
+            &amp;lt;artifactId&amp;gt;spring-boot-starter-web&amp;lt;/artifactId&amp;gt;
+        &amp;lt;/dependency&amp;gt;
+
+        &amp;lt;!-- Spring Boot Test 依赖 --&amp;gt;
+        &amp;lt;dependency&amp;gt;
+            &amp;lt;groupId&amp;gt;org.springframework.boot&amp;lt;/groupId&amp;gt;
+            &amp;lt;artifactId&amp;gt;spring-boot-starter-test&amp;lt;/artifactId&amp;gt;
+            &amp;lt;scope&amp;gt;test&amp;lt;/scope&amp;gt;
+        &amp;lt;/dependency&amp;gt;
+
+        &amp;lt;dependency&amp;gt;
+            &amp;lt;groupId&amp;gt;org.projectlombok&amp;lt;/groupId&amp;gt;
+            &amp;lt;artifactId&amp;gt;lombok&amp;lt;/artifactId&amp;gt;
+            &amp;lt;version&amp;gt;1.18.10&amp;lt;/version&amp;gt;
+            &amp;lt;optional&amp;gt;true&amp;lt;/optional&amp;gt;
+        &amp;lt;/dependency&amp;gt;
+
+    &amp;lt;/dependencies&amp;gt;
+
+    &amp;lt;dependencyManagement&amp;gt;
+        &amp;lt;dependencies&amp;gt;
+
+            &amp;lt;dependency&amp;gt;
+                &amp;lt;groupId&amp;gt;org.springframework.cloud&amp;lt;/groupId&amp;gt;
+                &amp;lt;artifactId&amp;gt;spring-cloud-starter-alibaba-nacos-config&amp;lt;/artifactId&amp;gt;
+                &amp;lt;version&amp;gt;0.2.2.RELEASE&amp;lt;/version&amp;gt;
+            &amp;lt;/dependency&amp;gt;
+
+            &amp;lt;!-- Spring Cloud Hoxton.SR12 版本依赖 --&amp;gt;
+            &amp;lt;dependency&amp;gt;
+                &amp;lt;groupId&amp;gt;org.springframework.cloud&amp;lt;/groupId&amp;gt;
+                &amp;lt;artifactId&amp;gt;spring-cloud-dependencies&amp;lt;/artifactId&amp;gt;
+                &amp;lt;version&amp;gt;Hoxton.SR7&amp;lt;/version&amp;gt;
+                &amp;lt;type&amp;gt;pom&amp;lt;/type&amp;gt;
+                &amp;lt;scope&amp;gt;import&amp;lt;/scope&amp;gt;
+            &amp;lt;/dependency&amp;gt;
+
+        &amp;lt;/dependencies&amp;gt;
+    &amp;lt;/dependencyManagement&amp;gt;
+
+    &amp;lt;build&amp;gt;
+        &amp;lt;plugins&amp;gt;
+            &amp;lt;plugin&amp;gt;
+                &amp;lt;groupId&amp;gt;org.apache.maven.plugins&amp;lt;/groupId&amp;gt;
+                &amp;lt;artifactId&amp;gt;maven-compiler-plugin&amp;lt;/artifactId&amp;gt;
+                &amp;lt;configuration&amp;gt;
+                    &amp;lt;source&amp;gt;1.8&amp;lt;/source&amp;gt;
+                    &amp;lt;target&amp;gt;1.8&amp;lt;/target&amp;gt;
+                &amp;lt;/configuration&amp;gt;
+            &amp;lt;/plugin&amp;gt;
+        &amp;lt;/plugins&amp;gt;
+    &amp;lt;/build&amp;gt;
+
+&amp;lt;/project&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;其中依赖了：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Spring Cloud Alibaba Nacos Config 依赖&lt;/li&gt;
+&lt;li&gt;Spring Cloud Hoxton.SR12 版本依赖&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;3、创建配置文件&lt;/h4&gt;
+&lt;p&gt;在应用工程的 &lt;code&gt;resources&lt;/code&gt; 目录下，创建 &lt;code&gt;application.yml&lt;/code&gt; 文件，填入如下信息：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-java&quot;&gt;server:
+  port: 8083 # 服务端口
+
+spring:
+  application:
+    name: config-service # 服务名称&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;其中：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;server.port&lt;/code&gt; 指定了服务端口 8083&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;spring.application.name&lt;/code&gt; 指定了服务名称 &lt;code&gt;config-service&lt;/code&gt; ，要跟 Nacos 后台新建配置的 &lt;code&gt;Data ID&lt;/code&gt; 值保持一致。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;为啥呢？因为看一下 Nacos Config 源码 org.springframework.cloud.alibaba.nacos.client.NacosPropertySourceLocator#locate 。源码如下：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-java&quot;&gt;if (StringUtils.isEmpty(dataIdPrefix)) {
+    dataIdPrefix = env.getProperty(&quot;spring.application.name&quot;);
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;如果 &lt;code&gt;Data ID&lt;/code&gt; 没有配置，则读取 &lt;code&gt;spring.application.name&lt;/code&gt; 服务名称配置。&lt;/p&gt;
+&lt;p&gt;继续创建 &lt;code&gt;bootstrap.yml&lt;/code&gt; 文件，填入以下信息：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-java&quot;&gt;spring:
+  cloud:
+    nacos:
+      config:
+        server-addr: 127.0.0.1:8848 # Nacos 配置中心地址
+        file-extension: yml # 配置文件格式&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;其中：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;nacos.config.server-addr&lt;/code&gt; 指定了 Nacos 地址和端口&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;nacos.config.file-extension&lt;/code&gt; 指定了配置文件格式为 yml&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;4、创建测试类和启动类&lt;/h4&gt;
+&lt;p&gt;新建 Spring Cloud 应用启动类 ConfigApplication，代码如下：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-java&quot;&gt;/**
+ * Spring Boot 服务启动类
+ *
+ * Created by bysocket.com on 21/12/06.
+ */
+@SpringBootApplication  // Spring Boot 应用标识
+public class ProviderApplication {
+
+    public static void main(String[] args) {
+        // 程序启动入口
+        // 启动嵌入式的 Tomcat 并初始化 Spring 环境及其各 Spring 组件
+        SpringApplication.run(ProviderApplication.class,args);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;然后新建测试控制类 ConfigController，代码如下：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-java&quot;&gt;/**
+ * Config 案例
+ * &amp;lt;p&amp;gt;
+ * Created by bysocket.com on 21/12/07.
+ */
+@RestController
+@Slf4j
+@RefreshScope
+@Data
+public class ConfigController {
+
+    @Value(&quot;${blog.name}&quot;)
+    private String blogName;
+
+    @GetMapping(&quot;/get&quot;)
+    public String get() {
+        return &quot;ConfigController#get blog name = &quot; + getBlogName();
+    }
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;代码详解如下：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;@Value&lt;/code&gt; 注解 ：@Value 对 Bean 的字段或者方法参数进行标注，职责是基于表达式给字段或方法参数设置默认属性值。通常格式是注解 + SpEL 表达式，如 @Value(&quot;SpEL 表达式&quot;)。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;@RefreshScope&lt;/code&gt; 注解 ：允许在运行时动态刷新 Bean 的 Scope 实现。如果 Bean 被刷新，则在下次访问 Bean 即执行方法时，会创建一个新实例。这说明在应用运行时，在 Nacos 控制台修改了对应配置的值后，会同时修改和生效该 Bean 这个值，达到动态配置的效果。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;5、运行测试&lt;/h4&gt;
+&lt;p&gt;启动上面的应用，会在控制台看到如下信息：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-java&quot;&gt;2021-12-09 20:11:43.399  INFO 13909 --- [-127.0.0.1_8848] o.s.c.a.n.c.NacosPropertySourceBuilder   : Loading nacos data, dataId: &#x27;config-service.yml&#x27;, group: &#x27;DEFAULT_GROUP&#x27;
+2021-12-09 20:11:43.400  INFO 13909 --- [-127.0.0.1_8848] b.c.PropertySourceBootstrapConfiguration : Located property source: [BootstrapPropertySource {name=&#x27;bootstrapProperties-config-service.yml&#x27;}]&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;这里可以看出，已经加载了 Nacos 配置信息 &lt;code&gt;dataId: &#x27;config-service.yml&#x27;&lt;/code&gt; 和 &lt;code&gt;group: &#x27;DEFAULT_GROUP&#x27;&lt;/code&gt; 。&lt;/p&gt;
+&lt;p&gt;最后在浏览器打开地址 &lt;code&gt;http://localhost:8083/get&lt;/code&gt; ，响应如图所示：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://www.bysocket.com/wp-content/uploads/2021/12/11.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;h5&gt;动态配置测试&lt;/h5&gt;
+&lt;p&gt;然后去 Nacos 控制台，配置列表点击修改 &lt;code&gt;config-service.yml&lt;/code&gt; 配置。将 &lt;code&gt;www.bysocekt.com&lt;/code&gt; 改成 &lt;code&gt;bysocket.com&lt;/code&gt;，然后确认发布。如图所示：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://www.bysocket.com/wp-content/uploads/2021/12/WechatIMG204.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;可以从控制台看到如下日志：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-java&quot;&gt;2021-12-09 20:31:30.747  INFO 13909 --- [-127.0.0.1_8848] o.s.c.e.event.RefreshEventListener       : Refresh keys changed: [blog.name]&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;重新访问下浏览器该地址 &lt;code&gt;http://localhost:8083/get&lt;/code&gt; ，响应如图所示：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://www.bysocket.com/wp-content/uploads/2021/12/22.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;说明动态刷新配置成功。&lt;/p&gt;
+&lt;h2&gt;三、Nacos 实现分布式配置小结&lt;/h2&gt;
+&lt;p&gt;本文详细介绍了Spring Cloud 整合 Nacos 实现服务分布配置。关键两点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;如何在 Nacos 设置对应的配置&lt;/li&gt;
+&lt;li&gt;如何在工程中通过依赖和注解关联上对应的外化配置&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;参考资料&lt;/h4&gt;
+
+&lt;h4&gt;代码示例地址&lt;/h4&gt;
+&lt;p&gt;本文案例，可以查看开源项目 springcloud-learning-example 中的 springcloud-nacos-config-sample 模块：&lt;/p&gt;
+
+&lt;h4&gt;以下系列教程推荐&lt;/h4&gt;
+
+            &lt;p class=&quot;clear&quot;/&gt;
 
 
 
-                
-                &lt;div class=&quot;reward_qrcode_area reward_area tc&quot; id=&quot;js_reward_qrcode&quot;&gt;
-                                &lt;p class=&quot;tips_global&quot; aria-hidden=&quot;true&quot; id=&quot;js_a11y_reward_qr_title&quot;&gt;Long-press QR code to transfer me a reward&lt;/p&gt;
-                                                                &lt;p role=&quot;option&quot; aria-labelledby=&quot;js_a11y_reward_qr_word js_a11y_comma js_a11y_reward_qr_title js_a11y_reward_qr_money&quot; aria-describedby=&quot;js_a11y_reward_qr_tips &quot; class=&quot;reward_tips&quot; id=&quot;js_a11y_reward_qr_word&quot;/&gt;
-                                &lt;span class=&quot;reward_qrcode_img_wrp&quot;&gt;&lt;img alt=&quot;赞赏二维码&quot; class=&quot;reward_qrcode_img&quot; id=&quot;js_reward_qrcode_img&quot;/&gt;&lt;/span&gt;
-                                &lt;p aria-hidden=&quot;true&quot; id=&quot;js_a11y_reward_qr_tips&quot; class=&quot;tips_global&quot;&gt;As required by Apple&#x27;s new policy, the Reward feature has been disabled on Weixin for iOS. You can still reward an Official Account by transferring money via QR code.&lt;/p&gt;
-                            &lt;/div&gt;
-                                                                            
-                              
-            &lt;/div&gt;&lt;/div&gt;</content:encoded>
+
+        &lt;/div&gt;
+        
+&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
