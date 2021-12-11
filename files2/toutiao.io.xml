@@ -156,9 +156,718 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>b0d31773bb4bd8122dc9dd6df9b77d37</guid>
-<title>基于 Python 探针完成调用库的数据提取</title>
-<link>https://toutiao.io/k/3wr0tqo</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;前记&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;最近在完善公司的监控系统, 发现在项目运行时经常会出现一些运行时的问题， 这些问题往往不是一个子服务引发的问题， 而可能是某个环节出现了问题， 这时候就需要引入APM系统。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在收集APM数据时发现在&lt;code&gt;Python&lt;/code&gt;生态中针对web框架都有完善的APM中间件用于接口统计与监控, 但是第三方调用库相关的APM实现都比较少(几乎没有)， 同时这些库大多数也都没提供一些钩子实现。这就需要自己去封装一些库， 为这些库实现一套调用过程的数据提供逻辑。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;本文是以&lt;code&gt;Python&lt;/code&gt;的&lt;code&gt;aiomysql&lt;/code&gt;库为例，阐述如何基于&lt;code&gt;Python&lt;/code&gt;的探针完成调用库的调用过程统计与监控的封装。&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;注: 监控的形式的agent有很多种，如&lt;code&gt;Prometheus&lt;/code&gt;，&lt;code&gt;Zabbix&lt;/code&gt;, &lt;code&gt;Graphite&lt;/code&gt;和&lt;code&gt;Opentracing&lt;/code&gt;他们的数据源有很大的不同，但是他们都是基于元数据封装成自己的源数据，然后发送到对应的服务，所以本文只介绍如何提取元数据，剩下的如何发送需要自己按照特定的监控系统去实现。注：这里以aiomysql库来做示例，提取数据的方法应该用统一的dbapi2， 本文只阐述如何简单的实现。&lt;/p&gt;&lt;/blockquote&gt;&lt;section&gt;原文地址：&lt;span&gt;https://so1n.me/2020/11/18/%E5%9F%BA%E4%BA%8EPython%E6%8E%A2%E9%92%88%E5%AE%8C%E6%88%90%E8%B0%83%E7%94%A8%E5%BA%93%E7%9A%84%E6%95%B0%E6%8D%AE%E6%8F%90%E5%8F%96&lt;/span&gt;&lt;/section&gt;&lt;hr data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;1.简单粗暴的方法--对mysql库进行封装&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;要统计一个执行过程， 就需要知道这个执行过程的开始位置和结束位置， 所以最简单粗暴的方法就是基于要调用的方法进行封装，在框架调用&lt;code&gt;MySQL&lt;/code&gt;库和&lt;code&gt;MySQL&lt;/code&gt;库中间实现一个中间层, 在中间层完成耗时统计,如:&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;# 伪代码&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;my_execute&lt;/span&gt;&lt;span&gt;(conn, sql, param)&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;# 针对MySql库的统计封装组件&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;with&lt;/span&gt; MyTracer(conn, sql, param):&lt;br/&gt;        &lt;span&gt;# 以下为正常使用MySql库的代码&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;with&lt;/span&gt; conn.cursor &lt;span&gt;as&lt;/span&gt; cursor:&lt;br/&gt;            cursor.execute(sql, param)&lt;br/&gt;            ...&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;看样子实现起来非常不错, 而且更改非常方便, 但由于是在最顶层的API上进行修改, 其实是非常不灵活的, 同时在&lt;code&gt;cursor.execute&lt;/code&gt;里会进行一些预操作, 如把sql和param进行拼接, 调用&lt;code&gt;nextset&lt;/code&gt;清除当前游标的数据等等。我们最后拿到的数据如时间耗时也是不准确的, 同时也没办法得到一些详细的元数据， 如错误码等等.&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果要拿到最直接有用的数据，就只能去改源代码, 然后再调用源代码了, 但是如果每个库都需要改源代码才能统计, 那也太麻烦了, 好在&lt;code&gt;Python&lt;/code&gt;也提供了一些类似探针的接口, 可以通过探针把库的源码进行替换完成我们的代码.&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;2.Python的探针&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在&lt;code&gt;Python&lt;/code&gt;中可以通过&lt;code&gt;sys.meta_path&lt;/code&gt;来实现&lt;code&gt;import hook&lt;/code&gt;的功能, 当执行 import 相关操作时, 会根据&lt;code&gt;sys.meta_path&lt;/code&gt;定义的对象对import相关库进行更改.&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;sys.meta_path&lt;/code&gt;中的对象需要实现一个&lt;code&gt;find_module&lt;/code&gt;方法， 这个&lt;code&gt;find_module&lt;/code&gt;方法返回&lt;code&gt;None&lt;/code&gt;或一个实现了&lt;code&gt;load_module&lt;/code&gt;方法的对象, 我们可以通过这个对象, 针对一些库在import时, 把相关的方法进行替换, 简单用法如下,通过hook&lt;code&gt;time.sleep&lt;/code&gt;让他在sleep的时候能打印消耗的时间.&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;github源码存储：&lt;span&gt;https://github.com/so1n/example/blob/master/example_python/example_python/python_hook/hook_demo&lt;/span&gt;&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;import&lt;/span&gt; importlib&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; sys&lt;br/&gt;&lt;span&gt;from&lt;/span&gt; functools &lt;span&gt;import&lt;/span&gt; wraps&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;func_wrapper&lt;/span&gt;&lt;span&gt;(func)&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&quot;&quot;&quot;这里通过一个装饰器来达到狸猫换太子和获取数据的效果&quot;&quot;&quot;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    @wraps(func)&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;wrapper&lt;/span&gt;&lt;span&gt;(*args, **kwargs)&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;# 记录开始时间&lt;/span&gt;&lt;br/&gt;        start = time.time()&lt;br/&gt;        result = func(*args, **kwargs)&lt;br/&gt;        &lt;span&gt;# 统计消耗时间&lt;/span&gt;&lt;br/&gt;        end = time.time()&lt;br/&gt;        print(&lt;span&gt;f&quot;speed time:&lt;span&gt;{end - start}&lt;/span&gt;&quot;&lt;/span&gt;)&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; result&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; wrapper&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;MetaPathFinder&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;find_module&lt;/span&gt;&lt;span&gt;(self, fullname, path=None)&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;# 执行时可以看出来在import哪些模块&lt;/span&gt;&lt;br/&gt;        print(&lt;span&gt;f&#x27;find module:&lt;span&gt;{path}&lt;/span&gt;:&lt;span&gt;{fullname}&lt;/span&gt;&#x27;&lt;/span&gt;)&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; MetaPathLoader()&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;MetaPathLoader&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;load_module&lt;/span&gt;&lt;span&gt;(self, fullname)&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;# import的模块都会存放在sys.modules里面， 通过判断可以减少重复import&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; fullname &lt;span&gt;in&lt;/span&gt; sys.modules:&lt;br/&gt;            &lt;span&gt;return&lt;/span&gt; sys.modules[fullname]&lt;br/&gt;        &lt;span&gt;# 防止递归调用&lt;/span&gt;&lt;br/&gt;        finder = sys.meta_path.pop(&lt;span&gt;0&lt;/span&gt;)&lt;br/&gt;        &lt;span&gt;# 导入 module&lt;/span&gt;&lt;br/&gt;        module = importlib.import_module(fullname)&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; fullname == &lt;span&gt;&#x27;time&#x27;&lt;/span&gt;:&lt;br/&gt;            &lt;span&gt;# 替换函数&lt;/span&gt;&lt;br/&gt;            module.sleep = func_wrapper(module.sleep)&lt;br/&gt;        sys.meta_path.insert(&lt;span&gt;0&lt;/span&gt;, finder)&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; module&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;sys.meta_path.insert(&lt;span&gt;0&lt;/span&gt;, MetaPathFinder())&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;if&lt;/span&gt; __name__ == &lt;span&gt;&#x27;__main__&#x27;&lt;/span&gt;:&lt;br/&gt;    &lt;span&gt;import&lt;/span&gt; time&lt;br/&gt;    time.sleep(&lt;span&gt;1&lt;/span&gt;)&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;# 输出示例:&lt;/span&gt;&lt;br/&gt;&lt;span&gt;# find module:datetime&lt;/span&gt;&lt;br/&gt;&lt;span&gt;# find module:time&lt;/span&gt;&lt;br/&gt;&lt;span&gt;# load module:time&lt;/span&gt;&lt;br/&gt;&lt;span&gt;# find module:math&lt;/span&gt;&lt;br/&gt;&lt;span&gt;# find module:_datetime&lt;/span&gt;&lt;br/&gt;&lt;span&gt;# speed time:1.00073385238647468&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;3.制作探针模块&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;了解完了主要流程后， 可以开始制作自己的探针模块了, 由于示例只涉及到aiomysql模块, 那么在&lt;code&gt;MetaPathFinder.find_module&lt;/code&gt;中需要只对aiomysql模块进行处理, 其他的先忽略. 然后我们需要确定我们要把aiomysql的哪个功能给替换, 从业务上来说, 一般情况下我们只要&lt;code&gt;cursor.execute&lt;/code&gt;, &lt;code&gt;cursor.fetchone&lt;/code&gt;, &lt;code&gt;cursor.fetchall&lt;/code&gt;, &lt;code&gt;cursor.executemany&lt;/code&gt;这几个主要的操作,所以需要深入cursor的源码：&lt;span&gt;https://github.com/aio-libs/aiomysql/blob/master/aiomysql/cursors.py&lt;/span&gt;, 看看如何去更改代码, 后者重载哪个函数.&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;先&lt;code&gt;cursor.execute&lt;/code&gt;的源码(&lt;code&gt;cursor.executemanay&lt;/code&gt;也类似), 发现会先调用&lt;code&gt;self.nextset&lt;/code&gt;的方法, 把上个请求的数据先拿完, 再合并sql语句, 最后通过&lt;code&gt;self._query&lt;/code&gt;进行查询:&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;async&lt;/span&gt; &lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;execute&lt;/span&gt;&lt;span&gt;(self, query, args=None)&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&quot;&quot;&quot;Executes the given operation&lt;br/&gt;    Executes the given operation substituting any markers with&lt;br/&gt;    the given parameters.&lt;br/&gt;    For example, getting all rows where id is 5:&lt;br/&gt;        cursor.execute(&quot;SELECT * FROM t1 WHERE id = %s&quot;, (5,))&lt;br/&gt;    :param query: ``str`` sql statement&lt;br/&gt;    :param args: ``tuple`` or ``list`` of arguments for sql query&lt;br/&gt;    :returns: ``int``, number of rows that has been produced of affected&lt;br/&gt;    &quot;&quot;&quot;&lt;/span&gt;&lt;br/&gt;    conn = self._get_db()&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;while&lt;/span&gt; (&lt;span&gt;await&lt;/span&gt; self.nextset()):&lt;br/&gt;        &lt;span&gt;pass&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; args &lt;span&gt;is&lt;/span&gt; &lt;span&gt;not&lt;/span&gt; &lt;span&gt;None&lt;/span&gt;:&lt;br/&gt;        query = query % self._escape_args(args, conn)&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;await&lt;/span&gt; self._query(query)&lt;br/&gt;    self._executed = query&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; self._echo:&lt;br/&gt;        logger.info(query)&lt;br/&gt;        logger.info(&lt;span&gt;&quot;%r&quot;&lt;/span&gt;, args)&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; self._rowcount&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;再看&lt;code&gt;cursor.fetchone&lt;/code&gt;的源码(&lt;code&gt;cursor.fetchall&lt;/code&gt;也类似), 发现其实是从缓存中获取数据, 这些数据在执行&lt;code&gt;cursor.execute&lt;/code&gt;中就已经获取了:&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;fetchone&lt;/span&gt;&lt;span&gt;(self)&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&quot;&quot;&quot;Fetch the next row &quot;&quot;&quot;&lt;/span&gt;&lt;br/&gt;    self._check_executed()&lt;br/&gt;    fut = self._loop.create_future()&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; self._rows &lt;span&gt;is&lt;/span&gt; &lt;span&gt;None&lt;/span&gt; &lt;span&gt;or&lt;/span&gt; self._rownumber &amp;gt;= len(self._rows):&lt;br/&gt;        fut.set_result(&lt;span&gt;None&lt;/span&gt;)&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; fut&lt;br/&gt;    result = self._rows[self._rownumber]&lt;br/&gt;    self._rownumber += &lt;span&gt;1&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;    fut = self._loop.create_future()&lt;br/&gt;    fut.set_result(result)&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; fut&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;综合上面的分析, 我们只要对核心的方法&lt;code&gt;self._query&lt;/code&gt;进行重载即可拿到我们要的数据, 从源码中我们可以知道, 我们能获取到传入&lt;code&gt;self._query&lt;/code&gt;的&lt;code&gt;self&lt;/code&gt;和&lt;code&gt;sql&lt;/code&gt;参数, 根据&lt;code&gt;self&lt;/code&gt;又能获取到查询的结果, 同时我们通过装饰器能获取到运行的时间, 要的数据基本都到齐了, 按照思路修改后的代码如下&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;import&lt;/span&gt; importlib&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; time&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; sys&lt;br/&gt;&lt;span&gt;from&lt;/span&gt; functools &lt;span&gt;import&lt;/span&gt; wraps&lt;br/&gt;&lt;br/&gt;&lt;span&gt;from&lt;/span&gt; typing &lt;span&gt;import&lt;/span&gt; cast, Any, Callable, Optional, Tuple, TYPE_CHECKING&lt;br/&gt;&lt;span&gt;from&lt;/span&gt; types &lt;span&gt;import&lt;/span&gt; ModuleType&lt;br/&gt;&lt;span&gt;if&lt;/span&gt; TYPE_CHECKING:&lt;br/&gt;    &lt;span&gt;import&lt;/span&gt; aiomysql&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;func_wrapper&lt;/span&gt;&lt;span&gt;(func: Callable)&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    @wraps(func)&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;async&lt;/span&gt; &lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;wrapper&lt;/span&gt;&lt;span&gt;(*args, **kwargs)&lt;/span&gt; -&amp;gt; Any:&lt;/span&gt;&lt;br/&gt;        start: float = time.time()&lt;br/&gt;        func_result: Any = &lt;span&gt;await&lt;/span&gt; func(*args, **kwargs)&lt;br/&gt;        end: float = time.time()&lt;br/&gt;&lt;br/&gt;        &lt;span&gt;# 根据_query可以知道, 第一格参数是self, 第二个参数是sql&lt;/span&gt;&lt;br/&gt;        self: aiomysql.Cursor = args[&lt;span&gt;0&lt;/span&gt;]&lt;br/&gt;        sql: str = args[&lt;span&gt;1&lt;/span&gt;]&lt;br/&gt;        &lt;span&gt;# 通过self,我们可以拿到其他的数据&lt;/span&gt;&lt;br/&gt;        db: str = self._connection.db&lt;br/&gt;        user: str = self._connection.user&lt;br/&gt;        host: str = self._connection.host&lt;br/&gt;        port: str = self._connection.port&lt;br/&gt;        execute_result: Tuple[Tuple] = self._rows&lt;br/&gt;        &lt;span&gt;# 可以根据自己定义的agent把数据发送到指定的平台, 然后我们就可以在平台上看到对应的数据或进行监控了, &lt;/span&gt;&lt;br/&gt;        &lt;span&gt;# 这里只是打印一部分数据出来&lt;/span&gt;&lt;br/&gt;        print({&lt;br/&gt;            &lt;span&gt;&quot;sql&quot;&lt;/span&gt;: sql,&lt;br/&gt;            &lt;span&gt;&quot;db&quot;&lt;/span&gt;: db,&lt;br/&gt;            &lt;span&gt;&quot;user&quot;&lt;/span&gt;: user,&lt;br/&gt;            &lt;span&gt;&quot;host&quot;&lt;/span&gt;: host,&lt;br/&gt;            &lt;span&gt;&quot;port&quot;&lt;/span&gt;: port,&lt;br/&gt;            &lt;span&gt;&quot;result&quot;&lt;/span&gt;: execute_result,&lt;br/&gt;            &lt;span&gt;&quot;speed time&quot;&lt;/span&gt;: end - start&lt;br/&gt;        })&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; func_result&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; cast(Callable, wrapper)&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;MetaPathFinder&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;    @staticmethod&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;find_module&lt;/span&gt;&lt;span&gt;(fullname: str, path: Optional[str] = None)&lt;/span&gt; -&amp;gt; Optional[&quot;MetaPathLoader&quot;]:&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; fullname == &lt;span&gt;&#x27;aiomysql&#x27;&lt;/span&gt;:&lt;br/&gt;            &lt;span&gt;# 只有aiomysql才进行hook&lt;/span&gt;&lt;br/&gt;            &lt;span&gt;return&lt;/span&gt; MetaPathLoader()&lt;br/&gt;        &lt;span&gt;else&lt;/span&gt;:&lt;br/&gt;            &lt;span&gt;return&lt;/span&gt; &lt;span&gt;None&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;MetaPathLoader&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;    @staticmethod&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;load_module&lt;/span&gt;&lt;span&gt;(fullname: str)&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; fullname &lt;span&gt;in&lt;/span&gt; sys.modules:&lt;br/&gt;            &lt;span&gt;return&lt;/span&gt; sys.modules[fullname]&lt;br/&gt;        &lt;span&gt;# 防止递归调用&lt;/span&gt;&lt;br/&gt;        finder: &lt;span&gt;&quot;MetaPathFinder&quot;&lt;/span&gt; = sys.meta_path.pop(&lt;span&gt;0&lt;/span&gt;)&lt;br/&gt;        &lt;span&gt;# 导入 module&lt;/span&gt;&lt;br/&gt;        module: ModuleType = importlib.import_module(fullname)&lt;br/&gt;        &lt;span&gt;# 针对_query进行hook&lt;/span&gt;&lt;br/&gt;        module.Cursor._query = func_wrapper(module.Cursor._query)&lt;br/&gt;        sys.meta_path.insert(&lt;span&gt;0&lt;/span&gt;, finder)&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; module&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;async&lt;/span&gt; &lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;test_mysql&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; -&amp;gt; &lt;span&gt;None&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;import&lt;/span&gt; aiomysql&lt;br/&gt;    pool: aiomysql.Pool = &lt;span&gt;await&lt;/span&gt; aiomysql.create_pool(&lt;br/&gt;        host=&lt;span&gt;&#x27;127.0.0.1&#x27;&lt;/span&gt;, port=&lt;span&gt;3306&lt;/span&gt;, user=&lt;span&gt;&#x27;root&#x27;&lt;/span&gt;, password=&lt;span&gt;&#x27;123123&#x27;&lt;/span&gt;, db=&lt;span&gt;&#x27;mysql&#x27;&lt;/span&gt;&lt;br/&gt;    )&lt;br/&gt;    &lt;span&gt;async&lt;/span&gt; &lt;span&gt;with&lt;/span&gt; pool.acquire() &lt;span&gt;as&lt;/span&gt; conn:&lt;br/&gt;        &lt;span&gt;async&lt;/span&gt; &lt;span&gt;with&lt;/span&gt; conn.cursor() &lt;span&gt;as&lt;/span&gt; cur:&lt;br/&gt;            &lt;span&gt;await&lt;/span&gt; cur.execute(&lt;span&gt;&quot;SELECT 42;&quot;&lt;/span&gt;)&lt;br/&gt;            (r,) = &lt;span&gt;await&lt;/span&gt; cur.fetchone()&lt;br/&gt;            &lt;span&gt;assert&lt;/span&gt; r == &lt;span&gt;42&lt;/span&gt;&lt;br/&gt;    pool.close()&lt;br/&gt;    &lt;span&gt;await&lt;/span&gt; pool.wait_closed()&lt;br/&gt;&lt;br/&gt;&lt;span&gt;if&lt;/span&gt; __name__ == &lt;span&gt;&#x27;__main__&#x27;&lt;/span&gt;:&lt;br/&gt;    sys.meta_path.insert(&lt;span&gt;0&lt;/span&gt;, MetaPathFinder())&lt;br/&gt;    &lt;span&gt;import&lt;/span&gt; asyncio&lt;br/&gt;&lt;br/&gt;    asyncio.run(test_mysql())&lt;br/&gt;&lt;br/&gt;&lt;span&gt;# 输出示例:&lt;/span&gt;&lt;br/&gt;&lt;span&gt;# 可以看出sql语句与我们输入的一样, db, user, host, port等参数也是, 还能知道执行的结果和运行时间&lt;/span&gt;&lt;br/&gt;&lt;span&gt;# {&#x27;sql&#x27;: &#x27;SELECT 42;&#x27;, &#x27;db&#x27;: &#x27;mysql&#x27;, &#x27;user&#x27;: &#x27;root&#x27;, &#x27;host&#x27;: &#x27;127.0.0.1&#x27;, &#x27;port&#x27;: 3306, &#x27;result&#x27;: ((42,),), &#x27;speed time&#x27;: 0.00045609474182128906}&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这个例子看来很不错, 但是需要在调用的入口处显式调用该逻辑, 通常一个项目可能有几个入口, 每个入口都显示调用该逻辑会非常麻烦， 而且必须先调用我们的hook逻辑后才能import， 这样就得订好引入规范， 不然就可能出现部分地方hook不成功, 如果能把引入hook这个逻辑安排在解析器启动后马上执行， 就可以完美地解决这个问题了. &lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;查阅了一翻资料后发现,&lt;code&gt;python&lt;/code&gt;解释器初始化的时候会自动&lt;code&gt;import PYTHONPATH&lt;/code&gt;下存在的&lt;code&gt;sitecustomize&lt;/code&gt;和&lt;code&gt;usercustomize&lt;/code&gt;模块, 我们只要创建该模块, 并在模块里面写入我们的 替换函数即可。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;具体结构如下，也可以参考github存储：https://github.com/so1n/example/blob/master/example_python/example_python/python_hook/hook_by_sys/&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;.&lt;br/&gt;├── __init__.py&lt;br/&gt;├── hook_aiomysql.py&lt;br/&gt;├── sitecustomize.py&lt;br/&gt;└── test_auto_hook.py&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;hook_aiomysql.py&lt;/code&gt;是我们制作探针的代码为例子， 而&lt;code&gt;sitecustomize.py&lt;/code&gt;存放的代码如下, 非常简单， 就是引入我们的探针代码, 并插入到&lt;code&gt;sys.meta_path&lt;/code&gt;：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;import&lt;/span&gt; sys&lt;br/&gt;&lt;span&gt;from&lt;/span&gt; hook_aiomysql &lt;span&gt;import&lt;/span&gt; MetaPathFinder&lt;br/&gt;&lt;br/&gt;sys.meta_path.insert(&lt;span&gt;0&lt;/span&gt;, MetaPathFinder())&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;test_auto_hook.py&lt;/code&gt;则是测试代码：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;import&lt;/span&gt; asyncio&lt;br/&gt;&lt;span&gt;from&lt;/span&gt; hook_aiomysql &lt;span&gt;import&lt;/span&gt; test_mysql&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;asyncio.run(test_mysql())&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;接下来只要设置&lt;code&gt;PYTHONPATH&lt;/code&gt;并运行我们的代码即可（如果是项目的话一般交由superisor启动，则可以在配置文件中设置好&lt;code&gt;PYTHONPATH&lt;/code&gt;）：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;(.venv) ➜  python_hook git:(master) ✗ &lt;span&gt;export&lt;/span&gt; PYTHONPATH=.      &lt;br/&gt;(.venv) ➜  python_hook git:(master) ✗ python test_auto_hook.py &lt;br/&gt;{&lt;span&gt;&#x27;sql&#x27;&lt;/span&gt;: &lt;span&gt;&#x27;SELECT 42;&#x27;&lt;/span&gt;, &lt;span&gt;&#x27;db&#x27;&lt;/span&gt;: &lt;span&gt;&#x27;mysql&#x27;&lt;/span&gt;, &lt;span&gt;&#x27;user&#x27;&lt;/span&gt;: &lt;span&gt;&#x27;root&#x27;&lt;/span&gt;, &lt;span&gt;&#x27;host&#x27;&lt;/span&gt;: &lt;span&gt;&#x27;127.0.0.1&#x27;&lt;/span&gt;, &lt;span&gt;&#x27;port&#x27;&lt;/span&gt;: 3306, &lt;span&gt;&#x27;result&#x27;&lt;/span&gt;: ((42,),), &lt;span&gt;&#x27;speed time&#x27;&lt;/span&gt;: 0.000213623046875}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;4.直接替换方法&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;可以看到上面的方法很好的运行了， 而且可以很方便的嵌入到我们的项目中， 但是依赖与&lt;code&gt;sitecustomize.py&lt;/code&gt;文件很难让他抽离成一个第三方的库， 如果要抽离成第三方的库就得考虑看看有没有其他的方法。在上面介绍&lt;code&gt;MetaPathLoader&lt;/code&gt;时说到了&lt;code&gt;sys.module&lt;/code&gt;, 在里面通过&lt;code&gt;sys.modules&lt;/code&gt;来减少重复引入：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;MetaPathLoader&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;load_module&lt;/span&gt;&lt;span&gt;(self, fullname)&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;# import的模块都会存放在sys.modules里面， 通过判断可以减少重复import&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; fullname &lt;span&gt;in&lt;/span&gt; sys.modules:&lt;br/&gt;            &lt;span&gt;return&lt;/span&gt; sys.modules[fullname]&lt;br/&gt;        &lt;span&gt;# 防止递归调用&lt;/span&gt;&lt;br/&gt;        finder = sys.meta_path.pop(&lt;span&gt;0&lt;/span&gt;)&lt;br/&gt;        &lt;span&gt;# 导入 module&lt;/span&gt;&lt;br/&gt;        module = importlib.import_module(fullname)&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt; fullname == &lt;span&gt;&#x27;time&#x27;&lt;/span&gt;:&lt;br/&gt;            &lt;span&gt;# 替换函数&lt;/span&gt;&lt;br/&gt;            module.sleep = func_wrapper(module.sleep)&lt;br/&gt;        sys.meta_path.insert(&lt;span&gt;0&lt;/span&gt;, finder)&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; module&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这个减少重复引入的原理是， 每次引入一个模块后， 他就会存放在sys.modules， 如果是重复引入， 就会直接刷新成最新引入的模块。上面之所以会考虑到减少重复import是因为我们不会在程序运行时升级第三方库的依赖。利用到我们可以不考虑重复引入同名不同实现的模块， 以及sys.modules会缓存引入模块的特点， 我们可以把上面的逻辑简化成&lt;code&gt;引入模块-&amp;gt;替换当前模块方法为我们修改的hook方法&lt;/code&gt;。第一次接触这个方法是从opentracing-python-instrumentation：https://github.com/uber-common/opentracing-python-instrumentation学的， 不过他夹带着其他的封装， 所以我这里进行了简化处理 github代码仓：https://github.com/so1n/example/tree/master/example_python/example_python/python_hook/hook_by_global：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;import&lt;/span&gt; time&lt;br/&gt;&lt;span&gt;from&lt;/span&gt; functools &lt;span&gt;import&lt;/span&gt; wraps&lt;br/&gt;&lt;span&gt;from&lt;/span&gt; typing &lt;span&gt;import&lt;/span&gt; Any, Callable, Tuple, cast&lt;br/&gt;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; aiomysql&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;func_wrapper&lt;/span&gt;&lt;span&gt;(func: Callable)&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&quot;&quot;&quot;和上面一样的封装函数, 这里简单略过&quot;&quot;&quot;&lt;/span&gt;&lt;br/&gt;    &lt;br/&gt;&lt;span&gt;# 判断是否hook过&lt;/span&gt;&lt;br/&gt;_IS_HOOK: bool = &lt;span&gt;False&lt;/span&gt;&lt;br/&gt;&lt;span&gt;# 存放原来的_query&lt;/span&gt;&lt;br/&gt;_query: Callable = aiomysql.Cursor._query&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;# hook函数&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;install_hook&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; -&amp;gt; &lt;span&gt;None&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;    _IS_HOOK = &lt;span&gt;False&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;if&lt;/span&gt; _IS_HOOK:&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt;&lt;br/&gt;    aiomysql.Cursor._query = func_wrapper(aiomysql.Cursor._query)&lt;br/&gt;    _IS_HOOK = &lt;span&gt;True&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;# 还原到原来的函数方法&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;reset_hook&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; -&amp;gt; &lt;span&gt;None&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;    aiomysql.Cursor._query = _query&lt;br/&gt;    _IS_HOOK = &lt;span&gt;False&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;代码简单明了，接下来跑一跑刚才的测试：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;import&lt;/span&gt; asyncio&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; aiomysql&lt;br/&gt;&lt;br/&gt;&lt;span&gt;from&lt;/span&gt; demo &lt;span&gt;import&lt;/span&gt; install_hook, reset_hook&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;async&lt;/span&gt; &lt;span&gt;&lt;span&gt;def&lt;/span&gt; &lt;span&gt;test_mysql&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; -&amp;gt; &lt;span&gt;None&lt;/span&gt;:&lt;/span&gt;&lt;br/&gt;    pool: aiomysql.Pool = &lt;span&gt;await&lt;/span&gt; aiomysql.create_pool(&lt;br/&gt;        host=&lt;span&gt;&#x27;127.0.0.1&#x27;&lt;/span&gt;, port=&lt;span&gt;3306&lt;/span&gt;, user=&lt;span&gt;&#x27;root&#x27;&lt;/span&gt;, password=&lt;span&gt;&#x27;&#x27;&lt;/span&gt;, db=&lt;span&gt;&#x27;mysql&#x27;&lt;/span&gt;&lt;br/&gt;    )&lt;br/&gt;    &lt;span&gt;async&lt;/span&gt; &lt;span&gt;with&lt;/span&gt; pool.acquire() &lt;span&gt;as&lt;/span&gt; conn:&lt;br/&gt;        &lt;span&gt;async&lt;/span&gt; &lt;span&gt;with&lt;/span&gt; conn.cursor() &lt;span&gt;as&lt;/span&gt; cur:&lt;br/&gt;            &lt;span&gt;await&lt;/span&gt; cur.execute(&lt;span&gt;&quot;SELECT 42;&quot;&lt;/span&gt;)&lt;br/&gt;            (r,) = &lt;span&gt;await&lt;/span&gt; cur.fetchone()&lt;br/&gt;            &lt;span&gt;assert&lt;/span&gt; r == &lt;span&gt;42&lt;/span&gt;&lt;br/&gt;    pool.close()&lt;br/&gt;    &lt;span&gt;await&lt;/span&gt; pool.wait_closed()&lt;br/&gt;&lt;br/&gt;print(&lt;span&gt;&quot;install hook&quot;&lt;/span&gt;)&lt;br/&gt;install_hook()&lt;br/&gt;asyncio.run(test_mysql())&lt;br/&gt;print(&lt;span&gt;&quot;reset hook&quot;&lt;/span&gt;)&lt;br/&gt;reset_hook()&lt;br/&gt;asyncio.run(test_mysql())&lt;br/&gt;print(&lt;span&gt;&quot;end&quot;&lt;/span&gt;)&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;通过测试输出可以发现我们的逻辑的正确的, install hook后能出现我们提取的元信息， 而reset后则不会打印原信息&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;install hook&lt;br/&gt;{&lt;span&gt;&#x27;sql&#x27;&lt;/span&gt;: &lt;span&gt;&#x27;SELECT 42;&#x27;&lt;/span&gt;, &lt;span&gt;&#x27;db&#x27;&lt;/span&gt;: &lt;span&gt;&#x27;mysql&#x27;&lt;/span&gt;, &lt;span&gt;&#x27;user&#x27;&lt;/span&gt;: &lt;span&gt;&#x27;root&#x27;&lt;/span&gt;, &lt;span&gt;&#x27;host&#x27;&lt;/span&gt;: &lt;span&gt;&#x27;127.0.0.1&#x27;&lt;/span&gt;, &lt;span&gt;&#x27;port&#x27;&lt;/span&gt;: 3306, &lt;span&gt;&#x27;result&#x27;&lt;/span&gt;: ((42,),), &lt;span&gt;&#x27;speed time&#x27;&lt;/span&gt;: 0.000347137451171875}&lt;br/&gt;reset hook&lt;br/&gt;end&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;5.总结&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;得益于Python动态语言的特性， 我们可以很容易的为第三方库实现钩子方法，上面说的两种方法中， 第二种方法非常简单， 但在自己项目中最好还是采用第一种方法， 因为&lt;code&gt;Python&lt;/code&gt;是通过一行一行代码进行扫描执行的， 第二种方法只能放在入口代码中， 并且要在被hook的对象实例化之前执行， 不然就会实现hook失败的现象, 而第一种方法除了麻烦外， 基本上能躲避所有坑。&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>ceb98fa23101caa6f2dd801be4a047e9</guid>
+<title>vscode-loader 解析之（node 环境） - 悠然宜想亭</title>
+<link>https://toutiao.io/k/r3oixv0</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;Post-body&quot;&gt;
+                    &lt;p&gt;前面，我们已经分析过浏览器环境的模块加载，接下来看 node 环境的模块加载。&lt;/p&gt;
+
+&lt;h2&gt;示例&lt;/h2&gt;
+
+&lt;p&gt;vscode-loader 在 node 环境下加载模块，和浏览器环境基本一致。不同点是，不是通过 script 标签加载 loader.js，而是通过 require 加载。&lt;/p&gt;
+
+&lt;p&gt;具体示例如下：&lt;/p&gt;
+
+&lt;p&gt;加载 loader.js，再调用 loader 模块的方法，加载 test 依赖：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-js&quot;&gt;loader = require(&quot;./src/loader&quot;);
+// 设置缓存
+loader.config({
+  nodeCachedData: {
+    path: &quot;./cache-data&quot;,
+  },
+});
+loader([&quot;test&quot;], function (test) {
+  console.log(test.compare(7, 5));
+});&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;定义模块：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-js&quot;&gt;// test.js
+
+define(&quot;test&quot;, function () {
+  return {
+    compare: function (a, b) {
+      return a &amp;gt; b;
+    },
+  };
+});&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2&gt;loader 加载模块&lt;/h2&gt;
+
+&lt;p&gt;上一篇文章中，我们提到，浏览器环境通过 require 函数加载模块。而 node 环境，是通过 loader.js 的模块导出值，加载其他模块。&lt;/p&gt;
+
+&lt;p&gt;查看入口文件中的逻辑，可以看出 loader 就是 require 函数：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-ts&quot;&gt;// 初始化
+export function init(): void {
+...
+
+if (env.isNode &amp;amp;&amp;amp; !env.isElectronRenderer) {
+// 设置 module.expots
+module.exports = RequireFunc;
+require = &amp;lt;any&amp;gt;RequireFunc;
+} else {
+...
+}
+}&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;所以，node 环境加载模块的逻辑，和浏览器基本是一致的。不同点在于，之前提到的，不同环境下的 &lt;code&gt;scriptLoader&lt;/code&gt; (脚本加载器)。&lt;/p&gt;
+
+&lt;h2&gt;NodeScriptLoader&lt;/h2&gt;
+
+&lt;p&gt;下面，我们具体来看 node 的脚本加载器。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-ts&quot;&gt;class OnlyOnceScriptLoader implements IScriptLoader {
+
+...
+
+public load(moduleManager: IModuleManager, scriptSrc: string, callback: () =&amp;gt; void, errorback: (err: any) =&amp;gt; void): void {
+if (!this._scriptLoader) {
+if (this._env.isWebWorker) {
+this._scriptLoader = new WorkerScriptLoader();
+} else if (this._env.isElectronRenderer) {
+// electron 渲染进程，preferScriptTags 指定是否用 &amp;lt;script&amp;gt; 标签加载，默认为 false
+const { preferScriptTags } = moduleManager.getConfig().getOptionsLiteral();
+if (preferScriptTags) {
+this._scriptLoader = new BrowserScriptLoader();
+} else {
+this._scriptLoader = new NodeScriptLoader(this._env);
+}
+} else if (this._env.isNode) {
+// node 环境，新建 node 的脚本加载器
+this._scriptLoader = new NodeScriptLoader(this._env);
+} else {
+this._scriptLoader = new BrowserScriptLoader();
+}
+}
+...
+}
+}
+
+class NodeScriptLoader implements IScriptLoader {
+
+private static _BOM = 0xFEFF;
+private static _PREFIX = &#x27;(function (require, define, __filename, __dirname) { &#x27;;
+private static _SUFFIX = &#x27;\n});&#x27;;
+
+...
+
+public load(moduleManager: IModuleManager, scriptSrc: string, callback: () =&amp;gt; void, errorback: (err: any) =&amp;gt; void): void {
+// load-1: 获取配置
+const opts = moduleManager.getConfig().getOptionsLiteral();
+const nodeRequire = ensureRecordedNodeRequire(moduleManager.getRecorder(), (opts.nodeRequire || global.nodeRequire)); // nodeRequire 增加事件记录
+const nodeInstrumenter = (opts.nodeInstrumenter || function (c) { return c; });// 如果设置了 nodeInstrumenter，在脚本加载之前，会先对脚本执行该转换函数
+// load-2: 初始化
+this._init(nodeRequire);
+this._initNodeRequire(nodeRequire, moduleManager);
+let recorder = moduleManager.getRecorder();
+
+// load-3: 加载模块
+if (/^node\|/.test(scriptSrc)) {
+// &#x27;node|&#x27; 开头的，用 nodeRequire 加载（同步加载），直接调用 callback
+
+let pieces = scriptSrc.split(&#x27;|&#x27;);
+
+let moduleExports = null;
+try {
+moduleExports = nodeRequire(pieces[1]);
+} catch (err) {
+errorback(err);
+return;
+}
+
+moduleManager.enqueueDefineAnonymousModule([], () =&amp;gt; moduleExports);
+callback();
+
+} else {
+
+// load-3-1: 路径处理
+scriptSrc = Utilities.fileUriToFilePath(this._env.isWindows, scriptSrc);
+const normalizedScriptSrc = this._path.normalize(scriptSrc);
+const vmScriptPathOrUri = this._getElectronRendererScriptPathOrUri(normalizedScriptSrc);
+const wantsCachedData = Boolean(opts.nodeCachedData);
+const cachedDataPath = wantsCachedData ? this._getCachedDataPath(opts.nodeCachedData!, scriptSrc) : undefined;
+
+// load-3-2: 获取模块代码和缓存，执行代码
+this._readSourceAndCachedData(normalizedScriptSrc, cachedDataPath, recorder, (err: any, data: string, cachedData: Buffer, hashData: Buffer) =&amp;gt; {
+if (err) {
+errorback(err);
+return;
+}
+
+// 处理模块代码
+let scriptSource: string;
+if (data.charCodeAt(0) === NodeScriptLoader._BOM) {
+scriptSource = NodeScriptLoader._PREFIX + data.substring(1) + NodeScriptLoader._SUFFIX;
+} else {
+scriptSource = NodeScriptLoader._PREFIX + data + NodeScriptLoader._SUFFIX;
+}
+
+scriptSource = nodeInstrumenter(scriptSource, normalizedScriptSrc);
+
+// 生成并执行脚本
+const scriptOpts: INodeVMScriptOptions = { filename: vmScriptPathOrUri, cachedData };
+const script = this._createAndEvalScript(moduleManager, scriptSource, scriptOpts, callback, errorback);
+
+// 处理、验证缓存
+this._handleCachedData(script, scriptSource, cachedDataPath!, wantsCachedData &amp;amp;&amp;amp; !cachedData, moduleManager);
+this._verifyCachedData(script, scriptSource, cachedDataPath!, hashData, moduleManager);
+});
+}
+}&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;初始化&lt;/h3&gt;
+
+&lt;p&gt;这里，我们先看 load-2 初始化的处理：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-ts&quot;&gt;class NodeScriptLoader implements IScriptLoader {
+private _init(nodeRequire: (nodeModule: string) =&amp;gt; any): void {
+if (this._didInitialize) {
+return;
+}
+this._didInitialize = true;
+
+// 获取 node 原生模块
+this._fs = nodeRequire(&#x27;fs&#x27;);
+this._vm = nodeRequire(&#x27;vm&#x27;);
+this._path = nodeRequire(&#x27;path&#x27;);
+this._crypto = nodeRequire(&#x27;crypto&#x27;);
+}
+
+// 修补 nodejs 的 require 函数，以便我们可以从缓存数据手动创建脚本。这是通过覆盖 `Module._compile` 函数来完成的。
+private _initNodeRequire(nodeRequire: (nodeModule: string) =&amp;gt; any, moduleManager: IModuleManager): void {
+// require-1: 如果已经打过补丁，直接返回
+const { nodeCachedData } = moduleManager.getConfig().getOptionsLiteral();
+if (!nodeCachedData) {
+return;
+}
+if (this._didPatchNodeRequire) {
+return;
+}
+this._didPatchNodeRequire = true;
+
+// require-2: 修改 Module.compile
+const that = this
+const Module = nodeRequire(&#x27;module&#x27;);
+
+function makeRequireFunction(mod: any) {
+...
+}
+
+Module.prototype._compile = function (content: string, filename: string) {
+...
+}
+}
+}&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;可以看到，_initNodeRequire 修改了 node 的 &lt;code&gt;require&lt;/code&gt; 函数，主要是改写了 &lt;code&gt;Module.prototype._compile&lt;/code&gt;。&lt;/p&gt;
+
+&lt;h4&gt;node 的 _compile&lt;/h4&gt;
+
+&lt;p&gt;我们先了解一下 node 的 &lt;code&gt;require&lt;/code&gt; 函数，及 &lt;code&gt;Module.prototype._compile&lt;/code&gt;，以便后续对比。这里的 node 代码为 &lt;a href=&quot;https://github.com/nodejs/node/blob/v14.0.0/lib/internal/modules/cjs/loader.js&quot; rel=&quot; nofollow ugc&quot;&gt;14.0.0 版本&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;先看 &lt;code&gt;require&lt;/code&gt; 函数：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-js&quot;&gt;// require: 根据路径加载模块，返回模块的 exports 属性。
+Module.prototype.require = function(id) {
+...
+// 第一步：调用 Module._load
+return Module._load(id, this, /* isMain */ false);
+};
+
+// Module._load：加载模块、管理缓存
+Module._load = function(request, parent, isMain) {
+...
+
+// 1. 如果缓存中已存在模块，返回模块的 exports
+const cachedModule = Module._cache[filename];
+    if (cachedModule !== undefined) {
+        updateChildren(parent, cachedModule, true);
+        if (!cachedModule.loaded)
+            return getExportsForCircularRequire(cachedModule);
+        return cachedModule.exports;
+    }
+
+...
+
+// 2. 如果是原生模块，调用 `NativeModule.prototype.compileForPublicLoader()` 并返回 exports
+    const mod = loadNativeModule(filename, request);
+    if (mod &amp;amp;&amp;amp; mod.canBeRequiredByUsers) return mod.exports;
+
+...
+
+// 3. 否则，新建一个模块并保存到缓存，加载文件，返回 exports
+const module = new Module(filename, parent);
+...
+Module._cache[filename] = module;
+try {
+...
+// 第二步：调用 Module.prototype.load
+        module.load(filename);
+        ...
+    } finally {
+        ...
+    }
+
+    return module.exports;
+}
+
+// Module.prototype.load: 根据文件名，调用合适的扩展处理器。
+Module.prototype.load = function (filename) {
+    ...
+
+// 第三步：调用对应的处理器，比如 Module._extensions[&#x27;.js&#x27;]
+    Module._extensions[extension](this, filename);
+    this.loaded = true;
+
+    ...
+};
+
+Module._extensions[&#x27;.js&#x27;] = function (module, filename) {
+    ...
+    content = fs.readFileSync(filename, &#x27;utf8&#x27;);
+// 第四步：调用 Module.prototype._compile
+    module._compile(content, filename);
+};&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;从上面代码，可以看出 node 的 &lt;code&gt;require&lt;/code&gt; 函数，执行过程是 &lt;code&gt;require&lt;/code&gt; -&amp;gt; &lt;code&gt;Module._load&lt;/code&gt; -&amp;gt; &lt;code&gt;Module.prototype.load&lt;/code&gt; -&amp;gt; &lt;code&gt;Module._extensions[&#x27;.js&#x27;]&lt;/code&gt; -&amp;gt; &lt;code&gt;Module.prototype._compile&lt;/code&gt;。&lt;/p&gt;
+
+&lt;p&gt;继续看 node 的 &lt;code&gt;Module.prototype._compile&lt;/code&gt;：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-js&quot;&gt;// node
+
+// Module.prototype._compile: 在指定的上下文中，编译、运行文件内容。
+Module.prototype._compile = function (content, filename) {
+    ...
+
+// node-compile-1：compiledWrapper: 将文件内容进行封装
+    const compiledWrapper = wrapSafe(filename, content, this);
+
+    ...
+// node-compile-2：生成 require, exports 等参数
+    const dirname = path.dirname(filename);
+    const require = makeRequireFunction(this, redirects);
+    let result;
+    const exports = this.exports;
+    const thisValue = exports;
+    const module = this;
+    ...
+    if (inspectorWrapper) {
+// 断点调试，一般不走这个逻辑
+        result = inspectorWrapper(compiledWrapper, thisValue, exports,
+            require, module, filename, dirname);
+    } else {
+// node-compile-3：调用 compiledWrapper
+        result = compiledWrapper.call(thisValue, exports, require, module,
+            filename, dirname);
+    }
+    ...
+    return result;
+};
+
+// 封装文件内容
+function wrapSafe(filename, content, cjsModuleInstance) {
+    if (patched) {
+// node-compile-1-1：Module.wrap，封装文件内容，返回 (function (exports, require, module, __filename, __dirname) { ${content} \n})
+        const wrapper = Module.wrap(content);
+// node-compile-1-2：vm.runInThisContext，调用虚拟机接口，编译代码，并在当前上下文执行代码
+        return vm.runInThisContext(wrapper, {
+            filename,
+            lineOffset: 0,
+            displayErrors: true,
+            importModuleDynamically: async (specifier) =&amp;gt; {
+                const loader = asyncESM.ESMLoader;
+                return loader.import(specifier, normalizeReferrerURL(filename));
+            },
+        });
+    }
+    ...
+}&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;node 的 &lt;code&gt;Module.prototype._compile&lt;/code&gt;，将文件内容进行封装（compiledWrapper），然后生成 require 等参数，再调用封装的函数（compiledWrapper）。&lt;/p&gt;
+
+&lt;p&gt;node-compile-1-2 使用了 node 的 &lt;a href=&quot;https://nodejs.org/api/vm.html&quot; rel=&quot; nofollow ugc&quot;&gt;vm&lt;/a&gt; 模块，该模块支持编译代码、运行代码等功能。&lt;/p&gt;
+
+&lt;h4&gt;vscode-loader 的 _compile&lt;/h4&gt;
+
+&lt;p&gt;vscode-loader 的 &lt;code&gt;Module.prototype._compile&lt;/code&gt;，逻辑如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-ts&quot;&gt;class NodeScriptLoader implements IScriptLoader {
+private _initNodeRequire(nodeRequire: (nodeModule: string) =&amp;gt; any, moduleManager: IModuleManager): void {
+
+...
+
+Module.prototype._compile = function (content: string, filename: string) {
+// compile-1: 替换 shebang，包装源码
+const scriptSource = Module.wrap(content.replace(/^#!.*/, &#x27;&#x27;));
+
+// compile-2: 获取缓存数据，并记录事件
+const recorder = moduleManager.getRecorder();
+// 对于示例而言，缓存路径为 cache-data/test-${hash}.code
+const cachedDataPath = that._getCachedDataPath(nodeCachedData, filename);
+const options: INodeVMScriptOptions = { filename };
+let hashData: Buffer | undefined;
+try {
+// 读取缓存数据
+const data = that._fs.readFileSync(cachedDataPath);
+hashData = data.slice(0, 16);
+// 设置到 options.cachedData
+options.cachedData = data.slice(16);
+recorder.record(LoaderEventType.CachedDataFound, cachedDataPath);
+} catch (_e) {
+recorder.record(LoaderEventType.CachedDataMissed, cachedDataPath);
+}
+// compile-3: 新建 vm.Script，编译代码
+const script = new that._vm.Script(scriptSource, options);
+// compile-4: 生成 compileWrapper，用于在当前上下文运行代码
+const compileWrapper = script.runInThisContext(options);
+
+// compile-5: 生成 require 等参数
+const dirname = that._path.dirname(filename);
+const require = makeRequireFunction(this);
+const args = [this.exports, require, this, filename, dirname, process, _commonjsGlobal, Buffer];
+// compile-6: 执行 compileWrapper，传入参数
+const result = compileWrapper.apply(this.exports, args);
+
+// compile-7: 缓存数据
+that._handleCachedData(script, scriptSource, cachedDataPath, !options.cachedData, moduleManager);
+that._verifyCachedData(script, scriptSource, cachedDataPath!, hashData, moduleManager);
+
+return result;
+}
+}
+}&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;和 node 的相似之处：&lt;/p&gt;
+
+&lt;ul&gt;&lt;li&gt;&lt;code&gt;compile-1&lt;/code&gt;，等同于 &lt;code&gt;node-compile-1-1&lt;/code&gt;，通过 &lt;code&gt;Module.wrap&lt;/code&gt; 封装文件内容。这样可以保证代码在独立上下文中运行。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;compile-3&lt;/code&gt;、&lt;code&gt;compile-4&lt;/code&gt;，等同于 &lt;code&gt;node-compile-1-2&lt;/code&gt;，调用虚拟机接口 &lt;code&gt;runInThisContext&lt;/code&gt;，用于在当前上下文执行代码。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;compile-5&lt;/code&gt;，等同于 &lt;code&gt;node-compile-2&lt;/code&gt;，生成 require 等参数。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;compile-6&lt;/code&gt;，等同于 &lt;code&gt;node-compile-3&lt;/code&gt;，执行封装后的代码。&lt;/li&gt;&lt;/ul&gt;
+
+&lt;p&gt;和 node 的不同之处：&lt;/p&gt;
+
+&lt;ul&gt;&lt;li&gt;&lt;code&gt;compile-2&lt;/code&gt;，增加了获取缓存，并记录缓存事件的逻辑。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;compile-3&lt;/code&gt;，编译代码时，options 中传入了缓存。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;compile-5&lt;/code&gt;，改写了 &lt;code&gt;makeRequireFunction&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;compile-7&lt;/code&gt;，执行代码后，缓存了数据。&lt;/li&gt;&lt;/ul&gt;
+
+&lt;p&gt;可以看出，vscode-loader 的 &lt;code&gt;Module.prototype._compile&lt;/code&gt;，主要是&lt;strong&gt;增加了缓存的逻辑&lt;/strong&gt;，改写了 &lt;code&gt;makeRequireFunction&lt;/code&gt;。&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;makeRequireFunction&lt;/code&gt; 的对比如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-ts&quot;&gt;// node
+function makeRequireFunction(mod, redirects) {
+    const Module = mod.constructor;
+
+    let require;
+    if (redirects) {
+// 处理重定向
+        const { resolve, reaction } = redirects;
+        const id = mod.filename || mod.id;
+        require = function require(path) {
+// node 协议，加载原生模块，返回 exports
+// 文件协议，调用 mode.require，加载文件
+...
+            return mod.require(path);
+        };
+    } else {
+// 非重定向，直接调用 mod.require
+        require = function require(path) {
+            return mod.require(path);
+        };
+    }
+
+    function resolve(request, options) {
+        validateString(request, &#x27;request&#x27;);
+        return Module._resolveFilename(request, mod, false, options);
+    }
+    require.resolve = resolve;
+    function paths(request) {
+        validateString(request, &#x27;request&#x27;);
+        return Module._resolveLookupPaths(request, mod);
+    }
+    resolve.paths = paths;
+    require.main = process.mainModule;
+    require.extensions = Module._extensions;
+    require.cache = Module._cache;
+    return require;
+}
+
+// vscode-loader
+function makeRequireFunction(mod: any) {
+const Module = mod.constructor;
+// 直接调用 mod.require
+let require = &amp;lt;any&amp;gt;function require(path) {
+try {
+return mod.require(path);
+} finally {
+// nothing
+}
+}
+require.resolve = function resolve(request, options) {
+return Module._resolveFilename(request, mod, false, options);
+};
+require.resolve.paths = function paths(request) {
+return Module._resolveLookupPaths(request, mod);
+};
+require.main = process.mainModule;
+require.extensions = Module._extensions;
+require.cache = Module._cache;
+return require;
+}&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;可以看到，由于 vscode-loader 的 &lt;code&gt;Module.prototype._compile&lt;/code&gt; 没有重定向的情况，所以 &lt;code&gt;makeRequireFunction&lt;/code&gt; 中的 require，删除了重定向处理。而 require 的其他属性，和 node 保持一致，没有修改。&lt;/p&gt;
+
+&lt;h4&gt;vscode-loader 的缓存处理&lt;/h4&gt;
+
+&lt;p&gt;vscode-loader 通过 config 来设置缓存目录：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-ts&quot;&gt;// 设置缓存
+loader.config({
+  nodeCachedData: {
+    path: &quot;./cache-data&quot;,
+  },
+});&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;code&gt;compile-2&lt;/code&gt; 通过 &lt;code&gt;_getCachedDataPath&lt;/code&gt; 获取缓存路径：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-ts&quot;&gt;// compile-2
+const cachedDataPath = that._getCachedDataPath(nodeCachedData, filename);
+
+// 对于示例而言，缓存路径为 cache-data/test-${hash}.code
+private _getCachedDataPath(config: INodeCachedDataConfiguration, filename: string): string {
+// 根据文件名、配置等生成 hash 值
+const hash = this._crypto.createHash(&#x27;md5&#x27;).update(filename, &#x27;utf8&#x27;).update(config.seed!, &#x27;utf8&#x27;).update(process.arch, &#x27;&#x27;).digest(&#x27;hex&#x27;);
+const basename = this._path.basename(filename).replace(/\.js$/, &#x27;&#x27;);
+return this._path.join(config.path, `${basename}-${hash}.code`);
+}&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;code&gt;compile-2&lt;/code&gt; 读取缓存后，并通过 options 传入 vm.script，以使用缓存数据：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-ts&quot;&gt;// compile-2
+try {
+const cachedDataPath = that._getCachedDataPath(nodeCachedData, filename);
+// 读取缓存数据
+const data = that._fs.readFileSync(cachedDataPath);
+hashData = data.slice(0, 16);
+// 设置到 options.cachedData
+options.cachedData = data.slice(16);
+...
+} catch (_e) {
+...
+}
+// options 中包含 cachedData
+const script = new that._vm.Script(scriptSource, options);&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;执行源文件的代码后，&lt;code&gt;compile-7&lt;/code&gt; 更新和校验缓存数据：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-ts&quot;&gt;// compile-7
+that._handleCachedData(script, scriptSource, cachedDataPath, !options.cachedData, moduleManager);
+that._verifyCachedData(script, scriptSource, cachedDataPath!, hashData, moduleManager);
+
+// 处理缓存数据：如果缓存失败，就删除原来的缓存，重新生成缓存；如果 options 没有缓存数据，就生成缓存数据
+private _handleCachedData(script: INodeVMScript, scriptSource: string, cachedDataPath: string, createCachedData: boolean, moduleManager: IModuleManager): void {
+if (script.cachedDataRejected) {
+// cached data got rejected -&amp;gt; delete and re-create
+this._fs.unlink(cachedDataPath, err =&amp;gt; {
+moduleManager.getRecorder().record(LoaderEventType.CachedDataRejected, cachedDataPath);
+this._createAndWriteCachedData(script, scriptSource, cachedDataPath, moduleManager);
+if (err) {
+moduleManager.getConfig().onError(err)
+}
+});
+} else if (createCachedData) {
+// no cached data, but wanted
+this._createAndWriteCachedData(script, scriptSource, cachedDataPath, moduleManager);
+}
+}
+
+// 校验缓存数据：如果 hash 值改变，就删除缓存文件
+private _verifyCachedData(script: INodeVMScript, scriptSource: string, cachedDataPath: string, hashData: Buffer | undefined, moduleManager: IModuleManager): void {
+if (!hashData) {
+// nothing to do
+return;
+}
+if (script.cachedDataRejected) {
+// invalid anyways
+return;
+}
+setTimeout(() =&amp;gt; {
+// check source hash - the contract is that file paths change when file content
+// change (e.g use the commit or version id as cache path). this check is
+// for violations of this contract.
+const hashDataNow = this._crypto.createHash(&#x27;md5&#x27;).update(scriptSource, &#x27;utf8&#x27;).digest();
+if (!hashData.equals(hashDataNow)) {
+moduleManager.getConfig().onError(&amp;lt;any&amp;gt;new Error(`FAILED TO VERIFY CACHED DATA, deleting stale &#x27;${cachedDataPath}&#x27; now, but a RESTART IS REQUIRED`));
+this._fs.unlink(cachedDataPath!, err =&amp;gt; {
+if (err) {
+moduleManager.getConfig().onError(err);
+}
+});
+}
+
+}, Math.ceil(5000 * (1 + Math.random())));
+}&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;加载模块&lt;/h3&gt;
+
+&lt;p&gt;初始化之后，load-3 进行模块加载，主要分为路径处理、获取模块代码并执行。&lt;/p&gt;
+
+&lt;h4&gt;路径处理&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-ts&quot;&gt;class NodeScriptLoader implements IScriptLoader {
+public load(moduleManager: IModuleManager, scriptSrc: string, callback: () =&amp;gt; void, errorback: (err: any) =&amp;gt; void): void {
+...
+// load-3-1: 路径处理
+// 对于示例而言，test.js -&amp;gt; test.js
+scriptSrc = Utilities.fileUriToFilePath(this._env.isWindows, scriptSrc);
+const normalizedScriptSrc = this._path.normalize(scriptSrc);
+const vmScriptPathOrUri = this._getElectronRendererScriptPathOrUri(normalizedScriptSrc);
+// 配置是否使用缓存，示例为 true
+const wantsCachedData = Boolean(opts.nodeCachedData);
+// 如果使用缓存，获取缓存路径，示例为 cache-data/test-${hash}.code
+const cachedDataPath = wantsCachedData ? this._getCachedDataPath(opts.nodeCachedData!, scriptSrc) : undefined;
+...
+}
+}&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4&gt;获取模块代码并执行&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-ts&quot;&gt;class NodeScriptLoader implements IScriptLoader {
+
+private static _BOM = 0xFEFF;
+private static _PREFIX = &#x27;(function (require, define, __filename, __dirname) { &#x27;;
+private static _SUFFIX = &#x27;\n});&#x27;;
+
+public load(moduleManager: IModuleManager, scriptSrc: string, callback: () =&amp;gt; void, errorback: (err: any) =&amp;gt; void): void {
+...
+// load-3-2: 获取模块代码和缓存，执行代码
+// 第一步: 获取模块代码和缓存，其中获取缓存同 compile-2
+this._readSourceAndCachedData(normalizedScriptSrc, cachedDataPath, recorder, (err: any, data: string, cachedData: Buffer, hashData: Buffer) =&amp;gt; {
+if (err) {
+errorback(err);
+return;
+}
+
+// 第二步: 处理模块代码，同 compile-1
+// 如果有 bom 则去除，再封装文件内容，即 &#x27;(function (require, define, __filename, __dirname)&#x27; + data + &#x27;{ \n});&#x27;;
+let scriptSource: string;
+if (data.charCodeAt(0) === NodeScriptLoader._BOM) {
+scriptSource = NodeScriptLoader._PREFIX + data.substring(1) + NodeScriptLoader._SUFFIX;
+} else {
+scriptSource = NodeScriptLoader._PREFIX + data + NodeScriptLoader._SUFFIX;
+}
+// 如果配置了转换函数，则执行转换函数：const nodeInstrumenter = (opts.nodeInstrumenter || function (c) { return c; });
+scriptSource = nodeInstrumenter(scriptSource, normalizedScriptSrc);
+
+// 第三步: 生成并执行脚本，cacheData 对应从缓存路径读取的缓存数据，同 compile-3 ~ compile-6
+const scriptOpts: INodeVMScriptOptions = { filename: vmScriptPathOrUri, cachedData };
+const script = this._createAndEvalScript(moduleManager, scriptSource, scriptOpts, callback, errorback);
+
+// step-4: 更新、验证缓存，同 compile-7
+this._handleCachedData(script, scriptSource, cachedDataPath!, wantsCachedData &amp;amp;&amp;amp; !cachedData, moduleManager);
+this._verifyCachedData(script, scriptSource, cachedDataPath!, hashData, moduleManager);
+});
+
+// 第一步. 读取模块和缓存文件
+private _readSourceAndCachedData(sourcePath: string, cachedDataPath: string | undefined, recorder: ILoaderEventRecorder, callback: (err?: any, source?: string, cachedData?: Buffer, hashData?: Buffer) =&amp;gt; any): void {
+
+if (!cachedDataPath) {
+// 不使用缓存时，直接读取模块文件
+this._fs.readFile(sourcePath, { encoding: &#x27;utf8&#x27; }, callback);
+
+} else {
+// 使用缓存时，同时读取模块文件和缓存文件
+let source: string | undefined = undefined;
+let cachedData: Buffer | undefined = undefined;
+let hashData: Buffer | undefined = undefined;
+let steps = 2;
+
+const step = (err?: any) =&amp;gt; {
+if (err) {
+callback(err);
+
+} else if (--steps === 0) {
+// 两个文件都读取后，steps 变为 0，再执行 callback
+callback(undefined, source, cachedData, hashData);
+}
+}
+
+this._fs.readFile(sourcePath, { encoding: &#x27;utf8&#x27; }, (err: any, data: string) =&amp;gt; {
+source = data;
+step(err);
+});
+
+this._fs.readFile(cachedDataPath, (err: any, data: Buffer) =&amp;gt; {
+if (!err &amp;amp;&amp;amp; data &amp;amp;&amp;amp; data.length &amp;gt; 0) {
+hashData = data.slice(0, 16);
+cachedData = data.slice(16);
+recorder.record(LoaderEventType.CachedDataFound, cachedDataPath);
+
+} else {
+recorder.record(LoaderEventType.CachedDataMissed, cachedDataPath);
+}
+step(); // ignored: cached data is optional
+});
+}
+}
+
+// 第三步. 生成并执行脚本
+private _createAndEvalScript(moduleManager: IModuleManager, contents: string, options: INodeVMScriptOptions, callback: () =&amp;gt; void, errorback: (err: any) =&amp;gt; void): INodeVMScript {
+const recorder = moduleManager.getRecorder();
+recorder.record(LoaderEventType.NodeBeginEvaluatingScript, options.filename);
+
+// 同 compile-3: 新建 vm.Script，编译代码
+const script = new this._vm.Script(contents, options);
+// 同 compile-4: 生成 ret，用于在当前上下文运行代码
+const ret = script.runInThisContext(options);
+
+// 获取 define 函数，对应 main.ts 中的 DefineFunc
+const globalDefineFunc = moduleManager.getGlobalAMDDefineFunc();
+let receivedDefineCall = false;
+const localDefineFunc: IDefineFunc = &amp;lt;any&amp;gt;function () {
+receivedDefineCall = true;
+return globalDefineFunc.apply(null, arguments);
+};
+localDefineFunc.amd = globalDefineFunc.amd;
+
+// 同 compile-6: 执行 ret
+ret.call(global, moduleManager.getGlobalAMDRequireFunc(), localDefineFunc, options.filename, this._path.dirname(options.filename));
+
+recorder.record(LoaderEventType.NodeEndEvaluatingScript, options.filename);
+
+if (receivedDefineCall) {
+callback();
+} else {
+errorback(new Error(`Didn&#x27;t receive define call in ${options.filename}!`));
+}
+
+return script;
+}
+}
+}&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;可以看到，load-3 加载模块，和 &lt;code&gt;Module.prototype._compile&lt;/code&gt; 的处理逻辑基本一致，都是调用 &lt;code&gt;vm.script&lt;/code&gt;，&lt;code&gt;runInThisContext&lt;/code&gt; 编译代码、执行代码。对缓存的处理也基本一致，都是读取缓存文件内容 &lt;code&gt;cachedData&lt;/code&gt;，在 &lt;code&gt;new vm.script&lt;/code&gt; 时传入缓存；执行代码后，通过 &lt;code&gt;_handleCachedData&lt;/code&gt;、&lt;code&gt;_verifyCachedData&lt;/code&gt; 更新、验证缓存。&lt;/p&gt;
+
+&lt;h2&gt;define 定义模块&lt;/h2&gt;
+
+&lt;p&gt;node 环境和浏览器环境，define 定义模块的逻辑是一致的，本文不再赘述。&lt;/p&gt;
+
+&lt;h2&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;本文主要介绍了 vscode-loader 在 node 环境和浏览器环境的区别，即 &lt;code&gt;scriptLoader&lt;/code&gt; 加载模块的方式不同：&lt;/p&gt;
+
+&lt;ul&gt;&lt;li&gt;浏览器环境，生成 &lt;code&gt;&amp;lt;script&amp;gt;&lt;/code&gt; 标签，并设置 async，异步加载模块。&lt;/li&gt;
+&lt;li&gt;node 环境，读取文件内容，再调用 &lt;code&gt;vm&lt;/code&gt; 接口（&lt;code&gt;vm.script&lt;/code&gt;，&lt;code&gt;runInThisContext&lt;/code&gt;）编译代码、执行代码，且支持缓存数据。&lt;/li&gt;&lt;/ul&gt;
+
+
+&lt;h2&gt;猜您可能感兴趣的文章&lt;/h2&gt;
+
+
+
+                &lt;/div&gt;
+            &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
