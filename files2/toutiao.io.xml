@@ -5,9 +5,9 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>fae532b3c3603114df73d958063ce428</guid>
-<title>2021 年马上就要结束了！抓紧啦！</title>
-<link>https://toutiao.io/k/rf8ezjy</link>
+<guid>b58684f6c46a304fd9d9d04dd9c53294</guid>
+<title>我去，还有这种网站！！</title>
+<link>https://toutiao.io/k/3cdqz3w</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;weui-dialog&quot;&gt;
       &lt;p class=&quot;weui-dialog__hd&quot;&gt;&lt;strong class=&quot;weui-dialog__title&quot;&gt;&quot;Top Stories&quot; is disabled&lt;/strong&gt;&lt;/p&gt;
       &lt;p class=&quot;weui-dialog__bd&quot;&gt;
@@ -17,676 +17,362 @@
   &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>93887cb775cc51ff106ab47da79786f9</guid>
-<title>Python调用Prometheus监控数据并计算</title>
-<link>https://toutiao.io/k/x6qjuel</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;h2&gt;Prometheus是什么&lt;/h2&gt;
-
-&lt;p&gt;Prometheus是一套开源监控系统和告警为一体，由go语言(golang)开发，是监控+报警+时间序列数
-据库的组合。适合监控docker容器。因为kubernetes(k8s)的流行带动其发展。&lt;/p&gt;
-
-&lt;h3&gt;Prometheus的主要特点&lt;/h3&gt;
-
-&lt;ul&gt;
-&lt;li&gt;多维度&lt;a href=&quot;https://prometheus.io/docs/concepts/data_model/&quot;&gt;数据模型&lt;/a&gt;，由指标名称和键/值对标识的时间序列数据。&lt;/li&gt;
-&lt;li&gt;作为一个时间序列数据库，其采集的数据会以文件的形式存储在本地中。&lt;/li&gt;
-&lt;li&gt;灵活的查询语言，&lt;a href=&quot;https://prometheus.io/docs/prometheus/latest/querying/basics/&quot;&gt;PromQL&lt;/a&gt;(Prometheus Query Language)函数式查询语言。&lt;/li&gt;
-&lt;li&gt;不依赖分布式存储，单个服务器节点是自治的。&lt;/li&gt;
-&lt;li&gt;以HTTP方式，通过pull模型拉取时间序列数据。&lt;/li&gt;
-&lt;li&gt;也可以通过&lt;a href=&quot;https://prometheus.io/docs/instrumenting/pushing/&quot;&gt;中间网关&lt;/a&gt;支持push模型。&lt;/li&gt;
-&lt;li&gt;通过服务发现或者静态配置，来发现目标服务对象。&lt;/li&gt;
-&lt;li&gt;支持多种多样的图表和界面展示。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3&gt;Prometheus原理架构图&lt;/h3&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://gitee.com/canhui/picture/raw/master/2021/images/image-20211202173238726.png&quot; alt=&quot;image-20211202173238726&quot;/&gt;&lt;/p&gt;
-
-&lt;h2&gt;Prometheus基础概念&lt;/h2&gt;
-
-&lt;h3&gt;什么是时间序列数据&lt;/h3&gt;
-
-&lt;p&gt;时间序列数据(TimeSeries Data) : 按照时间顺序记录系统、设备状态变化的数据被称为时序数据。&lt;/p&gt;
-
-&lt;p&gt;应用的场景很多，如：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;无人驾驶运行中记录的经度，纬度，速度，方向，旁边物体距离等。&lt;/li&gt;
-&lt;li&gt;某一个地区的各车辆的行驶轨迹数据。&lt;/li&gt;
-&lt;li&gt;传统证券行业实时交易数据。&lt;/li&gt;
-&lt;li&gt;实时运维监控数据等。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;时间序列数据特点：&lt;/p&gt;
-
-
-
-&lt;h3&gt;什么是targets(目标)&lt;/h3&gt;
-
-&lt;p&gt;Prometheus 是一个监控平台，它通过抓取监控目标(targets)上的指标 HTTP 端点来从这些目标收集指标。&lt;/p&gt;
-
-&lt;p&gt;安装完Prometheus Server端之后，第一个targets就是它本身。&lt;/p&gt;
-
-&lt;p&gt;具体可以参考&lt;a href=&quot;https://prometheus.io/docs/introduction/first_steps/&quot;&gt;官方文档&lt;/a&gt;&lt;/p&gt;
-
-&lt;h3&gt;什么是metrics(指标)&lt;/h3&gt;
-
-&lt;p&gt;Prometheus存在多种不同的监控指标(Metrics)，在不同的场景下应该要选择不同的Metrics。&lt;/p&gt;
-
-&lt;p&gt;Prometheus的merics类型有四种，分别为Counter、Gauge、Summary、Histogram。&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;Counter：只增不减的计数器&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Gauge：可增可减的仪表盘&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Histogram：分析数据分布情况&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;Summary：使用较少&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;简单了解即可，暂不需要深入理解。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;通过浏览器访问&lt;code&gt;http://被监控端IP:9100(被监控端口)/metrics&lt;/code&gt;&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;就可以查到node_exporter在被监控端收集的监控信息&lt;/strong&gt;&lt;/p&gt;
-
-&lt;h3&gt;什么是PromQL(函数式查询语言)&lt;/h3&gt;
-
-&lt;p&gt;Prometheus内置了一个强大的数据查询语言PromQL。 通过PromQL可以实现对监控数据的查询、聚合。&lt;/p&gt;
-
-&lt;p&gt;同时PromQL也被应用于数据可视化(如Grafana)以及告警当中。&lt;/p&gt;
-
-&lt;p&gt;通过PromQL可以轻松回答以下问题：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;在过去一段时间中95%应用延迟时间的分布范围？&lt;/li&gt;
-&lt;li&gt;预测在4小时后，磁盘空间占用大致会是什么情况？&lt;/li&gt;
-&lt;li&gt;CPU占用率前5位的服务有哪些？(过滤)&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;具体查询细节可以参考官方。&lt;/p&gt;
-
-&lt;h3&gt;如何监控远程Linux主机&lt;/h3&gt;
-
-&lt;p&gt;安装Prometheus组件其实很简单，下载包--解压--后台启动运行即可，不做具体演示。&lt;/p&gt;
-
-&lt;p&gt;在远程linux主机(被监控端)上安装node_exporter组件，可看&lt;a href=&quot;https://prometheus.io/download/&quot;&gt;下载地址&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://gitee.com/canhui/picture/raw/master/2021/images/image-20211203114053559.png&quot; alt=&quot;image-20211203114053559&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;下载解压后，里面就一个启动命令&lt;code&gt;node_exporter&lt;/code&gt;，直接启动即可。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;nohup /usr/local/node_exporter/node_exporter &amp;gt;/dev/null 2&amp;gt;&amp;amp;1 &amp;amp;
-lsof -i:9100
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;nohup：如果直接启动node_exporter的话，终端关闭进程也会随之关闭，这个命令帮你解决问题。&lt;/p&gt;
-
-&lt;h2&gt;Prometheus HTTP API&lt;/h2&gt;
-
-&lt;p&gt;Prometheus 所有稳定的 HTTP API 都在 &lt;code&gt;/api/v1&lt;/code&gt; 路径下。当我们有数据查询需求时，可以通过查询 API 请求监控数据，提交数据可以使用 &lt;a href=&quot;https://prometheus.io/docs/practices/remote_write/&quot;&gt;remote write&lt;/a&gt; 协议或者 &lt;a href=&quot;https://prometheus.io/docs/practices/pushing/&quot;&gt;Pushgateway&lt;/a&gt; 的方式。&lt;/p&gt;
-
-&lt;h3&gt;支持的 API&lt;/h3&gt;
-
-&lt;table&gt;&lt;thead&gt;
-&lt;tr&gt;
-&lt;th align=&quot;left&quot;&gt;API&lt;/th&gt;
-&lt;th align=&quot;left&quot;&gt;说明&lt;/th&gt;
-&lt;th align=&quot;left&quot;&gt;需要认证&lt;/th&gt;
-&lt;th align=&quot;left&quot;&gt;方法&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td align=&quot;left&quot;&gt;/api/v1/query&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;查询接口&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;是&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;GET/POST&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td align=&quot;left&quot;&gt;/api/v1/query_range&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;范围查询&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;是&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;GET/POST&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td align=&quot;left&quot;&gt;/api/v1/series&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;series 查询&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;是&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;GET/POST&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td align=&quot;left&quot;&gt;/api/v1/labels&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;labels 查询&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;是&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;GET/POST&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td align=&quot;left&quot;&gt;/api/v1/label/&lt;label_name&gt;/values&lt;/label_name&gt;&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;label value 查询&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;是&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;GET&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td align=&quot;left&quot;&gt;/api/v1/prom/write&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;remote write 数据提交&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;是&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;remote write&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td align=&quot;left&quot;&gt;Pushgateway&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;pushgateway 数据提交&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;是&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;SDK&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;&lt;/table&gt;
-
-&lt;h3&gt;认证方法&lt;/h3&gt;
-
-&lt;p&gt;默认开启认证，因此所有的接口都需要认证，且所有的认证方式都支持 Bearer Token和 Basic Auth。&lt;/p&gt;
-
-&lt;p&gt;调用接口的时候，我们需要携带Basic Auth请求头的认证，否则会出现401。&lt;/p&gt;
-
-&lt;h4&gt;Bearer Token&lt;/h4&gt;
-
-&lt;p&gt;Bearer Token 随着实例产生而生成，可以通过控制台进行查询。了解 Bearer Token 更多信息，请参见 &lt;a href=&quot;https://swagger.io/docs/specification/authentication/bearer-authentication/&quot;&gt;Bearer Authentication&lt;/a&gt;。&lt;/p&gt;
-
-&lt;h4&gt;Basic Auth&lt;/h4&gt;
-
-&lt;p&gt;Basic Auth 兼容原生 Prometheus Query 的认证方式，用户名为用户的 APPID，密码为 bearer token（实例产生时生成），可以通过控制台进行查询。了解 Basic Auth 更多信息，请参见 &lt;a href=&quot;https://swagger.io/docs/specification/authentication/basic-authentication/&quot;&gt;Basic Authentication&lt;/a&gt;。&lt;/p&gt;
-
-&lt;h3&gt;数据返回格式&lt;/h3&gt;
-
-&lt;p&gt;所有 API 的响应数据格式都为 JSON。每一次成功的请求会返回 &lt;code&gt;2xx&lt;/code&gt; 状态码。&lt;/p&gt;
-
-&lt;p&gt;无效的请求会返回一个包含错误对象的 JSON 格式数据，同时也将包含一个如下表格的状态码：&lt;/p&gt;
-
-&lt;table&gt;&lt;thead&gt;
-&lt;tr&gt;
-&lt;th align=&quot;left&quot;&gt;状态码&lt;/th&gt;
-&lt;th align=&quot;left&quot;&gt;含义&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td align=&quot;left&quot;&gt;401&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;认证失败&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td align=&quot;left&quot;&gt;400&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;当参数缺失或错误时返回无效的请求状态码&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td align=&quot;left&quot;&gt;422&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;当一个无效的表达式无法被指定时 (RFC4918)&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td align=&quot;left&quot;&gt;503&lt;/td&gt;
-&lt;td align=&quot;left&quot;&gt;当查询不可用或者被取消时返回服务不可用状态码&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;&lt;/table&gt;
-
-&lt;p&gt;无效请求响应返回模板如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;{
-&quot;status&quot;: &quot;success&quot; | &quot;error&quot;,
-&quot;data&quot;: &amp;lt;data&amp;gt;,
- // 当 status 状态为 error 时，下面的数据将被返回
-&quot;errorType&quot;: &quot;&amp;lt;string&amp;gt;&quot;,
-&quot;error&quot;: &quot;&amp;lt;string&amp;gt;&quot;,
- // 当执行请求时有警告信息时，该字段将被填充返回
-&quot;warnings&quot;: [&quot;&amp;lt;string&amp;gt;&quot;]
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;数据写入&lt;/h3&gt;
-
-&lt;p&gt;运维过程不需要对数据进行写入，所以暂时不深入理解。&lt;/p&gt;
-
-&lt;p&gt;有兴趣的同学可以看看&lt;a href=&quot;https://prometheus.io/docs/instrumenting/pushing/#pushing-metrics&quot;&gt;官方文档&lt;/a&gt;&lt;/p&gt;
-
-&lt;h3&gt;监控数据查询&lt;/h3&gt;
-
-&lt;p&gt;当我们有数据查询需求时，可以通过查询 API 请求监控数据。&lt;/p&gt;
-
-
-
-&lt;pre&gt;&lt;code&gt;GET /api/v1/query
-POST /api/v1/query
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;查询参数：&lt;/p&gt;
-
-&lt;p&gt;​ query= &lt;string&gt;: Prometheus：查询表达式。&lt;/string&gt;&lt;/p&gt;
-
-&lt;p&gt;​ time= &lt;rfc3339 unix_timestamp=&quot;&quot;&gt;： 时间戳， 可选。&lt;/rfc3339&gt;&lt;/p&gt;
-
-&lt;p&gt;​ timeout= &lt;duration&gt;：检测超时时间， 可选。 默认由 &lt;code&gt;-query.timeout&lt;/code&gt; 参数指定。&lt;/duration&gt;&lt;/p&gt;
-
-
-
-&lt;p&gt;查询当前状态为up的监控主机：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;curl -u &quot;appid:token&quot; &#x27;http://IP:PORT/api/v1/query?query=up&#x27;
-&lt;/code&gt;&lt;/pre&gt;
-
-
-
-&lt;pre&gt;&lt;code&gt;GET /api/v1/query_range
-POST /api/v1/query_range
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;根据时间范围查询需要的数据，这也是我们用得最多的场景，&lt;/p&gt;
-
-&lt;p&gt;这时我们需要用到 &lt;code&gt;/api/v1/query_range&lt;/code&gt; 接口，示例如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ curl &#x27;http://localhost:9090/api/v1/query_range?query=up&amp;amp;start=2015-07-01T20:10:30.781Z&amp;amp;end=2015-07-01T20:11:00.781Z&amp;amp;step=15s&#x27;
-{
-   &quot;status&quot; : &quot;success&quot;,
-   &quot;data&quot; : {
-      &quot;resultType&quot; : &quot;matrix&quot;,
-      &quot;result&quot; : [
-         {
-            &quot;metric&quot; : {
-               &quot;__name__&quot; : &quot;up&quot;,
-               &quot;job&quot; : &quot;prometheus&quot;,
-               &quot;instance&quot; : &quot;localhost:9090&quot;
-            },
-            &quot;values&quot; : [
-               [ 1435781430.781, &quot;1&quot; ],
-               [ 1435781445.781, &quot;1&quot; ],
-               [ 1435781460.781, &quot;1&quot; ]
-            ]
-         },
-         {
-            &quot;metric&quot; : {
-               &quot;__name__&quot; : &quot;up&quot;,
-               &quot;job&quot; : &quot;node&quot;,
-               &quot;instance&quot; : &quot;localhost:9091&quot;
-            },
-            &quot;values&quot; : [
-               [ 1435781430.781, &quot;0&quot; ],
-               [ 1435781445.781, &quot;0&quot; ],
-               [ 1435781460.781, &quot;1&quot; ]
-            ]
-         }
-      ]
-   }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2&gt;什么是Grafana&lt;/h2&gt;
-
-&lt;p&gt;Grafana是一个开源的度量分析和可视化工具，可以通过将采集的数据分析、查询，&lt;/p&gt;
-
-&lt;p&gt;然后进行可视化的展示，并能实现报警。&lt;/p&gt;
-
-&lt;p&gt;网址: &lt;a href=&quot;https://grafana.com/&quot;&gt;https://grafana.com/&lt;/a&gt;&lt;/p&gt;
-
-&lt;h3&gt;使用Grafana连接Prometheus&lt;/h3&gt;
-
-&lt;p&gt;连接不再做具体演示，操作思路如下：&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;在Grafana服务器上安装，下载地址：&lt;a href=&quot;https://grafana.com/grafana/download&quot;&gt;https://grafana.com/grafana/download&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;浏览器&lt;code&gt;http://grafana服务器IP:3000&lt;/code&gt;登录，默认账号密码都是admin，就可以登陆了。&lt;/li&gt;
-&lt;li&gt;把Prometheus服务器收集的数据做为一个数据源添加到Grafana，得到Prometheus数据。&lt;/li&gt;
-&lt;li&gt;然后为添加好的数据源做图形显示，最后在dashboard就可以查看到。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;操作流程不难，就不讲解重点，后面正式开始上查询脚本。&lt;/p&gt;
-
-&lt;h2&gt;工作使用场景&lt;/h2&gt;
-
-&lt;p&gt;工作中需要通过CPU、内存生成资源利用率报表，可以通过Prometheus的API写一个Python脚本。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://gitee.com/canhui/picture/raw/master/2021/images/image-20211229154759297.png&quot; alt=&quot;image-20211229154759297&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;可通过API获取数据，然后再进行数据排序、过滤、运算、聚合，最后写入Mysql数据库。&lt;/p&gt;
-
-&lt;h3&gt;CPU峰值计算&lt;/h3&gt;
-
-
-
-&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;def get_cpu_peak(self):
-    &quot;&quot;&quot;
-        CPU取最近一周所有数值，再排序取最高的值,TOP1
-        :return: {&#x27;IP&#x27; : value}
-        &quot;&quot;&quot;
-    # 拼接URL
-    pre_url = self.server_ip + &#x27;/api/v1/query_range?query=&#x27;
-    expr = &#x27;100 - (avg by(instance) (irate(node_cpu_seconds_total{mode=&quot;idle&quot;}[5m])) * 100) &#x27; \
-    &#x27;&amp;amp;start=%s&amp;amp;end=%s&amp;amp;step=300&#x27; % (self.time_list[0], self.time_list[-1] - 1)
-    url = pre_url + expr
-    # print(url)
-
-    result = {}
-    # 请求URL后将Json数据转为字典对象
-    res = json.loads(requests.post(url=url, headers=self.headers).content.decode(&#x27;utf8&#x27;, &#x27;ignore&#x27;))
-    # print(data)
-
-    # 循环取出字典里每个IP的values，排序取最高值，最后存入result字典
-    for da in res.get(&#x27;data&#x27;).get(&#x27;result&#x27;):
-        values = da.get(&#x27;values&#x27;)
-        cpu_values = [float(v[1]) for v in values]  # 取出数值并存入列表
-        # 取出IP并消除端口号
-        ip = da.get(&#x27;metric&#x27;).get(&#x27;instance&#x27;)
-        ip = ip[:ip.index(&#x27;:&#x27;)] if &#x27;:&#x27; in ip else ip
-        # if ip == &#x27;10.124.58.181&#x27;:
-        #     print (ip)
-        # cpu_peak = round(sorted(cpu_values, reverse=True)[0], 2)
-        cpu_peak = sorted(cpu_values, reverse=True)[0]
-        # 取出IP和最高值之后，写入字典
-        result[ip] = cpu_peak
-
-        # print(result)
-        return result
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;CPU均值计算&lt;/h3&gt;
-
-&lt;ul&gt;
-&lt;li&gt;取最近一周CPU每一天的TOP20除以20得到当时忙时平均值，
-再将7天平均值的和除以n，得到时间范围内忙时平均值。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;def get_cpu_average(self):
-    &quot;&quot;&quot;
-        CPU忙时平均值：取最近一周CPU数据，每一天的TOP20除以20得到忙时平均值；
-        再将一周得到的忙时平均值相加，再除以7，得到时间范围内一周的忙时平均值。
-        :return:
-        &quot;&quot;&quot;
-    cpu_average = {}
-    for t in range(len(self.time_list)):
-        if t + 1 &amp;lt; len(self.time_list):
-            start_time = self.time_list[t]
-            end_time = self.time_list[t + 1]
-            # print(start_time, end_time)
-            # 拼接URL
-            pre_url = server_ip + &#x27;/api/v1/query_range?query=&#x27;
-            expr = &#x27;100 - (avg by(instance) (irate(node_cpu_seconds_total{mode=&quot;idle&quot;}[5m])) * 100) &#x27; \
-            &#x27;&amp;amp;start=%s&amp;amp;end=%s&amp;amp;step=300&#x27; % (start_time, end_time - 1)
-            url = pre_url + expr
-            # print(url)
-            # 请求接口数据
-            data = json.loads(requests.post(url=url, headers=self.headers).content.decode(&#x27;utf8&#x27;, &#x27;ignore&#x27;))
-
-            for da in data.get(&#x27;data&#x27;).get(&#x27;result&#x27;):   # 循环拿到result数据
-                values = da.get(&#x27;values&#x27;)
-                cpu_load = [float(v[1]) for v in values]    # 循环拿到values里面的所有值
-                ip = da.get(&#x27;metric&#x27;).get(&#x27;instance&#x27;)       # 拿到instance里面的ip
-                ip = ip[:ip.index(&#x27;:&#x27;)] if &#x27;:&#x27; in ip else ip    # 去除个别后面带的端口号
-                # avg_cup_load = sum(sorted(cpu_load, reverse=True)[:20]) / 20
-                # 取top20% 再除以20%，得出top20%的平均值
-                # avg_cup_load = round(sum(sorted(cpu_load, reverse=True)[:round(len(cpu_load) * 0.2)]) / round(len(cpu_load) * 0.2), 2)
-                # 倒序后取前面20%除以个数，得到前20%的平均值
-                avg_cup_load = sum(sorted(cpu_load, reverse=True)[:round(len(cpu_load) * 0.2)]) / round(len(cpu_load) * 0.2)
-                # print(avg_cup_load)
-                # 将计算后的数据以ip为key写入字典
-                if cpu_average.get(ip):
-                    cpu_average[ip].append(avg_cup_load)
-                    else:
-                        cpu_average[ip] = [avg_cup_load]
-
-                        # 每日top20的平均值累加，共7天的再除以7
-                        for k, v in cpu_average.items():
-                            # cpu_average[k] = round(sum(v) / 7, 2)
-                            cpu_average[k] = sum(v)
-
-                            # print(cpu_average)
-                            return cpu_average
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;内存峰值计算&lt;/h3&gt;
-
-
-
-&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;def get_mem_peak(self):
-    &quot;&quot;&quot;
-        内存单台峰值：取7天内存最高峰值TOP1
-        :return: 7天内存使用率最高峰值
-        &quot;&quot;&quot;
-    pre_url = self.server_ip + &#x27;/api/v1/query_range?query=&#x27;
-    # expr = &#x27;(node_memory_MemTotal_bytes - (node_memory_MemFree_bytes+node_memory_Buffers_bytes+node_memory_Cached_bytes )) / node_memory_MemTotal_bytes * 100&amp;amp;start=%s&amp;amp;end=%s&amp;amp;step=300&#x27; % (start_time, end_time)
-    # 字符太长会导致报错，所以这里进行拆分字段计算
-    expr_MenTotal = &#x27;node_memory_MemTotal_bytes&amp;amp;start=%s&amp;amp;end=%s&amp;amp;step=300&#x27; % (self.time_list[0], self.time_list[-1] - 1)
-    expr_MemFree = &#x27;node_memory_MemFree_bytes&amp;amp;start=%s&amp;amp;end=%s&amp;amp;step=300&#x27; % (self.time_list[0], self.time_list[-1] - 1)
-    expr_Buffers = &#x27;node_memory_Buffers_bytes&amp;amp;start=%s&amp;amp;end=%s&amp;amp;step=300&#x27; % (self.time_list[0], self.time_list[-1] - 1)
-    expr_Cached = &#x27;node_memory_Cached_bytes&amp;amp;start=%s&amp;amp;end=%s&amp;amp;step=300&#x27; % (self.time_list[0], self.time_list[-1] - 1)
-
-    result = {}
-    # 循环分别取出总内存、可用内存、Buffer块、缓存块四个字段
-    for ur in expr_MenTotal, expr_MemFree, expr_Buffers, expr_Cached:
-        url = pre_url + ur
-        data = json.loads(requests.post(url=url, headers=self.headers).content.decode(&#x27;utf8&#x27;, &#x27;ignore&#x27;))
-        ip_dict = {}
-        # 循环单个字段所有值
-        for da in data.get(&#x27;data&#x27;).get(&#x27;result&#x27;):
-            ip = da.get(&#x27;metric&#x27;).get(&#x27;instance&#x27;)
-            ip = ip[:ip.index(&#x27;:&#x27;)] if &#x27;:&#x27; in ip else ip
-            # if ip != &#x27;10.124.53.12&#x27;:
-            #     continue
-            if ip_dict.get(ip):     # 过滤重复的ip，重复ip会导致计算多次
-                # print(&quot;重复ip：%s&quot; % (ip))
-                continue
-                values = da.get(&#x27;values&#x27;)
-                # 将列表里的值转为字典方便计算
-                values_dict = {}
-                for v in values:
-                    values_dict[str(v[0])] = v[1]
-                    # 标记ip存在
-                    ip_dict[ip] = True
-                    # 建立列表追加字典
-                    if result.get(ip):
-                        result[ip].append(values_dict)
-                        else:
-                            result[ip] = [values_dict]
-
-                            # print(result)
-                            # 对取出的四个值进行计算，得出峰值
-                            for ip, values in result.items():
-                                values_list = []
-                                for k, v in values[0].items():
-                                    try:
-                                        values_MenTotal = float(v)
-                                        values_MemFree = float(values[1].get(k, 0))
-                                        values_Buffers = float(values[2].get(k, 0)) if values[2] else 0
-                                        values_Cached = float(values[3].get(k, 0)) if values[3] else 0
-                                        # 如果是0，不参与计算
-                                        if values_MemFree==0.0 or values_Buffers==0.0 or values_Cached==0.0:
-                                            continue
-                                            # values_list.append(round((values_MenTotal - (values_MemFree + values_Buffers + values_Cached)) / values_MenTotal * 100, 2))
-                                            # 合并后计算，得出列表
-                                            values_list.append((values_MenTotal - (values_MemFree + values_Buffers + values_Cached)) / values_MenTotal * 100)
-                                            # 对得出结果进行排序
-                                            result[ip] = sorted(values_list, reverse=True)[0]
-                                            except Exception as e:
-                                                # print(values[0])
-                                                logging.exception(e)
-
-                                                # print(result)
-                                                return result
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;内存均值计算&lt;/h3&gt;
-
-&lt;ul&gt;
-&lt;li&gt;先取出7天的日期，根据多条链接循环取出每天数据，排序value取top20除以20，最终7天数据再除以7&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;def get_mem_average(self):
-    &quot;&quot;&quot;
-        内存忙时平均值：先取出7天的日期，根据多条链接循环取出每天数据，排序value取top20除以20，最终7天数据再除以7
-        :return:
-        &quot;&quot;&quot;
-    avg_mem_util = {}
-    for t in range(len(self.time_list)):
-        if t + 1 &amp;lt; len(self.time_list):
-            start_time = self.time_list[t]
-            end_time = self.time_list[t + 1]
-            # 根据多条链接循环取出每天数据
-            pre_url = self.server_ip + &#x27;/api/v1/query_range?query=&#x27;
-            # expr = &#x27;(node_memory_MemTotal_bytes - (node_memory_MemFree_bytes+node_memory_Buffers_bytes+node_memory_Cached_bytes )) / node_memory_MemTotal_bytes * 100&amp;amp;start=%s&amp;amp;end=%s&amp;amp;step=300&#x27; % (start_time, end_time)
-            expr_MenTotal = &#x27;node_memory_MemTotal_bytes&amp;amp;start=%s&amp;amp;end=%s&amp;amp;step=600&#x27; % (start_time, end_time - 1)
-            expr_MemFree = &#x27;node_memory_MemFree_bytes&amp;amp;start=%s&amp;amp;end=%s&amp;amp;step=600&#x27; % (start_time, end_time - 1)
-            expr_Buffers = &#x27;node_memory_Buffers_bytes&amp;amp;start=%s&amp;amp;end=%s&amp;amp;step=600&#x27; % (start_time, end_time - 1)
-            expr_Cached = &#x27;node_memory_Cached_bytes&amp;amp;start=%s&amp;amp;end=%s&amp;amp;step=600&#x27; % (start_time, end_time - 1)
-
-            result = {}
-            # 循环取出四个字段
-            for ur in expr_MenTotal, expr_MemFree, expr_Buffers, expr_Cached:
-                url = pre_url + ur
-                data = json.loads(requests.post(url=url, headers=self.headers).content.decode(&#x27;utf8&#x27;, &#x27;ignore&#x27;))
-                ip_dict = {}
-                # 循环单个字段所有值
-                for da in data.get(&#x27;data&#x27;).get(&#x27;result&#x27;):
-                    ip = da.get(&#x27;metric&#x27;).get(&#x27;instance&#x27;)
-                    ip = ip[:ip.index(&#x27;:&#x27;)] if &#x27;:&#x27; in ip else ip
-                    if ip_dict.get(ip):
-                        # print(&quot;重复ip：%s&quot; % (ip))
-                        continue
-                        values = da.get(&#x27;values&#x27;)
-                        # 将列表里的值转为字典方便计算
-                        values_dict = {}
-                        for v in values:
-                            values_dict[str(v[0])] = v[1]
-                            # 标记ip存在
-                            ip_dict[ip] = True
-                            # 建立列表追加字典
-                            if result.get(ip):
-                                result[ip].append(values_dict)
-                                else:
-                                    result[ip] = [values_dict]
-
-                                    # print(result)
-                                    for ip, values in result.items():
-                                        values_list = []
-
-                                        for k, v in values[0].items():
-                                            try:
-                                                values_MenTotal = float(v)
-                                                values_MemFree = float(values[1].get(k, 0)) if values[1] else 0
-                                                values_Buffers = float(values[2].get(k, 0)) if values[2] else 0
-                                                values_Cached = float(values[3].get(k, 0)) if values[3] else 0
-                                                if values_MemFree == 0.0 or values_Buffers == 0.0 or values_Cached == 0.0:
-                                                    continue
-                                                    value_calc = (values_MenTotal - (values_MemFree + values_Buffers + values_Cached)) / values_MenTotal * 100
-                                                    if value_calc != float(0):
-                                                        values_list.append(value_calc)
-                                                        except Exception as e:
-                                                            print(values[0])
-                                                            # logging.exception(e)
-                                                            continue
-                                                            # 排序value取top20除以20
-                                                            # avg_mem = round(sum(sorted(values_list, reverse=True)[:round(len(values_list) * 0.2)]) / round(len(values_list) * 0.2), 2)
-                                                            try:
-                                                                avg_mem = sum(sorted(values_list, reverse=True)[:round(len(values_list) * 0.2)]) / round(len(values_list) * 0.2)
-                                                                except Exception as e:
-                                                                    avg_mem = 0
-                                                                    logging.exception(e)
-
-                                                                    if avg_mem_util.get(ip):
-                                                                        avg_mem_util[ip].append(avg_mem)
-                                                                        else:
-                                                                            avg_mem_util[ip] = [avg_mem]
-
-                                                                            # 最终7天数据再除以7
-                                                                            for k, v in avg_mem_util.items():
-                                                                                # avg_mem_util[k] = round(sum(v) / 7, 2)
-                                                                                avg_mem_util[k] = sum(v)
-
-                                                                                return avg_mem_util
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;导出excel&lt;/h3&gt;
-
-
-
-&lt;pre lang=&quot;python&quot;&gt;&lt;code&gt;def export_excel(self, export):
-    &quot;&quot;&quot;
-        将采集到的数据导出excel
-        :param export: 数据集合
-        :return:
-        &quot;&quot;&quot;
-    try:
-        # 将字典列表转换为DataFrame
-        pf = pd.DataFrame(list(export))
-        # 指定字段顺序
-        order = [&#x27;ip&#x27;, &#x27;cpu_peak&#x27;, &#x27;cpu_average&#x27;, &#x27;mem_peak&#x27;, &#x27;mem_average&#x27;, &#x27;collector&#x27;]
-        pf = pf[order]
-        # 将列名替换为中文
-        columns_map = {
-            &#x27;ip&#x27;: &#x27;ip&#x27;,
-            &#x27;cpu_peak&#x27;: &#x27;CPU峰值利用率&#x27;,
-            &#x27;cpu_average&#x27;: &#x27;CPU忙时平均峰值利用率&#x27;,
-            &#x27;mem_peak&#x27;: &#x27;内存峰值利用率&#x27;,
-            &#x27;mem_average&#x27;: &#x27;内存忙时平均峰值利用率&#x27;,
-            &#x27;collector&#x27;: &#x27;来源地址&#x27;
-        }
-        pf.rename(columns=columns_map, inplace=True)
-        # 指定生成的Excel表格名称
-        writer_name = self.Host + &#x27;.xlsx&#x27;
-        writer_name.replace(&#x27;:18600&#x27;, &#x27;&#x27;)
-        # print(writer_name)
-        file_path = pd.ExcelWriter(writer_name.replace(&#x27;:18600&#x27;, &#x27;&#x27;))
-        # 替换空单元格
-        pf.fillna(&#x27; &#x27;, inplace=True)
-        # 输出
-        pf.to_excel(file_path, encoding=&#x27;utf-8&#x27;, index=False)
-        # 保存表格
-        file_path.save()
-        except Exception as e:
-            print(e)
-            logging.exception(e)
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;因为机房需要保留数据方便展示，后面改造成采集直接入库mysql。&lt;/p&gt;
-
-&lt;p&gt;---- 钢铁知识库 &lt;a href=&quot;mailto:648403020@qq.com&quot;&gt;648403020@qq.com&lt;/a&gt; 2021.12.29&lt;/p&gt;
-
-&lt;h2&gt;写在最后&lt;/h2&gt;
-
-&lt;p&gt;以上简单介绍了Prometheus架构、基础概念、API使用，以及Python调用Prometheus的API部分示例，完整代码也已经上传，需要自取或联系即可。&lt;/p&gt;
-
-&lt;p&gt;下载链接：
-&lt;a href=&quot;https://download.csdn.net/download/u011463397/72150839&quot;&gt;https://download.csdn.net/download/u011463397/72150839&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2&gt;参考链接：&lt;/h2&gt;
-
-&lt;p&gt;Prometheus操作指南：&lt;a href=&quot;https://github.com/yunlzheng/prometheus-book&quot;&gt;https://github.com/yunlzheng/prometheus-book&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;官方查询API：&lt;a href=&quot;https://prometheus.io/docs/prometheus/latest/querying/api/&quot;&gt;https://prometheus.io/docs/prometheus/latest/querying/api/&lt;/a&gt;&lt;/p&gt;
-&lt;/div&gt;
-  &lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>c2ad1f035b1b145855ca3ff0732a9e47</guid>
+<title>golang切片的一些自问自答</title>
+<link>https://toutiao.io/k/7w6z7ad</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;br/&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ffGGK0y3bBLj5sMauxUlyQqsUj9yFdqGHEF0PAsHtmJdlRz9egIltvkNo67p04breK29gibNymMRI1vLvzjyTYw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-ratio=&quot;0.5472222222222223&quot; data-w=&quot;1080&quot;/&gt;&lt;figcaption&gt;image-20211229094736903&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;你好，我是轩脉刃。这篇是关于go切片的一些问题和回答。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;go的切片基本上是代码中使用最多的一种数据结构了，使用这种数据结构有哪些要注意的点，这个是非常必要了解的东西。基本上，以前写的一篇博客 https://www.cnblogs.com/yjf512/p/9531282.html  就说的很清楚了。这里再深挖一些。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;问题：go的切片数据结构是什么样子的？&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;切片是有可能在编译器就被内联的，而如果在编译器没有被内联，进入运行期，就是直接使用SliceHeader数据结构。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;type&lt;/span&gt; SliceHeader struct {&lt;br/&gt; Data uintptr&lt;br/&gt; Len  int&lt;br/&gt; Cap  int&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这三个字段分别表示指针，长度，容量。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;问题：为什么在初始化slice的时候尽量补全cap&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当我们要创建一个slice结构，并且往slice中append元素的时候，我们可能有两种写法来初始化这个slice。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;方法1:&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;package main&lt;br/&gt;&lt;br/&gt;import &lt;span&gt;&quot;fmt&quot;&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;func &lt;span&gt;&lt;span&gt;main&lt;/span&gt;&lt;/span&gt;() {&lt;br/&gt; arr := []int{}&lt;br/&gt; arr = append(arr, 1,2,3,4, 5)&lt;br/&gt; fmt.Println(arr)&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;方法2:&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;package main&lt;br/&gt;&lt;br/&gt;import &lt;span&gt;&quot;fmt&quot;&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;func &lt;span&gt;&lt;span&gt;main&lt;/span&gt;&lt;/span&gt;() {&lt;br/&gt;   arr := make([]int, 0, 5)&lt;br/&gt;   arr = append(arr, 1,2,3,4, 5)&lt;br/&gt;   fmt.Println(arr)&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;方法2相较于方法1，就只有一个区别：在初始化[]int slice的时候在make中设置了cap的长度，就是slice的大小。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这两种方法对应的功能和输出结果是没有任何差别的，但是实际运行的时候，方法2会比少运行了一个growslice的命令。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这个我们可以通过打印汇编码进行查看：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;方法1：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ffGGK0y3bBLj5sMauxUlyQqsUj9yFdqG1kZOFzxNWTwJicUicbs1gsXwyic7CK6rjPHZH6FL32Tib90nOZfOibF0k7A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-ratio=&quot;0.8802177858439202&quot; data-w=&quot;551&quot;/&gt;&lt;figcaption&gt;image-20211219173237557&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;方法2:&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ffGGK0y3bBLj5sMauxUlyQqsUj9yFdqGeC31Ulnibo1Hd0x22xlWUR7QAZbHBXWLV5OVZDolAGCoBiaVicaQzT9Ug/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-ratio=&quot;0.8797814207650273&quot; data-w=&quot;549&quot;/&gt;&lt;figcaption&gt;image-20211219174112164&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们看到方法1中使用了growsslice方法，而方法2中是没有调用这个方法的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这个growslice的作用就是扩充slice的容量大小。就好比是原先我们没有定制容量，系统给了我们一个能装两个鞋子的盒子，但是当我们装到第三个鞋子的时候，这个盒子就不够了，我们就要换一个盒子，而换这个盒子，我们势必还需要将原先的盒子里面的鞋子也拿出来放到新的盒子里面。所以这个growsslice的操作是一个比较复杂的操作，它的表现和复杂度会高于最基本的初始化make方法。对追求性能的程序来说，应该能避免尽量避免。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;具体对growsslice函数具体实现同学有兴趣的可以参考源码src的 runtime/slice.go 。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当然，我们并不是每次都能在slice初始化的时候就能准确预估到最终的使用容量的。所以这里使用了一个“尽量”。明白是否设置slice容量的区别，我们在能预估容量的时候，请尽量使用方法2那种预估容量后的slice初始化方式。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;问题：如果不设置cap，make slice的时候，创建的cap为多大？&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果不设置cap，不管是使用make，还是直接使用[]slice 进行初始化，编译器都会计算初始化所需的空间，使用最小化的cap进行初始化。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;a := make([]int, 0)  // &lt;span&gt;cap&lt;/span&gt; 为0&lt;br/&gt;a := []int{1,2,3} // &lt;span&gt;cap&lt;/span&gt; 为3&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;可以从ssa看出&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ffGGK0y3bBLj5sMauxUlyQqsUj9yFdqGBV4335XFlCDG2RxSg5T8t7JIM2QamCHJAiaoezrNnIkvgYoKHmt06Tg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-ratio=&quot;0.3007518796992481&quot; data-w=&quot;798&quot;/&gt;&lt;figcaption&gt;image-20211221095655104&lt;/figcaption&gt;&lt;/figure&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;问题：slice什么时候决定扩张？&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;之前写过一篇文章 https://www.cnblogs.com/yjf512/p/10714792.html 里面得出的结论就是slice在编译期就决定是否要调用growslice。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这个逻辑是正确的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;编译器在ssa的时候 对于append是会转换为 OAPPEND（cmd/compile/internal/typecheck/universe.go） 。而在 cmd/compile/internal/ssagen/ssa.go 中，对其进行判断。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6898148148148148&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ffGGK0y3bBLj5sMauxUlyQqsUj9yFdqGJq3O14W4ib3roibl1o2Ef91xRZAZJ9BJvvmp3jGX7OiatsBYI5L7BG4Zg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1080&quot;/&gt;&lt;figcaption&gt;image-20211221101614497&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;目前还看不懂下面append下面的逻辑，不过基于这个注释，能了解到这里growslice的逻辑。比较扩容前后大小，如果原先cap小于扩容后需要cap，就growslice。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;总结&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;琢磨了四个关于切片的问题：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;问题：go的切片数据结构是什么样子的？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;问题：为什么在初始化slice的时候尽量补全cap？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;问题：如果不设置cap，make slice的时候，创建的cap为多大？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;问题：slice什么时候决定扩张？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;感觉第四个问题还没想透。&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>28c405697daf02ddefcf457910c009dc</guid>
-<title>画架构图的神器</title>
-<link>https://toutiao.io/k/4773s9p</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;fieldset&gt;&lt;section data-brushtype=&quot;text&quot;&gt;架构师（JiaGouX）&lt;/section&gt;&lt;section data-brushtype=&quot;text&quot;&gt;我们都是架构师！&lt;br/&gt;架构未来，你来不来？&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;/fieldset&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzAwNjQwNzU2NQ==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/sXiaukvjR0RCNb3RYsCgx02T4J55ia2SnemY7uJHsDChxq6jAibbATlIKDgzLxz0zekXWjblzCDcL86AjbMNp02Tg/0?wx_fmt=png&quot; data-nickname=&quot;架构师&quot; data-alias=&quot;JiaGouX&quot; data-signature=&quot;架构师云集，三高（高可用、高性能、高稳定）架构、大数据、机器学习、Java架构、系统架构、大规模分布式架构、人工智能等的架构讨论交流，以及结合互联网技术的架构调整，大规模架构实战分享。欢迎有想法、乐于分享的架构师交流学习。&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;前言&lt;/span&gt;&lt;br/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;看过我以往文章的小伙伴可能会发现，我的大部分文章都有很多配图。我的文章风格是图文相结合，更便于大家理解。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;最近有很多小伙伴发私信问我：文章中的图是用什么工具画的。他们觉得我画的图风格挺小清新的，能够让人眼前一亮。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;先上几张图让大家看看效果：&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.7021996615905245&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBEcQeQVeSPhd00alFgESSqkDNsO0rWriam0JoiccWGEP4ewJdibk25nZZiaQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1182&quot;/&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.513677811550152&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBESNLJibcUXjyxw8wBM9S04knvpJRWzxGQzQcYATR48MicUtbTHKkGax4w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1316&quot;/&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.4361525704809287&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBExhcMHxwz8Qq45Q2sJeBBTxLtWGRaaFHkRbHLicrPn8ZVKnObEiaKMxkA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1206&quot;/&gt;说实话，问我的人太多了，我真的没法一个个回复。同时问我的人多，也恰恰说明了这个工具的优秀。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;今天特地写一篇介绍画图工具的文章，给有需要的朋友一个参考。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;1. 用什么画的图？&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;对于画流程图的工具，之前大家用得比较多的可能是：&lt;code&gt;visio&lt;/code&gt;和&lt;code&gt;process on&lt;/code&gt;了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;visio&lt;/code&gt;是微软的一款画图软件，需要在电脑上安装，正版软件是付费的，但网上也可以搜到很多破解版。它是我用过的最早的画流程图工具了，后面使用mac电脑办公之后，就没有用过它了，之前觉得它跨电脑办公有点不方便。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;process on&lt;/code&gt;是一款免费在线画图工具，功能非常强大。除了常规的各种流程图之外，对于思维导图支持也非常友好。但有个缺点是只能免费保存最近9张图，想保留更多的图，需要付费升级。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;前面的两款画图工具，说到底还是收费的，对于喜欢白嫖的我们来说，有点无法接受。那么，有没有一款免费、在线、功能强大的画流程图的工具呢？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;答：有，可以使用：&lt;code&gt;diagrams&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;没错，我文章中的图都是用&lt;code&gt;diagrams&lt;/code&gt;画出来的，也可以叫它：&lt;code&gt;draw.io&lt;/code&gt;，它已经成为了我画图首选工具。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这款画图工具的官网地址是：https://app.diagrams.net/，它的前身是：https://draw.io/。这两个url都能访问。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;同时它也提供了离线版的画图软件，大家可以自己下载diagrams的安装软件，不过有个坏处是它是收费的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;所以，我用的最多的还是在线版的。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;2. 如何进入画图界面？&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;从上面已经知道，我的文章都是用&lt;code&gt;diagrams&lt;/code&gt;画流程图的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但如何进入diagrams的画图界面呢？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在浏览器上输入diagrams的官网地址，我平时喜欢输入：&lt;code&gt;https://draw.io/&lt;/code&gt;，因为它比较好记。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;第一次访问的时候有点慢，因为它要初始化一些东西。&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.2803819444444444&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBEkicr9pN4EjtlBrLhFveOKiawBA7NZN0to7h7d08apyjvJz7CuwSLibLCQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2304&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;接下来，会弹出一个窗口，让我们选择画的图，需要保存到哪里。&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.48214285714285715&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBEz6LoWib1bdic6VXFiaXYyP0lJtZY9hwU0959MFVMRyOCp22aZLCFFSzzw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2464&quot;/&gt;它主要支持四种：&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;OneDrive：即云&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Device：即设备&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Github&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Gitlab&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我目前为了图方便，用的最多的是&lt;code&gt;Device&lt;/code&gt;，它可以把画的图保存到本地电脑，也可以从本地电脑导入已有的图。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其实如果可以的话，把图保存到&lt;code&gt;Github&lt;/code&gt;，也是个不错的选择。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;接下来，会弹出一个窗口，让你选择是Create New Diagram（创建新流程图），还是选择Open Existing Diagram（打开已有的流程图）。&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.7270471464019851&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBESZhribz7pkaq82baW6iaYnb27QE16vR5CLLHvJqultLNhC70zGDxN31w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;806&quot;/&gt;我们第一次进来，当然是选择创建新流程图了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;然后，进入了画流程图的主界面：&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5746388443017657&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBE6yxHRaA0VhHxKurYQ3t7Y1d6oATeaD2ibibZgL1lxxqt6a9swiaQnNMlQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2492&quot;/&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;3 画图界面的组成部分&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;diagrams的工作界面主要是由以下几个部分组成：&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5211155378486055&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBEdYwF3yvNND7Qxkm97LZ2W079xic5VzuVU73ozAZQia8T4rA4SicDyyM6A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2510&quot;/&gt;此外，在这里顺便说一句，如果你想修改流程图名称的话，可以双击左上角的：&lt;code&gt;Untitled Diagram.drawio&lt;/code&gt;这几个字，会弹出如下窗口：&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.38235294117647056&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBEaSJ3tFGJ0OpyJYCibudZL736yskF1rl2ezw3eNcuicWrFUngdnxZwqiaw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;816&quot;/&gt;在这个窗口中可以修改流程图的名称和文件类型，默认是&lt;code&gt;.drawio&lt;/code&gt;格式的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;下面用一张图总结一下，diagrams的工作界面主要组成部分：&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.7270788912579957&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBEUZzzvjNiaicf6LFmHibuZTb2Iouia8dGLwbrSZXJGuuQtQq3ORFxADcKzw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;938&quot;/&gt;&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;3.1 菜单栏&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.11148648648648649&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBEMiaKwpoRmxicKG3H09elk4dxGqAmOghCQOG3r3DHArJbrQ6tTrqBLC5g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;592&quot;/&gt;&lt;/figure&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;File&lt;/code&gt;菜单：包含了一系列的文件操作，包括：新建、打开文件、打开最近的文件、保存文件、另存为文件、分享文件、重命名、拷贝文件、导入、导出、打印、关闭等。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;Edit&lt;/code&gt;菜单：包含了一系列工作区的操作，包括：回退、撤回、剪切、复制、粘贴、删除、查找、替换、编辑、编辑属性、选择、全选等。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;View&lt;/code&gt;菜单：包含了一系列的视图操作，包括：恢复默认布局、大纲视图、图层、标签、网格、滚动条、全屏等。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;Arrange&lt;/code&gt;菜单：包含了一系列图形排列操作，包含：在前面、在后面、插入图形、对齐等。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;Extras&lt;/code&gt;菜单：包含了一系列额外的操作，包含：主题、展开、收缩、插件、编辑画图区、配置等。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;Help&lt;/code&gt;菜单：主要包含一系列全局的操作，包含：搜索、快捷键、关于等。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;3.2 工具栏&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.02857142857142857&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBE7528BHib30X3v53TI2IZL7fhPETiabuP803sm5WnFgXDxE5EVxCkVMibg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2450&quot;/&gt;工具栏中包含了一些常用的功能，比如：图片尺寸、放大、缩小、退回、撤销、删除、在前、在后、背景色、字体颜色、连接、阴影、添加表格、添加图形、全屏、展开、收缩等。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这些功能真的太实用了。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;3.3 左边图形区&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这个区域可以选择我们画图时，需要的图形，默认有这7类图形。&lt;img class=&quot;rich_pages wxw-img&quot; data-backh=&quot;1066&quot; data-backw=&quot;426&quot; data-ratio=&quot;2.5023474178403755&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBEhpZOib4Nmfj6kgDMcFo3jNfy2nPsYfWSeIicP9PODU2K6RkRNCI7GqPA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;426&quot;/&gt;如果不满足要求，可以点击 More Shapes 按钮，选择更多类型。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.739568345323741&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBEhNNAoyh3nTtsThQde1HLlXw7ozIibVzSnr6socA0cGDt2wwlGBouY1w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1390&quot;/&gt;上图中我另外加了&lt;code&gt;IOS&lt;/code&gt;类的图形。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我个人喜欢使用&lt;code&gt;General&lt;/code&gt;类的图形：&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;1.7208121827411167&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBE0Wm1lb7mrxKaQhAicFu7tav8qmywMovZ8sphbWn6yVbibhSzEvNlmyJg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;394&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;里面常用的图形都有，画一般的流程图是够用的。当然你也可以根据个人喜欢，选择更多的类型画图。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;3.4 画图区&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6675257731958762&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBEmnCP8AoM9dnhbKI8oNrB8BKPnUZic1EoADIFt4OW0wokNgveAZVbzng/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1552&quot;/&gt;画图区是最重要的地方了，你的流程图是在这片区域完成的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;你可以在左边的图形区选择好图形之后，用鼠标拖到画图区。也可以直接在画图区复制已有的图形。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;还可以加网格：&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5284653465346535&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBE63d8GR4EVibKM6yvoMSeibVm4EwIbaEOJpKjELjjMbU4I2so8KL2GrHA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1616&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;右键空白的地方，会出现一些操作选项：&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.9698492462311558&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBE4AXjicv7EWaicbJSBwn4XU0Np31XJ5TKVmfoXoGpNrRNMrgKoG2ibia12Q/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;796&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;右键某个具体图形，会出现一些图形相关的选项：&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;1.2914691943127963&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBETmAzsHLaXdcIcQUU97GHAyVUfMp6o6EnpSAPrAXqibOa3VFxqD5ibbEA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;844&quot;/&gt;&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;3.5 右边样式区&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;1.9958333333333333&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBEMGxGicRBdDxKxThGMVOXcbDJtqlvxP8OELrz9CgvB0oXGpcrFzMfKnw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;480&quot;/&gt;右边样式区可以说是diagrams的灵魂。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;选择的图形，在画图区默认是这样的：&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.4981949458483754&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBEoE4aibg7hv82N12zGycZQcgIiaAZm9y8mMFwgiapFzcpMBPQIl5sk7LQQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;554&quot;/&gt;一眼看过去，显得非常单调。但如果在右边样式区，我加了一些样式之后，图形马上变得不一样了。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5981554677206851&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBEukaBHqX4lRUIpQOdh51vV2fX0PRedu66fVb1icrKPPCHzicEJWL4Curw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1518&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;对于文本样式也有挺多功能可以设置的：&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5431606905710491&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBEPxjjibSXOgF7zGlLBmLXh5UAg5svf7lfz3LNqnal3ZLwwYHNUxHfw8g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1506&quot;/&gt;&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;3.6 底部&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.05672823218997362&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBEseqOogg5tHGPRrD16A2NrRWUhro0jcO1gSqL5icvqDHwLicDHIoicqfsQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1516&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;底部主要展示的是每页的名称。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;点击左侧三个点：&lt;img class=&quot;rich_pages wxw-img&quot; data-backh=&quot;422&quot; data-backw=&quot;438&quot; data-ratio=&quot;0.9634703196347032&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBEJF9XiaACQqqWGYkR6FEP8Xib4kBCdDLYXlD7FiaQH0LSJyTDic6xa9SNjw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;438&quot;/&gt;可以切换、插入、删除和重命名页面。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;点击右侧的加号：&lt;/span&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.09336099585062241&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBEDDRebca26ZSVDGIjWiaErmofVNMPWPliacrjKxVpJFQHvKzSjxFYsprg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;964&quot;/&gt;&lt;span&gt;可以立刻新增页面。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;我们每次画图需要在某个页面上操作。&lt;/span&gt;&lt;span&gt;但如果你需要画的图很多，可以使用页进行归类，方面今后维护。&lt;/span&gt;&lt;span&gt;不太建议，一页上画的图太多，不然画图时会非常卡。&lt;/span&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;总结&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;本文主要介绍了diagrams画图工具，它是一款免费的在线画图工具，也叫做draw.io。它的功能非常强大，包括：菜单栏、工具栏、左边图形区、画图区、右边样式区、底部等。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;同时还介绍了如何进入画图区。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当然本文只是抛砖引玉，给大家介绍了diagrams的一小部分功能。它的强大之处，需要大家自己多动手摸索。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;下面用一张图给大家展示一下，我是如何使用diagrams画图的：&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.47346938775510206&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5jd2iaESCiah43qP7BwTyRHBETZ3yDdsUI1XpZEHlPX7IHhHaGg3iaCzcBvTHRNdIvmEEqy6U65FQmVQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2450&quot;/&gt;好了，今天的内容先分享到这里，我们下期再见。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果大家觉得这个工具不错，或者看了我的分享有些收获的话，请帮我点个在看。&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;如喜欢本文，请点击右上角，把文章分享到朋友圈&lt;/span&gt;&lt;br/&gt;&lt;span&gt;如有想了解学习的技术点，请留言给若飞安排分享&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;·END·&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;相关阅读：&lt;/strong&gt;&lt;/p&gt;&lt;hr/&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-tools-id=&quot;23409&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;blockquote&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;作者：苏三呀    &lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;来源：苏三说技术&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;版权申明：&lt;/span&gt;&lt;span&gt;内容来源网络，版权归原创者所有。&lt;/span&gt;&lt;span&gt;除非无法确认，我们都会标明作者及出处，如有侵权烦请告知，我们会立即删除并表示歉意。&lt;/span&gt;&lt;span&gt;谢谢!&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;article ng-controller=&quot;EntryCtrl&quot; ui-lightbox=&quot;&quot;&gt;&lt;section ng-bind-html=&quot;postContentTrustedHtml&quot;&gt;&lt;section data-id=&quot;702&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;span&gt;&lt;strong data-brushtype=&quot;text&quot;&gt;架构师&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section data-brushtype=&quot;text&quot;&gt;&lt;p&gt;&lt;span&gt;我们都是架构师！&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img border=&quot;0&quot; data-ratio=&quot;1&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz/sXiaukvjR0RB58TtkIHwhn4lpsqLnZgian9d5tr1BibP7XpibGTFFib1nq9YuYq209XZUEfCOqMzepDOBbN9KD9wMSg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;640&quot; data-width=&quot;200px&quot; height=&quot;&quot; opacity=&quot;&quot; title=&quot;&quot; vspace=&quot;0&quot;/&gt;&lt;span/&gt;&lt;/p&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;strong&gt;&lt;strong&gt;关注&lt;/strong&gt;架构师(JiaGouX)，添加“星标”&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;获取每天技术干货，一起成为牛逼架构师&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;技术群请&lt;/strong&gt;&lt;strong&gt;加若飞：&lt;/strong&gt;&lt;strong&gt;&lt;span&gt;1321113940 &lt;/span&gt;&lt;/strong&gt;&lt;strong&gt;进架构师群&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;投稿、合作、版权等邮箱：&lt;strong&gt;&lt;span&gt;admin@137x.com&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/article&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;
+<guid>b4c9d0056972b85dbc21f2bf1acb67da</guid>
+<title>最适合程序员的画图工具？</title>
+<link>https://toutiao.io/k/ptc0yky</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;p class=&quot;original_area_primary&quot;&gt;
+                                                                                                &lt;/p&gt;
+
+                    
+                                            &lt;div class=&quot;rich_media_content &quot; id=&quot;js_content&quot;&gt;
+                    
+
+                    
+                    
+                    
+                    &lt;blockquote class=&quot;js_blockquote_wrap&quot; data-type=&quot;2&quot; data-url=&quot;&quot; data-author-name=&quot;&quot; data-content-utf8-length=&quot;14&quot; data-source-title=&quot;&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;section class=&quot;js_blockquote_digest&quot;&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;来自公众号：&lt;span&gt;小林coding&lt;/span&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;/blockquote&gt;&lt;section&gt;大家好，我是小林。&lt;/section&gt;&lt;p&gt;最近很多读者私信问我，我图解文章中用到的画图工具、思维导图工具、代码贴图工具是什么？&lt;/p&gt;&lt;p&gt;我在很早的时候提到过，不过时间有点久了，而且比较零散，可能现在大部分读者还不知道。&lt;/p&gt;&lt;p&gt;我今天统一整理一下，我图解文章用到的各类工具吧，这些工具我用了一年多了，没发现什么问题，所以是值得推荐的。&lt;/p&gt;&lt;p&gt;我这里先列一下：&lt;/p&gt;&lt;p&gt;接下来，详细聊一聊。&lt;/p&gt;&lt;h3&gt;&lt;span&gt;画图工具&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p&gt;&lt;span/&gt;&lt;span&gt;这篇文章的封面图就是 &lt;/span&gt;&lt;span&gt;draw&lt;/span&gt;&lt;span&gt;.io&lt;/span&gt;&lt;span&gt; 的开发团队。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;我的图解文章里的图片全是在 draw.io 这个工具画的，写了那么久的图解文章，再加上我工作中也有画图的习惯，累计也有在上面画了接近 1000+ 张图片。&lt;/p&gt;&lt;p&gt;选择它的原因很简单，因为是免费的，而且图片的源文件可以直接保存到 Github 的，这样非常方便，相当于直接云备份到了 Github 仓库里，然后用 Github 作为图床。&lt;/p&gt;&lt;p&gt;这一套操作下来，不管是画图工具，还是图床，都是不花一分钱的方案！&lt;/p&gt;&lt;p&gt;draw.io 画图工具可以在线画图，或者下载应用，或者作为 visual studio code 插件来使用。&lt;/p&gt;&lt;p&gt;我比较常用的方式是在线画图，就是直接在网站上画图。draw.io 一开始的画图网站地址就是直接在浏览器输入 draw.io  地址后，就会自动进入在线画图工具页面，现在它改版了， 改成重定向到官网地址了，所以现在想进入在线画图工具页面，地址是：&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;https://app.diagrams.net&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;当然，如果你想下载应用来使用，也可以在 Github 下载：&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;https://github.com/jgraph/drawio-desktop/releases/&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;我们来看看这个画图工具的页面长什么样子，主要分为三个区域，从左往右的顺序是「图形选择区域、绘图区域、属性设置区域」。&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5897435897435898&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWXMmITXMW0VDpIWFaD7VmPP9GFBpjWYcAtZUQrr4cjXQhajtz8kaJPRw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1560&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;其中，最左边的「图形选择区域」可以选择的图案有很多种，常见的流程图、时序图、表格图都有，甚至还可以在最左下角的「更多图形」找到其他种类的图形，比如网络设备图标等。&lt;/p&gt;&lt;p&gt;具体的画图方法，我在之前的文章详细介绍过：「&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzUxODAzNDg4NQ==&amp;amp;mid=2247486263&amp;amp;idx=1&amp;amp;sn=90f7cb9782162f40e8b6aec1ad954491&amp;amp;scene=21#wechat_redirect&quot; data-linktype=&quot;2&quot;&gt;我的 500 张图是怎么画的？&lt;/a&gt;」，这次我就不再赘述啦。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;之前没有详细介绍，怎么将文件保存到 Github，然后作为图床使用，这次补充下&lt;/strong&gt;。&lt;/p&gt;&lt;p&gt;1、在浏览器输入地址：https://app.diagrams.net，进入到在线画图网站后，就会弹出保存文件到什么地方的选择，可以保存到本地、Github、OneDrive等。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;1.0342298288508558&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWXgmbtZozP4Pen1j505pMq12U0JdbFXE8l4sYC1nMYsxShXDUCaibEQDA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;818&quot;/&gt;&lt;/p&gt;&lt;p&gt;2、选择保存到 Github 后，就选择创建一个新的画图文件。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.735224586288416&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWXXB8x01ewFaVrTsibT7aamjJ2zYQcBGgsiclcwv4dBQ1sI4xBGDWoHkAw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;846&quot;/&gt;&lt;/p&gt;&lt;p&gt;3、选择创建一个空白的图片，然后可以给文件取个名字，画图的源文件后缀是 .drawio，最后点击创建。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.7546897546897547&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWXCIUDmjvNHoy9a1MsicoXLKiapqyfGy6W0p26hfianvU5OhOH0G7TuqWXw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1386&quot;/&gt;&lt;/p&gt;&lt;p&gt;4、点击创建后，就会弹出获取你的 Github 账号权限，点击同意就行。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.8667992047713717&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWXezxVFiaIoPv2g7ictnD4ibicLJsG77QoHc7rlZmKGmiauvBAjjyxib4FWeibQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1006&quot;/&gt;&lt;/p&gt;&lt;p&gt;5、接着输入你的 Github 账号密码。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;1.2860360360360361&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWXI2leygFOWdZJVvyD0pL4iaKpUly23HOv3bCv4klXeaia4AKpy0WUuRfQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;888&quot;/&gt;&lt;/p&gt;&lt;p&gt;5、登陆完后，选择你要保存的 Github 仓库，比如我选择这里：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.7738998482549317&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWXYB0qeqHuBp2jiaHicCib22DqekgpmDDTTOPXpf2f5qH7xJrL8eQsTdyEA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1318&quot;/&gt;&lt;/p&gt;&lt;p&gt;6、接着，点击同意授权。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.3225225225225225&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWXhzTYbPD1nNNMdXSLzOUcx8soPencwTJ7plZbiafP51oLznjqJe7cWfQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1110&quot;/&gt;&lt;/p&gt;&lt;p&gt;7、然后就会跳转到一个网站，在你的Github需要安装 draw.io App，直接点击安装即可，&lt;strong&gt;初次使用才会有这一步，后面就不用那么麻烦了&lt;/strong&gt;。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.4333034914950761&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWXavZkRqOBMhXat3YAsmJaL4fXKXpsjg3p5bM1K7rwBtGauHbkiaTqwjw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2234&quot;/&gt;&lt;/p&gt;&lt;p&gt;8、然后选择你要授权的仓库，可以是某个仓库，也可以全部仓库，我这里为了方便，就直接选择了所有仓库。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.8860182370820668&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWX1icZziabALQqoicO9DbQeRfia4HpvJK8Vu1r45sL4Ibp2gjF3bKicQHH81A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1316&quot;/&gt;&lt;/p&gt;&lt;p&gt;9、安装完成后，在回到在线画图网站，点击「try again」。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.7541208791208791&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWXslR8Q7TkEV4eA037S5GUug8nrs9cQ5xREUePEKWp8B48rwcic6IPHcQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1456&quot;/&gt;&lt;/p&gt;&lt;p&gt;10、到这一步，授权的工作就完成了。然后，就可以开始画图了。画完图后，就可以导出 png 图片。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;1.006631299734748&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWXic594RhzJJicYxlfHTf4TlFxbSQPH3TXu5zNhBvdTJKaCZUFLDK2DpGg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1508&quot;/&gt;&lt;/p&gt;&lt;p&gt;11、我直接将 png 图片保存到 Github。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.8957169459962756&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWXR6D3FPQCsmKMZWAWUF5HF5Q5cud7B23LMfZDc54oJ3mGggCCeKT5Zw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1074&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.8767395626242545&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWXBYlCdz5llb3L8icfsVvOo7hib1y7I2hBRZLVwkLy46Azmq4G6ytuCAww/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1006&quot;/&gt;&lt;/p&gt;&lt;p&gt;12、保存好图片后，我们可以用以下地址作为图片的地址。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.71280276816609&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWXpwrkwbEMQct4eibL7poHlcQZLIAPyVAUEnDqpEIpclRAqCoiaRmjMouw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1734&quot;/&gt;&lt;/p&gt;&lt;p&gt;我这个地址是经过 jsdeliver cdn 加速的了，这个 cdn 也是免费的。地址的构成是这样的：&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.2161520190023753&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWX4rWzKCb03icibuUHo1tIuiaGLpNm9ErCliaAzejVd4AswVT0icPrSlB7CpA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;842&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;也就是说，红色部分的前缀地址是固定的，绿色部分的地址是根据文件的保存仓库路径而变更就行。&lt;/p&gt;&lt;p&gt;如果你嫌这样替换地址麻烦，想自动化一点。可以搭配使用 pingo 工具来上传图片，上传完图片它会自动生成一个经过 jsdeliver cdn  加速的地址。网上的资料很多，关键词搜索「github + jsdeliver cdn + pingo」即可。&lt;/p&gt;&lt;p&gt;怎么样，这一套免费版的画图+Github云同步+图床的方案，还是很舒服的。&lt;/p&gt;&lt;h3&gt;&lt;span&gt;思维导图工具&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p&gt;我用的思维导图工具是 xmind，是国产的。他们软件的交互设计做的很不错，很简洁明了。&lt;/p&gt;&lt;p&gt;它有很多种风格选择，基本都是五彩的，整体挺好看的。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.681912681912682&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWXTyu4ichuHwJicktpYCuMoSbHELk3icnE5Kc5XBltpxdAibb0wYqVibzN2ag/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1924&quot;/&gt;&lt;/p&gt;&lt;p&gt;有意思的地方，这个思维导图工具的右侧会有一些图标图片选择，比如表情图片、标签图片、进度图图片等等。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5962897526501767&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWXkOjwqbj2YCibnMEkWWTre7fjbKz5m9HwJZ9NdylzYvEUqicg9zYtuALQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2264&quot;/&gt;&lt;/p&gt;&lt;p&gt;习惯用思维导图做笔记的同学， xmind 这个思维导图工具是个不错的选择。&lt;/p&gt;&lt;p&gt;另外，我有时会使用 Effie 这个工具来生成思维导图，它本身是一个写作的工具，但是自带一个根据文字内容生成思维导图的功能。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5198237885462555&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWXTw6zXk1FovsoWE6BXpDN76er0cOhJp5MKKUFt51MDdzl3tDyW0sssA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;3178&quot;/&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;代码贴图工具&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p&gt;如果你想展示你的代码，又苦于源代码的样式不好看，则可以使用一个生成漂亮的代码贴图网站。&lt;/p&gt;&lt;p&gt;地址：&lt;strong&gt;&lt;span&gt;https://carbon.now.sh&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.6901270772238515&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWXcDc9wAuwEw10VerbofheaYz2CBx8d735pPIGPUC0SUnzYy2CF8BUrQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2046&quot;/&gt;&lt;/p&gt;&lt;p&gt;导出图片后，就一张漂亮的代码展示图。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-backh=&quot;364&quot; data-backw=&quot;500&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.7290552584670231&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWXOoZfpTqF6vibkqmIm0O876S1rWbDkRnsicCWCnLpKgSI3b9YQO6yCbNw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1122&quot;/&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;文章编写工具&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p&gt;我写文章都是用 mardown 格式，这样的好处是能方便发布到各个博客平台。&lt;/p&gt;&lt;p&gt;刚好有道云笔记支持 mardown 格式，所以一直都在用这个，但是永久后，它的双屏显示体验不是很好，就是左边是 mardown 格式的文档，右边是显示渲染的效果。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5168539325842697&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWX0Vck6cVkiccmDbpu9UPHhJEWSwCpJnMzhrpnGPIzMNSdlnYGafuiaLGw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2670&quot;/&gt;&lt;/p&gt;&lt;p&gt;最近就开始转到 typora 写文章了。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.7032871972318339&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWXS7wKM50E9sRUqSXt4FhpwyP1tShJjQZ2yrh5NZHsmMZ1UHmRkIlvuA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2312&quot;/&gt;&lt;/p&gt;&lt;p&gt;因为 typora 自身没有云备份功能，所以我是将 md 文件直接保存到 iCoud 云盘的文件夹，这样相当于实现了文件内容自动备份功能，再也不怕文章内容丢失了，坏处就是无法跨平台，因为 iCoud 云盘只能用于 macOS 系统。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.47391304347826085&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWXDibA9oBwGicSEfQ1RFyw5vyKr19SvMLcJ5vNWuS2xic2icgiaziayYrS70aA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1840&quot;/&gt;&lt;/p&gt;&lt;p&gt;最新版本的 typora 已经开始要收费了，我一直没有更新，所以还是免费的状态。&lt;/p&gt;&lt;p&gt;还有一点，typora 有生成 pdf 的功能，我之前生成的图解系统和图解网络的 pdf，就是在 typora 生成的。&lt;/p&gt;&lt;p&gt;有时候写一些感想类的文章，我就直接在 Effie 这个工具写，因为它的页面非常简洁纯粹，就是一张大白纸页面，非常容易专注起来，而且是支持 mardown 格式的语法。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5645833333333333&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWX6DIut0b8OlsFFZoCtbwr6ot1klkncr2JsM71YVB9yC0qmZ1v27auIg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2880&quot;/&gt;&lt;/p&gt;&lt;p&gt;还有很多优秀的记笔记的软件，比如语雀、notion、wolai等等。我之前也分享过我用到的云笔记软件：&lt;a target=&quot;_blank&quot; href=&quot;https://mp.weixin.qq.com/s?__biz=MzA3MjMzODExOA==&amp;amp;mid=2651726164&amp;amp;idx=2&amp;amp;sn=90823b8748b0d1e4670ea131bdc7cdac&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;最适合‍程序员的云笔记？&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;最适合程序员的云笔记？&lt;/a&gt;&lt;/p&gt;&lt;hr/&gt;&lt;p&gt;以上这些就是我写文章的时候，常用的工具了，看起来很多，其实用习惯的话还好，而且基本都是不花钱的工具，用起来也很 nice。&lt;/p&gt;&lt;p&gt;你们日常中有哪些好用神仙软件，也可以评论区说下，我来种种草&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;1&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/J0g14CUwaZdkgpaJYKtsDrueUVianNYWX5TM3XQlBapflZOMZbUcPhb9TH2Kc6PI0IY6WkbTufSO7jqzGib6Dacw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;20&quot;/&gt;&lt;/p&gt;&lt;figure&gt;&lt;span&gt;--- EOF ---&lt;/span&gt;&lt;br/&gt;&lt;/figure&gt;&lt;p&gt;&lt;/p&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;span&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;推荐↓↓↓&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzIxNDEzMjQwNw==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/KSFIvW4ibNQJTv76dfOBtwAcfghHzt7gO8LCR7ZaPjhg16e9X17GSMQWfMUnD3D2qaRPUsDGezZLdubCiagEzWOg/0?wx_fmt=png&quot; data-nickname=&quot;程序员头条&quot; data-alias=&quot;CoderTop&quot; data-signature=&quot;10:24 一起看程序员热点新闻。把握行业热点，紧跟行业脚步&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;
+                &lt;/div&gt;
+
+                
+
+                
+
+
+
+                
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>dec87875647dcc835d2013c9b724a57c</guid>
-<title>如何把 MySQL 备份验证性能提升 10 倍</title>
-<link>https://toutiao.io/k/ev38ug2</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;post_content markdown&quot;&gt;&lt;p&gt;JuiceFS 非常适合用来做 MySQL 物理备份，具体使用参考我们的官方文档&lt;a href=&quot;https://juicefs.com/docs/zh/backup_mysql_in_juicefs.html&quot;&gt;[1]&lt;/a&gt;。最近有个客户在测试时反馈，备份验证的数据准备（&lt;code&gt;xtrabackup --prepare&lt;/code&gt;）过程非常慢。我们借助 JuiceFS 提供的性能分析工具做了分析，快速发现性能瓶颈，通过不断调整 XtraBackup 的参数和 JuiceFS 的挂载参数，在一个小时内将时间缩短到原先的 1/10。本文将我们性能分析和优化的过程记录分享下来，给大家分析和优化 IO 性能提供参考。&lt;/p&gt;&lt;h3 id=&quot;0-数据准备&quot;&gt;0. 数据准备&lt;/h3&gt;&lt;p&gt;我们通过 SysBench&lt;a href=&quot;https://dev.mysql.com/downloads/benchmarks.html&quot;&gt;[2]&lt;/a&gt; 工具生成一个大小 11GiB 左右的单表数据库，数据库表的 partition 设置成 10。为了模拟一个正常的数据库读写场景，通过 SysBench 以秒 50 个请求的压力访问数据库，在该压力下数据库对数据盘造成的写数据在 8~10MiB/s 范围内。通过下列命令将数据库备份到 JuiceFS 上。&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;language-shell&quot;&gt;# xtrabackup --backup --target-dir=/jfs/base/
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;为了保证每次数据准备操作的数据完全一样，使用 JuiceFS 的快照（snapshot）功能基于 &lt;code&gt;/jfs/base&lt;/code&gt; 目录生成快照 &lt;code&gt;/jfs/base_snapshot/&lt;/code&gt;。每一次操作前都会将前一次数据准备操作过的数据删掉重新生成一个新的快照。&lt;/p&gt;&lt;h3 id=&quot;1-使用默认参数&quot;&gt;1. 使用默认参数&lt;/h3&gt;&lt;pre&gt;&lt;code class=&quot;language-shell&quot;&gt;# ./juicefs mount volume-demoz /jfs
+<guid>54fb3a6b9d298bf4046e01f753e2b501</guid>
+<title>NTCore: 让AI/ML模型开发周期与运维管理变简单</title>
+<link>https://toutiao.io/k/5oo90wi</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;body class=&quot;logged-out env-production page-responsive page-blob&quot; id=&quot;readabilityBody&quot;&gt;
+    
 
-#  time xtrabackup --prepare --apply-log-only --target-dir=/jfs/base_snapshot
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;执行总耗时62秒。&lt;/p&gt;&lt;p&gt;JuiceFS支持导出操作日志 oplog，并能对 oplog 进行可视化展示。在执行 &lt;code&gt;xtrabackup --prepare&lt;/code&gt;操作之前我们新开一个终端连接到该服务器，在命令行输入&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;language-shell&quot;&gt;# cat /jfs/.oplog &amp;gt; oplog.txt
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;开始搜集 oplog 日志，然后执行 &lt;code&gt;xtrabackup --prepare&lt;/code&gt; 操作，操作结束后将 oplog.txt 下载到本地，上传到 JuiceFS 提供的 oplog 分析页面：&lt;a href=&quot;https://juicefs.com/oplog/&quot;&gt;https://juicefs.com/oplog/&lt;/a&gt;。&lt;/p&gt;&lt;p&gt;我们将 oplog &lt;a href=&quot;https://juicefs.com/tracing/61a53ce2f680e661f78035013e1651f1&quot;&gt;进行可视化展示&lt;/a&gt;。&lt;/p&gt;&lt;p&gt;这里先大致介绍下这个图中各种元素含义。我们的一条 oplog 中包含了时间戳，线程 ID，文件系统操作函数（read, write, fsync, flush 等），操作持续的时间等。左侧数字表示线程 ID，横轴表示时间，不同类型操作用不同颜色标记。&lt;/p&gt;&lt;p&gt;我们把局部图像放大，不同颜色代表不同类型的操作就一目了然。&lt;/p&gt;&lt;p&gt;排除掉与本次操作无关的几个线程。在数据准备过程中有 4 个线程负责读，5 个线程负责写数据，读写在时间上都是重叠的。&lt;/p&gt;&lt;h3 id=&quot;2-增大-xtrabackup-的内存缓冲区&quot;&gt;2. 增大 XtraBackup 的内存缓冲区&lt;/h3&gt;&lt;p&gt;参考 XtraBackup 官方文档&lt;a href=&quot;https://www.percona.com/doc/percona-xtrabackup/2.4/backup_scenarios/full_backup.html&quot;&gt;[3]&lt;/a&gt;，数据准备是使用内嵌的 InnoDB 在备份数据集上执行故障修复（crash recovery）的过程。&lt;/p&gt;&lt;p&gt;使用 &lt;code&gt;--use-memory&lt;/code&gt;&lt;a href=&quot;https://www.percona.com/doc/percona-xtrabackup/2.4/xtrabackup_bin/xbk_option_reference.html&quot;&gt;[4]&lt;/a&gt; 选项增大内嵌 InnoDB 的内存缓冲区大小，默认 100MB，我们增大到 4GB。&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;language-shell&quot;&gt;# time xtrabackup --prepare --use-memory=4G --apply-log-only --target-dir=/jfs/base_snapshot
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;执行时间降到了33秒。&lt;/p&gt;&lt;p&gt;将 oplog &lt;a href=&quot;https://juicefs.com/tracing/6db615529e75ae267bba782dc828cc71&quot;&gt;可视化展示&lt;/a&gt;。&lt;/p&gt;&lt;p&gt;可以看到读写不重叠了 ，将数据读到内存处理完成后写入文件系统。&lt;/p&gt;&lt;h3 id=&quot;3-增大-xtrabackup-读线程数&quot;&gt;3. 增大 XtraBackup 读线程数&lt;/h3&gt;&lt;p&gt;通过增大缓冲区将时间缩短了一半，整个读的过程耗时依然比较明显。我们看到每个读线程基本都是跑满的状态，我们尝试增加更多的读线程。&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;language-shell&quot;&gt;# time xtrabackup --prepare --use-memory=4G --innodb-file-io-threads=16 --innodb-read-io-threads=16 --apply-log-only --target-dir=/jfs/base_snapshot
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;执行时间降到了23秒，将 oplog &lt;a href=&quot;https://juicefs.com/tracing/18b7eb7c826a18c510fbcc9d0f118dd0&quot;&gt;可视化展示&lt;/a&gt;。&lt;/p&gt;&lt;p&gt;读线程已经增加到了 16 个（默认 4 个），读操作降到 7 秒左右。&lt;/p&gt;&lt;h3 id=&quot;4-juicefs-启用异步写&quot;&gt;4. JuiceFS 启用异步写&lt;/h3&gt;&lt;p&gt;上一步我们极大的优化了读操作时间，现在写过程消耗的时间就比较明显了。通过分析 oplog，发现写操作中&lt;strong&gt;fsync&lt;/strong&gt;是不能并行的，因此增大写线程数并不能提升写的效率，在实际操作过程中我们也通过增大写线程数验证了这一点，这里就不赘述了。分析 oplog 对同一个文件（相同文件描述符）的写操作的参数（偏移，写数据大小），发现有大量的随机写操作，我们可以在挂载 JuiceFS 时启用 &lt;code&gt;--writeback&lt;/code&gt; 选项，写数据时先写本地盘，再异步写到对象存储。&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;language-shell&quot;&gt;# ./juicefs mount --writeback volume-demoz /jfs
-# time xtrabackup --prepare --use-memory=4G --innodb-file-io-threads=16 --innodb-read-io-threads=16 --apply-log-only --target-dir=/jfs/base_snapshot
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;时间降到了 11.8 秒，将 oplog &lt;a href=&quot;https://juicefs.com/tracing/517024b32b7f3620dd5cc0989de83133&quot;&gt;可视化展示&lt;/a&gt;。&lt;/p&gt;&lt;p&gt;写过程已经降到 1.5 秒左右。&lt;/p&gt;&lt;p&gt;我们看到读线程读操作依然比较密集，我们尝试持续增加读线程数，InnoDB 读线程数最大为 64，我们直接调成 64。&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;language-shell&quot;&gt;# time xtrabackup --prepare --use-memory=4G --innodb-file-io-threads=64 --innodb-read-io-threads=64 --apply-log-only --target-dir=/jfs/base_snapshot
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;执行时间 11.2 秒，相比之前基本没变化，将 oplog &lt;a href=&quot;https://juicefs.com/tracing/7c74b6ea895333cfa15dc75f9fdd0473&quot;&gt;可视化展示&lt;/a&gt;。&lt;/p&gt;&lt;p&gt;我们看到，读线程读操作已经比较稀疏了，应该是线程读的数据之间有依赖关系，导致不能完全并行化，已经不能通过提升线程数压缩读过程的时间了。&lt;/p&gt;&lt;h3 id=&quot;5-增大-juicefs-的磁盘缓存&quot;&gt;5. 增大 JuiceFS 的磁盘缓存&lt;/h3&gt;&lt;p&gt;在上一步中，我们通过提升读线程数来提升读过程的效率已经到顶了，只能通过降低读数据的延迟来减少读过程时间。&lt;/p&gt;&lt;p&gt;JuiceFS 在读操作处理上提供了预读和缓存加速能力，我们接下来尝试通过增大 JuiceFS 的本地缓存来降低读操作的延迟。&lt;/p&gt;&lt;p&gt;将 JuiceFS 的本地缓存由高效云盘换成 SSD 云盘，并将缓存大小由 1G 改成 10G。&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;language-shell&quot;&gt;# ./juicefs mount --writeback volume-demoz --cache-size=10000 --cache-dir=/data/jfsCache /jfs
+    
 
-# time xtrabackup --prepare --use-memory=4G --innodb-file-io-threads=64 --innodb-read-io-threads=64 --apply-log-only --target-dir=/jfs/base_snapshot
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;执行时间降到了 6.9 秒，将 oplog &lt;a href=&quot;https://juicefs.com/tracing/efcf8223a00dcca0e3619343676c2728&quot;&gt;可视化展示&lt;/a&gt;。&lt;/p&gt;&lt;p&gt;通过提升缓存性能和增大缓存空间进一步减少了读操作耗时。&lt;/p&gt;&lt;p&gt;到此我们总结一下，我们通过分析 oplog，不断寻找可以优化的点，将整个数据准备过程一步步从 62 秒降到 6.9 秒，效果通过下图更直观的展示。&lt;/p&gt;&lt;h3 id=&quot;6-增大数据库数据量&quot;&gt;6. 增大数据库数据量&lt;/h3&gt;&lt;p&gt;以上的操作都是针对 11G 这样一个比较小的数据集不断调整参数进行优化得到一个很好的结果。作为对比，我们以同样的方式生成一个 115G 左右的 partition 为10的单表数据库。在 SysBench 持续每秒 50 个请求情况下，执行备份操作。&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;language-shell&quot;&gt;# time xtrabackup --prepare --use-memory=4G --innodb-file-io-threads=64 --innodb-read-io-threads=64 --apply-log-only --target-dir=/jfs/base_snapshot
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这个过程耗时 74 秒，将 oplog &lt;a href=&quot;https://juicefs.com/tracing/18ce933faa4e99a13e9b0695a9ae66bc&quot;&gt;可视化展示&lt;/a&gt;。&lt;/p&gt;&lt;p&gt;我们看到，读和写还是分开的。&lt;/p&gt;&lt;p&gt;在数据量增大10倍左右，相应的准备时间也增大到10倍。这是因为备份（&lt;code&gt;xtrabackup --backup&lt;/code&gt;）过程所需的时间扩大到 10 倍，在 SysBench 对数据库压力不变的情况下，备份过程中产生的 xtrabackup_logfile 也是原先的 10 倍。数据准备是要把 xtrabackup_logfile 中的所有数据更新合并到数据文件中，可见即使数据规模增大了 10 倍，但更新单条日志的时间基本不变。从上图也可以验证这一点，数据规模增大后，准备过程仍然是分成了读数据和写数据这两个明显的过程，说明设定的 4GB 的缓冲区大小仍然是够用的，整个过程仍然可以在内存中完成然后更新到文件系统。&lt;/p&gt;&lt;h3 id=&quot;总结&quot;&gt;总结&lt;/h3&gt;&lt;p&gt;我们使用 SysBench 这个相对简单的工具构造初始数据，持续给数据库一定数据更新的压力模拟数据备份时数据库运行场景。使用 JuiceFS 的 oplog 来观察 XtraBackup 在数据准备过程中访问备份数据的读写特点，调整 XtraBackup 和 JuiceFS 的参数来不断优化数据准备过程的效率。&lt;/p&gt;&lt;p&gt;在实际生产场景中，情况比我们 SysBench 模拟要复杂得多，我们上面的线性关系不一定严格成立，但是我们通过分析 oplog 快速发现可以优化的点，进而不断调整 XtraBackup 和 JuiceFS 的缓存和并发的思路是通用的。&lt;/p&gt;&lt;p&gt;整个调参过程耗时 1 小时左右，oplog 分析工具在这个过程中发挥了很大的作用，帮助我们快速定位系统性能瓶颈，从而针对性地调整参数做优化，也希望这个 oplog 分析功能也能帮助大家快速定位和分析遇到的性能问题。&lt;/p&gt;&lt;h3 id=&quot;参考文档&quot;&gt;参考文档&lt;/h3&gt;&lt;p&gt;[1]: 基于 JuiceFS 的 MySQL 备份、验证和恢复方案： &lt;a href=&quot;https://juicefs.com/docs/zh/backup_mysql_in_juicefs.html&quot;&gt;https://juicefs.com/docs/zh/backup_mysql_in_juicefs.html&lt;/a&gt;&lt;/p&gt;&lt;p&gt;[2]: SysBench: &lt;a href=&quot;https://dev.mysql.com/downloads/benchmarks.html&quot;&gt;https://dev.mysql.com/downloads/benchmarks.html&lt;/a&gt;&lt;/p&gt;&lt;p&gt;[3]: XtraBackup全量备份： &lt;a href=&quot;https://www.percona.com/doc/percona-xtrabackup/2.4/backup_scenarios/full_backup.html&quot;&gt;https://www.percona.com/doc/percona-xtrabackup/2.4/backup_scenarios/full_backup.html&lt;/a&gt;&lt;/p&gt;&lt;p&gt;[4]: XtraBackup命令行选项： &lt;a href=&quot;https://www.percona.com/doc/percona-xtrabackup/2.4/xtrabackup_bin/xbk_option_reference.html&quot;&gt;https://www.percona.com/doc/percona-xtrabackup/2.4/xtrabackup_bin/xbk_option_reference.html&lt;/a&gt;&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+  &lt;p id=&quot;start-of-content&quot; class=&quot;show-on-focus&quot;/&gt;
+
+
+
+
+
+
+
+    
+
+
+    
+
+  &lt;include-fragment class=&quot;js-notification-shelf-include-fragment&quot; data-base-src=&quot;https://github.com/notifications/beta/shelf&quot;/&gt;
+
+
+
+
+
+  &lt;div class=&quot;application-main &quot; data-commit-hovercards-enabled=&quot;&quot; data-discussion-hovercards-enabled=&quot;&quot; data-issue-and-pr-hovercards-enabled=&quot;&quot;&gt;
+        &lt;div itemscope=&quot;&quot; itemtype=&quot;http://schema.org/SoftwareSourceCode&quot; class=&quot;&quot;&gt;
+    &lt;main id=&quot;js-repo-pjax-container&quot; data-pjax-container=&quot;&quot;&gt;
+      
+
+    
+    
+
+
+
+
+
+
+
+      &lt;include-fragment src=&quot;/orgs/nantu-io/survey_banner&quot; data-test-selector=&quot;survey-banner-selector&quot;&gt;
+  &lt;/include-fragment&gt;
+
+
+
+  
+
+
+
+&lt;div class=&quot;clearfix new-discussion-timeline container-xl px-3 px-md-4 px-lg-5&quot;&gt;
+  &lt;div id=&quot;repo-content-pjax-container&quot; class=&quot;repository-content &quot;&gt;
+
+    
+
+
+    
+      
+  
+  
+&lt;div&gt;
+  
+
+
+
+    &lt;a class=&quot;d-none js-permalink-shortcut&quot; data-hotkey=&quot;y&quot; href=&quot;/nantu-io/ntcore/blob/fb9771889cbfb2a2dc8927330b5680d5bc1d3d18/README-zh-CN.md?hmsr=toutiao.io&amp;amp;utm_campaign=toutiao.io&amp;amp;utm_medium=toutiao.io&amp;amp;utm_source=toutiao.io&quot;&gt;Permalink&lt;/a&gt;
+
+
+    
+
+
+
+
+    &lt;div class=&quot;Box d-flex flex-column flex-shrink-0 mb-3&quot;&gt;
+      
+  
+
+  &lt;div class=&quot;Box-body d-flex flex-items-center flex-auto border-bottom-0 flex-wrap&quot;&gt;
+    &lt;details class=&quot;details-reset details-overlay details-overlay-dark lh-default color-fg-default float-left mr-3&quot; id=&quot;blob_contributors_box&quot;&gt;
+      &lt;summary class=&quot;Link--primary&quot;&gt;
+        &lt;svg text=&quot;gray&quot; aria-hidden=&quot;true&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; data-view-component=&quot;true&quot; class=&quot;octicon octicon-people&quot;&gt;
+    &lt;path fill-rule=&quot;evenodd&quot; d=&quot;M5.5 3.5a2 2 0 100 4 2 2 0 000-4zM2 5.5a3.5 3.5 0 115.898 2.549 5.507 5.507 0 013.034 4.084.75.75 0 11-1.482.235 4.001 4.001 0 00-7.9 0 .75.75 0 01-1.482-.236A5.507 5.507 0 013.102 8.05 3.49 3.49 0 012 5.5zM11 4a.75.75 0 100 1.5 1.5 1.5 0 01.666 2.844.75.75 0 00-.416.672v.352a.75.75 0 00.574.73c1.2.289 2.162 1.2 2.522 2.372a.75.75 0 101.434-.44 5.01 5.01 0 00-2.56-3.012A3 3 0 0011 4z&quot;/&gt;
+&lt;/svg&gt;
+        &lt;strong&gt;1&lt;/strong&gt;
+        
+        contributor
+      &lt;/summary&gt;
+      &lt;details-dialog class=&quot;Box Box--overlay d-flex flex-column anim-fade-in fast&quot; aria-label=&quot;Users who have contributed to this file&quot; src=&quot;/nantu-io/ntcore/contributors-list/main/README-zh-CN.md&quot; preload=&quot;&quot;&gt;
+        &lt;div class=&quot;Box-header&quot;&gt;
+          &lt;button class=&quot;Box-btn-octicon btn-octicon float-right&quot; type=&quot;button&quot; aria-label=&quot;Close dialog&quot; data-close-dialog=&quot;&quot;&gt;
+            &lt;svg aria-hidden=&quot;true&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; data-view-component=&quot;true&quot; class=&quot;octicon octicon-x&quot;&gt;
+    &lt;path fill-rule=&quot;evenodd&quot; d=&quot;M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z&quot;/&gt;
+&lt;/svg&gt;
+          &lt;/button&gt;
+          &lt;h3 class=&quot;Box-title&quot;&gt;
+            Users who have contributed to this file
+          &lt;/h3&gt;
+        &lt;/div&gt;
+        &lt;include-fragment&gt;
+          &lt;svg viewbox=&quot;0 0 16 16&quot; fill=&quot;none&quot; data-view-component=&quot;true&quot; class=&quot;my-3 mx-auto d-block anim-rotate&quot;&gt;
+  &lt;circle cx=&quot;8&quot; cy=&quot;8&quot; r=&quot;7&quot; stroke=&quot;currentColor&quot; stroke-opacity=&quot;0.25&quot; stroke-width=&quot;2&quot; vector-effect=&quot;non-scaling-stroke&quot;/&gt;
+  &lt;path d=&quot;M15 8a7.002 7.002 0 00-7-7&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; vector-effect=&quot;non-scaling-stroke&quot;/&gt;
+&lt;/svg&gt;
+        &lt;/include-fragment&gt;
+      &lt;/details-dialog&gt;
+    &lt;/details&gt;
+  &lt;/div&gt;
+    &lt;/div&gt;
+
+
+
+
+
+
+    &lt;readme-toc&gt;
+
+    &lt;div data-target=&quot;readme-toc.content&quot; class=&quot;Box mt-3 position-relative&quot;&gt;
+      
+  &lt;div class=&quot;Box-header blob-header js-sticky js-position-sticky top-0 p-2 d-flex flex-shrink-0 flex-md-row flex-items-center&quot;&gt;
+
+      &lt;details data-target=&quot;readme-toc.trigger&quot; data-menu-hydro-click=&quot;{&amp;quot;event_type&amp;quot;:&amp;quot;repository_toc_menu.click&amp;quot;,&amp;quot;payload&amp;quot;:{&amp;quot;target&amp;quot;:&amp;quot;trigger&amp;quot;,&amp;quot;repository_id&amp;quot;:373228368,&amp;quot;originating_url&amp;quot;:&amp;quot;https://github.com/nantu-io/ntcore/blob/main/README-zh-CN.md?hmsr=toutiao.io&amp;amp;utm_campaign=toutiao.io&amp;amp;utm_medium=toutiao.io&amp;amp;utm_source=toutiao.io&amp;quot;,&amp;quot;user_id&amp;quot;:null}}&quot; data-menu-hydro-click-hmac=&quot;daa6f0cb8f156e062509d0f9a3254d2d2df71c5fa289c1dbf4441ae89edc085d&quot; class=&quot;dropdown details-reset details-overlay&quot;&gt;
+  &lt;summary class=&quot;btn btn-octicon m-0 mr-2 p-2&quot; aria-haspopup=&quot;true&quot; aria-label=&quot;Table of Contents&quot;&gt;
+    &lt;svg aria-hidden=&quot;true&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; data-view-component=&quot;true&quot; class=&quot;octicon octicon-list-unordered&quot;&gt;
+    &lt;path fill-rule=&quot;evenodd&quot; d=&quot;M2 4a1 1 0 100-2 1 1 0 000 2zm3.75-1.5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zm0 5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zm0 5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zM3 8a1 1 0 11-2 0 1 1 0 012 0zm-1 6a1 1 0 100-2 1 1 0 000 2z&quot;/&gt;
+&lt;/svg&gt;
+  &lt;/summary&gt;
+
+
+  &lt;details-menu class=&quot;SelectMenu&quot; role=&quot;menu&quot;&gt;
+    
+  &lt;/details-menu&gt;
+&lt;/details&gt;
+
+
+  &lt;p class=&quot;text-mono f6 flex-auto pr-3 flex-order-2 flex-md-order-1&quot;&gt;
+
+      109 lines (82 sloc)
+      &lt;span class=&quot;file-info-divider&quot;/&gt;
+    5.14 KB
+  &lt;/p&gt;
+
+  
+
+    
+&lt;/div&gt;
+
+
+        &lt;div id=&quot;readme&quot; class=&quot;Box-body readme blob js-code-block-container p-5 p-xl-6 gist-border-0&quot;&gt;
+    &lt;article class=&quot;markdown-body entry-content container-lg&quot; itemprop=&quot;text&quot;&gt;&lt;h1 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-ntcore让aiml模型周期管理变得简单&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#ntcore让aiml模型周期管理变得简单&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;NTCore：让AI/ML模型周期管理变得简单&lt;/h1&gt;
+&lt;p dir=&quot;auto&quot;&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://user-images.githubusercontent.com/42594415/146384196-7ff6edcb-b30d-4daf-b878-822a5ddcae73.jpg&quot;&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/42594415/146384196-7ff6edcb-b30d-4daf-b878-822a5ddcae73.jpg&quot; alt=&quot;workflows-intro&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/6eb4667c6dd75725c0ce1cb728109841a8e7b7e6bf36d1a453a0151cd3d6f92a/68747470733a2f2f696d672e736869656c64732e696f2f646f636b65722f762f6e74636f72652f776562736572766572&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/6eb4667c6dd75725c0ce1cb728109841a8e7b7e6bf36d1a453a0151cd3d6f92a/68747470733a2f2f696d672e736869656c64732e696f2f646f636b65722f762f6e74636f72652f776562736572766572&quot; alt=&quot;Docker Image Version (latest by date)&quot; data-canonical-src=&quot;https://img.shields.io/docker/v/ntcore/webserver&quot;/&gt;&lt;/a&gt;
+&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/8b0d861cdf70245231ea11014942aca74a6e4cbbaf01278f692b0f2633e8f65c/68747470733a2f2f696d672e736869656c64732e696f2f646f636b65722f70756c6c732f6e74636f72652f776562736572766572&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/8b0d861cdf70245231ea11014942aca74a6e4cbbaf01278f692b0f2633e8f65c/68747470733a2f2f696d672e736869656c64732e696f2f646f636b65722f70756c6c732f6e74636f72652f776562736572766572&quot; alt=&quot;Docker Pulls&quot; data-canonical-src=&quot;https://img.shields.io/docker/pulls/ntcore/webserver&quot;/&gt;&lt;/a&gt;
+&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/684b80de8a7f9f15265f05513c5a770c2051df7278a2376368d2b489eba3efcc/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f4c6963656e73652d4170616368655f322e302d626c75652e737667&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/684b80de8a7f9f15265f05513c5a770c2051df7278a2376368d2b489eba3efcc/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f4c6963656e73652d4170616368655f322e302d626c75652e737667&quot; alt=&quot;License&quot; data-canonical-src=&quot;https://img.shields.io/badge/License-Apache_2.0-blue.svg&quot;/&gt;&lt;/a&gt;
+&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/cf4b9916f726a7feaa4894f454cf67b0b9036c4ab3243d20bf4878b8b452c540/68747470733a2f2f696d672e736869656c64732e696f2f707970692f762f6e74636f7265&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/cf4b9916f726a7feaa4894f454cf67b0b9036c4ab3243d20bf4878b8b452c540/68747470733a2f2f696d672e736869656c64732e696f2f707970692f762f6e74636f7265&quot; alt=&quot;PyPI&quot; data-canonical-src=&quot;https://img.shields.io/pypi/v/ntcore&quot;/&gt;&lt;/a&gt;
+&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://camo.githubusercontent.com/8324178308ab790cad015c468a04db75d17f15dddf873a4097165de94d54ef9c/68747470733a2f2f696d672e736869656c64732e696f2f6769746875622f6c6173742d636f6d6d69742f6e616e74752d696f2f6e74636f7265&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/8324178308ab790cad015c468a04db75d17f15dddf873a4097165de94d54ef9c/68747470733a2f2f696d672e736869656c64732e696f2f6769746875622f6c6173742d636f6d6d69742f6e616e74752d696f2f6e74636f7265&quot; alt=&quot;GitHub last commit&quot; data-canonical-src=&quot;https://img.shields.io/github/last-commit/nantu-io/ntcore&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;&lt;a href=&quot;https://github.com/nantu-io/ntcore/blob/main/README.md&quot;&gt;English&lt;/a&gt; | 简体中文&lt;/p&gt;
+&lt;hr/&gt;
+&lt;h2 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-概述&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#概述&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;概述&lt;/h2&gt;
+&lt;p dir=&quot;auto&quot;&gt;NTCore 可帮助数据科学家和机器学习工程师轻松地对 AI/ML 模型进行版本控制、部署和监控。&lt;/p&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;自动记录各种机器学习框架的模型实验元数据，例如 sklearn、tensorflow 和 keras 等。&lt;/li&gt;
+&lt;li&gt;与 Docker、Kubernetes 和云提供商（例如 AWS、Azure、Alicloud 等）一键部署。&lt;/li&gt;
+&lt;li&gt;仪表盘实时监控和报告模型各项参数与性能。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-特征&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#特征&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;特征&lt;/h2&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;易于集成的 Python 客户端，可自动对来自多个 AI/ML 框架（包括 sklearn、tensorflow 和 keras 等）的模型进行版本控制。&lt;/li&gt;
+&lt;li&gt;通过来自训练的元数据（例如召回率和精确度）对可审计性和再现性进行建模。&lt;/li&gt;
+&lt;li&gt;可通过 curl、Postman 和 HTTP 客户端调用的开箱即用 RESTful 端点。&lt;/li&gt;
+&lt;li&gt;使用 Docker、Kubernetes 和云提供商（例如 Amazon EKS、Microsoft AKS 等）的模型在生产中一键部署。&lt;/li&gt;
+&lt;li&gt;具有 ML 模型的易于扩展且高度可用的预测服务，以支持最先进的 Web 和移动应用程序架构。&lt;/li&gt;
+&lt;li&gt;每个模型一个端点，为多个端点提供服务。&lt;/li&gt;
+&lt;li&gt;与 Prometheus 集成的模型性能监控（持续开发中）。&lt;/li&gt;
+&lt;li&gt;UI仪表板以管理 ML 模型版本、部署和性能指标（持续开发中）。&lt;/li&gt;
+&lt;li&gt;API，用于通过与工作流管理器（例如 Apache Airflow）的集成来自动化 ML 工作流。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p dir=&quot;auto&quot;&gt;加入我们的&lt;a href=&quot;https://app.slack.com/client/T02DN2XTE2J/C02R163F1K4&quot; rel=&quot;nofollow&quot;&gt;Slack&lt;/a&gt;社区.&lt;/p&gt;
+&lt;hr/&gt;
+&lt;h2 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-目录&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#目录&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;目录&lt;/h2&gt;
+
+&lt;h2 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-快速开始&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#快速开始&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;快速开始&lt;/h2&gt;
+&lt;ol start=&quot;0&quot; dir=&quot;auto&quot;&gt;
+&lt;li&gt;使用 &lt;a href=&quot;https://docs.docker.com/compose/install/&quot; rel=&quot;nofollow&quot;&gt;docker compose&lt;/a&gt;安装 docker 引擎。&lt;/li&gt;
+&lt;li&gt;克隆这个存储库并通过 docker compose 启动 ntcore
+&lt;div class=&quot;snippet-clipboard-content position-relative overflow-auto&quot; data-snippet-clipboard-copy-content=&quot;docker-compose -f docker-compose.yml up&quot;&gt;&lt;pre&gt;&lt;code&gt;docker-compose -f docker-compose.yml up
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;/li&gt;
+&lt;li&gt;安装ntcore客户端
+
+&lt;/li&gt;
+&lt;li&gt;到&lt;a href=&quot;http://localhost:8000/dsp/console/workspaces&quot; rel=&quot;nofollow&quot;&gt;http://localhost:8000/dsp/console/workspaces&lt;/a&gt; 并创建您的第一个工作区。&lt;/li&gt;
+&lt;li&gt;模型版本控制。可以从&lt;a href=&quot;https://github.com/nantu-io/ntcore/tree/promotion/client/examples&quot;&gt;这里&lt;/a&gt;了解更多。
+&lt;div class=&quot;highlight highlight-source-python position-relative overflow-auto&quot; data-snippet-clipboard-copy-content=&quot;from sklearn import datasets&amp;#10;# Config the ntcore client&amp;#10;from ntcore import client&amp;#10;client.set_endpoint(&#x27;http://localhost:8000&#x27;)&amp;#10;client.autolog(&#x27;{workspace_id}&#x27;)&amp;#10;&amp;#10;# Prepare the training dataset&amp;#10;from sklearn import datasets&amp;#10;iris = datasets.load_iris()&amp;#10;&amp;#10;# Init the model&amp;#10;from sklearn.ensemble import RandomForestClassifier&amp;#10;clf = RandomForestClassifier(max_depth=2, random_state=0)&amp;#10;&amp;#10;# Start an experiment run&amp;#10;with client.start_run():&amp;#10;    clf.fit(iris.data, iris.target_names[iris.target])&quot;&gt;&lt;pre&gt;&lt;span class=&quot;pl-k&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;pl-s1&quot;&gt;sklearn&lt;/span&gt; &lt;span class=&quot;pl-k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;pl-s1&quot;&gt;datasets&lt;/span&gt;
+&lt;span class=&quot;pl-c&quot;&gt;# Config the ntcore client&lt;/span&gt;
+&lt;span class=&quot;pl-k&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;pl-s1&quot;&gt;ntcore&lt;/span&gt; &lt;span class=&quot;pl-k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;pl-s1&quot;&gt;client&lt;/span&gt;
+&lt;span class=&quot;pl-s1&quot;&gt;client&lt;/span&gt;.&lt;span class=&quot;pl-en&quot;&gt;set_endpoint&lt;/span&gt;(&lt;span class=&quot;pl-s&quot;&gt;&#x27;http://localhost:8000&#x27;&lt;/span&gt;)
+&lt;span class=&quot;pl-s1&quot;&gt;client&lt;/span&gt;.&lt;span class=&quot;pl-en&quot;&gt;autolog&lt;/span&gt;(&lt;span class=&quot;pl-s&quot;&gt;&#x27;{workspace_id}&#x27;&lt;/span&gt;)
+
+&lt;span class=&quot;pl-c&quot;&gt;# Prepare the training dataset&lt;/span&gt;
+&lt;span class=&quot;pl-k&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;pl-s1&quot;&gt;sklearn&lt;/span&gt; &lt;span class=&quot;pl-k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;pl-s1&quot;&gt;datasets&lt;/span&gt;
+&lt;span class=&quot;pl-s1&quot;&gt;iris&lt;/span&gt; &lt;span class=&quot;pl-c1&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;pl-s1&quot;&gt;datasets&lt;/span&gt;.&lt;span class=&quot;pl-en&quot;&gt;load_iris&lt;/span&gt;()
+
+&lt;span class=&quot;pl-c&quot;&gt;# Init the model&lt;/span&gt;
+&lt;span class=&quot;pl-k&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;pl-s1&quot;&gt;sklearn&lt;/span&gt;.&lt;span class=&quot;pl-s1&quot;&gt;ensemble&lt;/span&gt; &lt;span class=&quot;pl-k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;pl-v&quot;&gt;RandomForestClassifier&lt;/span&gt;
+&lt;span class=&quot;pl-s1&quot;&gt;clf&lt;/span&gt; &lt;span class=&quot;pl-c1&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;pl-v&quot;&gt;RandomForestClassifier&lt;/span&gt;(&lt;span class=&quot;pl-s1&quot;&gt;max_depth&lt;/span&gt;&lt;span class=&quot;pl-c1&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;pl-c1&quot;&gt;2&lt;/span&gt;, &lt;span class=&quot;pl-s1&quot;&gt;random_state&lt;/span&gt;&lt;span class=&quot;pl-c1&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;pl-c1&quot;&gt;0&lt;/span&gt;)
+
+&lt;span class=&quot;pl-c&quot;&gt;# Start an experiment run&lt;/span&gt;
+&lt;span class=&quot;pl-k&quot;&gt;with&lt;/span&gt; &lt;span class=&quot;pl-s1&quot;&gt;client&lt;/span&gt;.&lt;span class=&quot;pl-en&quot;&gt;start_run&lt;/span&gt;():
+    &lt;span class=&quot;pl-s1&quot;&gt;clf&lt;/span&gt;.&lt;span class=&quot;pl-en&quot;&gt;fit&lt;/span&gt;(&lt;span class=&quot;pl-s1&quot;&gt;iris&lt;/span&gt;.&lt;span class=&quot;pl-s1&quot;&gt;data&lt;/span&gt;, &lt;span class=&quot;pl-s1&quot;&gt;iris&lt;/span&gt;.&lt;span class=&quot;pl-s1&quot;&gt;target_names&lt;/span&gt;[&lt;span class=&quot;pl-s1&quot;&gt;iris&lt;/span&gt;.&lt;span class=&quot;pl-s1&quot;&gt;target&lt;/span&gt;])&lt;/pre&gt;&lt;/div&gt;
+&lt;/li&gt;
+&lt;li&gt;查看模型版本并注册一个用于预生产部署。
+&lt;kbd&gt;
+&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;https://user-images.githubusercontent.com/42594415/146832457-addbbc54-c18a-4024-8cea-ca935c67ce5e.png&quot;&gt;&lt;img alt=&quot;Screen Shot 2021-12-20 at 10 08 08 AM&quot; src=&quot;https://user-images.githubusercontent.com/42594415/146832457-addbbc54-c18a-4024-8cea-ca935c67ce5e.png&quot;/&gt;&lt;/a&gt;
+&lt;/kbd&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;br/&gt; 
+&lt;ol start=&quot;6&quot; dir=&quot;auto&quot;&gt;
+&lt;li&gt;部署您注册的模型版本并在部署成功后调用 RESTful 端点。
+&lt;div class=&quot;highlight highlight-source-shell position-relative overflow-auto&quot; data-snippet-clipboard-copy-content=&quot;curl -H &amp;quot;Content-Type: application/json&amp;quot; -X POST --data &#x27;{&amp;quot;data&amp;quot;: [[5.1,3.5,1.4,0.2]]}&#x27; http://localhost:8000/s/{workspace_id}/predict&quot;&gt;&lt;pre&gt;curl -H &lt;span class=&quot;pl-s&quot;&gt;&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;Content-Type: application/json&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt; -X POST --data &lt;span class=&quot;pl-s&quot;&gt;&lt;span class=&quot;pl-pds&quot;&gt;&#x27;&lt;/span&gt;{&quot;data&quot;: [[5.1,3.5,1.4,0.2]]}&lt;span class=&quot;pl-pds&quot;&gt;&#x27;&lt;/span&gt;&lt;/span&gt; http://localhost:8000/s/{workspace_id}/predict&lt;/pre&gt;&lt;/div&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-文档&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#文档&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;文档&lt;/h2&gt;
+&lt;p dir=&quot;auto&quot;&gt;NTCore 文档: &lt;a href=&quot;https://nantu-io.github.io/ntcore-doc&quot; rel=&quot;nofollow&quot;&gt;https://nantu-io.github.io/ntcore-doc&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-为什么选择ntcore&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#为什么选择ntcore&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;为什么选择NTCore&lt;/h2&gt;
+&lt;p dir=&quot;auto&quot;&gt;假设您是一名数据科学家，为 10 个不同的场景优化 AI/ML 模型，每个场景都需要 100 次迭代。您如何保留这 1000 个实验的输入/输出，比较它们以找到最佳模型并重现它们？这并不容易。但这并不是你噩梦的结束。如果要将“最佳”模型部署为预测端点，则必须重构代码以创建 API，然后 DevOps 团队才能部署。这个过程通常需要几天时间。更重要的是，当这个过程每小时、每天甚至每月重复一次时，疼痛会变得更糟。&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;NTCore 是一个旨在减轻痛苦的平台。它提供了 UI 工具和 API，以帮助数据科学家以最少的与 DevOps 团队的互动，将他们训练有素的模型持续无缝地传送到生产环境。它还提供监控功能，以便数据科学家可以快速访问其模型的最新性能指标。&lt;/p&gt;
+&lt;h2 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-社区&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#社区&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;社区&lt;/h2&gt;
+&lt;p dir=&quot;auto&quot;&gt;有关入门指南、教程和 API 参考，请查看我们的文档。&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;要报告错误、提交文档问题或提交功能请求，请打开 GitHub 问题。&lt;/p&gt;
+&lt;h2 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-执照&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#执照&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;执照&lt;/h2&gt;
+&lt;p dir=&quot;auto&quot;&gt;NTCore在&lt;a href=&quot;https://github.com/nantu-io/ntcore/blob/main/LICENSE&quot;&gt;Apache 2.0&lt;/a&gt;下获得许可.&lt;/p&gt;
+&lt;/article&gt;
+  &lt;/div&gt;
+
+    &lt;/div&gt;
+
+  &lt;/readme-toc&gt;
+
+  
+
+  &lt;details class=&quot;details-reset details-overlay details-overlay-dark&quot; id=&quot;jumpto-line-details-dialog&quot;&gt;
+    &lt;summary data-hotkey=&quot;l&quot; aria-label=&quot;Jump to line&quot;/&gt;
+    &lt;details-dialog class=&quot;Box Box--overlay d-flex flex-column anim-fade-in fast linejump&quot; aria-label=&quot;Jump to line&quot;&gt;
+          &lt;/details-dialog&gt;
+  &lt;/details&gt;
+
+    
+
+
+&lt;/div&gt;
+
+
+
+  &lt;/div&gt;
+&lt;/div&gt;
+
+    &lt;/main&gt;
+  &lt;/div&gt;
+
+  &lt;/div&gt;
+
+          &lt;footer class=&quot;footer width-full container-xl p-responsive&quot; role=&quot;contentinfo&quot;&gt;
+
+
+  
+  &lt;p class=&quot;d-flex flex-justify-center pb-6&quot;&gt;
+    &lt;span class=&quot;f6 color-fg-muted&quot;/&gt;
+  &lt;/p&gt;
+&lt;/footer&gt;
+
+
+
+
+  &lt;div id=&quot;ajax-error-message&quot; class=&quot;ajax-error-message flash flash-error&quot; hidden=&quot;&quot;&gt;
+    &lt;svg aria-hidden=&quot;true&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; data-view-component=&quot;true&quot; class=&quot;octicon octicon-alert&quot;&gt;
+    &lt;path fill-rule=&quot;evenodd&quot; d=&quot;M8.22 1.754a.25.25 0 00-.44 0L1.698 13.132a.25.25 0 00.22.368h12.164a.25.25 0 00.22-.368L8.22 1.754zm-1.763-.707c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0114.082 15H1.918a1.75 1.75 0 01-1.543-2.575L6.457 1.047zM9 11a1 1 0 11-2 0 1 1 0 012 0zm-.25-5.25a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5z&quot;/&gt;
+&lt;/svg&gt;
+    &lt;button type=&quot;button&quot; class=&quot;flash-close js-ajax-error-dismiss&quot; aria-label=&quot;Dismiss error&quot;&gt;
+      &lt;svg aria-hidden=&quot;true&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; data-view-component=&quot;true&quot; class=&quot;octicon octicon-x&quot;&gt;
+    &lt;path fill-rule=&quot;evenodd&quot; d=&quot;M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z&quot;/&gt;
+&lt;/svg&gt;
+    &lt;/button&gt;&lt;p&gt;
+    You can’t perform that action at this time.
+  &lt;/p&gt;&lt;/div&gt;
+
+  &lt;div class=&quot;js-stale-session-flash flash flash-warn flash-banner&quot; hidden=&quot;&quot;&gt;
+    &lt;svg aria-hidden=&quot;true&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; data-view-component=&quot;true&quot; class=&quot;octicon octicon-alert&quot;&gt;
+    &lt;path fill-rule=&quot;evenodd&quot; d=&quot;M8.22 1.754a.25.25 0 00-.44 0L1.698 13.132a.25.25 0 00.22.368h12.164a.25.25 0 00.22-.368L8.22 1.754zm-1.763-.707c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0114.082 15H1.918a1.75 1.75 0 01-1.543-2.575L6.457 1.047zM9 11a1 1 0 11-2 0 1 1 0 012 0zm-.25-5.25a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5z&quot;/&gt;
+&lt;/svg&gt;
+    &lt;span class=&quot;js-stale-session-flash-signed-in&quot; hidden=&quot;&quot;&gt;You signed in with another tab or window. &lt;a href=&quot;&quot;&gt;Reload&lt;/a&gt; to refresh your session.&lt;/span&gt;
+    &lt;span class=&quot;js-stale-session-flash-signed-out&quot; hidden=&quot;&quot;&gt;You signed out in another tab or window. &lt;a href=&quot;&quot;&gt;Reload&lt;/a&gt; to refresh your session.&lt;/span&gt;
+  &lt;/div&gt;
+    &lt;template id=&quot;site-details-dialog&quot;&gt;
+  &lt;details class=&quot;details-reset details-overlay details-overlay-dark lh-default color-fg-default hx_rsm&quot; open=&quot;&quot;&gt;
+    &lt;summary role=&quot;button&quot; aria-label=&quot;Close dialog&quot;/&gt;
+    &lt;details-dialog class=&quot;Box Box--overlay d-flex flex-column anim-fade-in fast hx_rsm-dialog hx_rsm-modal&quot; aria-labelledby=&quot;box-title&quot;&gt;
+      &lt;button class=&quot;Box-btn-octicon m-0 btn-octicon position-absolute right-0 top-0&quot; type=&quot;button&quot; aria-label=&quot;Close dialog&quot; data-close-dialog=&quot;&quot;&gt;
+        &lt;svg aria-hidden=&quot;true&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; data-view-component=&quot;true&quot; class=&quot;octicon octicon-x&quot;&gt;
+    &lt;path fill-rule=&quot;evenodd&quot; d=&quot;M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z&quot;/&gt;
+&lt;/svg&gt;
+      &lt;/button&gt;
+      &lt;p class=&quot;octocat-spinner my-6 js-details-dialog-spinner&quot;/&gt;
+    &lt;/details-dialog&gt;
+  &lt;/details&gt;
+&lt;/template&gt;
+
+    
+
+    &lt;template id=&quot;snippet-clipboard-copy-button&quot;&gt;
+  
+&lt;/template&gt;
+
+
+
+
+  &lt;/body&gt;
+&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>376661be7566de185a9cf11996a9ed4f</guid>
-<title>这种本机网络 IO 方法，性能可以翻倍！</title>
-<link>https://toutiao.io/k/jcfcs30</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;p&gt;&lt;span&gt;在本机网络 IO 中，我们讲到过基于普通 socket 的本机网络通信过程中，其实在内核工作流上并没有节约太多的开销。&lt;/span&gt;&lt;span&gt;该走的系统调用、协议栈、邻居系统、设备驱动（虽然说对于本机网络 loopback 设备来说只是一个软件虚拟的东东）全都走了一遍。&lt;/span&gt;&lt;span&gt;其工作过程如下图:&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.848816029143898&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/BBjAFF4hcwqr5dxehUyQGUfk69ibqFibVMYBNJiclZk13tB111axoKtso0QfeeZMKPrLohFlPoNBAGTzhviay28ibicA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;549&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;那么我们今天来看另外一种本机网络 IO 通信方式 —— Unix Domain Socket。看看这种方式在性能开销上和基于 127.0.0.1 的本机网络 IO 有没有啥差异呢。&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;本文中，我们将分析 Unix Domain Socket 的内部工作原理。你将理解为什么这种方式的性能比 127.0.0.1 要好很多。最后我们还给出了实际的性能测试对比数据。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;相信你已经迫不及待了，别着急，让我们一一展开细说！&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;1. 使用方法&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;Unix Domain Socket（后面统一简称 UDS） 使用起来和传统的 socket 非常的相似。区别点主要有两个地方需要关注。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;在创建 socket 的时候，普通的 socket 第一个参数 family 为 AF_INET， 而 UDS 指定为 AF_UNIX 即可。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;Server 的标识不再是 IP 和 端口，而是一个路径，例如 /dev/shm/fpm-cgi.sock。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;其实在平时我们使用 UDS 并不一定需要去写一段代码，很多应用程序都支持在本机网络 IO 的时候配置。例如在 Nginx 中，如果要访问的本机 fastcgi 服务是以 UDS 方式提供服务的话，只需要在配置文件中配置这么一行就搞定了。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;nginx&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__attribute&quot;&gt;fastcgi_pass&lt;/span&gt; unix:/dev/shm/fpm-cgi.sock;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;如果 对于一个 UDS 的 server 来说，它的代码示例大概结构如下，大家简单了解一下。只是个示例不一定可运行。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;cpp&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;()&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;{&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   &lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; fd = socket(AF_UNIX, SOCK_STREAM, &lt;span class=&quot;code-snippet__number&quot;&gt;0&lt;/span&gt;);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;  &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   &lt;span class=&quot;code-snippet__keyword&quot;&gt;char&lt;/span&gt; *socket_path = &lt;span class=&quot;code-snippet__string&quot;&gt;&quot;./server.sock&quot;&lt;/span&gt;;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   &lt;span class=&quot;code-snippet__built_in&quot;&gt;strcpy&lt;/span&gt;(serun.sun_path, socket_path); &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   bind(fd, serun, ...);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   listen(fd, &lt;span class=&quot;code-snippet__number&quot;&gt;128&lt;/span&gt;);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;  &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   &lt;span class=&quot;code-snippet__keyword&quot;&gt;while&lt;/span&gt;(&lt;span class=&quot;code-snippet__number&quot;&gt;1&lt;/span&gt;){&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;      &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;      conn = accept(fd, ...);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;      &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;      read(conn, ...);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;      write(conn, ...);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   }&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;基于 UDS 的 client 也是和普通 socket 使用方式差不太多，创建一个 socket，然后 connect 即可。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;perl&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; main(){&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   sock = &lt;span class=&quot;code-snippet__keyword&quot;&gt;socket&lt;/span&gt;(AF_UNIX, SOCK_STREAM, &lt;span class=&quot;code-snippet__number&quot;&gt;0&lt;/span&gt;);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   &lt;span class=&quot;code-snippet__keyword&quot;&gt;connect&lt;/span&gt;(sockfd, ...)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;br/&gt;&lt;/pre&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;2. 连接过程&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/pre&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;总的来说，基于 UDS 的连接过程比 inet 的 socket 连接过程要简单多了。客户端先创建一个自己用的 socket，然后调用 connect 来和服务器建立连接。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;在 connect 的时候，会申请一个新 socket 给 server 端将来使用，和自己的 socket 建立好连接关系以后，就放到服务器正在监听的 socket 的接收队列中。这个时候，服务器端通过 accept 就能获取到和客户端配好对的新 socket 了。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;总的 UDS 的连接建立流程如下图。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;1.166270783847981&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/BBjAFF4hcwqr5dxehUyQGUfk69ibqFibVMNB1r0ZJF5FRQNwMx6SJnUuN1NmM29TVDWlRibkCXuEIaYRGMkeAvibcA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;421&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;内核源码中最重要的逻辑在 connect 函数中，我们来简单展开看一下。unix 协议族中定义了这类 socket 的所有方法，它位于 net/unix/af_unix.c 中。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;cpp&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;code-snippet__class&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;proto_ops&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;unix_stream_ops&lt;/span&gt; = {&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   .family = PF_UNIX,&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   .owner = THIS_MODULE,&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   .bind =  unix_bind,&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   .connect = unix_stream_connect,&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   .socketpair = unix_socketpair,&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   .listen = unix_listen,&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   ...&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt; };&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;我们找到 connect 函数的具体实现，unix_stream_connect。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;cs&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;unix_stream_connect&lt;/span&gt;(&lt;span class=&quot;code-snippet__params&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;struct&lt;/span&gt; socket *sock, &lt;span class=&quot;code-snippet__keyword&quot;&gt;struct&lt;/span&gt; sockaddr *uaddr,&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;          &lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; addr_len, &lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; flags&lt;/span&gt;)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;{&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   &lt;span class=&quot;code-snippet__keyword&quot;&gt;struct&lt;/span&gt; sockaddr_un *sunaddr = (&lt;span class=&quot;code-snippet__keyword&quot;&gt;struct&lt;/span&gt; sockaddr_un *)uaddr;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;  &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   ...&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;  &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   newsk = unix_create1(sock_net(sk), NULL);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;  &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   skb = sock_wmalloc(newsk, &lt;span class=&quot;code-snippet__number&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;code-snippet__number&quot;&gt;0&lt;/span&gt;, GFP_KERNEL);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   ...&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;  &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   unix_peer(newsk) = sk;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   newsk-&amp;gt;sk_state  = TCP_ESTABLISHED;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   newsk-&amp;gt;sk_type  = sk-&amp;gt;sk_type;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   ...&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   sk-&amp;gt;sk_state = TCP_ESTABLISHED;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   unix_peer(sk) = newsk;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;  &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   __skb_queue_tail(&amp;amp;other-&amp;gt;sk_receive_queue, skb);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;要&lt;/span&gt;&lt;span&gt;的连接操作都是在这个函数中完成的。&lt;/span&gt;&lt;span&gt;和我们平常所见的 TCP 连接建立过程，这个连接过程简直是太简单了。&lt;/span&gt;&lt;span&gt;没有三次握手，也没有全连接队列、半连接队列，更没有啥超时重传。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;直接就是将两个 socket 结构体中的指针互相指向对方就行了。就是 unix_peer(newsk) = sk 和 unix_peer(sk) = newsk 这两句。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;cs&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__meta&quot;&gt;#&lt;span class=&quot;code-snippet__meta-keyword&quot;&gt;define&lt;/span&gt; unix_peer(sk) (unix_sk(sk)-&amp;gt;peer)&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;当关联关系建立好之后，通过 __skb_queue_tail 将 skb 放到服务器的接收队列中。注意这里的 skb 里保存着新 socket 的指针，因为服务进程通过 accept 取出这个 skb 的时候，就能获取到和客户进程中 socket 建立好连接关系的另一个 socket。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;怎么样，UDS 的连接建立过程是不是很简单！？&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;3. 发送过程&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;看完了连接建立过程，我们再来看看基于 UDS 的数据的收发。这个收发过程一样也是非常的简单。发送方是直接将数据写到接收方的接收队列里的。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5492700729927007&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/BBjAFF4hcwqr5dxehUyQGUfk69ibqFibVMbUcIFoJibcDKRgIMeZqWiaV9gIjBYZicJPhBjib2W3ibmqrhzlHmHT3jmyw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;548&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;我们从 send 函数来看起。send 系统调用的源码位于文件 net/socket.c 中。在这个系统调用里，内部其实真正使用的是 sendto 系统调用。它只干了两件简单的事情，&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;第一是在内核中把真正的 socket 找出来，在这个对象里记录着各种协议栈的函数地址。第二是构造一个 struct msghdr 对象，把用户传入的数据，比如 buffer地址、数据长度啥的，统统都装进去. 剩下的事情就交给下一层，协议栈里的函数 inet_sendmsg 了，其中 inet_sendmsg 函数的地址是通过 socket 内核对象里的 ops 成员找到的。大致流程如图。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.6823956442831216&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/BBjAFF4hcwqr5dxehUyQGUfk69ibqFibVMghJ9jR02cFjY2FoJFpsN8yZsYibSPSHpS2hIOxXYExNkVfTkRLY8zSg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;551&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;在进入到协议栈 inet_sendmsg 以后，内核接着会找到 socket 上的具体协议发送函数。对于 Unix Domain Socket 来说，那就是 unix_stream_sendmsg。我们来看一下这个函数。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;cs&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;/&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;unix_stream_sendmsg&lt;/span&gt;(&lt;span class=&quot;code-snippet__params&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;struct&lt;/span&gt; kiocb *kiocb, &lt;span class=&quot;code-snippet__keyword&quot;&gt;struct&lt;/span&gt; socket *sock,&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;          &lt;span class=&quot;code-snippet__keyword&quot;&gt;struct&lt;/span&gt; msghdr *msg, size_t len&lt;/span&gt;)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;{&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   skb = sock_alloc_send_skb(sk, size, msg-&amp;gt;msg_flags&amp;amp;MSG_DONTWAIT,&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        &amp;amp;err);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;  &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   err = memcpy_fromiovec(skb_put(skb, size), msg-&amp;gt;msg_iov, size);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;  &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   &lt;span class=&quot;code-snippet__keyword&quot;&gt;struct&lt;/span&gt; sock *other = NULL;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   other = unix_peer(sk);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;  &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   skb_queue_tail(&amp;amp;other-&amp;gt;sk_receive_queue, skb);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;  &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;   other-&amp;gt;sk_data_ready(other, size);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;和复杂的 TCP 发送接收过程相比，这里的发送逻辑简单简单到令人发指。申请一块内存（skb），把数据拷贝进去。根据 socket 对象找到另一端，直接把 skb 给放到对端的接收队列里了。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;接收函数主题是 unix_stream_recvmsg，这个函数中只需要访问它自己的接收队列就行了，源码就不展示了。所以在本机网络 IO 场景里，基于 Unix Domain Socket 的服务性能上肯定要好一些的。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;4. 性能对比&lt;/span&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;为了验证 Unix Domain Socket 到底比基于 127.0.0.1 的性能好多少，我做了一个性能测试。在网络性能对比测试，最重要的两个指标是延迟和吞吐。我从 Github 上找了个好用的测试源码：https://github.com/rigtorp/ipc-bench。我的测试环境是一台 4 核 CPU，8G 内存的 KVM 虚机。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;在延迟指标上，对比结果如下图。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.3431818181818182&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/BBjAFF4hcwqr5dxehUyQGUfk69ibqFibVM1X83FjHgcKPXoicpOStLm3vprwoH3tuhia91l2oibfmAOUhpCFjUaHlCA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;880&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;可见在小包（100 字节）的情况下，UDS 方法的“网络” IO 平均延迟只有 2707 纳秒，而基于 TCP（访问 127.0.0.1）的方式下延迟高达 5690 纳秒。耗时整整是前者的两倍。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;在包体达到 100 KB 以后，UDS 方法延迟 24 微秒左右（1 微秒等于 1000 纳秒），TCP 是 32 微秒，仍然高一截。这里低于 2 倍的关系了，是因为当包足够大的时候，网络协议栈上的开销就显得没那么明显了。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;再来看看吞吐效果对比。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.27355072463768115&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/BBjAFF4hcwqr5dxehUyQGUfk69ibqFibVMtaHJ8KD0jPibiaqiaYXSuWn4NNNhgEIwU9xsib8XxtMBibzHwn4z5eRHTNw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1104&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;在小包的情况下，带宽指标可以达到 854 M，而基于 TCP 的 IO 方式下只有 386 M。数据就解读到这里。&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;5. 总结&lt;/span&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;本文分析了基于 Unix Domain Socket 的连接创建、以及数据收发过程。其中数据收发的工作过程如下图。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5492700729927007&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/BBjAFF4hcwqr5dxehUyQGUfk69ibqFibVMbUcIFoJibcDKRgIMeZqWiaV9gIjBYZicJPhBjib2W3ibmqrhzlHmHT3jmyw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;548&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;相对比本机网络 IO 通信过程上，它的工作过程要清爽许多。其中 127.0.0.1 工作过程如下图。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.848816029143898&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/BBjAFF4hcwqr5dxehUyQGUfk69ibqFibVMYBNJiclZk13tB111axoKtso0QfeeZMKPrLohFlPoNBAGTzhviay28ibicA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;549&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;我们也对比了 UDP 和 TCP 两种方式下的延迟和性能指标。在包体不大于 1KB 的时候，UDS 的性能大约是 TCP 的两倍多。所以，在本机网络 IO 的场景下，如果对性能敏感，建议你使用 Unix Domain Socket。&lt;/span&gt;&lt;span/&gt;&lt;/section&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;- EOF -&lt;/span&gt;&lt;/p&gt;&lt;section donone=&quot;shifuMouseDownCard(&#x27;shifu_c_030&#x27;)&quot; label=&quot;Copyright Reserved by PLAYHUDONG.&quot;&gt;&lt;section&gt;&lt;span&gt;推荐阅读&lt;/span&gt;  &lt;span&gt;点击标题可跳转&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;1、&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MjM5NzMyMjAwMA==&amp;amp;mid=2651503617&amp;amp;idx=2&amp;amp;sn=b3772575e9c93a2959f7657fb431533b&amp;amp;chksm=bd25d07e8a525968711b2e13e80259d166154662c8f1d88c3fe3b5134ef02936f695020e8765&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;为什么网络 I/O 会被阻塞？&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;11&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;为什么网络 I/O 会被阻塞？&lt;/a&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2、&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MjM5NzMyMjAwMA==&amp;amp;mid=2651497617&amp;amp;idx=2&amp;amp;sn=48766564aea1c4896a837de00f8a4bc6&amp;amp;chksm=bd25c8ee8a5241f8a286f5889d78a5da11aa39658399ec0646557f82c9cfb3fa01b56405d6e0&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;36 张图详解 DNS ：网络世界的导航&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;11&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;36 张图详解 DNS ：网络世界的导航&lt;/a&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;3、&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MjM5NzMyMjAwMA==&amp;amp;mid=2651495718&amp;amp;idx=1&amp;amp;sn=f07fe55b05ba5866caf50e381c4bfe2c&amp;amp;chksm=bd25f1598a52784fa7d28df312e4e29e2a22d4e1defb68df5cd41e7d2b5369560dcb8a318e3e&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;25 张图，一万字，拆解 Linux 网络包发送过程&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;11&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;25 张图，一万字，拆解 Linux 网络包发送过程&lt;/a&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;看完本文有收获？请转发分享给更多人&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;关注「ImportNew」，提升Java技能&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.9166666666666666&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2A8tXicCG8ylbWIGfdoDED35IRRySQZTXUkJ1eop9MHApzFibKnOo0diboXpl0rmS5mH78YJhsWQv0dhv718A6kUA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;600&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;span&gt;点赞和在看就是最大的支持&lt;/span&gt;&lt;span&gt;❤️&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;/section&gt;
+<guid>3be7bbe64b5d31c59aa1427c5169b55a</guid>
+<title>一文搞懂 Docker、Containerd、RunC 间的联系和区别</title>
+<link>https://toutiao.io/k/01r96hf</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section&gt;&lt;section data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;span&gt;公众号关注 「&lt;span&gt;&lt;span&gt;奇妙的 Linux 世界&lt;/span&gt;&lt;/span&gt;」&lt;/span&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;设为「&lt;span&gt;星标&lt;/span&gt;」，每天带你玩转 Linux ！&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages&quot; data-cropselx1=&quot;0&quot; data-cropselx2=&quot;562&quot; data-cropsely1=&quot;0&quot; data-cropsely2=&quot;330&quot; data-fileid=&quot;100018142&quot; data-ratio=&quot;0.7411111111111112&quot; data-type=&quot;png&quot; data-w=&quot;900&quot; title=&quot;&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/8ZFzrRjqatqXrOdCSa2hThu5Gg6HMCv6DdlZegicHFpPcvRoVSicfEqfgX84cSicqfoNt3hqf3ODSlFTkibB8yMg6Q/640?wx_fmt=png&quot;/&gt;&lt;br/&gt;&lt;br/&gt;&lt;/section&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;什么是RunC&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Docker、Google、CoreOS 和其他供应商创建了开放容器计划 (OCI)，目前主要有两个标准文档：容器运行时标准 （runtime spec）和 容器镜像标准（image spec）。&lt;/p&gt;&lt;section&gt;&lt;img data-fileid=&quot;100018144&quot; data-ratio=&quot;0.5130533484676504&quot; data-type=&quot;png&quot; data-w=&quot;881&quot; title=&quot;&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibD9iaaPDn99j6K4fEDVSvE6ficAhoLE4zqUeibAB9ia21GP6vJth7wFlcAYzFHqUUqOehrA9zXlU6gxmsyo5yNjjcg/640?wx_fmt=png&quot;/&gt;&lt;figcaption&gt;&lt;br/&gt;&lt;/figcaption&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;OCI 对容器 runtime 的标准主要是指定容器的运行状态，和 runtime 需要提供的命令。下图可以是容器状态转换图：&lt;img data-fileid=&quot;100018148&quot; data-ratio=&quot;0.6009132420091324&quot; data-type=&quot;png&quot; data-w=&quot;1095&quot; title=&quot;&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibD9iaaPDn99j6K4fEDVSvE6ficAhoLE4zqj0Znnf19vRk5dThuF4GIQHm1r2qPwLagc2znlorFBPEGhlE0d2pOCA/640?wx_fmt=png&quot;/&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;init 状态：这个是我自己添加的状态，并不在标准中，表示没有容器存在的初始状态&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;creating：使用 create 命令创建容器，这个过程称为创建中&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;created：容器创建出来，但是还没有运行，表示镜像和配置没有错误，容器能够运行在当前平台&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;running：容器的运行状态，里面的进程处于 up 状态，正在执行用户设定的任务&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;stopped：容器运行完成，或者运行出错，或者 stop 命令之后，容器处于暂停状态。这个状态，容器还有很多信息保存在平台中，并没有完全被删除&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzI3MTI2NzkxMA==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/8ZFzrRjqatrP1H2ykr2xId1T1xNrZaVFuqGgQ3ycnJylh6A6h0vp2yqynejepUBcBufs3NWFKxl1QPsRxJ61YQ/0?wx_fmt=png&quot; data-nickname=&quot;奇妙的Linux世界&quot; data-alias=&quot;Hi-Linux&quot; data-signature=&quot;这里是 Linux 爱好者的聚集地，不仅有各种硬核干货文章和新奇内容推荐，还常常有福利红包等你来领哟。快快加入我们，一起愉快玩耍吧！&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;Runc的来历&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;RunC 是从 Docker 的 libcontainer 中迁移而来的，实现了容器启停、资源隔离等功能。Docker将RunC捐赠给 OCI 作为OCI 容器运行时标准的参考实现。Docker 默认提供了 docker-runc 实现。事实上，通过 containerd 的封装，可以在 Docker Daemon 启动的时候指定 RunC的实现。最初，人们对 Docker 对 OCI 的贡献感到困惑。他们贡献的是一种“运行”容器的标准方式，仅此而已。它们不包括镜像格式或注册表推/拉格式。当你运行一个 Docker 容器时，这些是 Docker 实际经历的步骤：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;下载镜像&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;将镜像文件解开为bundle文件，将一个文件系统拆分成多层&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;从bundle文件运行容器&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Docker标准化的仅仅是第三步。在此之前，每个人都认为容器运行时支持Docker支持的所有功能。最终，Docker方面澄清：原始OCI规范指出，只有“运行容器”的部分组成了runtime。这种“概念失联”一直持续到今天，并使“容器运行时”成为一个令人困惑的话题。希望我能证明双方都不是完全错误的，并且在本文中将广泛使用该术语。RunC 就可以按照这个 OCI 文档来创建一个符合规范的容器，既然是标准肯定就有其他 OCI 实现，比如 Kata、gVisor 这些容器运行时都是符合 OCI 标准的。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;怎么使用 runc&lt;/h3&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt; create the bundle&lt;br/&gt;&lt;span&gt;$&lt;/span&gt;&lt;span&gt; mkdir -p /mycontainer/rootfs&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;br/&gt;#&lt;/span&gt;&lt;span&gt; [ab]use Docker to copy a root fs into the bundle&lt;/span&gt;&lt;br/&gt;&lt;span&gt;$&lt;/span&gt;&lt;span&gt; docker &lt;span&gt;export&lt;/span&gt; $(docker create busybox) | tar -C /mycontainer/rootfs -xvf -&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;br/&gt;#&lt;/span&gt;&lt;span&gt; create the specification, by default sh will be the entrypoint of the container&lt;/span&gt;&lt;br/&gt;&lt;span&gt;$&lt;/span&gt;&lt;span&gt; &lt;span&gt;cd&lt;/span&gt; /mycontainer&lt;/span&gt;&lt;br/&gt;&lt;span&gt;$&lt;/span&gt;&lt;span&gt; runc spec&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;br/&gt;#&lt;/span&gt;&lt;span&gt; launch the container&lt;/span&gt;&lt;br/&gt;&lt;span&gt;$&lt;/span&gt;&lt;span&gt; sudo -i&lt;/span&gt;&lt;br/&gt;&lt;span&gt;$&lt;/span&gt;&lt;span&gt; &lt;span&gt;cd&lt;/span&gt; /mycontainer&lt;/span&gt;&lt;br/&gt;&lt;span&gt;$&lt;/span&gt;&lt;span&gt; runc run mycontainerid&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;br/&gt;#&lt;/span&gt;&lt;span&gt; list containers&lt;/span&gt;&lt;br/&gt;&lt;span&gt;$&lt;/span&gt;&lt;span&gt; runc list&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;br/&gt;#&lt;/span&gt;&lt;span&gt; stop the container&lt;/span&gt;&lt;br/&gt;&lt;span&gt;$&lt;/span&gt;&lt;span&gt; runc &lt;span&gt;kill&lt;/span&gt; mycontainerid&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;br/&gt;#&lt;/span&gt;&lt;span&gt; cleanup&lt;/span&gt;&lt;br/&gt;&lt;span&gt;$&lt;/span&gt;&lt;span&gt; runc delete mycontainerid&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在命令行中使用 runc，我们可以根据需要启动任意数量的容器。但是，如果我们想自动化这个过程，我们需要一个容器管理器。为什么这样？想象一下，我们需要启动数十个容器来跟踪它们的状态。其中一些需要在失败时重新启动，需要在终止时释放资源，必须从注册表中提取图像，需要配置容器间网络等等。就需要有Low-Level和High-Level容器运行时，runc就是Low-Level实现的实现。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;mpcpc js_editor_cpcad=&quot;&quot; class=&quot;js_cpc_area cpc_iframe&quot; data-category_id_list=&quot;1|11|16|17|22|24|26|27|28|29|3|31|32|35|36|37|39|41|42|43|45|46|47|48|49|5|50|51|52|53|54|55|6|7|8&quot; data-id=&quot;1635413232590&quot; src=&quot;/cgi-bin/readtemplate?t=tmpl/cpc_tmpl#1635413232590&quot;/&gt;&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;Low-Level和High-Level容器运行时&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当人们想到容器运行时，可能会想到一系列示例；runc、lxc、lmctfy、Docker（容器）、rkt、cri-o。这些中的每一个都是为不同的情况而构建的，并实现了不同的功能。有些，如 containerd 和 cri-o，实际上使用 runc 来运行容器，在High-Level实现镜像管理和 API。与 runc 的Low-Level实现相比，可以将这些功能（包括镜像传输、镜像管理、镜像解包和 API）视为High-Level功能。考虑到这一点，您可以看到容器运行时空间相当复杂。每个运行时都涵盖了这个Low-Level到High-Level频谱的不同部分。这是一个非常主观的图表：&lt;img data-fileid=&quot;100018145&quot; data-ratio=&quot;0.52&quot; data-type=&quot;png&quot; data-w=&quot;525&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibD9iaaPDn99j6K4fEDVSvE6ficAhoLE4zq3X6gL7KDaAEAWpaibvrQ5tCt4iaEOGNmUoXNomb6kn4mVljEUpTB3dVQ/640?wx_fmt=png&quot;/&gt;因此，从实际出发，通常只专注于正在运行的容器的runtime通常称为“Low-Level容器运行时”，支持更多高级功能（如镜像管理和gRPC / Web API）的运行时通常称为“High-Level容器运行时”，“High-Level容器运行时”或通常仅称为“容器运行时”，我将它们称为“High-Level容器运行时”。值得注意的是，Low-Level容器运行时和High-Level容器运行时是解决不同问题的、从根本上不同的事物。&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;Low-Level容器运行时：容器是通过Linux nanespace和Cgroups实现的，Namespace能让你为每个容器提供虚拟化系统资源，像是文件系统和网络，Cgroups提供了限制每个容器所能使用的资源的如内存和CPU使用量的方法。在最低级别的运行时中，容器运行时负责为容器建立namespaces和cgroups,然后在其中运行命令，Low-Level容器运行时支持在容器中使用这些操作系统特性。目前来看低级容器运行时有：runc ：我们最熟悉也是被广泛使用的容器运行时，代表实现Docker。runv：runV 是一个基于虚拟机管理程序（OCI）的运行时。它通过虚拟化 guest kernel，将容器和主机隔离开来，使得其边界更加清晰，这种方式很容易就能帮助加强主机和容器的安全性。代表实现是kata和Firecracker。runsc：runsc = runc + safety ，典型实现就是谷歌的gvisor，通过拦截应用程序的所有系统调用，提供安全隔离的轻量级容器运行时沙箱。截止目前，貌似并不没有生产环境使用案例。wasm : Wasm的沙箱机制带来的隔离性和安全性，都比Docker做的更好。但是wasm 容器处于草案阶段，距离生产环境尚有很长的一段路。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;High-Level容器运行时：通常情况下，开发人员想要运行一个容器不仅仅需要Low-Level容器运行时提供的这些特性，同时也需要与镜像格式、镜像管理和共享镜像相关的API接口和特性，而这些特性一般由High-Level容器运行时提供。就日常使用来说，Low-Level容器运行时提供的这些特性可能满足不了日常所需，因为这个缘故，唯一会使用Low-Level容器运行时的人是那些实现High-Level容器运行时以及容器工具的开发人员。那些实现Low-Level容器运行时的开发者会说High-Level容器运行时比如containerd和cri-o不像真正的容器运行时，因为从他们的角度来看，他们将容器运行的实现外包给了runc。但是从用户的角度来看，它们只是提供容器功能的单个组件，可以被另一个的实现替换，因此从这个角度将其称为runtime仍然是有意义的。即使containerd和cri-o都使用runc，但是它们是截然不同的项目，支持的特性也是非常不同的。dockershim, containerd 和cri-o都是遵循CRI的容器运行时，我们称他们为高层级运行时（High-level Runtime）。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Kubernetes 只需支持 containerd 等high-level container runtime即可。由containerd 按照OCI 规范去对接不同的low-level container runtime，比如通用的runc，安全增强的gvisor，隔离性更好的runv。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;containerd&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;与RunC_一样_，我们又可以在这里看到一个docker公司的开源产品containerd曾经是开源docker项目的一部分。尽管_containerd_是另一个自给自足的软件。&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;一方面，它称自己为容器运行时，但是与运行时__RunC_不同_。不仅_containerd_和_runc_的职责不同，组织形式也不同。显然_runc_是只是一个命令行工具，_containerd_是一个长期居住守护进程。_runc_的实例不能超过底层容器进程。通常它在create调用时开始它的生命，然后只是在容器的 rootfs 中的指定文件去运行。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;另一方面，_containerd _可以管理超过数千个_runc_容器。它更像是一个服务器，它侦听传入请求以启动、停止或报告容器的状态。在引擎盖下_containerd_使用RunC。然而，_containerd_不仅仅是一个容器生命周期管理器。它还负责镜像管理（从注册中心拉取和推送镜像，在本地存储镜像等）、跨容器网络管理和其他一些功能。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-fileid=&quot;100018147&quot; data-ratio=&quot;0.4851720047449585&quot; data-type=&quot;png&quot; data-w=&quot;1686&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibD9iaaPDn99j6K4fEDVSvE6ficAhoLE4zqNYZdOJk3vc2HQUsUjibegnsmNYoZJhvRiaHagSiby3BrD5c9CoksO84ibQ/640?wx_fmt=png&quot;/&gt;&lt;figcaption&gt;image.png&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;containerd 是一个工业级标准的容器运行时，它强调&lt;strong&gt;简单性&lt;/strong&gt;、&lt;strong&gt;健壮性&lt;/strong&gt;和&lt;strong&gt;可移植性&lt;/strong&gt;，containerd 可以负责干下面这些事情：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;管理容器的生命周期（从创建容器到销毁容器）&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;拉取/推送容器镜像&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;存储管理（管理镜像及容器数据的存储）&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;调用 runc 运行容器（与 runc 等容器运行时交互）&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;管理容器网络接口及网络&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-fileid=&quot;100018149&quot; data-ratio=&quot;0.6060606060606061&quot; data-type=&quot;png&quot; data-w=&quot;1782&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibD9iaaPDn99j6K4fEDVSvE6ficAhoLE4zqUUKf2m7qC15XGcwE72hUIStia5H7tm6VeD2vcmUhvBMQ8pQibBibGwM5A/640?wx_fmt=png&quot;/&gt;上图是 Containerd 整体的架构。由下往上，Containerd支持的操作系统和架构有 Linux、Windows 以及像 ARM 的一些平台。在这些底层的操作系统之上运行的就是底层容器运行时，其中有上文提到的runc、gVisor 等。在底层容器运行时之上的是Containerd 相关的组件，比如 Containerd 的 runtime、core、API、backend、store 还有metadata 等等。构筑在 Containerd 组件之上以及跟这些组件做交互的都是 Containerd 的 client，Kubernetes 跟 Containerd 通过 CRI 做交互时，本身也作为 Containerd 的一个 client。Containerd 本身有提供了一个 CRI，叫 ctr，不过这个命令行工具并不是很好用。 &lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在这些组件之上就是真正的平台，Google Cloud、Docker、IBM、阿里云、微软云还有RANCHER等等都是，这些平台目前都已经支持 containerd， 并且有些已经作为自己的默认容器运行时了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;从 k8s 的角度看，选择 containerd作为运行时的组件，它调用链更短，组件更少，更稳定，占用节点资源更少。&lt;img data-fileid=&quot;100018150&quot; data-ratio=&quot;0.2935185185185185&quot; data-type=&quot;png&quot; data-w=&quot;1080&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibD9iaaPDn99j6K4fEDVSvE6ficAhoLE4zqBRic9ZFYAFVBaqTgcqBCTc4hMJW9GicB4jtd7BZGB1gkkEiaPLl2QibHSg/640?wx_fmt=png&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;mpcpc js_editor_cpcad=&quot;&quot; class=&quot;js_cpc_area cpc_iframe&quot; data-category_id_list=&quot;1|11|16|17|22|24|26|27|28|29|3|31|32|35|36|37|39|41|42|43|45|46|47|48|49|5|50|51|52|53|54|55|6|7|8&quot; data-id=&quot;1635413250190&quot; src=&quot;/cgi-bin/readtemplate?t=tmpl/cpc_tmpl#1635413250190&quot;/&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;Docker&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Docker 于 2013 年发布，解决了开发人员在端到端运行容器时遇到的许多问题。这里是他包含的所有东西：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;section&gt;容器镜像格式&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;一种构建容器镜像的方法（Dockerfile/docker build）；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;一种管理容器镜像（docker image、docker rm等）；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;一种管理容器实例的方法（docker ps, docker rm 等）；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;一种共享容器镜像的方法（docker push/pull）；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;一种运行容器的方式（docker run）；&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当时，Docker 是一个单体系统。但是，这些功能中没有一个是真正相互依赖的。这些中的每一个都可以在可以一起使用的更小、更集中的工具中实现。每个工具都可以通过使用一种通用格式、一种容器标准来协同工作。从 Docker 1.11 之后，Docker Daemon 被分成了多个模块以适应 OCI 标准。拆分之后，结构分成了以下几个部分。&lt;img data-fileid=&quot;100018151&quot; data-ratio=&quot;0.628&quot; data-type=&quot;png&quot; data-w=&quot;2000&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibD9iaaPDn99j6K4fEDVSvE6ficAhoLE4zq4XPDAWQQ5toCbibBtXJQ8YPAo6iaVCqYMdcjGu1JKabUz45GdVfkW1Kw/640?wx_fmt=png&quot;/&gt;&lt;br/&gt;其中，containerd 独立负责容器运行时和生命周期（如创建、启动、停止、中止、信号处理、删除等），其他一些如镜像构建、卷管理、日志等由 Docker Daemon 的其他模块处理。 &lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Docker 的模块块拥抱了开放标准，希望通过 OCI 的标准化，容器技术能够有很快的发展。 &lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;现在创建一个docker容器的时候，Docker Daemon 并不能直接帮我们创建了，而是请求 containerd 来创建一个容器。当containerd 收到请求后，也不会直接去操作容器，而是创建一个叫做 containerd-shim 的进程。让这个进程去操作容器，我们指定容器进程是需要一个父进程来做状态收集、维持 stdin 等 fd 打开等工作的，假如这个父进程就是 containerd，那如果 containerd 挂掉的话，整个宿主机上所有的容器都得退出了，而引入 containerd-shim 这个垫片就可以来规避这个问题了，就是提供的live-restore的功能。这里需要注意systemd的 MountFlags=slave。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;然后创建容器需要做一些 namespaces 和 cgroups 的配置，以及挂载 root 文件系统等操作。runc 就可以按照这个 OCI 文档来创建一个符合规范的容器。 &lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;真正启动容器是通过 containerd-shim 去调用 runc 来启动容器的，runc 启动完容器后本身会直接退出，containerd-shim 则会成为容器进程的父进程, 负责收集容器进程的状态, 上报给 containerd, 并在容器中 pid 为 1 的进程退出后接管容器中的子进程进行清理, 确保不会出现僵尸进程。containerd，containerd-shim和容器进程(即容器主进程)三个进程，是有依赖关系的。可以参考《containerd,containerd-shim和runc的依存关系》[1],查看怎么保证live-restore的功能的。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;reference&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;https://www.ianlewis.org/en/container-runtimes-part-1-introduction-container-r&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;https://iximiuz.com/en/posts/journey-from-containerization-to-orchestration-and-beyond/#container-management&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;https://github.com/moby/moby/issues/35873#issuecomment-386467562&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;[1]https://fankangbest.github.io/2017/11/24/containerd-containerd-shim%E5%92%8Crunc%E7%9A%84%E4%BE%9D%E5%AD%98%E5%85%B3%E7%B3%BB/&lt;br/&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;本文转载自：「运维开发故事」，原文：https://tinyurl.com/skbbpr4j，版权归原作者所有。欢迎投稿，投稿邮箱: editor@hi-linux.com。&lt;/p&gt;&lt;/blockquote&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;__bg_gif&quot; data-fileid=&quot;100018141&quot; data-ratio=&quot;1&quot; data-type=&quot;gif&quot; data-w=&quot;55&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/V3ll7FMyGyMqQC7JRNgVZlsiaJibSyp27USlRia194K6Nqfvz8Wblg7HDceOn4Y3MekppS14lazRZTKLdt2BHuYGA/640?wx_fmt=gif&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img data-fileid=&quot;100018138&quot; data-ratio=&quot;0.19718309859154928&quot; data-type=&quot;png&quot; data-w=&quot;71&quot; data-width=&quot;100%&quot; title=&quot;&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/V3ll7FMyGyMSBQlhpwK0j3jOS5icKmFncGJdY8kL5kY6AswDpOBsz06GFowoDicL2dC2fr9haibnrwNdZ7rJLXqUA/640?wx_fmt=png&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;你可能还喜欢&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;点击下方图片即可阅读&lt;br/&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzI3MTI2NzkxMA==&amp;amp;mid=2247501647&amp;amp;idx=1&amp;amp;sn=20b5a0ecda942b5ba2166554eb045665&amp;amp;chksm=eac6e666ddb16f708e61423d1459d26b4f2d262cce7460bcc0ddced6cb37bee0ad56ef45fc4a&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;你已选中了添加链接的内容&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;1&quot;&gt;&lt;span class=&quot;js_jump_icon h5_image_link&quot; data-positionback=&quot;static&quot;&gt;&lt;img data-fileid=&quot;100018153&quot; data-ratio=&quot;0.375&quot; data-type=&quot;jpeg&quot; data-w=&quot;1080&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/8ZFzrRjqatqWpqDODU6e5tWXeR9ZB8APkleZalicTflzhfpU2ibFjCTKy3ICzoajK8AGgqmFCT7g38rymBiaBMNQg/640?wx_fmt=jpeg&quot;/&gt;&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;GitHub 星标 2.1 K，可能是最简单好用的纯文本流程图制作工具&lt;br/&gt;&lt;br/&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzI3MTI2NzkxMA==&amp;amp;mid=2247497936&amp;amp;idx=1&amp;amp;sn=ec9442c73de91c5ab35dbd21dfbedcbd&amp;amp;chksm=eac6d9f9ddb150ef9fc91129ab2b34d35ffef884a726fd90bc1fe9d4014456d910b3baa73afc&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;你已选中了添加链接的内容&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;1&quot;&gt;&lt;span class=&quot;js_jump_icon h5_image_link&quot; data-positionback=&quot;static&quot;&gt;&lt;img data-fileid=&quot;100018139&quot; data-ratio=&quot;0.5496957403651116&quot; data-type=&quot;png&quot; data-w=&quot;986&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/8ZFzrRjqatp9P1fjdJcxb1j9gtuoFvu5tYF73myE4ZCLLUzO34rxQ1jruOX4XN3bpqWJWyZ47Mfh7UhvIOJwDA/640?wx_fmt=png&quot;/&gt;&lt;/span&gt;&lt;/a&gt;&lt;br/&gt;点击上方图片，『美团|饿了么』外卖红包天天免费领&lt;br/&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages&quot; data-fileid=&quot;100018143&quot; data-ratio=&quot;0.5555555555555556&quot; data-s=&quot;300,640&quot; data-type=&quot;png&quot; data-w=&quot;900&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/8ZFzrRjqatpX5KlSvhARyBhcqYmvglSE9zMfzA8CSgNIibAiaFFNHBoXujK9vo2655gRWM5RibLzzF6jPhk4CuYAg/640?wx_fmt=png&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;更多有趣的互联网新鲜事，关注「奇妙的互联网」视频号全了解！&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
