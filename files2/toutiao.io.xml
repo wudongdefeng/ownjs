@@ -59,12 +59,6 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>c77debcfd8ac0e4e758e3c88a47f620b</guid>
-<title>Python监控小姐姐/小哥哥微博，了解一下？</title>
-<link>https://toutiao.io/k/ag0wyrr</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section&gt;&lt;p&gt;&lt;strong&gt;&lt;span/&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;2. &lt;/span&gt;&lt;/strong&gt;&lt;strong&gt;&lt;span&gt;实现微博监控&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;span&gt;步骤一：获取被监控微博用户发布的所有微博&lt;/span&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;经抓包分析与实际测试，获取被监控微博用户发布的所有微博流程如下：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;① 获取第一个containerid&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;登录状态的session请求用户主页后通过正则表达式从session的cookies中提取。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;② 获取第二个containerid&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;利用第一个containerid、user_id请求：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;https://m.weibo.cn/api/container/getIndex?uid={}&amp;amp;luicode=10000011&amp;amp;lfid=231093_-_selffollowed&amp;amp;type=uid&amp;amp;value={}&amp;amp;containerid={}&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;即可获取第二个containerid。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;③ 获取被监控微博用户发布的所有微博数据&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;利用第二个containerid、user_id请求：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;https://m.weibo.cn/api/container/getIndex?uid={}&amp;amp;luicode=10000011&amp;amp;lfid=231093_-_selffollowed&amp;amp;type=uid&amp;amp;value={}&amp;amp;containerid={}&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;即可获取被监控微博用户发布的所有微博数据。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;span&gt;步骤二：实时监控&lt;/span&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;不断重复步骤一，获取被监控微博用户发布的所有微博，将获取的数据与上一次获取的被监控微博用户发布的所有微博数据进行对比，若有新的数据，则代表被监控微博用户发布了新的微博。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;具体代码实现如下：&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
 <guid>4cd4e1d087a21f44ae30e0a6639ffb52</guid>
 <title>开源｜开发者不需要写一行代码，就可以拥有 10 倍生产力！</title>
 <link>https://toutiao.io/k/fiqzd4b</link>
@@ -85,5 +79,11 @@
 
                 
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>c77debcfd8ac0e4e758e3c88a47f620b</guid>
+<title>Python监控小姐姐/小哥哥微博，了解一下？</title>
+<link>https://toutiao.io/k/ag0wyrr</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section&gt;&lt;p&gt;&lt;strong&gt;&lt;span/&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;2. &lt;/span&gt;&lt;/strong&gt;&lt;strong&gt;&lt;span&gt;实现微博监控&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;span&gt;步骤一：获取被监控微博用户发布的所有微博&lt;/span&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;经抓包分析与实际测试，获取被监控微博用户发布的所有微博流程如下：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;① 获取第一个containerid&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;登录状态的session请求用户主页后通过正则表达式从session的cookies中提取。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;② 获取第二个containerid&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;利用第一个containerid、user_id请求：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;https://m.weibo.cn/api/container/getIndex?uid={}&amp;amp;luicode=10000011&amp;amp;lfid=231093_-_selffollowed&amp;amp;type=uid&amp;amp;value={}&amp;amp;containerid={}&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;即可获取第二个containerid。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;③ 获取被监控微博用户发布的所有微博数据&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;利用第二个containerid、user_id请求：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;https://m.weibo.cn/api/container/getIndex?uid={}&amp;amp;luicode=10000011&amp;amp;lfid=231093_-_selffollowed&amp;amp;type=uid&amp;amp;value={}&amp;amp;containerid={}&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;即可获取被监控微博用户发布的所有微博数据。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;&lt;span&gt;步骤二：实时监控&lt;/span&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;不断重复步骤一，获取被监控微博用户发布的所有微博，将获取的数据与上一次获取的被监控微博用户发布的所有微博数据进行对比，若有新的数据，则代表被监控微博用户发布了新的微博。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;具体代码实现如下：&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
