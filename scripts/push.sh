@@ -19,7 +19,7 @@ echo "告警信息 : $content"
  Gtoken=$(/usr/bin/curl -s -G $GURL | awk -F \" '{print $10}')
  PURL="https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=$Gtoken"
  function body() {
-   local int AppID=1000008           # 企业号中的应用id
+   local int AppID=1000007           # 企业号中的应用id
    local UserID='@all'            # 部门成员id，微信接收者，多个接收者用竖杠|隔开
    #local PartyID=$2            # 部门id，定义了范围，组内成员都可接收到消息
    
