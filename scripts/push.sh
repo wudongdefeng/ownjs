@@ -13,8 +13,8 @@ echo "告警信息 : $content"
  
 #echo "warn content is : $content" >> ./warn.log
  
- CropID=os.environ['wxcropid']
- Secret=os.environ['wxsecret']
+ CropID=${wxcropid}
+ Secret=${wxsecret}
  GURL="https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=$CropID&corpsecret=$Secret"
  Gtoken=$(/usr/bin/curl -s -G $GURL | awk -F \" '{print $10}')
  PURL="https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=$Gtoken"
