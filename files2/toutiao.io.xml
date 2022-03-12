@@ -5,18 +5,6 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>f2714a6e862ac70abccad2990f481e92</guid>
-<title>成为更好的开发者！行动起来！</title>
-<link>https://toutiao.io/k/bcodelm</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;weui-dialog&quot;&gt;
-      &lt;p class=&quot;weui-dialog__hd&quot;&gt;&lt;strong class=&quot;weui-dialog__title&quot;&gt;&quot;Top Stories&quot; is disabled&lt;/strong&gt;&lt;/p&gt;
-      &lt;p class=&quot;weui-dialog__bd&quot;&gt;
-        Enable &quot;Top Stories&quot; in &quot;Settings&quot; &amp;gt; &quot;General&quot; &amp;gt; &quot;Manage Discover&quot;      &lt;/p&gt;
-      
-    &lt;/div&gt;
-  &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
 <guid>403860aa2c5964ea49088ab33d7db829</guid>
 <title>快手抓包问题分析</title>
 <link>https://toutiao.io/k/ef3rtq9</link>
@@ -108,6 +96,18 @@ sudo iptables -t nat -I PREROUTING -p tcp  -s 172.17.0.12 --dport 443 -j REDIREC
 iptables -t nat -D PREROUTING 1
 iptables -t nat -D PREROUTING 1&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;设置完成后，观察手机的网络状况，现象如下：&lt;/p&gt;&lt;ol&gt;&lt;li&gt;使用浏览器访问普通网站，返回均正常，mitmproxy也能抓到包。&lt;/li&gt;&lt;li&gt;刷快手推荐页，能成功刷出，并且mitmproxy也抓到了包。&lt;/li&gt;&lt;/ol&gt;&lt;figure class=&quot;kg-card kg-image-card&quot;&gt;&lt;img src=&quot;https://blog.mythsman.com/content/images/2022/02/K20220220-174206.png&quot; class=&quot;kg-image&quot; alt=&quot;&quot; loading=&quot;lazy&quot; srcset=&quot;https://blog.mythsman.com/content/images/size/w600/2022/02/K20220220-174206.png 600w, https://blog.mythsman.com/content/images/2022/02/K20220220-174206.png 720w&quot; sizes=&quot;(min-width: 720px) 720px&quot;/&gt;&lt;/figure&gt;&lt;h2 id=&quot;%E6%80%BB%E7%BB%93&quot;&gt;总结&lt;/h2&gt;&lt;p&gt;目前看来，快手并非像很多网上传的那样，大多数接口都走了 kquic 协议导致无法抓包。其实很多接口只是做了一个禁止走系统代理的设置，简单使用透明代理模式进行抓包即可轻松绕过。当然，不排除有些关键接口也做了SSL pinning、走私有协议之类的。。。&lt;/p&gt;&lt;h2 id=&quot;%E5%8F%82%E8%80%83&quot;&gt;参考&lt;/h2&gt;&lt;p&gt;&lt;a href=&quot;https://docs.mitmproxy.org/stable/concepts-certificates/&quot;&gt;https://docs.mitmproxy.org/stable/concepts-certificates/&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://stackoverflow.com/questions/56830858&quot;&gt;https://stackoverflow.com/questions/56830858&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://square.github.io/okhttp/4.x/okhttp/okhttp3/-ok-http-client/-builder/proxy/&quot;&gt;https://square.github.io/okhttp/4.x/okhttp/okhttp3/-ok-http-client/-builder/proxy/&lt;/a&gt;&lt;/p&gt;
     &lt;/section&gt;
+  &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>f2714a6e862ac70abccad2990f481e92</guid>
+<title>成为更好的开发者！行动起来！</title>
+<link>https://toutiao.io/k/bcodelm</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;weui-dialog&quot;&gt;
+      &lt;p class=&quot;weui-dialog__hd&quot;&gt;&lt;strong class=&quot;weui-dialog__title&quot;&gt;&quot;Top Stories&quot; is disabled&lt;/strong&gt;&lt;/p&gt;
+      &lt;p class=&quot;weui-dialog__bd&quot;&gt;
+        Enable &quot;Top Stories&quot; in &quot;Settings&quot; &amp;gt; &quot;General&quot; &amp;gt; &quot;Manage Discover&quot;      &lt;/p&gt;
+      
+    &lt;/div&gt;
   &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
