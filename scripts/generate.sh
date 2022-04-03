@@ -89,10 +89,10 @@ git diff > ./log2.txt
 git log -1 > ./log1.txt 
 
 
-log1=head -3 (git log -1))
-log2=head -1 (git diff))
+log1=head -3 ${git log -1}
+log2=head -1 ${git diff}
 rm log*.txt
-
+touch ..log.txt
 
 sed -i "1i\#updated by wudongdefeng" ../file.txt
 sed -i "2i\${log1}" ..log.txt
