@@ -94,7 +94,8 @@ log1="head -3 log1.txt"
 log2="head -1 log2.txt"
 rm log*.txt
 touch log.txt
-
+echo ${log1}
+echo ${log2}
 sed -i "1i\#updated by wudongdefeng" file.txt
 sed -i "2i\${log1}" log.txt
 sed -i "3i\${log2}" log.txt
