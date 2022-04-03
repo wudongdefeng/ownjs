@@ -94,8 +94,9 @@ log1=$(sed -n '3,3p' log1.txt)
 log2=$(sed -n '3,3p' log2.txt)
 
 rm log*.txt
-echo "${log1}" > log.txt
-echo "${log2}" >> log.txt
+echo "$(sed -n '3,3p' log1.txt)" > log.txt
+echo "$(sed -n '3,3p' log2.txt)" >> log.txt
+echo "$(sed -n '4,4p' log2.txt)" >> log.txt
 
 sed -i "1i\#updated by wudongdefeng" file.txt
 
