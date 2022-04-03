@@ -85,18 +85,7 @@ sed -i '/订阅专享/d' *.txt
 sed -i '/tvbus\:/d' *.txt
 sed -i '/mitv\:/d' *.txt
 sed -i '/^[[:space:]]*$/d' *.txt
-cd ..
-git diff > ./log2.txt 
-git log -1 > ./log1.txt 
 
-
-log1=$(sed -n '3,3p' log1.txt)
-log2=$(sed -n '3,3p' log2.txt)
-log3=$(sed -n '3,3p' log2.txt)
-rm log*.txt
-echo "${log1}" > log.txt
-echo "${log2}" >> log.txt
-echo "${log3}" >> log.txt
 
 sed -i "1i\#updated by wudongdefeng" file.txt
 
