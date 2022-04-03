@@ -90,8 +90,8 @@ git diff > ./log2.txt
 git log -1 > ./log1.txt 
 
 
-log1=head -3 log1.txt
-log2=head -1 log2.txt
+log1=head -n 3 log1.txt | tail -n 1
+log2=head -n 1 log2.txt | tail -n 1
 rm log*.txt
 touch log.txt
 echo ${log1}
