@@ -81,6 +81,12 @@ sed -i '/均为/d' *.txt
 sed -i '/假冒/d' *.txt
 sed -i '/机哥特制/d' *.txt
 sed -i '/订阅专享/d' *.txt
+sed -i '/感谢全球直播/d' *.txt
+sed -i '/培 训 中  心/d' *.txt
+sed -i '/点播机构研发/d' *.txt
+
+
+
        
 sed -i '/tvbus\:/d' *.txt
 sed -i '/mitv\:/d' *.txt
