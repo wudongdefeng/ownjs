@@ -50,6 +50,7 @@ ls
 cd ..
 rm -rf tem
 ls -R *.txt > ../file.txt
+
 sed -i "s#0.txt#40740,0.txt#g" ../file.txt
 sed -i "s#liuwei.txt#六维,liuwei.txt#g" ../file.txt
 sed -i "s#iptv.txt#zbefine,iptv.txt#g" ../file.txt
@@ -66,6 +67,7 @@ sed -i "s#tv2.txt#七彩直播,tv2.txt#g" ../file.txt
 sed -i "s#CR.txt#综合直播,CR.txt#g" ../file.txt
 sed -i "s#直播2.txt#pglblb,直播2.txt#g" ../file.txt
 sed -i "s#xudong.txt#xudong,xudong.txt#g" ../file.txt
+sed -i "1i\#updated by wudongdefeng" ../file.txt
 
 sed -i "s/\$c\_start//g" *.txt
 sed -i "s/\$c\_end/\,\#genre\#/g" *.txt
@@ -91,7 +93,6 @@ sed -i '/点播机构研发/d' *.txt
 sed -i '/tvbus\:/d' *.txt
 sed -i '/mitv\:/d' *.txt
 sed -i '/^[[:space:]]*$/d' *.txt
-cd ..
 
-sed -i "1i\#updated by wudongdefeng" file.txt
+
 
