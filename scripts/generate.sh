@@ -87,10 +87,13 @@ sed -i '/mitv\:/d' *.txt
 sed -i '/^[[:space:]]*$/d' *.txt
 git diff > ./log2.txt 
 git log -1 > ./log1.txt 
-cat ./log*.txt > ./log.txt
 
-log1=$(head -1 log1.txt)
-log2=$(head -1 log2.txt)
-rm log1.txt
-rm log2.txt
+
+log1=$(head -3 ${git log -1})
+log2=$(head -1 ${git diff})
+rm log*.txt
+
+
 sed -i "1i\#updated by wudongdefeng" ../file.txt
+sed -i "2i\${log1}" ..log.txt
+sed -i "3i\${log2}" ..log.txt
