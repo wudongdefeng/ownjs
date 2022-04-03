@@ -92,10 +92,10 @@ git log -1 > ./log1.txt
 
 log1=$(sed -n '3,3p' log1.txt)
 log2=$(sed -n '3,3p' log2.txt)
+
 rm log*.txt
-touch log.txt
-echo ${log1}
-echo ${log2}
+echo ${log1} &"\n" & ${log2}
+${log1} &"\n" & ${log2} > log.txt
+
 sed -i "1i\#updated by wudongdefeng" file.txt
-sed -i "1i${log1}" log.txt
-sed -i "2i${log2}" log.txt
+
