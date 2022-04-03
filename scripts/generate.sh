@@ -97,5 +97,5 @@ touch log.txt
 echo ${log1}
 echo ${log2}
 sed -i "1i\#updated by wudongdefeng" file.txt
-sed -i "1i $log1" log.txt
-sed -i "2i $log2" log.txt
+sed -i "1i${log1}" log.txt
+sed -i "2i${log2}" log.txt
