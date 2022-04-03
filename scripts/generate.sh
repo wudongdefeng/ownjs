@@ -90,7 +90,7 @@ git diff > ./log2.txt
 git log -1 > ./log1.txt 
 
 
-log1=$(sed -n '1,1p' log1.txt)
+log1=$(sed -n '3,3p' log1.txt)
 log2=$(sed -n '3,3p' log2.txt)
 rm log*.txt
 touch log.txt
