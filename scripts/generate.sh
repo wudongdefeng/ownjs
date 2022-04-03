@@ -85,15 +85,16 @@ sed -i '/订阅专享/d' *.txt
 sed -i '/tvbus\:/d' *.txt
 sed -i '/mitv\:/d' *.txt
 sed -i '/^[[:space:]]*$/d' *.txt
+cd ..
 git diff > ./log2.txt 
 git log -1 > ./log1.txt 
 
 
-log1="head -3 ./log1.txt"
-log2="head -1 ./log2.txt"
+log1="head -3 log1.txt"
+log2="head -1 log2.txt"
 rm log*.txt
-touch ..log.txt
+touch log.txt
 
-sed -i "1i\#updated by wudongdefeng" ../file.txt
-sed -i "2i\${log1}" ..log.txt
-sed -i "3i\${log2}" ..log.txt
+sed -i "1i\#updated by wudongdefeng" file.txt
+sed -i "2i\${log1}" log.txt
+sed -i "3i\${log2}" log.txt
