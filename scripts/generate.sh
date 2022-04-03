@@ -85,7 +85,7 @@ sed -i '/订阅专享/d' *.txt
 sed -i '/tvbus\:/d' *.txt
 sed -i '/mitv\:/d' *.txt
 sed -i '/^[[:space:]]*$/d' *.txt
-
+cd ..
 
 sed -i "1i\#updated by wudongdefeng" file.txt
 
