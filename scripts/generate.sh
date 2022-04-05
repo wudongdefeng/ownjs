@@ -67,6 +67,8 @@ sed -i "s#tv2.txt#七彩直播,tv2.txt#g" ../file.txt
 sed -i "s#CR.txt#综合直播,CR.txt#g" ../file.txt
 sed -i "s#直播2.txt#pglblb,直播2.txt#g" ../file.txt
 sed -i "s#xudong.txt#xudong,xudong.txt#g" ../file.txt
+sed -i "s#hk.txt#honhkong,hk.txt#g" ../file.txt
+
 sed -i "1i\#updated by wudongdefeng" ../file.txt
 
 sed -i "s/\$c\_start//g" *.txt
