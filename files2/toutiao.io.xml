@@ -5,23 +5,410 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>fdd99580e59535b42875d5c2bd7a1c6f</guid>
-<title>手撕Spring源码（三），彻底理解Spring循环依赖原理</title>
-<link>https://toutiao.io/k/godfwci</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content                                                                     &quot; id=&quot;js_content&quot;&gt;
-            &lt;p&gt;很多朋友大概有注意到，我写过一些文章解释清楚了一些：全网没有其他文章解释清楚，或者大多数文章都是错误的问题。比如：《&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUzNjAxODg4MQ==&amp;amp;mid=2247486732&amp;amp;idx=1&amp;amp;sn=523d754d7944be46985d098c82f79af2&amp;amp;chksm=fafde7a2cd8a6eb47d6145a8538b907b8b118b09ddb530cd57ba80feaa7b539559279debe893&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;说透分布式事务&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;strong&gt;说透分布式事务&lt;/strong&gt;&lt;/a&gt;》里&lt;span&gt;BASE理论和分布式事务&lt;/span&gt;到底是什么关系。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;本篇文章我在动笔之前也搜索了一下，包含文章和收费视频。发现自己花了钱学习的东西老师(还是这个方面口碑很好的老师)在翻来覆去啰嗦那么几句话，就是没把问题讲透。为啥呢？我分析了一下，因为老师从一开始没有说明这么设计要解决的问题呀。&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;br/&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;上篇回顾&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;本篇是手撕Spring源码系列的第三篇。由于上下&lt;span&gt;文之间的逻辑关系，没看过前两篇的朋友强烈建议先看前两篇。上篇传送门：《&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUzNjAxODg4MQ==&amp;amp;mid=2247487194&amp;amp;idx=1&amp;amp;sn=67bf87a4fdc41922d7a5e80b481d95b4&amp;amp;chksm=fafde474cd8a6d62d9a3d4f095e4ea32f342c734ea50e997edf346e7f00f4c2c2e10e39f0d30&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;手撕Spring后置处理器源码，彻底理解Spring核心&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;strong&gt;手撕Spring源码（二），彻底理解Spring&lt;/strong&gt;&lt;/a&gt;&lt;strong&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUzNjAxODg4MQ==&amp;amp;mid=2247487194&amp;amp;idx=1&amp;amp;sn=67bf87a4fdc41922d7a5e80b481d95b4&amp;amp;chksm=fafde474cd8a6d62d9a3d4f095e4ea32f342c734ea50e997edf346e7f00f4c2c2e10e39f0d30&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;手撕Spring后置处理器源码，彻底理解Spring核心&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;strong&gt;后置处理器&lt;/strong&gt;&lt;/a&gt;&lt;/strong&gt;》。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;强化是深度记忆的有效手段。简单对上篇做个总结。Spring Bean创建的过程为：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.17768147345612134&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRlibdH4v2HFX63pg5XPteibjRjLvTVS3MDHQ43Ix7JPZAnmKmFtMcLVOpokS8UO0PRvsZlvIQhJ1gPmw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;923&quot;/&gt;&lt;/p&gt;&lt;p&gt;1、根据class生成Bean定义&lt;/p&gt;&lt;p&gt;2、根据Bean进行实例化&lt;/p&gt;&lt;p&gt;3、将实例的Bean属性进行填充&lt;/p&gt;&lt;p&gt;4、初始化Bean&lt;/p&gt;&lt;p&gt;5、Bean后置处理&lt;/p&gt;&lt;p&gt;6、完成Bean对象的创建&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;本系列&lt;span&gt;的所有&lt;/span&gt;&lt;span&gt;代码文字在 https://github.com/xiexiaojing/yuna 里可以找到。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;引出问题&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;在上篇最后的代码中，咱们来做这么一件事，让 testService 引用 userService ：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5674547983310153&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRlicA7m6G02opCfqvAeMiacTU6XXJ6npfEF3QQEU6whlcfelkRoRH8j2IY3Eus0qwdqKghhcicXT7MnVQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;719&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;加上原来的 userService 引用了 testService ：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.49461312438785504&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRlicA7m6G02opCfqvAeMiacTU6wMZbWHlCLpcjNxHWq9C7ODTWR2tK7uyk3ib1em78lAMrsa9Y1zRAPSw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1021&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;运行启动类：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.23414179104477612&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRlibdH4v2HFX63pg5XPteibjRjSrXgrFpbIA87g7wqBj548gfpMaAD2NmyUICeCyrdIeicqz6jev1miamQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1072&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;循环引用导致栈溢出：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.38772077375946173&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRlicA7m6G02opCfqvAeMiacTU6XWibicxDvtXFicv7l2M8Rp07dUIKpEY2SVx7iaPibLOItv5EnDp9DQMia6gA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1189&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;原因看代码就很明白了，有递归调用导致&lt;span&gt;&lt;strong&gt;死循环依赖&lt;/strong&gt;&lt;/span&gt;：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.8213914849428868&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRlibdH4v2HFX63pg5XPteibjRjzfR97ibaUGRicU2Stj83QV0y3HXibVBThWg1axrWciasspGbxqFiclszUqw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;963&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;咱们模拟的就是Spring源码，原理和Spring源码是一样的。那Spring最初也遇到了这个问题。它是怎么解决的呢？&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;单例池二级缓存&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;Spring解决的思路也是很常规的思路：testService 引用了 userService 。要创建userService需要先获取testService的Bean。那能不能先创建一个半成品先用着呢？这就是Spring解决循环依赖的二级缓存思想。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;有二级缓存，那就有一级缓存。什么是一级缓存呢？咱们头两节课里介绍获取Bean在Scope为单例时是从singletonObjects也就是单例池中获取的。这个单例池作用是缓存单例对象，这就是一级缓存。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.6363636363636364&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRl9rywK5Vs4W4tOkqGhZN1I7P9sUH8h5MYvBjkrZ5bwiaVKRNHUKq7GCibEPaicDWHibkFDzdx8rj05hAQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;968&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;那咱们来看二级缓存，也叫半成品池。思想就是如果获取Bean的时候发现Bean不存在，就从半成品池里获取。如果获取不到则立即实例化一个放到半成品池里。这样，其他Bean创建依赖于它时，就可以直接先拿来用。确保依赖它的可以实例化成功。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;定义半成品池：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.20202020202020202&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRl9rywK5Vs4W4tOkqGhZN1I7aJXy8TUvjRwZykGq8sq3z0jfUZuBRO39XXicTs26yZ8f9CRHiaUHqomQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;990&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;获取Bean时如果&lt;span&gt;如果获取不到&lt;/span&gt;&lt;span&gt;则&lt;/span&gt;&lt;span&gt;立即实例化一个放到半成品池里&lt;/span&gt;：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.4594594594594595&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRl9rywK5Vs4W4tOkqGhZN1I7dT1wv5TA6PeBBeS4pS0IsIicjGnSDSNnhTMnGEjZGk5BYmXDP644Ufw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1147&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;总共加上了这四行代码之后咱们再来运行一次：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5233248515691263&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRl9rywK5Vs4W4tOkqGhZN1I7icbkcSGGRyCH3BrAxKDyxASTiaSVhEzm0XVsVkKia6Vm0ia5M54a8JsCIg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1179&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.996309963099631&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/2tk5ianItRl9rywK5Vs4W4tOkqGhZN1I7kNJ6xtI7XwvibxJN0pvUiagtJvzvRic6rNudE08dY7zSPXtrMticiaC30kg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;271&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;单例池二级缓存存在的问题&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;记不记得咱们曾经手撕过mybatis的源码？可以回顾一下《&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUzNjAxODg4MQ==&amp;amp;mid=2247485597&amp;amp;idx=1&amp;amp;sn=555efa9b4b4041a29c4816772b0c1f2c&amp;amp;chksm=fafde233cd8a6b25f5a98a025df7917cb0d27f81e9efece21d4ce0a1f43155598b4108626172&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;mybatis的本质和原理&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;strong&gt;&lt;span&gt;mybatis的本质和原理&lt;/span&gt;&lt;/strong&gt;&lt;/a&gt;&lt;span&gt;》这篇文章。想抽空写一篇手撕spring整合mybatis的，大家有兴趣的可以在评论区留言。本篇在看超15，就是默认想看了，8小时内我就把文章肝出来~&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;spring整合mybatis时，咱们使用时定义接口，并把扫描注解标注到接口上：&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5495608531994981&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRl9rywK5Vs4W4tOkqGhZN1I7icOHZZjbOakgj2icib5GqQuFGE6NQiao4hNDiaQZgs53Ac8RpYg2eVVhq7w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;797&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;本质上Repository就是一个Component注解：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.9257884972170687&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRl9rywK5Vs4W4tOkqGhZN1I7gp4mqbFWNmovlVG4mjAWDreAT83I9pINZtzT7BD7vX3dicQTO7l4Iww/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;539&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;那问题来了，mybatis的操作sql语句的方法是接口不是类，不能被实例化呀，二级缓存提前实例化是有问题的。不信咱们来试验一下：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;1.0528&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRl9rywK5Vs4W4tOkqGhZN1I7LZe4SXLUCHVTvuoOs8b4dUzU9Z6ibyRZuFOwjMftWl144zU7AdyTmwg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;625&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;注入一个接口，启动时就报错了：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5985239852398524&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRl9rywK5Vs4W4tOkqGhZN1I7EjprMvCG6pK1dib0mI4UyDjO5S2HozxiaH7HE8P6oxHicjeNib54iaSIHfg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1355&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;因为本身啊，咱们利用Spring注入的Bean是代理类。比如mybatis的接口最终使用的是mybatis在执行完Bean后置处理器之后的代理类。&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;问题明确了：二级缓存由于提前实例化，实例化了一些不能被实例化的接口，会报错。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;单例池三级缓存&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;那如果你是Spring的设计者怎么解决这个问题？那如果发现是接口就提前执行后置器处理器把代理类创建出来使用呗。别说，Spring的设计者还真也是这么处理的。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;首先定义一个接口，这个接口直接从Spring源码里拷贝一下：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.6821608040201005&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRl9rywK5Vs4W4tOkqGhZN1I7I3lHOCXO2egkvyU7s6Bia20Ln0M9qXUJibXtCTWOSMvz9gH5kEd9AJGw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;796&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;这个接口的实现类作用就是实现getObject把接口真正替换成代理类。这里举得是mybatis的实现，具体可参考《&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUzNjAxODg4MQ==&amp;amp;mid=2247485597&amp;amp;idx=1&amp;amp;sn=555efa9b4b4041a29c4816772b0c1f2c&amp;amp;chksm=fafde233cd8a6b25f5a98a025df7917cb0d27f81e9efece21d4ce0a1f43155598b4108626172&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;mybatis的本质和原理&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;strong&gt;mybatis的本质和原理&lt;/strong&gt;&lt;/a&gt;》：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.761049723756906&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRl9rywK5Vs4W4tOkqGhZN1I7E0rwu4YpNdLmh76BtYrDD8zfdicibVbqZOUKLvA55EzzYdaQ8HVib8ibIA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;724&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;本质上Repository就是一个Component注解的别名。为了让咱们在spring的注解能扫描到，咱们把它替换成@Component注解：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5264527320034692&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRl9rywK5Vs4W4tOkqGhZN1I79goIecpgMhJuU2LSADrH9C5lujG3qVNibWhBv9cCf2Kld8YgdSlXiaww/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1153&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;由于类所在的位置，咱们把扫描范围扩大些：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.7712177121771218&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRl9rywK5Vs4W4tOkqGhZN1I7jVQSFic3SEX2M5QeEqEI0eNiaHGy7m4sdhOsMQiauJYXqBXyxnbqf6mVg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;813&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;定义三级缓存也叫工厂池：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.22319474835886213&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRl9rywK5Vs4W4tOkqGhZN1I7vs8J7W064nzufv7tevCVUVnMS9KU4TRib4h5sSa4dLeK2DN6WTABogQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;914&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;如果是接口先实例化工厂池对象，从工厂池对象中获取真正的Bean对象：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.6016877637130802&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRl9rywK5Vs4W4tOkqGhZN1I7DbadH9dvMop4HQbCoeqicBu3hpcplj7dEA8TSt0CxCz0Ld89U6jHSUw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1185&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;这里只是一个put操作，为了尽量和Spring源码保持一致，单独拆成方法，加了下面判断，其实核心就一行：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.29287305122494434&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRl9rywK5Vs4W4tOkqGhZN1I7d4abrJCxpTSL6XTSjC3acdI1sn5rMAfkRBYfBzrlUZOzU6v0XvcCVA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;898&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;其他就是因为提前实例化了，在创建Bean时判断如果已经实例化则不必再次实例化，只是一个判断：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.40865384615384615&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRl9rywK5Vs4W4tOkqGhZN1I7sGWP7Tcj8aeaFOT2zZ5WiaAVAJ02lOt1FNVmeCHtqDfXibKNPyYED4aQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1040&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;改造就是这些，咱们来运行一下：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.8289902280130294&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2tk5ianItRl9rywK5Vs4W4tOkqGhZN1I7cSxwUgCYiajniaP6VKrq7PqbWVVNPmN5LCd5yQ6m3MsLfMLicdNQxsXBg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;614&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.93&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/2tk5ianItRl9rywK5Vs4W4tOkqGhZN1I7jv1qRlb8ZMib7xd1DZs59wVnaOekZJ7NVyAo1rmM1cuUHT4AWkkibVXw/640?wx_fmt=gif&quot; data-type=&quot;gif&quot; data-w=&quot;300&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;总结&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;本篇针对Spring创建时会遇到的两个问题：死循环依赖问题和接口实例化问题给出了Spring的解决方案。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;虽然代码是我手撕的，和源码不完全一致，但原理是一样的。面试的时候跟人家说Spring就是这么实现的，一点问题也没有。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;在本系列的第一篇《&lt;span&gt;手撕spring核心源码，彻底搞懂spring流程》里其实Spring IoC控制反转和依赖注入原理就已经讲完并实现了。这两篇文章都是针对在此基础上的需求和问题。&lt;span&gt;《&lt;/span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUzNjAxODg4MQ==&amp;amp;mid=2247487194&amp;amp;idx=1&amp;amp;sn=67bf87a4fdc41922d7a5e80b481d95b4&amp;amp;chksm=fafde474cd8a6d62d9a3d4f095e4ea32f342c734ea50e997edf346e7f00f4c2c2e10e39f0d30&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;手撕Spring后置处理器源码，彻底理解Spring核心&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;strong&gt;手撕Spring源码（二），彻底理解Spring&lt;/strong&gt;&lt;/a&gt;&lt;strong&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUzNjAxODg4MQ==&amp;amp;mid=2247487194&amp;amp;idx=1&amp;amp;sn=67bf87a4fdc41922d7a5e80b481d95b4&amp;amp;chksm=fafde474cd8a6d62d9a3d4f095e4ea32f342c734ea50e997edf346e7f00f4c2c2e10e39f0d30&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;手撕Spring后置处理器源码，彻底理解Spring核心&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;strong&gt;后置处理器&lt;/strong&gt;&lt;/a&gt;&lt;/strong&gt;&lt;span&gt;》&lt;/span&gt;解决的是对Bean做增强的问题，本篇是随着Bean的多样性引发的问题是怎么解决的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;Spring本身就是如此：基于一个简单的想法，再解决设计中遇到的问题。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;&lt;strong data-brushtype=&quot;text&quot;&gt;&lt;span&gt;编程一生&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section data-brushtype=&quot;text&quot;&gt;&lt;p&gt;&lt;span&gt;因为公众号平台更改了推送规则，如果不想错过内容，记得读完点一下“在看”，加个“星标”，这样每次新文章推送才会第一时间出现在你的订阅列表里。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUzNjAxODg4MQ==&amp;amp;mid=2247486113&amp;amp;idx=1&amp;amp;sn=f3623b2cf257aa37ea83768fd4325762&amp;amp;chksm=fafde00fcd8a691928c66f7e484ab2b7f6fa7797dc32833a7f777bb4ebde58c010750f13c118&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;PDCA方法论&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; wah-hotarea=&quot;click&quot; hasload=&quot;1&quot;&gt;&lt;strong&gt;PDCA方法论&lt;/strong&gt;&lt;/a&gt;&lt;span&gt;，检查自己是否错过更新：每周三晚上8点左右，我都会更新文章，如果你没有收到，记得点开【编程一生】公众号找一下(*^▽^*)&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;
-          &lt;/div&gt;
+<guid>54ddd50b188ff919b8d6d4f108ff1ab9</guid>
+<title>《非常时期囤货手册》</title>
+<link>https://toutiao.io/k/vunyh1v</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;article class=&quot;markdown-body entry-content container-lg&quot; itemprop=&quot;text&quot;&gt;&lt;h1 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-非常时期囤货手册&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#非常时期囤货手册&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;非常时期囤货手册&lt;/h1&gt;
+&lt;p dir=&quot;auto&quot;&gt;本仓库维护者：&lt;a href=&quot;https://vip.manong.io/&quot; rel=&quot;nofollow&quot;&gt;周刊菌&lt;/a&gt;&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s/j4ecrRVqhHZtJLiIPMCThA&quot; rel=&quot;nofollow&quot;&gt;拒绝焦虑，不妨从这份Newsletter开始！&lt;/a&gt;&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;本手册来自推特网友集体编辑，无版权。（源自 &lt;a href=&quot;https://twitter.com/shuilovesbooks&quot; rel=&quot;nofollow&quot;&gt;@shuilovesbooks&lt;/a&gt; &lt;a href=&quot;https://twitter.com/shuilovesbooks/status/1512783540793925632&quot; rel=&quot;nofollow&quot;&gt;推文&lt;/a&gt;，审校主编：&lt;a href=&quot;https://twitter.com/haoel&quot; rel=&quot;nofollow&quot;&gt;@haoel&lt;/a&gt;）&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;&lt;strong&gt;说明&lt;/strong&gt;&lt;/p&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;本手册目的是给出一个可供选择的居家封闭情况下的商品列表&lt;/li&gt;
+&lt;li&gt;本手册分为 简单有效的“快速版” 和 面面俱到的“详细版”&lt;/li&gt;
+&lt;li&gt;本手册是大众文档，你可以复制本文档进行个性化的删增修改&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-2小时囤货策略&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#2小时囤货策略&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;2小时囤货策略&lt;/h1&gt;
+&lt;h2 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-一原则&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#一原则&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;一、原则&lt;/h2&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;1个月，3口之家 （主要以快速和必要为主）&lt;/li&gt;
+&lt;li&gt;这个决策很快作出，只要2小时内搞定超市就行（购买的东西、简单有效）。&lt;/li&gt;
+&lt;li&gt;不要浪费时间在决策上，应该花时间在行动上。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-二食物&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#二食物&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;二、食物&lt;/h2&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;50kg 各种米面干粮&lt;/li&gt;
+&lt;li&gt;方便面、饼干、面包、蛋糕、巧克力、糖果、蜂蜜 若干&lt;/li&gt;
+&lt;li&gt;1袋盐，1桶植物油&lt;/li&gt;
+&lt;li&gt;饮用水，有糖饮料 10L 或 两箱&lt;/li&gt;
+&lt;li&gt;火腿肠，午餐肉罐头，水果罐头  若干&lt;/li&gt;
+&lt;li&gt;冰冻肉 10kg，鸡蛋100个，牛奶 5L&lt;/li&gt;
+&lt;li&gt;土豆，萝卜，白菜、各种干菜 若干&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-三生活&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#三生活&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;三、生活&lt;/h2&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;家庭医用包、应急医疗包，药品：退烧，消炎药，抗生素&lt;/li&gt;
+&lt;li&gt;食物保存用品。如：保鲜膜，保鲜盒&lt;/li&gt;
+&lt;li&gt;蜡烛、打火机、放大镜&lt;/li&gt;
+&lt;li&gt;多功能刀具&lt;/li&gt;
+&lt;li&gt;手机充电设备&lt;/li&gt;
+&lt;li&gt;洗澡用品，洗衣用品&lt;/li&gt;
+&lt;li&gt;女性卫生用品&lt;/li&gt;
+&lt;li&gt;垃圾袋&lt;/li&gt;
+&lt;li&gt;卫生纸&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-详细囤货策略&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#详细囤货策略&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;详细囤货策略&lt;/h1&gt;
+&lt;h2 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-一食物类&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#一食物类&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;一、食物类&lt;/h2&gt;
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-11-干粮--干货&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#11-干粮--干货&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;1.1 干粮 &amp;amp; 干货&lt;/h3&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;大米5kg*10，分袋真空压缩包装，每天一斤，可够3口之家吃两个月&lt;/li&gt;
+&lt;li&gt;各色杂粮：红豆、绿豆、鹰嘴豆、黑豆、红芸豆、红豆薏米、糙米、小米、燕麦米、藜麦、糯米各一斤多，玉米糊1斤、豆浆粉（可直接冲泡的）&lt;/li&gt;
+&lt;li&gt;压缩饼干 10包 (200g左右每包真空可保存4年)&lt;/li&gt;
+&lt;li&gt;苏打饼干 1kg装 * 3&lt;/li&gt;
+&lt;li&gt;挂面20斤、快速面饼最低3箱（按照家庭人口，足够一家人3个月-6个月用量）&lt;/li&gt;
+&lt;li&gt;面条：荞麦面30包，魔芋面20包&lt;/li&gt;
+&lt;li&gt;各种麦片约 5斤&lt;/li&gt;
+&lt;li&gt;各种方便面、粉丝、粉条、干米线&lt;/li&gt;
+&lt;li&gt;各种脱水水果、干果（具体见下）&lt;/li&gt;
+&lt;li&gt;罐头（肉类、果蔬、豆类）20份（具体见下）&lt;/li&gt;
+&lt;li&gt;面粉25公斤&lt;/li&gt;
+&lt;li&gt;发酵粉（或酵母）20包（记得买小包装，开封后容易失效，且新手容易翻车，应多储备）&lt;/li&gt;
+&lt;li&gt;意大利面，一餐消耗75克到100克（意面可保存5年）&lt;/li&gt;
+&lt;li&gt;巧克力补充能量充饥&lt;/li&gt;
+&lt;li&gt;自加热盒饭&lt;/li&gt;
+&lt;li&gt;植物拉丝蛋白（TVP）：有汤就能吃，高蛋白高纤维。&lt;/li&gt;
+&lt;li&gt;代餐粉（营养全面，容易储存和计量）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-12-饮用水&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#12-饮用水&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;1.2 饮用水&lt;/h3&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;饮用水 5L*8，空瓶裝滿自來水存放備用&lt;/li&gt;
+&lt;li&gt;各种饮料（后期作为安慰食物）&lt;/li&gt;
+&lt;li&gt;野外净水片1瓶（二氧化氯、高锰酸钾、碘泡腾片：必须能灭菌），明矾淨水后取上层清水煮开即可饮用&lt;/li&gt;
+&lt;li&gt;滤水壶&lt;/li&gt;
+&lt;li&gt;可折叠容水器&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-13-油盐酱醋调味料&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#13-油盐酱醋调味料&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;1.3 油盐酱醋（调味料）&lt;/h3&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;植物油5L、椰子油250g、黄油约1斤，豬油（板油自己煉），菜籽油，大豆油&lt;/li&gt;
+&lt;li&gt;盐（重要）、料酒、生抽、醋、白糖（可止血）、红糖、冰糖、香油、麻油&lt;/li&gt;
+&lt;li&gt;榨菜、咖喱、沙拉酱&lt;/li&gt;
+&lt;li&gt;老干妈，豆瓣酱、番茄酱、红葱酱，黄豆酱，蒜蓉酱&lt;/li&gt;
+&lt;li&gt;五香粉、十三香、辣椒面、黑白胡椒、八角、花椒&lt;/li&gt;
+&lt;li&gt;小块的火锅底料，基本万能，煮面条米粉肉片麻辣烫红烧均可&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-14-肉蛋奶&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#14-肉蛋奶&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;1.4 肉蛋奶&lt;/h3&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;鸡蛋 50个（买后不能清洗，否则不经放）圆头在上尖头在下，延长存放期限&lt;/li&gt;
+&lt;li&gt;全蛋粉2.5kg (耐储存，可代替鸡蛋使用)&lt;/li&gt;
+&lt;li&gt;牛奶2箱（8L）（建议更多，UHT奶即常温奶可以存放6-9个月）&lt;/li&gt;
+&lt;li&gt;奶粉/蛋白粉2斤（奶粉尽量选择脱脂，全脂奶粉开封后更容易变质）老少皆宜&lt;/li&gt;
+&lt;li&gt;蛋白棒2盒约1斤&lt;/li&gt;
+&lt;li&gt;鸡胸肉 5斤、猪肉3斤、速冻饺子3斤、包子5斤、手抓饼2斤&lt;/li&gt;
+&lt;li&gt;火腿肠、腊肠、包装香肠、熏腊肉 2-5kg 火腿，牛肉干巴&lt;/li&gt;
+&lt;li&gt;牛排（保质期一年，可以多屯一点）&lt;/li&gt;
+&lt;li&gt;新鲜海鲜若干（冰冻虾仁，三文鱼，鳕鱼等）、干海鲜&lt;/li&gt;
+&lt;li&gt;罐头
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;午餐肉罐头10个（普通罐头淀粉多，牛肉罐头腥味重，红烧肉罐头较肥）&lt;/li&gt;
+&lt;li&gt;豆豉鲮鱼罐头、黄花鱼罐头、金枪鱼罐头、沙丁鱼罐头(红肉罐头中有亚硝酸盐，鱼类罐头则不含）&lt;/li&gt;
+&lt;li&gt;黄豆、碗豆、花生等豆类罐头（茄汁法保质期2年）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p dir=&quot;auto&quot;&gt;&lt;strong&gt;注&lt;/strong&gt;：-18°冷冻层空间有限的情况下，优先存储肉类这种能量密度高营养丰富的食材，速冻包子饺子不划算。长期停电冰箱保存的食物可能会在吃完之前变质，所以建议增加罐头储备。&lt;/p&gt;
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-15-蔬菜&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#15-蔬菜&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;1.5 蔬菜&lt;/h3&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;&lt;strong&gt;储存时间较短（3-4天）&lt;/strong&gt;：小白菜、奶白菜、乌塌菜、油菜、油菜心、菠菜、鸡毛菜、茼蒿、苦菊、油麦菜、空心菜、红薯叶、生菜、球生菜、罗马生菜、香椿、苜蓿、荠菜、茴香菜、苋菜、芹菜、韭菜、韭黄、蒜苗、小葱、草菇、杨树菇、口蘑、香菇、平菇、杏鲍菇、金针菇、豌豆苗、黑豆苗、绿豆芽、黄豆芽、黄瓜、苦瓜、切片冬瓜、丝瓜、西葫芦、樱桃番茄、荸荠&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;储存时间中等（5-7天）&lt;/strong&gt;：茄子、番茄、彩椒、辣椒、秋葵、佛手瓜、韭菜苔、茭白、莲藕、菱角、莴笋、花椰菜、西兰花、芥菜、卷心菜、紫甘蓝、芥蓝、芦笋、洋姜、毛豆、芸豆、豇豆、扁豆、荷兰豆、嫩豌豆、蚕豆（鲜）&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;存储时间较长（8-14天）&lt;/strong&gt;：白萝卜、红萝卜、青萝卜、樱桃萝卜、胡萝卜、芥菜头、甜菜根、生姜、冬笋、大白菜、南瓜、整个冬瓜、大蒜、大葱、山药、土豆、红薯、紫薯、芋头、洋葱&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;脱水蔬菜长期储存&lt;/strong&gt;：脱水萝卜干、紫菜、小虾皮、白菜、葱段、香菜、贡菜、黄花菜、干香菇、干豆角、土豆干、盐渍海带、木耳、腐竹、笋干、脱水综合蔬菜&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;冷冻蔬菜：冷冻综合蔬菜包&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;生长型蔬菜：&lt;/strong&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;干黄豆米、绿豆（用于生长豆芽）&lt;/li&gt;
+&lt;li&gt;有根小葱，将葱须切下种植在阳台花盆中&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;蔬菜罐头&lt;/strong&gt;：西红柿罐头、玉米罐头、青豆罐头&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-16-水果&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#16-水果&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;1.6 水果&lt;/h3&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;苹果、橙子、香梨、柚子&lt;/li&gt;
+&lt;li&gt;各种脱水水果、干果&lt;/li&gt;
+&lt;li&gt;各种水果罐头&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-17--其它准备3-6个月用量&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#17--其它准备3-6个月用量&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;1.7  其它（准备3-6个月用量）&lt;/h3&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;零食：
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;棒棒糖、水果糖半斤&lt;/li&gt;
+&lt;li&gt;饼干两包&lt;/li&gt;
+&lt;li&gt;巧克力约1斤&lt;/li&gt;
+&lt;li&gt;每日坚果 30包&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;酒水
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;红酒5瓶，威士忌3瓶，冷天暖身&lt;/li&gt;
+&lt;li&gt;白酒五十度以上 5瓶 （关键时刻可以做消毒剂和燃料）&lt;/li&gt;
+&lt;li&gt;啤酒2箱（听装）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;茶叶 ，红茶白茶绿茶 若干&lt;/li&gt;
+&lt;li&gt;咖啡，约 50 小盒（手冲咖啡的话，咖啡豆 及200张滤纸）&lt;/li&gt;
+&lt;li&gt;香烟，这个是硬通货，非常时期不好买&lt;/li&gt;
+&lt;li&gt;蜂蜜，大瓶裝，可封閉出血傷口，快速補糖&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-二食物注意事项&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#二食物注意事项&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;二、食物注意事项&lt;/h2&gt;
+&lt;p dir=&quot;auto&quot;&gt;记录采购日期和过期时间，依照先进先出和安全库存原则，优先消耗保质期短采购时间较长的食品，及时替换库存，阴凉避光通风干燥是储存基本条件&lt;/p&gt;
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-21-成年人每日营养所需&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#21-成年人每日营养所需&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;2.1 成年人每日营养所需&lt;/h3&gt;
+&lt;p dir=&quot;auto&quot;&gt;健康的饮食包括以下内容：（数据来源： &lt;a href=&quot;https://www.who.int/news-room/fact-sheets/detail/healthy-diet&quot; rel=&quot;nofollow&quot;&gt;WHO Healthy diet&lt;/a&gt;）&lt;/p&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;水果、蔬菜、豆类、坚果和全谷物&lt;/li&gt;
+&lt;li&gt;400g水果和蔬菜/人/天，不包括土豆、红薯、木薯和其他淀粉根&lt;/li&gt;
+&lt;li&gt;不到 10% 的总能量摄入来自游离糖（食品饮料中所有糖，及存在于蜂蜜、糖浆、果汁和浓缩果汁中的糖）&lt;/li&gt;
+&lt;li&gt;少于 30% 的总能量摄入来自脂肪&lt;/li&gt;
+&lt;li&gt;每天少于 5 克盐（相当于约一茶匙）。盐应该加碘。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-22-囤货频率&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#22-囤货频率&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;2.2 囤货频率&lt;/h3&gt;
+&lt;p dir=&quot;auto&quot;&gt;留足X个星期的多余食物，平日吃一份旧食物，买一份新食物。&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;动态保证家里有X个星期的存货，又不过期&lt;/p&gt;
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-23-食物保存方式&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#23-食物保存方式&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;2.3 食物保存方式&lt;/h3&gt;
+&lt;h4 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-231-常备食材冷冻方法&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#231-常备食材冷冻方法&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;2.3.1 常备食材冷冻方法&lt;/h4&gt;
+&lt;p dir=&quot;auto&quot;&gt;冷冻论据：UC Davis researchers发现，冷冻和冷鲜比，有相同或者更高的营养（&lt;a href=&quot;https://pubs.acs.org/doi/10.1021/jf5058793&quot; rel=&quot;nofollow&quot;&gt;点击查看原文&lt;/a&gt;）&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;原则：趁新鲜冷冻，擦干表面水分再冷冻，提前分成小份包装（强调密封），标记内容和日期&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;来源：《&lt;a href=&quot;https://m.douban.com/book/subject/34927505/&quot; rel=&quot;nofollow&quot;&gt;超级冰箱收纳术&lt;/a&gt;》- 岛本美由纪-日本&lt;/p&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;葱姜蒜，小米辣等小料： 切碎冷冻&lt;/li&gt;
+&lt;li&gt;菠菜，卷心菜等绿叶： 切段冷冻，或焯水擦干冷冻&lt;/li&gt;
+&lt;li&gt;土豆，胡萝卜，山药等根茎蔬菜：切块直接冷冻，或者焯水后擦干冷冻&lt;/li&gt;
+&lt;li&gt;米饭，面包等主食： 直接分装冷冻&lt;/li&gt;
+&lt;li&gt;鱼和肉： 切块后冷冻，生熟皆可&lt;/li&gt;
+&lt;li&gt;鸡蛋和牛奶：鸡蛋去壳冻蛋液，大包装用冰格分装&lt;/li&gt;
+&lt;li&gt;高汤，酱汁：普通高汤分装冷冻，咖喱等易染色的用一次性容器冷冻&lt;/li&gt;
+&lt;li&gt;乾燥的沙子可以儲存土豆紅薯姜蒜等食材，濕潤的沙子可以用來催芽或者種植&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-232-常备食材冷鲜方法&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#232-常备食材冷鲜方法&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;2.3.2 常备食材冷鲜方法&lt;/h4&gt;
+&lt;p dir=&quot;auto&quot;&gt;蔬菜：（不要洗）叶子菜，豆角，花菜&lt;/p&gt;
 
-          
+&lt;p dir=&quot;auto&quot;&gt;用报纸/纸巾/其他纸把菜裹住装进保鲜袋，扎好袋口&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;放到冰箱里&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;1周依然很新鲜&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;蔬菜：（不要洗）果蔬类&lt;/p&gt;
+&lt;div class=&quot;snippet-clipboard-content position-relative overflow-auto&quot; data-snippet-clipboard-copy-content=&quot;西红柿： 柿蒂朝下，室温保存&amp;#10;&amp;#10;黄瓜玉米青椒：擦干水分，保鲜袋放冰箱&quot;&gt;&lt;pre&gt;&lt;code&gt;西红柿： 柿蒂朝下，室温保存
 
-          
+黄瓜玉米青椒：擦干水分，保鲜袋放冰箱
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p dir=&quot;auto&quot;&gt;蔬菜：（不要洗）菌菇类&lt;/p&gt;
 
+&lt;p dir=&quot;auto&quot;&gt;蔬菜：（不要洗）根茎类&lt;/p&gt;
+&lt;div class=&quot;snippet-clipboard-content position-relative overflow-auto&quot; data-snippet-clipboard-copy-content=&quot;南瓜：整个南瓜，通风阴凉处放置&amp;#10;&amp;#10;切开的南瓜：挖掉瓤，分开装保鲜袋，放冰箱&amp;#10;&amp;#10;胡萝卜：纸巾包好，放进保鲜袋，阴凉通风处放置&amp;#10;&amp;#10;洋葱，红薯，紫薯，芋头： 直接放阴凉通风处&amp;#10;&amp;#10;土豆：春天可以直接阴凉通风处放置&quot;&gt;&lt;pre&gt;&lt;code&gt;南瓜：整个南瓜，通风阴凉处放置
 
+切开的南瓜：挖掉瓤，分开装保鲜袋，放冰箱
 
-           
-                                
-                    
-        &lt;/div&gt;&lt;/div&gt;</content:encoded>
+胡萝卜：纸巾包好，放进保鲜袋，阴凉通风处放置
+
+洋葱，红薯，紫薯，芋头： 直接放阴凉通风处
+
+土豆：春天可以直接阴凉通风处放置
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p dir=&quot;auto&quot;&gt;肉类：&lt;/p&gt;
+
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-24-冰箱效率提升&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#24-冰箱效率提升&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;2.4 冰箱效率提升&lt;/h3&gt;
+&lt;p dir=&quot;auto&quot;&gt;来源：《&lt;a href=&quot;https://m.douban.com/book/subject/34927505/&quot; rel=&quot;nofollow&quot;&gt;超级冰箱收纳术&lt;/a&gt;》- 岛本美由纪-日本&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;大房子建议再买个冰箱/冰柜，零度保鲜功能可以有效延长蔬菜水果保存时间；&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;普通人就提高冰箱空间利用率：&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;小散货：袋装，写好日期，竖放&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;/toutiaoio/A-Guide-To-Stockpiling/blob/main/images/image6.png&quot;&gt;&lt;img src=&quot;/toutiaoio/A-Guide-To-Stockpiling/raw/main/images/image6.png&quot; alt=&quot;alt_text&quot; title=&quot;image_tooltip&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;肉等无法压缩的：分好格子，写好日期&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;/toutiaoio/A-Guide-To-Stockpiling/blob/main/images/image5.png&quot;&gt;&lt;img src=&quot;/toutiaoio/A-Guide-To-Stockpiling/raw/main/images/image5.png&quot; alt=&quot;alt_text&quot; title=&quot;image_tooltip&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;土豆，水果等，可做成土豆泥，果酱，极大节约空间&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;/toutiaoio/A-Guide-To-Stockpiling/blob/main/images/image4.png&quot;&gt;&lt;img src=&quot;/toutiaoio/A-Guide-To-Stockpiling/raw/main/images/image4.png&quot; alt=&quot;alt_text&quot; title=&quot;image_tooltip&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-三生活用品类&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#三生活用品类&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;三、生活用品类&lt;/h2&gt;
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-31-通用&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#31-通用&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;3.1 通用&lt;/h3&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;40公分宽度的保鲜膜一大卷，以及封口夹，能够大大延长食物的保存期限。&lt;/li&gt;
+&lt;li&gt;打火机、太阳能点火器、火柴、充气点火器（充气瓶）、镁棒打火石、放大镜&lt;/li&gt;
+&lt;li&gt;充电宝/充电线（充电宝最好带太阳能充电或者支持手摇充电、容量选1万以上，充电线最好是三插头，避免插头损坏）&lt;/li&gt;
+&lt;li&gt;哨子 或 扩音喇叭&lt;/li&gt;
+&lt;li&gt;无电式手电筒，最好带SOS求救闪烁功能&lt;/li&gt;
+&lt;li&gt;蜡烛&lt;/li&gt;
+&lt;li&gt;瓦斯气炉（即卡式炉）+6罐气&lt;/li&gt;
+&lt;li&gt;白酒（火源、消毒等备用目的）&lt;/li&gt;
+&lt;li&gt;热水壶（电、火烧）、保溫杯&lt;/li&gt;
+&lt;li&gt;多功能组合刀具，推荐瑞士军刀 。&lt;/li&gt;
+&lt;li&gt;如果近视，至少有一副冗余的框架眼镜。&lt;/li&gt;
+&lt;li&gt;常见的灯泡，灯板替换装&lt;/li&gt;
+&lt;li&gt;你家需要的各种型号电池
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;1号，热水器、燃气灶常见；&lt;/li&gt;
+&lt;li&gt;2号，某些门禁；&lt;/li&gt;
+&lt;li&gt;5号，最常用之一，建议多储备；&lt;/li&gt;
+&lt;li&gt;7号，最常用之二，且容量比5号少，建议多储备；&lt;/li&gt;
+&lt;li&gt;CR2032 纽扣电池。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;厨具 （以下为最低配置）
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;电饭锅&lt;/li&gt;
+&lt;li&gt;炒锅汤锅各一口（通用火源，无涂层，电磁炉可用）&lt;/li&gt;
+&lt;li&gt;不锈钢锅铲、长柄汤勺&lt;/li&gt;
+&lt;li&gt;洗洁精，洗碗布，钢丝球&lt;/li&gt;
+&lt;li&gt;菜刀、万用刀、剪刀、刨皮刀、菜板、简易磨刀器&lt;/li&gt;
+&lt;li&gt;罐头开罐器&lt;/li&gt;
+&lt;li&gt;一次性餐具（碗/碟/勺子或叉子）足够套（停电停水时节水用）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-32-卫生&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#32-卫生&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;3.2 卫生&lt;/h3&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;牙膏3支&lt;/li&gt;
+&lt;li&gt;洗发液2瓶&lt;/li&gt;
+&lt;li&gt;香皂8块、沐浴露、肥皂&lt;/li&gt;
+&lt;li&gt;卫生纸25包 （建议卷纸，单位体积下更耐用）&lt;/li&gt;
+&lt;li&gt;洗衣液4袋&lt;/li&gt;
+&lt;li&gt;洗面奶3支&lt;/li&gt;
+&lt;li&gt;花露水3瓶（喷雾型，首选带避蚊胺的，不过孕妇慎用）&lt;/li&gt;
+&lt;li&gt;垃圾袋100只&lt;/li&gt;
+&lt;li&gt;厨房用洗洁精、油污清洗剂、管道疏通&lt;/li&gt;
+&lt;li&gt;电蚊香，驱蚊液（避蚊胺）&lt;/li&gt;
+&lt;li&gt;84消毒液或者二氧化氯泡腾片，后者单位体积更小，更耐储，可飲用水消毒&lt;/li&gt;
+&lt;li&gt;紫外线消毒灯（带臭氧适用范围广），365波長紫外手電筒，檢驗黃曲霉污染&lt;/li&gt;
+&lt;li&gt;指甲刀&lt;/li&gt;
+&lt;li&gt;电动理发工具&lt;/li&gt;
+&lt;li&gt;一次性手套（清洁用）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-33-女生&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#33-女生&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;3.3 女生&lt;/h3&gt;
+
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-34-婴儿&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#34-婴儿&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;3.4 婴儿&lt;/h3&gt;
+
+&lt;h2 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-四医用药品类&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#四医用药品类&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;四、医用药品类&lt;/h2&gt;
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-41-常规&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#41-常规&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;4.1 常规&lt;/h3&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;&lt;strong&gt;家庭医用包、应急医疗包&lt;/strong&gt; （内容物参照DIN 13164标准（机动车急救包），包含弹性绷带，三角巾，一次性手套，急救毯，剪刀，多种尺寸的创可贴，伤口敷料等）&lt;/li&gt;
+&lt;li&gt;酒精，体积分数 66-75% 。如无，可以高度白酒代替。&lt;/li&gt;
+&lt;li&gt;医用棉签和纱布若干、医用镊子及医用棉球&lt;/li&gt;
+&lt;li&gt;创可贴&lt;/li&gt;
+&lt;li&gt;碘伏棉签&lt;/li&gt;
+&lt;li&gt;体温计&lt;/li&gt;
+&lt;li&gt;葡萄糖，糖盐水&lt;/li&gt;
+&lt;li&gt;血压计、血糖仪及血糖试纸&lt;/li&gt;
+&lt;li&gt;云南白药喷雾&lt;/li&gt;
+&lt;li&gt;一次性手套&lt;/li&gt;
+&lt;li&gt;风油精、十滴水（防止中暑）&lt;/li&gt;
+&lt;li&gt;口罩，大人小孩的，要有N95的 1860 或者 9123&lt;/li&gt;
+&lt;li&gt;(可选)止血带，或者乳胶管&lt;/li&gt;
+&lt;li&gt;(可选)医用护目镜或者医用隔离面罩&lt;/li&gt;
+&lt;li&gt;(可选)血氧仪&lt;/li&gt;
+&lt;li&gt;(可选)呼吸机&lt;/li&gt;
+&lt;li&gt;(可选) CELOX或类似的止血粉，以及粘有止血粉的三角巾。&lt;/li&gt;
+&lt;li&gt;(可选)氧气罐头&lt;/li&gt;
+&lt;li&gt;(可选)雾化机（贵的 雾化效果过好的 别买超声波雾化类型的）&lt;/li&gt;
+&lt;li&gt;(可选)雾化机面罩&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-42-药品&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#42-药品&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;4.2 药品&lt;/h3&gt;
+&lt;p dir=&quot;auto&quot;&gt;药物使用前务必认真研读说明书，如果有任何疑问，请以专业医师的建议为准。&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;&lt;strong&gt;越小的婴幼儿家庭用药越需谨慎，务必事先征询儿科医师的建议。&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-421-常规药物-otc&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#421-常规药物-otc&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;4.2.1 常规药物 (OTC)&lt;/h4&gt;
+&lt;p dir=&quot;auto&quot;&gt;关于常备药，可以参看这个  &lt;a href=&quot;https://drive.google.com/file/d/15F4Cgv7RpkPiz5V8YIcvds4ueWIpS3a6/view?usp=sharing&quot; rel=&quot;nofollow&quot;&gt;PDF文档&lt;/a&gt;  有更为详细的说明。&lt;/p&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;布洛芬退烧，止疼&lt;/li&gt;
+&lt;li&gt;头疼粉退烧，止疼（注1）&lt;/li&gt;
+&lt;li&gt;对乙酰氨基酚（泰诺林）退烧&lt;/li&gt;
+&lt;li&gt;美林（小儿布洛芬）小孩退烧  （最好是小瓶装 多准备几瓶）&lt;/li&gt;
+&lt;li&gt;妈咪爱（小儿益生菌）小孩止泻&lt;/li&gt;
+&lt;li&gt;奥美拉唑胃炎&lt;/li&gt;
+&lt;li&gt;氯雷他定/西替利嗪/氯苯那敏缓解过敏状态&lt;/li&gt;
+&lt;li&gt;蒙脱石散止泻（吸附药，无此药时可换为同类陶土）&lt;/li&gt;
+&lt;li&gt;正露丸/盐酸小檗碱止泻（抗菌药）&lt;/li&gt;
+&lt;li&gt;口服补液盐治疗急性腹泻脱水&lt;/li&gt;
+&lt;li&gt;益生菌（双歧杆菌等）调节肠道菌群，改善便秘、腹泻等症状&lt;/li&gt;
+&lt;li&gt;盐酸特比萘芬                     杀皮肤病真菌（轻症买外用，严重买口服）&lt;/li&gt;
+&lt;li&gt;铝碳酸镁片胃酸相关的胃部不适&lt;/li&gt;
+&lt;li&gt;复方醋酸地塞米松乳膏皮肤瘙痒&lt;/li&gt;
+&lt;li&gt;红霉素软膏皮肤感染和轻度烫伤&lt;/li&gt;
+&lt;li&gt;多酶片消化不良，便秘&lt;/li&gt;
+&lt;li&gt;复方氨酚烷胺片缓解感冒症状&lt;/li&gt;
+&lt;li&gt;维生素C维生素缺乏（纯制剂，常备）（注2）&lt;/li&gt;
+&lt;li&gt;复合维生素B维生素缺乏（纯制剂，常备）（注2）&lt;/li&gt;
+&lt;li&gt;碘伏消毒液皮肤消毒&lt;/li&gt;
+&lt;li&gt;百多邦外用抗菌&lt;/li&gt;
+&lt;li&gt;Nulax(乐康片)/开塞露便秘&lt;/li&gt;
+&lt;li&gt;西地碘片        口腔类炎症&lt;/li&gt;
+&lt;li&gt;口服补液盐腹泻、感冒时补水（可以用盐、糖自配）（注3）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p dir=&quot;auto&quot;&gt;&lt;strong&gt;注1&lt;/strong&gt;：阿司匹林、咖啡因、对乙酰氨基酚复方，也有片剂“复方对乙酰氨基酚片”，可手动组合取代）&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;&lt;strong&gt;注2&lt;/strong&gt;：复合维生素、矿物质维生素缺乏（日常用，推荐多维元素片 (21) 或任何药店自有品牌）價格虛高，有效劑量低&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;&lt;strong&gt;注3&lt;/strong&gt;：ORS 为重要腹泻药物。补水是腹泻的第一应对方案，对降低全球小儿腹泻死亡率起关键作用&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;使用自有品牌及通用名药物时价格不高，且有效剂量“低”是符合膳食推荐避免过量&lt;/p&gt;
+&lt;h4 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-422-处方药rx&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#422-处方药rx&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;4.2.2 处方药(Rx)&lt;/h4&gt;
+&lt;p dir=&quot;auto&quot;&gt;&lt;strong&gt;抗生素&lt;/strong&gt;&lt;/p&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;阿莫西林抗生素&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://zh.wikipedia.org/wiki/%E5%B7%A6%E6%B0%A7%E6%B0%9F%E6%B2%99%E6%98%9F&quot; rel=&quot;nofollow&quot;&gt;左氧氟沙星&lt;/a&gt;细菌性腹泻，呼吸道、泌尿生殖道感染&lt;/li&gt;
+&lt;li&gt;阿奇霉素呼吸道、泌尿生殖道感染&lt;/li&gt;
+&lt;li&gt;阿奇霉素（冲剂 儿童） 消炎&lt;/li&gt;
+&lt;li&gt;甲硝唑片口腔炎、咽炎，阴道炎&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p dir=&quot;auto&quot;&gt;&lt;strong&gt;慢性病用药：建议根据家里老人平时用药，直接多开1个月的量。有的处方药自己也买不了。不少城市自从2020之后，一次可开几周甚至几个月的药。&lt;/strong&gt;&lt;/p&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;心血管：阿司匹林、波立维、硝酸甘油、速效救心丸、复方丹参滴丸&lt;/li&gt;
+&lt;li&gt;糖尿病：胰岛素，格华止、捷诺达、捷诺维、拜糖平&lt;/li&gt;
+&lt;li&gt;高血压：拜新同、洛丁新&lt;/li&gt;
+&lt;li&gt;高血脂：立普妥，&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p dir=&quot;auto&quot;&gt;需要注意的相关疾病&lt;/p&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;心脑血管疾病：包括高血压病、糖尿病，以及冠状动脉硬化性心脏病、脑梗死&lt;/li&gt;
+&lt;li&gt;消化系统疾病：慢性胃炎、消化性溃疡&lt;/li&gt;
+&lt;li&gt;骨病：骨质疏松症、骨关节病&lt;/li&gt;
+&lt;li&gt;精神系统疾病：焦虑症、抑郁症、睡眠障碍&lt;/li&gt;
+&lt;li&gt;呼吸系统疾病：慢性支气管炎、慢性阻塞性肺病&lt;/li&gt;
+&lt;li&gt;其他疾病：阿尔茨海默病、白内障、外周血管疾病，还有颈椎病、慢性疼痛、慢性肾炎、痛风、高尿酸血症、肝硬化、肿瘤，以及衰弱、肌少症、营养不良等疾病&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-423-老人相关&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#423-老人相关&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;4.2.3 老人相关&lt;/h4&gt;
+&lt;p dir=&quot;auto&quot;&gt;给老人傻瓜式配药&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;&lt;strong&gt;购买关键词&lt;/strong&gt;：配药盒&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;&lt;strong&gt;配药频率&lt;/strong&gt;：提前1周，准备下一周，或者下两周&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;&lt;strong&gt;优势&lt;/strong&gt;：早中晚吃什么药，安排明白，不吃错。子女不在可以撑一撑
+&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; href=&quot;/toutiaoio/A-Guide-To-Stockpiling/blob/main/images/image7.png&quot;&gt;&lt;img src=&quot;/toutiaoio/A-Guide-To-Stockpiling/raw/main/images/image7.png&quot; alt=&quot;alt_text&quot; title=&quot;image_tooltip&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;老人急症必备：&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;制氧机：哮喘，呼吸道疾病，或年龄偏大的，可以备着。&lt;/p&gt;
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-43保健品&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#43保健品&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;4.3保健品&lt;/h3&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;维生素A.B.C.D.E维生素&lt;/li&gt;
+&lt;li&gt;膳食纤维(洋车前子壳粉,菊粉)改善便秘,补充膳食纤维,防止肛裂&lt;/li&gt;
+&lt;li&gt;蛋白质补充剂(分离乳清蛋白等)长期隔离可能引起蛋白质缺乏&lt;/li&gt;
+&lt;li&gt;低聚果糖少量补充预防便秘&lt;/li&gt;
+&lt;li&gt;芦荟胶囊少量补充预防便秘&lt;/li&gt;
+&lt;li&gt;鱼油补充必须脂肪酸&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p dir=&quot;auto&quot;&gt;非常时期缺乏运动，便秘是健康的头号杀手，如果因为便秘引起肛裂在非常时期很难去医院进行处理。&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;对于一般人而言，维生素和微量元素的补充还是更建议使用预先配置好的元素片。不建议分开购买各种维生素和微量元素。不然每天早上配药都是一种痛苦。对于没有接触过相关知识的人而言很难掌握剂量。&lt;/p&gt;
+&lt;h2 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content--其它待讨论---&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#-其它待讨论---&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;–== 其它待讨论 ==--&lt;/h2&gt;
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-开车及野外&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#开车及野外&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;开车及野外&lt;/h3&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;指南针&lt;/li&gt;
+&lt;li&gt;全波段短波收音机，Ham（业余无线电爱好者）可准备短波电台&lt;/li&gt;
+&lt;li&gt;自卫武器（撬棍、防狼喷雾、消防斧、工兵铲、充电可录音扩音喇叭）&lt;/li&gt;
+&lt;li&gt;旮旯应急电源，家用小型发电机&lt;/li&gt;
+&lt;li&gt;应急救生哨  可吹出高频求救信号 （2.1中已包含此项）&lt;/li&gt;
+&lt;li&gt;搬运物品用的买菜车、平板车等&lt;/li&gt;
+&lt;li&gt;逃生绳索、8字环、野外高空穿戴全身或半身&lt;/li&gt;
+&lt;li&gt;三角架、支架配挂钩和绳子组合&lt;/li&gt;
+&lt;li&gt;千斤顶&lt;/li&gt;
+&lt;li&gt;拆卸螺丝刀、万用螺丝套装&lt;/li&gt;
+&lt;li&gt;拖车绳&lt;/li&gt;
+&lt;li&gt;应急启动电源/ 柴油发电机&lt;/li&gt;
+&lt;li&gt;折叠摔棒&lt;/li&gt;
+&lt;li&gt;紧急破窗器（预防大水、掉水里）&lt;/li&gt;
+&lt;li&gt;帐篷&lt;/li&gt;
+&lt;li&gt;多功能兵工铲&lt;/li&gt;
+&lt;li&gt;防寒毯，防曬毯&lt;/li&gt;
+&lt;li&gt;游泳眼镜、口罩（火灾逃生用)&lt;/li&gt;
+&lt;li&gt;防烟面罩，车载灭火器（放前座储备箱，出事故的话去后座来不及拿，求生工具存放位置同理）&lt;/li&gt;
+&lt;li&gt;极限防疫物资；3M 面罩配合7093滤盒，能使用很长时间直到闻到异味，能用1个月以上&lt;/li&gt;
+&lt;li&gt;太阳能充电宝，220V那种以便不时之需&lt;/li&gt;
+&lt;li&gt;大剪钳，能剪断铁丝网围栏那种，有的时候被困真的受不了就得挺而冒险突围，建议配合大白衣服一起用&lt;/li&gt;
+&lt;li&gt;男生武器；野猪长矛，铁锤，救生斧头，冰凿，潜水刀，棒球棍&lt;/li&gt;
+&lt;li&gt;女生武器；硬塑料伸缩棍,射钢珠的弹弓（备多几条皮筋）&lt;/li&gt;
+&lt;li&gt;睡袋，防潮垫&lt;/li&gt;
+&lt;li&gt;对讲机配套，能长于15城市公里以上通信距离最好&lt;/li&gt;
+&lt;li&gt;净水药片，生命吸管&lt;/li&gt;
+&lt;li&gt;液压钳，无线切机&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/article&gt;
+          &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
 <guid>9abeae2558d318c6b3b6a694f197157b</guid>
@@ -228,11 +615,11 @@ quit
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>d8b2511f13b493472766781e5e438156</guid>
-<title>升级到MySQL8.0，付出了惨痛的代价！</title>
-<link>https://toutiao.io/k/k1kwav6</link>
+<guid>fb408b647a977ba4dc69d159e5d04fd0</guid>
+<title>拒绝焦虑，不妨从这份Newsletter开始！</title>
+<link>https://toutiao.io/k/6qm1rn2</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content                                                                     &quot; id=&quot;js_content&quot;&gt;
-            &lt;pre data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-css=&quot;; border-radius: 8px;-webkit-align-items:center;-webkit-box-align:center;-webkit-box-pack:center;-webkit-justify-content:center;align-items: center;background-color: #ff6477;box-shadow: 0px 2px 4px rgba(46,15,23,0.37);color:#fff;display: -webkit-box;display: -webkit-box-flex;display: flex;font-size:12px;height:32px;justify-content: center;line-height: 0px;margin: 10px&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;pre&gt;&lt;section&gt;&lt;span&gt;以下内容来自公众号逆锋起笔，关注每日干货及时送达&lt;/span&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;1&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/b96CibCt70iaajvl7fD4ZCicMcjhXMp1v6UibM134tIsO1j5yqHyNhh9arj090oAL7zGhRJRq6cFqFOlDZMleLl4pw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;64&quot;/&gt;&lt;/section&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzUyMzM2ODUwMA==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/hs540iaTKoaIWQB73gicJGTicpAjbSjAjic3d4ytEoiaArkWw6hKMqicPSXrpd4FquTTdStuMoILtqGHS222lIQlh1mg/0?wx_fmt=png&quot; data-nickname=&quot;逆锋起笔&quot; data-alias=&quot;readdot&quot; data-signature=&quot;全网最新编程视频教程、大佬们推荐的 pdf 学习资料，全部免费分享！来到这里，你不懂程序都难。&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;作者 | Herman Lee，Pradeep Nayak &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;原文：https://engineering.fb.com/2021/07/22/data-infrastructure/mysql/ &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;译者 | 王雪迎  责编 | 晋兆雨 出品 | CSDN(ID:CSDNnews)&lt;/span&gt;&lt;span/&gt;&lt;/p&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/pre&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;Facebook 称，他们最近的一次大版本升级到 MySQL 5.6 花了一年多时间才完成，还在 5.6 版上开发 LSM 树存储引擎，MyRocks。在升级到 5.7 的同时构建一个新的存储引擎，会大大减慢 MyRocks 的进度，因此我们选择继续使用 5.6，直到 MyRocks 完成，MySQL 5.6 的寿命也即将结束，决定升级到 MySQL 8.0 。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/pre&gt;&lt;p&gt;&lt;span&gt;官博介绍说，此次过程比之前的升级更具挑战。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;MySQL 是由 Oracle 公司开发的一个开源数据库，它为 Facebook 的一些最重要的工作负载提供了动力。我们积极开发 MySQL 中的新特性，以支持不断演化的需求。这些特性对MySQL的许多方面进行了修改，包括客户机连接器、存储引擎、优化器以及复制。为了迁移工作负载，对于每个新的 MySQL 主版本，我们都需要投入大量的时间和精力。其中的挑战包括：&lt;/span&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;将自定义功能移植到新版本&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;确保主要版本之间的复制兼容&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;最小化现有应用程序查询所需的更改&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;对阻碍服务器支持我们工作负载的性能退化进行修复。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;span&gt;我们最近一次的主版本升级是到 MySQL 5.6，它花了一年多的时间才推出。当5.7 版发布时，我们还在 5.6 版上开发 LSM 树存储引擎和 MyRocks。在升级到 5.7 的同时构建一个新的存储引擎，会大大减慢 MyRocks 的进度，因此我们选择继续使用 5.6，直到 MyRocks 完成。MySQL 8.0 发布之际，我们正在做 MyRocks 向用户数据库（UDB）服务层推出的收尾。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;该版本包括一些引人注目的特性，如基于写集的并行复制和提供原子 DDL 支持的事务数据字典等。对我们来说，迁移到 8.0 还将带来包括文档存储在内的，我们已经错过的 5.7 特性。版本 5.6 的使命即将结束，我们希望在 MySQL 社区中保持活跃，尤其是在 MyRocks 存储引擎上的工作。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;8.0 中的增强功能，比如即时 DDL，可以加快 MyRocks 的模式更改，但是我们需要在 8.0 的代码库中使用它。考虑到更新代码的好处，我们决定迁移到 8.0。下面将分享我们如何解决 8.0 迁移项目的难题，以及在这个过程中发现的一些惊喜。当最初确定项目范围时，可以明确的是，迁移到 8.0 会比迁移到 5.6 或 MyRocks 更困难。&lt;/span&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;当时，我们定制的 5.6 分支有 1700 多个代码补丁需要移植到 8.0。在我们移植这些更改时，新的 Facebook 的 MySQL 特性和修复已被添加到5.6 的代码库中，从而使目标变得更加遥不可及。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;我们有许多 MySQL 服务器在生产环境中运行，为大量截然不同的应用程序提供服务。我们还有众多管理 MySQL 实例的软件架构。这些应用执行诸如收集统计数据或管理服务器备份之类的操作。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;从 5.6 升级到 8.0 完全跳过了 5.7。在 5.6 中处于活动状态的 API 在 5.7中可能被弃用，而在 8.0 中可能会被移除，这要求我们必须更新所有使用了现已删除API的应用程序。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;许多 Facebook 功能与 8.0 中的类似功能并不向前兼容，需要一种弃用或迁移途径。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;MyRocks 的增强功能需要在 8.0 中运行，包括本地化分区和崩溃恢复。&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;1、代码补丁&lt;/span&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;首先我们建立了 8.0 分支，用于在开发环境中进行构建和测试。然后，我们开始从 5.6 分支移植补丁的漫长过程。开始的时候有 1700 多个补丁，但我们能将其组织成几个主要类别。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们的大多数自定义代码都有很好的注释和描述，因此可以很容易地确定应用程序是否仍然需要它，或者是否可以将它删除。通过特殊关键字或唯一变量名所启用的功能，也使得确定关联变得很容易，因为我们可以搜索应用程序代码库来找到它们的用例。有些补丁非常晦涩难懂，需要做调查工作 — 挖掘旧的设计文档、邮件或代码评审注释，以了解它们的历史。&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;我们将每个补丁分入四类之一：&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Drop：不再使用，或在8.0中具有同等功能的特性，不需要移植。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Build/Client：支持我们构建环境的非服务器特性，修改过的 MySQL 工具，比如 mysqlbinlog，或者增加的功能，如异步客户端 API 等，需要移植。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;非 MyRocks 服务器：mysqld 服务器中与 MyRocks 存储引擎无关的特性，需要移植。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;MyRocks 服务器：支持 MyRocks 存储引擎的特性，需要移植。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;span&gt;我们使用电子表格跟踪每个补丁的状态和相关历史信息，并且在删除补丁时记录理由。更新相同特性的多个补丁被组在一起进行移植。移植并提交到 8.0 分支的补丁，用 5.6 提交信息进行了注释。由于我们需要筛选大量的补丁，将不可避免地出现移植状态上的差异，这些注释帮助我们解决了此类问题。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;客户端和服务器类别中的每个补丁都自然而然地成为一个软件发布里程碑。随着所有与客户端相关的更改的移植，我们能够将客户端工具和连接器代码更新到8.0。一旦所有非 MyRocks 服务器特性都被移植，我们就可以为 InnoDB 服务器部署8.0 mysqld了。完成 MyRocks 服务器特性移植使我们能够更新 MyRocks 安装。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;有些复杂特性需要对 8.0 进行重大更改，一些方面存在很大的兼容性问题。例如，上游 8.0 binlog 事件格式与我们一些对 5.6 的定制修改不兼容。Facebook 5.6 特性使用的错误代码与上游 8.0 分配给新特性的错误代码冲突。我们最终需要修补 5.6 服务器，以使其与 8.0 向前兼容。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;完成所有这些特性的移植花了几年时间。到最终结束时，我们已经评估了 2300 多个补丁，并将其中 1500 个移植到了 8.0 版本。另外，微信搜索readdot，关注后回复 视频教程 获取23种精品资料，非常齐全。&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;2、迁移途径&lt;/span&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;我们将多个 mysqld 实例组合到一个 MySQL 副本集中。副本集中的每个实例都包含相同的数据，但在地理上分布到不同的数据中心，以提供数据可用性和故障切换支持。每个副本集都有一个主实例。其余的实例都是从实例。主实例处理所有写流量，并将数据异步复制到所有从实例。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;由 5.6 主/5.6 从所组成的副本集开始，最终目标是包含 8.0 主/ 8.0 从的副本集。我们遵循一个类似于 UDB MyRocks migration plan 的迁移规划。&lt;/span&gt;&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;对于每个副本集，通过一个使用 mysqldump 生成的逻辑备份，创建并添加到 8.0 的从实例。这些从实例不提供任何应用程序读取流量；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;在 8.0 从实例上开启读取流量；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;允许将 8.0 从实例升级为主实例；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;禁用 5.6 实例的读取流量；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;移除所有 5.6 实例。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;span&gt;每个副本集可以独立地通过上述步骤进行迁移，并可根据需要停留在一个步骤上。我们将副本集分成更小的组，在组中进行每一次迁移。如果发现问题，我们可以回滚到上一步。在某些情况下，副本集能够在其它副本集开始之前到达最后一步。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;为了自动化迁移大量副本集，我们需要构建新的软件架构。可以通过简单地更改配置文件中的一行，将副本集组合并在每个阶段中移动它们。任何遇到问题的副本集都能单独回滚。&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;3、基于行的复制&lt;/span&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;作为 8.0 迁移工作的一部分，我们决定将使用基于行的复制（row-based replication，RBR）作为标准。一些 8.0 特性需要 RBR，并且它简化了 MyRocks 的移植工作。我们的大多数 MySQL 副本集已经在使用 RBR，而那些仍然运行基于语句的复制（statement-based replication，SBR）的副本集不容易迁移。这些副本集通常有不含任何高基数键的表。完全转向 RBR 是一个目标，但添加主键所需的长尾工作的优先级往往低于其它项目。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;因此，我们将 RBR 作为 8.0 的要求。在评估并向每个表添加主键之后，我们今年切换了最后一个 SBR 副本集。使用 RBR 还为我们提供了一个解决应用程序问题的替代解决方案，我们在将一些副本集移动到 8.0 主实例时遇到了这个问题，将在后面讨论。&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;4、自动化验证&lt;/span&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;大多数 8.0 迁移过程都涉及使用我们的自动化架构和应用查询来测试和验证 mysqld 服务器。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们用来管理服务器的自动化基础架构在随着 MySQL 服务器的增长而增长。为了确保所有 MySQL 自动化组件都与 8.0 版本兼容，我们投资构建了一个测试环境，该环境利用虚拟机上的测试副本集来验证行为。我们为 canary 编写了在 5.6 版本和 8.0 版本上运行的每个自动化组件的集成测试，并验证了它们的正确性。在进行此演练时，我们发现了几个错误和行为差异。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;当 MySQL 架构的每一部分都在我们的 8.0 服务器上进行验证时，我们发现并修复了（或解决了）一些有趣的问题：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;解析错误日志、mysqldump 输出或服务器 show 命令的文本输出的软件很容易损坏。服务器输出的细微变化常常会暴露出工具解析逻辑中的错误。&lt;/span&gt;&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;8.0 的默认 utf8mb4 排序规则设置导致 5.6 和 8.0 实例之间的排序规则不匹配。8.0 表可能会使用新的 utf8mb4_0900 排序规则，即使对于由 5.6 的show create table生成的create语句也是如此，因为使用utf8mb4_general_ci 的 5.6 模式没有显式指定排序规则。这些表差异通常会导致复制和模式验证工具出现问题；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;某些复制失败的错误代码发生了变化，我们必须修复我们的自动化程序来正确处理它们；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;8.0 版本的数据字典废弃了 table.frm 文件，但是我们的一些自动化系统使用它们来检测表模式的修改；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;我们必须更新自动化系统，以支持 8.0 中引入的动态权限。&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;5、应用程序验证&lt;/span&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;我们希望迁移对应用程序尽可能透明，但是有些应用程序的查询会出现性能退化，或者在8.0 上会失败。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;对于 MyRocks 迁移，我们构建了一个 MySQL 影子测试框架，该框架捕获生产流量并将其重放到测试实例中。对于每个应用程序工作负载，我们在 8.0 上创建了测试实例，并向它们回放影子流量的查询。我们捕获并记录了从 8.0 服务器返回的错误，并发现了一些有趣的问题。不幸的是，并非所有这些问题都是在测试过程中发现的。例如，事务死锁是应用程序在迁移过程中发现的。在研究不同的解决方案时，我们可以暂时将这些应用程序回滚到 5.6 版本。&lt;/span&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;8.0 引入了新的保留关键字，其中一些关键字，如 groups 和 rank，与应用程序查询中常用的表列名或别名相冲突。这些查询没有通过反引号转义名称，导致解析错误。使用了自动转义查询中列名的软件库的应用程序没有遇到这些问题，但并非所有应用程序都使用这些软件库。解决这个问题很简单，但是需要时间来跟踪生成这些查询的应用程序属主和代码库。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;在 5.6 和 8.0 之间还发现了有些 REGEXP 不兼容。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;一些包含在 InnoDB 上的 insert ... on duplicate key 查询的应用程序遇到了 repeatable-read 事务死锁。5.6 有一个 bug，在 8.0 中得到了修复，但是修复增加了事务死锁的可能性。在分析了查询之后，我们能够通过降低隔离级别来解决该问题。这个选项对我们来说是可用的，因为我们已经切换到基于行的复制。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;我们自定义的 5.6 文档存储和 JSON 函数与 8.0 不兼容。使用文档存储的应用程序需要将文档类型转换为文本以进行迁移。对于 JSON 函数，我们向 8.0 服务器中添加了兼容 5.6 的版本，以便应用程序以后可以迁移到 8.0 API。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;span&gt;我们对 8.0 服务器的查询和性能测试发现了一些需要立即解决的问题。&lt;/span&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;我们发现在 ACL 缓存部分出现了新的互斥争用热点。当大量连接同时打开时，它们都会阻塞 ACL 检查；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;当存在大量 binlog 文件并且 binlog 的高速写入导致频繁轮换文件时，binlog 索引访问也发现了类似的争用；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;几个涉及临时表的查询被中断。这些查询会返回意外错误，或者运行时间太长以致超时。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;span&gt;内存使用量与 5.6 相比有所增加，特别是对于 MyRocks 实例，因为必须加载 8.0 中的 InnoDB 。默认的 performance_schema 设置启用了所有工具集并消耗了大量内存。我们限制了内存使用，只启用了少量的工具，并对代码进行了更改，以禁用无法手动关闭的表。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;然而，并不是所有增加的内存都是分配给 performance_schema 的。我们需要检查和修改各种 InnoDB 内部数据结构，以进一步减少内存占用。这一努力使 8.0 的内存使用率降到了可以接受的水平。&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;6、接下来的工作&lt;/span&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;到目前为止，8.0 的移植已经花了几年时间。我们已将许多 InnoDB 副本集转换为完全在 8.0 上运行。剩下的大部分都处于迁移途径的不同阶段。现在，我们的大多数定制功能都已移植到 8.0，更新到 Oracle 的次版本相对容易些，我们计划跟上最新版本的步伐。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;跳过 5.7 这样的主版本会带来一些问题，我们的迁移需要解决这些问题。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;首先，我们无法就地升级服务器，需要使用逻辑转储和还原来构建新服务器。但是，对于非常大的 mysqld 实例，这可能需要在活跃生产服务器上运行很多天，而且这个脆弱的过程可能会在完成之前被中断。对于这些大型实例，我们必须修改备份和恢复系统来应对重建。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;其次，检测 API 更改要困难得多，因为 5.7 可能会向我们的应用程序客户端发出不推荐警告，以提示修复潜在的问题。而我们需要在迁移生产工作负载之前，运行额外的影子测试来查找失败。使用自动转义模式对象名称的 mysql 客户端软件，有助于减少兼容性问题的数量。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在一个副本集中支持两个主版本非常困难。一旦副本集将其主实例升级为 8.0，最好尽快禁用并移除 5.6 实例。应用程序用户往往会发现只有 8.0 支持的新特性，比如 utf8mb4_0900 排序规则，使用这些排序规则可能中断 8.0 和 5.6 实例之间的复制流。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;尽管我们在迁移过程中遇到了种种障碍，但我们已经看到了运行 8.0 带来的好处。一些应用程序选择了提早迁移到 8.0，以利用诸如文档存储和改进的日期时间支持等功能。我们一直在考虑如何在 MyRocks 上支持像即时DDL这样的存储引擎特性。总的来说，新版本大大扩展了 MySQL@Facebook 的功能。&lt;/span&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;&lt;code&gt;逆锋起笔&lt;/code&gt;专注于程序员圈子，你不但可以学习到&lt;code&gt;java&lt;/code&gt;、&lt;code&gt;python&lt;/code&gt;等主流技术干货和N多个&lt;code&gt;源码&lt;/code&gt;分享，还可以第一时间获悉&lt;code&gt;最新技术动态&lt;/code&gt;、&lt;code&gt;内测资格&lt;/code&gt;、&lt;code&gt;BAT大佬的经验&lt;/code&gt;、&lt;code&gt;精品视频教程&lt;/code&gt;、&lt;code&gt;副业赚钱&lt;/code&gt;经验，微信搜索&lt;code&gt;readdot&lt;/code&gt;关注！&lt;/p&gt;&lt;/blockquote&gt;&lt;/section&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUyMzM2ODUwMA==&amp;amp;mid=2247496513&amp;amp;idx=2&amp;amp;sn=cb9d32c5beca2799ab05bf9579de77d8&amp;amp;chksm=fa3f121acd489b0cde477f129ebec3409f2f4e71289322fc9f272a1b9e86286765225bbe094f&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;MySQL 团队开发规范，太详细，建议收藏！&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;span&gt;MySQL 团队开发规范，太详细，建议收藏！&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUyMzM2ODUwMA==&amp;amp;mid=2247496466&amp;amp;idx=2&amp;amp;sn=a2a6b6405ca08602af2e1eac811c774a&amp;amp;chksm=fa3f1249cd489b5fed6fad1b35197d0546b3a8cb26d93572b240da8c262c1323fd83a0903ead&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;MySQL 跨库分页/ 分表分页，为什么这么难？&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;span&gt;MySQL 跨库分页/ 分表分页，为什么这么难？&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUyMzM2ODUwMA==&amp;amp;mid=2247496098&amp;amp;idx=2&amp;amp;sn=199c481bdf4e8a8c107f371c6909d7b8&amp;amp;chksm=fa3f10f9cd4899ef96a1a3807e87cdb878cb8ebf177bc40161a1817eb6b93492568fd96c8aae&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;MySQL、Redis、MongoDB 网络抓包工具&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;span&gt;MySQL、Redis、MongoDB 网络抓包工具&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUyMzM2ODUwMA==&amp;amp;mid=2247495256&amp;amp;idx=2&amp;amp;sn=f6cab657abb356869a63f94cc3bc6bb2&amp;amp;chksm=fa3f0f03cd48861552db1bf48c9a6bac0b097aa3e6ae7f907ea5e11fff55eba7806773c8b913&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;SQL 中如何给指定数据库创建只读用户？&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;span&gt;SQL 中如何给指定数据库创建只读用户？&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzUyMzM2ODUwMA==&amp;amp;mid=2247495603&amp;amp;idx=2&amp;amp;sn=1530c7a01b0af0dfa501ca958570bf0e&amp;amp;chksm=fa3f0ee8cd4887fe5507427a7a2a2e5da5b0328f856fb0dc10a8c53efacb4b295e2aa7d57ca1&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;MySQL 8.0 可以操作 JSON 了！！&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;span&gt;MySQL 8.0 可以操作 JSON 了！！&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.20555555555555555&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/hs540iaTKoaLuzhKPBHe2SjggUdf1L0gvgSUlh0BGUNhwcVcSqe878WFZeibXfutEfN8b3cUJSLzT5INExmnibuYg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1080&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-croporisrc=&quot;https://mmbiz.qlogo.cn/mmbiz_jpg/xe4FY1hGDmq17JSGmvlibgJjT73DIFV5hNpPbbL7bDtKBKyOka9bl1LLiam25MusZplIsuk5l0zQW2Pg1WhvCRJw/?wx_fmt=jpeg&quot; data-cropx1=&quot;0&quot; data-cropx2=&quot;193&quot; data-cropy1=&quot;63&quot; data-cropy2=&quot;246&quot; data-fileid=&quot;100014145&quot; data-ratio=&quot;0.9583333333333334&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xe4FY1hGDmq17JSGmvlibgJjT73DIFV5hkricMTLpuRLmhy0OV8C9hGF9CkdmvficOyYXtfZcNTbYGgibtSSGd3zmw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;192&quot;/&gt;&lt;span&gt;&lt;span&gt; &lt;/span&gt;&lt;strong&gt;&lt;span&gt;你在看吗&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;strong/&gt;&lt;/section&gt;
+            &lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/AjN1jquNavib3NlJt37DBSrTmLaGd7y82j0SCAaW8XmlHAt33xPM7x3iaib7e2IWPWRXJuoYJczl3ibCpPpQSyH2rg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;640&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;你是通过什么方式&lt;/span&gt;&lt;span&gt;&lt;strong&gt;获取优质信息&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;呢？&lt;br/&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;公众号？博客？播客？短视频？微博？图书？&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;今天推荐一种&lt;/span&gt;&lt;span&gt;&lt;strong&gt;高手都在用&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;的「优质信息获取」方式！&lt;br/&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Newsletter&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/AjN1jquNavib3NlJt37DBSrTmLaGd7y82icbyrtFQ5edhQTZA13mpdrBmbianfFq2ib4Jiar4GBhSN4ppvVY1RrTgPQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;640&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;Newsletter中文可翻译成新闻信或电子报，是一个&lt;/span&gt;&lt;span&gt;&lt;strong&gt;基于电子邮件的信息分发&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;产品。&lt;br/&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;Newsletter多用于组织机构向客户推送相关新闻信息，一般机构网站首页上会有邮件订阅的链接。&lt;br/&gt;对于个人，Newsletter作为信息发布产品，有免中介、一对多自动分发的特点，开始&lt;/span&gt;&lt;span&gt;&lt;strong&gt;受到一些高手的青睐&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;。比如一些知名记者开始逃离Facebook、Twitter等社交平台，面向用户推出付费Newsletter订阅服务。&lt;br/&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;码农周刊&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/AjN1jquNavib3NlJt37DBSrTmLaGd7y82DrAxiaNsRbvwj4Zia3EfVibO9icDGEw4sXicqGia1qajnleLEU7q74qIa16w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;640&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;码农周刊是一份&lt;/span&gt;&lt;strong&gt;&lt;span&gt;专为广大程序员、编程爱好者们打造&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;的IT技术周刊。每周发送。&lt;br/&gt;2013年9月12日创刊至今，已发送300多期，订阅用户超20万。&lt;br/&gt;&lt;/span&gt;&lt;span&gt;&lt;strong&gt;专业、简单、有用&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;，是我们一直坚持的办刊宗旨。一路走来，我们见证了不少订阅用户从编程新手进阶成了高级程序员、架构师、CTO……&lt;br/&gt;2020年4月，为了给用户提供更优质的服务，我们面向码农周刊VIP会员推出了&lt;/span&gt;&lt;strong&gt;&lt;span&gt;Newsletter服务&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;。目前已发送87期。&lt;br/&gt;以下内容节选自&lt;/span&gt;&lt;span&gt;&lt;strong&gt;码农周刊VIP会员专属Newsletter&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;，供参考。&lt;br/&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;码农周刊VIP会员福利&lt;/span&gt;&lt;/strong&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/AjN1jquNavib3NlJt37DBSrTmLaGd7y822mOhDWWbtShmv7DouHMmYgZx9sxtfRibCpF3MNjADgYSfNgPDl4p0Og/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;640&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;1. 52 期码农周刊VIP会员专属&lt;/span&gt;&lt;span&gt;&lt;strong&gt;Newsletter&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;，让你及时掌握技术动向；&lt;br/&gt;2. 只限VIP会员加入的&lt;/span&gt;&lt;span&gt;&lt;strong&gt;交流圈子&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;，让你与技术大牛切磋学习；&lt;br/&gt;3. VIP会员独享的&lt;/span&gt;&lt;span&gt;&lt;strong&gt;工作机会&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;，为你介绍好公司的好机会；&lt;br/&gt;4. 更多会员福利，持续更新……&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;如何订阅「码农周刊VIP会员专属Newsletter」？&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;1. &lt;/span&gt;&lt;span&gt;&lt;strong&gt;微信扫描下方二维码&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;，加入码农周刊VIP会员知识星球。&lt;br/&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5493333333333333&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/AjN1jquNavicibroqCN98y5SNT9NbfA3oHYQiaicFScHFfppgek7ZGicJiaHK45qc2zoccBibfEzIvzTsI4AB2xO2IaOw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;750&quot;/&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;2. 加入码农周刊VIP会员知识星球后，客服会联系您，请&lt;/span&gt;&lt;span&gt;&lt;strong&gt;留意知识星球内的私信&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;。&lt;br/&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;3. 客服向您发送码农周刊VIP会员欢迎邮件，开启您的码农周刊VIP会员之旅。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;心动不如行动，赶快订阅吧！&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;
           &lt;/div&gt;
 
           
