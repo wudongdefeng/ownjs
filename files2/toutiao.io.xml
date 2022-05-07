@@ -309,22 +309,110 @@
         &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>f8028b4fcba6fdffdceecadd411cf538</guid>
-<title>欢迎加入读者圈子，一起交流！</title>
-<link>https://toutiao.io/k/p6oew1f</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content                                                                     &quot; id=&quot;js_content&quot;&gt;
-            &lt;p&gt;&lt;span&gt;&lt;strong&gt;欢迎加入读者圈子，一起交流！&lt;br/&gt;↓↓↓&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-cropselx1=&quot;0&quot; data-cropselx2=&quot;558&quot; data-cropsely1=&quot;0&quot; data-cropsely2=&quot;307&quot; data-ratio=&quot;0.5493333333333333&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/AjN1jquNavich3VaNkKeiaAwUhz7TQbQmic4fFsr58X9PAYleYzxqc1K1vZjeBoZDMUsmia0xH67EQYINGRvNOtLmA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;750&quot;/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;圈子剧透&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;1、600+圈子成员，以中高级程序员为主，更有架构师、CTO坐镇交流；&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2、1000+优质主题，数十G独家资料，每日分享，精挑细选；&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;3、全年52期专属邮件周报，让你轻松掌握业界资讯、技术干货，提升认知水平；&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;4、全年52本好书共读，让你花最少的时间，获取更好的知识；&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;……&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;心动不如行动，赶快加入吧！&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;
-          &lt;/div&gt;
+<guid>4739ef7b23ff288c6067d0da5c008839</guid>
+<title>【实操干货】做好这 16 项优化，你的 Linux 操作系统焕然一新</title>
+<link>https://toutiao.io/k/63xesh3</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;RichText ztext Post-RichText css-14bz7qe&quot; options=&quot;[object Object]&quot;&gt;&lt;p data-first-child=&quot;&quot; data-pid=&quot;af9Ntxig&quot;&gt;大家好，这次跟大家谈谈又拍云的操作系统优化方案。往简单地说，我们使用的 Linux 操作系统主要都是基于 CentOS6/7 的精简和优化。往复杂地说，则是我们有两套系统，业务上使用的定制 Linux 系统和数据中心使用的优化版 Linux 系统。&lt;/p&gt;&lt;p data-pid=&quot;SD8w-kLC&quot;&gt;业务上我们使用裁剪过的定制 Linux 系统，目的是为了更安全、更高效、更加贴近业务需求，方便全国各点进行闪电式部署，但这套系统不具备普适性，所以我们今天暂时不谈它。今天主要分享数据中心常用的 Linux 优化版本，因为这个比较通用，适合大家在使用时进行参考。我会从以下几个方面来进行分享。&lt;/p&gt;&lt;h3&gt;&lt;b&gt;主机名设定和永久生效&lt;/b&gt;&lt;/h3&gt;&lt;p data-pid=&quot;1srVm324&quot;&gt;在 CentOS 或 RHEL 中，有以下三种定义的主机名：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;JxHCrbU6&quot;&gt;静态的（static）：“静态”主机名也称为内核主机名，是系统在启动时从 /etc/hostname 自动初始化的主机名。&lt;/li&gt;&lt;li data-pid=&quot;oHRJPVOa&quot;&gt;瞬态的（transient）：“瞬态”主机名是在系统运行时临时分配的主机名如通过 DHCP 或 mDNS 服务器分配。&lt;/li&gt;&lt;li data-pid=&quot;FQ1xE4PT&quot;&gt;灵活的（pretty）：“灵活”主机名则允许使用自由形式（包括特殊/空白字符）的主机名，以展示给终端用户（如 Gemini&#x27;s Computer）。&lt;/li&gt;&lt;/ul&gt;&lt;p data-pid=&quot;pn9U8h0f&quot;&gt;好的主机名，可以让非运维的机房人员一目了然地了解和定位机器。比如:  用途名 + 省份 + 机房名 + 机柜号 + 编号，示例如下：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;HOST=&quot;DBS-ZJ-FUD-009&quot;
+hostnamectl set-hostname --static $HOST
+hostnamectl set-hostname --pretty $HOST
+hostnamectl set-hostname --transient  $HOST
+echo &quot;$HOST&quot; &amp;gt; /proc/sys/kernel/hostname&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3&gt;&lt;b&gt;定制远程登录界面&lt;/b&gt;&lt;/h3&gt;&lt;p data-pid=&quot;Za8DiLWv&quot;&gt;登陆Linux 的欢迎界面可由 /etc/issue和/etc/motd 控制。如下显示，不用登录系统就能一目了然的知道系统版本、CPU和内存型号容量、运行状态、应用版本号及网络连接情况。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-3aadfd51f1b650d8452ecafc39a9f808_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;706&quot; data-rawheight=&quot;400&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic1.zhimg.com/v2-3aadfd51f1b650d8452ecafc39a9f808_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;706&quot; data-rawheight=&quot;400&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic1.zhimg.com/v2-3aadfd51f1b650d8452ecafc39a9f808_r.jpg&quot; data-actualsrc=&quot;https://pic1.zhimg.com/v2-3aadfd51f1b650d8452ecafc39a9f808_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;h3&gt;&lt;b&gt;字符集配置&lt;/b&gt;&lt;/h3&gt;&lt;p data-pid=&quot;NVVIPMfR&quot;&gt;好的字符集，可以避免终端显示下的乱码。建议使用en_US.utf8字符集。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;# 查看操作系统支持的所有字符集
+# locale -a
 
-          
+cat &amp;gt; /etc/locale.conf &amp;lt;&amp;lt;EOF
+LANG=en_US.utf8
+LC_CTYPE=en_US.utf8
+EOF
+localectl set-locale LANG=en_US.UTF8&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3&gt;&lt;b&gt;常规基础软件安装&lt;/b&gt;&lt;/h3&gt;&lt;p data-pid=&quot;iRCuCT-q&quot;&gt;因为使用的都是基于 CentOS的最小化精简安装，安装后会缺少一些常规的基础软件，所以我们会适当补充一些基础软件，以帮助快速排查和定位问题。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;yum install -y tree ntpdate  bc nc net-tools wget lsof rsync nmon bash-completion iptables-services firewalld sysstat mtr htop bind-utils yum-utils epel-release smartmontools supervisor python-setuptools python-pip pkgconfig&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3&gt;&lt;b&gt;时区和时间同步设定&lt;/b&gt;&lt;/h3&gt;&lt;p data-pid=&quot;M-kyCKl4&quot;&gt;在实际生产环境中，保障服务器时区和时间的一致性非常重要。尤其是分布式系统、多机集群环境、数据库主从备份、以及依赖时间同步的定时任务等场景，时区和时间同步是非常有用的，一旦二者不一致很容易导致各种各样的问题。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;timedatectl set-timezone Asia/Shanghai
+timedatectl set-ntp 1
+timedatectl set-local-rtc 0
+#timedatectl set-time &quot;2018-08-08 18:08:08&quot;
+ntpdate -u cn.pool.ntp.org&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;hO_1sllT&quot;&gt;强烈建议同时把时间同步操作也写入 crontab 里做双保险。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;# crontab -l
+0 * * * * root(ntpdate -o3 192.168.1.10 211.115.194.21 )&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3&gt;&lt;b&gt;禁用 SELinux&lt;/b&gt;&lt;/h3&gt;&lt;p data-pid=&quot;F5G8tZrl&quot;&gt;SELinux为安全增强型 Linux（Security-Enhanced Linux），主要由美国国家安全局开发。它概念严谨、结构及配置复杂、操作严格。因此在使用时可以视情况决定是否要开启使用，可以在有机密和信息敏感机构等的特殊场景下可以启用。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;sed -r -i  &#x27;/^SELINUX=/s^=.*^=disabled^g&#x27; /etc/selinux/config
+set enforce 0&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3&gt;&lt;b&gt;添加普通用户并 sudo&lt;/b&gt;&lt;/h3&gt;&lt;p data-pid=&quot;VmmqG7Va&quot;&gt;sudo 是 Linux 系统管理指令，是允许系统管理员让普通用户执行一些或者全部的 root 命令的一个工具，如 halt、reboot、su 等等。 这样不但可以减少 root 用户的登录和管理时间，也能够提高安全性。&lt;/p&gt;&lt;p data-pid=&quot;KYkBnZIX&quot;&gt;需要注意的是，生产环境尽量不要直接用 root，建议先新建普通用户再提升权限。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;[root@OPS-FDI-020 ~]# useradd shaohy
+[root@OPS-FDI-020 ~]# usermod -G wheel  shaohy
+[root@OPS-FDI-020 ~]# sed -i &#x27;/pam_wheel/s/^#//g&#x27;  /etc/pam.d/su&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;GJnuCZwd&quot;&gt;为用户 shaohy 添加 sudo，除关机外的其他所有操作：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;[root@OPS-FDI-020 ~]# visudo
+Cmnd_Alias SHUTDOWN = /sbin/halt, /sbin/shutdown, /sbin/poweroff, /sbin/reboot, /sbin/init
+shaohy         ALL=(ALL)       ALL,!SHUTDOWN
+%wheel         ALL=(ALL)       ALL,!SHUTDOWN    #修改wheel组的权限，禁止关机
+Defaults logfile=/var/log/sudo.log&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3&gt;&lt;b&gt;配置防火墙规则和 iptables&lt;/b&gt;&lt;/h3&gt;&lt;p data-pid=&quot;arHWy6cV&quot;&gt;自 CentOS7 以后都是默认使用 firewalld 管理 netfilter 子系统，需要注意的是底层调用的命令仍然使用了  iptables。二者的区别对比如下：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;5oqoK7ja&quot;&gt;firewalld 可以动态修改单条规则，动态管理规则集，允许更新规则而不破坏现有会话和连接。而 iptables，在修改了规则后必须得全部刷新才可以生效。&lt;/li&gt;&lt;li data-pid=&quot;EohHRA8O&quot;&gt;firewalld 使用区域和服务而不是链式规则。&lt;/li&gt;&lt;li data-pid=&quot;bJbL1grr&quot;&gt;firewalld 默认是拒绝的，需要设置以后才能放行。而 iptables 默认是允许的，需要拒绝的才去限制。&lt;/li&gt;&lt;/ul&gt;&lt;p data-pid=&quot;8qW_R2P0&quot;&gt;所以在选择时可以考虑不拒绝 firewalld，去尝试接受它。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;#!/bin/sh
+IPS=&quot;192.168.0.0/16&quot;
+firewall-cmd --zone=public --remove-service=ssh
+firewall-cmd --new-zone=openssh --permanent
+firewall-cmd --zone=openssh --add-port=22222/tcp --permanent
+firewall-cmd --permanent --zone=public --set-target=default
+for ip in  $IPS;do
+        firewall-cmd --zone=openssh --add-source=$ip --permanent
+done
+firewall-cmd --reload
+firewall-cmd --runtime-to-permanent&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3&gt;&lt;b&gt;GPT 分区和分区挂载&lt;/b&gt;&lt;/h3&gt;&lt;p data-pid=&quot;YuGjHuWh&quot;&gt;又拍云每一台 CDN 服务器上都有大量硬盘，且不说 4T、6T 这类量比较小的，即便是 10T 的也有 12 块之多，所以需要自动化格式化和划分区这些硬盘的运维操作。&lt;/p&gt;&lt;p data-pid=&quot;lDLEJw1l&quot;&gt;早期的主引导记录（Master Boot Record，缩写：MBR），又叫做主引导扇区，也就是计算机开机后访问硬盘时所必须要读取的首个扇区，无法支持大于 2T 的硬盘引导。虽然打了补丁的 MBR 也可以支持大于 2T 的分区，但 GPT 已经成为了新的趋势。相比 MBR 而言，GPT 分区方案有以下特点：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;wlX5a-xX&quot;&gt;GPT 是 UEFI 标准的一部分（UEFI 是一种个人电脑系统规格，用来定义操作系统与系统固件之间的软件界面，作为 BIOS 的替代方案）。&lt;/li&gt;&lt;li data-pid=&quot;YLjWmeLj&quot;&gt;GPT 分区列表支持最大 128PB（1PB=1024TB）。&lt;/li&gt;&lt;li data-pid=&quot;NCqL_nsN&quot;&gt;可以定义 128 个分区。&lt;/li&gt;&lt;li data-pid=&quot;ClpUjAMb&quot;&gt;没有主分区，扩展分区和逻辑分区的概念，所有分区都能格式化。&lt;/li&gt;&lt;/ul&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;#!/bin/sh
+DEV=`lsscsi | awk &#x27;/HGST/{print $NF}&#x27;` # 筛选所有的sata硬盘
+i=1
+for dev in $DEV;do
+        label=&quot;/disk/sata0$i&quot;
+        echo $dev $label
+        parted -m -s $dev rm 1
+        parted -m -s $dev mklabel gpt
+        parted -m -s $dev mkpart primary ext4 2048s 100%
+        partx -a $dev
+        ((i++))
+        nohup mkfs.ext4 -L $label ${dev}1 &amp;gt;/dev/null &amp;amp;
+done&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3&gt;&lt;b&gt;ulimit 配额设定&lt;/b&gt;&lt;/h3&gt;&lt;p data-pid=&quot;VM7QJye1&quot;&gt;因为 CentOS7 / RHEL7 系统中使用 Systemd 替代了之前的 SysV，导致 /etc/security/limits.conf 文件的配置只适用于通过 PAM 认证登录用户的资源限制，对 systemd 的service 资源限制不生效。&lt;/p&gt;&lt;p data-pid=&quot;2XpqydID&quot;&gt;因为 systemd service 的资源限制，所以我们将全局配置放置于  /etc/systemd/system.conf 和 /etc/systemd/user.conf 中。其中 system.conf 用于系统实例，user.conf 用于用户实例。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;sed -r -i -e &#x27;/DefaultLimitCORE/s^.*^DefaultLimitCORE=infinity^g&#x27; -e &#x27;/DefaultLimitNOFILE/s^.*^DefaultLimitNOFILE=100000^g&#x27; -e &#x27;/DefaultLimitNPROC/s^.*^DefaultLimitNPROC=100000^g&#x27; /etc/systemd/system.conf&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;vnyyLBoo&quot;&gt;加大打开文件数的限制,默认设置了非 root 用户的最大进程数为 4096。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;cat &amp;gt; /etc/security/limits.d/20-nproc.conf &amp;lt;&amp;lt;EOF
+*       soft  nproc  10240
+root    soft  nproc  unlimited
+EOF&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3&gt;&lt;b&gt;sysctl.conf 配置生效&lt;/b&gt;&lt;/h3&gt;&lt;p data-pid=&quot;vWidi5xa&quot;&gt;sysctl.conf 文件配置参数较多且复杂，如果需要详解每一个参数的作用需要很长时间。这里我们之间看一部分常见调优参数来感受一下。主要是集中在网络和 TCP 参数优化、 swap 禁用、文件句柄放大 。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;net.ipv4.ip_forward=1
+net.ipv4.ip_local_port_range=1000 65535
 
-          
+net.ipv4.tcp_slow_start_after_idle=0
+net.ipv4.tcp_no_metrics_save=1
+net.ipv4.tcp_rfc1337=1
+net.ipv4.tcp_timestamps=1
+net.ipv4.tcp_sack=1
+net.ipv4.tcp_dsack=1
+net.ipv4.tcp_window_scaling=1
+net.ipv4.tcp_rmem=4096 102400 16777216
+net.ipv4.tcp_wmem=4096 102400 16777216
+net.ipv4.tcp_mem=786432 1048576 1572864
+net.ipv4.tcp_syncookies=1
+net.ipv4.tcp_syn_retries=3
+net.ipv4.tcp_synack_retries=5
+net.ipv4.tcp_retries1=3
+net.ipv4.tcp_retries2=15
+net.ipv4.tcp_fin_timeout=30
+net.ipv4.tcp_max_syn_backlog=262144                                  
+net.ipv4.tcp_max_orphans=262144
+net.ipv4.tcp_tw_recycle=0
+net.ipv4.tcp_tw_reuse=1
+net.ipv4.tcp_keepalive_time=30
+net.ipv4.tcp_keepalive_intvl=10
+net.ipv4.tcp_keepalive_probes=3
+net.ipv4.tcp_max_tw_buckets=600000
+net.ipv4.tcp_congestion_control=bbr
 
+net.core.somaxconn=8192
+net.core.rmem_default=131072
+net.core.wmem_default=131072
+net.core.rmem_max=33554432
+net.core.wmem_max=33554432
+net.core.dev_weight=512
+net.core.optmem_max=262144
+net.core.netdev_budget=1024
+net.core.netdev_max_backlog=262144
 
+vm.swappiness=0
+vm.dirty_writeback_centisecs=9000
+vm.dirty_expire_centisecs=18000
+vm.dirty_background_ratio=5
+vm.dirty_ratio=10
+vm.overcommit_memory=1
+vm.overcommit_ratio=50
+vm.max_map_count=200000
 
-           
-                                
-                    
-        &lt;/div&gt;&lt;/div&gt;</content:encoded>
+fs.file-max=524288
+fs.aio-max-nr=1048576 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3&gt;&lt;b&gt;/etc/passwd 安全性检查&lt;/b&gt;&lt;/h3&gt;&lt;p data-pid=&quot;XOwlJg8g&quot;&gt;用户的 shell 权限检查，通常考虑到安全性的问题，不允许有非 root 用户拥有 shell 权限。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;# 过滤出有uid==0, gid==0的潜伏用户,判断有没有bash
+awk -F: &#x27;($3==0||$4==0) {print $0}&#x27; /etc/passwd|grep -i bash
+# 除root外的用户shell全部为nologin
+sed -r -i &#x27;/^[^root]/s:/bin/bash:/sbin/nologin:g&#x27; /etc/passwd&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3&gt;&lt;b&gt;sshd 服务配置&lt;/b&gt;&lt;/h3&gt;&lt;p data-pid=&quot;4ltz4auH&quot;&gt;因为几乎所有 Linux 服务器都通过 SSH 来进行远程管理，这很容易招来许多不速之客，想方设法通过 SSH 来取得您的服务器权限。所以 SSH 安全不容忽视！强烈建议禁用口令登录，修改之前先改用公密钥的方式来 SSH 登录管理服务器。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;sed -r -i &#x27;/#Port 22/s^.*^Port 22222^g;/^PasswordAuthentication/s^yes^no^g&#x27; /etc/ssh/sshd_config&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3&gt;&lt;b&gt;关闭不必要服务&lt;/b&gt;&lt;/h3&gt;&lt;p data-pid=&quot;uDoszLPD&quot;&gt;Linux 服务（Linux services）对于每个应用 Linux 的用户来说都很重要。关闭不必要的服务，可以让 Linux 运行更高效，但并不是所有的 Linux 服务都可以关闭，这个要自己权衡。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;systemctl disable network  postfix irqbalance tuned rpcbind.target&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;XYmoQC01&quot;&gt;如果有基于 udp 的服务，如ntpd、dns，要注意 udp 的反射攻击。因为 udp 的反射攻击破坏力极大，最好关闭掉无用相关的服务, 或者选择高防机房去部署此类服务。&lt;/p&gt;&lt;h3&gt;&lt;b&gt;logrotate 缩减轮转日志包&lt;/b&gt;&lt;/h3&gt;&lt;p data-pid=&quot;FaQnC9ga&quot;&gt;当服务器进程较多，日志文件大小增长较快，就会不断消耗磁盘空间并触发告警。这时就需要人为定期按照各种维度去手动清理日志，如果不及时清理则很容易变成运维事故。&lt;/p&gt;&lt;p data-pid=&quot;XW1kcfeF&quot;&gt;通常可以使用 logrotate 日志滚动机制将日志文件按时间或大小分成多份，删除时间久远的日志文件，从而节省空间和方便整理。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;sed -r -i &#x27;s@weekly@daily@g;s@^rotate.*@rotate 7@g;s@^#compress.*@compress@g&#x27; /etc/logrotate.conf
+systemctl daemon-reload; systemctl restart rsyslog&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3&gt;&lt;b&gt;journalctl 调整 journal 日志&lt;/b&gt;&lt;/h3&gt;&lt;p data-pid=&quot;hcGnqf2O&quot;&gt;在 Systemd 出现之前，Linux 系统及各应用的日志都是分别管理的，而 Systemd 统一管理了所有 Unit 启动日志。这样的好处就是可以只用一个 journalctl 命令，查看所有内核和应用的日志。&lt;/p&gt;&lt;p data-pid=&quot;oR3UfpND&quot;&gt;适当的配置可以让 journal 体积可控，不至于容量爆炸。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;sed -r -i -e &#x27;/Compress=/s@.*@Compress=yes@g; /SystemMaxUse=/s@.*@SystemMaxUse=4G@g; &#x27; -e &#x27;/SystemMaxFileSize=/s@.*@SystemMaxFileSize=256M@g;&#x27; -e &#x27;/MaxRetentionSec=/s@.*@MaxRetentionSec=2week@g&#x27; /etc/systemd/journald.conf&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;04SAlJI4&quot;&gt;综上所述，完成以上这些优化后，一个安全可靠的操作系统就可以正式上线提供服务了, 祝大家 Linux 之旅玩得愉快!&lt;/p&gt;&lt;p data-pid=&quot;08wFQdrB&quot;&gt;&lt;b&gt;推荐阅读：&lt;/b&gt;&lt;/p&gt;&lt;a target=&quot;_blank&quot; href=&quot;https://link.zhihu.com/?target=https%3A//www.upyun.com/tech/article/696/%25E4%25B8%25A4%25E6%258B%259B%25E6%258F%2590%25E5%258D%2587%25E7%25A1%25AC%25E7%259B%2598%25E5%25AD%2598%25E5%2582%25A8%25E6%2595%25B0%25E6%258D%25AE%25E7%259A%2584%25E5%2586%2599%25E5%2585%25A5%25E6%2595%2588%25E7%258E%2587.html&quot; data-draft-node=&quot;block&quot; data-draft-type=&quot;link-card&quot; data-text=&quot;两招提升硬盘存储数据的写入效率&quot; class=&quot;LinkCard new&quot;&gt;&lt;span class=&quot;LinkCard-contents&quot;&gt;&lt;span class=&quot;LinkCard-title loading&quot; data-text=&quot;true&quot;/&gt;&lt;span class=&quot;LinkCard-desc loading&quot;/&gt;&lt;/span&gt;&lt;span class=&quot;LinkCard-image LinkCard-image--default&quot;/&gt;&lt;/a&gt;&lt;a target=&quot;_blank&quot; href=&quot;https://link.zhihu.com/?target=https%3A//www.upyun.com/tech/article/644/%25E6%25B7%25B1%25E5%2585%25A5%25E6%25B5%2585%25E5%2587%25BA%25E8%2581%258A%25E8%2581%258A%2520Rust%2520WebAssembly%25EF%25BC%2588%25E4%25B8%2580%25EF%25BC%2589.html&quot; data-draft-node=&quot;block&quot; data-draft-type=&quot;link-card&quot; data-image=&quot;https://pic4.zhimg.com/v2-8a6a22c4adab98f1b2c1e04d91c6899b_180x120.jpg&quot; data-image-width=&quot;512&quot; data-image-height=&quot;268&quot; data-text=&quot;深入浅出聊聊 Rust WebAssembly（一）&quot; class=&quot;LinkCard new&quot;&gt;&lt;span class=&quot;LinkCard-contents&quot;&gt;&lt;span class=&quot;LinkCard-title loading&quot; data-text=&quot;true&quot;/&gt;&lt;span class=&quot;LinkCard-desc loading&quot;/&gt;&lt;/span&gt;&lt;span class=&quot;LinkCard-image LinkCard-image--default&quot;/&gt;&lt;/a&gt;&lt;p/&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
