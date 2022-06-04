@@ -52,6 +52,7 @@ jobs:
     - name: Commit files 提交文件
       run: |
         cd ~/aliyun
+        awk '!a[$0]++' ad.txt
         git config --global credential.helper store
         git config user.name github-actions
         git config user.email github-actions@github.com
@@ -60,6 +61,7 @@ jobs:
         git push -u origin master
         rm ~/.git-credentials
         cd ~/gitlab
+        awk '!a[$0]++' ad.txt
         echo "https://wudongdefeng:${{ secrets.gitlab }}@gitlab.com">~/.git-credentials
         git config --global credential.helper store
         git config user.name github-actions
