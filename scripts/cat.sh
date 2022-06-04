@@ -10,7 +10,7 @@ grep -lrIZ '404 Not Found'. | xargs -0 rm -rf --
 grep -lrIZ '失败'. | xargs -0 rm -rf --
 
 grep -rl . -e '失败' | xargs rm --
-cp -r *.* ..
+grep -rl . -e '资源' | xargs cp -t ..
 cd ..
 rm -rf tem
 
