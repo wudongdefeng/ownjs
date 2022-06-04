@@ -1,4 +1,4 @@
-cd ./wind
+cd ./cat
 mkdir tem
 cd tem
 
