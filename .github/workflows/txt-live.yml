@@ -3,7 +3,7 @@ name: Publish playlist
 on:
   workflow_dispatch:
   schedule:
-    - cron:  '58 16 * * *'
+    - cron:  '58 */4 * * *'
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -19,7 +19,7 @@ jobs:
         git clone https://LPoImvJTtv:${{ secrets.CODING_TOKEN }}@e.coding.net/wudongdefeng/wudongdefeng/txt-live.git ~/coding
         
         bash ./scripts/generate.sh
-        
+        bash ./scripts/cat.sh
         git config --global user.name "wudongdefeng"
         git config --global user.email "615563901@qq.com"
         cd ~/coding
