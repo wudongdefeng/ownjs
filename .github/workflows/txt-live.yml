@@ -20,7 +20,10 @@ jobs:
         bash ./scripts/generate.sh
         git config --global user.name "Actions"
         git config --global user.email "actions@github.com"
+        git config core.filemode false
+        git remote set-url origin https://${coding_ref}
         git add .
         git commit -m "init"
-        git push
+        git push --force --quiet "https://LPoImvJTtv:${{ secrets.CODING_TOKEN }}@e.coding.net/wudongdefeng/wudongdefeng/txt-live.git" master:master
+        
       
