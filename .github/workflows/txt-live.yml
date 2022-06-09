@@ -17,6 +17,7 @@ jobs:
     - name: Generate Playlists
       run: |
         git clone https://LPoImvJTtv:${{ secrets.CODING_TOKEN }}@e.coding.net/wudongdefeng/wudongdefeng/txt-live.git ~/coding
+        ls ~/coding/live
         bash ./scripts/generate.sh
         ls ~/coding/live
         git config --global user.name "Actions"
