@@ -1,4 +1,3 @@
-cd ~/coding/live
 mkdir tem
 cd tem
 curl -O https://raw.githubusercontent.com/wudongdefeng/iptv-tools/master/generate.js
@@ -44,7 +43,7 @@ grep -lrIZ '404 Not Found'. | xargs -0 rm -rf --
 grep -lrIZ '失败'. | xargs -0 rm -rf --
 
 grep -rl . -e '失败' | xargs rm --
-grep -rl . -e '卫视\|全国' | xargs cp -t ..
+grep -rl . -e '卫视\|全国' | xargs cp -t ../coding
 ls
 #cp -r *.* ..
 cd ..
