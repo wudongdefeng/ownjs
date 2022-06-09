@@ -1,4 +1,4 @@
-cd ./wind
+cd ./live
 mkdir tem
 cd tem
 curl -O https://raw.githubusercontent.com/wudongdefeng/iptv-tools/master/generate.js
