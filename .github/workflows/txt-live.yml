@@ -16,7 +16,7 @@ jobs:
       run: echo "::set-output name=DATE::$(date +'%Y-%m-%d %H:%M:%S')" 
     - name: Generate Playlists
       run: |
-        git clone https://LPoImvJTtv:${{ secrets.CODING_TOKEN }}@e.coding.net/wudongdefeng/wudongdefeng/txt-live.git coding
+        git clone https://LPoImvJTtv:${{ secrets.CODING_TOKEN }}@e.coding.net/wudongdefeng/wudongdefeng/txt-live.git ~/coding
         bash ./scripts/generate.sh
         git config --global user.name "Actions"
         git config --global user.email "actions@github.com"
