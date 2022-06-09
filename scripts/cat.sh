@@ -3,7 +3,7 @@ mkdir tem
 cd tem
 
 
-curl --connect-timeout 10 -O https://gitea.com/wkyilisha/m/raw/branch/main/ff.json || echo "Link ff doesn't exist"   
+curl --connect-timeout 10 -O https://gitea.com/kvymin/CatVodTVSpider/raw/branch/main/0606.json || echo "Link 0606 doesn't exist"   
 curl --connect-timeout 10 -O http://www.mikkk.xyz/m.json || echo "Link m doesn't exist"   
 curl --connect-timeout 10 -O https://notabug.org/laoo1976/cat/raw/master/mao.txt || echo "Link ff doesn't exist"   
 curl --connect-timeout 10 -O https://gitea.com/AYOM/zhou/raw/branch/main/mao1.txt || echo "Link mao1 doesn't exist"   
