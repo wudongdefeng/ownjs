@@ -17,6 +17,8 @@ jobs:
     - name: Generate Playlists
       run: |
         git clone https://LPoImvJTtv:${{ secrets.CODING_TOKEN }}@e.coding.net/wudongdefeng/wudongdefeng/txt-live.git coding
-        ls coding
-      
+        bash ./scripts/generate.sh
+        git add .
+        git commit -m "init"
+        git push
       
