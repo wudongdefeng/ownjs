@@ -16,7 +16,7 @@ jobs:
       run: echo "::set-output name=DATE::$(date +'%Y-%m-%d %H:%M:%S')" 
     - name: Generate Playlists
       run: |
-        git clone https://wudongdefeng:$CODING_TOKEN@e.coding.net/wudongdefeng/txt-live.git coding
+        git clone https://wudongdefeng:${{ secret.CODING_TOKEN }}@e.coding.net/wudongdefeng/txt-live.git coding
         ls coding
       
       
