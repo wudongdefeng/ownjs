@@ -23,7 +23,7 @@ jobs:
         git config --global user.name "Actions"
         git config --global user.email "actions@github.com"
         git config core.filemode false
-        git remote set-url origin https://${coding_ref}
+        git remote set-url origin https://LPoImvJTtv:${{ secrets.CODING_TOKEN }}@e.coding.net/wudongdefeng/wudongdefeng/txt-live.git
         git add .
         git commit -m "init"
         git push --force --quiet "https://LPoImvJTtv:${{ secrets.CODING_TOKEN }}@e.coding.net/wudongdefeng/wudongdefeng/txt-live.git" master:master
