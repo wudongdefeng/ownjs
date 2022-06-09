@@ -1,4 +1,4 @@
-cd ./cat
+cd ~/coding/cat
 mkdir tem
 cd tem
 
