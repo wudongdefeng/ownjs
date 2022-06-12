@@ -7,13 +7,13 @@ curl --connect-timeout 10 -O https://gitea.com/kvymin/CatVodTVSpider/raw/branch/
 curl --connect-timeout 10 -O http://www.mikkk.xyz/m.json || echo "Link m doesn't exist"   
 curl --connect-timeout 10 -O https://notabug.org/laoo1976/cat/raw/master/mao.txt || echo "Link ff doesn't exist"   
 curl --connect-timeout 10 -O https://gitea.com/AYOM/zhou/raw/branch/main/mao1.txt || echo "Link mao1 doesn't exist"   
-curl --connect-timeout 10 -O https://pastebin.com/raw/Z23snh8Y
+curl --connect-timeout 10 -o m0.json https://pastebin.com/raw/Z23snh8Y || echo "Link mao0 doesn't exist"   
 
 curl --connect-timeout 10 -O http://www.mikkk.xyz/m.json || echo "Link m doesn't exist"   
 
 curl --connect-timeout 10 -O https://raw.githubusercontent.com/sclodestar/freed/master/maooxp2.json || echo "Link xp doesn't exist"   
 
-curl --connect-timeout 10 -O http://52xcl.cn/m2.txt
+curl --connect-timeout 10 -O http://52xcl.cn/m2.txt || echo "Link m2 doesn't exist"   
 
 curl --connect-timeout 10 -O http://fangcun.atwebpages.com/mao.json || echo "Link ff doesn't exist"   
 
