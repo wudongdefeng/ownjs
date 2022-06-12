@@ -11,7 +11,7 @@ curl --connect-timeout 10 -O https://pastebin.com/raw/Z23snh8Y
 
 curl --connect-timeout 10 -O http://www.mikkk.xyz/m.json || echo "Link m doesn't exist"   
 
-curl --connect-timeout 10 -O https://raw.fastgit.org/sclodestar/freed/master/maooxp2.json || echo "Link xp doesn't exist"   
+curl --connect-timeout 10 -O https://raw.githubusercontent.com/sclodestar/freed/master/maooxp2.json || echo "Link xp doesn't exist"   
 
 curl --connect-timeout 10 -O http://52xcl.cn/m2.txt
 
