@@ -20,6 +20,7 @@ curl --connect-timeout 10 -O http://fangcun.atwebpages.com/mao.json || echo "Lin
 curl --connect-timeout 10 -o m1.json http://xiaoguozitv.cn/m.json || echo "Link m1 doesn't exist"   
 
 curl --connect-timeout 10 -O http://xiaoguozitv.cn/redbull.json || echo "Link redbull doesn't exist"   
+curl --connect-timeout 10 -O https://gitea.com/yirenxing/TVBOX/raw/branch/main/BOX/xinmao.json || echo "Link xinmao doesn't exist"   
 
 grep -lrIZ '404 Not Found'. | xargs -0 rm -rf --
 grep -lrIZ '失败'. | xargs -0 rm -rf --
