@@ -21,12 +21,13 @@ curl --connect-timeout 10 -o m1.json http://xiaoguozitv.cn/m.json || echo "Link 
 
 curl --connect-timeout 10 -O http://xiaoguozitv.cn/redbull.json || echo "Link redbull doesn't exist"   
 curl --connect-timeout 10 -O https://gitea.com/yirenxing/TVBOX/raw/branch/main/BOX/xinmao.json || echo "Link xinmao doesn't exist"   
-
+curl --connect-timeout 10 -O https://github.com/liu673cn/biubiu/raw/main/bb.txt || echo "Link xinmao doesn't exist"   
 grep -lrIZ '404 Not Found'. | xargs -0 rm -rf --
 grep -lrIZ '失败'. | xargs -0 rm -rf --
 
 grep -rl . -e '失败' | xargs rm --
-grep -rl . -e '影视|243' | xargs cp -t ..
+#grep -rl . -e '影视|243' | xargs cp -t ..
+cp -r *.* ..
 cd ..
 rm -rf tem
 
