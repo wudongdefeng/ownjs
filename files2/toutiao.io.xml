@@ -5,37 +5,11 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>0cfa9673d650e06a9de39aa16d51ecd1</guid>
-<title>AI场景存储优化：云知声超算平台基于 JuiceFS 的存储实践</title>
-<link>https://toutiao.io/k/1ih3vod</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;post_content markdown&quot;&gt;&lt;blockquote&gt;&lt;p&gt;本文作者介绍：
-吕冬冬，云知声超算平台架构师，负责云知声大规模分布式机器学习平台架构设计与新功能演进，负责深度学习算法应用优化与 AI 模型加速。研究领域包括大规模集群调度、高性能计算、分布式文件存储、分布式缓存等。云原生开源社区爱好者。&lt;/p&gt;&lt;/blockquote&gt;&lt;h1 id=&quot;01-背景&quot;&gt;01 背景&lt;/h1&gt;&lt;p&gt;云知声是一家专注于语音及语言处理的技术公司。Atlas 超级计算平台是云知声的计算底层基础架构，为云知声在 AI 各个领域（如语音、自然语言处理、视觉等）的模型迭代提供训练加速等基础计算能力。Atlas 平台深度学习算力超过 57 PFLOPS（5.7 亿亿次／秒，是的你没有看错，是亿亿次图片），深度学习算力是衡量一个 AI 平台计算性能的核心指标。除了满足公司内部的业务需求，平台也为外部企业和院校机构提供定制化计算服务。&lt;/p&gt;&lt;p/&gt;&lt;small class=&quot;d-flex justify-content-center&quot;&gt;云知声 Atlas 平台架构图&lt;/small&gt;&lt;p&gt;本文主要分享云知声 Atlas 超算平台（以下简称 Atlas）的存储建设历程以及基于 JuiceFS 建设高效存储的实践。&lt;/p&gt;&lt;h1 id=&quot;02-存储建设历程&quot;&gt;02 存储建设历程&lt;/h1&gt;&lt;p&gt;一个性能卓越的超算平台，不仅需要充足的算力支持，也离不开高效的存储系统。结合 Atlas 上的任务特点和类型，高效存储系统应具备几个特点，如：满足多种类型的结构化与非结构化数据存储需求、兼容 POSIX 接口、海量小文件场景下具有较好的性能等。&lt;/p&gt;&lt;p&gt;在最早期进行 Atlas 超算平台建设的时候，我们尝试部署过 CephFS，开源版的 CephFS 在存储规模达到几千万小文件的时候，开始出现较为严重的性能问题，用户在操作文件时会遇到卡顿甚至在高 IO 的场景下整套存储系统会直接卡死，用户体验不太好。&lt;/p&gt;&lt;p&gt;后期，我们转到了 HPC 领域使用较为广泛的 Lustre 分布式文件存储系统， 构建了多套不同规模的 Lustre 集群，作为平台核心的存储系统，生产环境上目前主要有 40G 以太网与 100G InfiniBand 类型的集群，Lustre 分布式存储支持着用户在 Atlas 超算集群中进行数据处理、模型训练、源码编译与调试、数据归档等一系列数据操作。但是受限于 Lustre 在高并发请求下的性能瓶颈，无法满足对带宽与 IOPS 要求较高的场景需求。因此我们采用 Alluxio + Fluid 进行 IO 加速，分布式缓存给我们带来了 AI 模型训练速度上的提升以及存储系统总带宽的下降。&lt;/p&gt;&lt;p&gt;但是以上方案依然不是我们认为的最终方案，因此我们也在探索新的存储系统。&lt;strong&gt;在我们的场景上对这个新存储系统的核心需求是&lt;/strong&gt;：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;运维要足够简单：存储研发人员要能够较快的上手，运维人员后期的扩容、故障处理足够简单。Lustre 提供了 &lt;a href=&quot;https://whamcloud.github.io/Online-Help/docs/IML_Help_TOC.html&quot;&gt;IML&lt;/a&gt; 一系列的自动化部署与监控工具，在运维方面较为方便。但是由于 Lustre 的软件代码是在内核上运行，如果出现故障，问题定位就显得不那么直观，需要从内核消息这边定位，大部分操作涉及重启操作系统；&lt;/li&gt;&lt;li&gt;数据可靠性：数据是 AI 公司宝贵的资产，算法工程师在存储上的数据要足够稳定与安全。Lustre 目前不支持文件系统级的冗余，只能通过硬件的 RAID 来抵御硬盘故障；&lt;/li&gt;&lt;li&gt;客户端多级缓存功能：构建大规模数据存储系统（PB 量级以上）为了考虑成本数据大部分会存储在 HDD 上，为了自动区分冷热数据，并充分利用我们 GPU 服务器的接近 TB 级的内存与大量的独立 SSD 盘，我们希望具备客户端多级自动缓存功能 ，以应对高密集 I/O 的读写场景；&lt;/li&gt;&lt;li&gt;社区活跃度：社区活跃度也是我们考虑的因素，活跃的社区在功能版本的迭代与 bug 的解决方面能有更快的响应。&lt;/li&gt;&lt;/ul&gt;&lt;h1 id=&quot;03-初识-juicefs&quot;&gt;03 初识 JuiceFS&lt;/h1&gt;&lt;p&gt;云知声团队在 2021 年初了解到了 JuiceFS，并跟 Juicedata 团队进行了早期的方案对接、PoC 测试，目前 JuiceFS 已经上线到生产环境，我们也参与到 JuiceFS 开源社区的建设中。&lt;/p&gt;&lt;h2 id=&quot;juicefs-的架构与优势&quot;&gt;JuiceFS 的架构与优势&lt;/h2&gt;&lt;p&gt;JuiceFS 整体的架构由元数据引擎、对象存储集群以及 JuiceFS 客户端组成，其中元数据引擎与对象存储提供了多种方案供用户选择。通过 JuiceFS 存储的数据将持久化到对象存储（如 Amazon S3）中，相应的元数据可以根据场景和需求持久化到 Redis、MySQL、SQLite 以及 TiKV 等各种数据库引擎中。&lt;/p&gt;&lt;p/&gt;&lt;small class=&quot;d-flex justify-content-center&quot;&gt;JuiceFS 架构图&lt;/small&gt;&lt;p&gt;不管是元数据引擎还是对象存储都有很多成熟的方案可以选择，如果是在公有云上使用通常也有全托管的服务开箱即用。JuiceFS 的元数据自动备份、回收站等特性一定程度上保障了数据的可靠性，避免一些意外情况导致数据丢失，当然如果是自己运维元数据引擎和对象存储依然需要做好数据备份。JuiceFS 的本地缓存特性可以自动将频繁访问的数据缓存到内存以及磁盘中，同时也会对文件的元数据进行 &lt;a href=&quot;https://juicefs.com/docs/zh/community/cache_management&quot;&gt;缓存&lt;/a&gt;。&lt;/p&gt;&lt;h2 id=&quot;poc-测试&quot;&gt;PoC 测试&lt;/h2&gt;&lt;p&gt;PoC 测试我们主要是在小规模环境上做可行性验证，关注的点是产品特性、运维方式、与上游调度、业务框架对接是否可行等。&lt;/p&gt;&lt;p&gt;PoC 测试环境我们搭建了一个单节点的 Redis + 3 节点的 Ceph 对象存储集群，在环境搭建方面因为 Redis 跟 Ceph 都比较成熟，部署运维方案可以参考的资料也比较全，而 JuiceFS 客户端能够以较为简单的方式对接元数据引擎跟对象存储。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;业务的适配方面，JuiceFS 完全兼容 POSIX 协议，我们上层的业务可以无缝切换与对接，业务使用无感，JuiceFS 也支持以 CSI Driver 这种云原生的方式调度，与我们整个平台的技术栈契合。&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;在性能测试方面，我们在测试环境进行了文字识别模型的训练，实验环境为：模型采用服务器版中文识别模型 backbone 为 ResNet-18，数据整体总量是 98G 采用 LMDB 格式存储，在 6 张 NVIDIA Tesla V100 进行了三组实验，分别是：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;直接在 Lustre 读&lt;/li&gt;&lt;li&gt;在带有 200G 内存缓存的 JuiceFS 读&lt;/li&gt;&lt;li&gt;在带有 960G SSD 缓存的 JuiceFS 上读&lt;/li&gt;&lt;/ul&gt;&lt;p/&gt;&lt;small class=&quot;d-flex justify-content-center&quot;&gt;耗时对比&lt;/small&gt;&lt;p&gt;JuiceFS 客户端拥有多级缓存功能，因而在性能测试中，&lt;strong&gt;在数据读方面有较大性能提升，相比 Lustre 性能有1倍以上的提升&lt;/strong&gt;，这与我们的业务特点比较契合。&lt;/p&gt;&lt;p&gt;综合考虑运维方式、业务契合度以及性能表现，我们决定将 JuiceFS 带上生产。&lt;/p&gt;&lt;h1 id=&quot;04-juicefs-在-atlas-的使用场景与收益&quot;&gt;04 JuiceFS 在 Atlas 的使用场景与收益&lt;/h1&gt;&lt;p&gt;JuiceFS 客户端多级缓存目前主要应用在我们的&lt;strong&gt;文字识别、语音降噪以及语音识别场景。由于 AI 模型训练的数据读取特点是读多写少，我们充分利用 JuiceFS 客户端的缓存带来 IO 读取的加速收益。&lt;/strong&gt;&lt;/p&gt;&lt;h2 id=&quot;收益一-加速-ai模型训练&quot;&gt;收益一：加速 AI模型训练&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;1）语音降噪测试&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;降噪场景模型的测试中使用的是散文件，每个数据都是 wav 格式的小于 100k 的语音小文件，在降噪场景我们测试了数据 dataload 阶段的 I/O 数据，JuiceFS 客户端节点的内存缓存为 512G，在 500h 规模的数据下、以 40 的 batch size 进行测试。&lt;/p&gt;&lt;p/&gt;&lt;small class=&quot;d-flex justify-content-center&quot;&gt;Lustre vs. JuiceFS 每秒处理数据量对比&lt;/small&gt;&lt;p&gt;从测试结果来看，单从数据读取效率上，在 wav 小文件方面，&lt;strong&gt;JuiceFS 为 6.45 it/s，而 Lustre 为 5.15 it/s，性能提升25%。JuiceFS 有效加速了我们端到端的模型训练，整体缩短了模型的产出时间。&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;2）文字识别场景&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;在文字识别场景中，模型为 CRNN backbone 为 MobileNet v2 ，测试环境如下：&lt;/p&gt;&lt;p&gt;| 模型 | CRNN backbone 为 MobileNet v2 |
-| 深度学习框架 | PyTorch |
-| 数据规模 | 3*32*320 的图像生成的 50G LMDB 数据 |
-| 数据类型 | LMDB |
-| GPU Server | 6 * NVIDIA Tesla V100 / 512G MEM / 56 CPU Cores |
-| 缓存 | 200G 的内存缓存 |
-| Batch size | 6*400 |&lt;/p&gt;&lt;p/&gt;&lt;small class=&quot;d-flex justify-content-center&quot;&gt;Lustre vs. JuiceFS 每个 batch 耗时对比&lt;/small&gt;&lt;p&gt;在这个测试中，主要做了 JuiceFS 跟 Lustre 的速度对比，&lt;strong&gt;从实验的结果来看从 Lustre 读每个 batch 耗时 1.5s，从 JuiceFS 读每个 batch 耗时为 1.1s，提升36%。从模型收敛的时间来看，从 Lustre 的 96 小时下降到 JuiceFS 的 86 小时，使用 JuiceFS 能够将 CRNN 模型的产出时间缩短 10 小时。&lt;/strong&gt;&lt;/p&gt;&lt;h2 id=&quot;收益二-加速-ai模型开发&quot;&gt;收益二：加速 AI模型开发&lt;/h2&gt;&lt;p/&gt;&lt;small class=&quot;d-flex justify-content-center&quot;&gt;模型开发示意图&lt;/small&gt;&lt;p&gt;在算法工程师将 AI 模型训练任务正式提交到超算集群之前，其模型需要经过大量的调试，我们为用户提供了调试环境，Dev Node 跟 Atlas 正式训练集群一样都是使用相同的存储，开发节点与训练节点都挂载 JuiceFS 客户端，因此在开发机的修改能够无缝迁移到 Atlas 训练集群。&lt;/p&gt;&lt;p&gt;用户在开发机上可以灵活地选择开发环境，既可以在宿主机搭配 Anaconda 进行远程调试，也可以使用容器的方式运行开发环境。用户的调试模型大部分是 PyTorch 跟 TensorFlow 类型的框架，我们发现在调试的时候需要频繁地 import Python 包，例如 numpy、torch 等，这种包都是大量的小文件组成的，基于旧的存储系统，用户 import 包的耗时需要几秒或者几十秒。算法人员反馈模型调试的效率比较低。&lt;strong&gt;作为统一开发环境，伴随着大量的安装包导入、代码编译、日志读写、样本下载，这要求调试机既能有较高的吞吐量，又能快速处理大量小文件。&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;通过引入 JuiceFS，我们在开发机上挂载了 JuiceFS 客户端，客户端挂载时候使用元数据缓存以及数据读缓存机制。在元数据缓存方面，当 JuiceFS 客户端使用 open() 操作打开一个文件的时候，其文件属性（attribute）就会自动缓存在客户端内存中，只要缓存未失效则随后执行的 getattr() 跟 open() 操作都会从内存缓存中立即返回结果。在执行 read() 操作的时候文件的 chunk 和 slice 信息也会自动缓存在客户端内存。数据缓存方面我们使用内存作为缓存介质，采用该方式用户调试的 Python 包在经过第一次 import 之后会全部缓存在内存上，第二次调试的时候，直接从内存缓存读取文件。&lt;strong&gt;相比之前的方式，整体速度有 2-4 倍的提速 ，极大地提高了用户的调试效率，用户的体验也更加好。&lt;/strong&gt;&lt;/p&gt;&lt;h1 id=&quot;05-juicefs-在-atlas-的使用方式&quot;&gt;05 JuiceFS 在 Atlas 的使用方式&lt;/h1&gt;&lt;p&gt;在数据的存放管理方式上，我们采用兼容现有分布式存储系统的管理方式，JuiceFS 集群的节点也都是对接 LDAP，每个节点会通过 LDAP 的客户端与 LDAP Server 集群进行交互认证。&lt;/p&gt;&lt;p&gt;超算平台上的每个组归属于不同的目录，每个目录下是各自组内或者部门内的成员，不同组之间的目录是不可见的。目录的权限是基于 Linux 的权限管控机制。用户在 Atlas 集群提交训练任务的时候，集群的任务提交工具会自动读取系统上用户的 UID 与 GID 信息然后将其注入用户提交的任务 Pod 的 securityContext 字段，则 Atlas 集群上运行的容器 Pod 内所有容器的进程运行的 UID 与存储系统上的信息一致，保证权限不越界。&lt;/p&gt;&lt;p/&gt;&lt;small class=&quot;d-flex justify-content-center&quot;&gt;存储权限认证架构图&lt;/small&gt;&lt;p&gt;在数据的访问方式上，云知声目前有 2 种使用方式：
-1. 一种是通过计算节点的 HostPath 访问数据；
-2. 另一种是更加云原生的方式，通过结合 Fluid + JuiceFS 对利用 JuiceFS 客户端为 Atlas 的应用提供数据的访问与加速。&lt;/p&gt;&lt;p&gt;1）HostPath Volume&lt;/p&gt;&lt;p/&gt;&lt;small class=&quot;d-flex justify-content-center&quot;&gt;HostPath Volume 数据读取示意图&lt;/small&gt;&lt;p&gt;第 1 种还是沿用之前的访问分布式文件存储系统的方式，通过 Kubernetes HostPath 的方式直接访问本地的存储系统客户端，我们在所有的 CPU 与 GPU 计算节点都部署了 JuiceFS 的客户端，用户提交计算任务的时候需要指定 Kubernetes volume 为 HostPath 的方式，将 JuiceFS 的目录映射。这种方式的缓存管理就比较裸，在用户侧是无法对缓存进行管理的。&lt;/p&gt;&lt;p&gt;2） Fluid + JuiceFS&lt;/p&gt;&lt;p&gt;第 2 种方式是结合 Fluid + JuiceFS 的方式，关于如何使用的具体方式可以参考&lt;a href=&quot;https://juicefs.com/blog/cn/posts/fluid-with-juicefs/&quot;&gt;我们之前的文章&lt;/a&gt; ，这里仅对架构做个简单的说明。&lt;/p&gt;&lt;p/&gt;&lt;small class=&quot;d-flex justify-content-center&quot;&gt;基于 Fluid 数据读取示意图&lt;/small&gt;&lt;p&gt;Fluid 会启动 JuiceFS 相关的组件包括 FUSE 跟 Worker pod，其中 FUSE Pod 提供了 JuiceFS 客户端的缓存能力，Worker Pod 则实现了对缓存生命周期的管理，Atlas 平台的 AI 离线训练任务通过与 FUSE Pod 客户端交互，进行 AI 训练数据的读取，通过 Fluid 提供的缓存调度能力以及数据集的可观测性，平台的用户可以通过亲和调度将缓存部署在特定的计算节点上，同时用户能够直观的看到缓存的使用情况（例如缓存数据集的大小、缓存的百分比、缓存的容量等）。&lt;/p&gt;&lt;h1 id=&quot;06-juicefs-存储生产环境建设&quot;&gt;06 JuiceFS 存储生产环境建设&lt;/h1&gt;&lt;h2 id=&quot;元数据引擎&quot;&gt;元数据引擎&lt;/h2&gt;&lt;p&gt;目前我们生产环境的元数据引擎采用 Redis，Redis 节点的系统盘做了 RAID1，同时 Redis 持久化的数据会定期同步到另一台备份节点上。Redis 的数据持久化我们采用 AOF + RDB 的方案，每秒进行一次数据持久化，相关配置如下：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;appendonly yes 
-appendfsync everysec 
-aof-load-truncated yes
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;由于我们节点采用的是 100G InifiBand，IB 的 &lt;a href=&quot;https://www.mellanox.com/products/infiniband-drivers/linux/mlnx_ofed&quot;&gt;网卡驱动&lt;/a&gt; 需要用户根据自己的操作系统版本下载对应的 ISO。目前我们的节点是采用 Kernel 5.4 的版本，由于 IB 驱动跟操作系统还有 Kernel 版本有较强的耦合性，当我们 Kernel 升级到 5.4 版本，驱动需要重新编译安装，驱动版本 MLNX_OFED_LINUX-5.5-1.0.3.2-rhel7.6-x86_64.iso 注意 GCC 的版本一定要是 GCC 9 的才行，否则编译过程会出现各种莫名其妙的问题。&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;# 安装 gcc9 
-yum --enablerepo=extras install centos-release-scl-rh 
-yum install devtoolset-9-gcc scl enable devtoolset-9 bash 
-# 进行 IB 驱动编译 
-mount /dev/sr0 ib 
-./mlnx_add_kernel_support.sh -m /root/ib -k (kernel 版本)
-&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;对象存储&quot;&gt;对象存储&lt;/h2&gt;&lt;p&gt;对象存储采用自建的 Ceph 集群，Ceph 集群采用 Cephadm 进行部署，目前生产环境用的是 Octopus 版本。Cephadm 是随着 Ceph 新版本 v15.2.0（Octopus）发布的安装工具，并且不支持 Ceph 的旧版本，Cephadm 不依赖于外部配置工具，如 Ansible、 Rook 和 Salt，它通过 SSH 将管理器守护进程连接到主机来实现这一点。管理器守护进程可以添加、删除和更新 Ceph 容器。&lt;/p&gt;&lt;p&gt;通过 Cephadm 引导一个单节点的集群，Cephadm 会在执行 bootstrap 引导的节点部署 mgr 跟 mon 服务，当添加其他节点的时候，会自动在其中一台部署 mgr 管理节点，目前我们生产采用 2 个管理节点 3 个监控节点。&lt;/p&gt;&lt;p&gt;在 Ceph 调优方面我们借鉴了社区其他用户分享的方案，感谢携程的工程师在我们调优过程中提供的帮助 （&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=Mzg4NTU0MzEyMg==&amp;amp;mid=2247495811&amp;amp;idx=2&amp;amp;sn=475c9f9cb910f05f9eb93a8de1033e4a&amp;amp;scene=21#wechat_redirect&quot;&gt;点击此处查看&lt;/a&gt;），主要做了以下实践：&lt;/p&gt;&lt;p&gt;服务器层面（&lt;a href=&quot;https://docs.ceph.com/en/latest/start/hardware-recommendations&quot;&gt;参考&lt;/a&gt;）：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;42Cores 256GB 24*18T HDD&lt;/li&gt;&lt;li&gt;系统盘: 2* 960G SAS SSD&lt;/li&gt;&lt;li&gt;BlueStore&lt;/li&gt;&lt;li&gt;关闭 NUMA&lt;/li&gt;&lt;li&gt;升级 kernel: 5.4.146 开启 io_uring&lt;/li&gt;&lt;li&gt;Kernel pid max，修改 /proc/sys/kernel/pid_max&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;Ceph 配置方面：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Ceph RADOS：直接调用 librados 接口，不走 S3 协议&lt;/li&gt;&lt;li&gt;Bucket shard&lt;/li&gt;&lt;li&gt;关闭 pg 的自动调整功能&lt;/li&gt;&lt;li&gt;OSD 日志存储（采用 bluestore，建议裸容量配比—— block : block.db : block.wal = 100:1:1，后两者建议采用 SSD 或 NVMe SSD）&lt;/li&gt;&lt;li&gt;3 副本&lt;/li&gt;&lt;/ul&gt;&lt;h2 id=&quot;juicefs-客户端&quot;&gt;JuiceFS 客户端&lt;/h2&gt;&lt;p&gt;我们环境中 JuiceFS 对接的对象存储是 Ceph RADOS，JuiceFS 采用 librados 与 Ceph 进行交互，因此需要重新编译 JuiceFS 客户端，建议 librados 的版本要跟 Ceph 的对应，例如在我们的环境 Ceph 版本是 Octopus（v15.2.*），librados 的版本建议为 v15.2.*，CentOS 自带的 librados 版本比较低，因此我们可以在官网自己下载对应的包，我们的环境上只需要下载 librados2-15.2.10-0.el7.x86_64.rpm 和 librados-devel-15.2.10-0.el7.x86_64.rpm。然后运行如下命令安装：&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;yum localinstall -y librad*
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;安装 librados 后即可编译 JuiceFS 客户端了（推荐 Go 1.17+ 、GCC 5.4+）：&lt;/p&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;make juicefs.ceph
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;编译完 JuiceFS 即可创建文件系统并在计算节点进行 JuiceFS 客户端的挂载了。目前 JuiceFS 在我们的生产环境使用还是有一大部分是直接通过 Kubernetes 的 HostPath 进行挂载，因此我们在各个 GPU、CPU 节点中都挂载了 JuiceFS 客户端，并通过 systemctl 管理 JuiceFS 的挂载进程，实现开机自动挂载与故障的恢复。&lt;/p&gt;&lt;h1 id=&quot;07-未来展望与规划&quot;&gt;07 未来展望与规划&lt;/h1&gt;&lt;p&gt;&lt;strong&gt;最后归纳下 Lustre 与 JuiceFS 的特点与适用场景&lt;/strong&gt;，企业可以根据自身的业务场景、运维能力以及存储规模做出相应的选择。&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Lustre 作为老牌 HPC 领域的存储系统，为许多全球最大的超算系统提供动力，具有多年的生产环境经验。其具有符合 POSIX 标准、支持各种高性能低时延的网络，允许 RDMA 访问的优点，适用于传统 HPC 领域的高性能计算，但是在云原生场景的适配上还不够完善，目前只能采用 HostPath Volume 对接，而且其软件运行在 Linux 内核之上，对运维人员要求更高；&lt;/li&gt;&lt;li&gt;JuiceFS 是一款云原生领域的分布式存储系统产品，提供了 CSI Driver 以及 Fluid 等方式使用能够更好地与 Kubernetes 进行结合。在运维部署方面为用户提供了更多灵活的选择，用户既可以选择在云上也可以选择私有化部署，在存储扩容运维方面较为简单。完全兼容 POSIX 标准使得深度学习的应用可以无缝迁移，但是由于后端对象存储的特点其在随机写方面会有较高的延迟，在只读的场景可以使用客户端的多级缓存进行加速较为符合我们的业务特点。&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;Atlas 平台未来与 JuiceFS 相关的规划是：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;元数据引擎升级：TiKV 适合在 1 亿以上文件数量（最多可以支撑到百亿级文件），对性能以及数据安全都有较高要求的场景，目前我们已经完成了 TiKV 的内部测试也在积极跟进社区的进展，后续要将元数据引擎迁移到 TiKV。&lt;/li&gt;&lt;li&gt;基于目录（项目）的文件配额：开源版本目前还不支持基于目录的配额，目前我们每个部门是归属在 JuiceFS 的不同的目录下，需要对目录的配额做限制。JuiceFS 社区版已经在规划实现这个特性，会在 v1.0.0 之后的版本正式发布。&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;感谢 JuiceFS 开源社区在云知声 Atlas 计算平台高效存储建设的过程中提供的技术支持，云知声也在积极地进行内部测试，争取后续将开发的功能以及改进回馈到开源社区。&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>357b8e00abe61e39f52bd4ca8d7b3581</guid>
-<title>看完这篇还不会搞「策略模式」算我输. . .</title>
-<link>https://toutiao.io/k/d9ai32f</link>
+<guid>23aadca594fd04183c170aa020bb507d</guid>
+<title>什么鬼：谷歌浏览器，一次get请求建立两次tcp连接</title>
+<link>https://toutiao.io/k/d2k0ruf</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content                                       &quot; id=&quot;js_content&quot;&gt;
-            &lt;p data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;strong&gt;&lt;em&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.66875&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/Z85sZvtmju1ITB5pCPeoYmFdq6lZbhyLjhIuTWmibJgueIjLALCFUqAjV8GRcibQsUwicMnsIWp5iaMg8NBczeLPfQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;640&quot;/&gt;&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;em&gt;首先简单讨论几个问题：&lt;/em&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;设计模式就是为了重用代码？基本是的，同时也方便扩展维护&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;策略模式就是一堆if...else...？是的&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;策略模式通常和什么模式搞基？最直观模版模式。&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;span&gt;&lt;em&gt;&lt;strong&gt;最初原型：&lt;/strong&gt;&lt;/em&gt;&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;cs&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;if&lt;/span&gt;(&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;红包&quot;&lt;/span&gt;.&lt;span class=&quot;code-snippet__keyword&quot;&gt;equals&lt;/span&gt;(grantType)){&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;span class=&quot;code-snippet__keyword&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;if&lt;/span&gt; (&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;会员&quot;&lt;/span&gt;.&lt;span class=&quot;code-snippet__keyword&quot;&gt;equals&lt;/span&gt;(grantType)){&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;这么写有问题吗？我个人觉得没有任何问题，但确实新增判断分支时需要改这块代码逻辑，不易维护扩展，而且每个条件分支没什么依赖，却被耦合在一起，使用switch...case...类似。&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;em&gt;&lt;strong&gt;不建议使用map&amp;lt;type,Bean&amp;gt;:&lt;/strong&gt;&lt;/em&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;我为什么不建议使用map将处理类型和处理bean收集起来？假设使用map进行收集，那么你需要初始化组装这个map，如下：&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;javascript&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__built_in&quot;&gt;Map&lt;/span&gt;&amp;lt;&lt;span class=&quot;code-snippet__built_in&quot;&gt;String&lt;/span&gt;, Bean&amp;gt; map = &lt;span class=&quot;code-snippet__keyword&quot;&gt;new&lt;/span&gt; HashMap&amp;lt;&lt;span class=&quot;code-snippet__built_in&quot;&gt;String&lt;/span&gt;, Bean&amp;gt;(&lt;span class=&quot;code-snippet__number&quot;&gt;8&lt;/span&gt;){{&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    put(&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;红包&quot;&lt;/span&gt;,getBean());&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    put(&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;会员&quot;&lt;/span&gt;,getBean());&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}};&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;按类型进行收集，然后用的时候再根据类型获取对应的bean。显然这里put操作需要维护，所以不建议使用这种方式。&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;em&gt;&lt;strong&gt;不建议使用applicationContext去getBean：&lt;/strong&gt;&lt;/em&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;还有具体的处理类的名字当作一种类型，通过这个beanName来获取bean，如下：&lt;em&gt;&lt;strong&gt;&lt;br/&gt;&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;css&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__selector-tag&quot;&gt;applicationContext&lt;/span&gt;&lt;span class=&quot;code-snippet__selector-class&quot;&gt;.getBean&lt;/span&gt;(&quot;红包&quot;,&lt;span class=&quot;code-snippet__selector-tag&quot;&gt;ICouponService&lt;/span&gt;&lt;span class=&quot;code-snippet__selector-class&quot;&gt;.class&lt;/span&gt;);&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;需要根据beanName来获取bean，beanName需要作为参数传进来，先不说beanName和业务类型名字大相径庭，传beanName就有点诡异。&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;em&gt;&lt;strong&gt;个人愚见：&lt;/strong&gt;&lt;/em&gt;&lt;/span&gt;&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;使用接口定义规范&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;java&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;code-snippet__class&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;ICouponService&lt;/span&gt; &lt;/span&gt;{&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;canDiscount&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;(String couponStrArr)&lt;/span&gt;&lt;/span&gt;;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;discount&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;(CouponContext couponContext)&lt;/span&gt;&lt;/span&gt;;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;getMinusAmount&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;(&lt;span class=&quot;code-snippet__keyword&quot;&gt;long&lt;/span&gt; userid)&lt;/span&gt;&lt;/span&gt;;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;    2.最常见的模式：模版模式&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;java&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;abstract&lt;/span&gt; &lt;span class=&quot;code-snippet__class&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;AbstractCouponService&lt;/span&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;implements&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;ICouponService&lt;/span&gt;&lt;/span&gt;{&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__meta&quot;&gt;@Override&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;discount&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;(CouponContext couponContext)&lt;/span&gt; &lt;/span&gt;{&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        couponContext.finalAmount = couponContext.totalAmount - getMinusAmount(couponContext.getUid());&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    }&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;    3.if判断应该在策略类里&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;java&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__meta&quot;&gt;@Service&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;code-snippet__class&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;RedPacketCouponServiceImpl&lt;/span&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;AbstractCouponService&lt;/span&gt;&lt;/span&gt;{&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    String grantType = &lt;span class=&quot;code-snippet__string&quot;&gt;&quot;红包优惠&quot;&lt;/span&gt;;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__meta&quot;&gt;@Override&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;canDiscount&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;(String couponStrArr)&lt;/span&gt; &lt;/span&gt;{&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        &lt;span class=&quot;code-snippet__keyword&quot;&gt;return&lt;/span&gt; couponStrArr.contains(grantType);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    }&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__meta&quot;&gt;@Override&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;getMinusAmount&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;(&lt;span class=&quot;code-snippet__keyword&quot;&gt;long&lt;/span&gt; uid)&lt;/span&gt; &lt;/span&gt;{&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        &lt;span class=&quot;code-snippet__keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;code-snippet__number&quot;&gt;100&lt;/span&gt;;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    }&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__meta&quot;&gt;@Service&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;code-snippet__class&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;VipCouponServiceImpl&lt;/span&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;AbstractCouponService&lt;/span&gt; &lt;/span&gt;{&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    String grantType = &lt;span class=&quot;code-snippet__string&quot;&gt;&quot;会员优惠&quot;&lt;/span&gt;;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__meta&quot;&gt;@Override&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;canDiscount&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;(String couponStrArr)&lt;/span&gt; &lt;/span&gt;{&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        &lt;span class=&quot;code-snippet__keyword&quot;&gt;return&lt;/span&gt; couponStrArr.contains(grantType);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    }&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__meta&quot;&gt;@Override&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;discount&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;(CouponContext couponContext)&lt;/span&gt; &lt;/span&gt;{&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        couponContext.finalAmount = couponContext.finalAmount * getMinusAmount(couponContext.getUid()) / &lt;span class=&quot;code-snippet__number&quot;&gt;100&lt;/span&gt;;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    }&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__meta&quot;&gt;@Override&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;getMinusAmount&lt;/span&gt;&lt;span class=&quot;code-snippet__params&quot;&gt;(&lt;span class=&quot;code-snippet__keyword&quot;&gt;long&lt;/span&gt; uid)&lt;/span&gt; &lt;/span&gt;{&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        &lt;span class=&quot;code-snippet__keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;code-snippet__number&quot;&gt;80&lt;/span&gt;;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    }&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;    4.支持哪些策略应该动态配置，这里使用apollo&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;kotlin&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__meta&quot;&gt;@RestController&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__meta&quot;&gt;@RequestMapping(&lt;span class=&quot;code-snippet__meta-string&quot;&gt;&quot;/coupon&quot;&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;code-snippet__class&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;code-snippet__title&quot;&gt;CouponController&lt;/span&gt; &lt;/span&gt;{&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__meta&quot;&gt;@Value(&lt;span class=&quot;code-snippet__meta-string&quot;&gt;&quot;&lt;span class=&quot;code-snippet__subst&quot;&gt;${coupon.strarr:}&lt;/span&gt;&quot;&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    String couponStrArr;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}    &lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;    5.使用List收集所有策略&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;css&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;@&lt;span class=&quot;code-snippet__keyword&quot;&gt;Autowired&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;private List&amp;lt;ICouponService&amp;gt; couponServiceList;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;@&lt;span class=&quot;code-snippet__keyword&quot;&gt;GetMapping&lt;/span&gt;(&quot;&lt;span class=&quot;code-snippet__keyword&quot;&gt;cacl&lt;/span&gt;&quot;)&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;public ResultInfo caclCoupon(int totalAmount){&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__selector-tag&quot;&gt;CouponContext&lt;/span&gt; &lt;span class=&quot;code-snippet__selector-tag&quot;&gt;couponContext&lt;/span&gt; = &lt;span class=&quot;code-snippet__selector-tag&quot;&gt;CouponContext&lt;/span&gt;&lt;span class=&quot;code-snippet__selector-class&quot;&gt;.builder&lt;/span&gt;()&lt;span class=&quot;code-snippet__selector-class&quot;&gt;.totalAmount&lt;/span&gt;(&lt;span class=&quot;code-snippet__selector-tag&quot;&gt;totalAmount&lt;/span&gt;)&lt;span class=&quot;code-snippet__selector-class&quot;&gt;.build&lt;/span&gt;();&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__selector-tag&quot;&gt;couponServiceList&lt;/span&gt;&lt;span class=&quot;code-snippet__selector-class&quot;&gt;.stream&lt;/span&gt;()&lt;span class=&quot;code-snippet__selector-class&quot;&gt;.filter&lt;/span&gt;(&lt;span class=&quot;code-snippet__selector-tag&quot;&gt;e-&lt;/span&gt;&amp;gt;&lt;span class=&quot;code-snippet__selector-tag&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;code-snippet__selector-class&quot;&gt;.canDiscount&lt;/span&gt;(&lt;span class=&quot;code-snippet__selector-tag&quot;&gt;couponStrArr&lt;/span&gt;))&lt;span class=&quot;code-snippet__selector-class&quot;&gt;.forEach&lt;/span&gt;(&lt;span class=&quot;code-snippet__selector-tag&quot;&gt;e-&lt;/span&gt;&amp;gt;&lt;span class=&quot;code-snippet__selector-tag&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;code-snippet__selector-class&quot;&gt;.discount&lt;/span&gt;(&lt;span class=&quot;code-snippet__selector-tag&quot;&gt;couponContext&lt;/span&gt;));&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__selector-tag&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;code-snippet__selector-tag&quot;&gt;ResultInfo&lt;/span&gt;&lt;span class=&quot;code-snippet__selector-class&quot;&gt;.success&lt;/span&gt;(&lt;span class=&quot;code-snippet__selector-tag&quot;&gt;couponContext&lt;/span&gt;);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;本文从实际应用出发，抽象出简化版的优惠扣减模型，采用模版模式&amp;amp;策略模式完成。策略模式本质就是if...else...，开发应用也不该被设计模式所束缚，策略多了自然就会使用策略模式了。同意作者请点在看，觉得有用请点个赞。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5226390685640362&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z85sZvtmju2ZMvElmjsA4IjbhwMTv9HFQHMSCWvDnX6DtgEiaVYia6ZlZL9jPGvBDIyIDK5tAP1oZGlJxDhFYSYw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;773&quot;/&gt;&lt;/p&gt;
+            &lt;p data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5635416666666667&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/Z85sZvtmju0tiaJS6BMffqEdxZTHN7MmibYwlBITT6bn2tPqP3SFeqKN2QnYN5od7mnR3veDrRdhs1w9lkLZHgdA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;960&quot;/&gt;&lt;/p&gt;&lt;p&gt;今天，同事说在谷歌浏览器中发起一次请求，使用wireshark抓包时，却发现了有两次tcp连接建立：其中一次是正常的三次握手-请求应答-四次挥手；另一次只有三次握手和四次挥手。谷歌浏览器抓包如图所示：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-croporisrc=&quot;https://mmbiz.qlogo.cn/mmbiz_png/Z85sZvtmju1YPcZlVMKMJbbuibYfVpaWhnrU6aPeQ2PS4IgITmRUZWI3nkdkgAyPurdEoprEgJia6DG6fXfAYzBw/0?wx_fmt=png&quot; data-cropx1=&quot;0&quot; data-cropx2=&quot;912&quot; data-cropy1=&quot;52.069204152249135&quot; data-cropy2=&quot;397.61937716262975&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.3793859649122807&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/Z85sZvtmju1YPcZlVMKMJbbuibYfVpaWhrQh9JibGaFzzwtSdyRC26p99xMxar9l9dGuX420mDGRjNRvME0NAE6g/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;912&quot;/&gt;&lt;/p&gt;&lt;section&gt;可以看到客户端在端口61112和端口64272分别进行了三次握手，建立了tcp连接，下面的http请求都是在端口61112进行的请求应答。那端口64272在干什么呢？&lt;br/&gt;&lt;/section&gt;&lt;p&gt;为了排除浏览器的问题，我们使用火狐浏览器进行请求抓包，抓包如下图：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.32073544433094997&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z85sZvtmju1YPcZlVMKMJbbuibYfVpaWhhXA6gokxz8JrNZBDaJNiaxh2Jo5S6t4dwicpQUKQSAia4DWFpW1qaePQQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;979&quot;/&gt;&lt;/p&gt;&lt;section&gt;可以看到火狐浏览器中正常：一次请求只建立一次tcp连接。我们尝试了curl发起请求，抓包记录都是一次tcp连接。基本确定不是浏览器的共性，只是谷歌浏览器的个性。&lt;br/&gt;&lt;/section&gt;&lt;p&gt;使用多个连接通常最容易想到的是加速访问，比如一个数据库连接不够用，可以建立多个连接（连接池复用连接）。于是，我们在谷歌浏览器设置里搜索有关加速、快速的内容，经过测试找到了一项：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z85sZvtmju1YPcZlVMKMJbbuibYfVpaWhfa77dwTL0ru8vRhZo6K2WibcBhzcTQiaUbkTA2HcfA82HpH9VurhFIaw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;856&quot;/&gt;&lt;/p&gt;&lt;section&gt;关闭预加载后，再次发起请求，谷歌浏览器也正常变成单个三次握手了。本文使用wireshark抓包，过滤指定端口filter：&lt;br/&gt;&lt;/section&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;tcp.port==8787&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;section&gt;使用springboot2项目，配置tomcat 连接超时时间（验证keep-alive超时时间）：&lt;br/&gt;&lt;/section&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;server.connection-timeout=5000&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.32695035460992905&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z85sZvtmju1YPcZlVMKMJbbuibYfVpaWhzXtNrjYTSQO51DUfblQkrKWCOczhedticiaMPgA4kQEjMc3wh6uZTZcw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1410&quot;/&gt;&lt;/p&gt;&lt;section&gt;本文就简单分享到这里，觉得有用点个&lt;em&gt;在看&lt;/em&gt;，喜欢请关注我们：&lt;br/&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5226390685640362&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Z85sZvtmju2ZMvElmjsA4IjbhwMTv9HFQHMSCWvDnX6DtgEiaVYia6ZlZL9jPGvBDIyIDK5tAP1oZGlJxDhFYSYw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;773&quot;/&gt;&lt;span/&gt;&lt;/p&gt;
           &lt;/div&gt;
 
           
@@ -46,614 +20,1337 @@ mount /dev/sr0 ib
 
            
                           
-              &lt;/div&gt;&lt;/div&gt;</content:encoded>
+              &lt;div class=&quot;reward_qrcode_area reward_area tc&quot; id=&quot;js_reward_qrcode&quot;&gt;
+                  &lt;p class=&quot;tips_global&quot; aria-hidden=&quot;true&quot; id=&quot;js_a11y_reward_qr_title&quot;&gt;Long-press QR code to transfer me a reward&lt;/p&gt;
+                                    &lt;p role=&quot;option&quot; aria-labelledby=&quot;js_a11y_reward_qr_word js_a11y_comma js_a11y_reward_qr_title js_a11y_reward_qr_money&quot; aria-describedby=&quot;js_a11y_reward_qr_tips &quot; class=&quot;reward_tips&quot; id=&quot;js_a11y_reward_qr_word&quot;/&gt;
+                  &lt;span class=&quot;reward_qrcode_img_wrp&quot;&gt;&lt;img alt=&quot;赞赏二维码&quot; class=&quot;reward_qrcode_img&quot; id=&quot;js_reward_qrcode_img&quot;/&gt;&lt;/span&gt;
+                  &lt;p aria-hidden=&quot;true&quot; id=&quot;js_a11y_reward_qr_tips&quot; class=&quot;tips_global&quot;&gt;As required by Apple&#x27;s new policy, the Reward feature has been disabled on Weixin for iOS. You can still reward an Official Account by transferring money via QR code.&lt;/p&gt;
+                &lt;/div&gt;
+                                              
+                    
+        &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>1733a6f416dc871a7b3de7e82122a005</guid>
-<title>RocketMQ的原理和实战</title>
-<link>https://toutiao.io/k/grrdmf6</link>
+<guid>b249630e379fc927095e86702dc72698</guid>
+<title>MQTT 协议基本介绍</title>
+<link>https://toutiao.io/k/xxeqcbo</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div id=&quot;cnblogs_post_body&quot; class=&quot;blogpost-body blogpost-body-html&quot;&gt;
-&lt;ol class=&quot;list-paddingleft-2&quot;&gt;
+&lt;h2 class=&quot;_1RuRku&quot;&gt;&lt;span&gt;简介&lt;/span&gt;&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;https://links.jianshu.com/go?to=https%3A%2F%2Fwww.emqx.io%2Fcn%2Fmqtt&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;MQTT&lt;/a&gt; 全称为 Message Queuing Telemetry Transport（消息队列遥测传输）是一种基于发布/订阅范式的“轻量级”消息协议，由 IBM 发布。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;MQTT 可以被解释为一种低开销，低带宽占用的即时通讯协议，可以用极少的代码和带宽的为连接远程设备提供实时可靠的消息服务，它适用于硬件性能低下的远程设备以及网络状况糟糕的环境下，因此 MQTT 协议在 IoT（Internet of things，物联网），小型设备应用，移动应用等方面有较广泛的应用。&lt;/li&gt;
+&lt;li&gt;IoT 设备要运作，就必须连接到互联网，设备才能相互协作，以及与后端服务协同工作。而互联网的基础网络协议是 TCP/IP，MQTT 协议是基于 TCP/IP 协议栈而构建的，因此它已经慢慢的已经成为了 IoT 通讯的标准。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;在简介完 MQTT 协议后，EMQ君将从其一些基本特点和基本概念为两部分，介绍 MQTT 协议。&lt;/p&gt;
+&lt;h2&gt;基本特点&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;MQTT是一种发布/订阅传输协议，基本原理和实现如下；&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;MQTT 协议提供一对多的消息发布，可以解除应用程序耦合，信息冗余小。该协议需要客户端和服务端，而协议中主要有三种身份：发布者（Publisher）、代理（Broker，服务器）、订阅者（Subscriber）。其中，消息的发布者和订阅者都是客户端，消息代理是服务器，而消息发布者可以同时是订阅者，实现了生产者与消费者的脱耦。&lt;/p&gt;
+&lt;ol start=&quot;2&quot;&gt;
 &lt;li&gt;
-&lt;p&gt;搭建环境&lt;/p&gt;
+&lt;p&gt;使用 TCP/IP 提供网络连接，提供有序、无损、双向连接；&lt;/p&gt;
+&lt;p&gt;MQTT 是一种连接协议，它指定了如何组织数据字节并通过 TCP/IP 网络传输它们。设备联网，也需要连接到互联网中，在大万维的世界中，TCP 如同汽车，有轮子就能用来运输数据，MQTT 就像是交通规则。在网络模型中，TCP是传输层协议，而 MQTT是在应用层，在 TCP 的上层，因此 MQTT 也是基于这个而构建的，提高了可靠性。&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;helloworld&lt;/p&gt;
+&lt;p&gt;对负载内容屏蔽的消息传输；&lt;/p&gt;
+&lt;p&gt;可以对消息订阅者所接受到的内容有所屏蔽。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;具体有三种消息发布的服务质量：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;至多一次&lt;/code&gt;，消息发布完全依赖底层 TCP/IP 网络。会发生消息丢失或重复。这一级别可用于如下情况，环境传感器数据，丢失一次读记录无所谓，因为不久后还会有第二次发送。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;至少一次&lt;/code&gt;，确保消息到达，但消息重复可能会发生。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;只有一次&lt;/code&gt;，确保消息到达一次。这一级别可用于如下情况，在计费系统中，消息重复或丢失会导致不正确的结果。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;小型传输，开销小，固定长度的头部是 2 字节，协议交换最小化，以降低网络流量；&lt;/p&gt;
+&lt;p&gt;整体上协议可拆分为：固定头部+可变头部+消息体，这就是为什么在介绍里说它非常适合&quot;在物联网领域，传感器与服务器的通信，信息的收集&quot;。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;使用Last Will和Testament特性通知有关各方客户端异常中断的机制；&lt;/p&gt;
+&lt;p&gt;Last Will：即遗言机制，用于通知同一主题下的其他设备发送遗言的设备已经断开了连接。&lt;/p&gt;
+&lt;p&gt;Testament：遗嘱机制，功能类似于Last Will。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;我也不例外，直接搞起来。&lt;/p&gt;
-&lt;h1 class=&quot;eye-protector-processed&quot;&gt;一、RocketMQ的安装&lt;/h1&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;1、文档&lt;/h2&gt;
-&lt;p&gt;&lt;strong&gt;官方网站&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;http://rocketmq.apache.org&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;GitHub&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;https://github.com/apache/rocketmq&lt;/p&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;2、下载&lt;/h2&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;wget https://mirror.bit.edu.cn/apache/rocketmq/4.7.0/rocketmq-all-4.7.0-bin-release.zip
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;我们是基于Centos8来的，面向官方文档学习，所以下载地址自然也是官方的。&lt;/p&gt;
-&lt;p&gt;去官方网站找合适的版本进行下载，目前我这里最新的是4.7.0版本。&lt;/p&gt;
-&lt;p&gt;http://rocketmq.apache.org/dowloading/releases/&lt;/p&gt;
-&lt;p&gt;&lt;img class=&quot;rich_pages medium-zoom-image&quot; title=&quot;RocketMQ入门到入土（一）新手也能看懂的原理和实战！&quot; src=&quot;https://www.javazhiyin.com/wp-content/uploads/2020/06/java0-1593308598.png&quot; alt=&quot;RocketMQ入门到入土（一）新手也能看懂的原理和实战！&quot; data-original=&quot;https://www.javazhiyin.com/wp-content/uploads/2020/06/java0-1593308598.png&quot;/&gt;&lt;/p&gt;
-&lt;p&gt; &lt;/p&gt;
-&lt;p&gt;https://www.apache.org/dyn/closer.cgi?path=rocketmq/4.7.0/rocketmq-all-4.7.0-bin-release.zip&lt;/p&gt;
-&lt;p&gt;&lt;img class=&quot;rich_pages medium-zoom-image&quot; title=&quot;RocketMQ入门到入土（一）新手也能看懂的原理和实战！&quot; src=&quot;https://www.javazhiyin.com/wp-content/uploads/2020/06/java5-1593308598.png&quot; alt=&quot;RocketMQ入门到入土（一）新手也能看懂的原理和实战！&quot; data-original=&quot;https://www.javazhiyin.com/wp-content/uploads/2020/06/java5-1593308598.png&quot;/&gt;&lt;/p&gt;
-&lt;p&gt; &lt;/p&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;3、准备工作&lt;/h2&gt;
-&lt;h3 class=&quot;eye-protector-processed&quot;&gt;3.1、解压&lt;/h3&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;unzip rocketmq-all-4.7.0-bin-release.zip
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 class=&quot;eye-protector-processed&quot;&gt;3.2、安装jdk&lt;/h3&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;sudo yum install java-1.8.0-openjdk-devel
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;4、启动&lt;/h2&gt;
-&lt;h3 class=&quot;eye-protector-processed&quot;&gt;4.1、启动namesrv&lt;/h3&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;cd rocketmq-all-4.7.0-bin-release/bin
-./mqnamesrv
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 class=&quot;eye-protector-processed&quot;&gt;4.2、启动broker&lt;/h3&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;cd rocketmq-all-4.7.0-bin-release/bin
-./mqbroker -n localhost:9876
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;常见错误以及解决方案：&lt;/p&gt;
-&lt;p&gt;常见错误：启动broker失败 &lt;code class=&quot;eye-protector-processed&quot;&gt;Cannot allocate memory&lt;/code&gt;&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;[root@node-113b bin]# ./mqbroker -n localhost:9876
-Java HotSpot(TM) 64-Bit Server VM warning: INFO: os::commit_memory(0x00000005c0000000, 8589934592, 0) failed
-; error=&#x27;Cannot allocate memory&#x27; (errno=12)#
-# There is insufficient memory for the Java Runtime Environment to continue.
-# Native memory allocation (mmap) failed to map 8589934592 bytes for committing reserved memory.
-# An error report file with more information is saved as:
-# /usr/local/rocketmq/bin/hs_err_pid1997.log
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;解决方案：&lt;/p&gt;
-&lt;p&gt;是由于默认内存分配的太大了，超出了本机内存，直接OOM了。&lt;/p&gt;
-&lt;p&gt;修改bin/目录下的如下两个脚本&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;runbroker.sh
-runserver.sh
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;在这两个脚本里都搜索&lt;code class=&quot;eye-protector-processed&quot;&gt;-server -Xms&lt;/code&gt;，将其内存分配小点，自己玩的话512MB就足够了，够够的了！&lt;/p&gt;
-&lt;h3 class=&quot;eye-protector-processed&quot;&gt;4.3、启动成功标识&lt;/h3&gt;
-&lt;p&gt;namesrv启动成功标识：&lt;/p&gt;
-&lt;p&gt;&lt;img class=&quot;rich_pages medium-zoom-image&quot; title=&quot;RocketMQ入门到入土（一）新手也能看懂的原理和实战！&quot; src=&quot;https://www.javazhiyin.com/wp-content/uploads/2020/06/java7-1593308598.png&quot; alt=&quot;RocketMQ入门到入土（一）新手也能看懂的原理和实战！&quot; data-original=&quot;https://www.javazhiyin.com/wp-content/uploads/2020/06/java7-1593308598.png&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;broker启动成功标识：&lt;/p&gt;
-&lt;p&gt;&lt;img class=&quot;rich_pages medium-zoom-image&quot; title=&quot;RocketMQ入门到入土（一）新手也能看懂的原理和实战！&quot; src=&quot;https://www.javazhiyin.com/wp-content/uploads/2020/06/java2-1593308598.png&quot; alt=&quot;RocketMQ入门到入土（一）新手也能看懂的原理和实战！&quot; data-original=&quot;https://www.javazhiyin.com/wp-content/uploads/2020/06/java2-1593308598.png&quot;/&gt;&lt;/p&gt;
-&lt;h1 class=&quot;eye-protector-processed&quot;&gt;二、RocketMQ控制台的安装&lt;/h1&gt;
-&lt;p&gt;控制台目前获取方式有如下两种：&lt;/p&gt;
-&lt;ol class=&quot;list-paddingleft-2&quot;&gt;
+&lt;h2&gt;基本概念&lt;/h2&gt;
+&lt;ol&gt;
 &lt;li&gt;
-&lt;p&gt;第三方网站去下载现成的，比如csdn等。&lt;/p&gt;
+&lt;p&gt;MQTT 客户端&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;一个使用 MQTT 协议的设备、应用程序等，它总是建立到服务器的网络连接。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;可以发布信息，其他客户端可以订阅该信息&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;官方源码包自己编译而成，官方没有现成的。&lt;/p&gt;
+&lt;p&gt;订阅其它客户端发布的消息&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;退订或删除应用程序的消息&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;断开与服务器连接&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;MQTT 服务器&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;MQTT 服务器也称为 Broker（消息代理），以是一个应用程序或一台设备。它是位于消息发布者 和订阅者之间&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;接受来自客户端的网络连接&lt;/li&gt;
+&lt;li&gt;接受客户端发布的应用信息&lt;/li&gt;
+&lt;li&gt;处理来自客户端的订阅和退订请求&lt;/li&gt;
+&lt;li&gt;向订阅的客户转发应用程序消息&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;主题（Topic）&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;连接到一个应用程序消息的标签，该标签与服务器的订阅相匹配。服务器会将消息发送给订阅所匹配标签的每个客户端。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;主题筛选器（Topic Filter）&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;一个对主题名通配符筛选器，在订阅表达式中使用，表示订阅所匹配到的多个主题。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;QoS（消息传递的服务质量水平）&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;服务质量，标志表明此主题范围内的消息传送到客户端所需的一致程度。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;值 0：不可靠，消息基本上仅传送一次，如果当时客户端不可用，则会丢失该消息。&lt;/li&gt;
+&lt;li&gt;值 1：消息应传送至少 1 次。&lt;/li&gt;
+&lt;li&gt;值 2：消息仅传送一次。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;会话（Session）&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;每个客户端与服务器建立连接后就是一个会话，客户端和服务器之间有状态交互。会话存在于一个网络之间，也可能在客户端和服务器之间跨越多个连续的网络连接。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;订阅（Subscription）&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;订阅包含主题筛选器（Topic Filter）和最大服务质量（QoS）。订阅会与一个会话（Session）关联。一个会话可以包含多个订阅。每一个会话中的每个订阅都有一个不同的主题筛选器。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;客户端在成功建立TCP连接之后，发送CONNECT消息，在得到服务器端授权允许建立彼此连接的CONNACK消息之后，客户端会发送SUBSCRIBE消息，订阅感兴趣的Topic主题列表（至少一个主题）&lt;/li&gt;
+&lt;li&gt;订阅的主题名称采用UTF-8编码，然后紧跟着对应的QoS值&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;发布（publish）&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;控制报文是指从客户端向服务端或者服务端向客户端传输一个应用消息，MQTT 客户端发送消息请求，发送完成后返回应用程序线程&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;比如安卓的推送服务，还有一些即时通信软件如微信等也是采用的推送技术。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;负载（Payload）&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;消息订阅者所具体接收的内容&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;我们这里当然采取官方方式。&lt;/p&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;1、官方文档&lt;/h2&gt;
-&lt;p&gt;&lt;strong&gt;github仓库&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;https://github.com/apache/rocketmq-externals&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;中文指南&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;https://github.com/apache/rocketmq-externals/blob/master/rocketmq-console/doc/1_0_0/UserGuide_CN.md&lt;/p&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;2、下载源码&lt;/h2&gt;
-&lt;p&gt;https://github.com/apache/rocketmq-externals/tree/release-rocketmq-console-1.0.0&lt;/p&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;3、修改配置（可选）&lt;/h2&gt;
-&lt;p&gt;我们下载完解压后的文件目录如下：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://img2022.cnblogs.com/blog/420532/202206/420532-20220618094036965-975680575.png&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;修改&lt;code class=&quot;eye-protector-processed&quot;&gt;rocketmq-console/src/main/resources/application.properties&lt;/code&gt;文件的&lt;code class=&quot;eye-protector-processed&quot;&gt;server.port&lt;/code&gt;就欧了。默认8080。&lt;/p&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;4、编译打包&lt;/h2&gt;
-&lt;p&gt;进入&lt;code class=&quot;eye-protector-processed&quot;&gt;rocketmq-console&lt;/code&gt;，然后用maven进行编译打包， 如果没有mvn， 安装它： yum install maven ，然后：&lt;/p&gt;
-&lt;pre class=&quot;language-bash highlighter-hljs&quot;&gt;&lt;code&gt;mvn clean package -DskipTests&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;打包完会在target下生成我们spring boot的jar程序，直接&lt;code class=&quot;eye-protector-processed&quot;&gt;java -jar&lt;/code&gt;启动完事。&lt;/p&gt;
-&lt;p&gt;&lt;img class=&quot;rich_pages medium-zoom-image&quot; title=&quot;RocketMQ入门到入土（一）新手也能看懂的原理和实战！&quot; src=&quot;https://www.javazhiyin.com/wp-content/uploads/2020/06/java5-1593308598-1.png&quot; alt=&quot;RocketMQ入门到入土（一）新手也能看懂的原理和实战！&quot; data-original=&quot;https://www.javazhiyin.com/wp-content/uploads/2020/06/java5-1593308598-1.png&quot;/&gt;&lt;/p&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;5、启动控制台&lt;/h2&gt;
-&lt;p&gt;将编译打包好的springboot程序扔到服务器上，执行如下命令进行启动&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;java -jar rocketmq-console-ng-1.0.1.jar --rocketmq.config.namesrvAddr=127.0.0.1:9876
-&lt;/code&gt;&lt;/pre&gt;
-&lt;blockquote class=&quot;eye-protector-processed&quot;&gt;
-&lt;p&gt;如果想后台启动就nohup &amp;amp;&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;访问一下看看效果：&lt;/p&gt;
-&lt;p&gt;&lt;img class=&quot;rich_pages medium-zoom-image&quot; title=&quot;RocketMQ入门到入土（一）新手也能看懂的原理和实战！&quot; src=&quot;https://www.javazhiyin.com/wp-content/uploads/2020/06/java4-1593308598.png&quot; alt=&quot;RocketMQ入门到入土（一）新手也能看懂的原理和实战！&quot; data-original=&quot;https://www.javazhiyin.com/wp-content/uploads/2020/06/java4-1593308598.png&quot;/&gt;&lt;/p&gt;
-&lt;h1 class=&quot;eye-protector-processed&quot;&gt;三、测试&lt;/h1&gt;
-&lt;blockquote class=&quot;eye-protector-processed&quot;&gt;
-&lt;p&gt;rocketmq给我们提供了测试工具和测试类，可以在安装完很方便的进行测试。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;0、准备工作&lt;/h2&gt;
-&lt;p&gt;rocketmq给我们提供的默认测试工具在bin目录下，叫&lt;code class=&quot;eye-protector-processed&quot;&gt;tools.sh&lt;/code&gt;。我们测试前需要配置这个脚本，为他指定namesrv地址才可以，否则测试发送/消费消息的时候会出现如下错误 &lt;strong&gt;connect to null failed&lt;/strong&gt;：&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;22:49:02.470 [main] DEBUG i.n.u.i.l.InternalLoggerFactory - Using SLF4J as the default logging framework
-RocketMQLog:WARN No appenders could be found for logger (io.netty.util.internal.PlatformDependent0).
-RocketMQLog:WARN Please initialize the logger system properly.
-java.lang.IllegalStateException: org.apache.rocketmq.remoting.exception.RemotingConnectException: connect to null failed
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;配置如下：&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;vim tools.sh
-# 在export JAVA_HOME上面添加如下这段代码
-export NAMESRV_ADDR=localhost:9876
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;1、发送消息&lt;/h2&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;./tools.sh org.apache.rocketmq.example.quickstart.Producer&lt;/code&gt;&lt;/pre&gt;
-&lt;blockquote class=&quot;eye-protector-processed&quot;&gt;
-&lt;p&gt;成功的话会看到哗哗哗的日志，因为这个类会发送1000条消息到TopicTest这个Topic下。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;2、消费消息&lt;/h2&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;./tools.sh org.apache.rocketmq.example.quickstart.Consumer&lt;/code&gt;&lt;/pre&gt;
-&lt;blockquote class=&quot;eye-protector-processed&quot;&gt;
-&lt;p&gt;成功的话会看到哗哗哗的日志，因为这个类会消费TopicTest下的全部消息。刚发送的1000条都会被消费掉。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;3、控制台&lt;/h2&gt;
-&lt;p&gt;发送成功后我们自然也能来到管控台去看消息和消费情况等等等信息&lt;/p&gt;
-&lt;p&gt;&lt;img class=&quot;rich_pages medium-zoom-image&quot; title=&quot;RocketMQ入门到入土（一）新手也能看懂的原理和实战！&quot; src=&quot;https://www.javazhiyin.com/wp-content/uploads/2020/06/java1-1593308598.png&quot; alt=&quot;RocketMQ入门到入土（一）新手也能看懂的原理和实战！&quot; data-original=&quot;https://www.javazhiyin.com/wp-content/uploads/2020/06/java1-1593308598.png&quot;/&gt;&lt;/p&gt;
-&lt;h1 class=&quot;eye-protector-processed&quot;&gt;四、架构图以及角色&lt;/h1&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;1、架构图&lt;/h2&gt;
-&lt;p&gt;&lt;img class=&quot;rich_pages medium-zoom-image&quot; title=&quot;RocketMQ入门到入土（一）新手也能看懂的原理和实战！&quot; src=&quot;https://www.javazhiyin.com/wp-content/uploads/2020/06/java4-1593308598-1.png&quot; alt=&quot;RocketMQ入门到入土（一）新手也能看懂的原理和实战！&quot; data-original=&quot;https://www.javazhiyin.com/wp-content/uploads/2020/06/java4-1593308598-1.png&quot;/&gt;&lt;/p&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;2、角色&lt;/h2&gt;
-&lt;h3 class=&quot;eye-protector-processed&quot;&gt;2.1、Broker&lt;/h3&gt;
-&lt;ul class=&quot;list-paddingleft-2&quot;&gt;
-&lt;li&gt;
-&lt;p&gt;理解成RocketMQ本身&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;broker主要用于producer和consumer接收和发送消息&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;broker会定时向nameserver提交自己的信息&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;是消息中间件的消息存储、转发服务器&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;每个Broker节点，在启动时，都会遍历NameServer列表，与每个NameServer建立长连接，注册自己的信息，之后定时上报&lt;/p&gt;
-&lt;/li&gt;
+&lt;h2&gt;简单示例&lt;/h2&gt;
+&lt;p&gt;MQTT 协议主要是根据以下情况设计的：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;M2M（Machine to Machine），机器或设备间端到端通信，比如传感器之间的数据通讯。&lt;/li&gt;
+&lt;li&gt;设备（Machine）中，例如传感器，硬件能力很弱，协议要考虑尽量小的资源消耗，比如计算能力和存储等。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 class=&quot;eye-protector-processed&quot;&gt;2.2、Nameserver&lt;/h3&gt;
-&lt;ul class=&quot;list-paddingleft-2&quot;&gt;
-&lt;li&gt;
-&lt;p&gt;理解成zookeeper的效果，只是他没用zk，而是自己写了个nameserver来替代zk&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;底层由netty实现，提供了路由管理、服务注册、服务发现的功能，是一个无状态节点&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;nameserver是服务发现者，集群中各个角色（producer、broker、consumer等）都需要定时向nameserver上报自己的状态，以便互相发现彼此，超时不上报的话，nameserver会把它从列表中剔除&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;nameserver可以部署多个，当多个nameserver存在的时候，其他角色同时向他们上报信息，以保证高可用，&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;NameServer集群间互不通信，没有主备的概念&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;nameserver内存式存储，nameserver中的broker、topic等信息默认不会持久化，所以他是无状态节点&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 class=&quot;eye-protector-processed&quot;&gt;2.3、Producer&lt;/h3&gt;
+&lt;p&gt;根据 MQTT 的基础了解后并结合简单的架构，在这里做一个简单的示例图，可以更直观的理解MQTT协议的通信模型。MQTT Broker 就选择 EMQ 作为示范。比如有1个温度传感器（1个Machine），1个移动设备，1个电脑，一个服务器（3个Machine)，都可以得到或者显示温度传感器的温度值，需要先通过 MQTT 协议subscribe（订阅）一个比如叫 temperature 的 topic（主题）如下：&lt;/p&gt;
 
-&lt;h3 class=&quot;eye-protector-processed&quot;&gt;2.4、Consumer&lt;/h3&gt;
+&lt;p&gt;图中移动设备，服务器，电脑需要先通过 EMQ subscribe 一个叫 temperature 的 topic，当温度传感器 publish 温度数据，三个设备就可以收到了。&lt;/p&gt;
+&lt;h1&gt;进一步了解MQTT 3&lt;/h1&gt;
+&lt;p&gt;MQTT 3 （当前版本3.1.1）是目前使用的最为广泛的 MQTT 协议标准。尽管 &lt;a href=&quot;https://links.jianshu.com/go?to=https%3A%2F%2Fwww.emqx.io%2Fcn%2Fmqtt%2Fmqtt5&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;MQTT 5&lt;/a&gt; 标准已经发布，并且带来了一些令人振奋的新特性，但是在整个应用场景上，从后台服务到消息中间件再到客户端SDK等环节上的产品升级并没有都完成，再加上既有部署的维护，业界从版本3到5的过渡可能会持续相当长一段时间，所以，对于刚加入物联网行业的生力军来说，现在来学习 MQTT 3 依然是一件很有意义的事情。&lt;/p&gt;
+&lt;h2&gt;MQTT 协议的工作方式&lt;/h2&gt;
+&lt;p&gt;前面简介中讲到，在 MQTT 协议中有三个角色会参与到整个通信过程，发布者（publisher）、代理（broker）和订阅者（subscriber）。有别于传统的客户端/服务器通讯协议，MQTT协议并不是端到端的，消息传递通过代理，包括会话（session）也不是建立在发布者和订阅者之间，而是建立在端和代理之间。代理解除了发布者和订阅者之间的耦合。&lt;/p&gt;
+&lt;p&gt;除了发布者和订阅者之间传递普通消息，代理还可以为发布者处理保留消息和遗愿消息，并可以更改服务质量（QoS）等级。&lt;/p&gt;
+&lt;h2&gt;MQTT控制报文&lt;/h2&gt;
+&lt;p&gt;MQTT协议工作在TCP之上，端和代理之间通过交换预先定义的控制报文来完成通信。MQTT报文有3个部分组成，并按下表顺序出现：&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;&lt;th&gt;固定报头（fixed header）&lt;/th&gt;&lt;th&gt;可变报头（variable header）&lt;/th&gt;&lt;th&gt;荷载（payload）&lt;/th&gt;&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;所有报文都包含&lt;/td&gt;
+&lt;td&gt;部分报文包含&lt;/td&gt;
+&lt;td&gt;部分报文包含&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;所有的MQTT控制报文都有一个固定报头，格式如下：&lt;/p&gt;
 
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;3、核心流程&lt;/h2&gt;
-&lt;ul class=&quot;list-paddingleft-2&quot;&gt;
-&lt;li&gt;
-&lt;p&gt;Broker都注册到Nameserver上&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Producer发消息的时候会从Nameserver上获取发消息的topic信息&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Producer向提供服务的所有master建立长连接，且定时向master发送心跳&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Consumer通过NameServer集群获得Topic的路由信息&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Consumer会与所有的Master和所有的Slave都建立连接进行监听新消息&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h1 class=&quot;eye-protector-processed&quot;&gt;五、核心概念&lt;/h1&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;1、Message&lt;/h2&gt;
-&lt;p&gt;消息载体。Message发送或者消费的时候必须指定Topic。Message有一个可选的Tag项用于过滤消息，还可以添加额外的键值对。&lt;/p&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;2、topic&lt;/h2&gt;
-&lt;p&gt;消息的逻辑分类，发消息之前必须要指定一个topic才能发，就是将这条消息发送到这个topic上。消费消息的时候指定这个topic进行消费。就是逻辑分类。&lt;/p&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;3、queue&lt;/h2&gt;
-&lt;p&gt;1个Topic会被分为N个Queue，数量是可配置的。message本身其实是存储到queue上的，消费者消费的也是queue上的消息。多说一嘴，比如1个topic4个queue，有5个Consumer都在消费这个topic，那么会有一个consumer浪费掉了，因为负载均衡策略，每个consumer消费1个queue，5&amp;gt;4，溢出1个，这个会不工作。&lt;/p&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;4、Tag&lt;/h2&gt;
-&lt;p&gt;Tag 是 Topic 的进一步细分，顾名思义，标签。每个发送的时候消息都能打tag，消费的时候可以根据tag进行过滤，选择性消费。&lt;/p&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;5、Message Model&lt;/h2&gt;
-&lt;p&gt;消息模型：集群（Clustering）和广播（Broadcasting）&lt;/p&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;6、Message Order&lt;/h2&gt;
-&lt;p&gt;消息顺序：顺序（Orderly）和并发（Concurrently）&lt;/p&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;7、Producer Group&lt;/h2&gt;
-&lt;p&gt;消息生产者组&lt;/p&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;8、Consumer Group&lt;/h2&gt;
-&lt;p&gt;消息消费者组&lt;/p&gt;
-&lt;h1 class=&quot;eye-protector-processed&quot;&gt;六、ACK&lt;/h1&gt;
-&lt;p&gt;首先要明确一点：&lt;strong&gt;ACK机制是发生在Consumer端的，不是在Producer端的&lt;/strong&gt;。也就是说Consumer消费完消息后要进行ACK确认，如果未确认则代表是消费失败，这时候Broker会进行重试策略（仅集群模式会重试）。ACK的意思就是：Consumer说：ok，我消费成功了。这条消息给我标记成已消费吧。&lt;/p&gt;
-&lt;h1 class=&quot;eye-protector-processed&quot;&gt;七、消费模式&lt;/h1&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;1、集群模式（Clustering）&lt;/h2&gt;
-&lt;h3 class=&quot;eye-protector-processed&quot;&gt;1.1、图解&lt;/h3&gt;
-&lt;p&gt;&lt;img class=&quot;rich_pages medium-zoom-image&quot; title=&quot;RocketMQ入门到入土（一）新手也能看懂的原理和实战！&quot; src=&quot;https://www.javazhiyin.com/wp-content/uploads/2020/06/java0-1593308598-1.png&quot; alt=&quot;RocketMQ入门到入土（一）新手也能看懂的原理和实战！&quot; data-original=&quot;https://www.javazhiyin.com/wp-content/uploads/2020/06/java0-1593308598-1.png&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;协议版本3定义了14种 MQTT 报文，用于建立/断开连接、发布消息、订阅消息和维护连接。固定报头的第一字节的4-7位的值指定了报文类型，其取值如下表。0和15为系统保留值；0-3位为标志位，依照报文类型有不同的含义，事实上，除了 PUBLISH 报文以外，其他报文的标志位均为系统保留。如果收到报文的标志位无效，代理应断开连接。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;&lt;th&gt;报文类型&lt;/th&gt;&lt;th&gt;值&lt;/th&gt;&lt;th&gt;描述&lt;/th&gt;&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;CONNECT&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;客户端向代理发起连接请求&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CONNACK&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;连接确认&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;PUBLISH&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;发布消息&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;PUBACK&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;发布确认&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;PUBREC&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;发布收到（QoS2）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;PUBREL&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;发布释放（QoS2）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;PUBCOMP&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;发布完成（QoS2）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;SUBSCRIBE&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;td&gt;客户端向代理发起订阅请求&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;SUBACK&lt;/td&gt;
+&lt;td&gt;9&lt;/td&gt;
+&lt;td&gt;订阅确认&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;UNSUBSCRIBE&lt;/td&gt;
+&lt;td&gt;10&lt;/td&gt;
+&lt;td&gt;取消订阅&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;UNSUBACK&lt;/td&gt;
+&lt;td&gt;11&lt;/td&gt;
+&lt;td&gt;取消订阅确认&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;PINGREQ&lt;/td&gt;
+&lt;td&gt;12&lt;/td&gt;
+&lt;td&gt;PING请求&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;PINGRESP&lt;/td&gt;
+&lt;td&gt;13&lt;/td&gt;
+&lt;td&gt;PING响应&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;DISCONNECT&lt;/td&gt;
+&lt;td&gt;14&lt;/td&gt;
+&lt;td&gt;断开连接&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;固定报头的第二字节起表示报文的剩余长度。&lt;span&gt;最大4个字节，每字节可以编码至127，并含有一位继续位，如继续位非0，则下一字节依然为剩余长度。由此，理论上一个控制报文最长可以到256MB。&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;&lt;span&gt;&lt;img src=&quot;https://img2020.cnblogs.com/blog/420532/202106/420532-20210607095138649-2085346960.png&quot; alt=&quot;&quot; loading=&quot;lazy&quot;/&gt;&lt;/span&gt;&lt;/p&gt;
 &lt;p&gt; &lt;/p&gt;
-&lt;h3 class=&quot;eye-protector-processed&quot;&gt;1.2、特点&lt;/h3&gt;
-
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;2、广播模式（Broadcasting）&lt;/h2&gt;
-&lt;h3 class=&quot;eye-protector-processed&quot;&gt;2.1、图解&lt;/h3&gt;
-&lt;p&gt;&lt;img class=&quot;rich_pages medium-zoom-image&quot; title=&quot;RocketMQ入门到入土（一）新手也能看懂的原理和实战！&quot; src=&quot;https://www.javazhiyin.com/wp-content/uploads/2020/06/java2-1593308599.png&quot; alt=&quot;RocketMQ入门到入土（一）新手也能看懂的原理和实战！&quot; data-original=&quot;https://www.javazhiyin.com/wp-content/uploads/2020/06/java2-1593308599.png&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;span/&gt;&lt;/p&gt;
 &lt;p&gt; &lt;/p&gt;
-&lt;h3 class=&quot;eye-protector-processed&quot;&gt;2.2、特点&lt;/h3&gt;
-&lt;ul class=&quot;list-paddingleft-2&quot;&gt;
-&lt;li&gt;
-&lt;p&gt;消费进度由consumer维护&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;保证每个消费者都消费一次消息&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;消费失败的消息不会重投&lt;/p&gt;
-&lt;/li&gt;
+&lt;p&gt;一些报文在固定报头和荷载之间可以有一个可变报头。可变报头的内容根据报文类型不同而不同。最常见的可变报头是报文标识符（Packet Identifier）。&lt;/p&gt;
+&lt;p&gt;一些报文可以在最后携带一个荷载。不同的报文可以无荷载，可选荷载，或必须带有荷载。&lt;/p&gt;
+&lt;p&gt;限于篇幅，在这里我们仅以CONNECT和CONNACK为例解释一下 MQTT 报文的构成和报文响应行为。其他报文请查阅MQTT标准文档。&lt;/p&gt;
+&lt;h3&gt;CONNECT报文&lt;/h3&gt;
+&lt;p&gt;限于篇幅，在这里我们仅以CONNECT为例解释一下MQTT报文的构成。其他报文请查阅MQTT标准文档。&lt;br/&gt;CONNECT是客户端连接到代理的第一个报文，如果在连接已经存在，代理收到该报文将会断开现有连接。&lt;/p&gt;
+&lt;h4&gt;CONNECT报文的固定报头&lt;/h4&gt;
+
+&lt;h4&gt;CONNECT报文的可变报头&lt;/h4&gt;
+&lt;p&gt;CONNECT报文的可变报头由4部分组成：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;协议名。协议名是UTF-8编码的大写的MQTT。&lt;/li&gt;
+&lt;li&gt;协议级别。MQTT 3.1.1的协议级别为4.&lt;/li&gt;
+&lt;li&gt;连接标志位。定义连接行为的参数。见下表。&lt;/li&gt;
+&lt;li&gt;Keep Alive。2字节，客户端和代理之间的无活动时间超过该值后，应关闭连接。如果该值置0表示客户端不要求代理启用KEEPALIVE功能。&lt;/li&gt;
+
 &lt;/ul&gt;
-&lt;h1 class=&quot;eye-protector-processed&quot;&gt;八、Java API&lt;/h1&gt;
-&lt;p&gt;说明：&lt;/p&gt;
+&lt;p&gt;连接标志位：&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;&lt;th&gt;位&lt;/th&gt;&lt;th&gt;7&lt;/th&gt;&lt;th&gt;6&lt;/th&gt;&lt;th&gt;5&lt;/th&gt;&lt;th&gt;4&lt;/th&gt;&lt;th&gt;3&lt;/th&gt;&lt;th&gt;2&lt;/th&gt;&lt;th&gt;1&lt;/th&gt;&lt;th&gt;0&lt;/th&gt;&lt;/tr&gt;
 
-&lt;p&gt;pom如下&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;&amp;lt;dependency&amp;gt;
-    &amp;lt;groupId&amp;gt;org.apache.rocketmq&amp;lt;/groupId&amp;gt;
-    &amp;lt;artifactId&amp;gt;rocketmq-client&amp;lt;/artifactId&amp;gt;
-    &amp;lt;version&amp;gt;4.7.0&amp;lt;/version&amp;gt;
-&amp;lt;/dependency&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;1、Producer&lt;/h2&gt;
-&lt;blockquote class=&quot;eye-protector-processed&quot;&gt;
-&lt;p&gt;发消息肯定要必备如下几个条件：&lt;/p&gt;
-&lt;ul class=&quot;list-paddingleft-2&quot;&gt;
-&lt;li&gt;
-&lt;p&gt;指定生产组名（不能用默认的，会报错）&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;配置namesrv地址（必须）&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;指定topic name（必须）&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;指定tag/key（可选）&lt;/p&gt;
-&lt;/li&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt; &lt;/td&gt;
+&lt;td&gt;用户名&lt;/td&gt;
+&lt;td&gt;密码&lt;/td&gt;
+&lt;td&gt;保留遗愿&lt;/td&gt;
+&lt;td&gt;遗愿QoS&lt;/td&gt;
+&lt;td&gt;遗愿QoS&lt;/td&gt;
+&lt;td&gt;遗愿&lt;/td&gt;
+&lt;td&gt;清除会话&lt;/td&gt;
+&lt;td&gt;保留（0）&lt;/td&gt;
+
+&lt;/tr&gt;
+
+&lt;/tbody&gt;
+
+&lt;/table&gt;
+&lt;p&gt;清除会话标志位：&lt;br/&gt;这个标志位定义了如何处理会话状态。如果设置为0，客户端和代理可以恢复上一次连接时的会话状态，如果上一次连接的会话状态不存在，代理将会为客户端建立一个新的会话。如果该位设置为1，则双方将清除掉上一次连接的会话状态并建立一个新的会话。&lt;/p&gt;
+&lt;p&gt;遗愿标志位：&lt;br/&gt;如果遗愿标志为1，则遗愿消息会被存储在代理上，当连接关闭时，代理将发布这个消息，除非在客户端断开连接时把遗愿消息清除了。&lt;/p&gt;
+&lt;p&gt;遗愿QoS标志位：&lt;br/&gt;指定了遗愿消息的服务质量等级。&lt;/p&gt;
+&lt;p&gt;保留遗愿消息标志位：&lt;br/&gt;指定在发布遗愿消息的时候，是否把该消息作为保留消息存储在代理。&lt;/p&gt;
+&lt;p&gt;用户名标志位：&lt;br/&gt;如果设置为1，则用户名必须出现在荷载中，反之，用户名不允许出现在荷载中。&lt;/p&gt;
+&lt;p&gt;密码标志位：&lt;br/&gt;如果该位为1，则密码必须出现在荷载中；如果该位为0，则密码不允许出现在荷载中。如果用户名标志位为0，则该位必须也为0。&lt;/p&gt;
+&lt;h4&gt;CONNECT报文的荷载&lt;/h4&gt;
+&lt;p&gt;CONNECT报文的荷载由一个或者多个字段组成，这些字段是否出现由可变报头中的标志位决定。字段总是以长度开始。字段出现的顺序必须是：客户端标识符，遗愿主题，遗愿消息，用户名，密码。&lt;/p&gt;
+&lt;h4&gt;CONNECT报文的响应&lt;/h4&gt;
+&lt;p&gt;在代理在为MQTT协议开放的端口上接收到TCP连接请求并建立连接后应该会收到CONNECT报文，如果在一定时间内代理没有收到CONNECT报文，则应该关闭这个TCP连接。&lt;br/&gt;在收到CONNECT报文后，代理应该检查报文格式是否符合协议标准。如果不符合协议标准，代理应关闭连接，且不发送CONNACK报文给客户端。&lt;br/&gt;代理可以检查CONNECT报文的内容并执行响应的认证和鉴权。如果这些检查没有通过，代理应该向客户端发送一个带有非0返回码的CONNACK报文。&lt;/p&gt;
+&lt;h3&gt;CONNACK报文&lt;/h3&gt;
+&lt;p&gt;CONNACK是代理用来响应客户端CONNECT的报文。代理向客户端发送的第一个报文必须是CONNACT。CONNACK有一个固定报头，一个可变报头，但是不带有荷载。&lt;/p&gt;
+&lt;h4&gt;CONNACK的固定报头&lt;/h4&gt;
+
+&lt;p&gt;CONNACT报文只有固定报头和一个2字节的可变报头，所以它的剩余长度总是2。&lt;/p&gt;
+&lt;h4&gt;CONNACK报文的可变报头&lt;/h4&gt;
+&lt;p&gt;CONNACK报文的可变报头为定长2字节。第一字节的0位表示是否有会话存在。如果代理上已经有请求连接的客户端的会话，且连接请求的清除会话标识为0，则该位为1，否则该位为0。客户端可以根据这一位的值采取响应行为，比如（重新）订阅主题等。&lt;/p&gt;
+&lt;p&gt;CONNACK报文的可变报头的第二字节为返回码。如果CONNECT请求的格式正确，但是代理依然不能允许客户端连接，则返回码为一个非零值。如果连接成功，则返回0。&lt;/p&gt;
+&lt;p&gt;返回码的定义：&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;&lt;th&gt;值&lt;/th&gt;&lt;th&gt;返回码含义&lt;/th&gt;&lt;/tr&gt;
+
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;成功，连接请求被接受。&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;拒绝连接，不可接受的协议版本。&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;拒绝连接，不被允许的身份识别符（Client Identifier）。&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;拒绝连接，服务器不可用。&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;拒绝连接，无效的用户名和密码。&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;拒绝连接，客户端无授权。&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;6-255&lt;/td&gt;
+&lt;td&gt;系统保留。&lt;/td&gt;
+
+&lt;/tr&gt;
+
+&lt;/tbody&gt;
+
+&lt;/table&gt;
+&lt;p&gt;客户端接受到代理的CONNACK的返回码为0，则连接建立完成，双方可以开始通信。&lt;/p&gt;
+&lt;h2&gt;清除会话、保留消息和QoS的组合&lt;/h2&gt;
+&lt;p&gt;清除会话、保留消息等概念，在传统的客户端/服务器方式的通信中不一定会出现，这些概念有时候不太容易理解，特别是当他们被组合起来用的时候。&lt;/p&gt;
+&lt;p&gt;下面的表格汇总了当一个客户端连接上来时，它能收到消息的各种情况。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;&lt;th&gt;清除会话位&lt;/th&gt;&lt;th&gt;保留位&lt;/th&gt;&lt;th&gt;订阅QoS&lt;/th&gt;&lt;th&gt;发布QoS&lt;/th&gt;&lt;th&gt;可收到的消息&lt;/th&gt;&lt;/tr&gt;
+
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Y&lt;/td&gt;
+&lt;td&gt;N&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;N&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Y&lt;/td&gt;
+&lt;td&gt;N&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;N&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Y&lt;/td&gt;
+&lt;td&gt;N&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;N&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Y&lt;/td&gt;
+&lt;td&gt;N&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;N&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;N&lt;/td&gt;
+&lt;td&gt;N&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;N&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;N&lt;/td&gt;
+&lt;td&gt;N&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;N&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;N&lt;/td&gt;
+&lt;td&gt;N&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;N&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;N&lt;/td&gt;
+&lt;td&gt;N&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;Y，会话全部消息&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Y&lt;/td&gt;
+&lt;td&gt;Y&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;Y，最后一条消息&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Y&lt;/td&gt;
+&lt;td&gt;Y&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;Y，最后一条消息&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Y&lt;/td&gt;
+&lt;td&gt;Y&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;Y，最后一条消息&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Y&lt;/td&gt;
+&lt;td&gt;Y&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;Y，最后一条消息&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;N&lt;/td&gt;
+&lt;td&gt;Y&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;Y，最后一条消息&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;N&lt;/td&gt;
+&lt;td&gt;Y&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;Y，最后一条消息&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;N&lt;/td&gt;
+&lt;td&gt;Y&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;Y，最后一条消息&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;N&lt;/td&gt;
+&lt;td&gt;Y&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;Y，会话全部消息&lt;/td&gt;
+
+&lt;/tr&gt;
+
+&lt;/tbody&gt;
+
+&lt;/table&gt;
+&lt;h1&gt;MQTT 5.0 协议新增介绍&lt;/h1&gt;
+&lt;p&gt;MQTT 5.0 协议相比 MQTT 3.1.1 协议新增了许多内容， 比如说属性，AUTH 包，还有对一些字段做了修改，比如将 Clean Session 修改成 Clean Start 配合 Session Expiry Internal 去实现更灵活的会话控制。&lt;/p&gt;
+&lt;p&gt;这里就简单罗列一下 5.0 协议新增的内容。&lt;/p&gt;
+&lt;h2&gt;设计目标&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;增强了扩展性&lt;/li&gt;
+&lt;li&gt;改善了错误报告的方式&lt;/li&gt;
+&lt;li&gt;定型了一些通用范式，例如能力发现和请求、响应&lt;/li&gt;
+&lt;li&gt;扩展机制包括用户属性(user properties)&lt;/li&gt;
+&lt;li&gt;性能改善，并且添加了对小客户端（small clients） 的支持&lt;/li&gt;
+
 &lt;/ul&gt;
-&lt;p&gt;验证消息是否发送成功：消息发送完后可以启动消费者进行消费，也可以去管控台上看消息是否存在。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;h3 class=&quot;eye-protector-processed&quot;&gt;1.1、send（同步）&lt;/h3&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;public class Producer {
-    public static void main(String[] args) throws Exception {
-        // 指定生产组名为my-producer
-        DefaultMQProducer producer = new DefaultMQProducer(&quot;my-producer&quot;);
-        // 配置namesrv地址
-        producer.setNamesrvAddr(&quot;124.57.180.156:9876&quot;);
-        // 启动Producer
-        producer.start();
-        // 创建消息对象，topic为：myTopic001，消息内容为：hello world
-        Message msg = new Message(&quot;myTopic001&quot;, &quot;hello world&quot;.getBytes());
-        // 发送消息到mq，同步的
-        SendResult result = producer.send(msg);
-        System.out.println(&quot;发送消息成功！result is : &quot; + result);
-        // 关闭Producer
-        producer.shutdown();
-        System.out.println(&quot;生产者 shutdown！&quot;);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;输出结果：&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;发送消息成功！result is : SendResult [sendStatus=SEND_OK, msgId=A9FE854140F418B4AAC26F7973910000, offsetMsgId=7B39B49D00002A9F00000000000589BE, messageQueue=MessageQueue [topic=myTopic001, brokerName=broker-a, queueId=0], queueOffset=7]
-生产者 shutdown！
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 class=&quot;eye-protector-processed&quot;&gt;1.2、send（批量）&lt;/h3&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;public class ProducerMultiMsg {
-    public static void main(String[] args) throws Exception {
-        // 指定生产组名为my-producer
-        DefaultMQProducer producer = new DefaultMQProducer(&quot;my-producer&quot;);
-        // 配置namesrv地址
-        producer.setNamesrvAddr(&quot;124.57.180.156:9876&quot;);
-        // 启动Producer
-        producer.start();
+&lt;p&gt;读者可以参考MQTT5.0协议规范的&lt;a href=&quot;https://links.jianshu.com/go?to=http%3A%2F%2Fdocs.oasis-open.org%2Fmqtt%2Fmqtt%2Fv5.0%2Fcs02%2Fmqtt-v5.0-cs02.html%23AppendixC&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;附录C&lt;/a&gt;来了解协议变更。&lt;/p&gt;
+&lt;h2&gt;属性&lt;/h2&gt;
+&lt;p&gt;为了达成新协议的设计目标，MQTT 5.0 协议中新增了许多属性，以下是新添加的属性列表。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;&lt;th&gt;标识符 Identifier(十进制)&lt;/th&gt;&lt;th&gt;标识符 Identifier(十六进制)&lt;/th&gt;&lt;th&gt;名称（用法）Name(usage)&lt;/th&gt;&lt;th&gt;类型 Type&lt;/th&gt;&lt;th&gt;报文/遗嘱属性 Packet/Will Properties&lt;/th&gt;&lt;/tr&gt;
 
-        String topic = &quot;myTopic001&quot;;
-        // 创建消息对象，topic为：myTopic001，消息内容为：hello world1/2/3
-        Message msg1 = new Message(topic, &quot;hello world1&quot;.getBytes());
-        Message msg2 = new Message(topic, &quot;hello world2&quot;.getBytes());
-        Message msg3 = new Message(topic, &quot;hello world3&quot;.getBytes());
-        // 创建消息对象的集合，用于批量发送
-        List&amp;lt;Message&amp;gt; msgs = new ArrayList&amp;lt;&amp;gt;();
-        msgs.add(msg1);
-        msgs.add(msg2);
-        msgs.add(msg3);
-        // 批量发送的api的也是send()，只是他的重载方法支持List&amp;lt;Message&amp;gt;，同样是同步发送。
-        SendResult result = producer.send(msgs);
-        System.out.println(&quot;发送消息成功！result is : &quot; + result);
-        // 关闭Producer
-        producer.shutdown();
-        System.out.println(&quot;生产者 shutdown！&quot;);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p class=&quot;cnb-code-toolbar&quot;&gt;&lt;span class=&quot;cnb-code-toolbar-item&quot;&gt;JAVA&lt;span class=&quot;cnb-code-toolbar-item&quot;&gt; 复制&lt;span class=&quot;cnb-code-toolbar-item&quot;&gt; 全屏&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;输出结果：&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;发送消息成功！result is : SendResult [sendStatus=SEND_OK, msgId=A9FE854139C418B4AAC26F7D13770000,A9FE854139C418B4AAC26F7D13770001,A9FE854139C418B4AAC26F7D13770002, offsetMsgId=7B39B49D00002A9F0000000000058A62,7B39B49D00002A9F0000000000058B07,7B39B49D00002A9F0000000000058BAC, messageQueue=MessageQueue [topic=myTopic001, brokerName=broker-a, queueId=0], queueOffset=8]
-生产者 shutdown！
-&lt;/code&gt;&lt;/pre&gt;
-&lt;blockquote class=&quot;eye-protector-processed&quot;&gt;
-&lt;p&gt;从结果中可以看到只有一个msgId，所以可以发现虽然是三条消息对象，但是却只发送了一次，大大节省了client与server的开销。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;错误情况：&lt;/p&gt;
-&lt;p&gt;批量发送的topic必须是同一个，如果message对象指定不同的topic，那么批量发送的时候会报错：&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;Exception in thread &quot;main&quot; org.apache.rocketmq.client.exception.MQClientException: Failed to initiate the MessageBatch
-For more information, please visit the url, http://rocketmq.apache.org/docs/faq/
-    at org.apache.rocketmq.client.producer.DefaultMQProducer.batch(DefaultMQProducer.java:950)
-    at org.apache.rocketmq.client.producer.DefaultMQProducer.send(DefaultMQProducer.java:898)
-    at com.chentongwei.mq.rocketmq.ProducerMultiMsg.main(ProducerMultiMsg.java:29)
-Caused by: java.lang.UnsupportedOperationException: The topic of the messages in one batch should be the same
-    at org.apache.rocketmq.common.message.MessageBatch.generateFromList(MessageBatch.java:58)
-    at org.apache.rocketmq.client.producer.DefaultMQProducer.batch(DefaultMQProducer.java:942)
-    ... 2 more
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 class=&quot;eye-protector-processed&quot;&gt;1.3、sendCallBack（异步）&lt;/h3&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;public class ProducerASync {
-    public static void main(String[] args) throws Exception {
-       // 指定生产组名为my-producer
-        DefaultMQProducer producer = new DefaultMQProducer(&quot;my-producer&quot;);
-        // 配置namesrv地址
-        producer.setNamesrvAddr(&quot;124.57.180.156:9876&quot;);
-        // 启动Producer
-        producer.start();
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0x01&lt;/td&gt;
+&lt;td&gt;有效载荷格式指示器 Payload Format Indicator&lt;/td&gt;
+&lt;td&gt;字节&lt;/td&gt;
+&lt;td&gt;PUBLISH, 遗嘱属性 Will Properties&lt;/td&gt;
 
-        // 创建消息对象，topic为：myTopic001，消息内容为：hello world async
-        Message msg = new Message(&quot;myTopic001&quot;, &quot;hello world async&quot;.getBytes());
-        // 进行异步发送，通过SendCallback接口来得知发送的结果
-        producer.send(msg, new SendCallback() {
-            // 发送成功的回调接口
-            @Override
-            public void onSuccess(SendResult sendResult) {
-                System.out.println(&quot;发送消息成功！result is : &quot; + sendResult);
-            }
-            // 发送失败的回调接口
-            @Override
-            public void onException(Throwable throwable) {
-                throwable.printStackTrace();
-                System.out.println(&quot;发送消息失败！result is : &quot; + throwable.getMessage());
-            }
-        });
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;0x02&lt;/td&gt;
+&lt;td&gt;消息到期间隔 Message Exipiry Interval&lt;/td&gt;
+&lt;td&gt;四字节整形&lt;/td&gt;
+&lt;td&gt;PUBLISH，遗嘱属性&lt;/td&gt;
 
-        producer.shutdown();
-        System.out.println(&quot;生产者 shutdown！&quot;);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;输出结果：&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;生产者 shutdown！
-java.lang.IllegalStateException: org.apache.rocketmq.remoting.exception.RemotingConnectException: connect to [124.57.180.156:9876] failed
-    at org.apache.rocketmq.client.impl.factory.MQClientInstance.updateTopicRouteInfoFromNameServer(MQClientInstance.java:681)
-    at org.apache.rocketmq.client.impl.factory.MQClientInstance.updateTopicRouteInfoFromNameServer(MQClientInstance.java:511)
-    at org.apache.rocketmq.client.impl.producer.DefaultMQProducerImpl.tryToFindTopicPublishInfo(DefaultMQProducerImpl.java:692)
-    at org.apache.rocketmq.client.impl.producer.DefaultMQProducerImpl.sendDefaultImpl(DefaultMQProducerImpl.java:556)
-    at org.apache.rocketmq.client.impl.producer.DefaultMQProducerImpl.access$300(DefaultMQProducerImpl.java:97)
-    at org.apache.rocketmq.client.impl.producer.DefaultMQProducerImpl$4.run(DefaultMQProducerImpl.java:510)
-    at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
-    at java.util.concurrent.FutureTask.run(FutureTask.java:266)
-    at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
-    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
-    at java.lang.Thread.run(Thread.java:745)
-Caused by: org.apache.rocketmq.remoting.exception.RemotingConnectException: connect to [124.57.180.156:9876] failed
-    at org.apache.rocketmq.remoting.netty.NettyRemotingClient.getAndCreateNameserverChannel(NettyRemotingClient.java:441)
-    at org.apache.rocketmq.remoting.netty.NettyRemotingClient.getAndCreateChannel(NettyRemotingClient.java:396)
-    at org.apache.rocketmq.remoting.netty.NettyRemotingClient.invokeSync(NettyRemotingClient.java:365)
-    at org.apache.rocketmq.client.impl.MQClientAPIImpl.getTopicRouteInfoFromNameServer(MQClientAPIImpl.java:1371)
-    at org.apache.rocketmq.client.impl.MQClientAPIImpl.getTopicRouteInfoFromNameServer(MQClientAPIImpl.java:1361)
-    at org.apache.rocketmq.client.impl.factory.MQClientInstance.updateTopicRouteInfoFromNameServer(MQClientInstance.java:624)
-    ... 10 more
-发送消息失败！result is : org.apache.rocketmq.remoting.exception.RemotingConnectException: connect to [124.57.180.156:9876] failed
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;为啥报错了？很简单，他是异步的，从结果就能看出来，由于是异步的，我还没发送到mq呢，你就先给我shutdown了。肯定不行，所以我们在shutdown前面sleep 1s在看效果&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;public class ProducerASync {
-    public static void main(String[] args) throws Exception {
-       // 指定生产组名为my-producer
-        DefaultMQProducer producer = new DefaultMQProducer(&quot;my-producer&quot;);
-        // 配置namesrv地址
-        producer.setNamesrvAddr(&quot;124.57.180.156:9876&quot;);
-        // 启动Producer
-        producer.start();
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;0x03&lt;/td&gt;
+&lt;td&gt;内容类型 Content Type&lt;/td&gt;
+&lt;td&gt;UTF-8 编码字符串&lt;/td&gt;
+&lt;td&gt;PUBLISH，遗嘱属性&lt;/td&gt;
 
-        // 创建消息对象，topic为：myTopic001，消息内容为：hello world async
-        Message msg = new Message(&quot;myTopic001&quot;, &quot;hello world async&quot;.getBytes());
-        // 进行异步发送，通过SendCallback接口来得知发送的结果
-        producer.send(msg, new SendCallback() {
-            // 发送成功的回调接口
-            @Override
-            public void onSuccess(SendResult sendResult) {
-                System.out.println(&quot;发送消息成功！result is : &quot; + sendResult);
-            }
-            // 发送失败的回调接口
-            @Override
-            public void onException(Throwable throwable) {
-                throwable.printStackTrace();
-                System.out.println(&quot;发送消息失败！result is : &quot; + throwable.getMessage());
-            }
-        });
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;td&gt;0x08&lt;/td&gt;
+&lt;td&gt;响应主题 Response Topic&lt;/td&gt;
+&lt;td&gt;UTF-8 编码字符串&lt;/td&gt;
+&lt;td&gt;PUBLISH，遗嘱属性&lt;/td&gt;
 
-        Thread.sleep(1000);
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;9&lt;/td&gt;
+&lt;td&gt;0x09&lt;/td&gt;
+&lt;td&gt;关联数据 Correlation Data&lt;/td&gt;
+&lt;td&gt;二进制数据 Binary Data&lt;/td&gt;
+&lt;td&gt;PUBLISH，遗嘱属性&lt;/td&gt;
 
-        producer.shutdown();
-        System.out.println(&quot;生产者 shutdown！&quot;);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;输出结果：&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;发送消息成功！result is : SendResult [sendStatus=SEND_OK, msgId=A9FE854106E418B4AAC26F8719B20000, offsetMsgId=7B39B49D00002A9F0000000000058CFC, messageQueue=MessageQueue [topic=myTopic001, brokerName=broker-a, queueId=1], queueOffset=2]
-生产者 shutdown！
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 class=&quot;eye-protector-processed&quot;&gt;1.4、sendOneway&lt;/h3&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;public class ProducerOneWay {
-    public static void main(String[] args) throws Exception {
-        // 指定生产组名为my-producer
-        DefaultMQProducer producer = new DefaultMQProducer(&quot;my-producer&quot;);
-        // 配置namesrv地址
-        producer.setNamesrvAddr(&quot;124.57.180.156:9876&quot;);
-        // 启动Producer
-        producer.start();
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;11&lt;/td&gt;
+&lt;td&gt;0x0B&lt;/td&gt;
+&lt;td&gt;订阅标识符 Subscription Identifier&lt;/td&gt;
+&lt;td&gt;可变字节整形&lt;/td&gt;
+&lt;td&gt;PUBLISH, SUBSCRIBE&lt;/td&gt;
 
-        // 创建消息对象，topic为：myTopic001，消息内容为：hello world oneway
-        Message msg = new Message(&quot;myTopic001&quot;, &quot;hello world oneway&quot;.getBytes());
-        // 效率最高，因为oneway不关心是否发送成功，我就投递一下我就不管了。所以返回是void
-        producer.sendOneway(msg);
-        System.out.println(&quot;投递消息成功！，注意这里是投递成功，而不是发送消息成功哦！因为我sendOneway也不知道到底成没成功，我没返回值的。&quot;);
-        producer.shutdown();
-        System.out.println(&quot;生产者 shutdown！&quot;);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;输出结果：&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;投递消息成功！，注意这里是投递成功，而不是发送消息成功哦！因为我sendOneway也不知道到底成没成功，我没返回值的。
-生产者 shutdown！
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 class=&quot;eye-protector-processed&quot;&gt;1.5、效率对比&lt;/h3&gt;
-&lt;p&gt;sendOneway &amp;gt; sendCallBack &amp;gt; send批量 &amp;gt; send单条&lt;/p&gt;
-&lt;p&gt;很容易理解，sendOneway不求结果，我就负责投递，我不管你失败还是成功，相当于中转站，来了我就扔出去，我不进行任何其他处理。所以最快。&lt;/p&gt;
-&lt;p&gt;而sendCallBack是异步发送肯定比同步的效率高。&lt;/p&gt;
-&lt;p&gt;send批量和send单条的效率也是分情况的，如果只有1条msg要发，那还搞毛批量，直接send单条完事。&lt;/p&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;2、Consumer&lt;/h2&gt;
-&lt;p&gt;&lt;strong&gt;每个consumer只能关注一个topic。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;发消息肯定要必备如下几个条件：&lt;/p&gt;
-&lt;ul class=&quot;list-paddingleft-2&quot;&gt;
-&lt;li&gt;
-&lt;p&gt;指定消费组名（不能用默认的，会报错）&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;配置namesrv地址（必须）&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;指定topic name（必须）&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;指定tag/key（可选）&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 class=&quot;eye-protector-processed&quot;&gt;2.1、CLUSTERING&lt;/h3&gt;
-&lt;p&gt;集群模式，默认。&lt;/p&gt;
-&lt;p&gt;比如启动五个Consumer，Producer生产一条消息后，Broker会选择五个Consumer中的其中一个进行消费这条消息，所以他属于点对点消费模式。&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;public class Consumer {
-    public static void main(String[] args) throws Exception {
-        // 指定消费组名为my-consumer
-        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(&quot;my-consumer&quot;);
-        // 配置namesrv地址
-        consumer.setNamesrvAddr(&quot;124.57.180.156:9876&quot;);
-        // 订阅topic：myTopic001 下的全部消息（因为是*，*指定的是tag标签，代表全部消息，不进行任何过滤）
-        consumer.subscribe(&quot;myTopic001&quot;, &quot;*&quot;);
-        // 注册监听器，进行消息消息。
-        consumer.registerMessageListener(new MessageListenerConcurrently() {
-            @Override
-            public ConsumeConcurrentlyStatus consumeMessage(List&amp;lt;MessageExt&amp;gt; msgs, ConsumeConcurrentlyContext consumeConcurrentlyContext) {
-                for (MessageExt msg : msgs) {
-                    String str = new String(msg.getBody());
-                    // 输出消息内容
-                    System.out.println(str);
-                }
-                // 默认情况下，这条消息只会被一个consumer消费，这叫点对点消费模式。也就是集群模式。
-                // ack确认
-                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-            }
-        });
-        // 启动消费者
-        consumer.start();
-        System.out.println(&quot;Consumer start&quot;);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 class=&quot;eye-protector-processed&quot;&gt;2.2、BROADCASTING&lt;/h3&gt;
-&lt;p&gt;广播模式。&lt;/p&gt;
-&lt;p&gt;比如启动五个Consumer，Producer生产一条消息后，Broker会把这条消息广播到五个Consumer中，这五个Consumer分别消费一次，每个都消费一次。&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;// 代码里只需要添加如下这句话即可：
-consumer.setMessageModel(MessageModel.BROADCASTING); 
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 class=&quot;eye-protector-processed&quot;&gt;2.3、两种模式对比&lt;/h3&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;17&lt;/td&gt;
+&lt;td&gt;0x11&lt;/td&gt;
+&lt;td&gt;会话到期间隔 Session Expiry Interval&lt;/td&gt;
+&lt;td&gt;四字节整形&lt;/td&gt;
+&lt;td&gt;CONNECT, CONNACK, DISCONNECT&lt;/td&gt;
 
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;3、TAG&amp;amp;&amp;amp;KEY&lt;/h2&gt;
-&lt;blockquote class=&quot;eye-protector-processed&quot;&gt;
-&lt;p&gt;发送/消费 消息的时候可以指定tag/key来进行过滤消息，支持通配符。*代表消费此topic下的全部消息，不进行过滤。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;看下&lt;code class=&quot;eye-protector-processed&quot;&gt;org.apache.rocketmq.common.message.Message&lt;/code&gt;源码可以发现发消息的时候可以指定tag和keys：&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;public Message(String topic, String tags, String keys, byte[] body) {
-    this(topic, tags, keys, 0, body, true);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;比如：&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;public class ProducerTagsKeys {
-    public static void main(String[] args) throws Exception {
-        // 指定生产组名为my-producer
-        DefaultMQProducer producer = new DefaultMQProducer(&quot;my-producer&quot;);
-        // 配置namesrv地址
-        producer.setNamesrvAddr(&quot;124.57.180.156:9876&quot;);
-        // 启动Producer
-        producer.start();
-        // 创建消息对象，topic为：myTopic001，消息内容为：hello world，且tags为：test-tags，keys为test-keys
-        Message msg = new Message(&quot;myTopic001&quot;, &quot;test-tags&quot;, &quot;test-keys&quot;, &quot;hello world&quot;.getBytes());
-        // 发送消息到mq，同步的
-        SendResult result = producer.send(msg);
-        System.out.println(&quot;发送消息成功！result is : &quot; + result);
-        // 关闭Producer
-        producer.shutdown();
-        System.out.println(&quot;生产者 shutdown！&quot;);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;输出结果：&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;发送消息成功！result is : SendResult [sendStatus=SEND_OK, msgId=A9FE854149DC18B4AAC26FA4B7200000, offsetMsgId=7B39B49D00002A9F0000000000058DA6, messageQueue=MessageQueue [topic=myTopic001, brokerName=broker-a, queueId=3], queueOffset=3]
-生产者 shutdown！
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;查看管控台，可以发现tags和keys已经生效了：&lt;/p&gt;
-&lt;p&gt;&lt;img class=&quot;rich_pages medium-zoom-image&quot; title=&quot;RocketMQ入门到入土（一）新手也能看懂的原理和实战！&quot; src=&quot;https://www.javazhiyin.com/wp-content/uploads/2020/06/java1-1593308599.png&quot; alt=&quot;RocketMQ入门到入土（一）新手也能看懂的原理和实战！&quot; data-original=&quot;https://www.javazhiyin.com/wp-content/uploads/2020/06/java1-1593308599.png&quot;/&gt;&lt;/p&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;18&lt;/td&gt;
+&lt;td&gt;0x12&lt;/td&gt;
+&lt;td&gt;已分配客户端标识符 Assigned Client Identifier&lt;/td&gt;
+&lt;td&gt;UTF-8 编码字符串&lt;/td&gt;
+&lt;td&gt;CONNACK&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;19&lt;/td&gt;
+&lt;td&gt;0x13&lt;/td&gt;
+&lt;td&gt;服务器保活 Server Keep Alive&lt;/td&gt;
+&lt;td&gt;两字节整形&lt;/td&gt;
+&lt;td&gt;CONNACK&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;21&lt;/td&gt;
+&lt;td&gt;0x15&lt;/td&gt;
+&lt;td&gt;认证方法 Authentication Method&lt;/td&gt;
+&lt;td&gt;UTF-8 编码字符串&lt;/td&gt;
+&lt;td&gt;CONNECT, CONNACK, AUTH&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;22&lt;/td&gt;
+&lt;td&gt;0x16&lt;/td&gt;
+&lt;td&gt;认证数据 Authentication Data&lt;/td&gt;
+&lt;td&gt;二进制数据&lt;/td&gt;
+&lt;td&gt;CONNECT, CONNACK, AUTH&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;23&lt;/td&gt;
+&lt;td&gt;0x17&lt;/td&gt;
+&lt;td&gt;请求响应信息 Request Response Information&lt;/td&gt;
+&lt;td&gt;字节&lt;/td&gt;
+&lt;td&gt;CONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;24&lt;/td&gt;
+&lt;td&gt;0x18&lt;/td&gt;
+&lt;td&gt;遗嘱延迟间隔 Will Delay Interval&lt;/td&gt;
+&lt;td&gt;四字节整形&lt;/td&gt;
+&lt;td&gt;遗嘱属性 Will Properties&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;25&lt;/td&gt;
+&lt;td&gt;0x19&lt;/td&gt;
+&lt;td&gt;请求响应信息 Request Response Information&lt;/td&gt;
+&lt;td&gt;字节&lt;/td&gt;
+&lt;td&gt;CONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;26&lt;/td&gt;
+&lt;td&gt;0x1A&lt;/td&gt;
+&lt;td&gt;响应信息 Response Information&lt;/td&gt;
+&lt;td&gt;UTF-8 编码字符串&lt;/td&gt;
+&lt;td&gt;CONNACK, DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;28&lt;/td&gt;
+&lt;td&gt;0x1C&lt;/td&gt;
+&lt;td&gt;服务器引用 Server Reference&lt;/td&gt;
+&lt;td&gt;UTF-8 编码字符串&lt;/td&gt;
+&lt;td&gt;CONNACK, DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;31&lt;/td&gt;
+&lt;td&gt;0x1F&lt;/td&gt;
+&lt;td&gt;原因字符串 Reason String&lt;/td&gt;
+&lt;td&gt;UTF-8 编码字符串&lt;/td&gt;
+&lt;td&gt;CONNACK, PUBACK, PUBREC, PUBREL, PUBCOMP, SUBACK,UNSUBACK, DISCONNECT, AUTH&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;33&lt;/td&gt;
+&lt;td&gt;0x21&lt;/td&gt;
+&lt;td&gt;接收最大值 Receive Maximum&lt;/td&gt;
+&lt;td&gt;两字节整形&lt;/td&gt;
+&lt;td&gt;CONNECT, CONNACK&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;34&lt;/td&gt;
+&lt;td&gt;0x22&lt;/td&gt;
+&lt;td&gt;主题别名最大值 Topic Alias Maximum&lt;/td&gt;
+&lt;td&gt;两字节整形&lt;/td&gt;
+&lt;td&gt;CONNECT, CONNACK&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;35&lt;/td&gt;
+&lt;td&gt;0x23&lt;/td&gt;
+&lt;td&gt;主题别名 Topic Alias&lt;/td&gt;
+&lt;td&gt;两字节整形&lt;/td&gt;
+&lt;td&gt;PUBLISH&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;36&lt;/td&gt;
+&lt;td&gt;0x24&lt;/td&gt;
+&lt;td&gt;服务质量最大值 Maximum QoS&lt;/td&gt;
+&lt;td&gt;字节&lt;/td&gt;
+&lt;td&gt;CONNACK&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;37&lt;/td&gt;
+&lt;td&gt;0x25&lt;/td&gt;
+&lt;td&gt;保留可用 Retain Available&lt;/td&gt;
+&lt;td&gt;字节&lt;/td&gt;
+&lt;td&gt;CONNACK&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;38&lt;/td&gt;
+&lt;td&gt;0x26&lt;/td&gt;
+&lt;td&gt;用户属性 User Property&lt;/td&gt;
+&lt;td&gt;UTF-8 字符串对 UTF-8 String Pair&lt;/td&gt;
+&lt;td&gt;CONNECT, CONNACK, PUBLISH, PUBACK, PUBREC, PUBREL, PUBCOMP, SUBACK, UNSUBACK, DISCONNECT, AUTH&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;39&lt;/td&gt;
+&lt;td&gt;0x27&lt;/td&gt;
+&lt;td&gt;最大报文大小 Maximum Packet Size&lt;/td&gt;
+&lt;td&gt;四字节整形&lt;/td&gt;
+&lt;td&gt;CONNECT, CONNACK&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;40&lt;/td&gt;
+&lt;td&gt;0x28&lt;/td&gt;
+&lt;td&gt;可用通配符订阅 Wildcard Subscription Available&lt;/td&gt;
+&lt;td&gt;字节&lt;/td&gt;
+&lt;td&gt;CONNACK&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;41&lt;/td&gt;
+&lt;td&gt;0x29&lt;/td&gt;
+&lt;td&gt;可用订阅标识符 Subscription Identifier Available&lt;/td&gt;
+&lt;td&gt;Byte&lt;/td&gt;
+&lt;td&gt;CONNACK&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;42&lt;/td&gt;
+&lt;td&gt;0x2A&lt;/td&gt;
+&lt;td&gt;可用共享订阅 Shared Subscription Available&lt;/td&gt;
+&lt;td&gt;字节&lt;/td&gt;
+&lt;td&gt;CONNACK&lt;/td&gt;
+
+&lt;/tr&gt;
+
+&lt;/tbody&gt;
+
+&lt;/table&gt;
+&lt;h2&gt;原因码&lt;/h2&gt;
+&lt;p&gt;MQTT v3.1.1 只有寥寥 6 个返回码，用来表示网络连接时可能会出现的异常行为，在引入属性后的 MQTT 5.0 协议中，仅仅这 6 个返回码显然已经不足以用来描述各种异常行为，因此MQTT 5.0 协议中将返回码改成了原因码，用来实现改善错误报告的目的。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;&lt;th&gt;原因码（十进制）&lt;/th&gt;&lt;th&gt;原因码（十六进制）&lt;/th&gt;&lt;th&gt;名称&lt;/th&gt;&lt;th&gt;报文&lt;/th&gt;&lt;/tr&gt;
+
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0x00&lt;/td&gt;
+&lt;td&gt;成功 Success&lt;/td&gt;
+&lt;td&gt;CONNACK, PUBACK, PUBREC, PUBREL, PUBCOMP, UNSUBACK, AUTH&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0x00&lt;/td&gt;
+&lt;td&gt;正常断连 Normal disconnection&lt;/td&gt;
+&lt;td&gt;DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0x00&lt;/td&gt;
+&lt;td&gt;准许 QoS 0 Granted QoS 0&lt;/td&gt;
+&lt;td&gt;SUBACK&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0x01&lt;/td&gt;
+&lt;td&gt;准许 QoS 1 Granted QoS 1&lt;/td&gt;
+&lt;td&gt;SUBACK&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;0x02&lt;/td&gt;
+&lt;td&gt;准许 QoS 2 Granted QoS 2&lt;/td&gt;
+&lt;td&gt;SUBACK&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;0x04&lt;/td&gt;
+&lt;td&gt;以遗嘱消息断开连接 Disconnect with Will Message&lt;/td&gt;
+&lt;td&gt;DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;16&lt;/td&gt;
+&lt;td&gt;0x10&lt;/td&gt;
+&lt;td&gt;没有匹配的订阅者 No matching subscribers&lt;/td&gt;
+&lt;td&gt;PUBACK, PUBREC&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;17&lt;/td&gt;
+&lt;td&gt;0x11&lt;/td&gt;
+&lt;td&gt;没有订阅 No subscription existed&lt;/td&gt;
+&lt;td&gt;UNSUBACK&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;24&lt;/td&gt;
+&lt;td&gt;0x18&lt;/td&gt;
+&lt;td&gt;继续认证 Continue authentication&lt;/td&gt;
+&lt;td&gt;AUTH&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;25&lt;/td&gt;
+&lt;td&gt;0x19&lt;/td&gt;
+&lt;td&gt;重新认证 Re-authenticate&lt;/td&gt;
+&lt;td&gt;AUTH&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;128&lt;/td&gt;
+&lt;td&gt;0x80&lt;/td&gt;
+&lt;td&gt;未指定错误 Unspecified error&lt;/td&gt;
+&lt;td&gt;CONNACK, PUBACK, PUBREC, SUBACK, UNSUBACK, DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;129&lt;/td&gt;
+&lt;td&gt;0x81&lt;/td&gt;
+&lt;td&gt;畸形报文 Malformed Packet&lt;/td&gt;
+&lt;td&gt;CONNACK, DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;130&lt;/td&gt;
+&lt;td&gt;0x82&lt;/td&gt;
+&lt;td&gt;协议错误 Protocol Error&lt;/td&gt;
+&lt;td&gt;CONNACK, DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;131&lt;/td&gt;
+&lt;td&gt;0x83&lt;/td&gt;
+&lt;td&gt;实现特有错误 Implementation specific error&lt;/td&gt;
+&lt;td&gt;CONNACK, PUBACK, PUBREC, SUBACK, UNSUBACK, DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;132&lt;/td&gt;
+&lt;td&gt;0x84&lt;/td&gt;
+&lt;td&gt;不支持的协议版本 Unsupported Protocol Version&lt;/td&gt;
+&lt;td&gt;CONNACK&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;133&lt;/td&gt;
+&lt;td&gt;0x85&lt;/td&gt;
+&lt;td&gt;客户端标识符无效 Client Identifier not valid&lt;/td&gt;
+&lt;td&gt;CONNACK&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;134&lt;/td&gt;
+&lt;td&gt;0x86&lt;/td&gt;
+&lt;td&gt;错误的用户名和密码 Bad User Name or Password&lt;/td&gt;
+&lt;td&gt;CONNACK&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;135&lt;/td&gt;
+&lt;td&gt;0x87&lt;/td&gt;
+&lt;td&gt;未授权 Not authorized&lt;/td&gt;
+&lt;td&gt;CONNACK, PUBACK, PUBREC, SUBACK, UNSUBACK, DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;136&lt;/td&gt;
+&lt;td&gt;0x88&lt;/td&gt;
+&lt;td&gt;服务器不可用 Server unavailable&lt;/td&gt;
+&lt;td&gt;CONNACK&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;137&lt;/td&gt;
+&lt;td&gt;0x89&lt;/td&gt;
+&lt;td&gt;服务器繁忙 Server busy&lt;/td&gt;
+&lt;td&gt;CONNACK, DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;138&lt;/td&gt;
+&lt;td&gt;0x8A&lt;/td&gt;
+&lt;td&gt;禁止访问 Banned&lt;/td&gt;
+&lt;td&gt;CONNACK&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;139&lt;/td&gt;
+&lt;td&gt;0x8B&lt;/td&gt;
+&lt;td&gt;服务器关机中 Server shutting down&lt;/td&gt;
+&lt;td&gt;DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;140&lt;/td&gt;
+&lt;td&gt;0x8C&lt;/td&gt;
+&lt;td&gt;错误验证方法 Bad authentication method&lt;/td&gt;
+&lt;td&gt;CONNACK, DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;141&lt;/td&gt;
+&lt;td&gt;0x8D&lt;/td&gt;
+&lt;td&gt;保活超时 Keep Alive timeout&lt;/td&gt;
+&lt;td&gt;DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;142&lt;/td&gt;
+&lt;td&gt;0x8E&lt;/td&gt;
+&lt;td&gt;会话被接管 Session taken over&lt;/td&gt;
+&lt;td&gt;DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;143&lt;/td&gt;
+&lt;td&gt;0x8F&lt;/td&gt;
+&lt;td&gt;主题过滤器无效 Topic Filter invalid&lt;/td&gt;
+&lt;td&gt;SUBACK, UNSUBACK, DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;144&lt;/td&gt;
+&lt;td&gt;0x90&lt;/td&gt;
+&lt;td&gt;主题名无效 Topic Name invalid&lt;/td&gt;
+&lt;td&gt;CONNACK, PUBACK, PUBREC, DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;145&lt;/td&gt;
+&lt;td&gt;0x91&lt;/td&gt;
+&lt;td&gt;报文标识符在使用中 Packet Identifier in use&lt;/td&gt;
+&lt;td&gt;PUBACK, PUBREC, SUBACK, UNSUBACK=&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;146&lt;/td&gt;
+&lt;td&gt;0x92&lt;/td&gt;
+&lt;td&gt;没有发现报文标识符 Packet Identifier not found&lt;/td&gt;
+&lt;td&gt;PUBREL, PUBCOMP&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;147&lt;/td&gt;
+&lt;td&gt;0x93&lt;/td&gt;
+&lt;td&gt;超出接收最大值 Receive Maximum exceeded&lt;/td&gt;
+&lt;td&gt;DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;148&lt;/td&gt;
+&lt;td&gt;0x94&lt;/td&gt;
+&lt;td&gt;主题别名无效 Topic Alias invalid&lt;/td&gt;
+&lt;td&gt;DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;149&lt;/td&gt;
+&lt;td&gt;0x95&lt;/td&gt;
+&lt;td&gt;报文太大 Packet too large&lt;/td&gt;
+&lt;td&gt;CONNACK, DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;150&lt;/td&gt;
+&lt;td&gt;0x96&lt;/td&gt;
+&lt;td&gt;消息传输速率太高 Message rate too high&lt;/td&gt;
+&lt;td&gt;DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;151&lt;/td&gt;
+&lt;td&gt;0x97&lt;/td&gt;
+&lt;td&gt;超出限额 Quota exceeded&lt;/td&gt;
+&lt;td&gt;CONNACK, PUBACK, PUBREC, SUBACK, DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;152&lt;/td&gt;
+&lt;td&gt;0x98&lt;/td&gt;
+&lt;td&gt;管理行为 Administrative action&lt;/td&gt;
+&lt;td&gt;DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;153&lt;/td&gt;
+&lt;td&gt;0x99&lt;/td&gt;
+&lt;td&gt;有效载荷格式无效 Payload format invalid&lt;/td&gt;
+&lt;td&gt;PUBACK, PUBREC, DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;154&lt;/td&gt;
+&lt;td&gt;0x9A&lt;/td&gt;
+&lt;td&gt;不支持消息保留 Retain not supported&lt;/td&gt;
+&lt;td&gt;CONNACK, DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;155&lt;/td&gt;
+&lt;td&gt;0x9B&lt;/td&gt;
+&lt;td&gt;不支持的QoS QoS not supported&lt;/td&gt;
+&lt;td&gt;CONNACK, DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;156&lt;/td&gt;
+&lt;td&gt;0x9C&lt;/td&gt;
+&lt;td&gt;使用另一台服务器 Use another server&lt;/td&gt;
+&lt;td&gt;CONNACK, DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;157&lt;/td&gt;
+&lt;td&gt;0x9D&lt;/td&gt;
+&lt;td&gt;服务器被移除 Server moved&lt;/td&gt;
+&lt;td&gt;CONNACK, DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;158&lt;/td&gt;
+&lt;td&gt;0x9E&lt;/td&gt;
+&lt;td&gt;不支持的共享订阅 Shared Subscription not supported&lt;/td&gt;
+&lt;td&gt;SUBACK, DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;159&lt;/td&gt;
+&lt;td&gt;0x9F&lt;/td&gt;
+&lt;td&gt;超出连接速率 Connection rate exceeded&lt;/td&gt;
+&lt;td&gt;CONNACK, DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;160&lt;/td&gt;
+&lt;td&gt;0xA0&lt;/td&gt;
+&lt;td&gt;最大连接时间 Maximum connect time&lt;/td&gt;
+&lt;td&gt;DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;161&lt;/td&gt;
+&lt;td&gt;0xA1&lt;/td&gt;
+&lt;td&gt;不支持的订阅标识符 Subscription Identifiers not supported&lt;/td&gt;
+&lt;td&gt;SUBACK, DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;162&lt;/td&gt;
+&lt;td&gt;0xA2&lt;/td&gt;
+&lt;td&gt;不支持的通配符订阅 Wildcard Subscription not supported&lt;/td&gt;
+&lt;td&gt;SUBACK, DISCONNECT&lt;/td&gt;
+
+&lt;/tr&gt;
+
+&lt;/tbody&gt;
+
+&lt;/table&gt;
+&lt;h2&gt;实际应用&lt;/h2&gt;
+&lt;p&gt;1.　由于&lt;span&gt;主题别名（Topic Alias）的引入，使 MQTT PUBLISH 控制报文的体积更小&lt;/span&gt;，更便于在带宽和网络受限的物联网环境下传输消息。&lt;/p&gt;
+&lt;p&gt;2.　AUTH 包的引入使 MQTT 协议扩展了认证方式，增加了询问/响应式的认证方式，&lt;span&gt;服务器或客户端在发送 CONNECT 与接收 CONNACK 包之间交换 AUTH 报文来完成身份验证的流程&lt;/span&gt;。&lt;/p&gt;
+&lt;p&gt;3.　由于很多嵌入式设备的 CPU 并没有对 AES 加密标准下的加密算法提供硬件级的支持，因此，使用 AES 加密对嵌入式设备的硬件开销是非常大的，所以 MQTT 5.0 协议提供了新的加密算法 ChaCha20 ，&lt;span&gt;ChaCha20 在软件层面做加密和解密处理要比 AES 快得多&lt;/span&gt;。因此也算是一大进步，不过本人更希望 MQTT 下一版协议能够增加对 AEAD 加密算的支持。&lt;/p&gt;
+&lt;p&gt;总的来说，MQTT 5.0 协议的内容增加了很多，协议书的内容几乎是 MQTT 3.1.1 协议的两倍，除了本文上述提到的这些新的变化，还有很多非常细节的东西没有在这里做详细的介绍。基于 MQTT 5.0 协议现有的很多属性，在实现 MQTT 5.0 协议的时说不定还能挖掘出更多的有意思的新用法，不过这需要开发人员去多读协议的具体细节，去更深入地理解 MQTT 5.0 协议。&lt;/p&gt;
 &lt;p&gt; &lt;/p&gt;
-&lt;p&gt;消费的时候如果指定*那就是此topic下的全部消息，我们可以指定前缀通配符，比如：&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;// 这样就只会消费myTopic001下的tag为test-*开头的消息。
-consumer.subscribe(&quot;myTopic001&quot;, &quot;test-*&quot;);
+&lt;h2&gt;参考信息&lt;/h2&gt;
 
-// 代表订阅Topic为myTopic001下的tag为TagA或TagB的所有消息
-consumer.subscribe(&quot;myTopic001&quot;, &quot;TagA||TagB&quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;还支持SQL表达式过滤，不是很常用。不BB了。&lt;/p&gt;
-&lt;h2 class=&quot;eye-protector-processed&quot;&gt;4、常见错误&lt;/h2&gt;
-&lt;h3 class=&quot;eye-protector-processed&quot;&gt;4.1、sendDefaultImpl call timeout&lt;/h3&gt;
-&lt;h4 class=&quot;eye-protector-processed&quot;&gt;4.1.1、异常&lt;/h4&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;Exception in thread &quot;main&quot; org.apache.rocketmq.remoting.exception.RemotingTooMuchRequestException: sendDefaultImpl call timeout
-    at org.apache.rocketmq.client.impl.producer.DefaultMQProducerImpl.sendDefaultImpl(DefaultMQProducerImpl.java:666)
-    at org.apache.rocketmq.client.impl.producer.DefaultMQProducerImpl.send(DefaultMQProducerImpl.java:1342)
-    at org.apache.rocketmq.client.impl.producer.DefaultMQProducerImpl.send(DefaultMQProducerImpl.java:1288)
-    at org.apache.rocketmq.client.producer.DefaultMQProducer.send(DefaultMQProducer.java:324)
-    at com.chentongwei.mq.rocketmq.Producer.main(Producer.java:18)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h4 class=&quot;eye-protector-processed&quot;&gt;4.1.2、解决&lt;/h4&gt;
-&lt;p&gt;1.如果你是云服务器，首先检查安全组是否允许9876这个端口访问，是否开启了防火墙，如果开启了的话是否将9876映射了出去。&lt;/p&gt;
-&lt;p&gt;2.修改配置文件&lt;code class=&quot;eye-protector-processed&quot;&gt;broker.conf&lt;/code&gt;，加上：&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;brokerIP1=我用的是阿里云服务器，这里是我的公网IP
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;启动namesrv和broker的时候加上本机IP（我用的是阿里云服务器，这里是我的公网IP）：&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;./bin/mqnamesrv -n IP:9876
-./bin/mqbroker -n IP:9876 -c conf/broker.conf&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 class=&quot;eye-protector-processed&quot;&gt;4.2、No route info of this topic&lt;/h3&gt;
-&lt;h4 class=&quot;eye-protector-processed&quot;&gt;4.2.1、异常&lt;/h4&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;Exception in thread &quot;main&quot; org.apache.rocketmq.client.exception.MQClientException: No route info of this topic: myTopic001
-See http://rocketmq.apache.org/docs/faq/ for further details.
-    at org.apache.rocketmq.client.impl.producer.DefaultMQProducerImpl.sendDefaultImpl(DefaultMQProducerImpl.java:684)
-    at org.apache.rocketmq.client.impl.producer.DefaultMQProducerImpl.send(DefaultMQProducerImpl.java:1342)
-    at org.apache.rocketmq.client.impl.producer.DefaultMQProducerImpl.send(DefaultMQProducerImpl.java:1288)
-    at org.apache.rocketmq.client.producer.DefaultMQProducer.send(DefaultMQProducer.java:324)
-    at com.chentongwei.mq.rocketmq.Producer.main(Producer.java:18)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h4 class=&quot;eye-protector-processed&quot;&gt;4.2.2、解决&lt;/h4&gt;
-&lt;p&gt;很明显发送成功了，不再是刚才的超时了，但是告诉我们没有这个topic。那不能每次都手动创建呀，所以启动broker的时候可以指定参数让broker为我们自动创建。如下&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums eye-protector-processed highlighter-hljs&quot;&gt;&lt;code&gt;./bin/mqbroker -n IP:9876 -c conf/broker.conf autoCreateTopicEnable=true&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>a0f32e5f4934fb09ac2e87b452766453</guid>
-<title>如何写出好代码 — 防御式编程指南</title>
-<link>https://toutiao.io/k/mmvrn8n</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content                           autoTypeSetting24psection&amp;#10;                          &quot; id=&quot;js_content&quot;&gt;
-            &lt;p data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;span&gt;来源 | OSCHINA 社区&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;作者 | &lt;/span&gt;&lt;/span&gt;&lt;span&gt;云智慧AIOps社区&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;原文链接：https://my.oschina.net/yunzhihui/blog/5547812&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;h1&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;引言&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h1&gt;&lt;section&gt;&lt;span&gt;在日常工作当中，大家是否有这种感觉：“好” 代码和 “差” 代码，都可以实现产品的需求。但是不同的人写出的代码，在效率、质量、可维护性、可扩展性、可读性等方面千差万别。想法、构思、架构设计得再好，写出来的代码三天两头踩坑，这是纸上谈兵。因此软件的健壮性是衡量一名工程师水平的重要标准。如何提升软件的健壮性？合理的顶层设计、完备的测试必不可少，但终其根本是提升代码质量。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;防御式编程是一种安全编码的思维方式。它被看做是减少或消除墨菲定律的一种手段。在程序员奉为圭臬的著作《Code Complete》（代码大全）里，详细介绍了防御式编程。同时国内外有很多大厂把防御式编程作为质量建设的手段之一。本文将介绍防御式编程以及实际场景中如何应用防御式编程。&lt;/span&gt;&lt;/section&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;blockquote mpa-from-tpl=&quot;t&quot;&gt;&lt;p&gt;&lt;span mpa-is-content=&quot;t&quot;&gt;墨菲定律&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span mpa-is-content=&quot;t&quot;&gt;如果有两种或两种以上的方式去做某件事情，而其中一种选择方式将导致灾难，则必定有人会做出这种选择。这是一种偏悲观的思想，认为所有可能出问题的坏情况都会发生。那么在抱有该想法去做设计时，就需要对最坏情况做出预测并采取相对应的措施。同时让使用人员不需要进行复杂的思考，通过直觉即可使用某个系统，即所谓的防呆设计。如 3.5 寸的软盘设计，就设计成只有一种情况可以插入进去。&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.4081081081081081&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/dkwuWwLoRK9ia1Sia4ZpQ0t0JG5k8pcY4KkmOpkYRRHRkFXZPicorvCicGfCCotUDcNAT7LpT439GVlvM1yib6NbGvw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1480&quot;/&gt;&lt;span/&gt;&lt;/section&gt;&lt;h1&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;什么是防御式编程？&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h1&gt;&lt;section&gt;&lt;span&gt;防御式编程，其核心思想是 &lt;strong&gt;子程序应该不因传入错误数据而被破坏，哪怕是由其他子程序产生的错误数据。简单来说，就是怀疑一切，认为自身代码之外的环境都是不可信的，在这种情况下，考虑代码该怎么写。&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;blockquote mpa-from-tpl=&quot;t&quot;&gt;&lt;p&gt;&lt;span mpa-is-content=&quot;t&quot;&gt;防御式编程和防御式驾驶&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span mpa-is-content=&quot;t&quot;&gt;防御式编程，这一概念来自防御式驾驶。在防御式驾驶中要建立这样一种思维，那就是你永远也不能确定另一位司机将要做什么。这样才能确保在其他人做出危险动作时你也不会受到伤害。你要承担起保护自己的责任，哪怕是其他司机犯的错误。&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;举个实际的场景，以一次 SQL 查询为例：&lt;/span&gt;&lt;/section&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;cs&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;Class Main {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__keyword&quot;&gt;private&lt;/span&gt; Connection con = = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;public&lt;/span&gt; List&amp;lt;Student&amp;gt; &lt;span class=&quot;code-snippet__title&quot;&gt;doQuery&lt;/span&gt;(&lt;span class=&quot;code-snippet__params&quot;&gt;String name&lt;/span&gt;)&lt;/span&gt; {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        Statement stmt = conn.createStatement();&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        ResultSet rs = stmt.executeQuery(&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;SELECT id, grade, name, gender FROM students WHERE name=&quot;&lt;/span&gt; + name);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        List&amp;lt;Student&amp;gt; studentList = &lt;span class=&quot;code-snippet__keyword&quot;&gt;new&lt;/span&gt; ArrayList&amp;lt;&amp;gt;();&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        &lt;span class=&quot;code-snippet__keyword&quot;&gt;while&lt;/span&gt;(rs.next()) {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;            &lt;span class=&quot;code-snippet__keyword&quot;&gt;long&lt;/span&gt; id = rs.getLong(&lt;span class=&quot;code-snippet__number&quot;&gt;1&lt;/span&gt;);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;            &lt;span class=&quot;code-snippet__keyword&quot;&gt;long&lt;/span&gt; grade = rs.getLong(&lt;span class=&quot;code-snippet__number&quot;&gt;2&lt;/span&gt;);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;            String name = rs.getString(&lt;span class=&quot;code-snippet__number&quot;&gt;3&lt;/span&gt;);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;            String gender = convertGender(rs.getInt(&lt;span class=&quot;code-snippet__number&quot;&gt;4&lt;/span&gt;));&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;            Student student = &lt;span class=&quot;code-snippet__keyword&quot;&gt;new&lt;/span&gt; Student(id, grade, name, gender);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;            studentList.&lt;span class=&quot;code-snippet__keyword&quot;&gt;add&lt;/span&gt;(student);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        }&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        &lt;span class=&quot;code-snippet__keyword&quot;&gt;return&lt;/span&gt; studentList;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    }&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__function&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;private&lt;/span&gt; String &lt;span class=&quot;code-snippet__title&quot;&gt;convertGender&lt;/span&gt;(&lt;span class=&quot;code-snippet__params&quot;&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;int&lt;/span&gt; gender&lt;/span&gt;)&lt;/span&gt; {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        &lt;span class=&quot;code-snippet__keyword&quot;&gt;switch&lt;/span&gt;(gender) {&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;            &lt;span class=&quot;code-snippet__keyword&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;code-snippet__number&quot;&gt;0&lt;/span&gt; : &lt;span class=&quot;code-snippet__keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;code-snippet__string&quot;&gt;&quot;male&quot;&lt;/span&gt;;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;            &lt;span class=&quot;code-snippet__keyword&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;code-snippet__number&quot;&gt;1&lt;/span&gt; : &lt;span class=&quot;code-snippet__keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;code-snippet__string&quot;&gt;&quot;female&quot;&lt;/span&gt;;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        }&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        &lt;span class=&quot;code-snippet__keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;code-snippet__literal&quot;&gt;null&lt;/span&gt;;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    }&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;上述代码比较简单，看上去也实现了我们想要的需求：查询符合名字的所有学生。但是有经验的开发同学，就能够发现不少问题，比如：是否正常建立了数据库连接？数据库的返回值有没有做校验？以上的这些问题总结下来，我们可以得出防御式编程的关键原则。&lt;/span&gt;&lt;/section&gt;&lt;h2&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;边界防御：检查所有的外部输入&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;section&gt;&lt;span&gt;在防御式编程的理念中，所有的外部输入都是不可信的，需要校验是否在可允许的范围内。这里需要检查的项包括，空指针、数组越界、不合法入参等。特别是当我们在写一个公共方法时，不确定这个方法会在未来某个时刻，被某个外部系统调用，做好输入检查既能保护自身程序运行的健壮性，又可以让外部系统放心调用。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;在上面的这个 case 中有一个明显的传参漏洞，入参 name 有可能会被外部用户使用 SQL 注入攻击，如输入 name = &quot;zhangsan or 1 = 1&quot;，就可以获取所有 students 信息，显然这个是不符合我们要求的入参。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;另外这个外部输入不光包括传入参数，还包括任何从方法外部获取到的数据，包括数据库查询到的数据等。&lt;/span&gt;&lt;/section&gt;&lt;h2&gt;&lt;span&gt;异常处理：在正确性和健壮性之间做好取舍&lt;/span&gt;&lt;/h2&gt;&lt;section&gt;&lt;span&gt;正确性和健壮性往往是相互矛盾的，当我们检查出错误数据后，还需要决定如何处理它。防御性编程不会掩盖错误，也不会隐藏 bug。这需要在健壮性和正确性之间做权衡。在对异常低容忍度的场景，比如火箭发射系统或医疗系统，正确性要优于健壮性；在电商等消费场景中，要优先考虑健壮性，毕竟选择商品不成功，重新刷新一下就好了。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;在上述 case 中，如果数据库连接失败，比较好的做法是重试或者返回错误码，而不是直接让程序退出。&lt;/span&gt;&lt;/section&gt;&lt;h2&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;应检尽检：没有完全可靠的外部环境&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;section&gt;&lt;span&gt;我们在 coding 时，会有很多外部方法的调用和交互，要对所有的外部调用保持警惕。这些 API 或者三方类库也是人写的，人写的就意味着可能有 bug。一种好的思路是尽可能地按照自身逻辑，对外部调用做检查和异常处理（exception handle）。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;在上述 case 中，存在两个地方的问题：&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;1、调用数据库并没有检查是否成功；&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2、调用完数据库并没有手动释放资源，这很有可能造成内存泄漏。&lt;/span&gt;&lt;/p&gt;&lt;h2&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;显示约束：简单直接的代码风格&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;section&gt;&lt;span&gt;在防御式编程中，我们提倡使用 “最笨” 的方式写代码，尽量少的使用一些语法糖或者隐性规约。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;比如很多面试题中都会碰到的 &quot;a++ = b++&quot;，是防御式编程当中不提倡的，不如写成 &quot;a = b; a++; b++&quot;，虽然代码多了两行，但是意义清晰，且容易理解。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;另外一种情况是使用显示约束。比如：多用 const final static，避免使用 select *，字段名前加上表名。在上述的 case 中，&quot;SELECT id, grade, name, gender FROM students WHERE name=&quot; 里的 name 应该加上表名: students.name，因为 name 是 mysql 中的关键字。&lt;/span&gt;&lt;/section&gt;&lt;h2&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;减少依赖：write once, run anywhere&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;section&gt;&lt;span&gt;&quot;write once, run anywhere&quot; 是 Sun 公司用来展示 Java 程序设计语言的跨平台特性的口号，这本身就是一种防御式编程的理念体现，即在代码中减少对环境的依赖，确保外界环境改变了，程序依然可以正常运行。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;在我们的项目中，比较典型的就是国产化问题。国产化问题经常涉及到数据库的适配，那么在做程序设计时，我们就需要考虑到业务逻辑和底层数据调用的解耦。再举一个例子，&quot;i++ != j++&quot; 在不同的编译器中执行结果是不同的，这种也是我们需要避免的。&lt;/span&gt;&lt;/section&gt;&lt;h2&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;傻瓜式注释&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;section&gt;&lt;span&gt;代码是给系统看的，注释是给人看的。要想代码具有比较好的可阅读性，应该把自己当作傻子去添加注释。（这个和 clean code 的理念不同，clean code 提倡代码即注释，个人认为这是一种理想化的情境）&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;但注释并不是写废话，好的注释应该出现在：复杂的业务逻辑、非常规的写法、可能有坑的地方、临时解决方案、项目当中核心的类或者方法。写注释是一个优秀工程师必备的技能，大家可以参考下很多优秀项目上的注释写法。&lt;/span&gt;&lt;/section&gt;&lt;h1&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;契约式编程&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h1&gt;&lt;section&gt;&lt;span&gt;契约式编程（Contract Programming），顾名思义，在设计阶段就已经确定好每个方法的边界，包括每个方法的参数、返回值，以及它们的类型和所有可能的值。这个术语最早由伯特兰・迈耶于 1986 年提出。他设计了 Eiffel 程式语言来实现这种程式设计方法，在《物件导向软体建构》（Object-Oriented Software Construction）一书中，又提出两个后继版本。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;契约式编程强调了三个概念，即前置条件，后置条件和不变式。这几个概念实际上是脱胎于 Eiffel 语言的一些特性的，不熟悉 Eiffel 的同学会觉得有点晦涩难懂。&lt;/span&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;前置条件：期望所有调用它的客户模块都保证一定的进入条件，比如非 NULL、非 0 等要求；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;后置条件：保证退出时给出特定的属性，比如程序退出时会释放数据库连接；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;不变式：在进入时假定，并在退出时保持一些特定的属性。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;span&gt;契约式编程是比防御式编程更加乐观的一种编程思路，强调约定和断言，具体想了解契约式编程的同学，可以移步：https://www.eiffel.com/values/design-by-contract/introduction/&lt;/span&gt;&lt;/section&gt;&lt;h1&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;避免过度设计&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h1&gt;&lt;section&gt;&lt;span&gt;过度的防御式编程，也会带来新的问题：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;首先是预防不可能会发生的错误，如上面的 case 所示，对于数据库返回的结果，采用 rs.next () 即可判断是否有值，而不需要对 rs 进行非 null 判断；&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;其次，过多的防御式代码，会导致整体程序显得臃肿、难以维护，代码里充斥着大量的判断和非业务代码；同时，程序的性能也会受此影响；&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;然后，当代码中有非常多的异常捕捉和处理时，可能会导致异常被吞掉，没有正常地报出来。&lt;/span&gt;&lt;/section&gt;&lt;h1&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;总结&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h1&gt;&lt;section&gt;&lt;span&gt;防御式编程是一种安全的编程思想，本质上是要求开发人员对代码和线上环境报以辩证的态度和敬畏之心。它通过以下途径，从而来提升系统健壮性：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;作为一名优秀的开发者，不能将希望完全寄托于测试，测试驱动开发，而是在设计、开发阶段，对系统的异常和边界有充分的认知和考量，这是防御式编程带给我们的思考。&lt;/span&gt;&lt;/section&gt;&lt;h1&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;附录：防御式编程 checkList&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h1&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;一般事宜&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;子程序是否保护自己免遭有害输入数据的破坏？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;你用断言来说明编程假定吗？其中包括了前条件和后条件吗？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;断言是否只是用来说明从不应该发生的情况？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;你是否在架构或高层设计中规定了一组特定的错误处理技术？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;你是否在架构或高层设计中规定了是让错误处理更倾向于健壮性还是正确性？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;你是否建立了隔栏来遏制错误可能造成的破坏？是否减少了其他需要关注错误处理的代码的数量？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;代码中用到辅助调试的代码了吗？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;如果需要启用或禁用添加的辅助助手的话，是否无需大动干戈？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;在防御式编程时映入的代码量是否适宜–既不过多，也不过少？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;在开发阶段是否采用了进攻式编程来使错误难以被忽视？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;异常&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;你在项目中定义了一套标准化的异常处理方案吗？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;是否考虑过异常之外的其他替代方案？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;如果可能的话，是否在局部处理了错误而不是把它当成一个异常抛到外部？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;代码中是否避免了在构造函数和析构函数中抛出异常？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;所有的异常是否都与抛出它们的子程序处于同一抽象层次上？6). 每个异常是否都包含了关于异常发生的所有背景信息？&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;代码中是否没有使用空的 catch 语句？(或者如果使用空的 catch 语句确实很合适，那么明确说明了吗？)&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;安全事宜&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;要点：&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;最终产品代码中对错误的处理方式要比 “垃圾进，垃圾出” 复杂的多。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;防御式编程技术可以让错误更容易发现、更容易修改，并减少错误对产品代码的破坏。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;断言可以帮助人尽早发现错误，尤其是在大型系统和高可靠性的系统中，以及快速变化的代码中。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;关于如何处理错误输入的决策是一项关键的错误处理决策，也是一项关键的高层设计决策。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;异常提供了一种与代码正常流程角度不同的错误处理手段。如果留心使用异常，它可以成为程序员们知识工具箱中的一项有益补充，同时也应该在异常和其他错误处理手段之间进行权衡比较。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;针对产品代码的限制并不适用于开发中的软件。你可以利用这一优势在开发中添加有助于更快地排查错误的代码。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;作者简介&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;section&gt;&lt;span&gt;云智慧架构部，长期致力于智能运维领域工程架构的建设和发展，打造高性能、高可用、高易用的运维工程框架，提升公司技术水位线。&lt;/span&gt;&lt;/section&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;86032&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;span data-brushtype=&quot;text&quot;&gt;END&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;section&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;86032&quot;&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;如何看待开源社区中的SIG组织模式？&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;1&quot; data-type=&quot;png&quot; data-w=&quot;64&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/b96CibCt70iaajvl7fD4ZCicMcjhXMp1v6UibM134tIsO1j5yqHyNhh9arj090oAL7zGhRJRq6cFqFOlDZMleLl4pw/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot;/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section class=&quot;channels_iframe_wrp wxw_wechannel_card_not_horizontal&quot;&gt;&lt;mpvideosnap class=&quot;js_uneditable custom_select_card channels_iframe videosnap_video_iframe&quot; data-pluginname=&quot;videosnap&quot; data-id=&quot;export/UzFfAgtgekIEAQAAAAAAxXUpw7AnZAAAAAstQy6ubaLX4KHWvLEZgBPEmYMQSEM1VouDzNPgMIv_aYQpH4oRkedOMQ1ojhfT&quot; data-url=&quot;https://findermp.video.qq.com/251/20304/stodownload?encfilekey=rjD5jyTuFrIpZ2ibE8T7Ym3K77SEULgkiadGLUjVsDkaR40LEtCnsUgQxN5Uo9KKoMsBzUGoXEMj2594uE8micDUbYy0aVUk7mPPWSb1Y0vV0XmPfYhMoicLMQ&amp;amp;adaptivelytrans=0&amp;amp;bizid=1023&amp;amp;dotrans=0&amp;amp;hy=SZ&amp;amp;idx=1&amp;amp;m=&amp;amp;scene=0&amp;amp;token=AxricY7RBHdXpXVzpkwG6JEUNubo19srI85CyaicA79eVWbA7icqiaeB97hMPmCT1eibB7P21RIV1frk&quot; data-headimgurl=&quot;http://wx.qlogo.cn/finderhead/TTQibyKjrickxaZ7LG0fWYjKslHKkuycfC5r2ibT51J7x6QsFbfHfl2uQ/0&quot; data-username=&quot;v2_060000231003b20faec8c5e08a1bcbd1c806e434b077b18cbd3cef6a3a95a1814d2dc66ee22d@finder&quot; data-nickname=&quot;OSC开源社区&quot; data-desc=&quot;如何用SIG来组织一个庞大的开源社区？【单口开源】第五期~#开源 #社区 #SIG #组织 #开发 @微信时刻 &quot; data-nonceid=&quot;9267866976706511110&quot; data-type=&quot;video&quot; data-width=&quot;1080&quot; data-height=&quot;1920&quot;/&gt;&lt;/section&gt;&lt;hr/&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;这里有最新开源资讯、软件更新、技术干货等内容&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;点这里 ↓↓↓ 记得 关注✔ 标星⭐ 哦~&lt;/span&gt;&lt;/section&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MjM5NzM0MjcyMQ==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/dkwuWwLoRKibFSaFOxzVguEFp6FiaPYUpGzFgCDzntuS0V3Z7aWqgs8a2aVAiaGNticiapKQczicXqW5HicAGTrIXphbA/0?wx_fmt=png&quot; data-nickname=&quot;OSC开源社区&quot; data-alias=&quot;oschina2013&quot; data-signature=&quot;开源中国，为开发者服务&quot; data-from=&quot;2&quot; has-insert-preloading=&quot;1&quot;/&gt;&lt;/section&gt;&lt;/section&gt;
+<guid>b42bc2fdfe045ceac7c3376362cf1d04</guid>
+<title>搭建可维护的 Golang 开发环境</title>
+<link>https://toutiao.io/k/mj29vex</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;content&quot;&gt;
+  
+  
+  
+&lt;p&gt;本篇文章将聊聊如何快速搭建 Linux 环境中的 Golang 开发环境。&lt;/p&gt;
+&lt;p&gt;在&lt;a href=&quot;https://soulteary.com/2022/06/21/building-a-cost-effective-linux-learning-environment-on-a-laptop-the-basics.html&quot;&gt;《基础篇》&lt;/a&gt;的内容中，我们聊过了如何基于 Ubuntu 22.04 搭建基础的 Linux 学习环境。接下来的文章里，我们先来聊聊如何在 Linux 环境中，快速安装配置各种可维护的语言环境。&lt;/p&gt;
+&lt;h2 id=&quot;写在前面&quot;&gt;写在前面&lt;/h2&gt;
+&lt;p&gt;在开始聊如何做之前，我们首先要了解为什么要这么做。&lt;/p&gt;
+&lt;p&gt;我知道有不少同学有安装好环境之后，然后持续使用一个环境，并“天长地久”的用下去的习惯。这样做的好处是“看起来简单省心”，但实际上却埋藏了许多隐患，举几个常见的例子：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;同事说代码、程序有问题，跑不起来，你说程序在你这边是正常的，你觉得他的使用方式不对，他觉得你的程序“兼容性”/“健壮性”有问题。&lt;/li&gt;
+&lt;li&gt;当你想把半年、一年前的项目跑起来，发现运行的时候多了非常多的“警告”，甚至是“报错”，尤其是当你换了一台电脑的时候。&lt;/li&gt;
+&lt;li&gt;项目扩充人手，你的同事也需要配置一套环境，你和他折腾的半天，虽然有着重重困难，什么版本不对，配置散落在系统的各个“犄角旮旯”等等，但是你们最终克服了困难，并加深了革命友情。&lt;/li&gt;
+&lt;li&gt;项目遇到大版本升级，因为一些历史原因，你需要同时使用两个不同的语言版本来做调试，不同版本存在兼容性问题（包括依赖兼容性问题），你的本地环境是升级还是不升呢。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;解决这个问题的最佳方案有两个：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;尽可能简化你的环境，简化环境依赖（因为项目的多样性和复杂性，这有一些难）。&lt;/li&gt;
+&lt;li&gt;尽可能参考“基础架构即代码（IaC）”的思想去维护我们自己的开发环境，让我们所使用的内容，尽可能&lt;strong&gt;配置化，透明化，可复现&lt;/strong&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;它除了能够完成 golang 开发环境的快速安装之外，还能够保障多个版本的 golang 共存，不同版本的软件依赖包都保持正常工作。并且，它的实现和社区大名鼎鼎的 nvm-sh/nvm 、shyiko/jabba 是一致的，都是由 BASH 编写，和所需要管理的 Runtime 语言无关，能够更稳定的完成“管理工作”。&lt;/p&gt;
+&lt;h2 id=&quot;golang-环境安装和配置使用&quot;&gt;Golang 环境安装和配置使用&lt;/h2&gt;
+&lt;p&gt;关于 Golang 的多版本管理和安装，我曾经写过两篇相关的内容，一篇是半年前的内容，分享如何对 “&lt;a href=&quot;https://soulteary.com/2021/12/15/golang-multi-version-management.html&quot;&gt;Golang 进行多版本管理&lt;/a&gt;”，另外一篇则是这篇的补充内容，分享如何针对 Mac M1 这类 ARM 设备使用 Golang 版本管理工具：&lt;a href=&quot;https://soulteary.com/2022/05/12/better-golang-usage-on-m1-mac.html&quot;&gt;《M1 芯片 Mac 上更好的 Golang 使用方案》&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;如果你希望了解本章节之外的实践内容，或者过程中的思考，可以翻阅上面两篇内容。本篇文章的重点在于如何快速安装和配置，所以就不再展开相关“折腾安装工具”的细节啦。&lt;/p&gt;
+&lt;h3 id=&quot;安装-golang-版本管理工具soultearygvm&quot;&gt;安装 Golang 版本管理工具：soulteary/gvm&lt;/h3&gt;
+&lt;p&gt;关于 Golang 的安装和版本升降级，因为老牌开源软件 GVM （Go Version Manager）“年久失修”，所以我做了一个修正版：&lt;a href=&quot;https://github.com/soulteary/gvm&quot;&gt;https://github.com/soulteary/gvm&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;想要正常使用这个工具，我们需要先完成工具的基础依赖的安装：&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span&gt;&lt;span&gt;sudo apt install -y binutils bison gcc make
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;接着，执行下面的命令，通过网络获取安装脚本，然后在本地执行脚本完成安装。（如果你因为网络或其他原因，无法执行这条命令，可以使用下文中的替代方案）：&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span&gt;&lt;span&gt;curl -sSL https://github.com/soulteary/gvm/raw/master/binscripts/gvm-installer | bash
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;不出意外的话，你将会看到类似下面的日志输出，意味着工具就此刻已经安装好啦。&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span&gt;&lt;span&gt;Cloning from https://github.com/soulteary/gvm.git to /home/soulteary/.gvm
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;No existing Go versions detected
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;Installed GVM v1.0.24
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;Please restart your terminal session or to get started right away run
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt; &lt;span&gt;`&lt;/span&gt;source /home/soulteary/.gvm/scripts/gvm&lt;span&gt;`&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里选择执行或者不执行 &lt;code&gt;source /home/soulteary/.gvm/scripts/gvm&lt;/code&gt;  这条命令都可以（注意调整路径中的用户名），因为在接下来的文章中，我们将使用更靠谱的方式来将命令注册到我们所使用的 SHELL 环境中。&lt;/p&gt;
+&lt;h2 id=&quot;使用国内镜像来安装soultearygvm&quot;&gt;使用国内镜像来安装：soulteary/gvm&lt;/h2&gt;
+&lt;p&gt;为了让安装过程更加顺利，我们可以使用从国内镜像下载包含安装脚本的仓库代码，然后直接执行安装脚本，来完成 &lt;code&gt;gvm&lt;/code&gt; 这个开源软件的安装。&lt;/p&gt;
+&lt;p&gt;先使用 &lt;code&gt;git clone&lt;/code&gt; 下载完整的软件仓库：&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span&gt;&lt;span&gt;git clone https://gitcode.net/soulteary/gvm.git
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;指定 &lt;code&gt;SRC_REPO&lt;/code&gt; 参数为国内镜像地址，然后运行安装脚本：&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span&gt;&lt;span&gt;SRC_REPO&lt;span&gt;=&lt;/span&gt;https://gitcode.net/soulteary/gvm.git bash gvm/binscripts/gvm-installer
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;当脚本运行完毕，我们将会看到上文中提到过的日志输出，此刻 &lt;code&gt;gvm&lt;/code&gt; 就安装完毕啦。&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span&gt;&lt;span&gt;Cloning from https://gitcode.net/soulteary/gvm.git to /home/soulteary/.gvm
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;No existing Go versions detected
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;Installed GVM v1.0.24
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;Please restart your terminal session or to get started right away run
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt; &lt;span&gt;`&lt;/span&gt;source /home/soulteary/.gvm/scripts/gvm&lt;span&gt;`&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;为了更方便的使用 &lt;code&gt;gvm&lt;/code&gt;，我们还需要进行一些配置。&lt;/p&gt;
+&lt;h3 id=&quot;配置-gvm-加速-golang-下载切换&quot;&gt;配置 gvm 加速 Golang 下载/切换&lt;/h3&gt;
+&lt;p&gt;gvm 支持使用两种方式来下载 “Golang”，然而不论是“下载源码编译安装”，还是下载适合当前操作系统的“预编译好的二进制文件”，我们都需要访问官方地址。&lt;/p&gt;
+&lt;p&gt;为了避免下载过程中因为网络问题，出现下载慢，或者无法下载的情况，节约我们的时间，我们需要对 &lt;code&gt;gvm&lt;/code&gt; 进行一些简单的配置。&lt;/p&gt;
+&lt;p&gt;我们可以在当前使用的 “&lt;code&gt;SHELL&lt;/code&gt;”  的 “&lt;code&gt;rc&lt;/code&gt;” 文件中（比如&lt;code&gt;.bashrc&lt;/code&gt; 或者 &lt;code&gt;.zshrc&lt;/code&gt;），添加下面的内容，来在当前的环境中让 &lt;code&gt;gvm&lt;/code&gt; 命令生效，同时，让我们能够使用更快的下载源来下载我们所需要的 “Golang”：&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span&gt;&lt;span&gt;export GO_BINARY_BASE_URL&lt;span&gt;=&lt;/span&gt;https://golang.google.cn/dl/
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;[[&lt;/span&gt; -s &lt;span&gt;&quot;&lt;/span&gt;$HOME&lt;span&gt;/.gvm/scripts/gvm&quot;&lt;/span&gt; &lt;span&gt;]]&lt;/span&gt; &lt;span&gt;&amp;amp;&amp;amp;&lt;/span&gt; source &lt;span&gt;&quot;&lt;/span&gt;$HOME&lt;span&gt;/.gvm/scripts/gvm&quot;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;export GOROOT_BOOTSTRAP&lt;span&gt;=&lt;/span&gt;$GOROOT
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在“&lt;code&gt;rc&lt;/code&gt;” 文件中添加了上述内容后，需要重启终端会话，才能够让会话生效。你可以使用 &lt;code&gt;CTRL+D&lt;/code&gt; 退出登录，然后再重新使用 &lt;code&gt;SSH&lt;/code&gt; 进行终端连接或者直接在本地创建一个新的会话（具体怎么做，取决于你是如何开启的会话）。&lt;/p&gt;
+&lt;p&gt;为了让配置过程清晰透明，上面的三条命令，我们来依次看看上面的命令都“做了什么事情”。&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span&gt;&lt;span&gt;export GO_BINARY_BASE_URL&lt;span&gt;=&lt;/span&gt;https://golang.google.cn/dl/
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;命令中的 &lt;code&gt;GO_BINARY_BASE_URL&lt;/code&gt; 变量，定义了我们将从何处下载 Golang 的二进制文件或源码压缩包进行安装。当然，你也可以将其替换为下面的任意一个。&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;# 官方地址&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;https://go.dev/dl/
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;# 官方国内镜像地址&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;https://golang.google.cn/dl/
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;# 阿里云镜像&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;https://mirrors.aliyun.com/golang/
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;# 中科大镜像&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;http://mirrors.ustc.edu.cn/golang/
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;接下来，我们来看看三条命令中看似最复杂的命令：&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;[[&lt;/span&gt; -s &lt;span&gt;&quot;&lt;/span&gt;$HOME&lt;span&gt;/.gvm/scripts/gvm&quot;&lt;/span&gt; &lt;span&gt;]]&lt;/span&gt; &lt;span&gt;&amp;amp;&amp;amp;&lt;/span&gt; source &lt;span&gt;&quot;&lt;/span&gt;$HOME&lt;span&gt;/.gvm/scripts/gvm&quot;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这条命令，是根据软件的实际安装情况来选择性加载 &lt;code&gt;gvm&lt;/code&gt;。相比较前文中安装完毕 &lt;code&gt;gvm&lt;/code&gt; 日志输出内容推荐我们直接使用 &lt;code&gt;source&lt;/code&gt; 命令加载 &lt;code&gt;gvm&lt;/code&gt;，这样可以更安全的执行命令，当且仅当 &lt;code&gt;~/.gvm&lt;/code&gt; 存在的时候才会加载程序，将 &lt;code&gt;gvm&lt;/code&gt; 注册到你当前的 &lt;code&gt;SHELL&lt;/code&gt; 环境中。&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span&gt;&lt;span&gt;export GOROOT_BOOTSTRAP&lt;span&gt;=&lt;/span&gt;$GOROOT
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;最后一条命令，则是为了确保 Golang 使用源码编译安装时，不会出错（golang 1.14后需要 ），感兴趣可以围观官方开源项目中的&lt;a href=&quot;https://github.com/golang/go/issues/12214&quot;&gt;这个 issue&lt;/a&gt;。&lt;/p&gt;
+&lt;h2 id=&quot;gvm-简明实用教程&quot;&gt;gvm 简明实用教程&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;gvm&lt;/code&gt; 是一个特别简单的命令，我们日常使用中其实只需要记得&lt;strong&gt;两个命令&lt;/strong&gt;就好，第一个是 &lt;code&gt;gvm install&lt;/code&gt;，第二个是 &lt;code&gt;gvm use&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;假设我们想安装 Golang 最新版本 1.18.3，那么只需要执行下面的命令：&lt;/p&gt;
+&lt;p&gt;在执行完毕命令之后，稍等片刻，当我们看到 &lt;code&gt;Installing go1.18.3 from binary source&lt;/code&gt; 这条日志输出结果后，就意味着 Golang 已经被下载完毕了。如果你希望使用编译源码的方式安装 Golang 的话，可以去掉上面命令中的&lt;code&gt;-B&lt;/code&gt; 参数：&lt;/p&gt;
+&lt;p&gt;虽然我们已经完成了 Golang 1.18.3 的安装，但是目前我们还不能直接使用它，需要再执行一条命令，将这个版本的 Golang “激活”：&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span&gt;&lt;span&gt;gvm use go1.18.3 --default
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在执行完命令之后，我们能够立刻看到类似 &lt;code&gt;Now using version go1.18.3&lt;/code&gt; 的日志输出结果，接下来我们就可以随意的使用 &lt;code&gt;go&lt;/code&gt; 这个命令了。&lt;/p&gt;
+&lt;p&gt;我们可以使用 &lt;code&gt;go version&lt;/code&gt; 来验证刚刚下载的程序是否符合我们的诉求：&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span&gt;&lt;span&gt;go version
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;go version go1.18.3 linux/amd64
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;未来如果 Golang 推出了新版本，我们想升级只需要按照上面的玩法，调整版本号，然后再执行一遍 &lt;code&gt;install&lt;/code&gt; 和 &lt;code&gt;use&lt;/code&gt; 命令就好了，&lt;strong&gt;是不是很简单！&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;当然，如果你只是想临时性的使用某个版本，比如 Golang 1.17 这个旧版本，可以稍微调整一下上面的命令，去掉 &lt;code&gt;use&lt;/code&gt; 命令中的 &lt;code&gt;--default&lt;/code&gt; 参数，只在当前 &lt;code&gt;SHELL&lt;/code&gt; 会话中，让这个版本的 Golang 生效，随着我们关闭终端会话，Golang 的版本也会恢复到我们指定的默认版本，&lt;strong&gt;再也不需要担心系统环境混乱的问题啦。&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span&gt;&lt;span&gt;gvm install go1.17 -B
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;gvm use go1.17
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;# 再次执行查看版本，可以看到版本号已经变化了&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;go version
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;go version go1.17 linux/amd64
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&quot;配置-golang-软件包镜像&quot;&gt;配置 Golang 软件包镜像&lt;/h2&gt;
+&lt;p&gt;在日常开发和学习过程中，我们更多的是使用 Golang 来初始化项目和下载必要的软件包依赖。所以如何快速的下载到各种软件包也很重要，好在 Golang 提供了软件包代理配置选项 &lt;code&gt;GOPROXY&lt;/code&gt;，我们可以通过在 “&lt;code&gt;SHELL&lt;/code&gt;” 的 “&lt;code&gt;rc&lt;/code&gt;” 文件中配置这个参数来完成下载提速：&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span&gt;&lt;span&gt;export GO111MODULE&lt;span&gt;=&lt;/span&gt;on
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;export GOPROXY&lt;span&gt;=&lt;/span&gt;&lt;span&gt;&quot;https://goproxy.cn&quot;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;和上文中配置 &lt;code&gt;gvm&lt;/code&gt; 一样，我们将上面的内容添加到所使用的 SHELL 的 “&lt;code&gt;rc&lt;/code&gt;” 配置后，需要重新创建一个终端会话，让配置生效。&lt;/p&gt;
+&lt;p&gt;当然，你也可以将上面命令中使用的“镜像源”替换为下面任意一个：&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;# 由七牛云赞助的项目&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;goproxy.cn
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;# 阿里云&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;https://mirrors.aliyun.com/goproxy/
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;# 华为云&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;https://repo.huaweicloud.com/repository/goproxy/
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;# “一家的”&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;goproxy.io
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;proxy.golang.com.cn
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里有一个题外话，初见“goproxy”的两个域名的时候，觉得域名十分相似，一番搜索，发现这两个域名虽然归属不同的开发者在维护，但是它们之间确实有一段缘分：&lt;a href=&quot;https://github.com/goproxy/goproxy.cn/issues/61&quot;&gt;“goproxy.io 和 goproxy.cn 的关系”&lt;/a&gt;。&lt;/p&gt;
+&lt;h2 id=&quot;golang-环境验证gojieba&quot;&gt;Golang 环境验证：GoJieba&lt;/h2&gt;
+&lt;p&gt;在完成环境配置之后，我们使用一个比较实用的 Golang 项目（&lt;a href=&quot;https://github.com/yanyiwu/gojieba&quot;&gt;https://github.com/yanyiwu/gojieba&lt;/a&gt;），来验证环境是否“好用”。&lt;/p&gt;
+&lt;p&gt;随便创建一个程序目录，然后在其中创建一个名为 &lt;code&gt;main.go&lt;/code&gt; 的文件，引用 “gojieba”，并对一些句子和词汇进行处理：&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;package&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;import&lt;/span&gt; (
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;&quot;fmt&quot;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;&quot;strings&quot;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;&quot;github.com/yanyiwu/gojieba&quot;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;() {
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;var&lt;/span&gt; &lt;span&gt;s&lt;/span&gt; &lt;span&gt;string&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;var&lt;/span&gt; &lt;span&gt;words&lt;/span&gt; []&lt;span&gt;string&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;use_hmm&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;x&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;gojieba&lt;/span&gt;.&lt;span&gt;NewJieba&lt;/span&gt;()
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;defer&lt;/span&gt; &lt;span&gt;x&lt;/span&gt;.&lt;span&gt;Free&lt;/span&gt;()
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;s&lt;/span&gt; = &lt;span&gt;&quot;北京西站南广场东&quot;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;words&lt;/span&gt; = &lt;span&gt;x&lt;/span&gt;.&lt;span&gt;CutAll&lt;/span&gt;(&lt;span&gt;s&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;s&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;&quot;全模式:&quot;&lt;/span&gt;, &lt;span&gt;strings&lt;/span&gt;.&lt;span&gt;Join&lt;/span&gt;(&lt;span&gt;words&lt;/span&gt;, &lt;span&gt;&quot;/&quot;&lt;/span&gt;))
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;words&lt;/span&gt; = &lt;span&gt;x&lt;/span&gt;.&lt;span&gt;Cut&lt;/span&gt;(&lt;span&gt;s&lt;/span&gt;, &lt;span&gt;use_hmm&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;s&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;&quot;精确模式:&quot;&lt;/span&gt;, &lt;span&gt;strings&lt;/span&gt;.&lt;span&gt;Join&lt;/span&gt;(&lt;span&gt;words&lt;/span&gt;, &lt;span&gt;&quot;/&quot;&lt;/span&gt;))
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;s&lt;/span&gt; = &lt;span&gt;&quot;向量数据库&quot;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;words&lt;/span&gt; = &lt;span&gt;x&lt;/span&gt;.&lt;span&gt;Cut&lt;/span&gt;(&lt;span&gt;s&lt;/span&gt;, &lt;span&gt;use_hmm&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;s&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;&quot;精确模式:&quot;&lt;/span&gt;, &lt;span&gt;strings&lt;/span&gt;.&lt;span&gt;Join&lt;/span&gt;(&lt;span&gt;words&lt;/span&gt;, &lt;span&gt;&quot;/&quot;&lt;/span&gt;))
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;x&lt;/span&gt;.&lt;span&gt;AddWord&lt;/span&gt;(&lt;span&gt;&quot;向量数据库&quot;&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;s&lt;/span&gt; = &lt;span&gt;&quot;向量数据库&quot;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;words&lt;/span&gt; = &lt;span&gt;x&lt;/span&gt;.&lt;span&gt;Cut&lt;/span&gt;(&lt;span&gt;s&lt;/span&gt;, &lt;span&gt;use_hmm&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;s&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;&quot;添加词典后,精确模式:&quot;&lt;/span&gt;, &lt;span&gt;strings&lt;/span&gt;.&lt;span&gt;Join&lt;/span&gt;(&lt;span&gt;words&lt;/span&gt;, &lt;span&gt;&quot;/&quot;&lt;/span&gt;))
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;s&lt;/span&gt; = &lt;span&gt;&quot;前门到了，请您后门下车&quot;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;words&lt;/span&gt; = &lt;span&gt;x&lt;/span&gt;.&lt;span&gt;Cut&lt;/span&gt;(&lt;span&gt;s&lt;/span&gt;, &lt;span&gt;use_hmm&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;s&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;&quot;新词识别:&quot;&lt;/span&gt;, &lt;span&gt;strings&lt;/span&gt;.&lt;span&gt;Join&lt;/span&gt;(&lt;span&gt;words&lt;/span&gt;, &lt;span&gt;&quot;/&quot;&lt;/span&gt;))
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;s&lt;/span&gt; = &lt;span&gt;&quot;小明先去了北京西站南广场东，然后又去了南京东路北大街西&quot;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;words&lt;/span&gt; = &lt;span&gt;x&lt;/span&gt;.&lt;span&gt;CutForSearch&lt;/span&gt;(&lt;span&gt;s&lt;/span&gt;, &lt;span&gt;use_hmm&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;s&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;&quot;搜索引擎模式:&quot;&lt;/span&gt;, &lt;span&gt;strings&lt;/span&gt;.&lt;span&gt;Join&lt;/span&gt;(&lt;span&gt;words&lt;/span&gt;, &lt;span&gt;&quot;/&quot;&lt;/span&gt;))
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;s&lt;/span&gt; = &lt;span&gt;&quot;朝阳区三里屯优衣库&quot;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;words&lt;/span&gt; = &lt;span&gt;x&lt;/span&gt;.&lt;span&gt;Tag&lt;/span&gt;(&lt;span&gt;s&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;s&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;&quot;词性标注:&quot;&lt;/span&gt;, &lt;span&gt;strings&lt;/span&gt;.&lt;span&gt;Join&lt;/span&gt;(&lt;span&gt;words&lt;/span&gt;, &lt;span&gt;&quot;,&quot;&lt;/span&gt;))
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;s&lt;/span&gt; = &lt;span&gt;&quot;元宇宙&quot;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;words&lt;/span&gt; = &lt;span&gt;x&lt;/span&gt;.&lt;span&gt;Tag&lt;/span&gt;(&lt;span&gt;s&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;s&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;&quot;词性标注:&quot;&lt;/span&gt;, &lt;span&gt;strings&lt;/span&gt;.&lt;span&gt;Join&lt;/span&gt;(&lt;span&gt;words&lt;/span&gt;, &lt;span&gt;&quot;,&quot;&lt;/span&gt;))
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;s&lt;/span&gt; = &lt;span&gt;&quot;长江大桥&quot;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;words&lt;/span&gt; = &lt;span&gt;x&lt;/span&gt;.&lt;span&gt;CutForSearch&lt;/span&gt;(&lt;span&gt;s&lt;/span&gt;, !&lt;span&gt;use_hmm&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;s&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;&quot;搜索引擎模式:&quot;&lt;/span&gt;, &lt;span&gt;strings&lt;/span&gt;.&lt;span&gt;Join&lt;/span&gt;(&lt;span&gt;words&lt;/span&gt;, &lt;span&gt;&quot;/&quot;&lt;/span&gt;))
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;wordinfos&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;x&lt;/span&gt;.&lt;span&gt;Tokenize&lt;/span&gt;(&lt;span&gt;s&lt;/span&gt;, &lt;span&gt;gojieba&lt;/span&gt;.&lt;span&gt;SearchMode&lt;/span&gt;, !&lt;span&gt;use_hmm&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;s&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;&quot;Tokenize:(搜索引擎模式)&quot;&lt;/span&gt;, &lt;span&gt;wordinfos&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;wordinfos&lt;/span&gt; = &lt;span&gt;x&lt;/span&gt;.&lt;span&gt;Tokenize&lt;/span&gt;(&lt;span&gt;s&lt;/span&gt;, &lt;span&gt;gojieba&lt;/span&gt;.&lt;span&gt;DefaultMode&lt;/span&gt;, !&lt;span&gt;use_hmm&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;s&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;&quot;Tokenize:(默认模式)&quot;&lt;/span&gt;, &lt;span&gt;wordinfos&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;keywords&lt;/span&gt; &lt;span&gt;:=&lt;/span&gt; &lt;span&gt;x&lt;/span&gt;.&lt;span&gt;ExtractWithWeight&lt;/span&gt;(&lt;span&gt;s&lt;/span&gt;, &lt;span&gt;5&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;fmt&lt;/span&gt;.&lt;span&gt;Println&lt;/span&gt;(&lt;span&gt;&quot;Extract:&quot;&lt;/span&gt;, &lt;span&gt;keywords&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在准备好程序文件之后，我们先执行 &lt;code&gt;go mod init main&lt;/code&gt;，完成 Go 项目的初始化：&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;go&lt;/span&gt;: &lt;span&gt;creating&lt;/span&gt; &lt;span&gt;new&lt;/span&gt; &lt;span&gt;go&lt;/span&gt;.&lt;span&gt;mod&lt;/span&gt;: &lt;span&gt;module&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;go&lt;/span&gt;: &lt;span&gt;to&lt;/span&gt; &lt;span&gt;add&lt;/span&gt; &lt;span&gt;module&lt;/span&gt; &lt;span&gt;requirements&lt;/span&gt; &lt;span&gt;and&lt;/span&gt; &lt;span&gt;sums&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;go&lt;/span&gt; &lt;span&gt;mod&lt;/span&gt; &lt;span&gt;tidy&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在执行完上面的命令后，我们的目录中将会多出来 “go.mod” 和 “go.sum” 两个文件，接着，我们来执行 &lt;code&gt;go mod tidy&lt;/code&gt; 命令，让程序完成相关依赖的下载：&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;go&lt;/span&gt;: &lt;span&gt;finding&lt;/span&gt; &lt;span&gt;module&lt;/span&gt; &lt;span&gt;for&lt;/span&gt; &lt;span&gt;package&lt;/span&gt; &lt;span&gt;github&lt;/span&gt;.&lt;span&gt;com&lt;/span&gt;&lt;span&gt;/&lt;/span&gt;&lt;span&gt;yanyiwu&lt;/span&gt;&lt;span&gt;/&lt;/span&gt;&lt;span&gt;gojieba&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;go&lt;/span&gt;: &lt;span&gt;found&lt;/span&gt; &lt;span&gt;github&lt;/span&gt;.&lt;span&gt;com&lt;/span&gt;&lt;span&gt;/&lt;/span&gt;&lt;span&gt;yanyiwu&lt;/span&gt;&lt;span&gt;/&lt;/span&gt;&lt;span&gt;gojieba&lt;/span&gt; &lt;span&gt;in&lt;/span&gt; &lt;span&gt;github&lt;/span&gt;.&lt;span&gt;com&lt;/span&gt;&lt;span&gt;/&lt;/span&gt;&lt;span&gt;yanyiwu&lt;/span&gt;&lt;span&gt;/&lt;/span&gt;&lt;span&gt;gojieba&lt;/span&gt; &lt;span&gt;v1&lt;/span&gt;&lt;span&gt;.1.2&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;因为我们配置了软件包镜像，所以应该在几秒内就能够完成项目的初始化。&lt;/p&gt;
+&lt;p&gt;在完成了项目初始化之后，我们执行 &lt;code&gt;go run main.go&lt;/code&gt; 来验证下程序是否能运行，不出意外，将看到类似下面的输出结果：&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span&gt;&lt;span&gt;北京西站南广场东
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;全模式: 北京/北京西/北京西站/京西/西站/南/广场/东
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;北京西站南广场东
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;精确模式: 北京西站/南/广场/东
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;向量数据库
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;精确模式: 向量/数据库
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;向量数据库
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;添加词典后,精确模式: 向量数据库
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;前门到了，请您后门下车
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;新词识别: 前门/到/了/，/请/您/后门/下车
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;小明先去了北京西站南广场东，然后又去了南京东路北大街西
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;搜索引擎模式: 小明/先去/了/北京/京西/西站/北京西/北京西站/南/广场/东/，/然后/又/去/了/南京/京东/东路/南京东路/北大/大街/北大街/西
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;朝阳区三里屯优衣库
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;词性标注: 朝阳区/ns,三里屯/ns,优衣库/x
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;元宇宙
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;词性标注: 元/m,宇宙/n
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;长江大桥
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;搜索引擎模式: 长江/大桥/长江大桥
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;长江大桥
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;Tokenize:&lt;span&gt;(&lt;/span&gt;搜索引擎模式&lt;span&gt;)&lt;/span&gt; &lt;span&gt;[{&lt;/span&gt;长江 &lt;span&gt;0&lt;/span&gt; 6&lt;span&gt;}&lt;/span&gt; &lt;span&gt;{&lt;/span&gt;大桥 &lt;span&gt;6&lt;/span&gt; 12&lt;span&gt;}&lt;/span&gt; &lt;span&gt;{&lt;/span&gt;长江大桥 &lt;span&gt;0&lt;/span&gt; 12&lt;span&gt;}]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;长江大桥
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;Tokenize:&lt;span&gt;(&lt;/span&gt;默认模式&lt;span&gt;)&lt;/span&gt; &lt;span&gt;[{&lt;/span&gt;长江大桥 &lt;span&gt;0&lt;/span&gt; 12&lt;span&gt;}]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;Extract: &lt;span&gt;[{&lt;/span&gt;长江大桥 11.1926274509&lt;span&gt;}]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;当然，除了 &lt;code&gt;run&lt;/code&gt; 之外，我们最常用的命令还有 &lt;code&gt;test&lt;/code&gt; 和 &lt;code&gt;build&lt;/code&gt;，本篇文章暂时不聊如何写单元测试，所以我们就先只验证 &lt;code&gt;build&lt;/code&gt; 命令，执行 &lt;code&gt;go build .&lt;/code&gt;，我们将在程序目录得到一个名为 &lt;code&gt;main&lt;/code&gt; 的可执行文件。&lt;/p&gt;
+&lt;p&gt;手动执行命令 &lt;code&gt;./main&lt;/code&gt;，不出意外，将得到和上面 &lt;code&gt;run&lt;/code&gt; 一样的输出结果。至此，Golang 环境验证也就结束啦。&lt;/p&gt;
+&lt;h2 id=&quot;最后&quot;&gt;最后&lt;/h2&gt;
+&lt;p&gt;目前为止，我们已经聊完了“基础 Linux 环境搭建”、“Docker 环境安装和配置”、“Golang 的开发环境搭建”。&lt;/p&gt;
+&lt;p&gt;接下来的文章中，我会继续完成上篇文章中提到的几种不同的 K8S “发行版”的安装和配置，以及当今世界上流行的编程语言的环境配置。&lt;/p&gt;
+&lt;p&gt;希望对你有帮助。&lt;/p&gt;
+&lt;p&gt;–EOF&lt;/p&gt;
+
+&lt;/div&gt;
+
+                    &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>f7b7d7a566d17d0543f910997cbcc708</guid>
+<title>腾讯云实时数仓建设实践（PPT附下载）</title>
+<link>https://toutiao.io/k/wkiyw89</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;
+
+          
+
+          
+&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>bbe611bf7304a07cb0add61fd21d5eca</guid>
+<title>Grafana 9 正式发布，更易用，更酷炫了！</title>
+<link>https://toutiao.io/k/0qaeoa5</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content                                       &quot; id=&quot;js_content&quot;&gt;
+            &lt;section data-style-type=&quot;5&quot; data-tools=&quot;新媒体排版&quot; data-id=&quot;965972&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;因公众号更改推送规则，请点“在看”并加“星标”&lt;span&gt;第一时间获取精彩技术分享&lt;/span&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;点击关注#互联网架构师公众号，领取&lt;/span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzI2MTIzMzY3Mw==&amp;amp;mid=2247487508&amp;amp;idx=1&amp;amp;sn=78cf235aa9ba5f988c6922ca98f8bfd6&amp;amp;chksm=ea5cdd72dd2b54647cf55b4a73dcafa69fc7228205ad39ecc98fe57b39cdecb21c238c6d6cb6&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;架构师全套资料&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;span&gt;架构师全套资料&lt;/span&gt;&lt;/a&gt;&lt;span&gt; 都在这里&lt;/span&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-fileid=&quot;100029587&quot; data-ratio=&quot;1&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/b96CibCt70iaajvl7fD4ZCicMcjhXMp1v6UibM134tIsO1j5yqHyNhh9arj090oAL7zGhRJRq6cFqFOlDZMleLl4pw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;64&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;a target=&quot;_blank&quot; href=&quot;https://mp.weixin.qq.com/s?__biz=MzI2MTIzMzY3Mw==&amp;amp;mid=2247487508&amp;amp;idx=1&amp;amp;sn=78cf235aa9ba5f988c6922ca98f8bfd6&amp;amp;chksm=ea5cdd72dd2b54647cf55b4a73dcafa69fc7228205ad39ecc98fe57b39cdecb21c238c6d6cb6&amp;amp;scene=21&amp;amp;token=171858062&amp;amp;lang=zh_CN#wechat_redirect&quot; textvalue=&quot;0、2T架构师学习资料干货分享&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;0、&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;&lt;strong&gt;2T架构师学习资料干货分&lt;/strong&gt;&lt;/span&gt;&lt;/a&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;上一篇：&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzI2MTIzMzY3Mw==&amp;amp;mid=2247527176&amp;amp;idx=1&amp;amp;sn=23989e3cb33c88393087f8fd1091867c&amp;amp;chksm=ea5fa66edd282f78b7cb9ee1e77d9d341f7c9a094715ded1ed00433132d0f4537dfd574d65dc&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;被裁了！39 岁阿里 P9，攒下 1.5 亿....&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;被裁了！39 岁阿里 P9，攒下 1.5 亿....&lt;/a&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;span&gt;大家好，我是互联网架构师！&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;不久前，Grafana 9正式发布了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Grafana 是一个使用广泛的开源监控数据分析和可视化套件，可以用于查询、可视化、告警、分析指标和数据，很多技术团队都在使用。&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;&lt;span&gt;GitHub地址：https://github.com/grafana/grafana&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Grafana 9.0 的主要重点是改善 Grafana 的用户体验，使可观察性和数据可视化更易用也更容易获得。无论是Prometheus和Loki可视化查询生成器还是面板和仪表板搜索功能，Grafana 9.0 都引入了更新的工作流程，使用起来也更加容易和直观。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.562962962962963&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/dkwuWwLoRKicJxMpvt7FkrN8GfvPCPsb8eRgLeERpJhRPHcfBvxjOXFiaTFynexicZo0icKfPNnyibw5aLm5ubAFJLA/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-w=&quot;1080&quot;/&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;Visual Prometheus 查询生成器&lt;/span&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5564814814814815&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/dkwuWwLoRKicJxMpvt7FkrN8GfvPCPsb8wialPLFMNCzunrriaRXYB6hwx7gBqyVC6ib2MYnbp0xicF3tYxstUN3dQw/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-w=&quot;1080&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;尽管 PromQL 是一种强大的查询语言，但当涉及到编写查询时，它并不是最简单的，也不容易理解它们。对于 Prometheus 新手来说，开始编写查询可能是令人生畏的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Prometheus 的新查询生成器正是为了解决这个问题而建立的。在 Grafana 9.0 中，你将在 Explore 中看到一个全新的可视化查询生成器界面，允许任何人编写、编辑和理解一个查询的作用。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;多种方式来编写查询&lt;/span&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;你已经熟悉的 Explore 界面现在增加了切换字段，可以选择在文本编辑模式（Code）或可视化生成器模式（Builder）中编写 PromQL 查询。当你选择 Builder 模式时，一个新的可视化界面允许你通过多词搜索下拉菜单选择感兴趣的指标来制作你的查询。你可以在这些模式之间进行切换，同时保留你的文字修改。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;用指标和标签过滤器生成你的查询&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这个新的查询生成器允许你通过多词搜索来搜索和选择一个指标。你可以从选择一个指标或一个标签过滤器开始。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;对指标进行数学运算&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Operations 字段用于通过各种函数、聚合和二进制操作对感兴趣的指标进行数学操作。你可以通过 &lt;code&gt;+ Operation&lt;/code&gt; 按钮将这些操作分层。由于 Operations 是按照执行的顺序呈现的，而不是按照文本查询中的倒序排列，这使得阅读和编辑查询变得更加容易。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;通过应用内指南持续学习&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果你是 PromQL 的新手，你可以使用第三种模式，即 Explain，通过应用内指南了解已经写好的查询。你可以在 Builder 模式和 Explain 模式之间切换，同时保留查询，以了解更多关于被查询的指标和执行的操作。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.2861111111111111&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/dkwuWwLoRKicJxMpvt7FkrN8GfvPCPsb8Xd3Ihjr6SldHkTzXKeH3rG4Aa7IuWXrJ7gwcGI35eW10FTIlhgVfcA/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-w=&quot;1080&quot;/&gt;&lt;figcaption&gt;切换到 Explain 模式获取应用内指南以了解查询。&lt;/figcaption&gt;&lt;/figure&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.25092592592592594&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/dkwuWwLoRKicJxMpvt7FkrN8GfvPCPsb8HHUwod01ZiaY2w3OzAuYGw2w00IicadHjhRpHj3cC5xhMMzws6Utv0lw/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-w=&quot;1080&quot;/&gt;&lt;figcaption&gt;查看查询的不同参数代表什么的详细说明。&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;新的可视化生成器也有被称为 &quot;hints&quot; 的建议，会适时提供正确操作的建议&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.287962962962963&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/dkwuWwLoRKicJxMpvt7FkrN8GfvPCPsb89HL7FBarYmmPxFaaPhkcwr4uczAKsgNQ5N3LHgibFqxzNRicJWzGwwvw/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-w=&quot;1080&quot;/&gt;&lt;figcaption&gt;Hints 指导你为要查询的指标选择最适合的操作。&lt;/figcaption&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;Visual Grafana Loki 查询生成器&lt;/span&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;section&gt;&lt;span&gt;在 Grafana 9.0 中，编写 LogQL 查询也得到了一个可视化查询生成界面的帮助。在许多方面 LogQL 比 PromQL 更复杂，有更多的语法需要记忆。新的查询生成器将帮助你编写和理解 Loki 查询，而不需要记住任何语法。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;在下图所示的 Loki 查询生成器中，你可以添加和编辑标签过滤器、解析器和函数等。Loki 查询生成器支持上面列出的 Prometheus 查询生成器的所有功能，包括 Explain 模式，以及在 Code 模式和 Builder 模式之间切换的功能。&lt;/span&gt;&lt;/section&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.2916666666666667&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/dkwuWwLoRKicJxMpvt7FkrN8GfvPCPsb8yyutflSV8I3u9oibkEaFE8NUGY302ku5vIbDt0ek6A0h6g9pg6LyRBw/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-w=&quot;1080&quot;/&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Explore-to-dashboard 工作流程&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;虽然 Grafana 一直支持从仪表盘移动到 Explore 而不丢失上下文的功能，但反过来却不行。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Grafana 9.0 公布了一个新的 Explore 到仪表盘的工作流程，允许你直接从 Explore 模式中创建面板或仪表盘。当一个复杂的查询起作用时，你不再需要费力地复制它或重写它到一个新的仪表板。相反只需指示 Grafana，通过点击一个按钮（见下图），就可以直接从 Explore 创建一个新的面板 / 仪表盘或添加到一个现有的面板中。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5194444444444445&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/dkwuWwLoRKicJxMpvt7FkrN8GfvPCPsb8VmfNxl47defsBBOSBwGzoXPuVFymzBbxUrbMFHY9wubw1uhEgLAz8w/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-w=&quot;1080&quot;/&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;新的 heatmap 面板&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;新的和修订的 heatmap 面板经历了架构上的变化，使其具有更高的性能（能够在超过 20 万个数据点上呈现时间序列），速度也提高了几个数量级。除了性能，heatmap 面板上的分辨率也更高，你现在可以对色谱进行自定义和精细控制。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6824196597353497&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/dkwuWwLoRKicJxMpvt7FkrN8GfvPCPsb8Ptiao6GtibELyrunVpeT20j0fAYNWZUGUibh8990CDBBSFaRZ21svKghQ/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-w=&quot;1058&quot;/&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;命令面板&lt;/span&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;命令面板对于那些常用键盘快捷键的用户来说是一次很大的生产力提升。使用 cmd+K（macOS）或 ctrl+K（Linux/Windows），你可以调出一个命令面板，使导航和仪表盘搜索更加容易。根据你在 Grafana 用户界面中的位置，你可以快速运行一个查询、切换到分割视图、在仪表盘之间导航，或改变主题偏好。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6212962962962963&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/dkwuWwLoRKicJxMpvt7FkrN8GfvPCPsb8EQd01j5vjrugaaMorrLO1xFuxrF5ib9X0pXSujElNhfmvn7UB3BVJibg/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-w=&quot;1080&quot;/&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;面板搜索&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果你管理多个仪表盘和每个仪表盘下的许多不同的面板，搜索面板标题可以节省滚动仪表盘或在仪表盘之间切换以找到正确面板的时间。随着搜索功能的最新更新，你现在可以按标题搜索面板。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.7074074074074074&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/dkwuWwLoRKicJxMpvt7FkrN8GfvPCPsb8jmLNicnpwkEdumVY0W4FTvnmdRtW7oTYWE8glZGnzFJaibbDbhIqZQ2w/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-w=&quot;1080&quot;/&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;仪表盘中的 Trace 面板&lt;/span&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在 Grafana 9.0 中，你现在可以在仪表盘中添加 Trace 面板，通过 Trace 视图来可视化，而不是在 Explore 模式中查看它们。这项功能目前在 Grafana 9.0 中处于测试阶段。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;仪表盘预览&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这个测试版功能提供了所有可用仪表盘的摘要概述，当名称不足时，可以帮助你快速找到你需要的仪表盘。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6259259259259259&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/dkwuWwLoRKicJxMpvt7FkrN8GfvPCPsb8ADZ71SvlXMfLticnFrpT3qZ26Ne9QMlE9SD9ez5IzzwQuaCW1YExCqw/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-w=&quot;1080&quot;/&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;新的导航&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;扩大导航栏，以便更好地了解 Grafana 的功能和你安装的集成。Grafana 9 还将引入一种方法，让你把你的仪表盘加注星标，并从导航菜单中轻松访问它们。你可以通过打开 &lt;code&gt;savedItems&lt;/code&gt; 功能来选择访问被标记的仪表盘。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;Grafana Alerting 的改进&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在 v8.0 中，Grafana 引入了一种新的告警用户体验，以简化跨多个数据源和 Grafana 部署的告警创建和管理。在 Grafana 9.0 中，这是现在的默认设置，随着这一变化，Grafana 还进一步改善了告警体验 —— 特别是 UI 和文档。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;下载&lt;/span&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;链接：https://grafana.com/grafana/download&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;更多&lt;/span&gt;&lt;span&gt;详情可查看：https://github.com/grafana/grafana/releases/tag/v9.0.0&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;相关阅读：&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;1、&lt;/span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzI2MTIzMzY3Mw==&amp;amp;mid=2247523205&amp;amp;idx=1&amp;amp;sn=89b261f829ce6c3487ce8b2ccf3ed06b&amp;amp;chksm=ea5f56e3dd28dff5238989d3e07d775d34c04a4e80a166059e92e84379274819203d72d1dc1d&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;Alibaba开源内网高并发编程手册.pdf&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;span&gt;Alibaba开源内网高并发编程手册.pdf&lt;/span&gt;&lt;/a&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;2、&lt;/span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzI2MTIzMzY3Mw==&amp;amp;mid=2247487508&amp;amp;idx=1&amp;amp;sn=78cf235aa9ba5f988c6922ca98f8bfd6&amp;amp;chksm=ea5cdd72dd2b54647cf55b4a73dcafa69fc7228205ad39ecc98fe57b39cdecb21c238c6d6cb6&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;2T架构师学习资料干货分享&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;span&gt;2T架构师学习资料干货分享&lt;/span&gt;&lt;/a&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;3、&lt;/span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzI2MTIzMzY3Mw==&amp;amp;mid=2247523100&amp;amp;idx=1&amp;amp;sn=82a70350577bde0bca6dd2dde811ca17&amp;amp;chksm=ea5f567add28df6cb6a780ff744c3ffdc79e498d2c2536ffb1853d8082ebfa986e1e5c43d532&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;10000+TB 资源，阿里云盘，牛逼！！&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;span&gt;10000+TB 资源，阿里云盘，牛逼！！&lt;/span&gt;&lt;/a&gt;&lt;/section&gt;&lt;p&gt;4、&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzI2MTIzMzY3Mw==&amp;amp;mid=2247523863&amp;amp;idx=1&amp;amp;sn=4d2a2b5da60f14f3e8947e174d485c03&amp;amp;chksm=ea5f5371dd28da6791af6cb3a164c8052f1e77d7392cbbc87c5a73ccc6916b76eab29dbc9991&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;基本涵盖了Spring所有核心知识点总结&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;span&gt;基本涵盖了Spring所有核心知识点总结&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;  · END ·&lt;/span&gt;&lt;br/&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;最后，关注公众号互联网架构师，在后台回复：2T，可以获取我整理的 Java 系列面试题和答案，非常齐全&lt;span&gt;。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.3640625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/9mQQWOf4KRL358RWHQSLbUws79uyGm5RJ6WZibYJMAKUQibz8aYNA5LPSmbo1boibnD3IhggQ2F7kS37xgk3WXQ8Q/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果这篇文章对您有所帮助，或者有所启发的话，帮忙扫描下发二维码关注一下，您的支持是我坚持写作最大的动力。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;求一键三连：点赞、转发、在看。&lt;/p&gt;&lt;/section&gt;
           &lt;/div&gt;
 
           
@@ -666,11 +1363,5 @@ See http://rocketmq.apache.org/docs/faq/ for further details.
                                 
                     
         &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>d9ef489e7e5f4341778aee99604f2a22</guid>
-<title>Go中的一些优化笔记，简单而不简单</title>
-<link>https://toutiao.io/k/wt1dn17</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;今天小土给大家带来一篇关于 Golang 项目中最简单的优化的文章。原文见 &lt;span&gt;Golang: simple optimization notes&lt;/span&gt;&lt;sup&gt;[1]&lt;/sup&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们这里简单聊一下优化本身，然后我们直接从实际的示例开始。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;为什么要优化呢？&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当你资源占有较高的话会需要很大的成本，虽然现在服务器资源也不是很贵，但是你还是需要针对的做一些优化工作。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;另外每个优化应该建立在一个&lt;strong&gt;benchmark&lt;/strong&gt;的基础上，需要体现它给我们带来多大的收益。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;下面主要从slice、string、struct、function、map、interface、channel、pointer等方面罗列了一些常见的优化点。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;数组和slice优化篇&lt;/span&gt;&lt;/h2&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;提前为slice分配内存&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;尽量使用第三个参数：&lt;code&gt; make([]T, 0, len)&lt;/code&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果你事先不知道确切的数量并且slice是临时的，你可以设置得大一些，只要slice在运行时不会增长。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;不要忘记使用“copy”&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们尽量不要在复制时使用 append，例如，在合并两个或多个slice时。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;正确地使用迭代&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果我们有一个包含很多元素或比较大的元素的slice，我们会尝试使用“for”或 range 单个元素。通过这种方法，可以避免不必要的复制。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;学会复用slice&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果我们需要对传入的slice进行某种操作并返回结果，我们可以直接return，但已经修改了。这样我们就可以避免了新的内存分配。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;不要留下未使用的slice&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果我们需要从slice中切下一小块并仅使用它，其实主要部分也会保留下来。可以使用copy产生一个新的slice，而旧的对象让GC回收。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;string-字符串优化篇&lt;/span&gt;&lt;/h2&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;正确地进行拼接&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果拼接字符串可以在一个语句中完成，那么可以使用“+”，如果需要在循环中执行此操作，那么可以使用&lt;code&gt;string.Builder&lt;/code&gt;。通过“Grow”也可以预先指定&lt;code&gt;builder&lt;/code&gt;的大小。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;使用转换优化&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;由于字符串是由字节组成的，因此有时这两种类型之间的转换可以避免内存分配。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;使用池化技术&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们可以池化字符串，从而帮助编译器只存储一次相同的字符串。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;避免内存分配&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们可以使用map来替代复合键，我们也可以使用&lt;code&gt;[]byte&lt;/code&gt;。尽量不要使用&lt;code&gt;fmt&lt;/code&gt;包，因为它的所有函数都使用了反射。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;struct-结构体优化篇&lt;/span&gt;&lt;/h2&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;避免复制大的struct&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们理解的小&lt;code&gt;struct&lt;/code&gt;，是指不超过 4 个字段的&lt;code&gt;struct&lt;/code&gt;，不超过一个&lt;em&gt;机器字&lt;/em&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;标准的copy案例&lt;/strong&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;转换成interface&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;接收和发送到channel&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;替换map中的item&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;向slice添加元素&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;迭代（range）&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;避免通过指针来访问struct中的字段&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;解引用是比较昂贵的，我们可以尽量少做，尤其是在循环中。我们也会失去使用快速寄存器的能力。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;使用小型的struct&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这项工作由编译器优化的，这意味着它的工作量很小。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;通过内存对齐来减小struct大小&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们可以对齐struct（根据字段的大小，以正确的顺序排列），从而可以减小struct本身的大小。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;func-函数优化篇&lt;/span&gt;&lt;/h2&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;使用内联函数或自己内联&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们尽量编写一些可供编译器内联的小函数——它很快，但自己从函数中嵌入代码则更快。&lt;strong&gt;对于热路径&lt;/strong&gt;函数尤其如此。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;什么情况下不会被内联？&lt;/strong&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;recovery 函数&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;select&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;类型声明&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;defer&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;goroutine&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;for-range&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;明智地选择你的函数参数&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们尽量使用“小”参数，因为它们的拷贝会被特别优化。我们也尝试在拷贝和GC的负载的与增长堆栈之间保持平衡。避免使用大量的参数——让你的程序使用超快速的寄存器（寄存器的数量是有限的）&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;声明一个命名好的return结果&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这似乎比在函数体中声明这些变量更高效。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;保存函数中间的结果&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;帮助编译器优化你的代码，保存中间结果，然后会有更多的选择来优化你的代码。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;谨慎使用“defer”&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;尽量不要使用 &lt;code&gt;defer&lt;/code&gt;，或者至少 &lt;strong&gt;不要在循环中使用&lt;code&gt;defer&lt;/code&gt;&lt;/strong&gt; 。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;为“hot path”提供便利&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;避免在这些地方分配内存，尤其是短期对象。首先要检查的的就是最常见的分支（if，switch）。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这里 &lt;span&gt;hot path在Go源码中&lt;/span&gt;&lt;sup&gt;[2]&lt;/sup&gt;也出现多次，根据&lt;span&gt;在 sync.Once 的上下文中，“hot path”是什么意思？&lt;/span&gt;&lt;sup&gt;[3]&lt;/sup&gt;中的回答，这里翻译为热路径是非常频繁执行的指令序列。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;map优化篇&lt;/span&gt;&lt;/h2&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;提前分配内存&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;一切都和其他地方一样。初始化map时，指定其大小。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;使用空结构作为值&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;struct{}&lt;/code&gt;什么都不是，因此例如对信号值使用这种方法是非常有益的。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;清空map&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;map只能增长，不能缩小。我们需要控制这一点——完全而明确地重置map。因为删除其所有元素无济于事。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;尽量不要在键和值中使用指针&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果 map 不包含指针，那么 GC 就不会在它上面浪费宝贵的时间。而且要知道字符串也是指针——使用&lt;code&gt;[]byte&lt;/code&gt;而不是字符串作为键。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;减少更改的次数&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;同样，我们不想使用指针，但我们可以使用 map 和 slice 的复合体，并将键存储在 map 中，将可以不受限制地更改的值存储在slice中。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;interface优化篇&lt;/span&gt;&lt;/h2&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;计算内存分配&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;请记住，要给一个接口赋值，你首先需要将其拷贝到某处，然后粘贴一个指针。关键字是拷贝。事实证明，装箱和拆箱的成本将近似于结构体的大小和一次分配。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;选择最佳的类型&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在某些情况下，装箱/拆箱期间不会进行内存分配。例如，比较小的和布尔值的变量和常量、具有一个简单字段的struct、指针（包括&lt;em&gt;map、chan、func&lt;/em&gt;）&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;避免内存分配&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;与其他地方一样，我们尽量避免不必要的内存分配。例如，将一个接口分配给一个接口，而不是装箱两次。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;仅在需要时使用&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;避免在小型、频繁调用的函数的参数和结果中使用接口。我们不需要额外的包装和拆包。减少使用接口方法调用的频率，哪怕只是因为它可以防止内联。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;指针、chan、BCE(Bounds Check Elimination-边界检查) 优化篇&lt;/span&gt;&lt;/h2&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;避免不必要的解引用&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;尤其是在循环中，因为事实证明它太昂贵了。解引用是我们不想以牺牲自己为代价执行的一系列必要操作。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;channel使用效率是低效的&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;使用channel会比其他同步方法慢。另外，select 中的 case 越多，我们的程序就越慢。但是&lt;em&gt;select、case + default&lt;/em&gt;是优化过了的。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;尽量避免不必要的边界检查&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这也很昂贵，我们应该尽一切可能避免它。例如，一次检查（获取）最大slice索引比多次检查更正确。最好是立即尝试获得极端的选项。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;总结&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在这篇文章中，我们看到了一些相同的优化规则。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;帮助编译器做出正确的决定。在编译时分配内存，使用中间结果，并尽量保持代码的可读性。&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;不要忘记使用内置的分析和trace跟踪工具。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;最后小土也祝你在优化的路上做到尽善尽美。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;参考资料&lt;/span&gt;&lt;/h3&gt;&lt;section data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;span&gt;[1]&lt;/span&gt;&lt;p&gt;Golang: simple optimization notes: &lt;em&gt;https://medium.com/scum-gazeta/golang-simple-optimization-notes-70bc64673980&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[2]&lt;/span&gt;&lt;p&gt;hot path在Go源码中: &lt;em&gt;https://cs.opensource.google/search?q=%22hot%20path%22&amp;amp;ss=go%2Fgo&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[3]&lt;/span&gt;&lt;p&gt;在 sync.Once 的上下文中，“hot path”是什么意思？: &lt;em&gt;https://stackoverflow.com/questions/59174176/what-does-hot-path-mean-in-the-context-of-sync-once&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
