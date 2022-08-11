@@ -66,22 +66,366 @@ UDP DNS Query Flood 攻击采用的方法是向被攻击的服务器发送大量
         &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>7be75ad1f21110e7c67fd9f71b8e1905</guid>
-<title>RASP| SQL注入检测与防御</title>
-<link>https://toutiao.io/k/fygcao0</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content                           autoTypeSetting24psection&amp;#10;                          &quot; id=&quot;js_content&quot;&gt;
-            &lt;p&gt;&lt;span&gt;    &lt;/span&gt;&lt;span&gt;一方面&lt;span&gt;数&lt;/span&gt;据映射框架如mybatis、hiberate等在框架底层已经实现了对sql注入的防御，另一方面白盒/黑盒等扫描器也能解决一部分sql注入问题，sql注入的出现风险被大大降低。但是在研发人员未能恰当的使用框架或者sql语句拼接不当的的情况下，仍然可能导致sql注入的风险。本文分析sql注入的几种情况以及RASP在其中的作用。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;1.JDBC 拼接不当造成的SQL注入&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;    &lt;/span&gt;&lt;span&gt;JDBC有两种方法执行SQL语句，分别为PrepareStatement和Statement。两个方法的区别在于PrepareStatement会对SQL语句进行预编译，而Statement方法在每次执行时都需要编译，会增大系统开销。理论上PrepareStatement的效率和安全性会比Statement要好，但并不意味着使用PrepareStatement就绝对安全，不会产生SQL注入。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;      PrepareStatement方法支持使用‘?’对变量位进行占位，在预编译阶段填入相应的值构造出完整的SQL语句，此时可以避免SQL注入的产生。但开发者有时为了便利，会直接采取拼接的方式构造SQL语句，此时进行预编译则无法阻止SQL注入的产生。如以下代码所示，PrepareStatement虽然进行了预编译，但在以拼接方式构造SQL语句的情况下仍然会产生SQL注入。代码示例如下（若使用“or 1=1”，仍可判断出这段代码存在SQL注入）&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;sql&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;String sql = &quot;&lt;span class=&quot;code-snippet__keyword&quot;&gt;select&lt;/span&gt; * &lt;span class=&quot;code-snippet__keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;user&lt;/span&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;where&lt;/span&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;id&lt;/span&gt; =&lt;span class=&quot;code-snippet__string&quot;&gt;&quot; + req.getParameter(&quot;&lt;/span&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;);&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;out.println(sql);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;try{&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    PreparedStatement pstt = con.prepareStatement(sql);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    ResultSet re = pstt.executeQuery();&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    while(rs.next()){&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        out.println(&quot;&lt;/span&gt;&amp;lt;br&amp;gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;id&lt;/span&gt;:&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;+rs.getObject(&quot;&lt;/span&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;));&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        out.println(&quot;&lt;/span&gt;&amp;lt;br&amp;gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;name&lt;/span&gt;:&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;+re.getObject(&quot;&lt;/span&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;));&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    }&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    catch(SQLException e){&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;        e.printStackTrace();&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    }&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;     正确地使用PrepareStatement可以有效避免SQL注入的产生，使用“?”作为占位符时，填入对应字段的值会进行严格的类型检查。将前面的“拼接构造SQL语句”改为如下“使用占位符构造SQL语句”的代码片段，即可有效避免SQL注入的产生。&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;sql&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;PrintWriter out = resp.getWriter();&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;String sql = &quot;&lt;span class=&quot;code-snippet__keyword&quot;&gt;select&lt;/span&gt; * &lt;span class=&quot;code-snippet__keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;user&lt;/span&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;where&lt;/span&gt; &lt;span class=&quot;code-snippet__keyword&quot;&gt;id&lt;/span&gt; = ?&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;out.println(sql);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;try{&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    PreparedStatement pstt = con.prepareStatement(sql);&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    pstt.setInt(1,Integer.parseInt(req.getParameter(&quot;&lt;/span&gt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;)));&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    ResultSet rs = pstt.executeQuery();&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    // sql执行结果的代码省去....&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;2.&lt;/span&gt;&lt;span&gt;框架使用不当造成SQL注入&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;    &lt;/span&gt;&lt;/strong&gt;&lt;span&gt;如今的Java项目或多或少会使用对JDBC进行更抽象封装的持久化框架，如MyBatis和Hibernate。通常，框架底层已经实现了对SQL注入的防御，但在研发人员未能恰当使用框架的情况下，仍然可能存在SQL注入的风险。&lt;/span&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Mybatis框架&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;    MyBatis框架的思想是将SQL语句编入配置文件中，避免SQL语句在Java程序中大量出现，方便后续对SQL语句的修改与配置。&lt;/span&gt;&lt;span&gt;MyBatis中使用parameterType向SQL语句传参，在SQL引用传参可以使用#{Parameter}和${Parameter}两种方式&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;使用#{Parameter}构造SQL的代码如下所示&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;cs&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&amp;lt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;select&lt;/span&gt; id=&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;getUsername&quot;&lt;/span&gt; resultType=&lt;span class=&quot;code-snippet__string&quot;&gt;&quot;com.example.bean.User&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__keyword&quot;&gt;select&lt;/span&gt; id,name,age &lt;span class=&quot;code-snippet__keyword&quot;&gt;from&lt;/span&gt; user &lt;span class=&quot;code-snippet__keyword&quot;&gt;where&lt;/span&gt; name &lt;span class=&quot;code-snippet__meta&quot;&gt;#{name}&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&amp;lt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;select&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.45285087719298245&quot; data-type=&quot;png&quot; data-w=&quot;912&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UMb7JCCdbYN3W31X1NobuicoeZOzTGWNZtqxdrh03ggWwFzGcosCyFMgliaGTJqCFKv4w709kr9Zh54KJBiarUt9w/640?wx_fmt=png&quot;/&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;    从Debug回显的SQL语句执行过程可以看出，使用#{Parameter}方式会使用“?”占位进行预编译，因此不存在SQL注入的问题。用户可以尝试构造“name”值为“z1ng or 1=1”进行验证。回显如下，由于程序未查询到结果出现了空指针异常，因此此时不存在SQL注入。&lt;/p&gt;&lt;p&gt;&lt;span&gt;使用${Parameter}构造SQL的代码如下所示：&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;code-snippet__fix code-snippet__js&quot;&gt;&lt;pre class=&quot;code-snippet__js&quot; data-lang=&quot;cs&quot;&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&amp;lt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;select&lt;/span&gt; id = &lt;span class=&quot;code-snippet__string&quot;&gt;&quot;getUsername&quot;&lt;/span&gt; resultType = &lt;span class=&quot;code-snippet__string&quot;&gt;&quot;com.example.bean.User&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;    &lt;span class=&quot;code-snippet__keyword&quot;&gt;select&lt;/span&gt; id,name,age &lt;span class=&quot;code-snippet__keyword&quot;&gt;from&lt;/span&gt; user &lt;span class=&quot;code-snippet__keyword&quot;&gt;where&lt;/span&gt; name = ${name}&lt;/span&gt;&lt;/code&gt;&lt;code&gt;&lt;span class=&quot;code-snippet_outer&quot;&gt;&amp;lt;&lt;span class=&quot;code-snippet__keyword&quot;&gt;select&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.9084895259095921&quot; data-type=&quot;png&quot; data-w=&quot;907&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UMb7JCCdbYN3W31X1NobuicoeZOzTGWNZtvERE3M3VvTdRS4AuKu68p6G3vntn9g1b7ub9IickaVMCcWtDtjDOyg/640?wx_fmt=png&quot;/&gt;&lt;/p&gt;&lt;p&gt;name”值被拼接进SQL语句之中，因此此时存在SQL注入。&lt;span&gt;${Parameter}采用拼接的方式构造SQL，在对用户输入过滤不严格的前提下，此处很可能存在SQL注入。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Hibernate&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;    Hibernate是一种ORM框架，全称为 Object_Relative DateBase-Mapping，Hibernate框架是Java持久化API（JPA）规范的一种实现方式。Hibernate 将Java 类映射到数据库表中，从 Java 数据类型映射到 SQL 数据类型。Hibernate是目前主流的Java数据库持久化框架，采用Hibernate查询语言（HQL）注入&lt;/p&gt;&lt;p&gt;&lt;span&gt;    &lt;/span&gt;&lt;span&gt;HQL的语法与SQL类似，受语法的影响，HQL注入在实际漏洞利用上具有一定的限制。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;3.jrasp mysql检测模块&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;    &lt;/span&gt;&lt;span&gt;  &lt;span&gt;不同sql client版本，hook类差别大，&lt;/span&gt;这里以mysql8.x 为例子说明。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;1）可配置参数：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5780392156862745&quot; data-s=&quot;300,640&quot; data-type=&quot;png&quot; data-w=&quot;2550&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UMb7JCCdbYN3W31X1NobuicoeZOzTGWNZqt46sQO5csPibN9ZJ3XEdVaj5YSzt07hEMutoIY50JFMehG53G4B6Zg/640?wx_fmt=png&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;2）sql拼接hook&lt;/p&gt;&lt;pre&gt;&lt;span&gt;com.mysql.cj.jdbc.StatementImpl&lt;/span&gt;&lt;/pre&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5153550863723608&quot; data-s=&quot;300,640&quot; data-type=&quot;png&quot; data-w=&quot;2084&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UMb7JCCdbYN3W31X1NobuicoeZOzTGWNZWUXKUWsE2hibw36rddoiaXXXjEeJWfic3SdF2EFwlgtibWxpvWlHNuicl3A/640?wx_fmt=png&quot;/&gt;&lt;/p&gt;&lt;p&gt;3）sql 预编译hook&lt;/p&gt;&lt;p&gt;&lt;span&gt;com.mysql.cj.jdbc.ClientPreparedStatement,&lt;/span&gt;&lt;span&gt;com.mysql.cj.jdbc.PreparedStatement&lt;/span&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.45726495726495725&quot; data-s=&quot;300,640&quot; data-type=&quot;png&quot; data-w=&quot;2340&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UMb7JCCdbYN3W31X1NobuicoeZOzTGWNZeKI69dh95s9BpshTQnq9Jk9xCGaJ4KSGdwTMLYwtUQUhKV02q6sYLg/640?wx_fmt=png&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;4&lt;/span&gt;&lt;span&gt;）&lt;/span&gt;检测算法&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.591897233201581&quot; data-s=&quot;300,640&quot; data-type=&quot;png&quot; data-w=&quot;2024&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UMb7JCCdbYN3W31X1NobuicoeZOzTGWNZyTMGgP2KOglDKYLk5B0ftdJ4xvEJ6ApCnqJbshrbNdHbQTvEBehKyQ/640?wx_fmt=png&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;4.sql注入实战&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;存在sql拼接的业务代码如下&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.35009671179883944&quot; data-s=&quot;300,640&quot; data-type=&quot;png&quot; data-w=&quot;2068&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UMb7JCCdbYN3W31X1NobuicoeZOzTGWNZJMyiabL1sacvax7ePvR95viaicxh5GhKrKicDQ8f8SFc7ib3ptEQiatVHt9A/640?wx_fmt=png&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;正常sql（返回用户自己的数据）&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.54375&quot; data-s=&quot;300,640&quot; data-type=&quot;png&quot; data-w=&quot;2240&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UMb7JCCdbYN3W31X1NobuicoeZOzTGWNZzZKdLCHQJ3ibVyficl20RxiajVl3HGb7CtKTsdZZ553E8CiatovicANwwzg/640?wx_fmt=png&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;sql注入（返回了全部用户数据）&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.8368794326241135&quot; data-s=&quot;300,640&quot; data-type=&quot;png&quot; data-w=&quot;2256&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UMb7JCCdbYN3W31X1NobuicoeZOzTGWNZQy66rY0ScickxZH0KachichDcQa2TgcOkXMOic5lpMuWO8uamjFbicPEQw/640?wx_fmt=png&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;5.检测与防御&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.779261586802828&quot; data-s=&quot;300,640&quot; data-type=&quot;png&quot; data-w=&quot;2546&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/UMb7JCCdbYN3W31X1NobuicoeZOzTGWNZQaOSSICnER3Iic5qgJ9V1IvD75jSIoX5wBavz18NSibCuMopGCy17fzg/640?wx_fmt=png&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;    值得注意的是不同于复杂的正则规则检测， jrasp内置了 sql 注入词法分析防火墙，单条sql检测时间在0.1ms内完成，误报/漏报率极低。&lt;/p&gt;&lt;p&gt;---------------------------------------------------------------------------&lt;/p&gt;&lt;p&gt;&lt;span&gt;🔥🔥🔥国内技术领先的开源RASP社区 &lt;/span&gt;&lt;span&gt;https://www.jrasp.com&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;1.2792553191489362&quot; data-s=&quot;300,640&quot; data-type=&quot;png&quot; data-w=&quot;752&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/UMb7JCCdbYN3W31X1NobuicoeZOzTGWNZiab2qnlR2XZCddMHibpoW2cLywicITV5SliaMKVXJWXlnlquGWP0vdFoFA/640?wx_fmt=jpeg&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;
-          &lt;/div&gt;
+<guid>af533cbc7d3c8f877aaef15b079187f2</guid>
+<title>教你如何定位不合理的SQL？并优化之</title>
+<link>https://toutiao.io/k/huxhsnt</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;content&quot;&gt;
+                                                                                                                                                                                        &lt;h1&gt;如何定位不合理的SQL&lt;/h1&gt; 
+&lt;pre&gt;&lt;code&gt;引言
+在应用的开发过程中，由于初期数据量小，开发人员写 SQL 语句时更重视功能上的实现，但是当应用系统正式上线后，随着生产数据量的急剧增长，很多SQL语句开始逐渐显露出性能问题，对生产的影响也越来越大，此时这些有问题的SQL语句就成为整个系统性能的瓶颈，因此我们必须要对它们进行优化，本章将详细介绍在MySQL中优化SQL语句的方法。
 
-          
+当面对一个有SQL性能问题的数据库时，我们应该从何处入手来进行系统的分析，使得能够尽快定位问题SQL并尽快解决问题。
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h2&gt;4.1 如何查看SQL执行频率&lt;/h2&gt; 
+&lt;p&gt;MySQL 客户端连接成功后，通过&lt;/p&gt; 
+&lt;pre&gt;&lt;code class=&quot;language-sql&quot;&gt;-- 服务器状态信息
+show [session|global] status;
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;p&gt;命令可以提供服务器状态信息。show [session|global] status 可以根据需要加上参数“session”或者“global”来显示 session 级（当前连接）的统计结果和 global 级（自数据库上次启动至今）的统计结果。&lt;/p&gt; 
+&lt;p&gt;如果不写，默认使用参数是“session”。&lt;/p&gt; 
+&lt;p&gt;下面的命令显示了当前 session 中所有统计参数的值：&lt;/p&gt; 
+&lt;pre&gt;&lt;code class=&quot;language-sql&quot;&gt;show status like &#x27;Com_______&#x27;;
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-0f0fa8a261cb7f03d783322855bdbc51768.png&quot; alt=&quot;file&quot;/&gt;&lt;/p&gt; 
+&lt;pre&gt;&lt;code class=&quot;language-sql&quot;&gt;show status like &#x27;Innodb_rows_%&#x27;;
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-301c38317ed76b33255ba5291abce037e73.png&quot; alt=&quot;file&quot;/&gt;&lt;/p&gt; 
+&lt;p&gt;Com_xxx 表示每个 xxx 语句执行的次数，我们通常比较关心的是以下几个统计参数。&lt;/p&gt; 
+&lt;table&gt; 
+ &lt;thead&gt; 
+  &lt;tr&gt; 
+   &lt;th align=&quot;left&quot;&gt;参数&lt;/th&gt; 
+   &lt;th&gt;含义&lt;/th&gt; 
+  &lt;/tr&gt; 
+ &lt;/thead&gt; 
+ &lt;tbody&gt; 
+  &lt;tr&gt; 
+   &lt;td align=&quot;left&quot;&gt;Com_select&lt;/td&gt; 
+   &lt;td&gt;执行 select 操作的次数，一次查询只累加 1。&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td align=&quot;left&quot;&gt;Com_insert&lt;/td&gt; 
+   &lt;td&gt;执行 INSERT 操作的次数，对于批量插入的 INSERT 操作，只累加一次。&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td align=&quot;left&quot;&gt;Com_update&lt;/td&gt; 
+   &lt;td&gt;执行 UPDATE 操作的次数。&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td align=&quot;left&quot;&gt;Com_delete&lt;/td&gt; 
+   &lt;td&gt;执行 DELETE 操作的次数。&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td align=&quot;left&quot;&gt;Innodb_rows_read&lt;/td&gt; 
+   &lt;td&gt;select 查询返回的行数。&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td align=&quot;left&quot;&gt;Innodb_rows_inserted&lt;/td&gt; 
+   &lt;td&gt;执行 INSERT 操作插入的行数。&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td align=&quot;left&quot;&gt;Innodb_rows_updated&lt;/td&gt; 
+   &lt;td&gt;执行 UPDATE 操作更新的行数。&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td align=&quot;left&quot;&gt;Innodb_rows_deleted&lt;/td&gt; 
+   &lt;td&gt;执行 DELETE 操作删除的行数。&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td align=&quot;left&quot;&gt;Connections&lt;/td&gt; 
+   &lt;td&gt;试图连接 MySQL 服务器的次数。&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td align=&quot;left&quot;&gt;Uptime&lt;/td&gt; 
+   &lt;td&gt;服务器工作时间。&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td align=&quot;left&quot;&gt;Slow_queries&lt;/td&gt; 
+   &lt;td&gt;慢查询的次数。&lt;/td&gt; 
+  &lt;/tr&gt; 
+ &lt;/tbody&gt; 
+&lt;/table&gt; 
+&lt;p&gt;Com_*** : 这些参数对于所有存储引擎的表操作都会进行累计。&lt;/p&gt; 
+&lt;p&gt;Innodb_*** : 这几个参数只是针对InnoDB 存储引擎的，累加的算法也略有不同。&lt;/p&gt; 
+&lt;h2&gt;4.2 如何定位低效率SQL&lt;/h2&gt; 
+&lt;p&gt;以下两种方式：&lt;/p&gt; 
+&lt;ul&gt; 
+ &lt;li&gt; &lt;p&gt;&lt;strong&gt;慢查询日志（重要） :&lt;/strong&gt; 通过慢查询日志定位那些执行效率较低的 SQL 语句，用--log-slow-queries[=file_name]选项启动时，mysqld 写一个包含所有执行时间超过 long_query_time 秒的 SQL 语句的日志文件。&lt;/p&gt; 
+  &lt;blockquote&gt; 
+   &lt;p&gt;tips：&lt;/p&gt; 
+   &lt;p&gt;关于慢查询SQL如何获取&lt;/p&gt; 
+   &lt;p&gt;参看上个章节&lt;/p&gt; 
+  &lt;/blockquote&gt; &lt;/li&gt; 
+ &lt;li&gt; &lt;p&gt;&lt;strong&gt;show processlist （重要） :&lt;/strong&gt;&lt;/p&gt; &lt;p&gt;慢查询日志在查询结束以后才记录，所以在应用反映执行效率出现问题的时候查询慢查询日志并不能定位问题。&lt;/p&gt; &lt;p&gt;可以使用show processlist命令查看当前MySQL在进行的线程，包括线程的状态、是否锁表等，可以实时地查看 SQL 的执行情况，同时对一些锁表操作进行优化。&lt;/p&gt; &lt;/li&gt; 
+&lt;/ul&gt; 
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-7d647c94783723830a00a013f6fca57a910.png&quot; alt=&quot;file&quot;/&gt;&lt;/p&gt; 
+&lt;pre&gt;&lt;code&gt;属性字段解释
+1） id列，用户登录mysql时，系统分配的&quot;connection_id&quot;，可以使用函数connection_id()查看
+2） user列，显示当前用户。如果不是root，这个命令就只显示用户权限范围的sql语句
+3） host列，显示这个语句是从哪个ip的哪个端口上发的，可以用来跟踪出现问题语句的用户
+4） db列，显示这个进程目前连接的是哪个数据库
+5） command列，显示当前连接的执行的命令，一般取值为休眠（sleep），查询（query），连接（connect）等
+6） time列，显示这个状态持续的时间，单位是秒
+7） state列，显示使用当前连接的sql语句的状态，很重要的列。
+state描述的是语句执行中的某一个状态。一个sql语句，以查询为例，可能需要经过copying to tmp table、sorting result、sending data等状态才可以完成
+8） info列，显示这个sql语句，是判断问题语句的一个重要依据
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h2&gt;4.3 使用explain分析执行计划&lt;/h2&gt; 
+&lt;pre&gt;&lt;code class=&quot;language-sql&quot;&gt;-- explain 分析执行计划
+explain SELECT * FROM product_list WHERE store_name = &#x27;联想北达兴科专卖店&#x27;;
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-d62fbe64fb0e918b4c2b16e4a8c6731d8f7.png&quot; alt=&quot;file&quot;/&gt;&lt;/p&gt; 
+&lt;table&gt; 
+ &lt;thead&gt; 
+  &lt;tr&gt; 
+   &lt;th&gt;字段&lt;/th&gt; 
+   &lt;th&gt;含义&lt;/th&gt; 
+  &lt;/tr&gt; 
+ &lt;/thead&gt; 
+ &lt;tbody&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;id&lt;/td&gt; 
+   &lt;td&gt;select查询的序列号，是一组数字，表示的是查询中执行select子句或者是操作表的顺序。&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;select_type&lt;/td&gt; 
+   &lt;td&gt;表示 SELECT 的类型，常见的取值有 SIMPLE（简单表，即不使用表连接或者子查询）、PRIMARY（主查询，即外层的查询）、UNION（UNION 中的第二个或者后面的查询语句）、SUBQUERY（子查询中的第一个 SELECT）等&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;table&lt;/td&gt; 
+   &lt;td&gt;输出结果集的表&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;partitions&lt;/td&gt; 
+   &lt;td&gt;匹配的分区&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;type&lt;/td&gt; 
+   &lt;td&gt;表示表的连接类型，性能由好到差的连接类型为( system ---&amp;gt; const -----&amp;gt; eq_ref ------&amp;gt; ref -------&amp;gt; ref_or_null----&amp;gt; index_merge ---&amp;gt; index_subquery -----&amp;gt; range -----&amp;gt; index ------&amp;gt; all )&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;possible_keys&lt;/td&gt; 
+   &lt;td&gt;表示查询时，可能使用的索引&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;key&lt;/td&gt; 
+   &lt;td&gt;表示实际使用的索引&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;key_len&lt;/td&gt; 
+   &lt;td&gt;索引字段的长度&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;rows&lt;/td&gt; 
+   &lt;td&gt;扫描行的数量&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;filtered&lt;/td&gt; 
+   &lt;td&gt;按表条件过滤的行百分比&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;extra&lt;/td&gt; 
+   &lt;td&gt;执行情况的说明和描述&lt;/td&gt; 
+  &lt;/tr&gt; 
+ &lt;/tbody&gt; 
+&lt;/table&gt; 
+&lt;h3&gt;4.3.1 环境准备&lt;/h3&gt; 
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-505e9df7e57b438be9ecc9d75d5d0068e05.png&quot; alt=&quot;file&quot;/&gt;&lt;/p&gt; 
+&lt;pre&gt;&lt;code class=&quot;language-sql&quot;&gt;CREATE TABLE `t_role` (
+  `id` varchar(32) NOT NULL,
+  `role_name` varchar(255) DEFAULT NULL,
+  `role_code` varchar(255) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_role_name` (`role_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-          
+CREATE TABLE `t_user` (
+  `id` varchar(32) NOT NULL,
+  `username` varchar(45) NOT NULL,
+  `password` varchar(96) NOT NULL,
+  `name` varchar(45) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `user_role` (
+  `id` int(11) NOT NULL auto_increment ,
+  `user_id` varchar(32) DEFAULT NULL,
+  `role_id` varchar(32) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_role_user` (`role_id`,`user_id`),
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+insert into `t_user` (`id`, `username`, `password`, `name`) values(&#x27;1&#x27;,&#x27;super&#x27;,&#x27;$2a$10$TJ4TmCdK.X4wv/tCqHW14.w70U3CC33CeVncD3SLmyMXMknstqKRe&#x27;,&#x27;超级管理员&#x27;);
+insert into `t_user` (`id`, `username`, `password`, `name`) values(&#x27;2&#x27;,&#x27;admin&#x27;,&#x27;$2a$10$TJ4TmCdK.X4wv/tCqHW14.w70U3CC33CeVncD3SLmyMXMknstqKRe&#x27;,&#x27;系统管理员&#x27;);
+insert into `t_user` (`id`, `username`, `password`, `name`) values(&#x27;3&#x27;,&#x27;itcast&#x27;,&#x27;$2a$10$8qmaHgUFUAmPR5pOuWhYWOr291WJYjHelUlYn07k5ELF8ZCrW0Cui&#x27;,&#x27;test02&#x27;);
+insert into `t_user` (`id`, `username`, `password`, `name`) values(&#x27;4&#x27;,&#x27;stu1&#x27;,&#x27;$2a$10$pLtt2KDAFpwTWLjNsmTEi.oU1yOZyIn9XkziK/y/spH5rftCpUMZa&#x27;,&#x27;学生1&#x27;);
+insert into `t_user` (`id`, `username`, `password`, `name`) values(&#x27;5&#x27;,&#x27;stu2&#x27;,&#x27;$2a$10$nxPKkYSez7uz2YQYUnwhR.z57km3yqKn3Hr/p1FR6ZKgc18u.Tvqm&#x27;,&#x27;学生2&#x27;);
+insert into `t_user` (`id`, `username`, `password`, `name`) values(&#x27;6&#x27;,&#x27;t1&#x27;,&#x27;$2a$10$TJ4TmCdK.X4wv/tCqHW14.w70U3CC33CeVncD3SLmyMXMknstqKRe&#x27;,&#x27;老师1&#x27;);
+
+INSERT INTO `t_role` (`id`, `role_name`, `role_code`, `description`) VALUES(&#x27;5&#x27;,&#x27;学生&#x27;,&#x27;student&#x27;,&#x27;学生&#x27;);
+INSERT INTO `t_role` (`id`, `role_name`, `role_code`, `description`) VALUES(&#x27;7&#x27;,&#x27;老师&#x27;,&#x27;teacher&#x27;,&#x27;老师&#x27;);
+INSERT INTO `t_role` (`id`, `role_name`, `role_code`, `description`) VALUES(&#x27;8&#x27;,&#x27;教学管理员&#x27;,&#x27;teachmanager&#x27;,&#x27;教学管理员&#x27;);
+INSERT INTO `t_role` (`id`, `role_name`, `role_code`, `description`) VALUES(&#x27;9&#x27;,&#x27;管理员&#x27;,&#x27;admin&#x27;,&#x27;管理员&#x27;);
+INSERT INTO `t_role` (`id`, `role_name`, `role_code`, `description`) VALUES(&#x27;10&#x27;,&#x27;超级管理员&#x27;,&#x27;super&#x27;,&#x27;超级管理员&#x27;);
+
+INSERT INTO user_role(id,user_id,role_id) VALUES(NULL, &#x27;1&#x27;, &#x27;5&#x27;),(NULL, &#x27;1&#x27;, &#x27;7&#x27;),(NULL, &#x27;2&#x27;, &#x27;8&#x27;),(NULL, &#x27;3&#x27;, &#x27;9&#x27;),(NULL, &#x27;4&#x27;, &#x27;8&#x27;),(NULL, &#x27;5&#x27;, &#x27;10&#x27;) ;
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h3&gt;4.3.2 explain 之 id&lt;/h3&gt; 
+&lt;p&gt;id 字段是 select查询的序列号，是一组数字，表示的是查询中执行select子句或者是操作表的顺序。&lt;/p&gt; 
+&lt;p&gt;id 情况有三种 ：&lt;/p&gt; 
+&lt;p&gt;1） id 相同表示加载表的顺序是从上到下。&lt;/p&gt; 
+&lt;pre&gt;&lt;code class=&quot;language-sql&quot;&gt;explain select * from t_role r, t_user u, user_role ur where r.id = ur.role_id and u.id = ur.user_id ;
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-7782ec2772709c02183bb7e0da6ccd3d45d.png&quot; alt=&quot;file&quot;/&gt;&lt;/p&gt; 
+&lt;p&gt;2） id 不同id值越大，优先级越高，越先被执行。&lt;/p&gt; 
+&lt;pre&gt;&lt;code class=&quot;language-SQL&quot;&gt;EXPLAIN SELECT * FROM t_role WHERE id = (SELECT role_id FROM user_role WHERE user_id = (SELECT id FROM t_user WHERE username = &#x27;stu1&#x27;))
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-24a3673f1e09de7c598d95effd280dfa10c.png&quot; alt=&quot;file&quot;/&gt;&lt;/p&gt; 
+&lt;p&gt;3） id 有相同，也有不同，同时存在。id相同的可以认为是一组，从上往下顺序执行；在所有的组中，id的值越大，优先级越高，越先执行。&lt;/p&gt; 
+&lt;pre&gt;&lt;code class=&quot;language-sql&quot;&gt;EXPLAIN SELECT * FROM t_role r , (SELECT * FROM user_role ur WHERE ur.`user_id` = &#x27;2&#x27;) a WHERE r.id = (select role.id from t_user, user_role role where role.id = 10) ;
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-3788c00e9e00f1da9973d5955d54a92c4ec.png&quot; alt=&quot;file&quot;/&gt;&lt;/p&gt; 
+&lt;h3&gt;4.3.3 explain 之 select_type&lt;/h3&gt; 
+&lt;p&gt;表示 SELECT 的类型，常见的取值，如下表所示：&lt;/p&gt; 
+&lt;pre&gt;&lt;code class=&quot;language-mysql&quot;&gt;EXPLAIN SELECT * FROM t_role WHERE id = (SELECT role_id FROM user_role WHERE user_id = (SELECT id FROM t_user WHERE username = &#x27;stu1&#x27;));
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-a97f4bfb7bc1718e40fd1b25ced4e429b2c.png&quot; alt=&quot;file&quot;/&gt;&lt;/p&gt; 
+&lt;table&gt; 
+ &lt;thead&gt; 
+  &lt;tr&gt; 
+   &lt;th&gt;select_type&lt;/th&gt; 
+   &lt;th&gt;含义&lt;/th&gt; 
+  &lt;/tr&gt; 
+ &lt;/thead&gt; 
+ &lt;tbody&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;SIMPLE&lt;/td&gt; 
+   &lt;td&gt;简单的select查询，查询中不包含子查询或者UNION&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;PRIMARY&lt;/td&gt; 
+   &lt;td&gt;查询中若包含任何复杂的子查询，最外层查询标记为该标识&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;SUBQUERY&lt;/td&gt; 
+   &lt;td&gt;在SELECT 或 WHERE 列表中包含了子查询&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;DERIVED&lt;/td&gt; 
+   &lt;td&gt;在FROM 列表中包含的子查询，被标记为 DERIVED（衍生） MYSQL会递归执行这些子查询，把结果放在临时表中&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;UNION&lt;/td&gt; 
+   &lt;td&gt;若第二个SELECT出现在UNION之后，则标记为UNION ； 若UNION包含在FROM子句的子查询中，外层SELECT将被标记为 ： DERIVED&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;UNION RESULT&lt;/td&gt; 
+   &lt;td&gt;从UNION表获取结果的SELECT&lt;/td&gt; 
+  &lt;/tr&gt; 
+ &lt;/tbody&gt; 
+&lt;/table&gt; 
+&lt;h3&gt;4.3.4 explain 之 table&lt;/h3&gt; 
+&lt;p&gt;展示这一行的数据是关于哪一张表的&lt;/p&gt; 
+&lt;pre&gt;&lt;code class=&quot;language-sql&quot;&gt;EXPLAIN SELECT * FROM t_role WHERE id = (SELECT role_id FROM user_role WHERE user_id = (SELECT id FROM t_user WHERE username = &#x27;stu1&#x27;));
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-520269c821a8f1451dca7dc0119c1a9768e.png&quot; alt=&quot;file&quot;/&gt;&lt;/p&gt; 
+&lt;h3&gt;4.3.5 explain 之 type&lt;/h3&gt; 
+&lt;pre&gt;&lt;code class=&quot;language-sql&quot;&gt;EXPLAIN SELECT * FROM t_role WHERE id = (SELECT role_id FROM user_role WHERE user_id = (SELECT id FROM t_user WHERE username = &#x27;stu1&#x27;));
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-621b0da6e4b3e294f75043e1ff95687b3d1.png&quot; alt=&quot;file&quot;/&gt;&lt;/p&gt; 
+&lt;p&gt;type 显示的是访问类型，是较为重要的一个指标，可取值为：&lt;/p&gt; 
+&lt;table&gt; 
+ &lt;thead&gt; 
+  &lt;tr&gt; 
+   &lt;th&gt;type&lt;/th&gt; 
+   &lt;th&gt;含义&lt;/th&gt; 
+  &lt;/tr&gt; 
+ &lt;/thead&gt; 
+ &lt;tbody&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;NULL&lt;/td&gt; 
+   &lt;td&gt;MySQL不访问任何表，索引，直接返回结果&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;system&lt;/td&gt; 
+   &lt;td&gt;表只有一行记录(等于系统表)，这是const类型的特例，一般不会出现&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;const&lt;/td&gt; 
+   &lt;td&gt;表示通过索引一次就找到了，const 用于比较primary key 或者 unique 索引。因为只匹配一行数据，所以很快。如将主键置于where列表中，MySQL 就能将该查询转换为一个常量。const会将 &quot;主键&quot; 或 &quot;唯一&quot; 索引的所有部分与常量值进行比较&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;eq_ref&lt;/td&gt; 
+   &lt;td&gt;类似ref，区别在于使用的是唯一索引，使用主键的关联查询，关联查询出的记录只有一条。常见于主键或唯一索引扫描&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;ref&lt;/td&gt; 
+   &lt;td&gt;非唯一性索引扫描，返回匹配某个单独值的所有行。本质上也是一种索引访问，返回所有匹配某个单独值的所有行（多个）&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;range&lt;/td&gt; 
+   &lt;td&gt;只检索给定返回的行，使用一个索引来选择行。 where 之后出现 between ， &amp;lt; , &amp;gt; , in 等操作。&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;index&lt;/td&gt; 
+   &lt;td&gt;index 与 ALL的区别为 index 类型只是遍历了索引树， 通常比ALL 快， ALL 是遍历数据文件。&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;all&lt;/td&gt; 
+   &lt;td&gt;将遍历全表以找到匹配的行&lt;/td&gt; 
+  &lt;/tr&gt; 
+ &lt;/tbody&gt; 
+&lt;/table&gt; 
+&lt;p&gt;结果值从最好到最坏依次是：&lt;/p&gt; 
+&lt;pre&gt;&lt;code&gt;NULL &amp;gt; system &amp;gt; const &amp;gt; eq_ref &amp;gt; ref &amp;gt; fulltext &amp;gt; ref_or_null &amp;gt; index_merge &amp;gt; unique_subquery &amp;gt; index_subquery &amp;gt; range &amp;gt; index &amp;gt; ALL
 
 
+system &amp;gt; const &amp;gt; eq_ref &amp;gt; ref &amp;gt; range &amp;gt; index &amp;gt; ALL
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;p&gt;一般来说， 我们需要保证查询至少达到 range 级别， 最好达到ref 。&lt;/p&gt; 
+&lt;h3&gt;4.3.6 explain 之 key&lt;/h3&gt; 
+&lt;pre&gt;&lt;code&gt;possible_keys : 显示可能应用在这张表的索引， 一个或多个。 
+key ： 实际使用的索引， 如果为NULL， 则没有使用索引。
+key_len : 表示索引中使用的字节数。len=3*n+2（n为索引字段的长度）
 
-           
-                                
-                    
-        &lt;/div&gt;&lt;/div&gt;</content:encoded>
+EXPLAIN select * from t_role where role_name = &#x27;超级管理员&#x27;; 
+select 255 * 3 + 2; -- role_name VARCHAR(255)
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-0ee7692406926ac2292816f03a5caa9aa97.png&quot; alt=&quot;file&quot;/&gt;&lt;/p&gt; 
+&lt;h3&gt;4.3.7 explain 之 rows&lt;/h3&gt; 
+&lt;p&gt;扫描行的数量。&lt;/p&gt; 
+&lt;h3&gt;4.3.8 explain 之 extra&lt;/h3&gt; 
+&lt;p&gt;其他的额外的执行计划信息，在该列展示 。&lt;/p&gt; 
+&lt;pre&gt;&lt;code class=&quot;language-sql&quot;&gt;EXPLAIN select u.username from t_user u order by u.username desc;
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-cc4c0f9a01a38bfc940a60d64c477d12a13.png&quot; alt=&quot;file&quot;/&gt;&lt;/p&gt; 
+&lt;table&gt; 
+ &lt;thead&gt; 
+  &lt;tr&gt; 
+   &lt;th&gt;extra&lt;/th&gt; 
+   &lt;th&gt;含义&lt;/th&gt; 
+  &lt;/tr&gt; 
+ &lt;/thead&gt; 
+ &lt;tbody&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;using filesort&lt;/td&gt; 
+   &lt;td&gt;说明mysql会对数据使用一个外部的索引排序，而不是按照表内的索引顺序进行读取， 称为 “文件排序”, 效率低。&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;using temporary&lt;/td&gt; 
+   &lt;td&gt;使用了临时表保存中间结果，MySQL在对查询结果排序时使用临时表。常见于 order by 和 group by； 效率低&lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td&gt;using index&lt;/td&gt; 
+   &lt;td&gt;表示相应的select操作使用了覆盖索引， 避免访问表的数据行， 效率不错。&lt;/td&gt; 
+  &lt;/tr&gt; 
+ &lt;/tbody&gt; 
+&lt;/table&gt; 
+&lt;blockquote&gt; 
+ &lt;p&gt;本文由育博学谷狂野架构师发布 如果本文对您有帮助，欢迎关注和点赞；如果您有任何建议也可留言评论或私信，您的支持是我坚持创作的动力 转载请注明出处！&lt;/p&gt; 
+&lt;/blockquote&gt;
+                                        &lt;/div&gt;
+                                    &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
