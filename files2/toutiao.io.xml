@@ -65,103 +65,18 @@
           &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>83cf33b9907c1f808259901464cdbc5e</guid>
-<title>如何防止水印被恶意删除或者隐藏？</title>
-<link>https://toutiao.io/k/9dgqp5a</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entryContent&quot;&gt;&amp;#13;
-        &lt;p&gt;继上篇 &lt;strong&gt;&lt;a href=&quot;http://i-fanr.com/2022/07/29/vue3-watermark/&quot;&gt;Vue3 实现网页背景水印功能&lt;/a&gt;&lt;/strong&gt; 我们了解了常见的网页水印功能是如何实现的，懂原理的都知道水印是通过在网页中添加代码绘制 DOM 元素覆盖在原有的网页上而来的，一旦你打开浏览器中的元素审查，可以通过删除元素或者在元素的样式上操作属性值，就可以用来临时屏蔽水印。&lt;/p&gt;
-&lt;p&gt;为了防止作弊，我们可以利用接口 &lt;code&gt;MutationObserver&lt;/code&gt; 对 &lt;strong&gt;DOM&lt;/strong&gt; 元素进行监听。如果你对监听的元素进行样式属性的设置，或者对监听元素的子元素进行删除，都能通过 &lt;code&gt;MutationObserver&lt;/code&gt; 的回调函数进行捕获，然后再针对你的修改操作进行复原。这样可以有效防止临时操作网页元素来隐藏水印。&lt;/p&gt;
-&lt;blockquote&gt;&lt;p&gt;MutationObserver 接口提供了监视对 DOM 树所做更改的能力。它被设计为旧的 Mutation Events 功能的替代品，该功能是 DOM3 Events 规范的一部分。&lt;/p&gt;&lt;/blockquote&gt;
-&lt;pre&gt;// 选择需要观察变动的节点&amp;#13;
-const targetNode = document.getElementById(&#x27;some-id&#x27;);&amp;#13;
-&amp;#13;
-// 观察器的配置（需要观察什么变动）&amp;#13;
-const config = { attributes: true, childList: true, subtree: true };&amp;#13;
-&amp;#13;
-// 当观察到变动时执行的回调函数&amp;#13;
-const callback = function(mutationsList, observer) {&amp;#13;
-    // Use traditional &#x27;for loops&#x27; for IE 11&amp;#13;
-    for(let mutation of mutationsList) {&amp;#13;
-        if (mutation.type === &#x27;childList&#x27;) {&amp;#13;
-            console.log(&#x27;A child node has been added or removed.&#x27;);&amp;#13;
-        }&amp;#13;
-        else if (mutation.type === &#x27;attributes&#x27;) {&amp;#13;
-            console.log(&#x27;The &#x27; + mutation.attributeName + &#x27; attribute was modified.&#x27;);&amp;#13;
-        }&amp;#13;
-    }&amp;#13;
-};&amp;#13;
-&amp;#13;
-// 创建一个观察器实例并传入回调函数&amp;#13;
-const observer = new MutationObserver(callback);&amp;#13;
-&amp;#13;
-// 以上述配置开始观察目标节点&amp;#13;
-observer.observe(targetNode, config);&amp;#13;
-&amp;#13;
-// 之后，可停止观察&amp;#13;
-observer.disconnect();&lt;/pre&gt;
-&lt;p&gt;了解如何使用之后，我们对上篇封装的增加水印功能的 &lt;code&gt;hooks&lt;/code&gt; 进行优化，添加一个防删除的方法 &lt;code&gt;antiDeletion&lt;/code&gt;，里面对水印元素和它的父级也就是 &lt;code&gt;body&lt;/code&gt;进行了监听。&lt;/p&gt;
-&lt;p&gt;对父级元素进行监听，是为了捕获对它的删除操作，&lt;code&gt;mutation&lt;/code&gt; 的类型为 &lt;code&gt;childList&lt;/code&gt;，当删除水印元素的时候，我们通过回调参数 &lt;code&gt;removedNodes&lt;/code&gt; 拿到删除元素的内容后再往它的父节点动态插入水印元素，相当于未删除成功。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;http://i-fanr.oss-cn-hangzhou.aliyuncs.com/1660875008793-fcf84daf-75a7-4199-8027-360183b66171.png&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;然后还需要防止用户对水印元素进行样式属性的设置，比如 &lt;code&gt;display: none;&lt;/code&gt;隐藏元素内容。这个时候我们添加对水印 DIV 层的监听，通过对 &lt;code&gt;mutation&lt;/code&gt; 类型为&lt;code&gt;attributes&lt;/code&gt; 的判断，然后强制给可能导致水印显示变化的样式进行复原操作。&lt;/p&gt;
-&lt;pre&gt;const observers = [];&amp;#13;
-function antiDeletion() {&amp;#13;
-    const targetNode = unref(watermarkEl);&amp;#13;
-    const parentNode = unref(appendEl);&amp;#13;
-    const config = {&amp;#13;
-      childList: true,&amp;#13;
-      attributes: true,&amp;#13;
-      attributeOldValue: true,&amp;#13;
-      characterData: true,&amp;#13;
-      characterDataOldValue: true&amp;#13;
-    };&amp;#13;
-    observers[0] = new MutationObserver((mutationList, _observer) =&amp;gt; {&amp;#13;
-      for (const mutation of mutationList) {&amp;#13;
-        const type = mutation.type;&amp;#13;
-        switch (type) {&amp;#13;
-          case &quot;childList&quot;:&amp;#13;
-            console.log(&quot;childList&quot;, mutation);&amp;#13;
-            if (mutation.removedNodes.length &amp;gt; 0) {&amp;#13;
-              parentNode.appendChild(mutation.removedNodes[0]);&amp;#13;
-            }&amp;#13;
-            break;&amp;#13;
-          default:&amp;#13;
-            break;&amp;#13;
-        }&amp;#13;
-      }&amp;#13;
-    });&amp;#13;
-    observers[0].observe(parentNode, { childList: true });&amp;#13;
-    observers[1] = new MutationObserver((mutationList, _observer) =&amp;gt; {&amp;#13;
-      for (const mutation of mutationList) {&amp;#13;
-        const type = mutation.type;&amp;#13;
-        switch (type) {&amp;#13;
-          case &quot;attributes&quot;:&amp;#13;
-            console.log(&quot;attributes&quot;, mutation);&amp;#13;
-            if (mutation.attributeName === &quot;style&quot;) {&amp;#13;
-              targetNode.style.display = &quot;block&quot;;&amp;#13;
-              targetNode.style.zIndex = &quot;100000&quot;;&amp;#13;
-              targetNode.style.top = &quot;0px&quot;;&amp;#13;
-              targetNode.style.left = &quot;0px&quot;;&amp;#13;
-              targetNode.style.position = &quot;absolute&quot;;&amp;#13;
-            }&amp;#13;
-            if (mutation.attributeName === &quot;class&quot;) {&amp;#13;
-              targetNode.style.setProperty(&amp;#13;
-                &quot;visibility&quot;,&amp;#13;
-                &quot;visible&quot;,&amp;#13;
-                &quot;important&quot;&amp;#13;
-              );&amp;#13;
-            }&amp;#13;
-            break;&amp;#13;
-          default:&amp;#13;
-            break;&amp;#13;
-        }&amp;#13;
-      }&amp;#13;
-    });&amp;#13;
-    observers[1].observe(targetNode, config);&amp;#13;
-  }&lt;/pre&gt;
-&lt;p&gt;&lt;strong&gt;参考文档：&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://developer.mozilla.org/zh-CN/docs/Web/API/MutationObserver&quot;&gt;https://developer.mozilla.org/zh-CN/docs/Web/API/MutationObserver&lt;/a&gt;&lt;/p&gt;
-    &lt;/div&gt;&amp;#13;
-&amp;#13;
-    &lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>41c4dd229189d217432ab50b8e44ce0c</guid>
+<title>安全架构设计的方法论</title>
+<link>https://toutiao.io/k/ig2i9fh</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;a class=&quot;weui-flex original_primary_card appmsg_card_context wx_tap_card js_wx_tap_highlight&quot; href=&quot;#&quot; id=&quot;copyright_info&quot;&gt;
+                  
+                  &lt;div class=&quot;weui-flex__item&quot; role=&quot;option&quot;&gt;
+                    &lt;strong class=&quot;original_primary_nickname&quot;&gt;阿里开发者&lt;/strong&gt;
+                                          &lt;span class=&quot;weui-hidden_abs&quot;&gt;.&lt;/span&gt;
+                      &lt;p class=&quot;original_primary_desc&quot;&gt;阿里巴巴官方技术号，关于阿里的技术创新均呈现于此。&lt;/p&gt;
+                                      &lt;/div&gt;
+                  &lt;p class=&quot;weui-flex__ft&quot;/&gt;
+                &lt;/a&gt;
+              &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
