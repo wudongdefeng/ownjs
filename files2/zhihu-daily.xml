@@ -5,336 +5,277 @@
             <link>https://news-at.zhihu.com/api/4/stories/latest?client=0</link>
             <description>知乎日报</description>
 <item>
-<guid>670d3860c493541f9839182206a9ecf5</guid>
-<title>为什么鼠标放在鼠标垫上会更灵敏？</title>
-<link>https://daily.zhihu.com/story/9752000</link>
+<guid>2fc1e43bf2768274fc4e08f82a4c3d02</guid>
+<title>为什么空调的 26℃ 比室外的 26℃ 更凉快？</title>
+<link>https://daily.zhihu.com/story/9752038</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;
-&lt;img src=&quot;https://pic3.zhimg.com/da8e974dc_l.jpg?source=8673f162&quot;&gt;
-&lt;span&gt;知乎用户&lt;/span&gt;
-&lt;a href=&quot;https://www.zhihu.com/question/542880482/answer/2594349399&quot; hidden=&quot;&quot;&gt;阅读原文&lt;/a&gt;
+&lt;img src=&quot;https://picx.zhimg.com/v2-d9955a73b6a034d17c3e0f91d1141e95_l.jpg?source=8673f162&quot;&gt;
+&lt;span&gt;瞻云，&lt;/span&gt;&lt;span&gt;科普人，B站/微博/公众号全平台同名&lt;/span&gt;
+&lt;a href=&quot;https://www.zhihu.com/question/543892389/answer/2624950307&quot; hidden=&quot;&quot;&gt;阅读原文&lt;/a&gt;
 &lt;/div&gt;&lt;div&gt;
-&lt;p&gt;&lt;strong&gt;&lt;strong&gt;常见并且有趣的问题！&lt;/strong&gt;&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;直接给结论：鼠标垫表面的处理（更粗糙）更容易被传感器识别。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;简化理解：鼠标传感器会给工作的表面不停拍照，前一张照片和后一张照片有区别了就判定为移动。如果没有区别，传感器就傻了，以为还在原地。&lt;/p&gt;
-&lt;p&gt;在光滑表面上操作，因为前一张照片和后一张照片太像了，传感器就无法做出正确的移动判断，例如玻璃或是光滑的金属表面。但如果是有明显纹理的表面，例如书本、布面，传感器一拍照发现前后照片差距非常大，就知道要移动了。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;具体说说看？&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;原理其实非常简单，发光二极管通过透镜打亮鼠标底部，光线经透镜返射回来被 CMOS 捕捉，现在好的鼠标传感器每秒的速率可以达到上万次。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pica.zhimg.com/v2-efe9717f40a8b99898d7921436097de6_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;figcaption&gt;激光鼠标工作原理，激光鼠标其实就是光学鼠标的子类（图片来源：Internal Structure of an ADNS-9800 Laser Mouse Sensor）&lt;/figcaption&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;strong&gt;重点来了，只有当鼠标的工作表面有一定纹理时，光照才能产生阴影，这个阴影变为数字信号后接下来会被 DSP （Digital Signal Processing）芯片不停计算反射回来的前后数据之差，通过计算差别来实现 X 轴与 Y 轴移动变化，最后变成了 CPI（Counts Per Inch）&lt;/strong&gt;&lt;sup&gt;[1]&lt;/sup&gt;&lt;strong&gt;数据给到电脑。&lt;/strong&gt;&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pic4.zhimg.com/v2-1ed4080381f71e4d9d7d8294666a7f3c_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;figcaption&gt;图片来源： Branch Education &lt;/figcaption&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;strong&gt;这个差别其实就是移动中照射阴影前后的变化。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;平滑表面的移动前后变化不大（不粗糙太平滑就没有阴影了），传感器都无法正常计算出照射前后产生的数据之差。抑或是图案颜色降低了光线反射或者太透的表面（玻璃）光线根本无法反射回去，也就工作不了。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;PS：光学鼠标传感器的原理和平常见到的光学指纹识别的原理是一样的。如果手机用的是光学指纹解锁的朋友，仔细观察就会发现，当你的手指放在指定识别的屏幕区域时，会亮起一道强光把手指照亮。&lt;/strong&gt;&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-f215c50784ecbcacd752f884fc46c228_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;figcaption&gt;图片来源： Branch Education &lt;/figcaption&gt;&lt;/figure&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pic4.zhimg.com/v2-f173c779556050751a21c46ae12b048b_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;figcaption&gt;图片来源： Branch Education &lt;/figcaption&gt;&lt;/figure&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pic4.zhimg.com/v2-e2e7ee06963fe4271cb30f300934538c_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;figcaption&gt;图片来源： Branch Education &lt;/figcaption&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;strong&gt;一些常见的问题：&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;Q：抬起鼠标时，传感器咋还能工作？&lt;/p&gt;
-&lt;p&gt;A：鼠标垫传感器有一个正常的工作高度范围（光打出去并且能正常反射回来），也就是常说的静默距离 LOD（Lift Of Distance）高度。一般鼠标设定在 2mm~3mm 之间，超过了也许还能反射回去，但传感器并不承认这个返回数据，因为会失真。现在的游戏鼠标通过驱动可以更改 LOD 高度，为什么游戏鼠标允许更改 LOD 高度了？因为，不同游戏和不同操作者对抬鼠标的高度需求都不一样，当然一般也只有所谓高玩才注意这些。（我从来没改过，都是默认）&lt;/p&gt;
-&lt;p&gt;Q：为什么我的鼠标能在玻璃上用啊？&lt;/p&gt;
-&lt;p&gt;A：因为玻璃也是千千万万，不同的玻璃，工艺不一样，材质不一样，也许反射率高，我也不太懂，反正有些玻璃上鼠标确实能断断续续的用。现在所谓的专业玻璃鼠标垫，其实并不是玻璃垫，只是在布垫的基础上结合了塑料、玻璃、纤维等复合材料。如果是一整块真玻璃，表面也会进行处理（雾化磨砂，降低穿透，提升反射并更容易让 DSP 识别出前后阴影差）。我强烈反对玻璃鼠标垫，都是商家搞出的噱头。&lt;/p&gt;
-&lt;p&gt;Q：玻璃下面垫张纸能正常操作吗？&lt;/p&gt;
-&lt;p&gt;A：评论区非常多的朋友在好奇这个问题。理论上当然可以，但有很多的限制条件，例如，这个玻璃必须薄（在 LOD 的工作范围内，一般不能超过 3mm），再就是玻璃要绝对透，如果光线被折射了那就不能正常工作啦，再其次垫的那种张纸最好是不透的纯黑色等等。现实中没有什么玻璃是又透又薄的。&lt;/p&gt;
-&lt;p&gt;在 Rtings 的鼠标板块数据库中，266 款主流鼠标中只有不到 20 款能够在玻璃上正常使用，这些能在玻璃上工作的鼠标基本都是较特殊的轨迹球或高端办公鼠标。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pica.zhimg.com/v2-976234cad32666c2c6fffc343553f490_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;figcaption&gt;图片来源：Rtings&lt;/figcaption&gt;&lt;/figure&gt;
-&lt;p&gt;关于鼠标光学传感器：&lt;/p&gt;
+&lt;p&gt;根本原因是环境细节存在差异巨大，人体在 26℃空调房会流失大量热量，在 26℃室外反而可能吸收热量。&lt;/p&gt;
+&lt;p&gt;首先，人体如何感觉冷和热？&lt;/p&gt;
+&lt;p&gt;当人体流出热量高于流入，且皮肤温度低于 33℃，你会感觉到冷。反之，则感觉到热。&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;http://link.zhihu.com/?target=https%3A//www.pixart.com/products-detail/cn/11/PMW3330DM-TZQU&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;原相科技鼠标光学传感器列表&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;http://link.zhihu.com/?target=https%3A//sensor.fyi/sensors/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;Mouse Guide 整理的主流传感器列表&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;皮肤温度为 33℃时，同时激活冷觉和热觉感受器，人体对热量流入流出极为敏感。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;本文图片来源：Branch Education；对视频《How does a Mouse know when you move it? || How Does a Computer Mouse Work?》进行一定引用参考。&lt;sup&gt;[2]&lt;/sup&gt;&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;div&gt;&lt;a href=&quot;https://www.zhihu.com/question/542880482&quot;&gt;阅读原文&lt;span&gt;&lt;/span&gt;&lt;/a&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-<pubDate>Sun, 21 Aug 2022 23:07:21 GMT</pubDate>
-</item>
-<item>
-<guid>323a76f40bd73c45f305d80a5ba253d7</guid>
-<title>长期睡眠不足会不会对智力造成永久性损伤吗？</title>
-<link>https://daily.zhihu.com/story/9752004</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;
-&lt;img src=&quot;https://picx.zhimg.com/v2-fafec20238cdb209713abbc8b20caa55_l.jpg?source=8673f162&quot;&gt;
-&lt;span&gt;倩Sur，&lt;/span&gt;&lt;span&gt;医学博士、里根医院访问学者、赫尔辛基大学中心医院Fellow&lt;/span&gt;
-&lt;a href=&quot;https://www.zhihu.com/question/419444022/answer/2635613451&quot; hidden=&quot;&quot;&gt;阅读原文&lt;/a&gt;
-&lt;/div&gt;&lt;div&gt;
-&lt;p&gt;&lt;strong&gt;会。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;这注意这里面的 2 个关键词：&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;&lt;strong&gt;第一，长期。&lt;/strong&gt;&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;我想很多人都有感觉，偶尔的熬夜，或者失眠，第二天可能会觉得注意力不集中，做事效率低，记不住事情……&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;睡觉的第一大功能就是——给我们“洗脑”。&lt;/strong&gt;这个洗脑就是字面上的意思，给大脑做大扫除。&lt;/p&gt;
-&lt;p&gt;在我们睡着以后，我们大脑里的血液大规模、周期性地流出大脑。这个时候脑脊液趁机涌入大脑，冲刷着我们的大脑，带走各种代谢产物。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;你可能想问这个过程白天清醒的时候不能进行吗？&lt;/strong&gt;不知道大家逛过菜场没有，白天人很多，不同的摊位，有的杀鸡、杀鱼、有的是带着泥巴的青菜……只有晚上大家都收摊了，这个时候环卫大叔用水龙头冲刷打扫才能又快又好。&lt;/p&gt;
-&lt;p&gt;我们睡着以后，大脑里的神经元会开始出现同步的一起开，一起关。当大量神经元一同停止了工作，大脑就不再需要那么多血氧，这个时候脑脊液趁机涌进大脑，充分的循环，把各种垃圾、代谢副产物比如可能导致老年痴呆的错误折叠的蛋白比如β- 淀粉样蛋白等统统冲走&lt;sup&gt;[1]&lt;/sup&gt;。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-a3a563850d03287f55c3907fc09f87fc_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;figcaption&gt;只是一晚没睡，脑成像显示海马和附近区域的β- 淀粉样蛋白积累（红色）图片来源：Sleep deprivation increases Alzheimer’s protein&lt;/figcaption&gt;&lt;/figure&gt;
-&lt;p&gt;如果你一直睡眠不足，也就是题目里的&lt;strong&gt;“长期”&lt;/strong&gt;，那大脑里的这些垃圾就会越积越多，&lt;strong&gt;大量的研究已经证明熬夜、失眠和阿尔滋海吗（老年痴呆）的风险正相关。&lt;/strong&gt;&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pica.zhimg.com/v2-294290bbae2ea962027856752825e0a2_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;strong&gt;&lt;strong&gt;第二，睡眠不足。&lt;/strong&gt;&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;现在大家都知道我们体内有个“生物钟”，&lt;/strong&gt;其实生物钟只决定了我们什么时候睡。但我们能够睡多久，睡多深，其实是由另外一套系统决定的，这个就是睡眠的“稳态平衡”——&lt;strong&gt;醒的时间越长，就会觉得越困！&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;我们醒着的时候，大脑中的一些化学物质，主要是&lt;strong&gt;腺苷&lt;/strong&gt;会随着时间越积累越多，我们会觉得越来越困，这就是我们所说的&lt;strong&gt;睡眠压力&lt;/strong&gt;。我们清醒的时间越长，感受到的睡眠压力就会越大，就会越来越忍不住睡着。这就是有些人说的，太长时间没睡，坐着，甚至站着都能睡着。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://picx.zhimg.com/v2-cd16dd58d31833a380f1f6cb088a05e0_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;而当我们进入梦乡后，大脑就会逐渐的清理掉白天积累的腺苷，第二天早上再重新开始新的一天。但是，如果你前一天没有睡够，大脑中的腺苷没清理完，到了第二天仍然会较高，这样你会觉得昏昏欲睡，很难打起精神。&lt;/p&gt;
-&lt;p&gt;研究显示，我们人类循环利用的周期一般是 16 个小时，也就是说我们清醒 16 个小时以后，大脑就需要 7-8 个小时的睡眠。如果长期睡眠不足，那就像是信用卡的欠款一直没还，会越积越多，引起慢性疲劳，甚至一系列身体的健康问题，当然也包括对智力等的影响。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://picx.zhimg.com/v2-677e44cf7f461e708745045f4e2e7cf0_720w.gif?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;需要指出的是，睡眠足不足，并不是指的一定要睡 8 个小时，&lt;strong&gt;不同的人对睡眠的需求是不同的。另外我们在不同的年龄阶段对睡眠的需求也是不一样的，&lt;/strong&gt;这和基因还有我们体内的激素水平有关。从褪黑素的角度来看：&lt;/p&gt;
-&lt;p&gt;褪黑素在我们青少年时期分泌达到高峰，然后又开始慢慢的下降，这可能是导致我们&lt;strong&gt;年纪越大，需要的睡眠时间越来越短、醒得越来越早&lt;/strong&gt;的原因。和小朋友需要十几个小时的睡眠相比，很多时候，老年人可能只要睡 7 个小时就已经够了。&lt;/p&gt;
-&lt;p&gt;青少年需要的睡眠可能比家长要长 2 个小时，&lt;strong&gt;所以很多青少年早上起来很困难，这并不是因为懒，而是确实没睡够。&lt;/strong&gt;&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pica.zhimg.com/v2-ced31d3c2a2d27693de0bec9bbe089ac_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;strong&gt;所以，我们普通人判断自己睡够没有，并不是看每天睡满 8 小时没有，而是有一个简单的标准：&lt;/strong&gt;如果你的睡眠质量不错，而且你白天的工作、生活精神状态也不错，就不需要太过担心自己没有睡够，毕竟这个世界上也确实有一些基因特别的&lt;strong&gt;“短睡眠者”&lt;/strong&gt;，他们需要的睡眠时间就是比其他人少一些。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://picx.zhimg.com/v2-3655cc475b3dcbca6d243aa4800b6373_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;strong&gt;另外关于补觉是否有用、睡午睡、失眠等的一些建议之前都写过，有兴趣的可以再搜搜关键字。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://www.zhihu.com/question/20253649/answer/2628583506&quot;&gt;午睡，睡多长时间为宜？&lt;/a&gt;&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;div&gt;&lt;a href=&quot;https://www.zhihu.com/question/419444022&quot;&gt;阅读原文&lt;span&gt;&lt;/span&gt;&lt;/a&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-<pubDate>Sun, 21 Aug 2022 23:07:14 GMT</pubDate>
-</item>
-<item>
-<guid>03298f895ce1a6763453783f1a9a0739</guid>
-<title>中国的芯片工业水平能否在10年内达到世界前列呢？</title>
-<link>https://daily.zhihu.com/story/9752010</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;
-&lt;img src=&quot;https://pica.zhimg.com/v2-abed1a8c04700ba7d72b45195223e0ff_l.jpg?source=8673f162&quot;&gt;
-&lt;span&gt;阿狸，&lt;/span&gt;&lt;span&gt;一名芯片开发工程师，先后从事数字IC设计、验证、DFT工作&lt;/span&gt;
-&lt;a href=&quot;https://www.zhihu.com/question/543811431/answer/2633560909&quot; hidden=&quot;&quot;&gt;阅读原文&lt;/a&gt;
-&lt;/div&gt;&lt;div&gt;
-&lt;p&gt;十年内到达世界前列？那我们分业务板块来说一说。芯片行业包括七大业务板块：1.设计，2.晶圆制造，3.EDA 工具，4.芯片原材料，5.封装，6.测试，7.半导体设备&lt;/p&gt;
-&lt;p&gt;第一部分设计领域&lt;/p&gt;
-&lt;p&gt;芯片行业的设计领域，指的是规格制定、架构设计到 tape－out 的所有流程。tape out 是什么，可能很多朋友不清楚，那换个说法，对于芯片设计而言，简单通俗的说，就是芯片在晶圆厂生产之前的所有流程都属于设计领域。在芯片行业，我们把仅从事芯片设计，没有其他生产、封装、测试业务的公司称之为 fabless 或者 design house，比如国内的华为海思、紫光展锐、中兴微电子、比特大陆、寒武纪、汇顶科技、全志就是这类公司，美国的高通、博通也属于这一类型。而既有芯片业务，又有芯片晶圆制造业务的公司，我们称之为 IDM（Integrated Device Manufacture），国内的士兰微属于这类企业，美国的英特尔，韩国的三星、海力士，意大利的意法半导体也属于这类企业。&lt;/p&gt;
-&lt;p&gt;关于全球知名的芯片设计公司，可以参考下面的图表。下面的图表是 2021 年全球十大 IC 设计公司营收排名。注意仅仅指公布财报数据的前十名，有些公司可能更高，但未公布数据。这里只统计公布财报数据的前十名。下面的数据仅指芯片设计公司，不包括台积电、格罗方德等晶圆厂，也不包括芯片原材料和半导体设备公司。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pic4.zhimg.com/v2-d42f819ae57d690929f12d8293d4c525_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;从上面的表格，我们可以看到美国和中国台湾省的公司垄断前十。其中六家美国公司(高通、博通、英伟达、AMD、Marvell、赛灵思)，四家中国台湾公司(联发科、联咏、瑞昱、奇景)。具体排名方面，高通继续稳坐全球第一，主要由于手机系统单芯片、物联网芯片销售分别年增 51%与 63%所带动，加上射频与汽车芯片业务的多元化发展，带动 2021 年高通营收增长达 51%。英伟达在游戏显卡与数据中心营收年增分别达 64%与 59%的带动下，排名成功向上攀升至第二；而 AMD 则由于 Ryzen CPU、Radeon GPU 销售强劲及平均销售单价提升，使得 CPU 与 GPU 这两大业务营收年增 45%，加上云端企业需求加速，企业端、嵌入式暨半客制化部门营收年增 113%，让 AMD 总营收年增高达 68%。而台湾的芯片设计龙头企业联发科受惠于 5G 渗透率提升，手机产品组合销售暴增 93%，全年营收增长 61%；瑞昱受网通与商用型笔电产品需求强劲带动，且音频与蓝牙芯片表现也相当稳定，营收年增长达 43%。&lt;/p&gt;
-&lt;p&gt;以上文字讲了十大设计公司如何牛 X，业绩如何大涨。我们来对比一下大陆的芯片设计企业 2021 年的营收情况。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-cdb9e630c0cf8837c8efa83ebd9d14f3_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;以上表格仅包括芯片设计企业的芯片设计营业收入。从表格中我们可以看到华为的子公司海思已经下降到第三位。海思受美国制裁的影响，去年营收暴跌 80%。另外紫光展锐的营收应该高于台湾企业奇景，应该可以排进上面那个全球十大芯片设计公司营收的榜单。其余国内厂商营收则有升有降。&lt;/p&gt;
-&lt;p&gt;下面将从芯片具体的细分领域来看看大陆企业在芯片设计的各领域与世界先进水平的差异。看看各个芯片设计领域有没有可能在十年内达到世界前列？&lt;/p&gt;
-&lt;p&gt;我们将从处理器芯片、通信芯片、存储器芯片、消费电子芯片、FPGA 芯片几大领域来比较一下！&lt;/p&gt;
-&lt;p&gt;1. CPU 处理器类芯片&lt;/p&gt;
-&lt;p&gt;包括手机、pad 等移动端设备的处理器和台式电脑、笔记本电脑等微机处理器，以及嵌入式设备处理器。&lt;/p&gt;
-&lt;p&gt;1.1 手机处理器芯片&lt;/p&gt;
-&lt;p&gt;这一块国内和世界领先水平有较大差距。世界范围内的知名手机处理器厂商有高通、MTK（联发科），苹果和三星这两家也有自己的手机处理器芯片。而国内大部分手机厂商，比如小米、vivo、oppo 都是用高通或者联发科的处理器芯片！国内手机处理器设计的主要厂商是华为海思。但由于众所周知的原因，台积电不能给海思代工芯片，所以华为的麒麟芯片现在处境很尴尬！目前其他国内公司，据我所知，只有紫光展锐研发的虎贲 T7510 芯片，这一款芯片采用的是台积电 12 纳米工艺，按照网上的说法，这一款芯片相当于高通骁龙 710 系列。国内手机厂商里，好像只有海信用过这款处理器芯片。看一下以下图片，从 2020 年第一季度到 2021 年第二季度全球手机处理器市占率的情况，华为海思持续走低，市场份额从 12%下降至 3%，而联发科的市场份额由 24%提升至 38%，另一家大陆企业展锐一直维持在 5%。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://picx.zhimg.com/v2-8d29e325790aba2bba6eba80c3fd82f0_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;目前手机处理器芯片华为受制于芯片生产。本来华为海思已经在手机处理器芯片这一块接近第一梯队，但由于受美国制裁的影响，其先进工艺处理器芯片无法流片，导致手机处理器项目被搁置。未来十年，如果华为海思仍受制于美国的制裁，恐怕国产手机处理器芯片只能寄希望于紫光展锐！紫光展锐目前处于手机处理器研发的第二梯队，未来十年如果国产手机厂商愿意和展锐配合，展开合作，在某些型号手机采用展锐的处理器芯片，那么展锐有可能在十年后接近第一梯队，甚至进入手机处理器第一梯队，到达世界前列水平！&lt;/p&gt;
-&lt;p&gt;1.2 微机处理器芯片&lt;/p&gt;
-&lt;p&gt;微机处理器芯片就是我们台式电脑或笔记本电脑的处理器芯片！这一块美国的英特尔是绝对的老大，从奔腾处理器到酷睿 i3、i5、i7，英特尔一直领跑！这个领域能够对英特尔构成威胁的，估计只有 AMD 了。这一块目前国内和美国差距极大！目前兆心在做 x86 的处理器，这两年好像出了一款性能等同七代英特尔产品的处理器。另外海光也在做微机处理器芯片，不过用的 amd 的 zen 架构。这一块未来十年很难赶上英特尔、AMD 到达世界前列水平！&lt;/p&gt;
-&lt;p&gt;1.3 微处理器和微控制器&lt;/p&gt;
-&lt;p&gt;微处理器(Micro-Processor Unit，MPU)和微控制器 (Micro-Controller Unit ， MCU) 现在的界限越来越模糊，把两者一起介绍。这一领域荷兰的恩智浦、美国的 microchip(微芯半导体)、德州仪器（TI 公司）、飞思卡尔，意大利的意法半导体，日本的瑞萨电子，领先这一块业务。而国内我只知道深圳的科创板上市公司芯海科技是主营这一块业务的。差距有多大，参考下面的表格吧。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pica.zhimg.com/v2-bceee4ee428a7a0eb97bbfeed5bd973d_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;中国企业要想在 MCU 芯片这块上榜还要加油！目前国内做 MCU 芯片的基本是中小公司，未来十年要想追上世界前列水平，难度还是比较大的。&lt;/p&gt;
-&lt;p&gt;2.图像处理器 GPU 芯片&lt;/p&gt;
-&lt;p&gt;在 GPU 芯片这一块国内厂商和国外大厂差距极大。大家看看自己用的笔记本电脑的显卡是哪个公司的就知道了！整个 GPU 图形芯片领域，包括独立显卡和集成显卡。在具体市场份额方面，英特尔得益于笔记本电脑、传统 PC 行业的优势，其核芯显卡市占率超过全球市场的三分之二。如果只看独立显卡，美国著名企业英伟达是这一块绝对的王者。在独显领域，英伟达 GPU 芯片的市占率超过 80%。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-fa803b1742e8a95c801253cf6cc7af49_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;而我们国内做得比较好的，老牌公司有景嘉微和中科曙光。新成立的初创公司有摩尔线程和壁仞。但国内企业在 GPU 这一块和英伟达、英特尔、AMD 的差距巨大，不是短时间能赶得上的。图像处理 GPU 这一块，国内必须要努力追赶。依我看，未来十年要想在 GPU 芯片这块追上英伟达和 AMD 的水平，是很困难的啦！&lt;/p&gt;
-&lt;p&gt;3. 通信芯片&lt;/p&gt;
-&lt;p&gt;通信是一个很大的概念，很大的范畴！各种各样的通信芯片也是五花八门！通信可以划分为手机移动通信、wifi 通信、蓝牙通信。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-ea93d6ee8b9d12bb00e732589eebe08b_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;在移动通讯设备中最重要的器件就是射频芯片和基带芯片，射频芯片负责射频收发、频率合成、功率放大；而基带芯片负责信号处理和协议处理。&lt;/p&gt;
-&lt;p&gt;3.1 手机基带芯片&lt;/p&gt;
-&lt;p&gt;提到基带大家可能都听过但是不了解具体是什么，这个东西简单来说是手机通话和上网的必备组件，也就是说没了它，手机既不能通话又不能上网，重要性不言而喻。&lt;/p&gt;
-&lt;p&gt;全球移动通信市场经过 1G-3G 时代的发展，到 4G 时代已有多家半导体厂商进入基带芯片市场。然而，5G 基带芯片的性能要求和技术复杂程度要比前几代高得多，目前全球只有高通、华为海思、紫光展锐、三星和联发科研发出了 5G 基带芯片。英特尔的 5G 通信业务卖给了苹果，到现在还没有推出 5G 基带芯片。在基带芯片这块，大陆有华为海思和紫光展锐两家企业，台湾也有联发科。其中海思依靠华为的通信技术和专利积累，推出了巴龙系列基带芯片，以及集成巴龙基带的麒麟处理器；紫光展锐的虎贲 T7520 在中端市场将有一定的话语权，但目前在 5G 基带芯片方面还是美国的高通占据一定领先优势。未来十年在基带芯片这块，华为海思受制于美国制裁，目前来看只能寄希望于展锐追赶高通了。有多大希望能赶上或者接近高通，可能性不足三成吧。&lt;/p&gt;
-&lt;p&gt;3.2 射频芯片&lt;/p&gt;
-&lt;p&gt;射频芯片被誉为模拟芯片皇冠上的明珠。射频芯片又分为射频收发芯片和射频前端芯片。而目前射频前端芯片的复杂度更高，所以我们重点关注一下射频前端芯片。射频前端包括&quot;1：&quot;滤波器（Filter）、功率放大器（PA）、开关（Switch/Tuner）、低噪声放大器（LNA）四种器件&quot;。这四种器件 2020 年市场规模占比分别为 47%、32%、13%、8%。射频前端器件的技术难度从大到小为：滤波器、功率放大器（PA）、开关 / 低噪声放大器（LNA）。&lt;/p&gt;
-&lt;p&gt;市场格局方面，2020 年，全球射频前端芯片的市场规模已经超过 200 亿美元。具体企业市占率方面，我们可以看一下这张图片。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-db31dff97b880cfe77461874276840a5_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;图片的横坐标是产品销售额，纵坐标是增速。在射频领域，特别是手机射频前端领域，前五大公司思佳讯、Qorvo 威讯、Qualcomm 高通、博通、Murata 村田市场份额总计超过了 85%。国内的企业，我只知道江苏无锡的卓胜微和上海的芯朴科技做的射频前端芯片还不错。射频前端器件采用特殊制造工艺，且不同器件之间的工艺差别大，美日巨头以 IDM 模式垄断市场，国内厂商大多是 fabless 模式，国内厂商需要突破设计、工艺两层壁垒。未来十年，很难赶得上世界前列水平。&lt;/p&gt;
-&lt;p&gt;3.3 WIFI 芯片&lt;/p&gt;
-&lt;p&gt;这个领域和世界先进水平差距较大！这个领域，美国的博通公司世界第一！大部分高端手机里的 WIFI 芯片都是博通的！国际上知名的 WIFI 芯片厂商有美国的博通、高通、Marvell（美满科技，总部加州硅谷）、TI，台湾的联发科、瑞昱半导体。大陆在 WIFI 芯片做得比较好的，我只知道珠海的全志！目前来看，未来十年有国内企业能赶上博通的水平也是极其困难的。&lt;/p&gt;
-&lt;p&gt;3.4 蓝牙芯片&lt;/p&gt;
-&lt;p&gt;做蓝牙芯片的企业相当多，这个领域我觉得技术含量不算特别高，个人认为比 WIFI 芯片简单多了。国内大大小小的芯片设计公司都有在做蓝牙芯片的。&lt;/p&gt;
-&lt;p&gt;4. 存储器芯片&lt;/p&gt;
-&lt;p&gt;存储芯片是一个高度垄断的市场，全球市场基本被前三大公司占据，且近年来垄断程度逐步加剧。受全球市场寡头垄断格局影响，中国企业的议价能力极低，我国存储器芯片发展受限。&lt;/p&gt;
-&lt;p&gt;我们可以看一下这张图片，2020 年全球存储器芯片的市场份额。三星、海力士、美光垄断前三。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://picx.zhimg.com/v2-d67337f1410696aca19747484fae8bc0_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;在细分领域，全球 DRAM 市场仍由三大巨头主导，全球 NAND Flash 半数市场份额由三星和铠侠占据;在 NOR Flash 全球市场中，我国企业兆易创新位列前三。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pic4.zhimg.com/v2-160c600dab79efaf1c58d4ab733aac61_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;近年来国内厂商奋力追赶，已在部分领域实现突破，逐步缩小与国外原厂的差距，其中，兆易创新位列 NOR Flash 市场前三，聚辰股份在 EEPROM 芯片领域市占率全球第三，长江存储 128 层 3DNAND 存储芯片，直接跳过 96 层，加速赶超国外厂商先进技术。&lt;/p&gt;
-&lt;p&gt;但在市场份额方面，由于 DRAM 和 NAND Flash 占据了存储芯片 95%左右的市场份额，我国部分企业虽然在 NOR flash 方面有所突破，但仍未改变存储器芯片市场被韩美三巨头垄断的格局。未来十年，中国的存储器芯片厂商追赶先进任重而道远。&lt;/p&gt;
-&lt;p&gt;5. 消费电子芯片领域&lt;/p&gt;
-&lt;p&gt;安防监控、机顶盒、人工智能、汽车电子、触控芯片五大板块，分开来说。&lt;/p&gt;
-&lt;p&gt;5.1 安防监控芯片&lt;/p&gt;
-&lt;p&gt;视频监控系统主要包括前端、后端两类设备，按监控系统分为两类四种主要芯片。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pica.zhimg.com/v2-bffe31be81118431e278ae291e5ff211_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;前端设备完成对视频原始图像信号的采集和处理，将图像信号转化为模拟 / 数字视频信号，并传输到后端设备中。后端设备包括控制、显示、储存等。SoC 产品主要包括：前端 ISP、前端 IPCSoC 芯片、后端 DVRSoC 芯片、后端 NVRSoC 芯片。&lt;/p&gt;
-&lt;p&gt;说实话，监控芯片是国内做得相当不错的芯片领域！可以说监控芯片，国内处于世界第一梯队！世界一流！目前国内安防监控企业比如，海康威视和大华。据我所知海康威视大部分的监控芯片还是用的华为海思的！另外一些新兴的芯片设计公司也在做监控芯片。世界范围内，老牌的监控芯片厂商有美国的德州仪器（TI 公司）。&lt;/p&gt;
-&lt;p&gt;5.2 机顶盒芯片&lt;/p&gt;
-&lt;p&gt;这一块国内做得还不错。华为海思这一块国内最强，另外中兴微电子、福州瑞芯微、Amlogic(晶晨半导体)都在做机顶盒芯片，除了海思以外，amlogic 做得最好。amlogic(晶晨半导体)是在美国硅谷成立，但现在已回大陆注册。除了大陆以外台湾的 mstar 之前也做得不错，但这几年业务被海思和 amlogic 挤压得很厉害。mstar 中文名叫晨星半导体，总部在台湾新竹，已经被联发科收购。&lt;/p&gt;
-&lt;p&gt;5.3 人工智能芯片&lt;/p&gt;
-&lt;p&gt;世界范围内知名的人工智能芯片有美国的英伟达、英特尔，荷兰的恩智浦。国内知名的人工智能芯片设计企业有华为海思、寒武纪、地平线等等。现在国内做人工智能芯片的很多，字节跳动、阿里平头哥、百度、腾讯，这些互联网公司也都挤进来内卷了。但芯片行业不等同于互联网，他们玩得转互联网，但芯片行业没那么好整，我们拭目以待，看他们做出的芯片究竟怎样。说句题外话，人工智能芯片以及人工智能相关产业链在科技领域是一个热门领域，很有利于“讲故事”、“讲 ppt”、炒作，对于部分公司炒高估值、炒股价，很有利，你懂的。所以挤进来做人工智能芯片的企业特别多。目前人工智能芯片，全世界的企业都还处于群雄争霸的阶段，目前还没有哪家企业杀出重围，开始领跑！未来十年，中国企业必须把握机会，不能错过人工智能芯片这个风口。&lt;/p&gt;
-&lt;p&gt;5.4 汽车电子芯片&lt;/p&gt;
-&lt;p&gt;其实汽车电子芯片是一个很大的范畴，汽车电子芯片是汽车电子所有芯片的统称。前面提到的 MCU 芯片也在汽车电子领域有很多应用，除了 MCU 芯片以外，无人驾驶芯片是近几年一个比较热门的领域，但目前无人驾驶芯片落地还有些困难，各大厂商都想抢跑。除此之外，汽车电子领域的芯片还包括传感器芯片、一些模拟芯片。&lt;/p&gt;
-&lt;p&gt;在汽车电子芯片整体的格局方面，荷兰企业恩智浦、美国企业德州仪器、德国企业英飞凌、日本企业瑞萨电子、意大利的意法半导体是这一领域龙头。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://picx.zhimg.com/v2-df34dfaa4e5e8a04ed1beeb0f629167b_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;欧洲企业在这一领域有极大话语权。恩智浦、英飞凌、意法半导体、博世四家欧洲企业就占据全球 30%的市场份额。恩智浦目是由荷兰的飞利浦发展出来的企业，2015 年 12 月，恩智浦收购了飞思卡尔之后，开始成为汽车半导体和通用微控制器市场的领导者。美国企业以德州仪器为代表，日本企业以瑞萨电子为代表。欧美日三足鼎立。中国企业基本没有话语权。国内在汽车电子这一块我就只知道比亚迪半导体做得不错。另外这一两年成立了不少新的汽车电子芯片的公司，比如复睿微、蔚来半导体。未来十年，这些中国汽车电子芯片厂商能撼动欧美日三足鼎立的格局吗？我看难度也不小！&lt;/p&gt;
-&lt;p&gt;5.5 触控芯片&lt;/p&gt;
-&lt;p&gt;这一块国内做得不错。深圳企业汇顶科技是这个领域龙头，另外台湾的 mstar 和敦泰科技也做得不错！据我所知，触控芯片如果不涉及指纹识别的话，本身并没有特别高的技术含金量。如果涉及指纹识别，那触控芯片难度增加不少。而近一两年，汇顶科技的触控芯片业务也受到强有力挑战。希望中国芯片企业能在挑战中成长。下面的图片是 2016 年和 2017 年触控芯片市场份额情况，数据有点老，大家将就看一下，了解一下市场格局就行。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-3d6b0eb13563410f71c60a3b34634259_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;6. 时钟芯片&lt;/p&gt;
-&lt;p&gt;这一块差距很大！美国的厂商完全领先！不同于消费电子行业，时钟芯片偏向模拟，好多产品可以卖好多年！时钟芯片主要的市场都被美国公司把持！国际知名的时钟芯片企业有美国的 TI、Silicon Labs（芯科科技）、micro chip。国内的有成都天奥电子、宁波奥拉半导体、浙江赛思电子、新港海岸。以目前的差距来看，未来十年不说赶上美国厂商，能够缩小差距，赶上别人厂商的二线产品作为国产替代就不错了！&lt;/p&gt;
-&lt;p&gt;7.FPGA 芯片&lt;/p&gt;
-&lt;p&gt;FPGA 芯片这个领域，国内厂商和美国厂商差距极大。美国企业起步很早，全球 FPGA 市场由 Xilinx（赛灵思），altera（阿尔特拉）这两大巨头垄断，莱迪斯 Lattice 和微芯 Microchip 瓜分剩下大部分份额。四大厂商不仅在芯片设计垄断，而且还垄断了 FPGA 芯片配套的 EDA 软件，芯片设计和 EDA 工具上都形成了极强的技术封锁。Xilinx、Altera、Lattice 等公司通过近 9000 项专利构筑了牢固的知识产权壁垒，并形成了非常强大的产业生态链，四大厂商的市场占有率达到了 96%。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://picx.zhimg.com/v2-0b3163ce3b39e5a9776948a22b73f4fc_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;国内厂商方面，据我所知，只有紫光集团旗下的子公司紫光同创做的 FPGA 芯片还不错，但和美国公司的差距很大。未来十年，我觉得赶上美国厂商的 FPGA 芯片的水平是很困难的。&lt;/p&gt;
-&lt;p&gt;综合来看目前国内的芯片设计公司在世界处于什么发展水平呢？我的观点是整体落后，局部细分领域（比如监控芯片、触控芯片）世界领先！芯片设计相对于芯片生产来说，芯片设计国内与世界领先水平有较大差距，但没有像芯片生产那样大的差距，我个人观点，美国公司在设计领域处于第一梯队，台湾公司和韩国公司处于第二梯队，大陆企业的芯片设计的水平在世界范围内处于第二梯队和第三梯队之间，可以说 2.5 梯队。未来十年，芯片设计要赶上世界前列水平，就是要达到第一梯队美国的水平，你们觉得可能性有多少？&lt;/p&gt;
-&lt;p&gt;第二部分晶圆制造领域&lt;/p&gt;
-&lt;p&gt;晶圆是指硅半导体集成电路制作所用的硅晶片，由于其形状为圆形，故称为晶圆。在硅晶片上可加工制作成各种电路元件结构，而成为有特定电性功能的 IC 产品。晶圆的原始材料是硅，而地壳表面有用之不竭的二氧化硅。&lt;/p&gt;
-&lt;p&gt;晶圆制造是根据设计出的电路版图，通过炉管、湿刻、淀积、光刻、干刻、注入、退火等不同工艺流程在半导体晶圆基板上形成元器件和互联线，最终输出能够完成功能及性能实现的晶圆片。&lt;/p&gt;
-&lt;p&gt;在芯片行业，我们把仅从事晶圆制造的企业称之为 foundry。&lt;/p&gt;
-&lt;p&gt;晶圆制造目前在世界上的发展情况来看，台湾的台积电在晶圆制造领域领先世界，目前属于世界第一的水平，台积电目前独一档，第一梯队，台积电之后有哪些？三星、英特尔、格罗方德、UMC（联电）、SMIC、意法半导体、PSMC（力晶）、华虹。大陆最强的中芯国际可以说属于 2.5 梯队，大陆第二的华虹属于第三梯队。以上芯片制造企业中，台积电、UMC、PSMC 都是台湾企业，英特尔是美国公司，格罗方德本来是 AMD 的芯片生产部门，后来独立出来被阿联酋的资金收购，但目前格罗方德大部分工厂仍在美国。意法半导体目前应该是欧洲在芯片生产领域最高水平的公司啦!可以参考下面的表格，今年第一季度全球十大晶圆代工企业营收排名，共有七家中国企业上榜(四家中国台湾企业，三家中国大陆企业)。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-2a2a4b5e1e86eb315f2747afb1560d69_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;从目前的新工艺的推进和老工艺的成熟度来看，承载中国大陆芯片生产希望的中芯国际勉强处于第二梯队，不说和台积电、三星相比，就是和台湾的 UMC 相比，都略有差距。而大陆芯片制造第二的华虹，目前仅仅能够量产 28 纳米芯片。芯片生产这一块，大陆企业追赶先进制造，任重而道远！&lt;/p&gt;
-&lt;p&gt;可以参考下面的表是部分晶圆厂不同工艺的突破时间。我们可以看到，中芯国际在 28 纳米的制程上都落后了 UMC（联电）三年，和英特尔、台积电的差距更大。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-f06af8402f859014f7af83288fce0d14_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;台积电目前在芯片制造，领先大陆企业的优势特别大。未来十年，大陆的芯片制造企业几乎不可能赶得上台积电，能够赶上三星都不错了！&lt;/p&gt;
-&lt;p&gt;第三部分 EDA 工具&lt;/p&gt;
-&lt;p&gt;EDA 是电子设计自动化的英文简称( Electronic design automation)。EDA 工具是指利用计算机辅助设计软件，来完成超大规模集成电路芯片的功能设计、综合、验证、物理设计等流程的设计方式。&lt;/p&gt;
-&lt;p&gt;在芯片行业，我们把提供 EDA 工具的企业称之为 EDA 设计服务供应商。&lt;/p&gt;
-&lt;p&gt;目前，在 EDA 工具方面，EDA 工具厂商的三巨头——cadence（铿腾）、synopsys（新思科技）、mentor 公司垄断了绝大多数市场份额，其他 EDA 厂商很多都是在三巨头的阴影之下，夹缝之中求生存。&lt;/p&gt;
-&lt;p&gt;这三大公司的总部都位于美国加州，其中 cadence 和 synopsys 都是美国公司，而 mentor 本来也是美国公司，不过现在已经被德国的西门子收购，现在改名叫西门子 EDA。&lt;/p&gt;
-&lt;p&gt;而我们目前国内使用的 EDA 工具，几乎现在开发流程就没有使用国产的工具！国内做 EDA 工具最厉害的应该是华大九天，另外国微集团好像也在做 EDA 工具。而目前美国三巨头（synopsys、cadence、mentor）垄断了绝大部分 EDA 工具！以我本人经常使用的 EDA 工具为例吧！IC 验证工具方面用的最多的是 synopsys 公司的 vcs、cadence 公司的 irun！code debug 用的最多的是 synopsys 公司的 verdi，以前读书时用过 mentor 公司的 modelsim。DFT 目前用的也是 mentor 公司的 tessent 和 synopsys 的 DFT compiler。后端 PR 工具目前常用的 ICC 和 innovus 分别是 synopsys 和 cadence 的工具。形式验证用的是 synopsys 公司的 formality。STA 用的是 synopsys 的 PT。逻辑综合用的还是 synopsys 公司的 design compiler。因为我是做数字 IC 的，用的 synopsys 的工具多一些，模拟 IC 应该用 cadence 的工具多一些！FPGA 验证都是用赛灵思的 ISE 和 VIVADO。参考下面 2020 年全球芯片 EDA 工具厂商的市场份额。Synopsys(新思科技)、cadence、mentor(即西门子 EDA)这三巨头占据了全球百分之七十的市场份额。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://picx.zhimg.com/v2-ba23b395e92a109402d13e8befb9328b_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;国产 EDA 工具的研发任重而道远啊！未来十年能赶上美国三巨头吗？我看还是定个目标二十年现实一点！&lt;/p&gt;
-&lt;p&gt;第四部分芯片原材料&lt;/p&gt;
-&lt;p&gt;芯片生产需要大量的原材料，比如硅晶圆、光刻胶等等。对于大家经常听说的光刻机，我们用最通俗的语言来概括它的原理，就是投影仪 + 单反的原理，将激光光束透射过画着线路图的掩模，将芯片线路图成比例缩小投射到涂了光刻胶的硅晶圆上，最终形成芯片的电路图。所以硅晶圆和光刻胶是芯片生产过程中非常重要的原材料。&lt;/p&gt;
-&lt;p&gt;芯片制造所需的原料有很多，其中需求量最大的当属硅晶圆。数据显示，硅晶圆在芯片制造材料中占比最高，达到 37%。硅晶圆制造行业整合现象早在上世纪 90 年代就已经出现，经过三十年时间厮杀，目前 90%的市场份额都被日韩四巨头占据。它们分别是信越化学、环球晶圆、胜高以及 SK siltron。&lt;/p&gt;
-&lt;p&gt;在光刻胶领域，全球有超过 87%的市场份额都被美国罗门哈斯、日本 JSR、东京应化、日本信越与富士电子材料这五家企业所垄断，其中美国企业占到了 15%市场份额，而日本企业市场份额更是超过了 75%；&lt;/p&gt;
-&lt;p&gt;美日垄断！ 2019 年，日本和韩国打芯片战，禁止日本企业出口高纯度氟化氢及光阻剂等材料原材料给韩国，韩国半导体制造厂只能停工，即便不停工，使用替代原料进行风险量产，会使得到的芯片的可靠性问题受到客户们的强烈怀疑，无疑将会引起不小的业内地震。&lt;/p&gt;
-&lt;p&gt;目前国内在芯片原材料方面和国外差距较大！不看好未来十年能够赶上美日企业的水平。&lt;/p&gt;
-&lt;p&gt;第五部分封装&lt;/p&gt;
-&lt;p&gt;芯片封装，简单点来讲就是把 Foundry 生产出来的集成电路裸片放到一块起承载作用的基板上，再把管脚引出来，然后固定包装成为一个整体。&lt;/p&gt;
-&lt;p&gt;封装这一块，目前国内这一块做得不错！可以说处于第一梯队！但封装这一块本身的技术含量和难度在芯片行业的各领域里是比较低的！封装国内最强就是长电了，但封装是依赖于晶圆制造的，与工艺相关！除了长电之外还有华润微、硒品等企业。参考一下 2021 年大陆十大封测厂商的营收排名。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-151179335efcd0378cb03d0e459c5a45_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;第六部分测试&lt;/p&gt;
-&lt;p&gt;个人感觉芯片行业技术难度最低的就是测试和封装。测试的话包括 CP 测试、FT 测试等等，包括了芯片的功能测试、可靠性测试、老化测试等等。芯片测试这一块，国内目前和国外没有什么特别的差距。国内目前的芯片测试由封测厂来完成，某些企业同时完成封装测试工作，这些企业被称为封测厂，而某些企业只进行测试工作，这类企业被称为测试厂。&lt;/p&gt;
-&lt;p&gt;第七部分半导体设备&lt;/p&gt;
-&lt;p&gt;芯片行业的设备业务主要指的是芯片生产、封装、测试过程中需要使用的设备，比如晶圆制造过程中需要使用的光刻机、蚀刻机，测试过程中需要使用的 ATE 测试基台。下图是 2019 年世界范围内半导体设备厂商营收排名，大家可以大概看一下全球半导体设备厂商的市场占有格局情况。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-5290d1356bfbbb1d8e30176492c7572e_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;我们来看一下各类型半导体设备国内和国外的市场格局，以及国内半导体设备厂商的产品进展。&lt;/p&gt;
-&lt;p&gt;1.氧化扩散炉（高温炉）&lt;/p&gt;
-&lt;p&gt;芯片制造流程中，硅片表面通过氧化的方式生长一层氧化层，通过在氧化层上刻印图形和刻蚀，达到对硅衬底掺杂，激活硅片的半导体属性。而用于氧化扩散的设备被称为高温炉。目前高温炉的市场全部被外资大厂占据！其中美国企业应用材料、日本企业日立、东京电子占据了高温炉市场百分之九十的份额！我国企业只有北方华创有一款 12 英寸立式氧化炉投入市场应用。目前这个领域的设备未来十年想要实现国产替代，恐怕很难。&lt;/p&gt;
-&lt;p&gt;2.光刻机&lt;/p&gt;
-&lt;p&gt;光刻机有很多类型，有 EUV 光刻机、ArF 光刻机、KrF 光刻机等。全球的光刻机市场被荷兰的 ASML(阿斯麦尔)，日本的尼康、佳能这三大企业把持。其中阿斯麦尔更是光刻机领域绝对的龙头，占据了全球光刻机市场的三分之二的市场份额，几乎垄断了高端的 EUV 光刻机市场。而日本的尼康和佳能的光刻机主要为中低端类型。大家可以看下面的图片，2011-2017 年全球光刻机出货量的情况。虽然这个数据有点老了，但市场格局并未改变，可以参考一下。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://picx.zhimg.com/v2-1c477249eb61ba8d572faef526e63d99_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;国产光刻机方面，目前国产光刻机的代表企业上海微电子只能生产 90 纳米的光刻机。这个距离世界先进水平的阿斯麦尔太过遥远！你说未来十年能缩小多少差距？&lt;/p&gt;
-&lt;p&gt;3.薄膜沉积设备（CVD 设备）&lt;/p&gt;
-&lt;p&gt;薄膜沉积设备这一块的全球市场方面，美国企业应用材料占据了 30%的市场份额，其次市占率比较高的是日本的东京电子和美国的拉姆研究。&lt;/p&gt;
-&lt;p&gt;国内企业方面，北方华创的 LPCVD 和沈阳拓荆的 PEVCD 已通过主流晶圆厂的验证，实现小批量交货。&lt;/p&gt;
-&lt;p&gt;4.质量检测设备&lt;/p&gt;
-&lt;p&gt;半导体制造流程的检测环节分为前道检测和后道检测。其中前道检测主要分为光学测量和缺陷检测，统称质量测量。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-2fd51abc4ee4cf6dbaf731714ee56c32_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;目前质量测量设备全球主要的供应商是科磊半导体、应用材料、日本日立，三大企业的市场份额总计超过百分之七十。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-65b123983caab01a3793b22e8ba1c80a_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;国产企业在质量测量设备的主要厂商是上海精测电子和上海睿励科学。其中睿励科学具备光学膜厚测量系统、光学关键尺寸和形貌测量系统，国内技术领先。&lt;/p&gt;
-&lt;p&gt;除此之外，封测厂用的 ATE 测试基台等设备基本都是爱德万或泰瑞达等公司的产品。爱德万是日本公司，而泰瑞达是美国公司，总部在马萨诸塞州。这一块的市场份额几乎没有国内公司的蛋糕。从目前的市场格局和企业的研发进度，未来十年，国内半导体设备公司很难赶得上世界先进水平。&lt;/p&gt;
-&lt;p&gt;第八部分总结&lt;/p&gt;
-&lt;p&gt;对以上芯片各领域的企业做个总结。悲观的说，整个芯片行业，除了封测领域外，几乎全方面的落后，而且差距还很大。目前整个芯片行业，国内最被卡脖子的地方就是半导体设备和晶圆制造两大领域。这两大领域就是中国芯片行业命运的后劲项。EDA 工具、芯片原材料、芯片设计都存在不同程度的差距，追赶道路任重而道远！&lt;/p&gt;
-&lt;p&gt;我本人只是一名芯片开发工程师，入行以来，也呆过多家公司，先后从事数字 IC 设计、数字 IC 验证、DFT、数字后端设计工作。以上回答的内容都是我作为一名芯片开发工程师对行业的认知，由于一直在芯片设计公司工作，对于芯片其他领域也有很多认识不足的地方，如有错误，欢迎指出，大家一起讨论！如果有其他问题讨论，可以发私信沟通。&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;div&gt;&lt;a href=&quot;https://www.zhihu.com/question/543811431&quot;&gt;阅读原文&lt;span&gt;&lt;/span&gt;&lt;/a&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-<pubDate>Sun, 21 Aug 2022 23:07:05 GMT</pubDate>
-</item>
-<item>
-<guid>6b1bd9d3b2dc34dab103cccf7374ee16</guid>
-<title>猫咪得了抑郁症会有什么症状？</title>
-<link>https://daily.zhihu.com/story/9752019</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;
-&lt;img src=&quot;https://pic1.zhimg.com/v2-7ed99d789f4a9681269fc42e9576c471_l.jpg?source=8673f162&quot;&gt;
-&lt;span&gt;橘子，&lt;/span&gt;&lt;span&gt;分享养猫生活的实用干货。公众号：我的喵星人&lt;/span&gt;
-&lt;a href=&quot;https://www.zhihu.com/question/51943669/answer/2636004445&quot; hidden=&quot;&quot;&gt;阅读原文&lt;/a&gt;
-&lt;/div&gt;&lt;div&gt;
-&lt;p&gt;现代人患抑郁症的人数有越来越多的趋势，那么作为铲屎官，很好奇猫咪是否也会得抑郁症呢？&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;答案是：猫咪也会得抑郁症。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;一些抑郁的猫会表现出明显的行为变化，而有些猫症状不明显，需要主人仔细地观察。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-c9698026312714df1770a1681826fc13_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;strong&gt;患有抑郁症的猫可能会表现出：&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;我们假设一个人在 26℃的室内，无风，感觉不冷不热，体表温度在 33℃附近。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;人在静息状态的热功率大约为 100W 左右，那么他的身体同时通过热辐射、自然对流、蒸发散热、呼吸散热等方式，向环境外释放了 100W 的热功率。&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;span&gt;食欲下降&lt;/span&gt;&lt;/li&gt;
-&lt;li&gt;对玩具失去兴趣&lt;/li&gt;
-&lt;li&gt;与其他猫咪或主人互动的兴趣降低&lt;/li&gt;
-&lt;li&gt;叫声增加&lt;/li&gt;
-&lt;li&gt;外出的兴趣降低（如果平时有户外活动的习惯）&lt;/li&gt;
-&lt;li&gt;睡眠时间增加&lt;/li&gt;
-&lt;li&gt;梳理毛发的时间过度减少或增加&lt;/li&gt;
-&lt;li&gt;排尿的频率增加&lt;/li&gt;
-&lt;li&gt;到处乱排便或突然&lt;span&gt;不肯使用猫砂盆&lt;/span&gt;&lt;/li&gt;
-&lt;li&gt;过度抓挠&lt;/li&gt;
+&lt;li&gt;也即：人体产热=人体散热。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pica.zhimg.com/v2-5b80e76f410f22ea6f98a7509be24c2d_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;strong&gt;导致猫出现抑郁症状的情况包括：&lt;/strong&gt;&lt;strong&gt;失去家庭成员&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;许多人仍然认为猫在自然界中是孤​​独的。但是！猫也是会或多或少地进行社交，当然，这取决于它们的经历和生活环境等因素。所以失去一个亲近的家庭成员（人或动物）时，猫咪也会像人一样经历失落和悲伤。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;搬到新房子&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;要适应新的生活环境可能会给猫咪带来压力。除了陌生环境带来的压力之外，如果从大房子搬到小房子会减少猫探索的空间，这也可能会导致猫咪抑郁。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-d6a9d83229fce4c4c1c4501339f495da_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;strong&gt;主人长期不在家&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;铲屎官长时间不在猫咪身边时，猫的精神状态可能会受到影响。如果铲屎官要外出比较长时间的话，尽量要安排人上门喂猫，并且要跟猫进行互动，缓解它因为长时间没见主人而引发的焦虑。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;疾病&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;疾病本身就会让猫感觉不舒服，甚至可能会感到疼痛、恶心、不想吃东西、荷尔蒙失调或没有精力。脂肪肝、FIV、FeLV、上呼吸道疾病、糖尿病、甲状腺功能减退、牙齿疾病等都是严重的健康问题，会影响猫的幸福感。如果你怀疑你的猫是因为生病而抑郁，那要尽快带猫咪去看医生了。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;被遗弃&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;根据对领养平台上被退养猫眯的观察，在退养之后，很多猫咪跟之前相比都出现了闷闷不乐、不活泼等。 我们不得而知猫咪在领养到退养，这整个过程中的心历路程是如何变化的。但养猫前请考虑清楚，不要遗弃猫咪哦。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pica.zhimg.com/v2-b9f653e042cfe3d0e71270d969317a49_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;strong&gt;如何让沮丧的猫振作起来？&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;尽管猫会经历抑郁症，但咱们可以做很多事情来帮助它们改善心理健康。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;与猫共度美好时光&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;为了帮助沮丧的猫恢复快乐，铲屎官可以花更多的时间陪它，抚摸它可以起到抚慰猫沮丧情绪的作用。当然也有些猫可能会喜欢摸耳朵、抓挠脸侧、下巴或者是梳毛。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://picx.zhimg.com/v2-502f3eafe86eedb8f50879381643294c_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;strong&gt;新玩具和游戏&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;还可以尝试让猫参与更多娱乐活动，为它们提供不同尺寸、质地和颜色的新玩具，从而激发猫咪对生活的兴趣。&lt;/p&gt;
-&lt;p&gt;例如，使用钓鱼竿类玩具引诱猫咪、提供益智玩具 + 美食来刺激猫咪的好奇心、会发出有趣声音的玩具或下载专为猫制作的智能游戏。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-f3208e6dfe80ed9ddb6924185263340c_720w.gif?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;strong&gt;提供与以往不同的食物&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;可以考虑更换与以往不同的口味或品牌的猫粮给猫咪，让它对食物产生一些新鲜感，当然也有可能是反感。有些猫对人类食物（如煮熟或烤鸡、酸奶或奶酪）非常感兴趣，但是！在给猫喂人类食物之前，要确定这个食物是猫能吃的！千万千万不要什么都给它吃，因为人类的有些食物会引发猫咪中毒，例如葡萄等。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-b8cba883e2bda8d5e1340d0ed4218744_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;strong&gt;播放平静的音乐&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;铲屎官可以在音乐软件上找一些专门为猫设计的舒缓音乐，音乐包含猫的咕噜声和猫可以听到的其他声音频率的基本音轨。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;尝试补充剂&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;含有 l- 茶氨酸和 l- 色氨酸的天然补充剂可以增加猫大脑中的血清素，以帮助对抗抑郁症，血清素是一种能产生愉悦情绪的信使。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;使用信息素和令猫振奋的气味&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;span&gt;猫科动物信息素&lt;/span&gt;可以让猫平静下来，铲屎官还可以给猫提供不同的气味，例如猫薄荷和迷迭香，以唤醒它们的感官。&lt;/p&gt;
-&lt;figure&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-c7a4217c068f17bc7e2d85ebbd71b83e_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;strong&gt;考虑收养另一只猫&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;有些猫可能会喜欢另一只猫的陪伴。但是，需要仔细考虑！即使猫咪跟一只已经去世的猫咪非常友好，但养另一只猫也可能并不能让它振作起来。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;咨询专业宠物医生&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;猫咪也是会有情绪病，有些猫表现出来的症状会轻一些，有些猫则会重一些。如果铲屎官已经能察觉出猫咪有一些不寻常不健康的举动，最好还是求助医生，找到导致抑郁的源头然后改变它。然后做个天天开心的猫！&lt;/p&gt;
-&lt;p&gt;参考：&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;http://link.zhihu.com/?target=https%3A//www.petmd.com/cat/behavior/can-cats-get-depressed&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;Is Cat Depression Real?&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;http://link.zhihu.com/?target=https%3A//www.thesprucepets.com/is-your-cat-sad-553922&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;Is Your Cat Sad? Signs and Causes of Cat Depression&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;http://link.zhihu.com/?target=https%3A//www.rd.com/list/depressed-cat/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;&lt;span&gt;https://www.&lt;/span&gt;&lt;span&gt;rd.com/list/depressed-c&lt;/span&gt;&lt;span&gt;at/&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;这个时候，他选择进入 26℃的空调房。&lt;/p&gt;
+&lt;p&gt;假如空调开的小风，他也没正对着空调，遭遇的余风风速仅为 0.2m/s，身上的自然对流散热转变成强迫对流散热。&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&quot;https://pica.zhimg.com/v2-382fa98962471fd1748317d64413e96d_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;figcaption&gt;自然对流散热（左）与强迫对流散热（右）&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;强迫对流换热系数有经验公式&lt;sup&gt;[1]&lt;/sup&gt;：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://www.zhihu.com/equation?tex=h_%7Bc%7D%3DBV%5En&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;B，经验系数，风直吹区域可取 B=18.3。&lt;/li&gt;
+&lt;li&gt;n，速度指数，一般取为 0.5~0.6&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;计算可得，此时受风面的强迫对流换热系数：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://www.zhihu.com/equation?tex=h_%7Bc%7D%3D8.18&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;p&gt;非受风面自然对流系数&lt;sup&gt;[2]&lt;/sup&gt;：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://www.zhihu.com/equation?tex=h%3D1.48%5CDelta+T%5E%7B0.25%7D%3D2.7&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;p&gt;已知人体表面积大约 1.5-2.0m^2，如果 1/3 面积受风。&lt;/p&gt;
+&lt;p&gt;额外损失热功率为：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://www.zhihu.com/equation?tex=Q%3D%5CDelta+hA%5CDelta+T%3D5.48%C3%970.6%C3%977%3D23W&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;p&gt;损失的热功率，已经接近人体静息功率的 1/4，皮肤温度开始降低，人体开始感觉到冷。&lt;/p&gt;
+&lt;p&gt;尤其是受风面的热量流失，已经接近皮肤热功率，体感温度会明显降低。&lt;/p&gt;
+&lt;p&gt;通过热辐射公式，可大致推出，受风面皮肤温度会降低 3~4℃。&lt;/p&gt;
+&lt;p&gt;如果此时立即站到空调风口下，把风速调到 5m/s，即便出风口还是 26℃，热量流失速度可达到 161W，远远超出人体静息功率，在这一瞬间，皮肤温度会迅速下降。&lt;/p&gt;
+&lt;p&gt;由于皮肤温度下降的速度，比起之前快了 7 倍，这个时候也会觉得皮肤冷得多（加上风速带来的蒸发速度，其实瞬间的寒冷感受不止七倍）。&lt;/p&gt;
+&lt;p&gt;不过，随着皮肤温度接近 26℃，温差减小，热量流失也会减小。人体的寒冷感受也会减轻。但由于皮肤温度低至 27℃附近（远低于 33℃的舒适温度，激活大量冷觉感受器），会持续感受到寒冷。&lt;/p&gt;
+&lt;p&gt;如果此时出风口的温度还低了好几度，例如只有 18℃，你顶着吹，瞬间的热功率损失可达 278W，寒冷程度增加近一倍。&lt;/p&gt;
+&lt;p&gt;在这一瞬间，足以让你寒颤，吹出鸡皮疙瘩。&lt;/p&gt;
+&lt;p&gt;除此之外，空调还会降低空气湿度，空气湿度越低，湿度蒸发散热越快，也就越凉爽。虽然 26℃室外，一般不会有太高湿度，但还是比空调室更高。&lt;/p&gt;
+&lt;p&gt;虽然吹一会儿，你的寒冷感受会降低，但这样一直对着吹，最终皮肤温度会降低到 20℃以下，足以造成人体失温（前提是皮肤大面积裸露对着吹，衣服足够厚的情况下并不会）。&lt;/p&gt;
+&lt;p&gt;这也是为什么，有人吹低温空调，会不知不知吹生病了。&lt;/p&gt;
+&lt;p&gt;其实对于大多数人来说，26℃的空调温度还是太低了。&lt;/p&gt;
+&lt;p&gt;总的来说，根据你在空调房的吹风状态，比起无风室内，你的体感温度可能低 3~6℃。&lt;/p&gt;
+&lt;p&gt;因为冷得不行后，这个时候你走出了户外。&lt;/p&gt;
+&lt;p&gt;户外没有什么风，但正好是正午，太阳在头顶直射。假设天气预报晴朗，温度是 26℃，大概率还是春天，正午太阳直射角偏南。&lt;/p&gt;
+&lt;p&gt;已知太阳常数是 1367W/S^2，由于照射角度偏斜，取个 70%，人体倾斜照射面积约 0.4m^2，假设衣物通过遮挡、反射、吸收的热量也为 80%。&lt;/p&gt;
+&lt;p&gt;那么人体额外接受的热功率为：&lt;/p&gt;
+&lt;p&gt;1367×0.7×0.4×（1-0.8）=76.55W&lt;/p&gt;
+&lt;p&gt;这个热功率已经接近人体静息功率。&lt;/p&gt;
+&lt;p&gt;这个功率，会让人体体表平均温度升高 3℃左右，人会感觉到热。&lt;/p&gt;
+&lt;p&gt;而被太阳直射的皮肤，温度可在短时间超过 40℃，让人感觉到烫。&lt;/p&gt;
+&lt;p&gt;在室外，即便是太阳被云层遮挡，其实也有一部分太阳辐射会被人体吸收，从而提升热量。&lt;/p&gt;
+&lt;p&gt;所以，即便是无风的阴天，也是比室内体感温度更高的。当然，如果有风，则可能和空调房差异不大。&lt;/p&gt;
+&lt;p&gt;当体表处在 33℃的适宜温度附近，对冷热也会十分的敏感。&lt;/p&gt;
+&lt;p&gt;最后可以得出结论，从空调房走到室外，体感温度最低提升 0℃（空调低速、阴天有风），最高可达 10℃（空调高速近风口，晴天无风），如果情况随机，一般都会有几度的体感差异。&lt;/p&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;div&gt;&lt;a href=&quot;https://www.zhihu.com/question/51943669&quot;&gt;阅读原文&lt;span&gt;&lt;/span&gt;&lt;/a&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-<pubDate>Sun, 21 Aug 2022 23:06:56 GMT</pubDate>
+&lt;/div&gt;&lt;div&gt;&lt;a href=&quot;https://www.zhihu.com/question/543892389&quot;&gt;阅读原文&lt;span&gt;&lt;/span&gt;&lt;/a&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<pubDate>Mon, 22 Aug 2022 23:07:13 GMT</pubDate>
 </item>
 <item>
-<guid>15dc7ac851bcc9519c3befa2a53feba7</guid>
-<title>米老鼠版权过期，迪士尼最怕啥？</title>
-<link>https://daily.zhihu.com/story/9752025</link>
+<guid>5e4acc3795cd126ecd21d4ba6702ed64</guid>
+<title>为什么心理学的书很多都在谈要“接纳真实的自己”？这个“自己”指的是什么？</title>
+<link>https://daily.zhihu.com/story/9752043</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;
-&lt;img src=&quot;https://picx.zhimg.com/ba2b99b2f_l.jpg?source=8673f162&quot;&gt;
-&lt;span&gt;游云庭律师，&lt;/span&gt;&lt;span&gt;中国互联网知识产权的问题优先回答，证券、房地产、婚姻类法律问题不懂。&lt;/span&gt;
+&lt;img src=&quot;https://pic2.zhimg.com/v2-d9d763af38c41612cc651c300e3925c0_l.jpg?source=8673f162&quot;&gt;
+&lt;span&gt;Dr.M，&lt;/span&gt;&lt;span&gt;加拿大安大略省临床心理学家&lt;/span&gt;
+&lt;a href=&quot;https://www.zhihu.com/question/547646536/answer/2638881125&quot; hidden=&quot;&quot;&gt;阅读原文&lt;/a&gt;
 &lt;/div&gt;&lt;div&gt;
-&lt;p&gt;米老鼠版权过期，迪士尼最怕啥？&lt;/p&gt;
-&lt;p&gt;94 岁高龄的米老鼠将于 2024 年在迪士尼的大本营美国超过著作权保护期，实际上美国之外，米老鼠的版权在其他国家基本早都过了保护期，但迪士尼凭着对米老鼠 IP 的熟悉，经营有道不停迭代出新，仍攫取了最大份额的利益，但他们不是没有软肋的，本文就探讨竞争对手对米老鼠商业价值最具杀伤力的做法，把米老鼠拍成恐怖片或者色情片可能的损害，以及迪士尼的对应之策。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;一、中美两国的米老鼠版权期限&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;美国的保护期一延再延，2024 年到期。&lt;/strong&gt;米老鼠形象最先由华特·迪士尼于 1928 年创作，并于同年在电影《Steamboat Willie》中第一次出现在大众面前，此后逐渐风靡全球。&lt;strong&gt;当时美国《著作权法》规定的最长保护期限为 56 年，也就是说米老鼠本应于 1984 年就进入公有领域了。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;但迪士尼当然不会眼见着巨大的商业利益从自己手中溜走，他们所想到的最直接的方式就是延长法定的著作权保护期。因此，在迪士尼等多家娱乐行业巨头的积极游说下，&lt;strong&gt;美国国会先后两次修改著作权法，这才使得米老鼠的著作权保护期从 56 年延长至了 95 年，到 2024 年才会届满。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;中国和全世界绝大多数国家的保护期早已到期。&lt;/strong&gt;根据&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//wipolex.wipo.int/zh/text/283701&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;《伯尔尼保护文学和艺术作品公约》&lt;/a&gt;（下称“《伯尔尼公约》”）&lt;a href=&quot;https://zhuanlan.zhihu.com/p/555037881/edit#_edn1&quot;&gt;[i]&lt;/a&gt;，如果作品是法人作品的，保护期是发表后的 50 年内，如果是个人作品的，作品保护的期限也是作者有生之年及其去世后五十年内，而我国也是《伯尔尼公约》缔约国，著作权法对著作权保护期的规定也类似。&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//zh.wikipedia.org/wiki/%25E8%258F%25AF%25E7%2589%25B9%25C2%25B7%25E8%25BF%25AA%25E5%25A3%25AB%25E5%25B0%25BC&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;华特迪士尼去世于 1966 年&lt;/a&gt;&lt;a href=&quot;https://zhuanlan.zhihu.com/p/555037881/edit#_edn2&quot;&gt;[ii]&lt;/a&gt;，&lt;strong&gt;所以，即便按较长的个人作品保护期算，包括中国在内的全球绝大多数国家，米老鼠的版权在 2016 年都超过了保护期。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;二、为啥国内米老鼠版权过期了，迪士尼还是难遇对手？&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;别看米老鼠的版权早就过期了，但大家注意到没有，国内乃至全球其他国家，米老鼠的创作并没有特别有影响力的非迪士尼作品出现，这是为什么呢？因为根据《伯尔尼公约》和《著作权法》的规定，虽然原始米老鼠作品的保护期是作者去世后的 50 年，但&lt;strong&gt;如果迪士尼公司对作品进行再次加工创作，加入新的元素，新的元素作为法人作品的保护期就是自发表之日起 50 年。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;也就是说，最近媒体热议即将过著作权保护期的就仅仅是前文提到的 1928 年面世的米老鼠，而&lt;strong&gt;目前市场上流传度最广的几种米老鼠都是迪士尼近几年创作的，它们仍在著作权保护期内。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;迪士尼应对米老鼠原始版权过期策略就是在过去的近百年间不断地修改并创作制作精良的新米老鼠形象。&lt;strong&gt;就算别人也创作米老鼠，肯定没迪士尼对这个 IP 熟悉，也不会有迪士尼做的好。哪怕别人来分一杯羹，但大头还是迪士尼的。&lt;/strong&gt;所以，只要一直有新的形象被创作出来并能够占据市场，迪士尼就仍然可以获得最具商业价值的那一部分版权收益。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;三、竞争对手怎么做会毁了米老鼠？&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;虽然实践已经证明，论对米老鼠这个形象的熟悉程度，没人会比迪士尼更强，但这并不意味着迪士尼就可以一直高枕无忧了。事实上，&lt;strong&gt;版权过期的最大风险可能并不是正面的竞争，而是形象劣化，比如第三方以米老鼠创作恐怖素材、色情擦边球素材的内容并且在市场上流行，会把米老鼠这个面向青少年、清新可爱的形象毁掉，釜底抽薪地影响其价值。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;今年初迪士尼的另一个卡通形象小熊维尼就遇到了这个问题，小熊维尼超过著作权保护期后，有导演便迅速推出了名为《&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//variety.com/2022/film/news/winnie-the-pooh-blood-and-honey-director-1235278405/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;Winnie the Pooh: Blood and Honey&lt;/a&gt;》的恐怖电影，并在采访中表示他们尽了最大努力使电影只基于 1926 年版本的小熊维尼并保证没有人会误认这是迪士尼的作品&lt;a href=&quot;https://zhuanlan.zhihu.com/p/555037881/edit#_edn3&quot;&gt;[iii]&lt;/a&gt;。&lt;/p&gt;
-&lt;p&gt;又如国人熟悉的英国卡通形象小猪佩奇，本来是面向低龄儿童的动画片主角，结果在国内被一句“小猪佩奇身上纹，掌声送给社会人”的段子带火，一下沾上了黑社会的边，火则火矣，但对其面向低龄儿童的形象设定是个很大的伤害，长远看“社会人”这个设定会严重损害其商业价值。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;四、用米老鼠拍恐怖片，迪士尼可以维权吗？&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;把米老鼠拍成恐怖片甚至是色情片的，如果在作品保护期内的，是可以保护的，因为作者可以起诉改编者侵犯了作者的保护作品完整权，但如果著作权保护期过期，要维权其实还挺麻烦。简而言之就是在美国维权胜算很小，在中国维权应该可以打赢官司，但迪士尼公司自己出面不行，得米老鼠作者迪士尼先生的继承人出面才行。&lt;/p&gt;
-&lt;p&gt;根据《伯尔尼公约》的规定，作者独立享有著作人身权，终身有权对有损其声誉的歪曲、割裂或其他修改行为进行维权。但作者去世后，《伯尔尼公约》仅规定至少保留到著作财产权期满为止，且如果加入《伯尔尼公约》之前该国未赋予作者以著作权人身权的，可以规定作者去世后不予保护。&lt;/p&gt;
-&lt;p&gt;美国在加入《伯尔尼公约》之前就不存在著作人身权一说，美国对人身权的规定就是人去世后就不享有人身权了，&lt;strong&gt;因此目前在美国，作者去世后即不再享有保护作品完整权，其继承人也无权进行维权。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;而我国《著作权法》明确规定，作者的署名权、修改权、保护作品完整权的保护期不受限制，同时《著作权法实施条例》进一步规定，作者死亡后由其继承人或者受遗赠人予以保护。上述规定表明，保护作品完整权等著作人身权由作者终身享有，不可转让但可以继承。&lt;strong&gt;因此在中国，华特·迪士尼的继承人发现他人有歪曲、篡改米老鼠形象的行为，是有权诉讼维权的。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;最后，美国现行《著作权法》95 年的超长保护期&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//priceonomics.com/how-mickey-mouse-evades-the-public-domain/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;已经受到了诟病&lt;/a&gt;&lt;a href=&quot;https://zhuanlan.zhihu.com/p/555037881/edit#_edn4&quot;&gt;[iv]&lt;/a&gt;，我们不是很认同为了保护米老鼠版权就修改法律的行为&lt;strong&gt;。从法经济学的角度上，延长保护期需要考虑其对社会产生的收益与成本是否对等，过长的保护期会造成更高程度的垄断，他人创作新作品的成本以及追溯权利人并获得授权的成本就会提高，因此延长保护期对创作作品的激励作用可能不升反降，收益就会小于成本。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;本文作者：游云庭，上海大邦律师事务所高级合伙人。知识产权律师。电话：8621-52134900，Email: yytbest@gmail.com，高天怡，上海大邦律师事务所律师助理。本文仅代表作者观点。&lt;/p&gt;
+&lt;p&gt;我从创伤的角度来提供一个回答吧。&lt;/p&gt;
+&lt;p&gt;对于创伤后应激障碍症 PTSD 来说，目前业界的“金标准”治疗方案有二&lt;sup&gt;[1]&lt;/sup&gt;&lt;sup&gt;[2]&lt;/sup&gt;&lt;sup&gt;[3]&lt;/sup&gt;：一是&lt;strong&gt;认知加工疗法 Cognitive Processing Therapy（简称 CPT）&lt;/strong&gt;，二是&lt;strong&gt;延长暴露疗法 Prolonged Exposure Therapy（简称 PE）&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;我最近回答里用 CPT 比较多，那么今天就站在 PE 的角度来说一说，在治疗 PTSD 过程中，什么是”接纳真实的自己“？&lt;/p&gt;
 &lt;hr&gt;
-&lt;p&gt;&lt;a href=&quot;https://zhuanlan.zhihu.com/p/555037881/edit#_ednref1&quot;&gt;[i]&lt;/a&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//wipolex.wipo.int/zh/text/283701&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;&lt;span&gt;https://&lt;/span&gt;&lt;span&gt;wipolex.wipo.int/zh/tex&lt;/span&gt;&lt;span&gt;t/283701&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://zhuanlan.zhihu.com/p/555037881/edit#_ednref2&quot;&gt;[ii]&lt;/a&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//zh.wikipedia.org/wiki/%25E8%258F%25AF%25E7%2589%25B9%25C2%25B7%25E8%25BF%25AA%25E5%25A3%25AB%25E5%25B0%25BC&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;&lt;span&gt;https://&lt;/span&gt;&lt;span&gt;zh.wikipedia.org/wiki/%&lt;/span&gt;&lt;span&gt;E8%8F%AF%E7%89%B9%C2%B7%E8%BF%AA%E5%A3%AB%E5%B0%BC&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://zhuanlan.zhihu.com/p/555037881/edit#_ednref3&quot;&gt;[iii]&lt;/a&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//variety.com/2022/film/news/winnie-the-pooh-blood-and-honey-director-1235278405/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;&lt;span&gt;https://&lt;/span&gt;&lt;span&gt;variety.com/2022/film/n&lt;/span&gt;&lt;span&gt;ews/winnie-the-pooh-blood-and-honey-director-1235278405/&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://zhuanlan.zhihu.com/p/555037881/edit#_ednref4&quot;&gt;[iv]&lt;/a&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//priceonomics.com/how-mickey-mouse-evades-the-public-domain/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;&lt;span&gt;https://&lt;/span&gt;&lt;span&gt;priceonomics.com/how-mi&lt;/span&gt;&lt;span&gt;ckey-mouse-evades-the-public-domain/&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;div&gt;&lt;a href=&quot;https://zhuanlan.zhihu.com/p/555037881&quot;&gt;阅读原文&lt;/a&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;对于经历过显着创伤事件，从而患上创伤后应激障碍症 PTSD 的患者来说，他们体验到最明显的症状，也是大家往往最熟知的症状是：&lt;strong&gt;”创伤再体验“（re-experiencing），又称之为”闯入性症状“（intrusion）。 &lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;strong&gt;“创伤再体验”&lt;/strong&gt;（re-experiencing）&lt;strong&gt;是什么意思呢？&lt;/strong&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;就是说创伤事件已经过去了，但是患者依然会在日常生活中，通过各种方式再次体验到这个创伤经历，从而遭受显着的困扰。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;常见的“创伤再体验”症状有以下五个：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;闯入性回忆（intrusive memories）&lt;/strong&gt;：也就是患者在清醒状态下，TA 不想去回忆创伤事件，但是相关的回忆会不受控制地“浮现”。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;闪回（flashback）&lt;/strong&gt;：这个大家可能听说过，就像是放电影一样，患者会觉得自己突然回到了创伤事件的现场。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;噩梦（nightmare）&lt;/strong&gt;：这个也好理解，就是会做与创伤事件相关的梦，一般会体验到强烈的应激反应，进而从梦中惊醒，有的时候甚至无法返回到睡眠中去。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;触发事件会导致强烈的情绪反应（emotional reactions when triggered）&lt;/strong&gt;：因为患者生活中接触到一些事情，从而唤起了 TA 对于创伤的回忆，一般会导致非常强烈的情绪反应。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;触发事件会导致强烈的生理反应（physical reactions when triggered）&lt;/strong&gt;：和上面一样，因为生活中的触发事件唤起了创伤回忆，进而导致非常强烈的生理反应。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;figure&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-b17d9c12379f1fe51a526d7e7e52f777_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;strong&gt;在延长暴露疗法 PE 中，我们是如何去处理创伤回忆，进而减少“创伤再体验” 的症状呢？&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;首先，&lt;strong&gt;PE 认为之所以 PTSD 患者有“创伤再体验”的症状，是因为他们对创伤回忆存在显着的逃避行为，或者说不接受创伤经历，这也是大量研究所证明的&lt;/strong&gt;&lt;sup&gt;[4]&lt;/sup&gt;。也就是说 PTSD 患者会逃避去谈论他们的创伤经历，会逃避去回忆他们的创伤经历，会逃避一系列和他们创伤经历相关的想法和情绪，正因如此，他们不断体验到“闯入性的症状“（因为记忆是逃避不了的）。&lt;/p&gt;
+&lt;p&gt;在 PE 的操作过程中，&lt;strong&gt;我们会从第三节治疗中，开始进行一项叫做“假想暴露”（imaginal exposure）的活动。&lt;/strong&gt;每节治疗中会做至少 40 分钟的“假想暴露”，课后也有相关的作业，一直做到 PE 的最后一节治疗。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;那什么是“假想暴露”（imaginal exposure）呢？&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;其实并不复杂，就是&lt;strong&gt;患者在治疗师面前，闭上眼睛，采用现在时的语态，通过口头叙述的方式，去讲述自己的创伤经历&lt;/strong&gt;。患者从头到尾，要讲述当时的自己看到了什么，听到了什么，闻到了什么，感觉到了什么，想到了什么。只要是和创伤事件相关的细节，患者都需要讲述出来。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;在这个过程中，治疗师一般不会提问题，也不会做评论&lt;/strong&gt;。治疗师如果注意到患者有逃避的行为（比如很少提到当时自己的情绪感受、肢体感受等），那么治疗师会提出一些问题，帮助患者更好地去回忆自己的创伤经历。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;在每节治疗中，患者需要持续做“假想暴露”至少 40 分钟。&lt;/strong&gt;一般来说，在每节治疗中（PE 每节治疗是 90 分钟），患者会口头叙述自己的创伤经历至少 2-3 次。期间治疗师还会每隔 5 分钟，询问患者当下的痛苦强度，目的是为了确保随着暴露的进行，患者的痛苦强度的确有出现下降。&lt;/p&gt;
+&lt;p&gt;患者在治疗中需要闭上眼睛去口头讲述自己的创伤经历，这并不是全部的工作。&lt;strong&gt;患者在做“假想暴露”的时候，我们会对他们口头叙述的内容进行录音，在治疗之后，患者需要每天去听录音至少一遍。&lt;/strong&gt;PE 治疗每周一次，同一件创伤事件做上 6-8 节治疗都是常见的，那么患者可能要听录音 40-50 次。&lt;/p&gt;
+&lt;p&gt;当完成了三节左右的“假想暴露“之后，我们会进行升级版的暴露，也就是”对热点进行暴露“（hotspot procedure）。这是什么意思呢？&lt;strong&gt;患者的创伤经历中会存在”热点“，也就是让患者最痛苦的部分，我们会让患者在 40 分钟之内，反复去口头叙述这一个”热点“，并让患者努力去回忆所有的细节，让这个”记忆回放”的速度慢下来。&lt;/strong&gt;当我们完成了一个热点后，会在下一节治疗中进入到另一个热点中。&lt;/p&gt;
+&lt;p&gt;每一节治疗中的“假想暴露”完成之后，治疗师会和患者进行 15-20 分钟的讨论，来加工处理这些创伤回忆。&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-fa4d70c25c51e613c332a66dce4a0950_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;strong&gt;为什么做”假想暴露“（imaginal exposure）和”接纳真实的自己“有关？&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;通过反复回忆创伤事件，反复口头叙述创伤经历，反复聆听自己的创伤回忆，&lt;strong&gt;这些暴露活动可以帮助患者去接受一系列和创伤相关的信息，包括&lt;/strong&gt;：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;关于创伤的回忆。&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;关于创伤的情绪（当时体验到的）。&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;关于创伤的想法（当时所有的）。&lt;/strong&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;没有做过 PE 的患者和临床工作人员，往往会觉得 PE 的“假想暴露”实在是太“残酷无情“了，让一个受害者反复去讲述自己的创伤回忆，反复去体验痛苦的情绪，这不是”折磨人“吗？&lt;/p&gt;
+&lt;p&gt;并不是这样的，&lt;strong&gt;我们做”假想暴露“的目标就是想要帮助患者去接受自己曾经被创伤的现实，去接受自己关于创伤的回忆，去适应自己因为创伤所体验到的情绪和想法&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;因为，你可以去逃避给你带来创伤的人，你可以逃避给你带来创伤的地方，你甚至可以逃避外在世界，但是你永远无法逃避你对于创伤的记忆。&lt;/strong&gt;&lt;strong&gt;不论你去哪里，不论你在做什么，不论你身边有谁，你的记忆永远跟随着你。你的记忆不会有一天突然消失，如果你不接受并勇敢面对你的记忆，那么你的创伤记忆就像鬼一样，会永远“纠缠”着你，直到死亡。&lt;/strong&gt;&lt;strong&gt;所以，如果我们想要从创伤中走出来，想要从 PTSD 中康复，那么我们就必须要直面我们的创伤回忆，去接纳与创伤相关的痛苦情绪，让这些记忆成为我们的一部分，让创伤经历成为“我们”这个身份的一部分。在我看来，这和“接纳真实的自己”表达的是一个意思。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;还有一点，我们会在 PE 中反复提到，可以打消患者对于“假想暴露”的顾虑，就是：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;创伤事件是危险的，我们并不想要任何人再去经历类似的事件。但是关于创伤的记忆并不是危险的，去回忆我们的创伤经历不是危险的。相反，我们应该有能力去回忆这段经历。不是说回忆创伤不会痛苦，当然会痛苦，但是我们需要能忍耐这样的痛苦。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;PE 中进行“假想暴露”还有一个目标，&lt;strong&gt;就是通过回忆创伤事件的细节，可以改变我们既有的、对于创伤经历的错误认知，进而建立起更为符合现实的、针对创伤经历的认知&lt;/strong&gt;。打个比方，我最近的一个患者一直因为自己在逃难时没有帮助同事而自责（因为同事受伤不治身亡），但是通过做”假想暴露“，TA 回忆起当时自己以为同事就要死了，所以就继续逃命了（这是正常的应激反应），这样就改变了自责的认知。&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&quot;https://picx.zhimg.com/v2-ccb62608fe73908a9ec0388bc2839778_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
+&lt;hr&gt;
+&lt;p&gt;所以，&lt;strong&gt;从 PTSD 治疗的角度来说，我们要帮助患者做到能过直面自己的创伤回忆&lt;/strong&gt;，去接受”创伤经历”是自己回忆中的一部分，这并不是自己可以逃避的。&lt;strong&gt;如果患者可以接纳自己的创伤回忆，也就是”接纳了真实的自己“&lt;/strong&gt;，就可以有效地减少”创伤再体验“的症状，实现 PTSD 的康复。&lt;/p&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-<pubDate>Sun, 21 Aug 2022 23:06:47 GMT</pubDate>
+&lt;/div&gt;&lt;div&gt;&lt;a href=&quot;https://www.zhihu.com/question/547646536&quot;&gt;阅读原文&lt;span&gt;&lt;/span&gt;&lt;/a&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<pubDate>Mon, 22 Aug 2022 23:07:05 GMT</pubDate>
+</item>
+<item>
+<guid>afede12d3442440a26309d553bcb31f5</guid>
+<title>为什么感觉「鲜牛奶」比「牛奶」更好喝？</title>
+<link>https://daily.zhihu.com/story/9752045</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;
+&lt;img src=&quot;https://pic1.zhimg.com/v2-8823f48238bc0d936e64618c51aca124_l.jpg?source=8673f162&quot;&gt;
+&lt;span&gt;HAKU，&lt;/span&gt;&lt;span&gt;美酒与美食不可错过&lt;/span&gt;
+&lt;a href=&quot;https://www.zhihu.com/question/547570915/answer/2625383035&quot; hidden=&quot;&quot;&gt;阅读原文&lt;/a&gt;
+&lt;/div&gt;&lt;div&gt;
+&lt;p&gt;确实鲜牛奶香味十分浓厚，与市面上出售的纯牛奶相比更加好喝。&lt;/p&gt;
+&lt;p&gt;通过商场中出售的牛奶根据包装上可以了解到，几乎都是经过了杀菌。那么杀菌究竟有什么效果？&lt;/p&gt;
+&lt;p&gt;是不是新鲜牛奶没有杀菌才这么好喝呢？&lt;/p&gt;
+&lt;p&gt;这篇回答主要围绕这几点，聊聊大家关心的牛奶制作方面的问题。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;新鲜牛奶好喝的原因&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;市面上的普通牛奶从牧场奶牛身上得到奶水后主要经过以下几个流程后，作为商品摆上货架。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;①鲜奶过滤脱气（祛除掉“原奶”中微小的饲料、毛发等杂质以及奶腥味）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;②牛奶均质化 &lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;③杀菌 &lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;④灌装&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;很多人认为便利店或商场中出售的鲜牛奶是从奶牛身上挤出来后作为商品直接出售。其实这样的想法是错误的，&lt;strong&gt;在商场或是便利店中购买到的鲜牛奶都是要经过过滤和杀菌这两道程序的。&lt;/strong&gt;（建议大家不要饮用未经过杀菌的鲜奶）&lt;/p&gt;
+&lt;p&gt;除了均质化以外，脱气工艺祛除掉奶腥味同时也降低了入口后浓郁的口感。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;牛奶均质化&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;所谓的“均质”，是指牛奶加工中把牛奶中的脂肪球粉碎，使脂肪充分溶入到蛋白质中去，从而防止脂肪黏附和凝结，也更利于人体吸收。它们的营养价值与鲜牛奶相差并不大，但是一些生理活性物质可能会失活。&lt;/p&gt;
+&lt;p&gt;新鲜牛奶未经过均质化的加工脂肪球相对会大一些，形成奶油（乳脂肪）会漂浮在牛奶表面。&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&quot;https://pica.zhimg.com/v2-5d06e66d12bee2c2f2d2caf45c1a20c3_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
+&lt;p&gt;&lt;strong&gt;未经过均质化处理的牛奶，上层漂浮着这层奶油。第一口饮用后会给人一种相当浓厚的牛奶香味。这也是相当多消费者喜欢新鲜牛奶的原因之一。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;明明未经过均质化的牛奶更好喝，那为什么还要多此一举加工呢？很多人会有这样的疑问。&lt;/p&gt;
+&lt;p&gt;未经均质化的牛奶会引起消化不良人士的腹痛，而且很多人也不喜欢牛奶上层有黄油般的漂浮物。所以厂商为了促进销售而使用了这种加工方法。&lt;sup&gt;[1]&lt;/sup&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;影响牛奶好喝与否的其他条件&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;牛奶的好喝以及脂肪比率，受到牛的种类以及牧草环境等方面的影响。&lt;/p&gt;
+&lt;p&gt;中国现在市场上喝到的牛奶大多都是荷斯坦牛，最近市场上也开始流行娟姗奶，据说这种奶牛产的奶味更加浓厚好喝。&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-105c86a4f2482ea90989c243f23f2600_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;figcaption&gt;娟姗奶牛&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;同时奶牛在夏天多食用新鲜草，而在冬天吃的多是青贮饲料等干燥草饲料。冬天并没有夏天那样摄取更多的水分而牛奶更加浓厚，香味更足。&lt;/p&gt;
+&lt;p&gt;同时还有一点影响了牛奶风味，那就是不同的杀菌方法。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;牛奶为何要杀菌&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;不同国家对于牛奶都有非常严格的要求，毕竟需求量大一有疏忽会有相当大的影响。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;排泄物、奶牛乳头是否干净、挤奶时是否经过严格消毒作业、以及细菌和微生物没经过消毒的话，也会产生腹痛等方面的影响。如果各方面全都有了保证的话，刚挤出奶是可以饮用的，但是牛奶是非常利于细菌和微生物繁殖的饮品，10℃以上就开始了加速繁殖。到消费者手中时，肯定是经过了一定的时间，因而杀菌是不可缺少的步骤。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;市面上牛奶主流的杀菌方法有这三种&lt;/p&gt;
+&lt;p&gt;一种是低温长时间法（LTLT）,杀菌条件在 62~65℃，持续 30 分钟，这种方法持续时间长，卫生条件要求苛刻，因而现在多不采用这种方法&lt;/p&gt;
+&lt;p&gt;另一种是高温短时间法（HTST）,杀菌条件在 72~75℃，持续 15~30 秒、杀菌条件在 80~85℃持续 10~15 秒、杀菌条件在 90~95℃持续 2~3 秒。这种方法适合于连续杀菌，保质期较短需要冷藏。现在的巴氏灭菌大多使用的是高温短时间的灭菌处理。&lt;/p&gt;
+&lt;p&gt;超高温灭菌奶，是牛奶经过超高温 135℃~150℃，4~7 秒（UHT）的瞬间灭菌处理。便于运输，保质时间较长。&lt;/p&gt;
+&lt;p&gt;无论采用哪一种方法对于牛奶营养方面的影响并不大，但是高温杀菌保存期限可以延长但是对于，但是对于风味还是有一定的影响，有这方面考虑的朋友可以考虑选购巴氏杀菌奶。&lt;sup&gt;[2]&lt;/sup&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;总结&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;鲜牛奶确实比较浓厚好喝，但普通纯牛奶也并不是是添加水兑成的。杀菌方法的不同、以及均质化&lt;/p&gt;
+&lt;p&gt;脱气等多方面原因造成的。&lt;/p&gt;
+&lt;p&gt;很多人认为没有均质化和低温杀菌的鲜牛奶最好，但是却对肠胃不好的人不太友好。&lt;/p&gt;
+&lt;p&gt;现在喝牛奶已经成为了很多人饮食习惯之一，选择什么样的牛奶最好还是要根据自己情况来决定。&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;div&gt;&lt;a href=&quot;https://www.zhihu.com/question/547570915&quot;&gt;阅读原文&lt;span&gt;&lt;/span&gt;&lt;/a&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<pubDate>Mon, 22 Aug 2022 23:06:55 GMT</pubDate>
+</item>
+<item>
+<guid>d1eed89430842dae84cb5e1d86e4f1dd</guid>
+<title>空间站应该使用什么样的玻璃才能保证人的安全？</title>
+<link>https://daily.zhihu.com/story/9752054</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;
+&lt;img src=&quot;https://picx.zhimg.com/v2-b0785862eab4b0f660b276542450e604_l.jpg?source=8673f162&quot;&gt;
+&lt;span&gt;太空僧，&lt;/span&gt;&lt;span&gt;和尚洗头用飘柔&lt;/span&gt;
+&lt;a href=&quot;https://www.zhihu.com/question/498514106/answer/2236926809&quot; hidden=&quot;&quot;&gt;阅读原文&lt;/a&gt;
+&lt;/div&gt;&lt;div&gt;
+&lt;p&gt;&lt;strong&gt;防弹&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;一般大家首先会想到的是，应该是防弹的。下图是国际空间站一块玻璃上的“弹孔”：&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-0a14a517fdd160b6f76c79a49ff20b0d_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;figcaption&gt;国际空间站玻璃窗被空间碎片击中留下的直径约 7 毫米的裂纹，宇航员蒂莫西·皮克拍摄&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;由于国际空间站以每小时约 27000 公里的速度在太空穿行，而太空垃圾（不止是微小的陨石或者俄国炸毁卫星飞散出的碎片，哪怕是一块剥落的油漆碎片）的速度有时比子弹要快多了，所以空间站的窗户玻璃至少是多层的防弹玻璃，才能保证生命安全。目前国际空间站的玻璃能承受直径不超过 10 厘米的物体的高速撞击，如果遇到 10 厘米以上怎么办？这时宇航员的生命可能会受到威胁，按手册规定，空间站应采取机动躲避处理。&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&quot;https://pica.zhimg.com/v2-e21be9f1b8d3ed220ca268fc0dd95f68_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;figcaption&gt;STS-130 任务中，负责组装空间站的奋进号航天飞机的舷窗玻璃上出现一个撞击产生的小洞&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;接下来应该想到的是什么？对，热胀冷缩。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;耐热玻璃&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;在太空中的航天器，受太阳直射的那一面的温度会很高，而背着太阳的阴面温度会很低。所以当年阿波罗计划中的飞船在太空中要像墨西哥烤肉的那个肉串一样不停的（以 z 轴）翻滚，才能让整体受热均匀，而不致于一边过冷一边过热。我们的生活经验告诉我们，骤冷骤热会导致玻璃的碎裂，这是应力不匀造成的。&lt;/p&gt;
+&lt;p&gt;对于玻璃来说，当它在太空中受到温差影响时，由于热在材料中传导需要一个时间和过程，玻璃并不能做到一整块上下左右同步热胀冷缩。在这一过程中，不均匀的应力如果大于玻璃的临界强度，就会炸裂。我们知道，相同温差下，一个材料的热膨胀系数（主要由结构决定）越小，产生的热应力越小。普通硼硅酸盐玻璃的热膨胀系数无法满足在较大而快速的温度变化中不破裂。&lt;/p&gt;
+&lt;p&gt;人们把天然高纯度二氧化硅在高于 1760℃的温度下熔融再快速冷却，将晶型二氧化硅转变为非晶型的玻璃熔体，制得了熔融石英(沿用前苏联叫法)。熔融石英的热膨胀系数几乎是所有耐火材料中最小的。即使将其从上千度高温下中取出并立即放到冷水里淬冷也不会碎裂，(实际生产时分电熔，气炼和 CVD 三类，这里不写了)&lt;/p&gt;
+&lt;p&gt;为了应对低温，空间站的玻璃窗还要加上温感元件和窗户加热器&lt;sup&gt;[1]&lt;/sup&gt;。&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-37027d439e01e0c37533fddab1679a0e_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;figcaption&gt;世界机位最高的业余摄影师&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;除极端温度外，空间站的玻璃还应在长时间抵御可见光、紫外线和红外线的辐射而不降低透明度。目前国际空间站用的是康宁的“ UV 级”合成熔融石英玻璃（从水星计划开始就是一直用康宁的玻璃）&lt;sup&gt;[2]&lt;/sup&gt;。其研发的代号 7971 的熔融石英（修正：此处 ULE7971 和 7972 应为二氧化钛 - 硅酸盐玻璃&lt;sup&gt;[3]&lt;/sup&gt;&lt;sup&gt;[4]&lt;/sup&gt;，感谢 &lt;a href=&quot;http://www.zhihu.com/people/be1837f4839c14b670863ab278f7fb5b&quot;&gt;@Rasmodius Zhang&lt;/a&gt; 捉虫），在 0～200℃范围平均线性热膨胀系数为零。此处不是打广告并没有钱。。。德国 HERAEUS 公司也有类似合成产品，但 NASA 不用。中国大部分产自江苏东海县的几个厂，具体就不写了。&lt;/p&gt;
+&lt;p&gt;这里有两个关键词：合成，UV 级。&lt;/p&gt;
+&lt;p&gt;与普通熔融玻璃不同，合成石英玻璃更纯。与天然石英玻璃最大的区别就是原材料。天然石英玻璃是以天然石英砂作为原料制得，而合成石英玻璃则是直接以含硅的气体化学品作为原料与氧反应制得高纯的二氧化硅，纯度比天然石英玻璃高出几个量级。&lt;/p&gt;
+&lt;p&gt;UV 级代表具有非常低的金属杂质含量(几乎是只含硅和氧)，使其对紫外线更透明(高紫外线透过率)。相对与 UV 级的是红外级，低一个档次，杂质(主要是铝和钛)较多，一般只做商用(如深层潜水用品或化学器皿等)。说到化学器皿，BTW，其对大多数元素和化合物（包括几乎所有的酸，HF 不算）具有化学惰性。商用产品很多含有气泡，这是由于熔融玻璃的生产温度高且黏度大，所以气泡很难排除。&lt;/p&gt;
+&lt;p&gt;我们说回空间站。国际空间站的窗户玻璃分三层&lt;sup&gt;[5]&lt;/sup&gt;，如下图所示。&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-3eb1518dc8a28121303306d07cddd911_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
+&lt;p&gt;&lt;strong&gt;压强&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;有人说，还没考虑真空中的压强差呢。太空中没有空气，而舱内为一个大气压。会不会被压力给压碎了呀？实际上，按设计要求，国际空间站的玻璃应能承受 19 个标准大气压，而实际材料在 58 个大气压强下才会被压裂。&lt;/p&gt;
+&lt;p&gt;说到空气，就多说一点点。空间站玻璃如果被碎片击中后，最怕的是什么？是水。当玻璃因撞击而产生轻微裂纹后，舱内湿度如果过高，空气中的水分子会使裂纹处的硅氧键发生断裂，从而加速裂纹的生长。&lt;/p&gt;
+&lt;p&gt;除此之外，磨削玻璃时引起的不必要的表面损伤及碱金属接触也是应尽力避免的。&lt;/p&gt;
+&lt;p&gt;在 30 多年的载人航天器飞行中，从未发生过单纯因窗户玻璃质量而引发的大事故。&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&quot;https://picx.zhimg.com/v2-8a4f9afe92dade0f5823b02e7d000e40_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;figcaption&gt;国际空间站俄国舱段的玻璃上的一个撞击坑&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;&lt;strong&gt;未来&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;除了熔融石英，科学工作者还在尝试用其它更好的材料来制作空间站的玻璃。比如透明尖晶石陶瓷。它不仅具有高硬度陶瓷的耐高温、耐腐蚀、耐磨损、抗冲击等性能特点，还具有良好的光学性能，在紫外、可见光、红外光波段都有良好的光学透光率。与玻璃相比，透明尖晶石的断裂韧性更好，裂纹扩展更小，因此用在窗玻璃上很有潜力（但目前材料的抗热震性指标较差）。&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&quot;https://picx.zhimg.com/v2-fad41691f7c8a647442a5876e9988761_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;figcaption&gt;相同直径撞击物下的透明尖晶石和透明尖晶石对比&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;但玻璃总归是不可靠的，在必要的时候，还是要在玻璃窗外面加一个挡板，以应对更大的冲击：&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-3637cac1dbfd704f18b37102d93685e4_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;figcaption&gt;图中空间站的玻璃穹顶外有七块挡板&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;div&gt;&lt;a href=&quot;https://www.zhihu.com/question/498514106&quot;&gt;阅读原文&lt;span&gt;&lt;/span&gt;&lt;/a&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<pubDate>Mon, 22 Aug 2022 23:06:48 GMT</pubDate>
+</item>
+<item>
+<guid>7dddab6f8a1131c56435f64bd90e4ed7</guid>
+<title>古人是如何炼铁的？</title>
+<link>https://daily.zhihu.com/story/9752063</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;
+&lt;img src=&quot;https://pic1.zhimg.com/2705da255415b10ac7eb79e3a8d07e63_l.jpg?source=8673f162&quot;&gt;
+&lt;span&gt;Devymex Wang，&lt;/span&gt;&lt;span&gt;多看，多听，多说&lt;/span&gt;
+&lt;a href=&quot;https://www.zhihu.com/question/20025297/answer/397554824&quot; hidden=&quot;&quot;&gt;阅读原文&lt;/a&gt;
+&lt;/div&gt;&lt;div&gt;
+&lt;p&gt;现代炼铁通常使用高炉练铁，炉温之高可以将铁熔化成铁水。古人使用传统熔炉则无法达到可以熔化铁的温度，但能工巧匠们在这种艰难的情况下依然能生产出大量精美的铁器，本文将向您讲述古代的“钢铁是怎样炼成的”。&lt;/p&gt;
+&lt;p&gt;古代的冶炼过程大致可分为四个阶段：一、造炉，二、选矿，三、熔练，四、锻造。由于人类在不同的历史时期所掌握的技术有巨大差异，不同地理位置能够获得的原材料也千差万别，熔炼规模也有小有大，此外，对于制品的性能要求也不尽相同，因此这四个阶段的工艺无法一概而论。下文主要描述一种最原始的小规模冶炼工艺，这种工艺在许多不同的人类文明遗址的考古中均有发现。正是这种工艺的出现，使人类进入了&lt;strong&gt;铁器时代&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;一、造炉&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;熔炉就是粘土制成的中空圆柱，根据熔炼的规模和地方习惯决定其大小的形状。通常底部有侧门，并附有鼓风装置。燃料则是木碳，那我们先说从木碳说起。&lt;/p&gt;
+&lt;p&gt;炼铁所需的温度很高，所以要选用热量较高的木料来制炭。首先在地上挖一个很大的浅坑，将收集来的大量木块堆入沙坑，点火，等所有的木块都被引燃后盖上松土，让木块在缺少氧气的环境中闷烧，以去除水分并分解有机质。当碳堆自然熄灭，把土扒开，就得到了一批高品质的木炭。闷烧的时间由木料多少决定，往往需要几天时间。&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-f81389491cf426bf8576084544b28f87_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;figcaption&gt;在覆土里焖烧的碳散发出烟雾&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;熔炉使用粘土条堆砌：选择纯净的粘土，用筛去除小石，再用水长时间浸泡，打浆成泥，混入碎草，反复捶打揉搓直至均匀，然后搓成细条备用。粘土的纯净度和浸水是否完全保证熔炼过程中炉壁各处受热均匀，而揉入碎草则使得炉壁在烧制过程中形成微孔（碳被烧尽），具有抗缩胀的性能。这些都是为了避免炉壁开裂和崩塌，所以筛选、浸泡、揉打的过程非常关键。&lt;/p&gt;
+&lt;p&gt;接下来制炉坯：选一块块平整的地面，规划好各种原材料的堆放位置，然后在熔炉位置处挖一个圆形浅坑，并打实基础。然后用之前制造的泥条一圈一圈的围出炉壁外形，并将内外壁都仔细抹光，不留缝隙。底部侧面开一个口，用于鼓风和出渣，这样就制成了炉坯。将炉坯在阳光下晾干后，在里面填充木碳，点燃烧结，就像制陶的过程一样，可以烧成坚硬的炉壁。在烧结过程中如果发现有裂开要及时修补。烧结后，将碳灰取出，这样熔炉就制成了。&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-a06908ebd74103f78686214796b04cf9_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;figcaption&gt;熔炉形状千奇百怪，这是其中一种直桶形的&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;然后要制备鼓风设备，这套器具则可以说是五花八门各式各样了。当然炼铁所用的风箱和农家的灶具还是有些区别，但原理都是一样的：有一个进气活门和一个出气口，通过往复运动使空间加压后从出气口排出，多用兽皮、木料和绳索制成，这里就不展开细说了。&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-3945f3aa8e555d1fc0d05bdaa0baaf00_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;figcaption&gt;一种双手交替鼓风的风箱&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;&lt;strong&gt;二、选矿&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;铁在大自然中不以单质存在，主要是赤铁矿或磁铁矿。赤铁矿的主要成分是 Fe2O3，含铁 40% ~ 60%，磁铁矿主要成分是 Fe3O4，含铁 50% ~ 70%。显然，含铁量越高的矿石越容易练出高质量的铁，所以精选矿石的过程直接决定了炼铁的成败。古代经验丰富的熔炼师可以用肉眼区分矿的品位（含铁量），他们有时也会利用一些工具，比如磁石。&lt;strong&gt;熔炼主要的任务，就是把铁从铁的氧化物和其它杂质中提取出来&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;古人没有什么大型机械可用，所以要破碎大量的整块矿石是一件比较麻烦的事，因此他们更愿意去寻找含铁量高的沙砾。不管怎样，在最终进炉之前，一直要破碎研磨成很细小的颗粒，并进行多遍筛选，这样可以保证熔炼的效率和成品的质量。&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-5e29a256fd31ca9d44ab8ac07da5be33_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
+&lt;p&gt;除了矿石，还有一个非常重要的辅料，就是作为助熔剂的灰石（注意，是灰石而不是石灰）。灰石是一种常见的矿物，其主要成分是碳酸钙（CaCO3），在高温下会分解为石灰和二氧化碳。石灰即氧化钙（CaO），可以和矿石中的碳、硅、磷等杂质反应生成钙盐，并形成炉渣。&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-6b4b6e087ef1dc5f0aaf6b63844b2c76_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
+&lt;p&gt;在进炉熔炼之前，矿石粉和灰石粉要按照一个经验比例（比如 2:1）进行混合，成为原料粉。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;三、熔炼&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;将鼓风设备通过耐热的陶管连接到熔炉侧门的上部，然后用粘土将整个侧门封死，仅使得鼓风的气流可以进入。接下来用木炭从熔炉的顶部开始装填，直到填满。然后点火并开始鼓风，等炉温达到一定程度就可以开始熔炼了。&lt;/p&gt;
+&lt;p&gt;熔练的过程可能会长达数小时乃至数天，而鼓风的工作是一刻不能停歇，所以需要一组工人轮流进行。另一组工人则往炉顶添加原料粉和木碳，每当炉内的木炭烧尽，上层木炭下落，工人就在顶部添加一层新炭，并铺一层原料粉。这个过程一直重复到熔炼完成。&lt;/p&gt;
+&lt;p&gt;此时，在炉内正发生复杂的化学反应：&lt;/p&gt;
+&lt;p&gt;CaCO3-&amp;gt;CaO+CO2，灰石受热分解为石灰和二氧化碳；&lt;/p&gt;
+&lt;p&gt;CaO+3C-&amp;gt;CaC2+CO，石灰和碳反应生成电石和一氧化碳；&lt;/p&gt;
+&lt;p&gt;Fe2O3+3CO-&amp;gt;2Fe+3CO2，氧化铁在高温下被一氧化碳还原为铁，放出二氧化碳；&lt;/p&gt;
+&lt;p&gt;2Fe2O3+3C-&amp;gt;4Fe+3CO2，氧化铁在高温下被碳还原为铁，放出二氧化碳；&lt;/p&gt;
+&lt;p&gt;CaO+SiO2-&amp;gt;CaSiO3，石灰和杂质二氧化硅反应生成偏硅酸钙；&lt;/p&gt;
+&lt;p&gt;3CaO+P2O5-&amp;gt;Ca3(PO4)2，石灰和杂质磷的氧化物反应生成磷酸钙；&lt;/p&gt;
+&lt;p&gt;……&lt;/p&gt;
+&lt;p&gt;看，助熔剂多么重要，它和碳共同作用，不仅&lt;strong&gt;将氧化铁还原成了铁&lt;/strong&gt;，并与杂质形成可分离的钙盐。熔炼一段时间后，熔点较低的一些金属和杂质就会以矿渣的形式（像熔岩一样）从流至炉底，在底部打开一个小口可让矿渣流出。而熔点较高无法熔化的铁则被软化，凝结成块状，留在了熔炉中下部。&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-90663c1547e8834a1b730032e3827ee5_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;figcaption&gt;矿渣从底部流出&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;逐渐的，当铁块和炭灰越积越多，这个熔炉的熔炼过程就要结束了。人们迅速打破熔炉，扒开不能熔化的矿渣和炭灰，就取得了白热的海棉状粗炼铁块。&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&quot;https://pica.zhimg.com/v2-49a0d6133ab4ec75baa1b57177428109_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;figcaption&gt;粗炼铁块被从炉中取出&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;&lt;strong&gt;四、锻造&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;白热的海棉铁块刚取出时还比较软，可以用凿和锤切分成块，块的大小依据准备打制的器具大小决定 。接下来一小块铁就被移入打铁间进行锻造了。&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&quot;https://pica.zhimg.com/v2-d3f07562c6effdb386b713deeca70081_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;figcaption&gt;在远古时期人们可以使用石锤&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;锻台旁边是由风箱驱动，燃烧木碳的火炉。铁块在炉内被烧至白热（这一过程称为“炼”），然后&lt;strong&gt;趁热打铁&lt;/strong&gt;，放于锻台上锤打成条或着片，然后在中间凿出凹痕，对折后再烧至白热，锤打成条或片。如此反复，就像揉面一样，在这个过程中，铁块的里里外外都被充分暴露在空气中，不能被烧软的杂质就在每一次锤打时和铁块的氧化物一起凝固在表面并剥落，碳等能被氧化为气体的杂质也在高温中逸散。&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-484a98d5250000acb8fb2349543f30c8_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
+&lt;p&gt;经过&lt;strong&gt;千锤百炼&lt;/strong&gt;，大量杂质和碳就被从粗铁块中去除了，成为了比较纯净的铁块，并且因为反复拉伸和折叠，使得铁块具有了更好的性能。随着技术进度，炼出来的铁块纯度越来越高，含碳量也逐渐降低，这又导致铁器比较软也不耐磨。为了进一步增强铁的机械性能，在更晚些发展出来的“渗碳”工艺就是在高温条件下增加铁器表面的含碳量，从而增加硬度。这已经超出了本文所讨论的内容范围。&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&quot;https://picx.zhimg.com/v2-b13d88afa13800b70dccd92fb9bea9c2_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
+&lt;figure&gt;&lt;img src=&quot;https://picx.zhimg.com/v2-908467e1d77fdd5bce6ae1ab3ba3961b_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;/figure&gt;
+&lt;p&gt;将钢材再次加热，打制成器具形状后，还要进行淬火硬化。简单来说就是将烧至白热的钢料，用水或其它淬火液迅速降温，使得钢表面的晶体在快速冷确的过程中以发生形态的变化，以获得更高的硬度。有时因为淬火后器具变得过脆，还要再进行回火。为了防锈还会进行一些表面处理，这些工艺这里就不再赘述了。&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&quot;https://pica.zhimg.com/v2-9361afd85a2b8b74f375ccc48cb5c667_720w.jpg?source=8673f162&quot; alt=&quot;&quot;&gt;&lt;figcaption&gt;图坦卡蒙匕首&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;想罢您看到这，一定会觉得这个过程的繁复程度远超乎你的想象。的确，在缺少工具和技术的远古时期，要练出一些铁用以制备器具是非常困难的，这也是“&lt;strong&gt;锻炼&lt;/strong&gt;”一词能够成为强健体魄的代名词的原因吧。但是铁器对于人类文明而言，则意味着一个新时代的到来。&lt;/p&gt;
+&lt;p&gt;本文内容如有错漏，敬请领域专家予斧正。感谢阅读，谢绝转载。&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;div&gt;&lt;a href=&quot;https://www.zhihu.com/question/20025297&quot;&gt;阅读原文&lt;span&gt;&lt;/span&gt;&lt;/a&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<pubDate>Mon, 22 Aug 2022 23:06:42 GMT</pubDate>
 </item>
 </channel></rss>
