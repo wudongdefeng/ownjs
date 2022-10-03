@@ -625,6 +625,124 @@
             &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
+<guid>f499b11fb1ab33aad79a45229cde7326</guid>
+<title>日志记录的最佳实践</title>
+<link>https://toutiao.io/k/0w9hsc7</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entry-content&quot; itemprop=&quot;articleBody&quot;&gt;&amp;#13;
+&lt;h3&gt;简介&lt;/h3&gt;
+&lt;p&gt;日志（Log）是由系统在运行过程中产生的结构化或者非结构化的文字信息。通常情况，可以将其视为应用程序对某个事件（Event）的记录。日志通常可以帮助我们发现一些微服务架构系统的非预期或突发的行为。 Logging作为 Observability（可观察性，在IT和云计算中，它是根据系统生成的数据，例如日志、指标和数据链追踪等来衡量系统当前状态的能力）的重要组成部分，在我们的系统开发、维护中起到无法替代的作用。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2022/09/one.png&quot; alt=&quot;Pillars of Observability&quot;/&gt;&lt;br/&gt;
+Pillars of Observability&lt;/p&gt;
+&lt;h3&gt;日志的重要性&lt;/h3&gt;
+&lt;p&gt;要理解为什么日志在产品或者系统中扮演着重要的角色，我们必须了解它的价值。至少到现在，日志被应用最广泛的是&lt;strong&gt;报警、故障排除和业务数据可视化&lt;/strong&gt;。&lt;/p&gt;
+&lt;h4&gt;报警&lt;/h4&gt;
+&lt;p&gt;日志可以作为我们业务系统监控的重要数据来源；成熟的产品系统都有报警系统，如果系统中出现超过某个已定义的某个指标的问题，日志系统会自动将报警信息发送到通知平台，On-call 的人就可以根据报警信息定位解决问题了。&lt;/p&gt;
+&lt;h4&gt;故障排除&lt;/h4&gt;
+&lt;p&gt;这种情况非常普遍；想象一下你最近负责开发维护的系统被他人发现有问题，在你梳理完思路之后第一件事是干什么？肯定是查看系统信息验证自己的假设是否成立，这里打印在服务器上的日志就是最好的辅助信息。而作为程序员的我们，日志是我们最熟悉不过的解决问题的利器。 &lt;/p&gt;
+&lt;h4&gt;业务数据可视化&lt;/h4&gt;
+&lt;p&gt;很多公司可以利用存储在自己数据库里的生产环境的日志，结合相应的工具可以对业务进行业务数据可视化。这里最典型的代表是 Grafana 和 SumoLogic。&lt;/p&gt;
+&lt;h3&gt;怎么做&lt;/h3&gt;
+&lt;h4&gt;模板化&lt;/h4&gt;
+&lt;p&gt;为了更好支持上面的各种情况，我们需要对我们的日志格式进行梳理，按照一定的规范来写日志，而不是随便写一句废话。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2022/09/2-9.png&quot; alt=&quot;Log Format&quot;/&gt;&lt;br/&gt;
+Log Format&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;基础版本&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;对于日志，&lt;strong&gt;时间，日志级别，和日志信息&lt;/strong&gt;最为重要，所以一个合格的日志应该至少包含这些信息。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;高级版本&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;在基础版的基础上，加入线程名，主机名，方法名，类名，方法对应的行数；&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;线程名&lt;/strong&gt;：多数应用的用户都不是单一的，对于单实例的服务对同一个接口很多用户访问应用会将在不同的线程中执行，这时如果要区分对应用户的业务流程，那么通过线程名是最好的。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;主机名&lt;/strong&gt;：现在的应用大多部署在 Cloud 中，都是多实例的，所以在单节点的基础上，日志在多实例上就需要实例级别的区分，而主机名是最好的区分方式。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;方法名&lt;/strong&gt;：打印了日志的方法名，方便区分相同日志的出处。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;类名&lt;/strong&gt;：打印了日志的类名，方便快速定位业务流程。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;行数&lt;/strong&gt;：打印了日志的行数，方便快速定位日志的具体位置。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;格式化&lt;/h4&gt;
+&lt;p&gt;为了提高日志的可读性，我们可以对日志进行修饰。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;对日志级别、主机名和线程名前后加&lt;strong&gt;中括号&lt;/strong&gt;；&lt;/li&gt;
+&lt;li&gt;对方法名所在的类名和行号加&lt;strong&gt;括号&lt;/strong&gt;，并在类名与行号中间用&lt;strong&gt;冒号&lt;/strong&gt;隔开；&lt;/li&gt;
+&lt;li&gt;在行号和日志信息中间加入一个&lt;strong&gt;横线&lt;/strong&gt;来分隔；&lt;/li&gt;
+&lt;li&gt;对于日志信息也可以进行特定的格式化
+&lt;ul&gt;
+&lt;li&gt;对于常规的请求（Request）、响应（Response）或者其他业务日志，可以在自定义信息和参数之间用&lt;strong&gt;下划线&lt;/strong&gt;分隔；多个参数之间用逗号分隔，当然参数也是可选的；&lt;/li&gt;
+&lt;li&gt;对于错误信息格式化，也可以按照 &lt;strong&gt;Key：Value&lt;/strong&gt; 的形式进行组织。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;链式追踪&lt;/h4&gt;
+&lt;p&gt;记录下了日志，如果只是一行行简单的文字说明，那是没有太大意义的。在复杂系统或业务操作频繁的系统中，会产生非常多的日志，在这种情况下，我们就得花时间去过滤出相关的日志。解决上面问题的最好办法是日志的&lt;strong&gt;链式追踪&lt;/strong&gt;；简单说就是，在每条日志中加入业务系统中的一个或者多个&lt;strong&gt;唯一&lt;/strong&gt;的 ID，这样在定位业务问题的时候可以通过这些唯一的 ID 和 其他条件（e.g. 时间）快速过滤出相关的日志。&lt;/p&gt;
+&lt;h4&gt;按需记录日志&lt;/h4&gt;
+&lt;h5&gt;日志级别&lt;/h5&gt;
+&lt;p&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2022/09/3-7.png&quot; alt=&quot;Log Level&quot;/&gt;&lt;br/&gt;
+Log Level&lt;/p&gt;
+&lt;p&gt;日志的输出都是分级别的，不同的场景需要打印不同级别的日志；以下是几个比较重要的日志级别。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Debug&lt;/strong&gt;: 记录技术细节，和一些帮助理解系统运行的日志；&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Info&lt;/strong&gt;: 记录业务信息的日志；&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Warn&lt;/strong&gt;: 非紧急且可控的可接受的错误信息；&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Error&lt;/strong&gt;: 非期望的错误或者系统表现，通常是由系统bug或者环境问题导致。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;同时不是所有的日志都需要记录，我们要做到按需记录。下表是在不同的环境选择不同日志级别的推荐。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Environment&lt;/th&gt;
+&lt;th&gt;Log Leave&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Dev&lt;/td&gt;
+&lt;td&gt;Debug&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Test&lt;/td&gt;
+&lt;td&gt;Debug&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;UAT&lt;/td&gt;
+&lt;td&gt;Info&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Prod&lt;/td&gt;
+&lt;td&gt;Info&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h5&gt;日志位置&lt;/h5&gt;
+&lt;p&gt;有了日志级别，日志打印的位置也需要明确。一般情况下：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;其他系统调用自有系统时需要在收到请求和完成请求时各打印一次日志；&lt;/li&gt;
+&lt;li&gt;自有系统调用第三方系统的接口前和收到返回信息后各打印一次日志；&lt;/li&gt;
+&lt;li&gt;在系统中任何有异常的地方需要打印日志；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;还有一种特殊情况是，像消息传递之类的系统，为了节省日志存储和减少查看干扰，大多时候我们不需要在收到消息后直接打印该消息，一般建议在收到消息后，如果系统处理有异常，在异常中将原始消息打印。&lt;/p&gt;
+&lt;h3&gt;工具推荐&lt;/h3&gt;
+&lt;p&gt;不同的编程语言有不同的日志工具；比较著名的是 Apache 的 &lt;a href=&quot;https://logging.apache.org/log4j&quot;&gt;Log4j&lt;/a&gt;, Log4j是高度可配置的，并可通过在运行时的外部文件配置。它根据记录的优先级别，并提供机制以指示记录信息到许多的目的地，诸如：数据库，文件，控制台，UNIX系统日志等；而且 log4j 已经被移植到了其他编程语言中了，如 Python 中的 &lt;a href=&quot;https://docs.python.org/3/library/logging.html&quot;&gt;logging&lt;/a&gt;, NodeJS 中的&lt;a href=&quot;https://www.npmjs.com/package/log4js&quot;&gt;log4js&lt;/a&gt;, Rust 中的&lt;a href=&quot;https://crates.io/crates/log4rs&quot;&gt;log4rs&lt;/a&gt;。&lt;/p&gt;
+&lt;h3&gt;注意点&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;避免打印或记录任何敏感信息，包括但不限于各种PII，PCI信息，一定要记得遵守当地的各种法律法规，如中国的《个人信息保护法》（PILI），欧洲的一般数据保护条例GDPR等&lt;/li&gt;
+&lt;li&gt;按需选择合适的日志级别和日志位置&lt;/li&gt;
+&lt;li&gt;……&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;总结&lt;/h3&gt;
+&lt;p&gt;好的日志不仅可以为程序开发提供便利，为故障排除提供最重要的辅助信息，更可以为业务或基础设施提供优化建议或数据统计。&lt;/p&gt;
+&lt;h3&gt;参考材料&lt;/h3&gt;
+
+&amp;#13;
+&lt;/div&gt;&amp;#13;
+&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
 <guid>6d6188964c427020c50ef1b0a9d7e8c4</guid>
 <title>IM 跨平台技术学习（三）：vivo 的 Electron 技术栈选型、全方位实践总结</title>
 <link>https://toutiao.io/k/uaa9ymi</link>
@@ -1541,123 +1659,5 @@ napi-rs 的使用请阅读官方文档，地址是：&lt;a href=&quot;https://na
 
           
         &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>f499b11fb1ab33aad79a45229cde7326</guid>
-<title>日志记录的最佳实践</title>
-<link>https://toutiao.io/k/0w9hsc7</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entry-content&quot; itemprop=&quot;articleBody&quot;&gt;&amp;#13;
-&lt;h3&gt;简介&lt;/h3&gt;
-&lt;p&gt;日志（Log）是由系统在运行过程中产生的结构化或者非结构化的文字信息。通常情况，可以将其视为应用程序对某个事件（Event）的记录。日志通常可以帮助我们发现一些微服务架构系统的非预期或突发的行为。 Logging作为 Observability（可观察性，在IT和云计算中，它是根据系统生成的数据，例如日志、指标和数据链追踪等来衡量系统当前状态的能力）的重要组成部分，在我们的系统开发、维护中起到无法替代的作用。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2022/09/one.png&quot; alt=&quot;Pillars of Observability&quot;/&gt;&lt;br/&gt;
-Pillars of Observability&lt;/p&gt;
-&lt;h3&gt;日志的重要性&lt;/h3&gt;
-&lt;p&gt;要理解为什么日志在产品或者系统中扮演着重要的角色，我们必须了解它的价值。至少到现在，日志被应用最广泛的是&lt;strong&gt;报警、故障排除和业务数据可视化&lt;/strong&gt;。&lt;/p&gt;
-&lt;h4&gt;报警&lt;/h4&gt;
-&lt;p&gt;日志可以作为我们业务系统监控的重要数据来源；成熟的产品系统都有报警系统，如果系统中出现超过某个已定义的某个指标的问题，日志系统会自动将报警信息发送到通知平台，On-call 的人就可以根据报警信息定位解决问题了。&lt;/p&gt;
-&lt;h4&gt;故障排除&lt;/h4&gt;
-&lt;p&gt;这种情况非常普遍；想象一下你最近负责开发维护的系统被他人发现有问题，在你梳理完思路之后第一件事是干什么？肯定是查看系统信息验证自己的假设是否成立，这里打印在服务器上的日志就是最好的辅助信息。而作为程序员的我们，日志是我们最熟悉不过的解决问题的利器。 &lt;/p&gt;
-&lt;h4&gt;业务数据可视化&lt;/h4&gt;
-&lt;p&gt;很多公司可以利用存储在自己数据库里的生产环境的日志，结合相应的工具可以对业务进行业务数据可视化。这里最典型的代表是 Grafana 和 SumoLogic。&lt;/p&gt;
-&lt;h3&gt;怎么做&lt;/h3&gt;
-&lt;h4&gt;模板化&lt;/h4&gt;
-&lt;p&gt;为了更好支持上面的各种情况，我们需要对我们的日志格式进行梳理，按照一定的规范来写日志，而不是随便写一句废话。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2022/09/2-9.png&quot; alt=&quot;Log Format&quot;/&gt;&lt;br/&gt;
-Log Format&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;基础版本&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;对于日志，&lt;strong&gt;时间，日志级别，和日志信息&lt;/strong&gt;最为重要，所以一个合格的日志应该至少包含这些信息。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;高级版本&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;在基础版的基础上，加入线程名，主机名，方法名，类名，方法对应的行数；&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;线程名&lt;/strong&gt;：多数应用的用户都不是单一的，对于单实例的服务对同一个接口很多用户访问应用会将在不同的线程中执行，这时如果要区分对应用户的业务流程，那么通过线程名是最好的。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;主机名&lt;/strong&gt;：现在的应用大多部署在 Cloud 中，都是多实例的，所以在单节点的基础上，日志在多实例上就需要实例级别的区分，而主机名是最好的区分方式。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;方法名&lt;/strong&gt;：打印了日志的方法名，方便区分相同日志的出处。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;类名&lt;/strong&gt;：打印了日志的类名，方便快速定位业务流程。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;行数&lt;/strong&gt;：打印了日志的行数，方便快速定位日志的具体位置。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4&gt;格式化&lt;/h4&gt;
-&lt;p&gt;为了提高日志的可读性，我们可以对日志进行修饰。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;对日志级别、主机名和线程名前后加&lt;strong&gt;中括号&lt;/strong&gt;；&lt;/li&gt;
-&lt;li&gt;对方法名所在的类名和行号加&lt;strong&gt;括号&lt;/strong&gt;，并在类名与行号中间用&lt;strong&gt;冒号&lt;/strong&gt;隔开；&lt;/li&gt;
-&lt;li&gt;在行号和日志信息中间加入一个&lt;strong&gt;横线&lt;/strong&gt;来分隔；&lt;/li&gt;
-&lt;li&gt;对于日志信息也可以进行特定的格式化
-&lt;ul&gt;
-&lt;li&gt;对于常规的请求（Request）、响应（Response）或者其他业务日志，可以在自定义信息和参数之间用&lt;strong&gt;下划线&lt;/strong&gt;分隔；多个参数之间用逗号分隔，当然参数也是可选的；&lt;/li&gt;
-&lt;li&gt;对于错误信息格式化，也可以按照 &lt;strong&gt;Key：Value&lt;/strong&gt; 的形式进行组织。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4&gt;链式追踪&lt;/h4&gt;
-&lt;p&gt;记录下了日志，如果只是一行行简单的文字说明，那是没有太大意义的。在复杂系统或业务操作频繁的系统中，会产生非常多的日志，在这种情况下，我们就得花时间去过滤出相关的日志。解决上面问题的最好办法是日志的&lt;strong&gt;链式追踪&lt;/strong&gt;；简单说就是，在每条日志中加入业务系统中的一个或者多个&lt;strong&gt;唯一&lt;/strong&gt;的 ID，这样在定位业务问题的时候可以通过这些唯一的 ID 和 其他条件（e.g. 时间）快速过滤出相关的日志。&lt;/p&gt;
-&lt;h4&gt;按需记录日志&lt;/h4&gt;
-&lt;h5&gt;日志级别&lt;/h5&gt;
-&lt;p&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2022/09/3-7.png&quot; alt=&quot;Log Level&quot;/&gt;&lt;br/&gt;
-Log Level&lt;/p&gt;
-&lt;p&gt;日志的输出都是分级别的，不同的场景需要打印不同级别的日志；以下是几个比较重要的日志级别。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Debug&lt;/strong&gt;: 记录技术细节，和一些帮助理解系统运行的日志；&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Info&lt;/strong&gt;: 记录业务信息的日志；&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Warn&lt;/strong&gt;: 非紧急且可控的可接受的错误信息；&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Error&lt;/strong&gt;: 非期望的错误或者系统表现，通常是由系统bug或者环境问题导致。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;同时不是所有的日志都需要记录，我们要做到按需记录。下表是在不同的环境选择不同日志级别的推荐。&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Environment&lt;/th&gt;
-&lt;th&gt;Log Leave&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;Dev&lt;/td&gt;
-&lt;td&gt;Debug&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;Test&lt;/td&gt;
-&lt;td&gt;Debug&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;UAT&lt;/td&gt;
-&lt;td&gt;Info&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;Prod&lt;/td&gt;
-&lt;td&gt;Info&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;h5&gt;日志位置&lt;/h5&gt;
-&lt;p&gt;有了日志级别，日志打印的位置也需要明确。一般情况下：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;其他系统调用自有系统时需要在收到请求和完成请求时各打印一次日志；&lt;/li&gt;
-&lt;li&gt;自有系统调用第三方系统的接口前和收到返回信息后各打印一次日志；&lt;/li&gt;
-&lt;li&gt;在系统中任何有异常的地方需要打印日志；&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;还有一种特殊情况是，像消息传递之类的系统，为了节省日志存储和减少查看干扰，大多时候我们不需要在收到消息后直接打印该消息，一般建议在收到消息后，如果系统处理有异常，在异常中将原始消息打印。&lt;/p&gt;
-&lt;h3&gt;工具推荐&lt;/h3&gt;
-&lt;p&gt;不同的编程语言有不同的日志工具；比较著名的是 Apache 的 &lt;a href=&quot;https://logging.apache.org/log4j&quot;&gt;Log4j&lt;/a&gt;, Log4j是高度可配置的，并可通过在运行时的外部文件配置。它根据记录的优先级别，并提供机制以指示记录信息到许多的目的地，诸如：数据库，文件，控制台，UNIX系统日志等；而且 log4j 已经被移植到了其他编程语言中了，如 Python 中的 &lt;a href=&quot;https://docs.python.org/3/library/logging.html&quot;&gt;logging&lt;/a&gt;, NodeJS 中的&lt;a href=&quot;https://www.npmjs.com/package/log4js&quot;&gt;log4js&lt;/a&gt;, Rust 中的&lt;a href=&quot;https://crates.io/crates/log4rs&quot;&gt;log4rs&lt;/a&gt;。&lt;/p&gt;
-&lt;h3&gt;注意点&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;避免打印或记录任何敏感信息，包括但不限于各种PII，PCI信息，一定要记得遵守当地的各种法律法规，如中国的《个人信息保护法》（PILI），欧洲的一般数据保护条例GDPR等&lt;/li&gt;
-&lt;li&gt;按需选择合适的日志级别和日志位置&lt;/li&gt;
-&lt;li&gt;……&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3&gt;总结&lt;/h3&gt;
-&lt;p&gt;好的日志不仅可以为程序开发提供便利，为故障排除提供最重要的辅助信息，更可以为业务或基础设施提供优化建议或数据统计。&lt;/p&gt;
-&lt;h3&gt;参考材料&lt;/h3&gt;
-
-&amp;#13;
-&lt;/div&gt;&amp;#13;
-&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
