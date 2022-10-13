@@ -426,13 +426,24 @@ check[11]=state[tha]=6&lt;strong&gt;通过&lt;/strong&gt;&lt;/p&gt;
   &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>df5d5ec099f091e2f10f85259855651b</guid>
-<title>Paxos 选举出一个Leader 解决活锁，可是如果在存在 Leader 为什么要使用 Paxos?</title>
-<link>https://toutiao.io/k/2bbd05t</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content             autoTypeSetting24psection&quot; id=&quot;js_content&quot;&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.2949547218628719&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Xxt327ybUOV0mEIPWEYAszrbTYOzzTeibNynwpNTSkcUtc2Ftjx0WVe8oGa3P9IL5wh65aoBUf4OIzOnKW9eCWA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;773&quot;/&gt;&lt;/p&gt;&lt;p data-first-child=&quot;&quot; data-pid=&quot;YqO7yZI8&quot;&gt;&lt;/p&gt;&lt;p data-first-child=&quot;&quot; data-pid=&quot;YqO7yZI8&quot;&gt;解答题主的疑惑，需要先了解引入Leader的推导过程（即multi-paxos的推导过程），跟题主明确两个概念，basic-paxos（存在活锁）、multi-paxos（引入Leader）。&lt;/p&gt;&lt;h2 data-into-catalog-status=&quot;&quot;&gt;推导过程&lt;/h2&gt;&lt;p data-pid=&quot;lX6lLlgj&quot;&gt;我们知道basic-paxos存在活锁，并且需要两个阶段才能达成共识。因为这两个局限，我们推导出multi-paxos。&lt;/p&gt;&lt;h3 data-into-catalog-status=&quot;&quot;&gt;活锁（引入Leader）&lt;/h3&gt;&lt;p data-pid=&quot;JJE9rBVc&quot;&gt;活锁导致原因是因为，存在多个proposer发起提案，导致多个提案之间互相干扰，使得最终没有任何提案达成共识。&lt;/p&gt;&lt;p data-pid=&quot;bX9q0PQl&quot;&gt;解决这个问题，最简单的方案，自然是引入&lt;span&gt;（并非一个）&lt;/span&gt;权威的成员，即Leader，只允许权威的成员发起提案。减少了发起提案成员的数量，提案相互干扰的概率自然也会降低。&lt;/p&gt;&lt;p data-pid=&quot;aRnBrMAN&quot;&gt;而这里提到的Leader，并非是一个全局唯一的强Leader，与题主理解的Leader稍有不同，在multi-paxos中允许存在同时存在多个Leader，如果引入一个强Leader，那确实有其他的算法可以替代，例如：Raft。所以在multi-paxos中，Leader是一个集合，它是Proposer的子集。&lt;/p&gt;&lt;p data-pid=&quot;cE2tSlLP&quot;&gt;因为多个Leader同时存在的缘故，Leader仅仅是为了降低活锁的概率，因此并不能完全规避活锁。&lt;/p&gt;&lt;p data-pid=&quot;vMg_eSb0&quot;&gt;另外，同时存在多个Leader会不会影响算法的正确性？不会，只要每个Leader按照preare → accept执行协商过程，最终正确性仍然可以保证，因为拥有最高的提案编号的多数派最多只会有一个，而其他更低提案编号的提案将不会达成共识。&lt;/p&gt;&lt;h3 data-into-catalog-status=&quot;&quot;&gt;需要两个阶段才能达成共识（省略prepare）&lt;/h3&gt;&lt;p data-pid=&quot;3HhhxFC2&quot;&gt;引入Leader后，我们可以很快的观察到，当没有提案干扰（即：只存在一个Leader）的情况，prepare阶段是非必须的。&lt;/p&gt;&lt;p data-pid=&quot;2dUMdUmp&quot;&gt;因为prepare阶段是用来协商提案编号的，而协商提案编号的目的是为了争取该提案编号发起提案的所有权。当只有一个Leader A存在的情况，没有其他成员和该Leader A争取发起提案的所有权，所以Leader A可以直接进入accept阶段，而跳过prepare阶段。当其他Leader B获取下一个提案编号的所有权后，那么Leader A的accept阶段，就不会获取到多数派的支持，从而重新进入prepare阶段。&lt;/p&gt;&lt;p data-pid=&quot;J7axq28l&quot;&gt;而这就是multi-paxos的协商过程。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;/div&gt;
+<guid>fd33f6771d4727c01f83f6a0fe54f0a8</guid>
+<title>130 个学术网站 26 个科研工具</title>
+<link>https://toutiao.io/k/rw2dlfo</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;profile_inner&quot;&gt;
+                  &lt;strong class=&quot;profile_nickname&quot;&gt;pythonic生物人&lt;/strong&gt;
+                  &lt;img class=&quot;profile_avatar&quot; id=&quot;js_profile_qrcode_img&quot; src=&quot;&quot; alt=&quot;&quot;/&gt;
 
-          
-        &lt;/div&gt;&lt;/div&gt;</content:encoded>
+                  &lt;p class=&quot;profile_meta&quot;&gt;
+                  &lt;label class=&quot;profile_meta_label&quot;&gt;Weixin ID&lt;/label&gt;
+                  &lt;span class=&quot;profile_meta_value&quot;&gt;gh_d6ea706a4619&lt;/span&gt;
+                  &lt;/p&gt;
+
+                  &lt;p class=&quot;profile_meta&quot;&gt;
+                  &lt;label class=&quot;profile_meta_label&quot;&gt;About Feature&lt;/label&gt;
+                  &lt;span class=&quot;profile_meta_value&quot;&gt;分享数据科学干货（涉及Python/R/统计等）&lt;/span&gt;
+                  &lt;/p&gt;
+                &lt;/div&gt;
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
 <guid>43b9e8c9c0735e56174ddad115f4bbbb</guid>
@@ -525,23 +536,12 @@ check[11]=state[tha]=6&lt;strong&gt;通过&lt;/strong&gt;&lt;/p&gt;
 &lt;/section&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>fd33f6771d4727c01f83f6a0fe54f0a8</guid>
-<title>130 个学术网站 26 个科研工具</title>
-<link>https://toutiao.io/k/rw2dlfo</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;profile_inner&quot;&gt;
-                  &lt;strong class=&quot;profile_nickname&quot;&gt;pythonic生物人&lt;/strong&gt;
-                  &lt;img class=&quot;profile_avatar&quot; id=&quot;js_profile_qrcode_img&quot; src=&quot;&quot; alt=&quot;&quot;/&gt;
+<guid>df5d5ec099f091e2f10f85259855651b</guid>
+<title>Paxos 选举出一个Leader 解决活锁，可是如果在存在 Leader 为什么要使用 Paxos?</title>
+<link>https://toutiao.io/k/2bbd05t</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content             autoTypeSetting24psection&quot; id=&quot;js_content&quot;&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.2949547218628719&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Xxt327ybUOV0mEIPWEYAszrbTYOzzTeibNynwpNTSkcUtc2Ftjx0WVe8oGa3P9IL5wh65aoBUf4OIzOnKW9eCWA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;773&quot;/&gt;&lt;/p&gt;&lt;p data-first-child=&quot;&quot; data-pid=&quot;YqO7yZI8&quot;&gt;&lt;/p&gt;&lt;p data-first-child=&quot;&quot; data-pid=&quot;YqO7yZI8&quot;&gt;解答题主的疑惑，需要先了解引入Leader的推导过程（即multi-paxos的推导过程），跟题主明确两个概念，basic-paxos（存在活锁）、multi-paxos（引入Leader）。&lt;/p&gt;&lt;h2 data-into-catalog-status=&quot;&quot;&gt;推导过程&lt;/h2&gt;&lt;p data-pid=&quot;lX6lLlgj&quot;&gt;我们知道basic-paxos存在活锁，并且需要两个阶段才能达成共识。因为这两个局限，我们推导出multi-paxos。&lt;/p&gt;&lt;h3 data-into-catalog-status=&quot;&quot;&gt;活锁（引入Leader）&lt;/h3&gt;&lt;p data-pid=&quot;JJE9rBVc&quot;&gt;活锁导致原因是因为，存在多个proposer发起提案，导致多个提案之间互相干扰，使得最终没有任何提案达成共识。&lt;/p&gt;&lt;p data-pid=&quot;bX9q0PQl&quot;&gt;解决这个问题，最简单的方案，自然是引入&lt;span&gt;（并非一个）&lt;/span&gt;权威的成员，即Leader，只允许权威的成员发起提案。减少了发起提案成员的数量，提案相互干扰的概率自然也会降低。&lt;/p&gt;&lt;p data-pid=&quot;aRnBrMAN&quot;&gt;而这里提到的Leader，并非是一个全局唯一的强Leader，与题主理解的Leader稍有不同，在multi-paxos中允许存在同时存在多个Leader，如果引入一个强Leader，那确实有其他的算法可以替代，例如：Raft。所以在multi-paxos中，Leader是一个集合，它是Proposer的子集。&lt;/p&gt;&lt;p data-pid=&quot;cE2tSlLP&quot;&gt;因为多个Leader同时存在的缘故，Leader仅仅是为了降低活锁的概率，因此并不能完全规避活锁。&lt;/p&gt;&lt;p data-pid=&quot;vMg_eSb0&quot;&gt;另外，同时存在多个Leader会不会影响算法的正确性？不会，只要每个Leader按照preare → accept执行协商过程，最终正确性仍然可以保证，因为拥有最高的提案编号的多数派最多只会有一个，而其他更低提案编号的提案将不会达成共识。&lt;/p&gt;&lt;h3 data-into-catalog-status=&quot;&quot;&gt;需要两个阶段才能达成共识（省略prepare）&lt;/h3&gt;&lt;p data-pid=&quot;3HhhxFC2&quot;&gt;引入Leader后，我们可以很快的观察到，当没有提案干扰（即：只存在一个Leader）的情况，prepare阶段是非必须的。&lt;/p&gt;&lt;p data-pid=&quot;2dUMdUmp&quot;&gt;因为prepare阶段是用来协商提案编号的，而协商提案编号的目的是为了争取该提案编号发起提案的所有权。当只有一个Leader A存在的情况，没有其他成员和该Leader A争取发起提案的所有权，所以Leader A可以直接进入accept阶段，而跳过prepare阶段。当其他Leader B获取下一个提案编号的所有权后，那么Leader A的accept阶段，就不会获取到多数派的支持，从而重新进入prepare阶段。&lt;/p&gt;&lt;p data-pid=&quot;J7axq28l&quot;&gt;而这就是multi-paxos的协商过程。&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;/div&gt;
 
-                  &lt;p class=&quot;profile_meta&quot;&gt;
-                  &lt;label class=&quot;profile_meta_label&quot;&gt;Weixin ID&lt;/label&gt;
-                  &lt;span class=&quot;profile_meta_value&quot;&gt;gh_d6ea706a4619&lt;/span&gt;
-                  &lt;/p&gt;
-
-                  &lt;p class=&quot;profile_meta&quot;&gt;
-                  &lt;label class=&quot;profile_meta_label&quot;&gt;About Feature&lt;/label&gt;
-                  &lt;span class=&quot;profile_meta_value&quot;&gt;分享数据科学干货（涉及Python/R/统计等）&lt;/span&gt;
-                  &lt;/p&gt;
-                &lt;/div&gt;
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+          
+        &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
