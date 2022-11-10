@@ -20,6 +20,50 @@
         &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
+<guid>7e584ee48fda6c3f1d7832d8f3464eb6</guid>
+<title>推特按照代码行数来裁员？赶快看一下自己在 Git 仓库中的贡献有多少</title>
+<link>https://toutiao.io/k/x6jr41i</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entry-content mt-0&quot;&gt;&lt;p&gt;据说推特是按照代码行数来裁员的。怎么才能知道自己到底贡献了多少代码呢？本文来告诉你。&lt;/p&gt;&lt;p&gt;绝大部分公司都使用 git 来管理源代码。git 的 commit 是以行为单位的。每个 commit 可以看到添加或删除的行。通过计算全部 commit 中添加或删除的行的数量，就可以看出一个人在代码仓库中的贡献有多少。&lt;/p&gt;&lt;p&gt;第一步，&lt;strong&gt;查看自己在 git 仓库中的贡献&lt;/strong&gt;。&lt;/p&gt;&lt;p&gt;通过 &lt;code class=&quot;language-text&quot;&gt;git log&lt;/code&gt; 命令就可以查看。只需要复制粘贴这条命令，把 &lt;code class=&quot;language-text&quot;&gt;&amp;lt;邮件地址&amp;gt;&lt;/code&gt; 替换成自己在 git 仓库中使用的地址，运行之后就可以看到输出的结果了。&lt;/p&gt;&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;sh&quot;&gt;&lt;pre class=&quot;language-sh line-numbers&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;git log --author=&quot;&amp;lt;邮件地址&amp;gt;&quot; --no-merges --no-show-signature --pretty=tformat: --numstat | awk &#x27;{ add += $1; subs += $2; loc += $1 - $2 } END { printf &quot;添加的行数: %s, 删除的行数: %s, 总行数: %s\n&quot;, add, subs, loc }&#x27; -&lt;/code&gt;&lt;span aria-hidden=&quot;true&quot; class=&quot;line-numbers-rows&quot;&gt;&lt;span/&gt;&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;输出的结果类似下面这样的：&lt;/p&gt;&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;sh&quot;&gt;&lt;pre class=&quot;language-sh line-numbers&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;添加的行数: 38070, 删除的行数: 68072, 总行数: -30002&lt;/code&gt;&lt;span aria-hidden=&quot;true&quot; class=&quot;line-numbers-rows&quot;&gt;&lt;span/&gt;&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;第二步，&lt;strong&gt;查看公司所有人在 git 仓库中的贡献&lt;/strong&gt;。&lt;/p&gt;&lt;p&gt;这一步是确定自己在贡献排行中的位置，同样的复制粘贴脚本再运行。&lt;/p&gt;&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;sh&quot;&gt;&lt;pre class=&quot;language-sh line-numbers&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;git log --no-merges --no-show-signature --pretty=format:%an --numstat | awk &#x27;/./ &amp;amp;&amp;amp; !author { author = $0; next } author { ins[author] += $1; del[author] += $2 } /^$/ { author = &quot;&quot;; next } END { for (a in ins) { printf &quot;%10d %10d %10d %s\n&quot;, ins[a] - del[a], ins[a], del[a], a } }&#x27; | sort -rn&lt;/code&gt;&lt;span aria-hidden=&quot;true&quot; class=&quot;line-numbers-rows&quot;&gt;&lt;span/&gt;&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;输出的结果会按照总行数来进行排序。结果一共有 4 列，分别是总行数、添加的行数、删除的行数和名字。&lt;/p&gt;&lt;p&gt;下面是 Spring 框架的贡献者的排行榜的一部分：&lt;/p&gt;&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;txt&quot;&gt;&lt;pre class=&quot;language-txt line-numbers&quot;&gt;&lt;code class=&quot;language-txt&quot;&gt;    645708     732238      86530 Arjen Poutsma
+    241568     472056     230488 Rossen Stoyanchev
+     84111     113974      29863 Thomas Risberg
+     82777     111029      28252 Stephane Nicoll
+     68131     270734     202603 Chris Beams
+     67341     226088     158747 Sam Brannen
+     67258      91641      24383 Sebastien Deleuze
+     40399     121776      81377 Andy Clement
+     35374     136229     100855 Brian Clozel
+     24461     229173     204712 Phillip Webb
+     19649      70753      51104 Keith Donald
+     18111      18430        319 Mark Paluch
+     12734      21256       8522 rstoyanchev
+      8837      12209       3372 Sébastien Deleuze
+      7472      21998      14526 Mark Pollack
+      6847       8155       1308 Mark Fisher
+      5005       9039       4034 David Syer
+      4895       6243       1348 Oliver Gierke
+      4323       4988        665 sdeleuze
+      4193       5355       1162 Violeta Georgieva
+      3916      16517      12601 Costin Leau
+      3385       3876        491 Scott Andrews
+      3265       3457        192 Ramnivas Laddad
+      2983      19080      16097 Jay Bryant&lt;/code&gt;&lt;span aria-hidden=&quot;true&quot; class=&quot;line-numbers-rows&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;上面说到的做法都需要执行脚本。有没有更加容易的做法呢？可以用工具。&lt;/p&gt;&lt;p&gt;这里介绍两个工具。第一个是 &lt;code class=&quot;language-text&quot;&gt;git-quick-stats&lt;/code&gt;。使用 Homebrew 就可以安装。&lt;/p&gt;&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;sh&quot;&gt;&lt;pre class=&quot;language-sh line-numbers&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;brew install git-quick-stats&lt;/code&gt;&lt;span aria-hidden=&quot;true&quot; class=&quot;line-numbers-rows&quot;&gt;&lt;span/&gt;&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;git-quick-stats&lt;/code&gt; 提供的功能很多，如下图所示。&lt;/p&gt;&lt;p&gt;第一个选项是我们需要运行的。&lt;/p&gt;&lt;p&gt;&lt;span class=&quot;gatsby-resp-image-wrapper&quot;&gt;
+      &lt;a class=&quot;gatsby-resp-image-link&quot; href=&quot;/static/bd8e088f06dd25d74b0ed9d6cd7f939d/2b608/git-quick-stats.png&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;
+    &lt;span class=&quot;gatsby-resp-image-background-image&quot;/&gt;
+  &lt;img class=&quot;gatsby-resp-image-image&quot; alt=&quot;git-quick-stats&quot; title=&quot;git-quick-stats&quot; src=&quot;/static/bd8e088f06dd25d74b0ed9d6cd7f939d/00d43/git-quick-stats.png&quot; srcset=&quot;/static/bd8e088f06dd25d74b0ed9d6cd7f939d/63868/git-quick-stats.png 250w,/static/bd8e088f06dd25d74b0ed9d6cd7f939d/0b533/git-quick-stats.png 500w,/static/bd8e088f06dd25d74b0ed9d6cd7f939d/00d43/git-quick-stats.png 1000w,/static/bd8e088f06dd25d74b0ed9d6cd7f939d/aa440/git-quick-stats.png 1500w,/static/bd8e088f06dd25d74b0ed9d6cd7f939d/2b608/git-quick-stats.png 1540w&quot; sizes=&quot;(max-width: 1000px) 100vw, 1000px&quot; loading=&quot;lazy&quot;/&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;&lt;p&gt;运行的结果如下所示。&lt;/p&gt;&lt;p&gt;&lt;span class=&quot;gatsby-resp-image-wrapper&quot;&gt;
+      &lt;a class=&quot;gatsby-resp-image-link&quot; href=&quot;/static/c3d3892a1903c869e2e57c5d1e8d8369/49b61/git-quick-stats-result.png&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;
+    &lt;span class=&quot;gatsby-resp-image-background-image&quot;/&gt;
+  &lt;img class=&quot;gatsby-resp-image-image&quot; alt=&quot;git-quick-stats 结果&quot; title=&quot;git-quick-stats 结果&quot; src=&quot;/static/c3d3892a1903c869e2e57c5d1e8d8369/00d43/git-quick-stats-result.png&quot; srcset=&quot;/static/c3d3892a1903c869e2e57c5d1e8d8369/63868/git-quick-stats-result.png 250w,/static/c3d3892a1903c869e2e57c5d1e8d8369/0b533/git-quick-stats-result.png 500w,/static/c3d3892a1903c869e2e57c5d1e8d8369/00d43/git-quick-stats-result.png 1000w,/static/c3d3892a1903c869e2e57c5d1e8d8369/aa440/git-quick-stats-result.png 1500w,/static/c3d3892a1903c869e2e57c5d1e8d8369/49b61/git-quick-stats-result.png 1756w&quot; sizes=&quot;(max-width: 1000px) 100vw, 1000px&quot; loading=&quot;lazy&quot;/&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;&lt;p&gt; &lt;code class=&quot;language-text&quot;&gt;git-quick-stats&lt;/code&gt; 所提供的结果是比较详细的，但是没有按照贡献值排序。&lt;/p&gt;&lt;p&gt;第二个工具是 &lt;a href=&quot;https://github.com/oleander/git-fame-rb&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;git-fame&lt;/a&gt;， 使用 Ruby开发，可以通过 &lt;code class=&quot;language-text&quot;&gt;gem&lt;/code&gt; 安装。&lt;/p&gt;&lt;p&gt;安装了之后，运行下面的命令就可以查看结果。&lt;/p&gt;&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;git-fame&lt;/code&gt; 的输出会更加美观一点。&lt;/p&gt;&lt;p&gt;&lt;span class=&quot;gatsby-resp-image-wrapper&quot;&gt;
+      &lt;a class=&quot;gatsby-resp-image-link&quot; href=&quot;/static/138859fc967a107c64fe5638b571e494/3b25c/git-fame.png&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;
+    &lt;span class=&quot;gatsby-resp-image-background-image&quot;/&gt;
+  &lt;img class=&quot;gatsby-resp-image-image&quot; alt=&quot;git-fame&quot; title=&quot;git-fame&quot; src=&quot;/static/138859fc967a107c64fe5638b571e494/00d43/git-fame.png&quot; srcset=&quot;/static/138859fc967a107c64fe5638b571e494/63868/git-fame.png 250w,/static/138859fc967a107c64fe5638b571e494/0b533/git-fame.png 500w,/static/138859fc967a107c64fe5638b571e494/00d43/git-fame.png 1000w,/static/138859fc967a107c64fe5638b571e494/aa440/git-fame.png 1500w,/static/138859fc967a107c64fe5638b571e494/e8950/git-fame.png 2000w,/static/138859fc967a107c64fe5638b571e494/3b25c/git-fame.png 3440w&quot; sizes=&quot;(max-width: 1000px) 100vw, 1000px&quot; loading=&quot;lazy&quot;/&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;git-fame&lt;/code&gt; 的问题在于执行起来非常慢。稍微大一点的 git 仓库，执行就会卡住，很长时间都没有结果。&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
 <guid>40bbf068af1070daf6dcb782297831db</guid>
 <title>五大模型揭秘深度学习用于时序预测的最新进展</title>
 <link>https://toutiao.io/k/ej101yr</link>
@@ -126,50 +170,6 @@
 &lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f767f325fae54f28aff064405c11c9d7%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
 &lt;/div&gt;
   &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>7e584ee48fda6c3f1d7832d8f3464eb6</guid>
-<title>推特按照代码行数来裁员？赶快看一下自己在 Git 仓库中的贡献有多少</title>
-<link>https://toutiao.io/k/x6jr41i</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entry-content mt-0&quot;&gt;&lt;p&gt;据说推特是按照代码行数来裁员的。怎么才能知道自己到底贡献了多少代码呢？本文来告诉你。&lt;/p&gt;&lt;p&gt;绝大部分公司都使用 git 来管理源代码。git 的 commit 是以行为单位的。每个 commit 可以看到添加或删除的行。通过计算全部 commit 中添加或删除的行的数量，就可以看出一个人在代码仓库中的贡献有多少。&lt;/p&gt;&lt;p&gt;第一步，&lt;strong&gt;查看自己在 git 仓库中的贡献&lt;/strong&gt;。&lt;/p&gt;&lt;p&gt;通过 &lt;code class=&quot;language-text&quot;&gt;git log&lt;/code&gt; 命令就可以查看。只需要复制粘贴这条命令，把 &lt;code class=&quot;language-text&quot;&gt;&amp;lt;邮件地址&amp;gt;&lt;/code&gt; 替换成自己在 git 仓库中使用的地址，运行之后就可以看到输出的结果了。&lt;/p&gt;&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;sh&quot;&gt;&lt;pre class=&quot;language-sh line-numbers&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;git log --author=&quot;&amp;lt;邮件地址&amp;gt;&quot; --no-merges --no-show-signature --pretty=tformat: --numstat | awk &#x27;{ add += $1; subs += $2; loc += $1 - $2 } END { printf &quot;添加的行数: %s, 删除的行数: %s, 总行数: %s\n&quot;, add, subs, loc }&#x27; -&lt;/code&gt;&lt;span aria-hidden=&quot;true&quot; class=&quot;line-numbers-rows&quot;&gt;&lt;span/&gt;&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;输出的结果类似下面这样的：&lt;/p&gt;&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;sh&quot;&gt;&lt;pre class=&quot;language-sh line-numbers&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;添加的行数: 38070, 删除的行数: 68072, 总行数: -30002&lt;/code&gt;&lt;span aria-hidden=&quot;true&quot; class=&quot;line-numbers-rows&quot;&gt;&lt;span/&gt;&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;第二步，&lt;strong&gt;查看公司所有人在 git 仓库中的贡献&lt;/strong&gt;。&lt;/p&gt;&lt;p&gt;这一步是确定自己在贡献排行中的位置，同样的复制粘贴脚本再运行。&lt;/p&gt;&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;sh&quot;&gt;&lt;pre class=&quot;language-sh line-numbers&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;git log --no-merges --no-show-signature --pretty=format:%an --numstat | awk &#x27;/./ &amp;amp;&amp;amp; !author { author = $0; next } author { ins[author] += $1; del[author] += $2 } /^$/ { author = &quot;&quot;; next } END { for (a in ins) { printf &quot;%10d %10d %10d %s\n&quot;, ins[a] - del[a], ins[a], del[a], a } }&#x27; | sort -rn&lt;/code&gt;&lt;span aria-hidden=&quot;true&quot; class=&quot;line-numbers-rows&quot;&gt;&lt;span/&gt;&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;输出的结果会按照总行数来进行排序。结果一共有 4 列，分别是总行数、添加的行数、删除的行数和名字。&lt;/p&gt;&lt;p&gt;下面是 Spring 框架的贡献者的排行榜的一部分：&lt;/p&gt;&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;txt&quot;&gt;&lt;pre class=&quot;language-txt line-numbers&quot;&gt;&lt;code class=&quot;language-txt&quot;&gt;    645708     732238      86530 Arjen Poutsma
-    241568     472056     230488 Rossen Stoyanchev
-     84111     113974      29863 Thomas Risberg
-     82777     111029      28252 Stephane Nicoll
-     68131     270734     202603 Chris Beams
-     67341     226088     158747 Sam Brannen
-     67258      91641      24383 Sebastien Deleuze
-     40399     121776      81377 Andy Clement
-     35374     136229     100855 Brian Clozel
-     24461     229173     204712 Phillip Webb
-     19649      70753      51104 Keith Donald
-     18111      18430        319 Mark Paluch
-     12734      21256       8522 rstoyanchev
-      8837      12209       3372 Sébastien Deleuze
-      7472      21998      14526 Mark Pollack
-      6847       8155       1308 Mark Fisher
-      5005       9039       4034 David Syer
-      4895       6243       1348 Oliver Gierke
-      4323       4988        665 sdeleuze
-      4193       5355       1162 Violeta Georgieva
-      3916      16517      12601 Costin Leau
-      3385       3876        491 Scott Andrews
-      3265       3457        192 Ramnivas Laddad
-      2983      19080      16097 Jay Bryant&lt;/code&gt;&lt;span aria-hidden=&quot;true&quot; class=&quot;line-numbers-rows&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;span/&gt;&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;上面说到的做法都需要执行脚本。有没有更加容易的做法呢？可以用工具。&lt;/p&gt;&lt;p&gt;这里介绍两个工具。第一个是 &lt;code class=&quot;language-text&quot;&gt;git-quick-stats&lt;/code&gt;。使用 Homebrew 就可以安装。&lt;/p&gt;&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;sh&quot;&gt;&lt;pre class=&quot;language-sh line-numbers&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;brew install git-quick-stats&lt;/code&gt;&lt;span aria-hidden=&quot;true&quot; class=&quot;line-numbers-rows&quot;&gt;&lt;span/&gt;&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;git-quick-stats&lt;/code&gt; 提供的功能很多，如下图所示。&lt;/p&gt;&lt;p&gt;第一个选项是我们需要运行的。&lt;/p&gt;&lt;p&gt;&lt;span class=&quot;gatsby-resp-image-wrapper&quot;&gt;
-      &lt;a class=&quot;gatsby-resp-image-link&quot; href=&quot;/static/bd8e088f06dd25d74b0ed9d6cd7f939d/2b608/git-quick-stats.png&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;
-    &lt;span class=&quot;gatsby-resp-image-background-image&quot;/&gt;
-  &lt;img class=&quot;gatsby-resp-image-image&quot; alt=&quot;git-quick-stats&quot; title=&quot;git-quick-stats&quot; src=&quot;/static/bd8e088f06dd25d74b0ed9d6cd7f939d/00d43/git-quick-stats.png&quot; srcset=&quot;/static/bd8e088f06dd25d74b0ed9d6cd7f939d/63868/git-quick-stats.png 250w,/static/bd8e088f06dd25d74b0ed9d6cd7f939d/0b533/git-quick-stats.png 500w,/static/bd8e088f06dd25d74b0ed9d6cd7f939d/00d43/git-quick-stats.png 1000w,/static/bd8e088f06dd25d74b0ed9d6cd7f939d/aa440/git-quick-stats.png 1500w,/static/bd8e088f06dd25d74b0ed9d6cd7f939d/2b608/git-quick-stats.png 1540w&quot; sizes=&quot;(max-width: 1000px) 100vw, 1000px&quot; loading=&quot;lazy&quot;/&gt;
-  &lt;/a&gt;
-    &lt;/span&gt;&lt;/p&gt;&lt;p&gt;运行的结果如下所示。&lt;/p&gt;&lt;p&gt;&lt;span class=&quot;gatsby-resp-image-wrapper&quot;&gt;
-      &lt;a class=&quot;gatsby-resp-image-link&quot; href=&quot;/static/c3d3892a1903c869e2e57c5d1e8d8369/49b61/git-quick-stats-result.png&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;
-    &lt;span class=&quot;gatsby-resp-image-background-image&quot;/&gt;
-  &lt;img class=&quot;gatsby-resp-image-image&quot; alt=&quot;git-quick-stats 结果&quot; title=&quot;git-quick-stats 结果&quot; src=&quot;/static/c3d3892a1903c869e2e57c5d1e8d8369/00d43/git-quick-stats-result.png&quot; srcset=&quot;/static/c3d3892a1903c869e2e57c5d1e8d8369/63868/git-quick-stats-result.png 250w,/static/c3d3892a1903c869e2e57c5d1e8d8369/0b533/git-quick-stats-result.png 500w,/static/c3d3892a1903c869e2e57c5d1e8d8369/00d43/git-quick-stats-result.png 1000w,/static/c3d3892a1903c869e2e57c5d1e8d8369/aa440/git-quick-stats-result.png 1500w,/static/c3d3892a1903c869e2e57c5d1e8d8369/49b61/git-quick-stats-result.png 1756w&quot; sizes=&quot;(max-width: 1000px) 100vw, 1000px&quot; loading=&quot;lazy&quot;/&gt;
-  &lt;/a&gt;
-    &lt;/span&gt;&lt;/p&gt;&lt;p&gt; &lt;code class=&quot;language-text&quot;&gt;git-quick-stats&lt;/code&gt; 所提供的结果是比较详细的，但是没有按照贡献值排序。&lt;/p&gt;&lt;p&gt;第二个工具是 &lt;a href=&quot;https://github.com/oleander/git-fame-rb&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;git-fame&lt;/a&gt;， 使用 Ruby开发，可以通过 &lt;code class=&quot;language-text&quot;&gt;gem&lt;/code&gt; 安装。&lt;/p&gt;&lt;p&gt;安装了之后，运行下面的命令就可以查看结果。&lt;/p&gt;&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;git-fame&lt;/code&gt; 的输出会更加美观一点。&lt;/p&gt;&lt;p&gt;&lt;span class=&quot;gatsby-resp-image-wrapper&quot;&gt;
-      &lt;a class=&quot;gatsby-resp-image-link&quot; href=&quot;/static/138859fc967a107c64fe5638b571e494/3b25c/git-fame.png&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;
-    &lt;span class=&quot;gatsby-resp-image-background-image&quot;/&gt;
-  &lt;img class=&quot;gatsby-resp-image-image&quot; alt=&quot;git-fame&quot; title=&quot;git-fame&quot; src=&quot;/static/138859fc967a107c64fe5638b571e494/00d43/git-fame.png&quot; srcset=&quot;/static/138859fc967a107c64fe5638b571e494/63868/git-fame.png 250w,/static/138859fc967a107c64fe5638b571e494/0b533/git-fame.png 500w,/static/138859fc967a107c64fe5638b571e494/00d43/git-fame.png 1000w,/static/138859fc967a107c64fe5638b571e494/aa440/git-fame.png 1500w,/static/138859fc967a107c64fe5638b571e494/e8950/git-fame.png 2000w,/static/138859fc967a107c64fe5638b571e494/3b25c/git-fame.png 3440w&quot; sizes=&quot;(max-width: 1000px) 100vw, 1000px&quot; loading=&quot;lazy&quot;/&gt;
-  &lt;/a&gt;
-    &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;git-fame&lt;/code&gt; 的问题在于执行起来非常慢。稍微大一点的 git 仓库，执行就会卡住，很长时间都没有结果。&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
 <guid>59191c81e6e1e8b9af6e427a998c4079</guid>
