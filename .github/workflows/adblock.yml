@@ -29,8 +29,8 @@ jobs:
         
         git clone git@github.com:wudongdefeng/anti-AD.git ~/anti-AD    
         git clone git@github.com:dancing-wind/ownadblock.git ~/ad
-        git clone https://code.aliyun.com/wudongdefeng/ownadblock.git ~/aliyun
-        git clone https://gitlab.com/wudongdefeng/ownadblock.git ~/gitlab
+        git clone git clone https://codeberg.org/wudongdefeng/adblock.git ~/codeberg
+        #git clone https://gitlab.com/wudongdefeng/ownadblock.git ~/gitlab
 
     - name: Run diy.sh 开始定制
       run: |
@@ -44,28 +44,28 @@ jobs:
 
     - name: copy some list files 复制文件
       run: |
-        echo "https://wudongdefeng:${{ secrets.aliyun }}@code.aliyun.com">~/.git-credentials
-        cp ~/anti-AD/anti-ad-easylist.txt ~/aliyun/ad.txt
-        cp ~/anti-AD/anti-ad-easylist.txt ~/gitlab/ad.txt    
+        echo "https://wudongdefeng:${{ secrets.codeberg }}@codeberg.org">~/.git-credentials
+        cp ~/anti-AD/anti-ad-easylist.txt ~/codeberg/ad.txt
+        #cp ~/anti-AD/anti-ad-easylist.txt ~/gitlab/ad.txt    
     
         
     - name: Commit files 提交文件
       run: |
-        cd ~/aliyun
+        cd ~/codeberg
         awk '!a[$0]++' ad.txt
         git config --global credential.helper store
         git config user.name github-actions
         git config user.email github-actions@github.com
         git add .
         git commit -m "空投已送达" -a
-        git push -u origin master
+        git push -u origin main
         rm ~/.git-credentials
-        cd ~/gitlab
-        awk '!a[$0]++' ad.txt
-        echo "https://wudongdefeng:${{ secrets.gitlab }}@gitlab.com">~/.git-credentials
-        git config --global credential.helper store
-        git config user.name github-actions
-        git config user.email github-actions@github.com
-        git add .
-        git commit -m "空投已送达" -a
-        git push -u origin master
+        #cd ~/gitlab
+        #awk '!a[$0]++' ad.txt
+        #echo "https://wudongdefeng:${{ secrets.gitlab }}@gitlab.com">~/.git-credentials
+        #git config --global credential.helper store
+        #git config user.name github-actions
+        #git config user.email github-actions@github.com
+        #git add .
+        #git commit -m "空投已送达" -a
+        #git push -u origin master
