@@ -30,20 +30,7 @@ jobs:
         git clone git@github.com:wudongdefeng/anti-AD.git ~/anti-AD    
         git clone git@github.com:dancing-wind/ownadblock.git ~/ad
         git clone https://codeberg.org/wudongdefeng/adblock.git ~/codeberg
-        #git clone https://gitlab.com/wudongdefeng/ownadblock.git ~/gitlab
-    - name: init codeberg 提交文件
-      run: |
-        cd ~/codeberg
-        echo "https://wudongdefeng:${{ secrets.codeberg }}@codeberg.org">~/.git-credentials
-        touch README.md
-        git init
-        git checkout -b main
-        git config --global credential.helper store
-        git config user.name github-actions
-        git config user.email github-actions@github.com
-        git add README.md
-        git commit -m "first commit"
-        git push -u origin main        
+        #git clone https://gitlab.com/wudongdefeng/ownadblock.git ~/gitlab         
     - name: Run diy.sh 开始定制
       run: |
         
