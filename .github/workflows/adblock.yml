@@ -38,6 +38,9 @@ jobs:
         touch README.md
         git init
         git checkout -b main
+        git config --global credential.helper store
+        git config user.name github-actions
+        git config user.email github-actions@github.com
         git add README.md
         git commit -m "first commit"
         git remote add origin https://codeberg.org/wudongdefeng/adblock.git
