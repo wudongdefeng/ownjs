@@ -159,128 +159,511 @@ uncommon_ &lt;span class=&quot;token function&quot;&gt;trap&lt;/span&gt;&lt;span
         &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>b9ecfcb0d867e4e3349d9e683015cf1f</guid>
-<title>独立开发变现周刊（第81期）：开发一个应用来减少屏幕使用时间，月收入 2 万美元</title>
-<link>https://toutiao.io/k/wzlxohy</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;markdown-body-box nuxt-content&quot;&gt;&lt;h1 id=&quot;独立开发变现周刊第81期开发一个应用来减少屏幕使用时间月收入2万美元&quot;&gt;&lt;a href=&quot;#%E7%8B%AC%E7%AB%8B%E5%BC%80%E5%8F%91%E5%8F%98%E7%8E%B0%E5%91%A8%E5%88%8A%E7%AC%AC81%E6%9C%9F%E5%BC%80%E5%8F%91%E4%B8%80%E4%B8%AA%E5%BA%94%E7%94%A8%E6%9D%A5%E5%87%8F%E5%B0%91%E5%B1%8F%E5%B9%95%E4%BD%BF%E7%94%A8%E6%97%B6%E9%97%B4%E6%9C%88%E6%94%B6%E5%85%A52%E4%B8%87%E7%BE%8E%E5%85%83&quot; aria-hidden=&quot;true&quot; tabindex=&quot;-1&quot;&gt;&lt;span class=&quot;icon icon-link&quot;/&gt;&lt;/a&gt;独立开发变现周刊（第81期）：开发一个应用来减少屏幕使用时间，月收入2万美元&lt;/h1&gt;
-&lt;p&gt;分享独立开发、产品变现相关内容，每周五发布。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;目录&lt;/strong&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;1、组件世界 WidgetStore：一个丰富、强大的嵌入式小组件库&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;2、Distill Web Monitor: 监控网页任意区域变化，并发出实时提醒的工具&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;3、Water Hero: 饮水追踪和提醒&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;4、Guidde: 快速创建工作流教程视频&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;5、开发一个应用来减少屏幕使用时间，月收入达到2万美元&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
+<guid>8821c1328f6c7f8a7ab78f7078aa77fd</guid>
+<title>SpringBoot 整合 JWT + Redis 实现双Token 校验 Demo</title>
+<link>https://toutiao.io/k/gju5suq</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div id=&quot;content_views&quot; class=&quot;htmledit_views&quot;&gt;
+                    &lt;h1&gt;一、新建一个SpringBoot 项目，springboot项目创建过程详见 &lt;/h1&gt; 
+&lt;p&gt;&lt;a href=&quot;https://blog.csdn.net/wang_jing_jing/article/details/115075991&quot; title=&quot;mac idea 创建 springboot 项目_JAVA·Ｄ·WangJing的博客-CSDN博客_mac idea创建springboot项目&quot;&gt;mac idea 创建 springboot 项目_JAVA·Ｄ·WangJing的博客-CSDN博客_mac idea创建springboot项目&lt;/a&gt;&lt;/p&gt; 
+&lt;h1&gt;二、SpringBoot 整合使用 Rdis&lt;/h1&gt; 
+&lt;p&gt;&lt;a href=&quot;https://blog.csdn.net/wang_jing_jing/article/details/117455080&quot; title=&quot;SpringBoot 项目 添加 redis配置_JAVA·Ｄ·WangJing的博客-CSDN博客_springboot添加redis&quot;&gt;SpringBoot 项目 添加 redis配置_JAVA·Ｄ·WangJing的博客-CSDN博客_springboot添加redis&lt;/a&gt;&lt;/p&gt; 
+&lt;h1&gt;三、SpringBoot 整合 JWT&lt;/h1&gt; 
+&lt;h2&gt;3.1、pom.xml依赖配置&lt;/h2&gt; 
+&lt;pre&gt;&lt;code class=&quot;hljs&quot;&gt;&amp;lt;!-- JWT依赖 --&amp;gt;
 
-&lt;p&gt;一个服务于 Notion 类产品、双链笔记类产品、代码托管平台「GitHub 等」、博客系统「WordPress」以及为知笔记等文本编辑器的可嵌入式小组件库。辅助用户建立个性化、可视化的仪表盘或者知识库的工具。&lt;/p&gt;
-&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;https://tva1.sinaimg.cn/large/008vxvgGly1h8fyosup96j30v10k3myz.jpg&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;目前已经有接近 40 个基础组件。包括基础组件、动态图标、动态背景、可视化图表、Notion 汉化 等多种服务，可以为笔记用户提供适用于时间管理、任务管理、资讯管理、习惯养成、学习等多种使用场景的解决方案。比如，在基础组件中包括天气、时钟、番茄钟、倒计时、日历、纪念日、习惯打卡、访客统计、白噪音、热力图、微博热搜、百度统计埋点等多种类型等小组件。&lt;/p&gt;
-&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;https://tva1.sinaimg.cn/large/008vxvgGly1h8fyosqvgcj31wg0q6q7t.jpg&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://cn.widgetstore.net/&quot; rel=&quot;nofollow noopener noreferrer&quot; target=&quot;_blank&quot;&gt;组件世界官网体验&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&quot;2distill-web-monitor-监控网页任意区域变化并发出实时提醒的工具&quot;&gt;&lt;a href=&quot;#2distill-web-monitor-%E7%9B%91%E6%8E%A7%E7%BD%91%E9%A1%B5%E4%BB%BB%E6%84%8F%E5%8C%BA%E5%9F%9F%E5%8F%98%E5%8C%96%E5%B9%B6%E5%8F%91%E5%87%BA%E5%AE%9E%E6%97%B6%E6%8F%90%E9%86%92%E7%9A%84%E5%B7%A5%E5%85%B7&quot; aria-hidden=&quot;true&quot; tabindex=&quot;-1&quot;&gt;&lt;span class=&quot;icon icon-link&quot;/&gt;&lt;/a&gt;2、Distill Web Monitor: 监控网页任意区域变化，并发出实时提醒的工具&lt;/h2&gt;
-&lt;p&gt;是一款专门用来监控网页任意区域变化，并发出实时提醒的工具，有浏览器扩展的支持 Chrome、Firefox、Opear，以及拥有 Android 与 iOS 客户端。&lt;/p&gt;
-&lt;p&gt;可以在本地运行，也可以在云端运行（付费），浏览器端通过扩展，实时（最低5秒）将变化告知用户。&lt;/p&gt;
-&lt;p&gt;3步操作即可。&lt;/p&gt;
-&lt;p&gt;1、通过 XPath、JavaScript、CSS Selector 三种方式来选择区域。&lt;/p&gt;
-&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;https://tva1.sinaimg.cn/large/008vxvgGly1h8fyosl0ekj31rh0u0jw1.jpg&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;2、可以设定条件&lt;/p&gt;
-&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;https://tva1.sinaimg.cn/large/008vxvgGly1h8fyosfjvzj31wi0lsaco.jpg&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;3、将变化通知到各个端，还集成了第三方的平台，Slack和Discord的集成。webhook与任何其他平台集成。&lt;/p&gt;
-&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;https://tva1.sinaimg.cn/large/008vxvgGly1h8fyosbdirj30v40gawga.jpg&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://distill.io/&quot; rel=&quot;nofollow noopener noreferrer&quot; target=&quot;_blank&quot;&gt;Distill官网&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&quot;3water-hero-饮水追踪和提醒&quot;&gt;&lt;a href=&quot;#3water-hero-%E9%A5%AE%E6%B0%B4%E8%BF%BD%E8%B8%AA%E5%92%8C%E6%8F%90%E9%86%92&quot; aria-hidden=&quot;true&quot; tabindex=&quot;-1&quot;&gt;&lt;span class=&quot;icon icon-link&quot;/&gt;&lt;/a&gt;3、Water Hero: 饮水追踪和提醒&lt;/h2&gt;
-&lt;p&gt;冬天到了，得多喝热水，保持温暖。Water Hero 帮助您保持水分。计算每日饮水量并设置推送通知提醒。这是一款Android上的应用。&lt;/p&gt;
-&lt;p&gt;一些主要特点是：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;记录水的简单方法。只需向上滑动玻璃，就会记录所需的数量。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;你有 2 个选择用于记录水。分步输入，可以在其中添加最多 5 个收件人尺寸或 FreeFlow。设置想要使用的时间间隔，每次滑动到正确的水平&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;摇动以在 20 秒内取消最后一次喝水。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;推送通知 - 设置推送通知的自定义时间表。还可以选择 30 分钟到 3 小时的饮用间隔。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;计算您的每日摄入量目标。Water Hero 可以帮助估计每日水合作用需求。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;设置自定义每日摄入量目标&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;https://tva1.sinaimg.cn/large/008vxvgGly1h8fyos7ac6j31tc0q60wc.jpg&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://play.google.com/store/apps/details?id=ro.holdone.waterly&quot; rel=&quot;nofollow noopener noreferrer&quot; target=&quot;_blank&quot;&gt;Water Hero的谷歌应用商店&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&quot;4guidde-快速创建工作流教程视频&quot;&gt;&lt;a href=&quot;#4guidde-%E5%BF%AB%E9%80%9F%E5%88%9B%E5%BB%BA%E5%B7%A5%E4%BD%9C%E6%B5%81%E6%95%99%E7%A8%8B%E8%A7%86%E9%A2%91&quot; aria-hidden=&quot;true&quot; tabindex=&quot;-1&quot;&gt;&lt;span class=&quot;icon icon-link&quot;/&gt;&lt;/a&gt;4、Guidde: 快速创建工作流教程视频&lt;/h2&gt;
-&lt;p&gt;guidde是让创建工作流教程视频更简单。这是一个浏览器扩展插件，不需要设计或视频编辑技能。任何人都可以创建漂亮的软件如何制作视频，这些视频可以在60秒或更短的时间内传递你想要传递的信息的主旨。
-在你的流程中发现你的团队创建的视频，而不离开你当前使用的工具。重复使用和回收视频可以节省你大量的时间。你甚至可以一起编辑和设计视频!&lt;/p&gt;
-&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;https://tva1.sinaimg.cn/large/008vxvgGly1h8fyoryvj1j31tw0q80wz.jpg&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://www.guidde.com/&quot; rel=&quot;nofollow noopener noreferrer&quot; target=&quot;_blank&quot;&gt;Guidde官网视频&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&quot;5开发一个应用来减少屏幕使用时间月收入达到2万美元&quot;&gt;&lt;a href=&quot;#5%E5%BC%80%E5%8F%91%E4%B8%80%E4%B8%AA%E5%BA%94%E7%94%A8%E6%9D%A5%E5%87%8F%E5%B0%91%E5%B1%8F%E5%B9%95%E4%BD%BF%E7%94%A8%E6%97%B6%E9%97%B4%E6%9C%88%E6%94%B6%E5%85%A5%E8%BE%BE%E5%88%B02%E4%B8%87%E7%BE%8E%E5%85%83&quot; aria-hidden=&quot;true&quot; tabindex=&quot;-1&quot;&gt;&lt;span class=&quot;icon icon-link&quot;/&gt;&lt;/a&gt;5、开发一个应用来减少屏幕使用时间，月收入达到2万美元&lt;/h2&gt;
-&lt;p&gt;大家好，我的名字是Martin，我是minimalist phone的开发者。这款手机应用允许人们通过温和地减少屏幕时间来优先考虑自己的心理健康。&lt;/p&gt;
-&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;https://tva1.sinaimg.cn/large/008vxvgGly1h8fz9vfa2mj30b40b474k.jpg&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;我们的客户是那些花太多时间在社交媒体上的人，他们希望改善他们耗时的模式。这尤其适用于那些想要提高工作效率、戒掉社交媒体/智能手机瘾的人。&lt;/p&gt;
-&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;https://tva1.sinaimg.cn/large/008vxvgGly1h8fyort1gej30nm0da75o.jpg&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;最初的投资只有100美元用于谷歌Play开发者许可，3000美元开发了一个主页，从这些投资中，我们现在平均每月产生2万美元的收入 —— 大部分收入又花在了付费广告上。我们在谷歌Play上的下载量很快就会达到50万次，这是一个了不起的里程碑。&lt;/p&gt;
-&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;https://tva1.sinaimg.cn/large/008vxvgGly1h8fyorol2pj30rk0rqjtm.jpg&quot;/&gt;&lt;/p&gt;
-&lt;h3 id=&quot;你是怎么想到这个想法的&quot;&gt;&lt;a href=&quot;#%E4%BD%A0%E6%98%AF%E6%80%8E%E4%B9%88%E6%83%B3%E5%88%B0%E8%BF%99%E4%B8%AA%E6%83%B3%E6%B3%95%E7%9A%84&quot; aria-hidden=&quot;true&quot; tabindex=&quot;-1&quot;&gt;&lt;span class=&quot;icon icon-link&quot;/&gt;&lt;/a&gt;你是怎么想到这个想法的?&lt;/h3&gt;
-&lt;p&gt;2020年冠状病毒病爆发时，世界各地的人们采取了前所未有的社交距离和隔离措施。我们之间保持联系的唯一方式就是通过互联网。不幸的是，这只是加速了一个现有的趋势:许多人过度使用社交媒体。这些习惯导致使用者患上抑郁症和其他心理健康问题。&lt;/p&gt;
-&lt;p&gt;疫情期间，我停止了自由职业的工作，找到了一份上班的工作。&lt;/p&gt;
-&lt;p&gt;因为我有了很多新的空闲时间，所以我一直在玩智能手机。我注意到这很耗时——你很容易失去注意力。手机本质上是在重新训练我们的大脑:当你受到参与(点赞、评论等)的“奖励”时，会释放出化学物质(比如多巴胺)，手机正在影响我们的感知能力、表现和生产力。我最终找到了一份新工作，但这段经历决定了我如何看待花在手机上的“dead time”。&lt;/p&gt;
-&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;https://tva1.sinaimg.cn/large/008vxvgGly1h8fyorhow4j30nm0xstag.jpg&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;在意识到社交媒体消费带来的所有这些问题后，我决定要解决这个问题。我喜欢编程，我想把这种热情和一些有用的东西联系起来一些可以帮助社会的东西。这时，minimalist phone的想法诞生了。&lt;/p&gt;
-&lt;p&gt;我的大学背景让我接触到了心理学和机器学习。在学习软件工程时，我对计算机图形学的关注导致我开始研究彩色图像和滤镜如何影响用户，并最终让他们继续使用应用程序。了解到这一点，我基本上逆转了体验，定制了极简手机的UI为黑白。它不像颜色那样吸引眼球，所以我们没有动力花时间点击图标和滚动。&lt;/p&gt;
-&lt;p&gt;&quot;最好是在朝九晚五工作之外的空闲时间工作，这样你就有了灵活性。&quot;&lt;/p&gt;
-&lt;h3 id=&quot;介绍下第一个产品的设计原型和制造过程&quot;&gt;&lt;a href=&quot;#%E4%BB%8B%E7%BB%8D%E4%B8%8B%E7%AC%AC%E4%B8%80%E4%B8%AA%E4%BA%A7%E5%93%81%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%9E%8B%E5%92%8C%E5%88%B6%E9%80%A0%E8%BF%87%E7%A8%8B&quot; aria-hidden=&quot;true&quot; tabindex=&quot;-1&quot;&gt;&lt;span class=&quot;icon icon-link&quot;/&gt;&lt;/a&gt;介绍下第一个产品的设计、原型和制造过程。&lt;/h3&gt;
-&lt;p&gt;首先，我们进行了开发前的用户研究。它包括问卷调查和面对面访谈，以更好地了解用户的需求。我还考虑了以前的学术研究(例如心理学)，以建立理论基础。&lt;/p&gt;
-&lt;p&gt;用户研究参与者被问到的一些问题是&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;想象一下，你需要为你的手机选择一个新的主屏幕。你会选哪一个?&lt;/li&gt;
-&lt;li&gt;你为什么选择这个选择?&lt;/li&gt;
-&lt;li&gt;你喜欢它什么?&lt;/li&gt;
-&lt;li&gt;你认为你花在手机上的时间太多了吗?&lt;/li&gt;
-&lt;li&gt;你认为像这样的主屏幕能帮助你花更少的时间在手机上吗?&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;https://tva1.sinaimg.cn/large/008vxvgGly1h8fyord3qtj30nm0vi3zn.jpg&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;https://tva1.sinaimg.cn/large/008vxvgGly1h8fyor8lrmj30nm0vhq6r.jpg&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;在这些截图中，你还可以看到一些从未投入生产的minimalist phone的替代设计。&lt;/p&gt;
-&lt;p&gt;最初的版本在8周内就准备好了。我从这次经历中得到的教训是:专注于早期的MVP交付。你的产品不必是完美的，因为很多改进都是在发布和使用一段时间后发生的。我们很幸运，拥有一批反应积极的观众。在发布后，我们在3天的使用后收到了早期的客户反馈，我们得到了令人满意的结果。(93%的人表示，他们通过使用minimalist phone减少了花在智能手机上的时间。)&lt;/p&gt;
-&lt;p&gt;我们还通过电子邮件收到了很多反馈。自首次发布以来已经两年多了，我们仍然在收到关于如何改进这款应用的建议。我们Reddit社区的见解真的很有帮助。所以:改进不是有限的，改进的过程应该是无止境的。&lt;/p&gt;
-&lt;p&gt;由于用户的反馈，我们已经完成了很多改变，例如在可视化(默认字体和字体大小)方面的改进。&lt;/p&gt;
-&lt;p&gt;为了不分散人们的注意力，这款应用完全没有广告。&lt;/p&gt;
-&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;https://tva1.sinaimg.cn/large/008vxvgGly1h8fyoqypjtj30nm0crab5.jpg&quot;/&gt;&lt;/p&gt;
-&lt;h3 id=&quot;描述下启动业务的过程&quot;&gt;&lt;a href=&quot;#%E6%8F%8F%E8%BF%B0%E4%B8%8B%E5%90%AF%E5%8A%A8%E4%B8%9A%E5%8A%A1%E7%9A%84%E8%BF%87%E7%A8%8B&quot; aria-hidden=&quot;true&quot; tabindex=&quot;-1&quot;&gt;&lt;span class=&quot;icon icon-link&quot;/&gt;&lt;/a&gt;描述下启动业务的过程。&lt;/h3&gt;
-&lt;p&gt;首先，应用程序发布在谷歌Play Store。付费广告在几个月后才开始出现，起初规模很小。&lt;/p&gt;
-&lt;p&gt;花了两个月的时间才获得第一个付费客户。我说:“终于!”这正是你等待的“哇”时刻。&lt;/p&gt;
-&lt;p&gt;你知道那种感觉吗?当你慢慢忘记为什么开始的时候。你开始感到失落，想要放弃。这就像是一次复兴。这激励着我继续下去。&lt;/p&gt;
-&lt;p&gt;有一个专业的网站是必要的。虽然我是一名软件工程师和网页开发人员，但我把这项任务交给了来自乌克兰的专业设计师。他们做了很棒的工作!网站项目的价格大约是3000美元。&lt;/p&gt;
-&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;https://tva1.sinaimg.cn/large/008vxvgGly1h8fyoqt0roj31220rsag3.jpg&quot;/&gt;&lt;/p&gt;
-&lt;h3 id=&quot;是什么有效地吸引和留住了客户&quot;&gt;&lt;a href=&quot;#%E6%98%AF%E4%BB%80%E4%B9%88%E6%9C%89%E6%95%88%E5%9C%B0%E5%90%B8%E5%BC%95%E5%92%8C%E7%95%99%E4%BD%8F%E4%BA%86%E5%AE%A2%E6%88%B7&quot; aria-hidden=&quot;true&quot; tabindex=&quot;-1&quot;&gt;&lt;span class=&quot;icon icon-link&quot;/&gt;&lt;/a&gt;是什么有效地吸引和留住了客户?&lt;/h3&gt;
-&lt;p&gt;下载后，应用程序立即解释手机使用如何影响人类大脑，这有助于人们更好地理解产品的价值。最初，新手教程的内容更侧重于解释如何使用这款应用，但这款教程的用户留存率要低得多，在我们决定将所有人切换到新版本之前，我们使用了AB测试来测试两个版本的新手教程。&lt;/p&gt;
-&lt;p&gt;另一个重要的工具是短回复时间的优质客户服务。这对于要求退款尤其重要——应用程序中有一个试用期，人们可以在试用期内要求退款一次性购买的产品。&lt;/p&gt;
-&lt;p&gt;我们还在社交媒体平台上建立社区，比如Reddit、Instagram和Twitter，这里仅举几个例子。谷歌Play的评论、奖状和投票都是有价值的营销工具。我们与有影响力的人和youtuber合作，使用联属营销，创造我们自己的内容和新闻稿等。&lt;/p&gt;
-&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;https://tva1.sinaimg.cn/large/008vxvgGly1h8fyoqid9qj30nm0fqq4a.jpg&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;我们接受了几次采访。除此之外，我们在维基百科上也有一篇文章，一个免费的百科全书。&lt;/p&gt;
-&lt;p&gt;我们在应用发布6个月后开始尝试付费广告，因为在这个阶段，我们觉得应用已经准备好进行额外推广了。所有的广告活动都只在谷歌上播放，最初把人们带到minimalist phone主页上——这不是最好的主意，后来把人们直接从广告活动带到Play Store上——这比通过下载按钮进入主页要好得多。&lt;/p&gt;
-&lt;p&gt;我们自己管理了半年的活动，活动进行得还不错——略有盈利，但他们的支出不足以产生显著的影响。随着时间的推移，我们意识到建立和维护一个活动是一个非常复杂的话题，额外的经验可能会带来很大的不同。我们已经决定寻找外部广告活动管理，我们已经与爱沙尼亚数字营销机构epc Digital签约。在8个月内，谷歌广告支出增长了29倍，收入增长了15倍，总ROAS(广告支出回报率)达到200%。&lt;/p&gt;
-&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;https://tva1.sinaimg.cn/large/008vxvgGly1h8fyoqdidcj30nm0k3wfg.jpg&quot;/&gt;&lt;/p&gt;
-&lt;h3 id=&quot;你未来的机会是什么样的&quot;&gt;&lt;a href=&quot;#%E4%BD%A0%E6%9C%AA%E6%9D%A5%E7%9A%84%E6%9C%BA%E4%BC%9A%E6%98%AF%E4%BB%80%E4%B9%88%E6%A0%B7%E7%9A%84&quot; aria-hidden=&quot;true&quot; tabindex=&quot;-1&quot;&gt;&lt;span class=&quot;icon icon-link&quot;/&gt;&lt;/a&gt;你未来的机会是什么样的?&lt;/h3&gt;
-&lt;p&gt;目前我们每个月的收入约为2万美元，我们将其中的65%投入到付费广告中，平均每月利润约为6500美元。最近几个月，每月的下载量增长了20 - 40%(总下载量-还不包括付费用户)。&lt;/p&gt;
-&lt;p&gt;目前该应用的月下载量为5万次，总下载量近50万次。&lt;/p&gt;
-&lt;p&gt;分销只能通过谷歌Play store -它高度依赖谷歌搜索和Play store发现。&lt;/p&gt;
-&lt;p&gt;目前，团队有1名创始人和开发人员(我)+ 5名兼职外部人员(执行各种营销活动)。&lt;/p&gt;
-&lt;p&gt;没有其他产品的计划。我认为这将分散我们发现该产品的全部潜力的注意力。我们正在新的国家开展宣传活动。目前，我们主要瞄准北美和欧洲市场。&lt;/p&gt;
-&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;https://tva1.sinaimg.cn/large/008vxvgGly1h8fyoq9hacj30nm0ayaau.jpg&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;https://tva1.sinaimg.cn/large/008vxvgGly1h8fyoq4avjj30nm0fq404.jpg&quot;/&gt;&lt;/p&gt;
-&lt;h3 id=&quot;对其他想要起步或刚刚起步的开发者有什么建议&quot;&gt;&lt;a href=&quot;#%E5%AF%B9%E5%85%B6%E4%BB%96%E6%83%B3%E8%A6%81%E8%B5%B7%E6%AD%A5%E6%88%96%E5%88%9A%E5%88%9A%E8%B5%B7%E6%AD%A5%E7%9A%84%E5%BC%80%E5%8F%91%E8%80%85%E6%9C%89%E4%BB%80%E4%B9%88%E5%BB%BA%E8%AE%AE&quot; aria-hidden=&quot;true&quot; tabindex=&quot;-1&quot;&gt;&lt;span class=&quot;icon icon-link&quot;/&gt;&lt;/a&gt;对其他想要起步或刚刚起步的开发者有什么建议?&lt;/h3&gt;
-&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;https://tva1.sinaimg.cn/large/008vxvgGly1h8fyopupbsj31920u0tg1.jpg&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;对于启动项目，确保你有足够的时间来完成你的想法，并且你尝试它的“窗口”不会太短。例如，如果你辞职去实现自己的想法，但只有12个月的储蓄，那么你可能需要超过12个月的时间才能实现盈利。minimalist phone手机，它花了24个月才实现盈利。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;最好是在朝九晚五工作之外的空闲时间工作，这样你就有了灵活性。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;本次周刊结束，欢迎大家联系我推荐自己的产品，我们下周见！&lt;/p&gt;&lt;/div&gt; &lt;/div&gt;&lt;/div&gt;</content:encoded>
+&amp;lt;dependency&amp;gt;
+
+&amp;lt;groupId&amp;gt;io.jsonwebtoken&amp;lt;/groupId&amp;gt;
+
+&amp;lt;artifactId&amp;gt;jjwt&amp;lt;/artifactId&amp;gt;
+
+&amp;lt;version&amp;gt;0.7.0&amp;lt;/version&amp;gt;
+
+&amp;lt;/dependency&amp;gt;
+
+&amp;lt;dependency&amp;gt;
+
+&amp;lt;groupId&amp;gt;com.auth0&amp;lt;/groupId&amp;gt;
+
+&amp;lt;artifactId&amp;gt;java-jwt&amp;lt;/artifactId&amp;gt;
+
+&amp;lt;version&amp;gt;3.4.0&amp;lt;/version&amp;gt;
+
+&amp;lt;/dependency&amp;gt;
+
+&amp;lt;!-- JSON 解析器和生成器 --&amp;gt;
+
+&amp;lt;dependency&amp;gt;
+
+&amp;lt;groupId&amp;gt;com.alibaba&amp;lt;/groupId&amp;gt;
+
+&amp;lt;artifactId&amp;gt;fastjson&amp;lt;/artifactId&amp;gt;
+
+&amp;lt;version&amp;gt;1.2.83&amp;lt;/version&amp;gt;
+
+&amp;lt;/dependency&amp;gt;&lt;/code&gt;&lt;/pre&gt; 
+&lt;h2&gt;3.2、application.yml 增加配置&lt;/h2&gt; 
+&lt;pre&gt;&lt;code class=&quot;hljs&quot;&gt;# 应用服务 WEB 访问端口
+server:
+  port: 8080
+
+spring:
+  # 应用名称
+  application:
+    name: jwt-demo
+  # redis配置
+  redis:
+    # 地址
+    host: 127.0.0.1
+    # 端口，默认为6379
+    port: 6379
+    # 连接超时时间
+    timeout: 10s
+    # 密码
+    password: wangjing
+
+# JWT 配置
+jwt:
+  # 加密密钥
+  secret: wangjing
+  # header 名称
+  header: Authorization
+  # token有效时长 S
+  expire:
+    accessToken: 3600
+    refreshToken: 4000&lt;/code&gt;&lt;/pre&gt; 
+&lt;h2&gt;3.3、JwtToken 工具类&lt;/h2&gt; 
+&lt;pre&gt;&lt;code class=&quot;hljs&quot;&gt;package com.wangjing.jwtdemo.util;
+
+import com.alibaba.fastjson.JSONObject;
+import com.wangjing.jwtdemo.constants.Constants;
+import com.wangjing.jwtdemo.vo.UserToken;
+import com.wangjing.jwtdemo.vo.UserTokenInfo;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import java.util.Date;
+
+/**
+ * @author: wangjing
+ * @createTime: 2022-11-23 14:55
+ * @version: 1.0.0
+ * @Description: JwtToken 工具类
+ */
+@Component
+public class JwtTokenUtil {
+
+    @Value(&quot;${jwt.secret}&quot;)
+    public String secret;
+
+    @Value(&quot;${jwt.header}&quot;)
+    public String header;
+
+    @Value(&quot;${jwt.expire.accessToken}&quot;)
+    public Integer accessTokenExpire;
+
+    @Value(&quot;${jwt.expire.refreshToken}&quot;)
+    public Integer refreshTokenExpire;
+
+    @Autowired
+    RedisUtil redisUtil;
+
+
+    /**
+     * 创建 刷新令牌 与 访问令牌 关联关系
+     *
+     * @param userToken
+     * @param refreshTokenExpireDate
+     */
+    public void tokenAssociation(UserToken userToken, Date refreshTokenExpireDate) {
+        Long time = (refreshTokenExpireDate.getTime() - System.currentTimeMillis()) / 1000 + 100;
+        redisUtil.set(userToken.getRefreshToken(), userToken.getAccessToken(), time);
+    }
+
+    /**
+     * 根据 刷新令牌 获取 访问令牌
+     *
+     * @param refreshToken
+     */
+    public String getAccessTokenByRefresh(String refreshToken) {
+        Object value = redisUtil.get(refreshToken);
+        return value == null ? null : String.valueOf(value);
+    }
+
+
+    /**
+     * 添加至黑名单
+     *
+     * @param token
+     * @param expireTime
+     */
+    public void addBlacklist(String token, Date expireTime) {
+        Long expireTimeLong = (expireTime.getTime() - System.currentTimeMillis()) / 1000 + 100;
+        redisUtil.set(getBlacklistPrefix(token), &quot;1&quot;, expireTimeLong);
+    }
+
+    /**
+     * 校验是否存在黑名单
+     *
+     * @param token
+     * @return true 存在 false不存在
+     */
+    public Boolean checkBlacklist(String token) {
+        return redisUtil.hasKey(getBlacklistPrefix(token));
+    }
+
+    /**
+     * 获取黑名单前缀
+     *
+     * @param token
+     * @return
+     */
+    public String getBlacklistPrefix(String token) {
+        return Constants.TOKEN_BLACKLIST_PREFIX + token;
+    }
+
+
+    /**
+     * 获取 token 信息
+     *
+     * @param userTokenInfo
+     * @return
+     */
+    public UserToken createToekns(UserTokenInfo userTokenInfo) {
+        Date nowDate = new Date();
+        Date accessTokenExpireDate = new Date(nowDate.getTime() + accessTokenExpire * 1000);
+        Date refreshTokenExpireDate = new Date(nowDate.getTime() + refreshTokenExpire * 1000);
+
+        UserToken userToken = new UserToken();
+        BeanUtils.copyProperties(userTokenInfo, userToken);
+        userToken.setAccessToken(createToken(userTokenInfo, nowDate, accessTokenExpireDate));
+        userToken.setRefreshToken(createToken(userTokenInfo, nowDate, refreshTokenExpireDate));
+
+        // 创建 刷新令牌 与 访问令牌 关联关系
+        tokenAssociation(userToken, refreshTokenExpireDate);
+        return userToken;
+    }
+
+    /**
+     * 生成token
+     *
+     * @param userTokenInfo
+     * @return
+     */
+    public String createToken(UserTokenInfo userTokenInfo, Date nowDate, Date expireDate) {
+        return Jwts.builder()
+                .setHeaderParam(&quot;typ&quot;, &quot;JWT&quot;)
+                .setSubject(JSONObject.toJSONString(userTokenInfo))
+                .setIssuedAt(nowDate)
+                .setExpiration(expireDate)
+                .signWith(SignatureAlgorithm.HS512, secret)
+                .compact();
+    }
+
+    /**
+     * 获取 token 中注册信息
+     *
+     * @param token
+     * @return
+     */
+    public Claims getTokenClaim(String token) {
+        try {
+            return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 验证 token 是否过期失效
+     *
+     * @param token
+     * @return true 过期 false 未过期
+     */
+    public Boolean isTokenExpired(String token) {
+        return getExpirationDate(token).before(new Date());
+    }
+
+    /**
+     * 获取 token 失效时间
+     *
+     * @param token
+     * @return
+     */
+    public Date getExpirationDate(String token) {
+        return getTokenClaim(token).getExpiration();
+    }
+
+
+    /**
+     * 获取 token 发布时间
+     *
+     * @param token
+     * @return
+     */
+    public Date getIssuedAtDate(String token) {
+        return getTokenClaim(token).getIssuedAt();
+    }
+
+
+    /**
+     * 获取用户信息
+     *
+     * @param token
+     * @return
+     */
+    public UserTokenInfo getUserInfoToken(String token) {
+        String subject = getTokenClaim(token).getSubject();
+        UserTokenInfo userTokenInfo = JSONObject.parseObject(subject, UserTokenInfo.class);
+        return userTokenInfo;
+    }
+
+    /**
+     * 获取用户名
+     *
+     * @param token
+     * @return
+     */
+    public String getUserName(String token) {
+        UserTokenInfo userInfoToken = getUserInfoToken(token);
+        return userInfoToken.getUserName();
+    }
+
+    /**
+     * 获取用户Id
+     *
+     * @param token
+     * @return
+     */
+    public Long getUserId(String token) {
+
+        UserTokenInfo userInfoToken = getUserInfoToken(token);
+        return userInfoToken.getUserId();
+    }
+
+}
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h2&gt;3.4、JwtFilter 拦截器&lt;/h2&gt; 
+&lt;pre&gt;&lt;code class=&quot;hljs&quot;&gt;package com.wangjing.jwtdemo.filter;
+
+import com.wangjing.jwtdemo.util.JwtTokenUtil;
+import com.wangjing.jwtdemo.vo.UserTokenInfo;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+/**
+ * @author: wangjing
+ * @createTime: 2022-10-17 19:03
+ * @version: 1.0.0
+ * @Description: Jwt 拦截器
+ */
+@Slf4j
+@Component
+public class JwtFilter extends HandlerInterceptorAdapter {
+
+    @Resource
+    JwtTokenUtil jwtTokenUtil;
+
+
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        // 获取token
+        String token = request.getHeader(jwtTokenUtil.header);
+
+        if (StringUtils.isEmpty(token)) {
+            token = request.getParameter(jwtTokenUtil.header);
+        }
+
+        if (StringUtils.isEmpty(token)) {
+            // 只是简单DEMO，这里直接返回false，可以自己进行添加
+            log.error(&quot;token 不能为空！&quot;);
+            return false;
+        }
+
+        // 判断token是否超时
+        if (jwtTokenUtil.isTokenExpired(token)) {
+            log.error(&quot;token 已失效！&quot;);
+            return false;
+        }
+
+        // 判断 token 是否已在黑名单
+        if (jwtTokenUtil.checkBlacklist(token)) {
+            log.error(&quot;token 已被加入黑名单！&quot;);
+            return false;
+        }
+
+        // 获取用户信息
+        UserTokenInfo userInfoToken = jwtTokenUtil.getUserInfoToken(token);
+        // 通过用户信息去判断用户状态，等业务
+        //TODO 涉及到业务，这里不在阐述
+
+        return true;
+    }
+}&lt;/code&gt;&lt;/pre&gt; 
+&lt;p/&gt; 
+&lt;h2&gt;3.5、WebConfig 类（注入拦截器）&lt;/h2&gt; 
+&lt;pre&gt;&lt;code class=&quot;hljs&quot;&gt;package com.wangjing.jwtdemo.config;
+
+import com.wangjing.jwtdemo.filter.JwtFilter;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import javax.annotation.Resource;
+
+/**
+ * @author: wangjing
+ * @createTime: 2022-10-17 19:02
+ * @version: 1.0.0
+ * @Description: 请求拦截器
+ */
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+    @Resource
+    private JwtFilter jwtFilter;
+
+    /**
+     * 不需要拦截地址
+     */
+    public static final String[] EXCLUDE_URLS = {
+            &quot;/login/**&quot;
+    };
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(jwtFilter).addPathPatterns(&quot;/**&quot;)
+                .excludePathPatterns(EXCLUDE_URLS);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h2&gt;3.6、LoginController（简单的代码实现）&lt;/h2&gt; 
+&lt;pre&gt;&lt;code class=&quot;hljs&quot;&gt;package com.wangjing.jwtdemo.controller;
+
+
+import com.wangjing.jwtdemo.entity.Result;
+import com.wangjing.jwtdemo.enums.ResultTypeEnum;
+import com.wangjing.jwtdemo.util.JwtTokenUtil;
+import com.wangjing.jwtdemo.vo.LoginBody;
+import com.wangjing.jwtdemo.vo.UserToken;
+import com.wangjing.jwtdemo.vo.UserTokenInfo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.*;
+
+
+/**
+ * @author wangjing
+ * @since 2022-10-18
+ */
+@RestController
+@RequestMapping(&quot;/login&quot;)
+public class LoginController {
+
+    @Autowired
+    JwtTokenUtil jwtTokenUtil;
+
+    /**
+     * 登录
+     *
+     * @param loginBody
+     * @return
+     */
+    @PostMapping(&quot;/login&quot;)
+    public Result&amp;lt;UserToken&amp;gt; login(@RequestBody LoginBody loginBody) {
+        // 业务验证：入参校验 + 用户信息校验查询
+        //TODO 涉及到业务，这里不在阐述
+        UserTokenInfo userTokenInfo = new UserTokenInfo();
+        userTokenInfo.setUserId(1L);
+        userTokenInfo.setUserName(&quot;wangjing&quot;);
+        userTokenInfo.setRealName(&quot;王京&quot;);
+
+        // 生成Token
+        UserToken userToken = jwtTokenUtil.createToekns(userTokenInfo);
+
+        return new Result&amp;lt;&amp;gt;(ResultTypeEnum.SUCCESS, userToken);
+    }
+
+    /**
+     * 刷新令牌
+     *
+     * @param refreshToken
+     * @return
+     */
+    @PostMapping(&quot;/refreshToken/{refreshToken}&quot;)
+    public Result&amp;lt;UserToken&amp;gt; refreshToken(@PathVariable(&quot;refreshToken&quot;) String refreshToken) {
+
+        // 判断token是否超时
+        if (jwtTokenUtil.isTokenExpired(refreshToken)) {
+            return new Result&amp;lt;&amp;gt;(ResultTypeEnum.TOKEN_INVALID);
+        }
+
+        // 刷新令牌 放入黑名单
+        jwtTokenUtil.addBlacklist(refreshToken, jwtTokenUtil.getExpirationDate(refreshToken));
+        // 访问令牌 放入黑名单
+        String odlAccessToken = jwtTokenUtil.getAccessTokenByRefresh(refreshToken);
+        if (!StringUtils.isEmpty(odlAccessToken)) {
+            jwtTokenUtil.addBlacklist(odlAccessToken, jwtTokenUtil.getExpirationDate(odlAccessToken));
+        }
+
+        // 生成新的 访问令牌 和 刷新令牌
+        UserTokenInfo userInfoToken = jwtTokenUtil.getUserInfoToken(refreshToken);
+
+        // 生成Token
+        UserToken userToken = jwtTokenUtil.createToekns(userInfoToken);
+
+        return new Result&amp;lt;&amp;gt;(ResultTypeEnum.TOKEN_INVALID, userToken);
+    }
+
+
+    /**
+     * 登出
+     *
+     * @return
+     */
+    @PostMapping(&quot;/logOut/{token}&quot;)
+    public Result logOut(@PathVariable(&quot;token&quot;) String token) {
+        // 放入黑名单
+        jwtTokenUtil.addBlacklist(token, jwtTokenUtil.getExpirationDate(token));
+        return new Result&amp;lt;&amp;gt;(ResultTypeEnum.SUCCESS);
+    }
+
+    /**
+     * 注销
+     *
+     * @return
+     */
+    @PostMapping(&quot;/logOff/{token}&quot;)
+    public Result logOff(@PathVariable(&quot;token&quot;) String token) {
+        // 修改用户状态
+        //TODO 涉及到业务，这里不在阐述
+
+        // 放入黑名单
+        jwtTokenUtil.addBlacklist(token, jwtTokenUtil.getExpirationDate(token));
+
+        return new Result&amp;lt;&amp;gt;(ResultTypeEnum.SUCCESS);
+    }
+
+
+}
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h2&gt; 3.7、本文只列出相对重要的类，具体Demo 下载地址：&lt;/h2&gt; 
+&lt;p&gt;&lt;a href=&quot;https://download.csdn.net/download/wang_jing_jing/87127439&quot; title=&quot;https://download.csdn.net/download/wang_jing_jing/87127439&quot;&gt;https://download.csdn.net/download/wang_jing_jing/87127439&lt;/a&gt;&lt;/p&gt; 
+&lt;h1&gt;四、通过postman 简单测试&lt;/h1&gt; 
+&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;https://img-blog.csdnimg.cn/6a50da48fdce4c2188568c25b4a21e70.png&quot;/&gt;&lt;/p&gt; 
+&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;https://img-blog.csdnimg.cn/434c64e72d90481e8cad063fba7291db.png&quot;/&gt; &lt;/p&gt; 
+&lt;p&gt;&lt;strong&gt;注：以上内容仅提供参考和交流，请勿用于商业用途，如有侵权联系本人删除！&lt;/strong&gt;&lt;/p&gt;
+                &lt;/div&gt;
+        &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
