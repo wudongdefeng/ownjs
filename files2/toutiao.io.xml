@@ -33,194 +33,317 @@
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.1575&quot; data-type=&quot;gif&quot; data-w=&quot;400&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/j3gficicyOvasIjZpiaTNIPReJVWEJf7UGpmokI3LL4NbQDb8fO48fYROmYPXUhXFN8IdDqPcI1gA6OfSLsQHxB4w/640?wx_fmt=gif&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;作者：kunqian，腾讯 WXG 后台开发工程师&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;尝试用大家都能听得懂的话，结合我们在增值业务中的具体实现，分享一下我们从入门到实践 DDD 的一些心得。&lt;/p&gt;&lt;/blockquote&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;0. 写在前面的&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;DDD（领域驱动设计）是 Eric Evans 于 2003 年提出的解决复杂的中大型软件的方法，开始一直不愠不火。直到 Martin Fowler 于 2014 年发表的论文《Microservices》引起大家对微服务的关注，DDD 才重新慢慢的回到了大众的视野中。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;DDD 这几年升温的同时，也收到了很多行业人员对 DDD 的负面意见，主要原因大概有“晦涩难懂过于抽象”、“很难找到实际的案例参考”、“不知道怎么落地”等。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;笔者在学习 DDD 的过程中，也遇到了这些问题。不过在经过几个月的学习-实践，逐渐掌握了 DDD 的一些思想后，感觉还是确实有所受益，&lt;strong&gt;所以这里尝试用白话去总结我们从入门到实践的过程，尽量每一个概念都用我们的具体实现做出例子&lt;/strong&gt;，希望能对想一起学习 DDD 的同事有所帮助。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;1.一个维护中的业务系统引出的思考&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们后台+前端大概 6-8 个开发同事这几年一起维护了一个带货类的项目，这个项目我们用了最传统的三层模型来搭建，大概是如下的模型：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6645569620253164&quot; data-type=&quot;jpeg&quot; data-w=&quot;948&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvau8maibc9t42kTkMeyVdsuztYmWHPAAiajlIVezhOV2ibnK7Boaibefevu914E89xK5YvRZibicyojU6Cdg/640?wx_fmt=jpeg&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当这个项目维护几年之后，逐渐出些了一些有意思的情况，我挑选一些主要环节发现的代表性问题介绍下：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;情况 1（代码层面）：&lt;/strong&gt;少部分代码可读性在长期不同人员的修改下变得越来越差。如某个带货的核心 rpc 逻辑没有任何嵌套平铺在一个函数，单函数代码行数达到几百行，可读性和维护性极差，成功化身为“技术护城河”。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;情况 2（微服务层面）：&lt;/strong&gt; 某些微服务初始职能划分较为简单，导致少量模块在后续快速的迭代中快速膨胀。如其中的 mp 模块，原本职能是用来承接 B 端门户的功能，当我们决定拆分这个庞大的模块时，这个模块已经承载了 204 个 rpc。过多的能力承担让它编译变慢、变成链路单点、改动较多、一旦出现问题影响较大。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;情况 3（业务团队层面）：&lt;/strong&gt;带货项目会使用一些其他业务系统的接口和数据结构，当这些业务系统想要修改这些接口和数据结构的时候 ，偶尔可能没有察觉这里的依赖导致线上问题， 或者沟通过来发现耦合处比较多不容易改动。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;对这个项目的维护引出了我们一些思考，在一个复杂业务系统中：代码结构要如何设计、微服务的横/纵向职能要如何划分、业务团队之间如何交互，才能持续在长期快速、多人协作的迭代中保证系统可维护性、拓展性、高内聚低耦合和稳定性。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;而传统的开发模式不管是&lt;strong&gt;面向过程（POP）&lt;/strong&gt;还是&lt;strong&gt;面向对象（OOP）&lt;/strong&gt;的思维，都没办法从微服务层面指导我们找到这些问题的答案。大概有两种方法解决这个问题：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;1）寻找一个总是有时间、总能做出正确决策的中心节点同事，介入每一处全局/细节的设计并统一做出决策。2）寻找一个新的规则/规范来做指导，让每一位开发都能有做出正确决策的依据。在 Tencent 的氛围和环境中，2）无疑是更合理的，所以我们想到了领域驱动设计(DDD)。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;2.DDD 的分层架构&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;DDD 最有标志性的一点，就是将传统软件设计三层模型转化为了四层模型，这个转化如下图所示：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.680973734785394&quot; data-type=&quot;jpeg&quot; data-w=&quot;1561&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvau8maibc9t42kTkMeyVdsuztsFlibgHeNp8Rj3JkCiaFzQziaaUgrz4d6GRIX1ibKlafQOD61QpCBZmRkQ/640?wx_fmt=jpeg&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;乍看之下，四层架构引入了很多概念，如领域服务、领域对象、 DTO、仓储等等。我们先不用在意这些细节概念，因为下一节我们会逐个分析并列举我们的实现例子。我们先关注这几个关键的层：&lt;strong&gt;用户界面层、应用层、领域层、基础设施层&lt;/strong&gt;。我们来看下他们的职能分工：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;用户界面层：网络协议的转化/统一鉴权/Session 管理/限流配置/前置缓存/异常转换&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;应用层：&lt;strong&gt;业务流程编排（仅编排，不能存在业务逻辑）&lt;/strong&gt;/ DTO 出入转化&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;领域层：领域模型/领域服务/仓储和防腐层的接口定义&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;基础设施层：仓储和防腐层接口实现/存储等基础层能力&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这里必须要说的是，&lt;strong&gt;这四层不一定是指物理四层，也可以在一个微服务中拆分逻辑四层&lt;/strong&gt;。四层架构有很多变种，如六边形架构、洋葱架构、整洁架构、清晰架构等等。这些繁多的概念我们这里不过多讨论，仅以洋葱架构为例，着重强调 DDD 中的&lt;strong&gt;依赖倒置（DIP）&lt;/strong&gt;，以便后面更容易介绍仓储/防腐层等概念。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;依赖倒置(DIP)：&lt;br/&gt;&lt;span&gt;1.&lt;/span&gt;高级模块不应依赖于低级模块。两者都应依赖抽象。&lt;br/&gt;&lt;span&gt;2.&lt;/span&gt;抽象不应依赖细节。细节应依赖于抽象。&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.8801115241635687&quot; data-type=&quot;jpeg&quot; data-w=&quot;1076&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvau8maibc9t42kTkMeyVdsuzt6PI41ObbUBvnic9CE2vHgh5oRHSnTtUZSsXCQCkhEfq7OkhzVYR3lEw/640?wx_fmt=jpeg&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如上，洋葱架构越往里依赖越低，越是核心能力。基础设施层在最外面，依赖其他层，这是是因为 DDD 中其他层等需要定义自己需要的基础能力接口，而基础设施层负责依赖并实现这些接口，从而实现整体依赖倒置。这体现了 DDD 的由全局入细微、自顶层向下层的设计思维。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;3.DDD 的概念和实践&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;1）战略和战术&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;DDD 的落地过程，其实就是&lt;strong&gt;战略建模&lt;/strong&gt;和&lt;strong&gt;战术建模&lt;/strong&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;战略建模&lt;/strong&gt;，是指：通过 DDD 的理论，对业务需求进行拆解分析，划分子域，梳理限界上下文，通过领域语言从战略层面进行领域划分以及构建领域模型。并且在在构建领域模型的过程中梳理出业务对应的聚合、实体、以及值对象。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;战术建模&lt;/strong&gt;，是指：以领域模型基础，通过限界上下文作为服务划分的边界进行微服务拆分，在每个微服务中进行领域分层，实现领域服务，从而实现领域模型对于代码映射目的，最终实现 DDD 的落地实施。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6876404494382022&quot; data-type=&quot;jpeg&quot; data-w=&quot;1335&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvau8maibc9t42kTkMeyVdsuztyMpiaBOZkE4exwXT2ypwJOdtUkFGrWYIye52DRbbqn2Ez4OIv0RgPUA/640?wx_fmt=jpeg&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当然，战略和战术的建模除了要考虑业务形态，还要考虑到组织架构，就如同&lt;strong&gt;康威定律&lt;/strong&gt;中的表达，&lt;strong&gt;沟通架构会影响技术架构&lt;/strong&gt;。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;康威定律：任何组织在设计一套系统（广义概念上的系统）时，所交付的设计方案在结构上都与该组织的沟通结构保持一致。&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;2）领域&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;DDD 在解决复杂的问题的时候，使用的是分而治之的思想。而这个分而治之的思想，就是从领域开始，一个领域就是一个问题空间，而我们在拆分这个问题空间的时候，也就是在划分子领域和寻找它的解系统的过程。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;实践例子：&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如我们某个新的增值业务，就是看成是的大的增值业务域，接下来我们通过 DDD 来指导拆分它。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6309055118110236&quot; data-type=&quot;jpeg&quot; data-w=&quot;1016&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvau8maibc9t42kTkMeyVdsuztic5o73UrnWld7vNqXcNia6uU2ODbDzJSN3dINmRSlDyiboX74BSw6FahA/640?wx_fmt=jpeg&quot;/&gt;&lt;/figure&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;strong&gt;3&lt;/strong&gt;）&lt;strong&gt;子域&lt;/strong&gt;&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果一个领域太大太复杂，涉及到的业务规则、交互流程、领域概念太多，就不能直接针对这个大的领域进行建模。这时就需要将领域进行拆分，本质上就是把大问题拆分为小问题，把一个大的领域划分为了多个小的领域（子域）。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;子域可以分为三类：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;核心子域：&lt;/strong&gt;业务成功的核心竞争力。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;通用子域：&lt;/strong&gt;不是核心，但被整个业务系统所使用 。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;支撑子域：&lt;/strong&gt;不是核心，不被整个系统使用，完成业务的必要能力。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;子域的划分除了分治了大的问题空间，也划定了工作的优先级。我们应该给予核心域最高的优先级和最大的资源。在实施 DDD 的过程中，我们也是主要关注于核心域。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;实践例子：&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;子域的划分，需要比较强的业务知识和产品研发集体讨论，准确和深入的业务见解在这一阶段尤为重要。这里我们不对业务知识深入讨论，仅展示下我们的对增值业务域的拆解结果。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6587556125721616&quot; data-type=&quot;jpeg&quot; data-w=&quot;1559&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvau8maibc9t42kTkMeyVdsuzt7JccKSs1TnsBlUociaRFMiatQfzJKoEYYC53wDCVF7fqv3oCrYa2kqOg/640?wx_fmt=jpeg&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这里要说的是，套餐域在实现的过程中由于产品需求变化概念被废弃了，但是由于我们的子域拆分，套餐域和其他域实现上没有任何耦合，所以废弃套餐域概念的废弃就像拆掉一个积木一样，对整套系统没有任何影响，也不会遗留任何不必要的包袱代码。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;strong&gt;4）限界上下文&lt;/strong&gt;&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;要理解限界上下文，首先要先介绍通用语言。通用语言是 DDD 非常重要的一点。比如商品这个概念，在商品域里是指备上架的商品， 包含了 id、介绍、文档等。在交易域里其实是指订单中被交易的实体，关注的是 id、成交时刻的售价等参数、成交数量。而如果不能明确这些概念和他们的关系就会让开发人员的实现变的随心所欲和模糊。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;而限界上下文是就是划分一个边界，当领域模型被一个显示的边界所包围时，其中每个概念的含义应该是明确且有唯一的含义。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我觉得初学者最常碰到的问题，肯定&quot;明明已经有子域了，为什么还会有限界上下文这个概念&quot;。子域是一个子问题空间，而限界上下文的作用是指导如何设计这个问题空间的解系统。换句话说，限界上下文才是真正用来指导微服务划分。一般来说一个子域对应一个或多个限界上下文。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;划分限界上下文可以参考如下的规则：1） 概念是否有歧义：如果一个模型在一个上下文里面有歧义，就说明可以继续拆分限界上下文。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;2）外部系统：可以把与外部系统交互的那部分拆分出去降低外部系统对我们我们的核心业务逻辑的影响。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;3）组织架构：不同团队最好在不同的限界上下文里面开发，避免沟通不顺畅、集成困难等问题。可以参考上述&quot;&lt;strong&gt;康威定律&lt;/strong&gt;&quot;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;实践例子 1：&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如上所述，商品&lt;strong&gt;这个概念，是需要用限界上下文在不同场景区分开的。当然这也会导致两个限界上下文之间会有依赖。通过 DDD 的概念可以指导我们进行如下实现。&lt;/strong&gt;&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.4006896551724138&quot; data-type=&quot;jpeg&quot; data-w=&quot;1450&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvau8maibc9t42kTkMeyVdsuzt1FmMNDuXLJ6vgGbLzmDqfeAr7lWMicfMg1bu3BpGs8LsVvRT58eJcpQ/640?wx_fmt=jpeg&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;其中 gateway/gatewayimpl 是防腐层的实现，DTO 是指数据传输对象，APP 是指商品应用层。两个不同颜色的商品是指两个上下文中分别进行定义的不同的实体或值对象。&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;实践例子 2：&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;交易域中，有两个订单的概念，其中第一个订单的概念是指业务层订单， 第二个订单的概念是指内部基础层订单。业务订单更关注发生交易的成交商品信息，这个订单是用户需要的。基础层订单更关注交易底层的过程信息，这个订单更多是我们内部人员需要的，用户不理解。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当时有个思路是想让基础层团队的同学额外开发直接支持基础层订单存储业务信息，这明显是不符合 DDD 限界上下文划分规则 1）和 3）的，是需要通过限界上下文解耦开的。所以我们在交易域中拆分两个上下文，后续从微服务层面也是相互独立的微服务，各自管理各自的领域实体和值对象。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5578437310720775&quot; data-type=&quot;jpeg&quot; data-w=&quot;1651&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvau8maibc9t42kTkMeyVdsuzthL86iam8K4icVEX2dNAcSmIZbTeia5xviaRFXINdYcmMWo0rlXWoia6M5mw/640?wx_fmt=jpeg&quot;/&gt;&lt;/figure&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;strong&gt;5）防腐层&lt;/strong&gt;&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当两个限界上下文相互调用的时候，需使用防腐层（ACL）来进行两个限界上下文的隔离，并实现 value object 的转换。避免不同上下文直接互相调用，不然一旦被调用上下文被修改则可能产生较大影响。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;实践例子：&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;实现链路可以参考 3.4 的例子 1，在商品域中，我们的防腐层是按照如下的目录方式实现的， 领域层来定义领域层需要的防腐接口，基础设施层继承并实现防腐接口，在基础设施层直接调用其他限界上下文。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;productdomainsvr （商品限界上下文）&lt;br/&gt;├── domain（领域层）&lt;br/&gt;│   ├── aggregate&lt;br/&gt;│   │   ├── spu.cpp                        //1)spu领域对象需要调用其他限界上下文生成id&lt;br/&gt;│   │   └── spu.h&lt;br/&gt;│   └── gateway&lt;br/&gt;│       └── gen_id_gateway.h         //2)领域层定义调用其他限界上下文生成id的防腐接口&lt;br/&gt;├── infrastructure（基础设施层）&lt;br/&gt;│   └── gatewayimpl&lt;br/&gt;│      └── acl（防腐层）&lt;br/&gt;│         ├── gen_id_gateway_impl.cpp //3)基础设施层实现领域层定义的防腐接口，真实调用其他上下文&lt;br/&gt;│         └── gen_id_gateway_impl.h&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;strong&gt;6）领域事件&lt;/strong&gt;&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;两个限界上下文除了通过使用防腐层直接调用，更多的时候是通过领域事件来进行解耦。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;并不是所有领域中发生的事情都需要被建模为领域事件，我们只关注有业务价值的事情。领域事件是领域专家所关心的（需要跟踪的、希望被通知的、会引起其他模型对象改变状态的）发生在领域中的一些事情。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其实，领域事件的本质就是事件，我们常见的 kafka、wq 等都可以作为领域事件的实现基建。通过领域事件，可以把很轻松两个限界上下文解耦&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;实践例子：&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在我们的增值业务中，交易域的&quot;支付成功&quot;就是一个领域事件，计费域订阅这个领域事件，从而可以根据这个事件调整客户的计费资源包实体。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.24958494742667406&quot; data-type=&quot;jpeg&quot; data-w=&quot;1807&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvau8maibc9t42kTkMeyVdsuztX4wlhiasWRPzjqgNZlicbaDDdXfatN5jLAI6eBMyYzic0ngiaFAibPZrb7g/640?wx_fmt=jpeg&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;可以想象，如果这里没有采用领域事件， 而是交易域直接调用计费域的 rpc 通知交易成功，那么当后续有其他域需要接受“支付成功”这个事件，或者，计费域被调用的接口出现故障。都会让交易域陷入麻烦，前者需要交易域不停的堆叠调用外部 rpc 的代码并让系统变得不稳定，后者则直接会让计费域的故障影响到用户交易。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;strong&gt;7）实体/值对象&lt;/strong&gt;&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;实体是指上下文中唯一的且可持续变化的基础单元，在其生命周期中可以通过稳定的唯一 id 来标识。实体在我们代码中以领域对象的形态存在，同时具备属性和方法，实体是 DDD 用来实现充血编程、解决贫血症的关键。&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;与实体相对应的就是值对象，如果没有唯一标识就是值对象。值对象一般是嵌套在实体里面的。&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;实践例子：&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;商品域中的实体和值对象如下&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;&lt;strong&gt;实体&lt;/strong&gt;&lt;/th&gt;&lt;th&gt;&lt;strong&gt;描述&lt;/strong&gt;&lt;/th&gt;&lt;th&gt;&lt;strong&gt;关键值对象&lt;/strong&gt;&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;SPU&lt;/td&gt;&lt;td&gt;指一个被上架的服务。&lt;/td&gt;&lt;td&gt;spu_id, spu_type，状态等。&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;SKU&lt;/td&gt;&lt;td&gt;指一个服务具体的单项套餐。&lt;/td&gt;&lt;td&gt;sku_id, 规格，价格等。&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;折扣&lt;/td&gt;&lt;td&gt;自定义折扣。&lt;/td&gt;&lt;td&gt;折扣 id，折扣类型，折扣比例等。&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/section&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;strong&gt;8）聚合/聚合根&lt;/strong&gt;&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;把关系紧密的实体放到一个聚合中，每个聚合中有一个实体作为聚合根，所有对于聚合内对象的访问都通过聚合根来进行，外部对象只能持有对聚合根的引用。每个聚合都可以有一个独立的上下文边界。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;聚合应划分的尽量小，一个聚合只包含一个聚合根实体和密不可分的实体，实体中只包含最小数量的属性。设计这样的小聚合有助于进行后续微服务的拆分。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果一个 rpc 所实现的功能是跨聚合的，那跨聚合的编排协调工作应该放在应用层来实现。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;实践例子：&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们可以在 6)中的例子划分如下的聚合。&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;&lt;strong&gt;聚合&lt;/strong&gt;&lt;/th&gt;&lt;th&gt;&lt;strong&gt;实体&lt;/strong&gt;&lt;/th&gt;&lt;th&gt;&lt;strong&gt;是否是根&lt;/strong&gt;&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;聚合 1&lt;/td&gt;&lt;td&gt;服务 SPU&lt;/td&gt;&lt;td&gt;是&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;服务 SKU&lt;/td&gt;&lt;td&gt;否&lt;/td&gt;&lt;td&gt;&lt;br/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;聚合 2&lt;/td&gt;&lt;td&gt;折扣&lt;/td&gt;&lt;td&gt;是&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在底层存储落表上， spu 实体/折扣实体作为表的一行， 而 sku 实体在这种聚合建模的指引下我们设计成 spu 聚合根的一列。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在微服务拆分上，如果想拆到最细粒度， 可以把两个聚合按照各自上下文拆成独立的微服务。当然这种落地实现并不是 DDD 强行要求的，我认为一些时候我们也可以从开发维护效率的角度考虑， 将一些有关联的小上下文放在一个为微服务上。我们在处理商品域上选择了后者。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;strong&gt;9）DTO/领域对象/Data object&lt;/strong&gt;&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当一个请求进入 DDD 所设计的系统中，这个请求的形态会根据所在的层级发生如下变换，DTO&amp;lt;-&amp;gt;领域对象&amp;lt;-&amp;gt;Data object。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;DTO 是指对外传输的其他服务需要理解的结构，领域对象是指同时包含了属性和方法的领域实体封装，Data object 则是真正用于最终存储的数据结构。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.7422324510932106&quot; data-type=&quot;jpeg&quot; data-w=&quot;869&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvau8maibc9t42kTkMeyVdsuztbafibaweQavZzcQUPz4jSL5hjo7sNt8w5J6BiaPgHBX4yFt9ibMAvMHDQ/640?wx_fmt=jpeg&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这里其实很容易发现，DTO 的存在虽然符合其他调用方&lt;strong&gt;最少知识原则（LKP）&lt;/strong&gt;，但如果连最简单的查询请求都需要做这三级的转换，那无疑是会加重开发的复杂度，变成为了设计模式而设计模式。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;最少知识原则(迪米特法则，LKP):一个软件实体应当尽可能少地与其他实体发生相互作用。这里的软件实体是一个广义的概念，不仅包括对象，还包括系统、类、模块、函数、变量等。&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;所以 DDD 在这里一般会使用 CQRS（读写责任分离）架构，来保证一些简单的查询请求不会因为领域建模而变得过于复杂。CQRS（读写责任分离）基于 CQS（读写分离），使用了 CQRS 的 DDD 对象转换流程如下：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6601239669421488&quot; data-type=&quot;jpeg&quot; data-w=&quot;968&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvau8maibc9t42kTkMeyVdsuztaO9pzyib6bAicpGFibF9Xa3cZCv4e8rTFeqHvgAqWAMXibBCic3SDibib3NuA/640?wx_fmt=jpeg&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;实践例子：&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们的实现是在领域对象中封装了转换的 convert 函数（当然也可以在基础设施层将 convert 方法拆分出来做单独的封装），用于将 DTO 转换为领域对象，或者将领域对象转换为 DO。下面是我们明细域的实际转换代码和转换过程。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;//1.领域对象中定义convert方法&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;DetailRecord&lt;/span&gt; {&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt;:&lt;br/&gt;    &lt;span&gt;&lt;span&gt;int&lt;/span&gt; &lt;span&gt;ConvertFromDTO&lt;/span&gt;&lt;span&gt;(&lt;span&gt;const&lt;/span&gt; google::protobuf::Message&amp;amp; oDto)&lt;/span&gt;&lt;/span&gt;;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;int&lt;/span&gt; &lt;span&gt;ConvertToDO&lt;/span&gt;&lt;span&gt;(detailrecordinfrastructure::DetailRecordDO &amp;amp; oDo)&lt;/span&gt;&lt;/span&gt;;&lt;br/&gt;    &lt;span&gt;/*...*/&lt;/span&gt;&lt;br/&gt;};&lt;br/&gt;&lt;span&gt;//2.应用层调用方法将DTO转化为领域对象， 然后调用仓储接口进行持久化&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;int&lt;/span&gt; &lt;span&gt;DetailrecordApplication::InsertDetailRecord&lt;/span&gt;&lt;span&gt;(&lt;span&gt;unsigned&lt;/span&gt; &lt;span&gt;int&lt;/span&gt; head_uin, &lt;span&gt;const&lt;/span&gt; InsertDetailRecordReq&amp;amp; req,  InsertDetailRecordResp* resp)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;   &lt;span&gt;int&lt;/span&gt; iRet = &lt;span&gt;0&lt;/span&gt;;&lt;br/&gt;   &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;DetailRecord&lt;/span&gt; &lt;span&gt;oRecord&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;   iRet = oRecord.ConvertFromDTO(req); &lt;span&gt;//生成领域对象，可以同时利用领域对象的方法进行自检等操作&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;/*...*/&lt;/span&gt;&lt;br/&gt;   iRet = m_oDetailRecordGateway-&amp;gt;Save(oRecord); &lt;span&gt;//调用仓储接口进行持久化&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;/*...*/&lt;/span&gt;&lt;br/&gt;   &lt;span&gt;return&lt;/span&gt; iRet;&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;//3.在仓储中将领域对象转化为Dataobject，进行落存储操作，并发布领域事件&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;int&lt;/span&gt; &lt;span&gt;DetailRecordGatewayImpl::Save&lt;/span&gt;&lt;span&gt;(DetailRecord &amp;amp; oEntity)&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;   detailrecordinfrastructure::DetailRecordDO oDo;&lt;br/&gt;   &lt;span&gt;int&lt;/span&gt; iRet = oEntity.ConvertToDO(oDo);&lt;br/&gt;    &lt;span&gt;/*...*/&lt;/span&gt;&lt;br/&gt;   iRet = oKvMapper.insert(oDo);      &lt;span&gt;//实际落存储&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;/*...*/&lt;/span&gt;&lt;br/&gt;   iRet = oEventMapper.publish(oDo);  &lt;span&gt;//发送领域事件&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;/*...*/&lt;/span&gt;&lt;br/&gt;   &lt;span&gt;return&lt;/span&gt; iRet;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;strong&gt;10）仓储&lt;/strong&gt;&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;仓储&lt;/strong&gt;是领域层由定义接口，它抽象了业务逻辑中对实体的访问（包括读取和存储）的技术细节。它的作用就是通过隔离具体的存储层技术实现来保证业务逻辑的稳定性。注意，&lt;strong&gt;仓储只是接口的定义是在领域层，但是它的实现是在基础设施层&lt;/strong&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;仓储不是数据库 Dao！！！&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;仓储不是数据库 Dao！！！&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;仓储不是数据库 Dao！！！&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;重要的事情说三遍，仓储是从业务逻辑的角度抽象出来的接口，所以仓储的接口在实现上，一般是一个聚合对应一个仓储实现，仓储的需要用领域对象做参数。仓储接口的命名也可以取 save 这种更业务的命名， 而避免传统 dao 的 insert/set 等这种明明。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;实践例子：&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;通过 3.9 的例子，我们可以发现，仓储用于持久化的接口里，不但包含了写 kv 的操作，还包含了发布领域事件等操作，这就是因为仓储是从业务逻辑角度抽象出来的接口，领域层只需要理解 save 这个业务操作，而不应该理解 save 的过程包含了落存储、发布领域事件等具体流程。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;//1.领域层定义DetailRecord仓储的接口&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;DetailRecordGateway&lt;/span&gt; {&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;public&lt;/span&gt;:&lt;br/&gt;       &lt;span&gt;/*...*/&lt;/span&gt;&lt;br/&gt;       &lt;span&gt;&lt;span&gt;virtual&lt;/span&gt; &lt;span&gt;int&lt;/span&gt; &lt;span&gt;Save&lt;/span&gt;&lt;span&gt;(DetailRecord &amp;amp; oEntity)&lt;/span&gt; &lt;/span&gt;= &lt;span&gt;0&lt;/span&gt;;&lt;br/&gt;       &lt;span&gt;/*...*/&lt;/span&gt;&lt;br/&gt;};&lt;br/&gt;&lt;span&gt;//2.基础设施层继承领域层的仓储接口进行实现&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;DetailRecordGatewayImpl&lt;/span&gt; :&lt;/span&gt; &lt;span&gt;public&lt;/span&gt; DetailRecordGateway {&lt;br/&gt;    &lt;span&gt;public&lt;/span&gt;:&lt;br/&gt;       &lt;span&gt;/*...*/&lt;/span&gt;&lt;br/&gt;       &lt;span&gt;&lt;span&gt;virtual&lt;/span&gt; &lt;span&gt;int&lt;/span&gt; &lt;span&gt;Save&lt;/span&gt;&lt;span&gt;(DetailRecord &amp;amp; oEntity)&lt;/span&gt;&lt;/span&gt;;&lt;br/&gt;       &lt;span&gt;/*...*/&lt;/span&gt;&lt;br/&gt; };&lt;br/&gt;&lt;span&gt;//3.仓储save接口具体实现&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;int&lt;/span&gt; &lt;span&gt;DetailRecordGatewayImpl::Save&lt;/span&gt;&lt;span&gt;(DetailRecord &amp;amp; oEntity)&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;   detailrecordinfrastructure::DetailRecordDO oDo;&lt;br/&gt;   &lt;span&gt;int&lt;/span&gt; iRet = oEntity.ConvertToDO(oDo);&lt;br/&gt;   &lt;span&gt;/*...*/&lt;/span&gt;&lt;br/&gt;   iRet = oKvMapper.insert(oDo);      &lt;span&gt;//实际落存储&lt;/span&gt;&lt;br/&gt;   &lt;span&gt;/*...*/&lt;/span&gt;&lt;br/&gt;   iRet = oEventMapper.publish(oDo);  &lt;span&gt;//发布领域事件&lt;/span&gt;&lt;br/&gt;   &lt;span&gt;/*...*/&lt;/span&gt;&lt;br/&gt;   &lt;span&gt;return&lt;/span&gt; iRet;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;strong&gt;11）领域服务&lt;/strong&gt;&lt;/span&gt;&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当一些能力不适合放在某个领域对象中实现，又因为过于复杂不应该放在应用层来实现。可以把这些操作封装成领域服务的中方法，由应用层编排领域层的领域对象和领域服务方法来完成具体的业务功能。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;4.DDD 的代码脚手架&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们基于对 DDD 的理解和 WXG 的 svrkit 框架，设定我们的代码脚手架。脚手架的目录如下所示，希望可以给想一起实践的同事抛砖引玉，也欢迎大家来找我们一起讨论：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;项目目录&lt;br/&gt;├── adapter（物理用户界面模块）&lt;br/&gt;├── domainsvr（领域微服务）&lt;br/&gt;│   ├── detailrecorddomainsvr（明细域微服务）&lt;br/&gt;│   │   ├── adapter（用户界面层）&lt;br/&gt;│   │   ├── application（应用层）&lt;br/&gt;│   │   │   ├── detailrecord_application.cpp（应用层方法）&lt;br/&gt;│   │   ├── domain（领域层）&lt;br/&gt;│   │   │   ├── aggregate（聚合根）&lt;br/&gt;│   │   │   │   ├── detail_record.cpp（领域对象）&lt;br/&gt;│   │   │   │   └── detailrecordaggregate.proto（聚合根的值对象）&lt;br/&gt;│   │   │   ├── entity（非根实体）&lt;br/&gt;│   │   │   │   └── detailrecordentity.proto（非根实体的值对象）&lt;br/&gt;│   │   │   ├── gateway&lt;br/&gt;│   │   │   │   └── detail_record_gateway.h（仓储接口）&lt;br/&gt;│   │   │   └── detailrecord_domain_service.cpp（领域服务）&lt;br/&gt;│   │   ├── infrastructure（基础设施层）&lt;br/&gt;│   │   │   ├── gatewayimpl&lt;br/&gt;│   │   │   │   ├── acl（防腐层实现）&lt;br/&gt;│   │   │   │   └── detail_record_gateway_impl.cpp（仓储实现）&lt;br/&gt;│   │   │   └── detailrecordinfrastructure.proto（Data object定义）&lt;br/&gt;│   │   └── detailrecord.proto（DTO定义)&lt;br/&gt;└── infrastructuresvr（物理基础设施模块）&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>4edb16fafc6de113754f5c51635960eb</guid>
-<title>白话并发模型和异步编程范式</title>
-<link>https://toutiao.io/k/6cqqd4v</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;post-content&quot;&gt;&lt;p&gt;&lt;img src=&quot;https://filecdn.code2life.top/blog/%2A%2Alangs-influence.png&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;在编程领域，&lt;strong&gt;并发&lt;/strong&gt;和&lt;strong&gt;异步&lt;/strong&gt;这两个概念并没有初学者想象的那么高深，本文将以最普通的白话，拆解这两个概念，读完后下面这一系列问题，或许你就有了答案。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;协程&lt;/strong&gt;是什么？&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;协程&lt;/strong&gt;和&lt;strong&gt;线程&lt;/strong&gt;的本质区别是啥？&lt;/li&gt;
-&lt;li&gt;哪些编程语言支持协程？&lt;strong&gt;有栈协程&lt;/strong&gt;和&lt;strong&gt;无栈协程&lt;/strong&gt;有什么区别？&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;CSP模型&lt;/strong&gt;是什么意思？&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Actor模型&lt;/strong&gt;是什么意思？&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;I/O多路复用&lt;/strong&gt;到底解决了什么问题？&lt;/li&gt;
-&lt;li&gt;线程间&lt;strong&gt;上下文切换&lt;/strong&gt;的成本真的很高吗？&lt;/li&gt;
-&lt;li&gt;为什么用&lt;strong&gt;同步原语&lt;/strong&gt;进行并发编程常常出BUG？&lt;/li&gt;
-&lt;li&gt;怎么解决&lt;strong&gt;异步回调模式&lt;/strong&gt;的可维护性问题？&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;async/await&lt;/strong&gt;算协程吗？和Generator函数是什么关系？&lt;/li&gt;
-&lt;li&gt;什么是&lt;strong&gt;函数响应式编程（FRP）&lt;/strong&gt;？&lt;/li&gt;
-&lt;li&gt;为什么Node.js要用&lt;strong&gt;单线程&lt;/strong&gt;？真的只有一个线程吗？&lt;/li&gt;
-&lt;li&gt;为什么Java到JDK 16还&lt;strong&gt;没有协程&lt;/strong&gt;？&lt;/li&gt;
-&lt;li&gt;为什么更优雅的&lt;strong&gt;Actor模型、FRP&lt;/strong&gt;没有成为主流？&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;目录：&lt;/p&gt;
+<guid>e6b278f4769585aaeff788f4ecc2ba8b</guid>
+<title>【Redis技术探索】「底层架构原理」探索分析服务核心数据结构介绍和案例_洛神灬殇的博客-CSDN博客</title>
+<link>https://toutiao.io/k/hp3vboy</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div id=&quot;content_views&quot; class=&quot;markdown_views prism-tomorrow-night&quot;&gt;
+                    &lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot;&gt;
+                        &lt;path stroke-linecap=&quot;round&quot; d=&quot;M5,0 0,2.5 5,5z&quot; id=&quot;raphael-marker-block&quot;/&gt;
+                    &lt;/svg&gt;
+                    &lt;p&gt;&lt;img src=&quot;https://img-blog.csdnimg.cn/img_convert/9695cebfde1cb4c9e7afc41fa7644141.jpeg&quot; alt=&quot;&quot;/&gt;&lt;/p&gt; 
+&lt;h1&gt;&lt;a id=&quot;Redis_2&quot;/&gt;Redis常用存储类型&lt;/h1&gt; 
+&lt;blockquote&gt; 
+ &lt;p&gt;Redis底层提供了5种数据结构：&lt;strong&gt;字符串、哈希、列表、集合、有序集合&lt;/strong&gt;&lt;/p&gt; 
+&lt;/blockquote&gt; 
+&lt;p&gt;下图非常形象的表示了数据结构：&lt;br/&gt; &lt;img src=&quot;https://img-blog.csdnimg.cn/img_convert/f69a6fcbe88d604f4b2197aab29fa1b2.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt; 
+&lt;h2&gt;&lt;a id=&quot;String_9&quot;/&gt;字符串String&lt;/h2&gt; 
+&lt;h3&gt;&lt;a id=&quot;_11&quot;/&gt;常用命令&lt;/h3&gt; 
+&lt;ul&gt;&lt;li&gt;&lt;strong&gt;EX seconds：设置失效时长，单位秒&lt;/strong&gt;&lt;/li&gt;&lt;li&gt;&lt;strong&gt;PX milliseconds：设置失效时长，单位毫秒&lt;/strong&gt;&lt;/li&gt;&lt;li&gt;&lt;strong&gt;NX：key不存在时设置value，成功返回OK，失败返回(nil)&lt;/strong&gt;&lt;/li&gt;&lt;li&gt;&lt;strong&gt;XX：key存在时设置value，成功返回OK，失败返回(nil)&lt;/strong&gt;&lt;/li&gt;&lt;/ul&gt; 
+&lt;blockquote&gt; 
+ &lt;p&gt;&lt;strong&gt;SET key value [EX seconds] [PX milliseconds] [NX|XX]&lt;/strong&gt;&lt;/p&gt; 
+&lt;/blockquote&gt; 
+&lt;h4&gt;&lt;a id=&quot;_20&quot;/&gt;批量存储字符串键值对&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;MSET key value [key value...]
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;key_27&quot;/&gt;设置一个不存在的key&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;SETNX key value
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;keyvalue_34&quot;/&gt;获取key对应的value&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;GET key
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;_41&quot;/&gt;批量获取字符串键值&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;MGET key [key...]
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;_48&quot;/&gt;删除一个键&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;DEL key [key...]
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;_55&quot;/&gt;设置一个键的过期时间(秒)&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;EXPIRE key seconds
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;_62&quot;/&gt;原子操作&lt;/h4&gt; 
+&lt;h5&gt;&lt;a id=&quot;key1_64&quot;/&gt;将key中储存的数字值加1&lt;/h5&gt; 
+&lt;pre&gt;&lt;code&gt;INCR key
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h5&gt;&lt;a id=&quot;key1_71&quot;/&gt;将key中储存的数字值减1&lt;/h5&gt; 
+&lt;pre&gt;&lt;code&gt;DECR key
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h5&gt;&lt;a id=&quot;keyincrement_78&quot;/&gt;将key中储存的数字值加increment&lt;/h5&gt; 
+&lt;pre&gt;&lt;code&gt;INCRBY key increment
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h5&gt;&lt;a id=&quot;keydecrement_85&quot;/&gt;将key中储存的数字值减decrement&lt;/h5&gt; 
+&lt;pre&gt;&lt;code&gt;INCRBY key decrement
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;hr/&gt; 
+&lt;h2&gt;&lt;a id=&quot;String_94&quot;/&gt;String应用场景&lt;/h2&gt; 
+&lt;h3&gt;&lt;a id=&quot;_96&quot;/&gt;单值存储&lt;/h3&gt; 
+&lt;pre&gt;&lt;code&gt;SET sentinel:status 1
+GET sentinel:status
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h3&gt;&lt;a id=&quot;_103&quot;/&gt;对象存储&lt;/h3&gt; 
+&lt;h4&gt;&lt;a id=&quot;JSON_105&quot;/&gt;JSON格式&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;SET user:1001 {&quot;userId&quot;:1001, &quot;userName&quot;:&quot;张三&quot;, &quot;age&quot;:28}
+GET user:1001
+MSET user:1001:name 张三 user:1001:age 28
+MGET user:1001:name user:1001:age
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h3&gt;&lt;a id=&quot;_114&quot;/&gt;分布式锁&lt;/h3&gt; 
+&lt;p&gt;返回1表示获取锁成功，返回0表示获取锁失败&lt;/p&gt; 
+&lt;pre&gt;&lt;code&gt;SET lock:product:100001 1 EX 30 NX
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;p&gt;处理成功后释放锁&lt;/p&gt; 
+&lt;pre&gt;&lt;code&gt;DEL lock:product:100001
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h3&gt;&lt;a id=&quot;_128&quot;/&gt;计数器&lt;/h3&gt; 
+&lt;pre&gt;&lt;code&gt;INCR article:readcount:18021 // 文章id为18021阅读数量+1
+GET article:readcount:18021  // 查询文章id为18021阅读数量
+DECR product:count:100001  // 产品id为100001库存-1
+GET product:count:100001    // 查询产品id为100001库存
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h3&gt;&lt;a id=&quot;WebSession_136&quot;/&gt;Web集群Session共享&lt;/h3&gt; 
+&lt;pre&gt;&lt;code&gt;SET sessionId  {&quot;userId&quot;:1001,&quot;name&quot;:&quot;张三&quot;,&quot;auth&quot;:&quot;&quot;}
 
-&lt;h2 id=&quot;主流编程语言的并发模型&quot;&gt;主流编程语言的并发模型&lt;/h2&gt;&lt;p&gt;为了方便理解，我们用餐厅打个比方，贯穿整篇文章。&lt;/p&gt;
-&lt;p&gt;CPU核心，或者说Processor，是&lt;strong&gt;厨师&lt;/strong&gt;。&lt;/p&gt;
-&lt;img src=&quot;https://filecdn.code2life.top/blog/%2A%2Acooker.png&quot;/&gt;
-
-&lt;p&gt;Thread是&lt;strong&gt;灶台&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://filecdn.code2life.top/blog/%2A%2Ameiqizao.png&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;理想情况下，一个厨师一个灶台，厨师一刻不停的炒菜。这种情况餐厅老板是最开心的。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;但是，客人不仅吃炒菜，也喜欢喝鸡汤。&lt;strong&gt;厨师&lt;/strong&gt;（Processor）需要在一个灶台&lt;strong&gt;炖汤&lt;/strong&gt;（I/O操作）的时候，换到别的灶台（Thread）炒菜，&lt;strong&gt;换灶台&lt;/strong&gt;就叫&lt;strong&gt;线程间上下文切换&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;于是，一系列问题就出现了。&lt;/p&gt;
-&lt;p&gt;我们先从大家熟悉的多线程编程开始讲。&lt;/p&gt;
-&lt;h4 id=&quot;三头六臂：多线程模型&quot;&gt;三头六臂：多线程模型&lt;/h4&gt;&lt;p&gt;典型代表：Java。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://filecdn.code2life.top/blog/%2A%2Asantouliubi.png&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;哦，放错图了。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://filecdn.code2life.top/blog/%2A%2Asantouliubi2.png&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;加入客人要100锅鸡汤，最朴素的办法就是放100个灶台，每个灶台炖一锅。厨师需要有&lt;strong&gt;三头六臂&lt;/strong&gt;来回奔波，哪个炖了多久、哪个要加调料，都要厨师操心。&lt;/p&gt;
-&lt;p&gt;这种方案好像除了换灶台费点事，好像也没什么大问题。编程语言实现多线程模型，大多基于操作系统提供的原生线程，再包装一层出来给开发者用。而&lt;strong&gt;封装的线程&lt;/strong&gt;和&lt;strong&gt;OS线程&lt;/strong&gt;是&lt;strong&gt;一对一&lt;/strong&gt;关系，线程调度&lt;strong&gt;完全交给操作系统&lt;/strong&gt;就完事了，编程语言的Runtime实现也相对简单。&lt;/p&gt;
-&lt;p&gt;不过，当生意越来越好，老板雇两个厨师来一起干（多核并行编程），问题就出来了。对于同一锅鸡汤：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;1号厨师放过盐了，2号厨师不知道又放了一次，客户非常生气；&lt;/li&gt;
-&lt;li&gt;两个厨师都以为对方放了盐，结果都没放盐，客户非常生气；&lt;/li&gt;
-&lt;li&gt;1号厨师和2号厨师正巧准备一起放，两人互相扯皮了半天还没放，所有客户都非常生气。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;这叫&lt;strong&gt;竞态条件&lt;/strong&gt;（Race Condition）。解决这类问题，需要用到各种&lt;strong&gt;同步原语&lt;/strong&gt;：从CPU硬件层面的&lt;strong&gt;CAS指令&lt;/strong&gt;；到OS级别的&lt;strong&gt;临界区、信号量、互斥量&lt;/strong&gt;；再到编程语言的&lt;strong&gt;原子类型、各种锁、同步栅栏、并发安全的集合&lt;/strong&gt;，都是让&lt;strong&gt;内存数据&lt;/strong&gt;能被&lt;strong&gt;多核CPU安全地修改&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;除了同步原语，有没有其他办法呢？餐厅的老板很聪明，想到了两种新的方案，下面两节分别介绍。&lt;/p&gt;
-&lt;h4 id=&quot;万剑归宗：I-O多路复用-单线程模型&quot;&gt;万剑归宗：I/O多路复用 + 单线程模型&lt;/h4&gt;&lt;p&gt;典型代表：JavaScript。&lt;/p&gt;
-&lt;img src=&quot;https://filecdn.code2life.top/blog/%2A%2Awanjianguizong.png&quot;/&gt;
-
-&lt;p&gt;回顾上一节那个餐厅的难题：炖的汤越来越多，&lt;strong&gt;换灶台要时间，灶台太多放不下，厨师多了会打架&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;餐厅老板脑袋一拍：咱就炖个汤还请那么多厨师干嘛？就雇&lt;strong&gt;一个厨师&lt;/strong&gt;不就好了吗！什么，厨师忙不过来？雇勤杂工！&lt;/p&gt;
-&lt;p&gt;厨师放调料要1秒，炖的过程要等1小时。类比计算机世界也类似，不同部件的&lt;strong&gt;执行速度&lt;/strong&gt;严重失衡：&lt;a href=&quot;//code2life.top/2020/08/14/0056-performance2/&quot;&gt;CPU计算 &amp;gt;&amp;gt; 主存读写 &amp;gt;&amp;gt; 网络或文件I/O&lt;/a&gt;。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;CPU很快：1核CPU在一眨眼的功夫，100毫秒，就可以执行数亿条指令。&lt;/li&gt;
-&lt;li&gt;I/O很慢：如果一次主存访问想象成1天的话，一趟局域网数据传输就要13.7年。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;老板雇了勤杂工之后，炖鸡的这些锅，全都交给勤杂工一起&lt;strong&gt;批量照看&lt;/strong&gt;就好了，&lt;strong&gt;大厨只负责在恰当的时候放调料&lt;/strong&gt;。脑补一下关东煮就明白了：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://filecdn.code2life.top/blog/%2A%2Aguandongzhu.png&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;我们把每个小格子想象成一个Socket连接，这就叫&lt;strong&gt;I/O多路复用&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;在餐厅里：有一个手持任务队列、名为EventLoop的大厨线程，加上N个任劳任怨的勤杂工线程一起干活。&lt;/p&gt;
-&lt;p&gt;以Node.js为例，厨师是这样的：&lt;/p&gt;
-&lt;figure class=&quot;highlight js&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;cooker.on(&lt;span class=&quot;string&quot;&gt;&quot;该放调料了&quot;&lt;/span&gt;, &lt;span class=&quot;function&quot;&gt;() =&amp;gt;&lt;/span&gt; {&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  &lt;span class=&quot;built_in&quot;&gt;console&lt;/span&gt;.log(&lt;span class=&quot;string&quot;&gt;&quot;一眨眼功夫就放好啦&quot;&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;})&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-
-&lt;p&gt;苦逼的勤杂工们，被关在一个叫“libuv”的小黑屋里，切到内核态进行系统调用，干着类似这样的活：&lt;/p&gt;
-&lt;figure class=&quot;highlight c++&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;built_in&quot;&gt;setnonblocking&lt;/span&gt;(socket_fd);&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;ep_fd = &lt;span class=&quot;built_in&quot;&gt;epoll_create&lt;/span&gt;(max_events);&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;while&lt;/span&gt; (&lt;span class=&quot;literal&quot;&gt;true&lt;/span&gt;) {&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  &lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  &lt;span class=&quot;built_in&quot;&gt;epoll_wait&lt;/span&gt;(..)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  &lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;}&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-
-&lt;p&gt;从这个模型来看，I/O多路复用，本质上是解决了&lt;strong&gt;I/O与计算职责分离&lt;/strong&gt;的问题。当&lt;strong&gt;网络I/O&lt;/strong&gt;的脏活、累活分离出去了，只要一位大厨，炖百万只鸡不在话下。Node.js、Redis都是这么干的。篇幅原因，只简单说明了网络I/O的案例。定时器、文件I/O等异步任务的实现原理是&lt;strong&gt;不一样&lt;/strong&gt;的，和I/O多路复用&lt;strong&gt;无关&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;然鹅，这里有一个巨大的隐患。&lt;/p&gt;
-&lt;p&gt;如果不仅要做关东煮或者炖鸡（I/O密集型任务），还时常要做炒菜（CPU密集型任务）怎么办？&lt;/p&gt;
-&lt;p&gt;协程，该出场了。&lt;/p&gt;
-&lt;h4 id=&quot;千手观音：协程模型&quot;&gt;千手观音：协程模型&lt;/h4&gt;&lt;p&gt;典型代表：Erlang / Golang。&lt;/p&gt;
-&lt;img src=&quot;https://filecdn.code2life.top/blog/%2A%2Aqianshouguanyin.png&quot;/&gt;
-
-&lt;p&gt;为了解决&lt;strong&gt;既要炒菜又要炖汤&lt;/strong&gt;的问题，聪明的餐厅老板又脑袋一拍，想到一个&lt;strong&gt;万全之策&lt;/strong&gt;：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;多雇几个厨师，但是&lt;strong&gt;每个人只管面前这一个灶台&lt;/strong&gt; —— 不需要线程切换，有多少核CPU就建多少OS线程；&lt;/li&gt;
-&lt;li&gt;不用增加灶台，但要购置一大批锅 —— 这些“锅”就是协程（coroutine）；&lt;/li&gt;
-&lt;li&gt;之前雇的勤杂工继续照看炖鸡的锅和关东煮的锅 —— 继续保留 非阻塞I/O + I/O多路复用 的优良传统；&lt;/li&gt;
-&lt;li&gt;再雇一波勤杂工，就叫他们“&lt;strong&gt;换锅侠&lt;/strong&gt;”吧，&lt;strong&gt;专门负责看厨师们面前的锅&lt;/strong&gt;有没有炒好、放好调料，弄好了就立刻&lt;strong&gt;帮厨师换锅&lt;/strong&gt; —— &lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://golang.org/src/runtime/proc.go&quot;&gt;协程调度&lt;/a&gt;。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;协程最核心的特点就是：&lt;strong&gt;不用OS线程的上下文切换，在用户态实现超轻量的执行单元调度&lt;/strong&gt;。协程的实现有很多，可以根据&lt;strong&gt;协程之间有无调用栈&lt;/strong&gt;分为&lt;strong&gt;有栈协程&lt;/strong&gt;和&lt;strong&gt;无栈协程&lt;/strong&gt;；也可以根据协程间是否存在从属关系分为&lt;strong&gt;对称协程&lt;/strong&gt;和&lt;strong&gt;非对称协程&lt;/strong&gt;。&lt;/p&gt;
-&lt;h4 id=&quot;多面手-你有我有全都有&quot;&gt;多面手: 你有我有全都有&lt;/h4&gt;&lt;p&gt;其实，编程语言的演进过程也是互相“借鉴”的过程，最后的结果就是“你有我有全都有”。其中最典型的“借鉴”就是Generator函数，搭配async/await或yield实现&lt;strong&gt;无栈协程&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;async/await模式我们在下面讲异步编程范式再细谈，是一个兼顾实现成本、迁移成本、性能、可维护性的方案，因此多数主流编程语言都可以看到async/await协程的身影。比如：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;C++(20): co_await/co_return/co_yield&lt;/li&gt;
-&lt;li&gt;C#: async/wait, yield&lt;/li&gt;
-&lt;li&gt;JavaScript: async/await, yield&lt;/li&gt;
-&lt;li&gt;Dart: async/await, yield&lt;/li&gt;
-&lt;li&gt;Python：async/await, yield&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;注：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;虽然C++ 20在语法层面提供的是无栈协程，C/C++ 生态也有诸多使用汇编或其他方式实现的&lt;strong&gt;有栈协程库&lt;/strong&gt;。&lt;/li&gt;
-&lt;li&gt;执行线程是单线程的Node.js，也早已提供了多线程的支持，用于处理CPU密集型任务。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;异步编程范式&quot;&gt;异步编程范式&lt;/h2&gt;&lt;p&gt;上面一节我们讲了3种并发模型，基于编程语言实现的并发模型，又演化出了多种异步编程范式。下面一节，我们逐个讲解各类异步编程范式，仍然举餐厅的例子，设想一个场景：现在想让厨师做鸡汤给我们喝，需要 startBoil/coolDown/drinkSoap 3个耗时操作。&lt;/p&gt;
-&lt;p&gt;在讲异步编程范式之前，我们先看同步编程是怎么做的。为了保持简洁，假设都在一个线程执行了，不涉及多线程间共享数据。&lt;/p&gt;
-&lt;figure class=&quot;highlight java&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;new&lt;/span&gt; Thread(() -&amp;gt; {&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    startBoil();&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    coolDown();&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    drinkSoap();&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;}).start();&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-
-&lt;h4 id=&quot;异步回调模式&quot;&gt;异步回调模式&lt;/h4&gt;&lt;p&gt;这三个操作要转换成异步调用模式，最直观的解决方案就是用&lt;strong&gt;回调函数&lt;/strong&gt;。什么是回调函数呢？&lt;/p&gt;
-&lt;p&gt;声明一个函数，把函数指针丢给调度器，这次I/O搞定了就来执行它，这就是一个Callback。&lt;/p&gt;
-&lt;figure class=&quot;highlight js&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;startBoil(&lt;span class=&quot;function&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;callback&lt;/span&gt;(&lt;span class=&quot;params&quot;/&gt;) &lt;/span&gt;{&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;built_in&quot;&gt;console&lt;/span&gt;.log(&lt;span class=&quot;string&quot;&gt;&quot;炖好了，撒点盐&quot;&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    coolDown(&lt;span class=&quot;function&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;callback&lt;/span&gt;(&lt;span class=&quot;params&quot;/&gt;) &lt;/span&gt;{&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        &lt;span class=&quot;built_in&quot;&gt;console&lt;/span&gt;.log(&lt;span class=&quot;string&quot;&gt;&quot;现在可以喝了&quot;&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        drinkSoap(&lt;span class=&quot;function&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;callback&lt;/span&gt;(&lt;span class=&quot;params&quot;/&gt;) &lt;/span&gt;{&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;          &lt;span class=&quot;built_in&quot;&gt;console&lt;/span&gt;.log(&lt;span class=&quot;string&quot;&gt;&quot;嗝~~&quot;&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;        })&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  })&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;})&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-
-&lt;p&gt;虽然避免了线程间上下文切换的问题，但这样写异步代码，写着写着屏幕就不够宽了。嵌套回调越来越深，变成了回调地狱，下面几节就是常见解法。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;async/await/yield：熨平callback嵌套褶皱；&lt;/li&gt;
-&lt;li&gt;发布订阅模式：把callback丢出去不管了；&lt;/li&gt;
-&lt;li&gt;函数响应式编程：把callback做成烤串；&lt;/li&gt;
-&lt;li&gt;CSP模型/Actor模型：回归同步调用，放到有栈的协程/线程。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4 id=&quot;Callback的蜕变：async-await范式&quot;&gt;Callback的蜕变：async/await范式&lt;/h4&gt;&lt;p&gt;async/await本质上是编程语言对generator/yield的一层语法糖。懂了Generator也就明白了async/await的原理，以及&lt;strong&gt;为什么Generator函数可以熨平回调函数的嵌套褶皱&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;具体的原理分析网上有很多文章，比如这个Node.js的：&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://juejin.cn/post/6844903967298682888&quot;&gt;async/await 源码实现&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;一句话概况就是：Generator可以看做状态机，遇到yield就进入Pending状态出让执行权，遇到resume/next就继续执行，直到下一个yield。编程语言或者SDK把generator函数包装成 async/await 关键字，就能在看似同步的代码块中异步执行，由于Generator实现的协程是在当前栈顶上继续调用函数，只能模拟携带上下文，并不是真正的保存当前上下文，切换到另一个协程栈，因此是无栈协程。&lt;/p&gt;
-&lt;figure class=&quot;highlight js&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;async&lt;/span&gt; () =&amp;gt; {&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  &lt;span class=&quot;keyword&quot;&gt;await&lt;/span&gt; startBoil();&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  &lt;span class=&quot;keyword&quot;&gt;await&lt;/span&gt; coolDown();&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  &lt;span class=&quot;keyword&quot;&gt;await&lt;/span&gt; drinkSoap();&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;}&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-
-&lt;p&gt;这种看上去像同步的调用，让心智负担大大降低，也是实际工程中权衡利弊的工程中&lt;strong&gt;非常实用&lt;/strong&gt;的方案。&lt;/p&gt;
-&lt;p&gt;不过，async/await存在一个小问题：&lt;strong&gt;关键字传染&lt;/strong&gt;。&lt;/p&gt;
-&lt;figure class=&quot;highlight js&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;async&lt;/span&gt; () =&amp;gt; {&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  someArray.forEach(&lt;span class=&quot;keyword&quot;&gt;async&lt;/span&gt; () =&amp;gt; {&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    &lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  })&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;}&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-
-&lt;p&gt;下次新入职的前端遇到”SyntaxError: await is only valid in async functions”报错的时候，你就可以拍拍她：写&lt;strong&gt;Generator状态机实现的无栈协程&lt;/strong&gt;的时候会出现async关键字传染问题，显式告诉V8引擎，即可解决这类问题。&lt;/p&gt;
-&lt;h4 id=&quot;Callback的涅槃：函数响应式编程&quot;&gt;Callback的涅槃：函数响应式编程&lt;/h4&gt;&lt;p&gt;除了async/await/yield，异步回调地狱还有另一个解法 —— 函数响应式编程（FRP）。&lt;/p&gt;
-&lt;p&gt;FRP简单的理解可以认为是：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;函数响应式编程（FRP） ≈ 函数式编程（FP） + 发布订阅模式&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;在讲FRP之前，我们先复习一下“发布订阅模式”。&lt;/p&gt;
-&lt;figure class=&quot;highlight js&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;eventBus.on(&lt;span class=&quot;string&quot;&gt;&quot;炖好了&quot;&lt;/span&gt;, &lt;span class=&quot;function&quot;&gt;() =&amp;gt;&lt;/span&gt; {&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  eventBus.emit(&lt;span class=&quot;string&quot;&gt;&quot;可以喝了&quot;&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;})&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;eventBus.on(&lt;span class=&quot;string&quot;&gt;&quot;可以喝了&quot;&lt;/span&gt;, &lt;span class=&quot;function&quot;&gt;() =&amp;gt;&lt;/span&gt; {&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  &lt;span class=&quot;built_in&quot;&gt;console&lt;/span&gt;.log(&lt;span class=&quot;string&quot;&gt;&quot;嗝~~&quot;&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  &lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  &lt;span class=&quot;built_in&quot;&gt;console&lt;/span&gt;.log(&lt;span class=&quot;string&quot;&gt;&quot;对了，汤咋做出来的，炖汤之前嘎哈了？&quot;&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;})&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-
-&lt;p&gt;发布订阅模式在异步编程中，从另一个维度解决掉了回调地狱问题。让&lt;strong&gt;Event Bus统一管理一大锅Callback&lt;/strong&gt;，每个Callback挂了一个onXXXEvent的标签，来了什么异步事件，就让Event Bus统一来调用对应的函数。&lt;/p&gt;
-&lt;p&gt;既然一个Event Bus就解决了回调地狱问题，为什么还要函数响应式编程呢？&lt;/p&gt;
-&lt;p&gt;因为事件模式，解开了Callback，会带来&lt;strong&gt;逻辑碎片化&lt;/strong&gt;的问题。也就是说，完全靠Event Listener无法写出高内聚的代码。&lt;/p&gt;
-&lt;p&gt;那有没有办法，把&lt;strong&gt;碎片化&lt;/strong&gt;的回调函数整合起来，让代码重新内聚呢？&lt;/p&gt;
-&lt;p&gt;有的。萝卜加大棒，听说&lt;strong&gt;发布订阅模式&lt;/strong&gt;和&lt;strong&gt;函数式编程&lt;/strong&gt;更配哦？&lt;/p&gt;
-&lt;p&gt;函数式编程（FP）是一个自古有之的概念，把一沓纯净的函数声明式地组合起来，理论上就可以实现任何功能。事件驱动的异步回调函数，经过FP的洗礼，变成了Callback烤串，外酥里嫩。&lt;/p&gt;
-&lt;p&gt;我理解的函数响应式编程：就是通过一系列&lt;strong&gt;操作符&lt;/strong&gt;对函数&lt;strong&gt;组合&lt;/strong&gt;，实现复杂的&lt;strong&gt;异步事件流的操纵和处理&lt;/strong&gt;，异步事件与函数式编程的完美结合。&lt;/p&gt;
-&lt;p&gt;比如下面是一段用RxJS实现异步事件流处理的代码实例，没有回调地狱，也不需要async/await。&lt;/p&gt;
-&lt;figure class=&quot;highlight js&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;12&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;13&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;14&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;15&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;16&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;17&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;18&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;MessageBus.incoming$.pipe(&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  &lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  delayWhen(&lt;span class=&quot;function&quot;&gt;() =&amp;gt;&lt;/span&gt; &lt;span class=&quot;built_in&quot;&gt;this&lt;/span&gt;.pauseWhenUnAvailable()),&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  &lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  mergeMap(&lt;span class=&quot;function&quot;&gt;(&lt;span class=&quot;params&quot;&gt;input&lt;/span&gt;) =&amp;gt;&lt;/span&gt; &lt;span class=&quot;built_in&quot;&gt;this&lt;/span&gt;.handleCommand(input)),&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  &lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  mergeMap(&lt;span class=&quot;function&quot;&gt;(&lt;span class=&quot;params&quot;&gt;output&lt;/span&gt;) =&amp;gt;&lt;/span&gt; &lt;span class=&quot;built_in&quot;&gt;this&lt;/span&gt;.sendAckIfNeed(output)),&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  &lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  tap(&lt;span class=&quot;function&quot;&gt;(&lt;span class=&quot;params&quot;&gt;output&lt;/span&gt;) =&amp;gt;&lt;/span&gt; {&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;built_in&quot;&gt;this&lt;/span&gt;.logOutput(output);&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  })&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;).subscribe(&lt;span class=&quot;function&quot;&gt;() =&amp;gt;&lt;/span&gt; {&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  &lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;})&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-
-&lt;p&gt;脑补一下植物大战僵尸游戏里，biubiubiu的豌豆射手，源源不断的豌豆异步发射出来，经过火炬的Pipeline变成了火豌豆，最终真正起作用是在砸到目标的瞬间，也就是上面subscribe里的逻辑。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;//filecdn.code2life.top/zombie.png&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;FRP范式下经常提到背压控制，我们脑补一下水坝，上游的水流速度时快时慢，但水坝可以缓冲整流，让下游流速非常平缓，在传统编程范式要实现复杂的整流逻辑挺复杂的，而在Rx中实现“水坝”功能，仅仅需要一个操作符。这种操作符组合的黑魔法，尤其适合作为框架层的实现基础。因此，大家熟知的Java界新秀：Vert.x, WebFlux 等框架，前端的Angular/Vue/React框架都有FRP的影子。&lt;/p&gt;
-&lt;h4 id=&quot;CSP-Actor模型：一切皆消息&quot;&gt;CSP/Actor模型：一切皆消息&lt;/h4&gt;&lt;blockquote&gt;
-&lt;p&gt;Do not communicate by sharing memory; instead, share memory by communicating.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;上面这句名言，Share Nothing架构，也解释了CSP模型和Actor模型的共性：把编程问题转换为通信问题，不同的执行单元&lt;strong&gt;不共享同一份内存数据&lt;/strong&gt;，因此就不需要任何同步原语控制共享数据的访问。&lt;/p&gt;
-&lt;p&gt;我们先说CSP模型，CSP是上个世纪七十年代提出的，用于描述&lt;strong&gt;两个独立的并发实体&lt;/strong&gt;通过&lt;strong&gt;共享的 channel 进行通信&lt;/strong&gt;的并发模型。Golang用channel炖鸡汤的代码如下：&lt;/p&gt;
-&lt;figure class=&quot;highlight go&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;12&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;13&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;14&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;15&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;16&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;17&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;18&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;19&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;20&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;21&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;22&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;23&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;24&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;25&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;26&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;27&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;28&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;29&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;30&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;31&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;32&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;33&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;34&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;35&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;package&lt;/span&gt; main&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;import&lt;/span&gt; (&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  &lt;span class=&quot;string&quot;&gt;&quot;fmt&quot;&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  &lt;span class=&quot;string&quot;&gt;&quot;time&quot;&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;function&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  boiled := &lt;span class=&quot;built_in&quot;&gt;make&lt;/span&gt;(&lt;span class=&quot;keyword&quot;&gt;chan&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt;{})&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  drinkable := &lt;span class=&quot;built_in&quot;&gt;make&lt;/span&gt;(&lt;span class=&quot;keyword&quot;&gt;chan&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt;{})&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  finished := &lt;span class=&quot;built_in&quot;&gt;make&lt;/span&gt;(&lt;span class=&quot;keyword&quot;&gt;chan&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt;{})&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  &lt;span class=&quot;keyword&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;function&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    fmt.Printf(&lt;span class=&quot;string&quot;&gt;&quot;开始炖\n&quot;&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    time.Sleep(time.Second)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    fmt.Printf(&lt;span class=&quot;string&quot;&gt;&quot;炖好了\n&quot;&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    boiled &amp;lt;- &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt;{}{}&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  }()&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  &lt;span class=&quot;keyword&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;function&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    &amp;lt;-boiled&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    fmt.Printf(&lt;span class=&quot;string&quot;&gt;&quot;凉一凉\n&quot;&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    time.Sleep(time.Second)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    fmt.Printf(&lt;span class=&quot;string&quot;&gt;&quot;凉好啦，可以喝了\n&quot;&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    drinkable &amp;lt;- &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt;{}{}&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  }()&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  &lt;span class=&quot;keyword&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;function&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;params&quot;&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    &amp;lt;-drinkable&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    fmt.Printf(&lt;span class=&quot;string&quot;&gt;&quot;喝完啦\n&quot;&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;    finished &amp;lt;- &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt;{}{}&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  }()&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;/&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;  &amp;lt;-finished&lt;/span&gt;&lt;br/&gt;&lt;span class=&quot;line&quot;&gt;}&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-
-&lt;p&gt;注：Golang虽然部分实现了CSP模型，但语言本身也&lt;strong&gt;允许共享内存数据&lt;/strong&gt;，如果不用channel机制，直接多协程更新共享数据，不正确使用&lt;strong&gt;同步原语&lt;/strong&gt;也一样会出现并发BUG。&lt;/p&gt;
-&lt;p&gt;至于常常一起被提到的Actor模型，我们常说Erlang、Scala-Akka就是典型的Actor模型（虽然Erlang的诞生比Actor模型概念的提出更早，Erlang的作者也不认为Erlang是Actor模型），其主要特点也是在于把&lt;strong&gt;编程问题转换为通信问题&lt;/strong&gt;：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Actor之间&lt;strong&gt;完全不存在共享数据&lt;/strong&gt;，创建Actor非常廉价；&lt;/li&gt;
-&lt;li&gt;每个Actor，在Erlang中叫微进程，有自己的执行栈，互相之间&lt;strong&gt;完全隔离&lt;/strong&gt;；&lt;/li&gt;
-&lt;li&gt;每个Actor有一个“邮箱”， Actor之间通过收发邮箱通信。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;与CSP模型不同的是，&lt;strong&gt;Actor模型&lt;/strong&gt;更进一步，&lt;strong&gt;每个独立的并发实体&lt;/strong&gt;都有一份自己的“Channel”，在Erlang中叫“具名邮箱”。可以看出，这种抽象非常适合消息相关的领域，比如曾经WhatsApp增长到9亿用户也只有50人维护的聊天服务器、Zoom的聊天服务器、一些著名的分布式消息队列组件，都是用Erlang开发的。&lt;/p&gt;
-&lt;p&gt;因此，简单的理解Actor模型就是：有栈协程/线程 + 发布订阅模式 + Share-nothing 架构。CSP模型与Actor更细节的原理可以阅读这篇文章：&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;//jolestar.com/parallel-programming-model-thread-goroutine-actor/&quot;&gt;并发之痛 Thread，Goroutine，Actor&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;结合对OOP和FRP的理解，我自创了一个词来概括CSP/Actor范式 —— 面向对象响应式编程（OORP）。OORP可以看作是原教旨面向对象编程在异步事件流场景下的特化产物。&lt;/p&gt;
-&lt;h2 id=&quot;到底哪个范式最好？&quot;&gt;到底哪个范式最好？&lt;/h2&gt;&lt;p&gt;我们从主流编程语言的并发模型出发，了解了几类异步编程范式及其演化历程，学习了5种“喝鸡汤”的姿势。那么，这些并发模型下的异步编程范式，哪个最好？&lt;/p&gt;
-&lt;h4 id=&quot;理论-vs-现实&quot;&gt;理论 vs 现实&lt;/h4&gt;&lt;p&gt;理论上，上面介绍的4种范式中：函数响应式编程、Sharing noting的Actor模式 似乎是最优雅的解决方案；&lt;br/&gt;实际上，目前世界上大部分代码，都是在用同步编程或Async/Await的假装同步，这两个看似一堆缺点的方案。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;为什么会这样呢？&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;其原因我们从FP的发展历程可以看出来。猿界有一支神秘的学院派&lt;strong&gt;函数式编程&lt;/strong&gt;的崇拜者，念叨着函子，单子、纯函数、柯里化之类的咒语，膜拜Lisp、Pascal，鄙视新泽西派简陋的C、C++、Golang、蓝领语言Java。从工程师的视角看，FP的确在一些基础库和特定领域解决了非常关键的问题，但很难成为软件系统中的砖头和水泥。&lt;/p&gt;
-&lt;p&gt;类似的，Actor模型、FRP这类技术或许一直将是小众选型，因为：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;世界是不确定的：世界充满不确定的变化，无法用完美的模型来表示，打补丁才是常态；&lt;/li&gt;
-&lt;li&gt;人脑带宽有限：当一种知识，学习它的心智成本过高，学习它的人数就会呈&lt;strong&gt;幂律分布&lt;/strong&gt;骤减。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;现实世界常常是 &lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://en.wikipedia.org/wiki/Worse_is_better&quot;&gt;Worse is better&lt;/a&gt;。能解决掉实际问题的技术，就会有市场，不管我们是认为它们是好还是坏、优雅还是丑陋，即使是被诟病的回调模式也有应用场景。&lt;/p&gt;
-&lt;h4 id=&quot;插曲-为什么Java至今没有协程&quot;&gt;插曲: 为什么Java至今没有协程&lt;/h4&gt;&lt;p&gt;广泛使用的Java就是线程池、JUC类库撸到底，协程是什么，我不听，我不听。Java官方的协程特性支持（Project Loom）从JDK 14就说要发布了，难产了好几个大版本，至今还没生出来。&lt;/p&gt;
-&lt;p&gt;那么，为什么Java头这么铁，是道德的沦丧还是人性的扭曲？&lt;/p&gt;
-&lt;p&gt;其实也不能怪Java，这里有一系列很棒的回答：&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://www.zhihu.com/question/332042250/answer/734115120&quot;&gt;为什么Java坚持多线程不选择协程？&lt;/a&gt;，总结一下主要原因有：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;数据库操作无法协程化，20多年的JDBC标准就是同步的、一个连接一个线程。其他部分花里胡哨的NIO/Reactor也没法根除线程池模式，除非不用JDBC；&lt;/li&gt;
-&lt;li&gt;大部分网络I/O已经被Netty们剥离出去，性能瓶颈问题已经解决大半，JDBC的数据库I/O剥不出去也没太大问题，毕竟大部分数据库自己就处理不了太高并发；&lt;/li&gt;
-&lt;li&gt;同步编程的业务线程池就算切换白耗一点CPU又咋地了，毕竟JVM已经那么吃内存了，Spring全家桶各种AOP、反射的损耗已经那么多了，不在乎再多耗一点；&lt;/li&gt;
-&lt;li&gt;同步编程模式符合直观思维模式，已经深入广大JAVAer的心，Reactor/ReactiveX那一套即使学会了，习惯了传统的Java编程模式的开发者用起来也别扭；&lt;/li&gt;
-&lt;li&gt;历史包袱太沉，核心生态对线程池、ThreadLocal、JDBC这些东西的依赖太强，迁移成本很高，从Project Loom的Virtual Thread的设计也可以看出来；&lt;/li&gt;
-&lt;li&gt;其实&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://blog.csdn.net/guangcheng0312q/article/details/110358905&quot;&gt;线程上下文切换的开销&lt;/a&gt;也没有那么恐怖，现代CPU可以做到&lt;strong&gt;约每秒33万次线程切换&lt;/strong&gt;，一次耗时&lt;strong&gt;约3μs&lt;/strong&gt;，即使相比于Golang的协程切换慢了30倍，这些开销也可以接受。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;没有协程的Java活的很好。其实多线程模型下，内存数据共享也不是原罪，关键在于数据共享时，执行上下文&lt;strong&gt;自动&lt;/strong&gt;被外部调度器切换了才是BUG之源，于是需要依靠&lt;strong&gt;同步原语&lt;/strong&gt;和&lt;strong&gt;头发稀疏程度&lt;/strong&gt;来保障不出BUG。&lt;/p&gt;
-&lt;p&gt;因此，Java的面试总要问成堆的并发、同步栅栏、锁、线程池问题，JavaScript的面试就不会。&lt;/p&gt;
-&lt;h4 id=&quot;结语&quot;&gt;结语&lt;/h4&gt;&lt;p&gt;哪个语言的并发模型最好、哪种异步编程范式最好，不会存在标准答案。&lt;/p&gt;
-&lt;p&gt;对于编程语言和范式的选择，也不一定是单选题。实际开发中，我们完全可以混合范式编程，对特定的业务类型应用特定的编程范式，找最优解对付现实问题。&lt;/p&gt;
-&lt;p&gt;从异步编程范式，归结到面向对象编程与函数式编程，这二者像是&lt;strong&gt;编程领域的的波粒二象性&lt;/strong&gt;。&lt;strong&gt;面向对象是粒，函数式是波&lt;/strong&gt;：面向对象更关注数据结构，强调信息隐藏、消息传递；而函数式编程更关注行为，由变而生、一切皆函数。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;不管黑猫白猫，抓到老鼠就是好猫。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h3&gt;&lt;a id=&quot;id_143&quot;/&gt;分布式全局主键id&lt;/h3&gt; 
+&lt;pre&gt;&lt;code&gt;INCRBY order:ids 1000   // 给订单服务生成1000个主键id
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h2&gt;&lt;a id=&quot;Hash_150&quot;/&gt;哈希Hash&lt;/h2&gt; 
+&lt;h3&gt;&lt;a id=&quot;key_152&quot;/&gt;存储一个哈希表key的键值&lt;/h3&gt; 
+&lt;pre&gt;&lt;code&gt;HSET key field value
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h3&gt;&lt;a id=&quot;key_159&quot;/&gt;存储一个不存在的哈希表key的键值&lt;/h3&gt; 
+&lt;pre&gt;&lt;code&gt;HSETNX key field value
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h3&gt;&lt;a id=&quot;key_165&quot;/&gt;存储多个哈希表key的键值&lt;/h3&gt; 
+&lt;pre&gt;&lt;code&gt;HMSET key field value [field value ...]
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h3&gt;&lt;a id=&quot;keyfield_172&quot;/&gt;获取哈希表key对应的field键值&lt;/h3&gt; 
+&lt;pre&gt;&lt;code&gt;HGET key field
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h3&gt;&lt;a id=&quot;keyfield_179&quot;/&gt;批量获取哈希表key中多个field键值&lt;/h3&gt; 
+&lt;pre&gt;&lt;code&gt;HMGET key field [field ...]
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h3&gt;&lt;a id=&quot;keyfield_186&quot;/&gt;批量删除哈希表key中的field键值&lt;/h3&gt; 
+&lt;pre&gt;&lt;code&gt;HDEL key field [field ...]
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h3&gt;&lt;a id=&quot;keyfield_193&quot;/&gt;返回哈希表key中field的数量&lt;/h3&gt; 
+&lt;pre&gt;&lt;code&gt;HLEN key
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h3&gt;&lt;a id=&quot;key_199&quot;/&gt;返回哈希表key中所有的键值&lt;/h3&gt; 
+&lt;pre&gt;&lt;code&gt;HGETALL key
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h3&gt;&lt;a id=&quot;keyhash_206&quot;/&gt;删除key，整个hash表全部删除&lt;/h3&gt; 
+&lt;pre&gt;&lt;code&gt;DEL key
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h3&gt;&lt;a id=&quot;keyfieldincrement_213&quot;/&gt;为哈希表key中field键的值加上增量increment&lt;/h3&gt; 
+&lt;pre&gt;&lt;code&gt;HINCRBY key field increment
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h3&gt;&lt;a id=&quot;hash_219&quot;/&gt;hash应用场景&lt;/h3&gt; 
+&lt;h4&gt;&lt;a id=&quot;_221&quot;/&gt;存储对象&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;hmset userinfo id:1001:name 张三 id:1001:age 28
+hmget userinfo id:1001:name id:1001:age
+hmset user:1001 id 1001 name 张三 age 28
+expire user:1001 30
+hgetall user:1001
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;_231&quot;/&gt;电商购物车&lt;/h4&gt; 
+&lt;blockquote&gt; 
+ &lt;p&gt;&lt;strong&gt;用户id为key，商品id为field，商品数量为value&lt;/strong&gt;&lt;/p&gt; 
+&lt;/blockquote&gt; 
+&lt;h5&gt;&lt;a id=&quot;_235&quot;/&gt;添加商品&lt;/h5&gt; 
+&lt;pre&gt;&lt;code&gt;hset cart:user:1001 10088 1
+hset cart:user:1001 10072 1
+hset cart:user:1001 10192 1
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h5&gt;&lt;a id=&quot;_243&quot;/&gt;商品增加数量&lt;/h5&gt; 
+&lt;pre&gt;&lt;code&gt;hincrby cart:user:1001 10088 1
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h5&gt;&lt;a id=&quot;_249&quot;/&gt;获取商品总数&lt;/h5&gt; 
+&lt;pre&gt;&lt;code&gt;hlen cart:user:1001
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h5&gt;&lt;a id=&quot;_255&quot;/&gt;删除商品&lt;/h5&gt; 
+&lt;pre&gt;&lt;code&gt;hdel cart:user:1001 10072
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h5&gt;&lt;a id=&quot;_261&quot;/&gt;查询商品列表&lt;/h5&gt; 
+&lt;pre&gt;&lt;code&gt;hgetall cart:user:1001
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;hash_267&quot;/&gt;hash优缺点&lt;/h4&gt; 
+&lt;h5&gt;&lt;a id=&quot;_269&quot;/&gt;优点&lt;/h5&gt; 
+&lt;blockquote&gt; 
+ &lt;p&gt;&lt;strong&gt;同类数据归类整合储存，方便数据管理，相比string操作消耗内存与cpu更小，相比string储存更节省空间&lt;/strong&gt;&lt;/p&gt; 
+&lt;/blockquote&gt; 
+&lt;h5&gt;&lt;a id=&quot;_273&quot;/&gt;缺点&lt;/h5&gt; 
+&lt;blockquote&gt; 
+ &lt;p&gt;&lt;strong&gt;过期功能只能设置在key上，无法对field单独设置key，一个key不能存太多的field&lt;/strong&gt;&lt;/p&gt; 
+&lt;/blockquote&gt; 
+&lt;h2&gt;&lt;a id=&quot;List_277&quot;/&gt;List集合&lt;/h2&gt; 
+&lt;h3&gt;&lt;a id=&quot;_279&quot;/&gt;常用操作&lt;/h3&gt; 
+&lt;h4&gt;&lt;a id=&quot;listvalue_281&quot;/&gt;list列表左边依次插入一个或多个value&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;LPUSH list value [value ...]
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;listvalue_287&quot;/&gt;list列表右边依次插入一个或多个value&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;RPUSH list value [value ...]
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;list_293&quot;/&gt;移除list列表最左边的元素并返回&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;LPOP list
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;list_299&quot;/&gt;移除list列表最右边的元素并返回&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;RPOP list
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;liststartstop_305&quot;/&gt;返回列表list中指定区间内的元素，区间以偏移量start和stop指定&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;LRANGE list start stop
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;listlisttimeout_311&quot;/&gt;从list列表中弹出最左边的元素，如果list为空则阻塞timeout秒&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;BLPOP list [timeout]
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;listlisttimeout_317&quot;/&gt;从list列表中弹出最右边的元素，如果list为空则阻塞timeout秒&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;BRPOP list [timeout]
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;p&gt;[外链图片转存失败,源站可能有防盗链机制,建议将图片保存下来直接上传(img-9UYjlSrn-1671096099930)(null)]&lt;/p&gt; 
+&lt;h3&gt;&lt;a id=&quot;list_326&quot;/&gt;list实现数据结构&lt;/h3&gt; 
+&lt;ul&gt;&lt;li&gt;栈（FILO）：&lt;strong&gt;LPUSH + LPOP 或 RPUSH + RPOP&lt;/strong&gt;&lt;/li&gt;&lt;li&gt;队列（FIFO）：&lt;strong&gt;LPUSH + RPOP 或 RPUSH + LPOP&lt;/strong&gt;&lt;/li&gt;&lt;li&gt;阻塞队列：&lt;strong&gt;LPUSH + BRPOP&lt;/strong&gt;或&lt;strong&gt;RPUSH+BLPOP&lt;/strong&gt;&lt;/li&gt;&lt;/ul&gt; 
+&lt;h3&gt;&lt;a id=&quot;list_332&quot;/&gt;list应用场景&lt;/h3&gt; 
+&lt;h4&gt;&lt;a id=&quot;_334&quot;/&gt;消息队列&lt;/h4&gt; 
+&lt;blockquote&gt; 
+ &lt;p&gt;&lt;strong&gt;利用list的LPUSH + BRPOP实现一个消息队列，故而可以实现一个简单的点对点消息队列&lt;/strong&gt;&lt;/p&gt; 
+&lt;/blockquote&gt; 
+&lt;h4&gt;&lt;a id=&quot;_338&quot;/&gt;点赞用户列表&lt;/h4&gt; 
+&lt;blockquote&gt; 
+ &lt;p&gt;&lt;strong&gt;利用RPUSH + LRANGE组合实现点赞用户列表功能&lt;/strong&gt;&lt;/p&gt; 
+&lt;/blockquote&gt; 
+&lt;h4&gt;&lt;a id=&quot;_342&quot;/&gt;消息推送&lt;/h4&gt; 
+&lt;blockquote&gt; 
+ &lt;p&gt;&lt;strong&gt;利用LPUSH + LRANGE组合实现消息推送功能&lt;/strong&gt;&lt;/p&gt; 
+&lt;/blockquote&gt; 
+&lt;h2&gt;&lt;a id=&quot;Set_346&quot;/&gt;Set集合&lt;/h2&gt; 
+&lt;h3&gt;&lt;a id=&quot;_348&quot;/&gt;常用操作&lt;/h3&gt; 
+&lt;h4&gt;&lt;a id=&quot;key_350&quot;/&gt;往集合key中存入一个或多个元素，元素存在则忽略，元素不存在则存入&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;SADD key [member] [member...]
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;key_356&quot;/&gt;从集合key中移除一个或多个元素，不存在的元素则忽略&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;SREM key [member] [member...]
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;key_362&quot;/&gt;获取集合key中所有元素&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;SMEMBERS key
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;key_368&quot;/&gt;获取集合key总个数&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;SCARD key
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;memberkey_374&quot;/&gt;判断member元素在key集合中是否存在&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;SISMEMBER key member
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;keycountkey_380&quot;/&gt;从集合key中随机选择出count个元素，元素不从集合key中删除&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;SRANDMEMBER key [count]
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;keycount_386&quot;/&gt;从集合key中移除随机count个元素&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;SPOP key [count]
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;_392&quot;/&gt;多个集合求交集&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;SINTER key [key...]
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;destination_398&quot;/&gt;将交集结果存入destination集合中&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;SINTERSTORE destination key1 [key2] 
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;destination_403&quot;/&gt;将交集结果存入destination集合中&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;SUNION key1 [key2] 
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;destination_409&quot;/&gt;将并集结果存入destination集合中&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;SUNIONSTORE destination key1 [key2]
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;_415&quot;/&gt;差集运算&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;SDIFF key1 [key2] 
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;destination_421&quot;/&gt;将差果存入destination集合中&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;SDIFFSTORE destination key1 [key2]
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h3&gt;&lt;a id=&quot;_427&quot;/&gt;应用场景&lt;/h3&gt; 
+&lt;h4&gt;&lt;a id=&quot;_428&quot;/&gt;抽奖小程序&lt;/h4&gt; 
+&lt;h5&gt;&lt;a id=&quot;id100110293_430&quot;/&gt;奖品id为1001的抽奖添加10293用户&lt;/h5&gt; 
+&lt;pre&gt;&lt;code&gt;SADD draw:prizes:1001 10293
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h5&gt;&lt;a id=&quot;_436&quot;/&gt;查看所有参与抽奖用户&lt;/h5&gt; 
+&lt;pre&gt;&lt;code&gt;SMEMBERS draw:prizes:1001
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h5&gt;&lt;a id=&quot;_442&quot;/&gt;抽奖&lt;/h5&gt; 
+&lt;pre&gt;&lt;code&gt;SPOP draw:prizes:1001
+SPOP draw:prizes:1001 N
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h5&gt;&lt;a id=&quot;_449&quot;/&gt;点赞、收藏功能&lt;/h5&gt; 
+&lt;h6&gt;&lt;a id=&quot;_451&quot;/&gt;收藏&lt;/h6&gt; 
+ 
+&lt;pre&gt;&lt;code&gt;SADD collect:article:1001 29102
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h6&gt;&lt;a id=&quot;_458&quot;/&gt;取消收藏&lt;/h6&gt; 
+ 
+&lt;pre&gt;&lt;code&gt;SREM collect:article:1001 29102
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h6&gt;&lt;a id=&quot;_464&quot;/&gt;检查用户是否收藏&lt;/h6&gt; 
+&lt;pre&gt;&lt;code&gt;SISMEMBER collect:article:1001 29102
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h6&gt;&lt;a id=&quot;_469&quot;/&gt;获取收藏的用户列表&lt;/h6&gt; 
+&lt;pre&gt;&lt;code&gt;SMEMBERS collect:article:1001
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h6&gt;&lt;a id=&quot;_475&quot;/&gt;获取收藏用户数&lt;/h6&gt; 
+&lt;pre&gt;&lt;code&gt;SCARD collect:article:1001
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h2&gt;&lt;a id=&quot;ZSet_482&quot;/&gt;ZSet有序集合&lt;/h2&gt; 
+&lt;h3&gt;&lt;a id=&quot;_484&quot;/&gt;常用操作&lt;/h3&gt; 
+&lt;h4&gt;&lt;a id=&quot;_486&quot;/&gt;向有序集合添加一个或多个成员，或者更新已存在成员的分数&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;ZADD key score1 member1 [score2 member2] 
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;keykey_492&quot;/&gt;从有序集合key中删除key&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;ZREM key member [member...]
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;keymember_498&quot;/&gt;返回有序集合key中元素member的分值&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;ZSCORE key member
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;keymemberincrement_504&quot;/&gt;为有序集合key中元素member的分值加上increment&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;ZINCRBY key increment member 
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;key_510&quot;/&gt;返回有序集合key中元素个数&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;ZCARD key 
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;keystartstop_516&quot;/&gt;正序获取有序集合key从start下标到stop下标的元素&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;ZRANGE key start stop [WITHSCORES] 
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;keystartstop_522&quot;/&gt;倒序获取有序集合key从start下标到stop下标的元素&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;ZREVRANGE key start stop [WITHSCORES] 
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;_528&quot;/&gt;并集计算&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;ZUNIONSTORE destkey numkeys key [key ...]  
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h4&gt;&lt;a id=&quot;_534&quot;/&gt;交集计算&lt;/h4&gt; 
+&lt;pre&gt;&lt;code&gt;ZINTERSTORE destkey numkeys key [key ...] 
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h3&gt;&lt;a id=&quot;_540&quot;/&gt;应用场景&lt;/h3&gt; 
+&lt;h4&gt;&lt;a id=&quot;_542&quot;/&gt;排行榜功能&lt;/h4&gt; 
+&lt;h5&gt;&lt;a id=&quot;id1000120210426_545&quot;/&gt;文章id10001在20210426日被点击一次&lt;/h5&gt; 
+&lt;pre&gt;&lt;code&gt;ZINCRBY hotnews:20210426 1 10001 
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h5&gt;&lt;a id=&quot;_551&quot;/&gt;展示当天热点前十新闻&lt;/h5&gt; 
+&lt;pre&gt;&lt;code&gt;ZREVRANGE hotnews:20210426 0 10 WITHSCORES
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h5&gt;&lt;a id=&quot;_557&quot;/&gt;七日搜索榜单计算&lt;/h5&gt; 
+&lt;pre&gt;&lt;code&gt;ZUNIONSTORE hotnews:20210426-20210502 hotnews:20210426 hotnews:20210427 ... hotnews:20210502
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h5&gt;&lt;a id=&quot;_563&quot;/&gt;展示七日排行前十&lt;/h5&gt; 
+&lt;pre&gt;&lt;code&gt;ZREVRANGE hotnews:20210426-20210502 0 10 WITHSCORES
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;h1&gt;&lt;a id=&quot;Redis10w_570&quot;/&gt;Redis为什么每秒支持10w并发&lt;/h1&gt; 
+&lt;ul&gt;&lt;li&gt;单线程设计，避免线程上下文切换&lt;/li&gt;&lt;li&gt;基于内存操作运算&lt;/li&gt;&lt;li&gt;使用IO多路复用技术实现对多个并发请求的响应&lt;/li&gt;&lt;/ul&gt; 
+&lt;p&gt;&lt;img src=&quot;https://img-blog.csdnimg.cn/img_convert/0e55051d33a673e0d57a9b0f20f3c8a7.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+                &lt;/div&gt;
+                
+                
+        &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
