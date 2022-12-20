@@ -5,265 +5,579 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>f9d8b54a397f6bcb9565e23b1a87232d</guid>
-<title>Go 语言性能剖析利器：pprof 实战</title>
-<link>https://toutiao.io/k/ye9g2eb</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;p&gt;作者：耿宗杰&lt;/p&gt;
+<guid>ce975edcc73243a6e697003d3283d3b1</guid>
+<title>强化学习调参技巧（二）：DDPG、TD3、SAC 算法为例</title>
+<link>https://toutiao.io/k/43k6p3s</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;h1&gt;1.训练环境如何正确编写&lt;/h1&gt;
 
-&lt;h1&gt;前言&lt;/h1&gt;
+&lt;p&gt;强化学习里的 env.reset() env.step() 就是训练环境。其编写流程如下：&lt;/p&gt;
 
-&lt;p&gt;关于pprof的文章在网上已是汗牛充栋，却是千篇一律的命令介绍，鲜有真正实操的，本文将参考Go社区资料，结合自己的经验，实战Go程序的性能分析与优化过程。&lt;/p&gt;
+&lt;h2&gt;1.1 初始阶段：&lt;/h2&gt;
 
-&lt;h1&gt;优化思路&lt;/h1&gt;
+&lt;p&gt;先写一个简化版的训练环境。把任务难度降到最低，确保一定能正常训练。记录正常训练的智能体的分数，与随机动作、传统算法得到的分数做比较。
+DRL算法的分数应该明显高于随机动作（随机执行动作）。DRL算法不应该低于传统算法的分数。如果没有传统算法，那么也需要自己写一个局部最优的算法&lt;/p&gt;
 
-&lt;p&gt;首先说一下性能优化的一般思路。系统性能的分析优化，一定是从大到小的步骤来进行的，即从业务架构的优化，到系统架构的优化，再到系统模块间的优化，最后到代码编写层面的优化。业务架构的优化是最具性价比的，技术难度相对较小，却可以带来大幅的性能提升。比如通过和同事或外部门沟通，减少了一些接口调用或者去掉了不必要的复杂的业务逻辑，可以轻松提升整个系统的性能。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;评估策略的性能:&lt;/strong&gt; 大部分情况下，可以直接是对Reward Function 给出的reward 进行求和得到的每轮收益episode return作为策略评分。有时候可以需要直接拿策略的实际分数作为评分
+&lt;strong&gt;需要保证这个简化版的代码：高效、简洁、可拓展&lt;/strong&gt;&lt;/p&gt;
 
-&lt;p&gt;系统架构的优化，比如加入缓存，由http改进为rpc等，也可以在少量投入下带来较大的性能提升。最后是程序代码级别的性能优化，这又分为两方面，一是合格的数据结构与使用，二才是在此基础上的性能剖析。比如在Go语言中使用slice这种方便的数据结构时，尽可能提前申请足够的内存防止append超过容量时的内存申请和数据拷贝；使用并发保护时尽量由RWMutex 代替mutex，甚至在极高并发场景下使用更细粒度的原子操作代替锁等等。&lt;/p&gt;
+&lt;h2&gt;1.2 改进阶段：&lt;/h2&gt;
 
-&lt;h1&gt;优化实践&lt;/h1&gt;
+&lt;p&gt;让任务难度逐步提高，对训练环境env 进行缓慢的修改，时刻保存旧版本的代码同步微调 Reward Function，可以直接代入自己的人类视角，为某些行为添加正负奖励。注意奖励的平衡（有正有负）。注意不要为Reward Function 添加太多额外规则，时常回过头取消一些规则，避免过度矫正。
+ 同步微调 DRL算法，只建议微调超参数，但不建议对算法核心进行修改。因为任务变困难了，所以需要调整超参数让训练变快。同时摸清楚在这个训练环境下，算法对&lt;strong&gt;哪几个超参数是敏感的&lt;/strong&gt;。有时候为了节省时间，甚至可以为 off-policy 算法保存一些典型的 trajectory（不建议在最终验证阶段使用）。
+每一次修改，都需要跑一下记录不同方法的分数，确保：随机动作 &amp;lt; 传统方法 &amp;lt; DRL算法。这样才能及时发现代码逻辑上的错误。要极力避免代码中出现复数个的错误，因为极难排查。&lt;/p&gt;
 
-&lt;p&gt;下面进入正文，待优化程序是社区中一个例子，代码有点长，实现的算法是著名的计算机科学家Tarjan的求图的强连通分量算法，关于这个算法的思想请自行google（就别自行百度了~）。以下为实操过程（会有那么一丢丢长。。。）：&lt;/p&gt;
+&lt;h2&gt;1.3 收尾阶段：&lt;/h2&gt;
 
-&lt;p&gt;初始版本代码 havlak1.go:&lt;/p&gt;
+&lt;p&gt;尝试慢慢删掉Reward Function 中一些比较复杂的东西，删不掉就算了。
+选择&lt;font&gt;&lt;strong&gt;高低两组超参数&lt;/strong&gt;&lt;/font&gt;再跑一次，确认没有优化空间。&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;// Go from multi-language-benchmark/src/havlak/go_pro// Copyright 2011 Google Inc.//// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);// you may not use this file except in compliance with the License.// You may obtain a copy of the License at////     http://www.apache.org/licenses/LICENSE-2.0//// Unless required by applicable law or agreed to in writing, software// distributed under the License is distributed on an &quot;AS IS&quot; BASIS,// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.// See the License for the specific language governing permissions and// limitations under the License.// Test Program for the Havlak loop finder.//// This program constructs a fairly large control flow// graph and performs loop recognition. This is the Go// version.//package mainimport (   &quot;flag&quot;   &quot;fmt&quot;   &quot;log&quot;   &quot;os&quot;   &quot;runtime/pprof&quot;)type BasicBlock struct {   Name     int   InEdges  []*BasicBlock   OutEdges []*BasicBlock}func NewBasicBlock(name int) *BasicBlock {   return &amp;amp;BasicBlock{Name: name}}func (bb *BasicBlock) Dump() {   fmt.Printf(&quot;BB#%06d:&quot;, bb.Name)   if len(bb.InEdges) &amp;gt; 0 {      fmt.Printf(&quot; in :&quot;)      for _, iter := range bb.InEdges {         fmt.Printf(&quot; BB#%06d&quot;, iter.Name)      }   }   if len(bb.OutEdges) &amp;gt; 0 {      fmt.Print(&quot; out:&quot;)      for _, iter := range bb.OutEdges {         fmt.Printf(&quot; BB#%06d&quot;, iter.Name)      }   }   fmt.Printf(&quot;\n&quot;)}func (bb *BasicBlock) NumPred() int {   return len(bb.InEdges)}func (bb *BasicBlock) NumSucc() int {   return len(bb.OutEdges)}func (bb *BasicBlock) AddInEdge(from *BasicBlock) {   bb.InEdges = append(bb.InEdges, from)}func (bb *BasicBlock) AddOutEdge(to *BasicBlock) {   bb.OutEdges = append(bb.OutEdges, to)}//-----------------------------------------------------------type CFG struct {   Blocks []*BasicBlock   Start  *BasicBlock}func NewCFG() *CFG {   return &amp;amp;CFG{}}func (cfg *CFG) NumNodes() int {   return len(cfg.Blocks)}func (cfg *CFG) CreateNode(node int) *BasicBlock {   if node &amp;lt; len(cfg.Blocks) {      return cfg.Blocks[node]   }   if node != len(cfg.Blocks) {      println(&quot;oops&quot;, node, len(cfg.Blocks))      panic(&quot;wtf&quot;)   }   bblock := NewBasicBlock(node)   cfg.Blocks = append(cfg.Blocks, bblock)   if len(cfg.Blocks) == 1 {      cfg.Start = bblock   }   return bblock}func (cfg *CFG) Dump() {   for _, n := range cfg.Blocks {      n.Dump()   }}//-----------------------------------------------------------type BasicBlockEdge struct {   Dst *BasicBlock   Src *BasicBlock}func NewBasicBlockEdge(cfg *CFG, from int, to int) *BasicBlockEdge {   self := new(BasicBlockEdge)   self.Src = cfg.CreateNode(from)   self.Dst = cfg.CreateNode(to)   self.Src.AddOutEdge(self.Dst)   self.Dst.AddInEdge(self.Src)   return self}//-----------------------------------------------------------// Basic Blocks and Loops are being classified as regular, irreducible,// and so on. This enum contains a symbolic name for all these classifications//const (   _             = iota // Go has an interesting iota concept   bbTop                // uninitialized   bbNonHeader          // a regular BB   bbReducible          // reducible loop   bbSelf               // single BB loop   bbIrreducible        // irreducible loop   bbDead               // a dead BB   bbLast               // sentinel)// UnionFindNode is used in the Union/Find algorithm to collapse// complete loops into a single node. These nodes and the// corresponding functionality are implemented with this class//type UnionFindNode struct {   parent    *UnionFindNode   bb        *BasicBlock   loop      *SimpleLoop   dfsNumber int}// Init explicitly initializes UnionFind nodes.//func (u *UnionFindNode) Init(bb *BasicBlock, dfsNumber int) {   u.parent = u   u.bb = bb   u.dfsNumber = dfsNumber   u.loop = nil}// FindSet implements the Find part of the Union/Find Algorithm//// Implemented with Path Compression (inner loops are only// visited and collapsed once, however, deep nests would still// result in significant traversals).//func (u *UnionFindNode) FindSet() *UnionFindNode {   var nodeList []*UnionFindNode   node := u   for ; node != node.parent; node = node.parent {      if node.parent != node.parent.parent {         nodeList = append(nodeList, node)      }   }   // Path Compression, all nodes&#x27; parents point to the 1st level parent.   for _, ll := range nodeList {      ll.parent = node.parent   }   return node}// Union relies on path compression.//func (u *UnionFindNode) Union(B *UnionFindNode) {   u.parent = B}// Constants//// Marker for uninitialized nodes.const unvisited = -1// Safeguard against pathological algorithm behavior.const maxNonBackPreds = 32 * 1024// IsAncestor//// As described in the paper, determine whether a node &#x27;w&#x27; is a// &quot;true&quot; ancestor for node &#x27;v&#x27;.//// Dominance can be tested quickly using a pre-order trick// for depth-first spanning trees. This is why DFS is the first// thing we run below.//// Go comment: Parameters can be written as w,v int, inlike in C, where//   each parameter needs its own type.//func isAncestor(w, v int, last []int) bool {   return ((w &amp;lt;= v) &amp;amp;&amp;amp; (v &amp;lt;= last[w]))}// listContainsNode//// Check whether a list contains a specific element. //func listContainsNode(l []*UnionFindNode, u *UnionFindNode) bool {   for _, ll := range l {      if ll == u {         return true      }   }   return false}// DFS - Depth-First-Search and node numbering.//func DFS(currentNode *BasicBlock, nodes []*UnionFindNode, number map[*BasicBlock]int, last []int, current int) int {   nodes[current].Init(currentNode, current)   number[currentNode] = current   lastid := current   for _, target := range currentNode.OutEdges {      if number[target] == unvisited {         lastid = DFS(target, nodes, number, last, lastid+1)      }   }   last[number[currentNode]] = lastid   return lastid}// FindLoops//// Find loops and build loop forest using Havlak&#x27;s algorithm, which// is derived from Tarjan. Variable names and step numbering has// been chosen to be identical to the nomenclature in Havlak&#x27;s// paper (which, in turn, is similar to the one used by Tarjan).//func FindLoops(cfgraph *CFG, lsgraph *LSG) {   if cfgraph.Start == nil {      return   }   size := cfgraph.NumNodes()   nonBackPreds := make([]map[int]bool, size)   backPreds := make([][]int, size)   number := make(map[*BasicBlock]int)   header := make([]int, size, size)   types := make([]int, size, size)   last := make([]int, size, size)   nodes := make([]*UnionFindNode, size, size)   for i := 0; i &amp;lt; size; i++ {      nodes[i] = new(UnionFindNode)   }   // Step a:   //   - initialize all nodes as unvisited.   //   - depth-first traversal and numbering.   //   - unreached BB&#x27;s are marked as dead.   //   for i, bb := range cfgraph.Blocks {      number[bb] = unvisited      nonBackPreds[i] = make(map[int]bool)   }   DFS(cfgraph.Start, nodes, number, last, 0)   // Step b:   //   - iterate over all nodes.   //   //   A backedge comes from a descendant in the DFS tree, and non-backedges   //   from non-descendants (following Tarjan).   //   //   - check incoming edges &#x27;v&#x27; and add them to either   //     - the list of backedges (backPreds) or   //     - the list of non-backedges (nonBackPreds)   //   for w := 0; w &amp;lt; size; w++ {      header[w] = 0      types[w] = bbNonHeader      nodeW := nodes[w].bb      if nodeW == nil {         types[w] = bbDead         continue // dead BB      }      if nodeW.NumPred() &amp;gt; 0 {         for _, nodeV := range nodeW.InEdges {            v := number[nodeV]            if v == unvisited {               continue // dead node            }            if isAncestor(w, v, last) {               backPreds[w] = append(backPreds[w], v)            } else {               nonBackPreds[w][v] = true            }         }      }   }   // Start node is root of all other loops.   header[0] = 0   // Step c:   //   // The outer loop, unchanged from Tarjan. It does nothing except   // for those nodes which are the destinations of backedges.   // For a header node w, we chase backward from the sources of the   // backedges adding nodes to the set P, representing the body of   // the loop headed by w.   //   // By running through the nodes in reverse of the DFST preorder,   // we ensure that inner loop headers will be processed before the   // headers for surrounding loops.   //   for w := size - 1; w &amp;gt;= 0; w-- {      // this is &#x27;P&#x27; in Havlak&#x27;s paper      var nodePool []*UnionFindNode      nodeW := nodes[w].bb      if nodeW == nil {         continue // dead BB      }      // Step d:      for _, v := range backPreds[w] {         if v != w {            nodePool = append(nodePool, nodes[v].FindSet())         } else {            types[w] = bbSelf         }      }      // Copy nodePool to workList.      //      workList := append([]*UnionFindNode(nil), nodePool...)      if len(nodePool) != 0 {         types[w] = bbReducible      }      // work the list...      //      for len(workList) &amp;gt; 0 {         x := workList[0]         workList = workList[1:]         // Step e:         //         // Step e represents the main difference from Tarjan&#x27;s method.         // Chasing upwards from the sources of a node w&#x27;s backedges. If         // there is a node y&#x27; that is not a descendant of w, w is marked         // the header of an irreducible loop, there is another entry         // into this loop that avoids w.         //         // The algorithm has degenerated. Break and         // return in this case.         //         nonBackSize := len(nonBackPreds[x.dfsNumber])         if nonBackSize &amp;gt; maxNonBackPreds {            return         }         for iter := range nonBackPreds[x.dfsNumber] {            y := nodes[iter]            ydash := y.FindSet()            if !isAncestor(w, ydash.dfsNumber, last) {               types[w] = bbIrreducible               nonBackPreds[w][ydash.dfsNumber] = true            } else {               if ydash.dfsNumber != w {                  if !listContainsNode(nodePool, ydash) {                     workList = append(workList, ydash)                     nodePool = append(nodePool, ydash)                  }               }            }         }      }      // Collapse/Unionize nodes in a SCC to a single node      // For every SCC found, create a loop descriptor and link it in.      //      if (len(nodePool) &amp;gt; 0) || (types[w] == bbSelf) {         loop := lsgraph.NewLoop()         loop.SetHeader(nodeW)         if types[w] != bbIrreducible {            loop.IsReducible = true         }         // At this point, one can set attributes to the loop, such as:         //         // the bottom node:         //    iter  = backPreds[w].begin();         //    loop bottom is: nodes[iter].node);         //         // the number of backedges:         //    backPreds[w].size()         //         // whether this loop is reducible:         //    type[w] != BasicBlockClass.bbIrreducible         //         nodes[w].loop = loop         for _, node := range nodePool {            // Add nodes to loop descriptor.            header[node.dfsNumber] = w            node.Union(nodes[w])            // Nested loops are not added, but linked together.            if node.loop != nil {               node.loop.Parent = loop            } else {               loop.AddNode(node.bb)            }         }         lsgraph.AddLoop(loop)      } // nodePool.size   } // Step c}// External entry point.func FindHavlakLoops(cfgraph *CFG, lsgraph *LSG) int {   FindLoops(cfgraph, lsgraph)   return lsgraph.NumLoops()}//======================================================// Scaffold Code//======================================================// Basic representation of loops, a loop has an entry point,// one or more exit edges, a set of basic blocks, and potentially// an outer loop - a &quot;parent&quot; loop.//// Furthermore, it can have any set of properties, e.g.,// it can be an irreducible loop, have control flow, be// a candidate for transformations, and what not.//type SimpleLoop struct {   // No set, use map to bool   basicBlocks map[*BasicBlock]bool   Children    map[*SimpleLoop]bool   Parent      *SimpleLoop   header      *BasicBlock   IsRoot       bool   IsReducible  bool   Counter      int   NestingLevel int   DepthLevel   int}func (loop *SimpleLoop) AddNode(bb *BasicBlock) {   loop.basicBlocks[bb] = true}func (loop *SimpleLoop) AddChildLoop(child *SimpleLoop) {   loop.Children[child] = true}func (loop *SimpleLoop) Dump(indent int) {   for i := 0; i &amp;lt; indent; i++ {      fmt.Printf(&quot;  &quot;)   }   // No ? operator ?   fmt.Printf(&quot;loop-%d nest: %d depth %d &quot;,      loop.Counter, loop.NestingLevel, loop.DepthLevel)   if !loop.IsReducible {      fmt.Printf(&quot;(Irreducible) &quot;)   }   // must have &amp;gt; 0   if len(loop.Children) &amp;gt; 0 {      fmt.Printf(&quot;Children: &quot;)      for ll := range loop.Children {         fmt.Printf(&quot;loop-%d&quot;, ll.Counter)      }   }   if len(loop.basicBlocks) &amp;gt; 0 {      fmt.Printf(&quot;(&quot;)      for bb := range loop.basicBlocks {         fmt.Printf(&quot;BB#%06d &quot;, bb.Name)         if loop.header == bb {            fmt.Printf(&quot;*&quot;)         }      }      fmt.Printf(&quot;\b)&quot;)   }   fmt.Printf(&quot;\n&quot;)}func (loop *SimpleLoop) SetParent(parent *SimpleLoop) {   loop.Parent = parent   loop.Parent.AddChildLoop(loop)}func (loop *SimpleLoop) SetHeader(bb *BasicBlock) {   loop.AddNode(bb)   loop.header = bb}//------------------------------------// Helper (No templates or such)//func max(x, y int) int {   if x &amp;gt; y {      return x   }   return y}// LoopStructureGraph//// Maintain loop structure for a given CFG.//// Two values are maintained for this loop graph, depth, and nesting level.// For example://// loop        nesting level    depth//----------------------------------------// loop-0      2                0//   loop-1    1                1//   loop-3    1                1//     loop-2  0                2//var loopCounter = 0type LSG struct {   root  *SimpleLoop   loops []*SimpleLoop}func NewLSG() *LSG {   lsg := new(LSG)   lsg.root = lsg.NewLoop()   lsg.root.NestingLevel = 0   return lsg}func (lsg *LSG) NewLoop() *SimpleLoop {   loop := new(SimpleLoop)   loop.basicBlocks = make(map[*BasicBlock]bool)   loop.Children = make(map[*SimpleLoop]bool)   loop.Parent = nil   loop.header = nil   loop.Counter = loopCounter   loopCounter++   return loop}func (lsg *LSG) AddLoop(loop *SimpleLoop) {   lsg.loops = append(lsg.loops, loop)}func (lsg *LSG) Dump() {   lsg.dump(lsg.root, 0)}func (lsg *LSG) dump(loop *SimpleLoop, indent int) {   loop.Dump(indent)   for ll := range loop.Children {      lsg.dump(ll, indent+1)   }}func (lsg *LSG) CalculateNestingLevel() {   for _, sl := range lsg.loops {      if sl.IsRoot {         continue      }      if sl.Parent == nil {         sl.SetParent(lsg.root)      }   }   lsg.calculateNestingLevel(lsg.root, 0)}func (lsg *LSG) calculateNestingLevel(loop *SimpleLoop, depth int) {   loop.DepthLevel = depth   for ll := range loop.Children {      lsg.calculateNestingLevel(ll, depth+1)      ll.NestingLevel = max(loop.NestingLevel, ll.NestingLevel+1)   }}func (lsg *LSG) NumLoops() int {   return len(lsg.loops)}func (lsg *LSG) Root() *SimpleLoop {   return lsg.root}//======================================================// Testing Code//======================================================func buildDiamond(cfgraph *CFG, start int) int {   bb0 := start   NewBasicBlockEdge(cfgraph, bb0, bb0+1)   NewBasicBlockEdge(cfgraph, bb0, bb0+2)   NewBasicBlockEdge(cfgraph, bb0+1, bb0+3)   NewBasicBlockEdge(cfgraph, bb0+2, bb0+3)   return bb0 + 3}func buildConnect(cfgraph *CFG, start int, end int) {   NewBasicBlockEdge(cfgraph, start, end)}func buildStraight(cfgraph *CFG, start int, n int) int {   for i := 0; i &amp;lt; n; i++ {      buildConnect(cfgraph, start+i, start+i+1)   }   return start + n}func buildBaseLoop(cfgraph *CFG, from int) int {   header := buildStraight(cfgraph, from, 1)   diamond1 := buildDiamond(cfgraph, header)   d11 := buildStraight(cfgraph, diamond1, 1)   diamond2 := buildDiamond(cfgraph, d11)   footer := buildStraight(cfgraph, diamond2, 1)   buildConnect(cfgraph, diamond2, d11)   buildConnect(cfgraph, diamond1, header)   buildConnect(cfgraph, footer, from)   footer = buildStraight(cfgraph, footer, 1)   return footer}var cpuprofile = flag.String(&quot;cpuprofile&quot;, &quot;&quot;, &quot;write cpu profile to this file&quot;)func main() {   flag.Parse()   if *cpuprofile != &quot;&quot; {      f, err := os.Create(*cpuprofile)      if err != nil {         log.Fatal(err)      }      pprof.StartCPUProfile(f)      defer pprof.StopCPUProfile()   }   lsgraph := NewLSG()   cfgraph := NewCFG()   cfgraph.CreateNode(0) // top   cfgraph.CreateNode(1) // bottom   NewBasicBlockEdge(cfgraph, 0, 2)   for dummyloop := 0; dummyloop &amp;lt; 15000; dummyloop++ {      FindHavlakLoops(cfgraph, NewLSG())   }   n := 2   for parlooptrees := 0; parlooptrees &amp;lt; 10; parlooptrees++ {      cfgraph.CreateNode(n + 1)      buildConnect(cfgraph, 2, n+1)      n = n + 1      for i := 0; i &amp;lt; 100; i++ {         top := n         n = buildStraight(cfgraph, n, 1)         for j := 0; j &amp;lt; 25; j++ {            n = buildBaseLoop(cfgraph, n)         }         bottom := buildStraight(cfgraph, n, 1)         buildConnect(cfgraph, n, top)         n = bottom      }      buildConnect(cfgraph, n, 1)   }   FindHavlakLoops(cfgraph, lsgraph)   for i := 0; i &amp;lt; 50; i++ {      FindHavlakLoops(cfgraph, NewLSG())   }   fmt.Printf(&quot;# of loops: %d (including 1 artificial root node)\n&quot;, lsgraph.NumLoops())   lsgraph.CalculateNestingLevel()}
+&lt;h1&gt;2. 超参数解释分析&lt;/h1&gt;
+
+&lt;h2&gt;2.1 off-policy算法中常见的超参数&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;网络宽度：&lt;/strong&gt; network dimension number。DRL 全连接层的宽度（特征数量）&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;网络层数：&lt;/strong&gt; network layer number。一个输入张量到输出需要乘上w的次数&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;随机失活：&lt;/strong&gt; dropout&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;批归一化&lt;/strong&gt;： batch normalization&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;记忆容量：&lt;/strong&gt; 经验回放缓存 experimence replay buffer 的最大容量 max capacity&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;批次大小：&lt;/strong&gt; batch size。使用优化器更新时，每次更新使用的数据数量&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;更新次数&lt;/strong&gt;：update times。使用梯度下降更新网络的次数&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;折扣因子：&lt;/strong&gt; discount factor、gamma&lt;/li&gt;
+&lt;li&gt;
+&lt;strong&gt;【网络宽度、网络层数】&lt;/strong&gt; 越复杂的函数就需要越大容量的神经网络去拟合。在需要训练1e6步的任务中，我一般选择 宽度&lt;strong&gt;128、256&lt;/strong&gt;，层数小于8的网络（请注意，乘以一个w算一层，一层LSTM等于2层）。使用ResNet等结构会有很小的提升。一般选择一个略微冗余的网络容量即可，把调整超参数的精力用在这上面不划算，我建议这些超参数都粗略地选择2的N次方，&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;pre&gt;&lt;code&gt;因为：防止过度调参，超参数选择x+1 与 x-1并没有什么区别，但是 x与2x一定会有显著区别
+2的N次方大小的数据，刚好能完整地放进CPU或GPU的硬件中进行计算，如Tensor Core
+过大、过深的神经网络不适合DRL，
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;我们借助macbook系统上的time命令来打印程序运行的时间（内核态、用户态、总时间）：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;因为：深度学习可以在整个训练结束后再使用训练好的模型。
+而强化学习需要在几秒钟的训练后马上使用刚训好的模型。
+这导致DRL只能用比较浅的网络来保证快速拟合（10层以下）
+并且强化学习的训练数据不如有监督学习那么稳定，无法划分出训练集测试集去避免过拟合，
+因此DRL也不能用太宽的网络（超过1024），避免参数过度冗余导致过拟合
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;编译后运行程序：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;【dropout、批归一化】&lt;/strong&gt; 她们在DL中得到广泛地使用，可惜不适合DRL。如果非要用，那么也要选择非常小的 &lt;strong&gt;dropout rate（0~0.2）&lt;/strong&gt;，而且要注意在使用的时候关掉dropout。我不用dropout。&lt;/p&gt;
 
-&lt;p&gt;﻿&lt;/p&gt;
+&lt;p&gt;好处：在数据不足的情况下缓解过拟合；像Noisy DQN那样去促进策略网络探索
+坏处：影响DRL快速拟合的能力；略微增加训练时间&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/b1c287dfbd5c4448bc055996f7aca517%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;【批归一化】&lt;/strong&gt; 经过大量实验，DRL绝对不能直接使用批归一化，如果非要用，那么就要修改Batch Normalization的动量项超参数。&lt;/p&gt;
 
-&lt;p&gt;﻿﻿  &lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;【记忆容量】&lt;/strong&gt; 经验回放缓存 experimence replay buffer 的最大容量 max capacity，如果超过容量限制，它就会删掉最早的记忆。在简单的任务中（训练步数小于1e6），对于探索能力强的DRL算法，通常在缓存被放满前就训练到收敛了，不需要删除任何记忆。然而，过大的记忆也会拖慢训练速度，我一般会先从默认值 2 ** 17 ~ 2 ** 20 开始尝试，如果环境的随机因素大，我会同步增加记忆容量 与 batch size、网络更新次数，直到逼近服务器的内存、显存上限（放在显存训练更快）&lt;/p&gt;
 
-&lt;p&gt;用户态耗时23.07s，内核态耗时0.4s，总耗时13.7s（用了两个核，170%）。因为程序里面已经先开启了pprof统计cpu耗时，直接top命令看：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;【批次大小、更新次数】&lt;/strong&gt; 一般我会选择与网络宽度相同、或略大的批次大小batch size。我一般从&lt;strong&gt;128、256&lt;/strong&gt; 开始尝试这些2的N次方。在off-policy中，每往Replay 更新几个数据，就对应地更新几次网络，这样做简单，但效果一般。（深度学习里）更优秀的更新方法是：根据Replay中数据数量，成比例地修改更新次数。Don&#x27;t Decay the Learning Rate, Increase the Batch Size. ICLR. 2018 。，经过验证，DRL也适用。&lt;/p&gt;
 
-&lt;p&gt;﻿&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;【折扣因子】&lt;/strong&gt; discount factor、discount-rate parameter 或者叫 gamma 。0.99&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4f11b769cab54f20bef9aa8f8f4c7e09%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;h2&gt;2.2 on-policy算法中常见的超参数&lt;/h2&gt;
 
-&lt;p&gt;﻿﻿  &lt;/p&gt;
+&lt;p&gt;同策略（A3C、PPO、PPO+GAE）与异策略（DQN、DDPG、TD3、SAC）的主要差异是：&lt;/p&gt;
 
-&lt;p&gt;可以看到，pprof数据采集持续了12.99s，采样时长是19.49s（还是两核的缘故）。&lt;/p&gt;
 
-&lt;p&gt;这里要说一下，无论是cpu耗时统计还是内存占用统计，都是间隔采样。cpu耗时时每隔一段时间（大概是10ms）对调用栈的函数进行记录，最后分析在所有的记录次数中，各个函数出现的次数，包括在运行中的次数，和入栈次数（说明它调用了别的函数）。内存占用统计是每分配512K记录一次分配路径。&lt;/p&gt;
 
-&lt;p&gt;耗时最多的是mapaccess1_fast64，这是运行时中的map读写时的数据查询函数。如果编译程序时没有禁用内联，看到的会有所不同，其中会显示FindHavlakLoops函数，并标识为inline。因为FindHavlakLoops里面就调用了FindLoops，所以在编译器会直接把这个函数展开，用FindLoops替换FindHavlakLoops函数。也可以在不禁用内联编译时，设置pprof的noinlines开关为true，默认为false，即noinlines=true。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;【记忆容量】&lt;/strong&gt; on-policy 算法每轮更新后都需要删除“用过的数据”，所以on-policy的记忆容量应该大于等于【单轮更新的采样步数】，随机因素更多的任务需要更大的单层采样步数才能获得更多的 轨迹 trajectory，才能有足够的数据去表达环境与策略的互动关系。详见下面PPO算法的【单轮更新的采样步数】&lt;/p&gt;
 
-&lt;p&gt;这里看到最大的函数并不是业务函数而是系统函数，那没啥好优化系统函数的（只能是咱用的不对了呗~）。就看是哪里调用的这个系统函数：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;【批次大小】&lt;/strong&gt; on-policy 算法比off-policy更像深度学习，它可以采用稍大一点的学习率（2e-4）。因为【单轮更新的采样步数】更大，所以它也需要搭配更大的batch size（2&lt;strong&gt;9 ~ 2&lt;/strong&gt;12）。如果内存显存足够，我建议使用更大的batch size，我发现一些很难调的任务，在很大的batch size（2 ** 14） 面前更容易获得单调上升的学习曲线（训练慢但是及其稳定，多GPU分布式）。请自行取舍。&lt;/p&gt;
 
-&lt;p&gt;web mapaccess1_fast64&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;【更新次数】&lt;/strong&gt; 一般我们不直接设置更新次数，而是通过【单轮更新的采样步数】、【批次大小】和【数据重用次数】一同算出【更新次数】，详见下面PPO算法的【数据重用次数】&lt;/p&gt;
 
-&lt;p&gt;﻿&lt;/p&gt;
+&lt;h1&gt;3. TD3特有的超参数&lt;/h1&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f4cd13caad3b4f95b7a1e6d983be2c3a%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;探索噪声方差 exploration noise std&lt;/li&gt;
+&lt;li&gt;策略噪声方差 policy noise std&lt;/li&gt;
+&lt;li&gt;延迟更新频率 delay update frequency&lt;/li&gt;
+&lt;/ul&gt;
 
-&lt;p&gt;﻿﻿  &lt;/p&gt;
+&lt;p&gt;如果你擅长调参，那么可以可以考虑TD3算法。如果你的算法的&lt;strong&gt;最优策略通常是边界值&lt;/strong&gt;，那么你首选的算法就是TD3----&lt;font&gt;&lt;strong&gt;最佳策略总在动作边界&lt;/strong&gt;&lt;/font&gt;&lt;/p&gt;
 
-&lt;p&gt;可以看到，调用最多的是DFS和FindLoops。那就看看这俩函数里面是怎么使用map的，来看DFS：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;【TD3的探索方式】&lt;/strong&gt; 让其很容易在探索「边界动作」：&lt;/p&gt;
 
-&lt;p&gt;﻿&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;策略网络输出张量，经过激活函数 tanh 调整到 (-1, +1)&lt;/li&gt;
+&lt;li&gt;为动作添加一个clip过的高斯噪声，噪声大小由人类指定&lt;/li&gt;
+&lt;li&gt;对动作再进行一次clip操作，调整到 (-1， +1)&lt;/li&gt;
+&lt;/ul&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/e657652219a348aab8c144aa0f19f3c3%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;好处：&lt;/strong&gt; 一些任务的最优策略本就存在存在大量边界动作，TD3可以很快学得很快。
+&lt;strong&gt;坏处：&lt;/strong&gt; 边界动作都是 -1或 +1，这会降低策略的多样性，网络需要在多样性好数据上训练才不容易过拟合。对于clip 到正负1之间的action，过大的噪声方差会产生大量边界动作 。
+&lt;img src=&quot;https://s2.51cto.com/images/blog/202212/15135614_639ab6fea6da517014.png?x-oss-process=image/watermark,size_14,text_QDUxQ1RP5Y2a5a6i,color_FFFFFF,t_30,g_se,x_10,y_10,shadow_20,type_ZmFuZ3poZW5naGVpdGk=&quot; alt=&quot;在这里插入图片描述&quot;/&gt;&lt;/p&gt;
 
-&lt;p&gt;﻿﻿  &lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;【探索噪声方差 exploration noise std】&lt;/strong&gt;  就是上图中的s。需要先尝试小的噪声方差（如0.05），然后逐渐加大。大的噪声方差刻意多探索边界值，特定任务下能让探索更快。&lt;strong&gt;且高噪声下训练出来的智能体更robust（稳健、耐操）&lt;/strong&gt;。
+请注意：过大的噪声方差（大于上图蓝线的0.5）并不会让探索动作接近随机动作，而是让探索动作更接近单一的边界动作。此外，过大的噪声会影响智能体性能，导致她不容易探索到某些state。&lt;/p&gt;
 
-&lt;p&gt;可以看到，DFS函数里耗时较长又是map操作的，是242 246 和250三行。对于这里的优化方法，是用list结构代替map结构，因为能用list达到效果的情况下没必要用map。这个咋一看没问题，但好像又有点别扭对吧？其实是因为这个程序的本身特点，这里有明显的一点，就是BasicBlock结构的特殊性，本身的Name属性就是自身的索引下标。查找某个BasicBlock不需要使用map来记录，直接通过下标访问显然是最低的时间复杂度（关于map和list的时间复杂度就不多说了，map看起来是O1，但其实没有考虑hash计算本身的过程和解决hash冲突的成本，而list是必然的O1）。通过把这部分的map修改为list数据结构，版本H2，再编译查看耗时情况：&lt;/p&gt;
+&lt;p&gt;因此，合适的探索噪声方差只能慢慢试出来，TD3适合愿意调参的人使用。在做出错误动作后容易挽回的环境，可以直接尝试较大的噪声。
+我们也可以模仿 epslion-Greedy，设置一个使用随机动作的概率，或者每间隔几步探索就不添加噪声，甚至也在TD3中使用探索衰减。这些操作都会增加超参数的数量，慎用。&lt;/p&gt;
 
-&lt;p&gt;﻿&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;【策略噪声方差 policy noise std】&lt;/strong&gt; 确定了探索噪声后，策略噪声只需要比探索噪声稍大&lt;strong&gt;（1~2倍）&lt;/strong&gt;。TD3对策略噪声的解释是“计算Q值时，因为相似的动作的Q值也是相似的，所以TD3也为动作加一个噪声，这能使Q值函数更加光滑，提高训练稳定性 我们还能多使用几个添加噪声的动作，甚至使用加权重要性采样去算出更稳定的Q值期望。在确定策略梯度算法里的这种“在计算Q值时，为动作加noise的操作”，让TD3变得有点像随机策略梯度。无论是否有clip，策略噪声方差最大也不该超过0.5。&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3911f3af78954fc0a9dcc4182c489729%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;【延迟更新频率 delay update frequency】&lt;/strong&gt; TD3认为：引入目标网络进行 soft update 就是为了提高训练稳定性，那么既然 network 不够稳定，那么我们应该延迟更新目标网络 target network，即多更新几次 network，然后再更新一次target network。从这个想法再拓展出去，我们甚至可以模仿TTUR的思想做得更细致一点，针对双层优化问题我们能做：&lt;/p&gt;
 
-&lt;p&gt;﻿﻿  &lt;/p&gt;
+&lt;p&gt;环境随机因素多，则需要尝试更大的延迟更新频率，可尝试的值有 1~8，默认值为2
+提供策略梯度的critic可以多更新几次，再更新一次actor，可尝试的值有 1~4&amp;lt;&lt;/p&gt;
 
-&lt;p&gt;此时耗时降低到了8s。再次查看cpu耗时分布：&lt;/p&gt;
+&lt;p&gt;提供策略梯度的critic可以设计更大的学习率，例如让critic的学习率是actor 的1~10倍&lt;/p&gt;
 
-&lt;p&gt;﻿&lt;/p&gt;
+&lt;p&gt;由于critic 需要处理比 actor 更多的数据，因此建议让critic网络的宽度略大于actor&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/c8e70976c5f14e93b896a62ba3857c24%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;h1&gt;4. SAC特有的超参数&lt;/h1&gt;
 
-&lt;p&gt;﻿﻿  &lt;/p&gt;
+&lt;p&gt;尽管下面列举了4个超参数，但是后三个超参数可以直接使用默认值（默认值只会有限地影响训练速度），第一个超参数甚至可以直接通过计算选择出来，不需要调整。&lt;/p&gt;
 
-&lt;p&gt;可以看到，top1变成了scanobject函数，不再是map读写了。看到这个函数，以及下边的mallocgc，我们要知道，这都是内存相关的，前者是内存对象扫描的处理函数，是垃圾回收三色标记的一个过程，后者则是直接管理内存分配和回收的（注意是同时负责内存分配和回收，malloc &amp;amp;&amp;amp; gc）。这说明目前程序花了很多时间在进行内存管理，看比例是8%。那就要分析一下了，是什么东西产生了这么多内存变化，合不合理。分析内存，就是pprof的memprofile功能了。添加一下相关的内存统计代码，具体怎么添加大家肯定都会，就不贴了（网上多得是）。添加完之后，重新编译生成版本H3，执行H3，生成对应的内存监测文件：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;reward scale 按比例调整奖励&lt;/li&gt;
+&lt;li&gt;alpha 温度系数 或 target entropy 目标 策略熵&lt;/li&gt;
+&lt;li&gt;learning rate of alpha 温度系数 alpha 的学习率&lt;/li&gt;
+&lt;li&gt;initialization of alpha 温度系数 alpha 的初始值
+SAC有极少的超参数，甚至这些超参数可以在训练开始前就凭经验确定。
+&lt;img src=&quot;https://s2.51cto.com/images/blog/202212/15135614_639ab6fea92375198.png?x-oss-process=image/watermark,size_14,text_QDUxQ1RP5Y2a5a6i,color_FFFFFF,t_30,g_se,x_10,y_10,shadow_20,type_ZmFuZ3poZW5naGVpdGk=&quot; alt=&quot;在这里插入图片描述&quot;/&gt;任何存在多个loss相加的目标函数，一定需要调整系数 lambda，例如SAC算法、共享了actor critic 网络的A3C或PPO，使用了辅助任务的PPG。我们需要确定好各个 lambda 的比例。SAC的第二篇论文加入了自动调整 温度系数 alpha 的机制，处于lambda2位置的温度alpha 已经用于自动调整策略熵了，所以我们只能修改lambda1。&lt;/li&gt;
+&lt;/ul&gt;
 
-&lt;p&gt;﻿&lt;/p&gt;
+&lt;p&gt;reward scaling 是指直接让reward 乘以一个常数k (reward scale)，在不破坏reward function 的前提下调整reward值，从而间接调整Q值到合适的大小。 修改reward scale，相当于修改lambda1，从而让可以让 reward项 和 entropy项 它们传递的梯度大小接近。与其他超参数不同，只要我们知晓训练环境的累计收益范围，我们就能在训练前，直接随意地选定一个reward scaling的值，让累计收益的范围落在 -1000~1000以内即可，不需要精细调整：&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/64a821e17b6440d79d1871d6be3a54f0%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;【温度系数、目标策略熵】&lt;/strong&gt;  Temperature parameters (alpha)、target &#x27;policy entropy&#x27;。SAC的第二篇论文加入了自动调整 温度系数 alpha 的机制：通过自动调整温度系数，做到让策略的熵维持在目标熵的附近（不让alpha过大而影响优化，也不让alpha过小而影响探索）&lt;/p&gt;
 
-&lt;p&gt;﻿﻿  &lt;/p&gt;
+&lt;p&gt;策略熵的默认值是 动作的个数 的负log，详见SAC的第二篇论文 section 5 Automating Entropy Adjustment for Maximum Entropy 。SAC对这个超参数不敏感，一般不需要修改。有时候策略的熵太大将导致智能体无法探索到某些有优势的state，此时需要将目标熵调小。&lt;/p&gt;
 
-&lt;p&gt;查看内存的分配情况，在这里不禁止内联，因为在实际运行时该内联的函数也是会被展开替换掉的：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;【温度系数 alpha 的学习率】&lt;/strong&gt; learning rate of alpha 温度系数alpha 最好使用 log 形式进行优化，因为alpha是表示倍数的正数。一般地，温度系数的学习率和网络参数的学习率保持一致（一般都是1e-4）。当环境随机因素过大，导致每个batch 算出来的策略熵 log_prob 不够稳定时，我们需要调小温度系数的学习率。&lt;/p&gt;
 
-&lt;p&gt;﻿&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;【温度系数 alpha 的初始值】&lt;/strong&gt; initialization of alpha 温度系数的初始值可以随便设置，只要初始值不过于离奇，它都可以被自动调整为合适的值。一般偷懒地将初始值设置为 log(0) 其实过大了，这会延长SAC的预热时间，我一般设置成更小的数值，详见 The alpha loss calculating of SAC is different from other repo · Issue #10 · Yonv1943/ElegantRL 。&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6c76579c6b664119a21486e7ac6ece4b%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;h1&gt;5. 自己模型训练调参记录（TD3）&lt;/h1&gt;
 
-&lt;p&gt;﻿﻿  &lt;/p&gt;
+&lt;h2&gt;5.1 模型环境参数&lt;/h2&gt;
 
-&lt;p&gt;可以看到，节点创建是第一，FindLoops是第二。因为创建BasicBlock首先很简单，没有复杂的过程，其次这是程序中的一个基础对象结构，若要改结构体，那可能涉及到算法也得改，这个显然是不合适的，不仅可能改出bug，还可能收益不高。那我们就顺着看第二位的FindLoops，这个就是前边我们看到的调用mapaccess内置函数的另一个业务函数，所以优化的方法跟上面类似，还是优化map的使用，替换为list。这里有一点特殊的是，替换成list之后，map的追加需要改一下，加一个判断重复的逻辑，所以新加了一个appendUnique方法。再次编译，版本H4，查看耗时：&lt;/p&gt;
-
-&lt;p&gt;﻿&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/7b59cf00cc2743a9b6f9a092c08fcd70%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;﻿﻿  &lt;/p&gt;
-
-&lt;p&gt;这时程序耗时降到了5.6s。再次查看内存分配，确认优化效果：&lt;/p&gt;
-
-&lt;p&gt;﻿&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/de8ab14770744074a9af71e5a5a6fedf%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;﻿﻿  &lt;/p&gt;
-
-&lt;p&gt;可以看到，FindLoops函数已经不在高位，内存消耗降下去了。再看一下此时的cpu耗时分布：&lt;/p&gt;
-
-&lt;p&gt;﻿&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/140f481e60754c189bc926a7046cb9fd%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;﻿﻿  &lt;/p&gt;
-
-&lt;p&gt;可以看到，FindLoops成为top1，scanobject函数成了第二位。这就对了，因为&lt;strong&gt;我们就是要让cpu更多的去运行业务代码，把时间花到真正需要的地方&lt;/strong&gt;。&lt;/p&gt;
-
-&lt;p&gt;这时就可以进行下一轮的性能优化了（这就是性能调优，一遍一遍的排查耗时，压缩不必要的cpu时间，压榨计算性能）。继续看一下此时FindLoops到底在哪儿化的时间多，是否合理：&lt;/p&gt;
-
-&lt;p&gt;﻿&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/dee2767b996f403491b41539816ca113%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;﻿﻿  &lt;/p&gt;
-
-&lt;p&gt;从各个语句的耗时来看，好像没啥大问题，没有很离谱的耗时（360ms那行是因为循环的缘故）。这说明编码上没有大问题，按照我们前边一开始说的程序优化的步骤，就需要往上找了，看能不能优化逻辑来减少不必要的计算，以达到提升性能的目的（即，每一个计算步骤处理的都没啥大问题了，那能不能少算点儿）。这里FindLoops在程序入口，花了不少时间来初始化一系列临时变量，加起来有180ms，这就意味着每次调用FindLoops函数，都要先花180ms的准备工作。这部分临时变量的多次创建+初始化，可以通过加内存缓存的方式来减少重复创建和申请，这里涉及到的标准解法其实就是对象池（像Go创建的web服务，在并发量很高的情况下，每一次http请求的解析都需要创建对象+申请内存+反序列这一系列的初始动作，这时就可以借助sync.Pool来减少这种重复工作，提升性能）。同理，这里也是加入了一个内存缓存对象cache：&lt;/p&gt;
-
-&lt;p&gt;﻿&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3e27db17ac344e0f8e1a3283334407a2%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;﻿﻿  &lt;/p&gt;
-
-&lt;p&gt;把原本的内存申请初始化过程做了替换。在原有缓存不够的情况下，申请新的变量，否者截取原有缓存使用，减少内存申请：&lt;/p&gt;
-
-&lt;p&gt;﻿&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/e9a25914cc8d41639315e25db3997304%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;﻿﻿  &lt;/p&gt;
-
-&lt;p&gt;调整完毕后，编译新版本H5，再看下耗时：&lt;/p&gt;
-
-&lt;p&gt;﻿&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/69fa905ddb274902bb2f97bd9446b246%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;﻿﻿  &lt;/p&gt;
-
-&lt;p&gt;这时候程序的耗时已经降到4.1s，相比一开始的13.7s，已经提升了两倍多。看下现在的cpu耗时分布：&lt;/p&gt;
-
-&lt;p&gt;﻿&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/9da5964e347c49f1929c501c1617bb9f%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;﻿﻿  &lt;/p&gt;
-
-&lt;p&gt;可以看到，相比上次的分布，前两位都是业务代码函数了，说明进一步提高了业务代码的耗时占比，降低了无关系统函数的负载。这种直接使用全局变量的方式加cache不是并发安全的，但是因为这里程序的逻辑本身也不是并发的，所以这里没问题。&lt;/p&gt;
-
-&lt;p&gt;到这里，实操的优化过程就走完了。提炼总结一下优化的步骤和使用的主要方法命令有：&lt;/p&gt;
-
-&lt;p&gt;1.通过top5查看cpu耗时：确定是字典数据操作占比最大；&lt;/p&gt;
-
-&lt;p&gt;2.通过web命令查看是谁主要调用了字典操作函数：确定有DFS和FindLoops；&lt;/p&gt;
-
-&lt;p&gt;3.使用list 命令查看DFS函数中每行代码的耗时，找到跟map操作相关的部分，确定优化方法：把map换成list；&lt;/p&gt;
-
-&lt;p&gt;4.重新运行，再用top命令查看cpu耗时分布：找到耗时最大的是内存对象扫描函数scanobject；&lt;/p&gt;
-
-&lt;p&gt;5.加入内存剖析代码，运行查看内存分配的大小分布：确定FindLoops占用较大；&lt;/p&gt;
-
-&lt;p&gt;6.使用list命令查看FindLoops函数的每行内存开销：确定是map创建占用内存较大；&lt;/p&gt;
-
-&lt;p&gt;7.同样使用list数据结构替换map，重新运行，再看内存大小分布：确定FindLoops已不在高位，同时再看CPU耗时时，scanobject已经降下去了，目的达到；&lt;/p&gt;
-
-&lt;p&gt;8.此时又开始新的一轮排查，继续查看cpu耗时排行榜，FindLoops耗时居首；&lt;/p&gt;
-
-&lt;p&gt;9.继续使用list方法看FindLoops函数每行的耗时，没有明显的问题。那就要换思路，从排查编码问题转换为排查逻辑问题，减少计算过程：这里是加缓存；&lt;/p&gt;
-
-&lt;p&gt;10.加完缓存看到性能明显提升了，说明优化对了。这时又该循环进入下一轮的排查的优化了，以此往复。。。直到压榨出我们能达到的最大性能！&lt;/p&gt;
-
-&lt;p&gt;以上就是本次程序优化的整体步骤和思路，过程中秉持的思路方法是一贯的，&lt;strong&gt;就是不断的用pprof排查top级的函数耗时和内存占用，通过优化数据结构、减少不必要的计算过程、降低内存分配和回收的负担等方式来提升性能，这一点对所有的程序都适用，也是后续可以借鉴的方法论&lt;/strong&gt;。&lt;/p&gt;
-
-&lt;h1&gt;两点感悟&lt;/h1&gt;
-
-&lt;p&gt;1.&lt;strong&gt;优化程序的大前提是你一定要对程序有足够深入的理解！&lt;/strong&gt; （或者说我们不能优化程序优化出bug来啊。。。）。最后生产H6版本，之所以又对性能提升了一倍，全是建立在作者对程序完全理解的基础之上的，所以他才可以调整循环逻辑，复用程序对象，调整调用逻辑等等。这一层再往上层思考，就到了程序逻辑，系统架构内置整体的业务架构层面了。这其实就又回到了一开始我们说的程序优化由大到小的总体思路上了。&lt;/p&gt;
-
-&lt;p&gt;2.&lt;strong&gt;带GC的语言相比不带的，反而更考验内存管理的技术&lt;/strong&gt;。Go语言在开发效率上的提升，是把垃圾回收交给了系统来处理，但别忘了，消耗的依然是我们自己的cpu时间（羊毛，那不得从羊身上来...）。所以我们在使用每种结构体，进行每种计算操作时，都要明白其背后涉及的内存开销，要把内存变化放到潜意识里去管理。&lt;/p&gt;
-
-&lt;p&gt;以上就是本次pprof优化Go程序的实操过程及总结感想，供参考，感谢~&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;常规参数：&lt;/strong&gt;
+| 无人机初始位置|用户初始位置  | 无人机覆盖半径(米)|最大关联数 |UAV飞行距离 |
+|--|--|--|--|--|
+| 【20，180】 |【20，180】  | 【75，100】|【20，30】 |【0，30】 |
+&lt;strong&gt;时延记录:&lt;/strong&gt;
+|前景（MB） | 0.125 |0.5 |1|1.25  |1.5 |
+|--|--|--|--|--|--|
+| 背景(MB) |0.5 | 2|4 | 5| 6|
+| local(ms) |13 | 52|105| ---|150|
+| UAV(ms) |47 | 29.4|39.7 | ---| 50.6|
+| coop(ms) |44 | 29.6|38.2| ----| 47|
+&lt;strong&gt;超参数：&lt;/strong&gt;
+| ACTOR_LR |CRITIC_LR | BATCH_SIZE|GAMMA  |TAU  |
+|--|--|--|--|--|
+| 【1e-4 ，1e-5】 |【1e-3 ，1e-4】  | 【256，512】|0.99】 |0.005 |
+| EXPL_NOISE|policy_noise | noise_clip| policy_freq |hid_size |
+|0.1、0.05|0.2、0.1|0.5|【1，8】默认：2|【128，512】|&lt;/p&gt;
+
+&lt;p&gt;目前采用组合有如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;ACTOR_LR = 1e-4  # Actor网络的 learning rate 学习率  1e-3&lt;/li&gt;
+&lt;li&gt;CRITIC_LR = 1e-3  # Critic网络的 learning rate   1e-3&lt;/li&gt;
+&lt;li&gt;EXPL_NOISE = 0.05   # 动作噪声方差&lt;/li&gt;
+&lt;li&gt;self.hid_size=256&lt;/li&gt;
+&lt;li&gt;self.hid1_size=128
+
+&lt;/li&gt;
+&lt;li&gt;noise_clip=0.5,&lt;/li&gt;
+&lt;li&gt; policy_freq=2&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;5.2 &lt;strong&gt;调参效果：&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;可以看到模型训练的稳定性和收敛效果越来越好，调多了你也就知道哪些超参数影响的大了&lt;/p&gt;
+
+&lt;h2&gt;5.3 &lt;strong&gt;造成波动的原因，然后采用对应的解决方案：&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;如果在策略网络没有更新的情况下，Agent在环境中得到的分数差异过大。那么这是环境发生改变造成的：
+-1. 每一轮训练都需要 env.reset()，然而，有时候重置环境会改变难度，这种情况下造成的波动无法消除。
+-2. 有时候是因为DRL算法的泛化性不够好。此时我们需要调大相关参数增加探索，以训练出泛化性更好的策略。&lt;/li&gt;
+&lt;li&gt;如果在策略网络没有更新的情况下，Agent在环境中得到的分数差异较小。等到更新后，相邻两次的分数差异很大。那么这是环境发生改变造成的： 1. 把 learning rate 调小一点。2. 有时候是因为算法过度鼓励探索而导致的，调小相关参数即可。&lt;/li&gt;
+&lt;/ul&gt;
 &lt;/div&gt;
   &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>be779641978f1bdefd07f5897cc67d3b</guid>
-<title>实战总结！18 种接口优化方案的总结</title>
-<link>https://toutiao.io/k/cpmcbd6</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;前言&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;之前工作中，遇到一个&lt;/span&gt;&lt;code&gt;504&lt;/code&gt;&lt;span&gt;超时问题。原因是因为接口耗时过长，超过&lt;/span&gt;&lt;code&gt;nginx&lt;/code&gt;&lt;span&gt;配置的&lt;/span&gt;&lt;code&gt;10&lt;/code&gt;&lt;span&gt;秒。然后
-真枪实弹搞了一次接口性能优化，最后接口从&lt;/span&gt;&lt;code&gt;11.3s&lt;/code&gt;&lt;span&gt;降为&lt;/span&gt;&lt;code&gt;170ms&lt;/code&gt;&lt;span&gt;。本文将跟小伙伴们分享接口优化的&lt;/span&gt;&lt;strong&gt;一些通用&lt;/strong&gt;&lt;span&gt;方案。&lt;/span&gt;&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.48668639053254437&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpwP7aJCPYSrFvUia0Vo4NxLibh1ElZffVRmicXGtf6pOibI8pvcF7ycFgKaLyhibOfhJM0cukXaNysdO5w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2028&quot;/&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;1. 批量思想：批量操作数据库&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;优化前：&lt;/strong&gt;&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;//&lt;span&gt;for&lt;/span&gt;循环单笔入库&lt;br/&gt;&lt;span&gt;for&lt;/span&gt;(TransDetail detail:transDetailList){&lt;br/&gt;  insert(detail);  &lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;优化后：&lt;/strong&gt;&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;batchInsert(transDetailList);&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;打个比喻：&lt;/strong&gt;&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;打个比喻:假如你需要搬一万块砖到楼顶,你有一个电梯,电梯一次可以放适量的砖（最多放&lt;code&gt;500&lt;/code&gt;）,
-你可以选择一次运送一块砖,也可以一次运送&lt;code&gt;500&lt;/code&gt;,你觉得哪种方式更方便，时间消耗更少?&lt;/p&gt;&lt;/blockquote&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;2. 异步思想：耗时操作，考虑放到异步执行&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;耗时操作，考虑用&lt;strong&gt;异步处理&lt;/strong&gt;，这样可以降低接口耗时。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;假设一个转账接口，匹配联行号，是同步执行的，&lt;strong&gt;但是它的操作耗时有点长&lt;/strong&gt;，优化前的流程：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.8900634249471459&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpwP7aJCPYSrFvUia0Vo4NxLib7PjUFDMKMOeYsD6o8vmFPcm8ticgj2umic35JXPvTRdgiafRV2j7BP5Uw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;473&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;为了降低接口耗时，更快返回，你可以把&lt;strong&gt;匹配联行号&lt;/strong&gt;移到&lt;strong&gt;异步处理&lt;/strong&gt;，优化后：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.7041420118343196&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpwP7aJCPYSrFvUia0Vo4NxLibKbKe1DsXQSZOv3AHuDe5ia68fB8c1kInJHxjvUnogTjjY4qVJ5NPic5g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;507&quot;/&gt;&lt;/figure&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;除了转账这个例子，日常工作中还有很多这种例子。比如：&lt;strong&gt;用户注册成功后，短信邮件通知，也是可以异步处理的&lt;/strong&gt;~&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;至于异步的实现方式，&lt;strong&gt;你可以用线程池，也可以用消息队列实现&lt;/strong&gt;。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;3. 空间换时间思想：恰当使用缓存。&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在适当的业务场景，恰当地使用缓存，是可以大大提高接口性能的。缓存其实就是一种&lt;strong&gt;空间换时间的思想&lt;/strong&gt;，就是你把要查的数据，提前放好到缓存里面，需要时，&lt;strong&gt;直接查缓存，而避免去查数据库或者计算的过程&lt;/strong&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这里的缓存包括：&lt;code&gt;Redis&lt;/code&gt;缓存，&lt;code&gt;JVM&lt;/code&gt;本地缓存，&lt;code&gt;memcached&lt;/code&gt;，或者&lt;code&gt;Map&lt;/code&gt;等等。我举个我工作中，一次使用缓存优化的设计吧，比较简单，但是思路很有借鉴的意义。&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;那是一次转账接口的优化，&lt;strong&gt;老代码&lt;/strong&gt;，每次转账，都会根据客户账号，查询数据库，计算匹配联行号。&lt;/p&gt;&lt;/blockquote&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;1.817910447761194&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpwP7aJCPYSrFvUia0Vo4NxLibDw2Jn3ia171gZr6yfd938iaaxTiak54Rd4tdLsIXysRXhZV0IPia3DrYJQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;335&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因为每次&lt;strong&gt;都查数据库，都计算匹配，比较耗时&lt;/strong&gt;，所以&lt;strong&gt;使用缓存&lt;/strong&gt;，优化后流程如下：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;1.0737704918032787&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpwP7aJCPYSrFvUia0Vo4NxLibfE3PGuYdme6via3UUonhJMUOCe0iam6xoYzu0PibTfSLKZicf4QMEKHyjA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;488&quot;/&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;4. 预取思想：提前初始化到缓存&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;预取思想很容易理解，就是&lt;strong&gt;提前把要计算查询的数据，初始化到缓存&lt;/strong&gt;。如果你在未来某个时间需要用到某个经过复杂计算的数据，&lt;strong&gt;才实时去计算的话，可能耗时比较大&lt;/strong&gt;。这时候，我们可以采取预取思想，&lt;strong&gt;提前把将来可能需要的数据计算好，放到缓存中&lt;/strong&gt;，等需要的时候，去缓存取就行。这将大幅度提高接口性能。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我记得以前在第一个公司做视频直播的时候，看到我们的直播列表就是用到&lt;strong&gt;这种优化方案&lt;/strong&gt;。就是启动个任务，&lt;strong&gt;提前把直播用户、积分等相关信息，初始化到缓存&lt;/strong&gt;。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;5. 池化思想：预分配与循环使用&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;大家应该都记得，&lt;strong&gt;我们为什么需要使用线程池&lt;/strong&gt;？&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;线程池可以帮我们管理线程，避免增加创建线程和销毁线程的资源损耗。&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;如果你每次需要用到线程，都去创建，就会有增加一定的耗时，而线程池可以重复利用线程，避免不必要的耗时。&lt;/strong&gt; 池化技术不仅仅指线程池，很多场景都有池化思想的体现，它的本质就是&lt;strong&gt;预分配与循环使用&lt;/strong&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;比如&lt;code&gt;TCP&lt;/code&gt;三次握手，大家都很熟悉吧，它为了减少性能损耗，引入了&lt;code&gt;Keep-Alive长连接&lt;/code&gt;，避免频繁的创建和销毁连接。当然，类似的例子还有很多，如数据库连接池、&lt;code&gt;HttpClient&lt;/code&gt;连接池。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们写代码的过程中，&lt;strong&gt;学会池化思想&lt;/strong&gt;，最直接相关的就是使用线程池而不是去&lt;code&gt;new&lt;/code&gt;一个线程。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;6. 事件回调思想：拒绝阻塞等待。&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果你调用一个系统&lt;code&gt;B&lt;/code&gt;的接口，但是它处理业务逻辑，耗时需要&lt;code&gt;10s&lt;/code&gt;甚至更多。然后你是一直&lt;strong&gt;阻塞等待，直到系统B的下游接口返回&lt;/strong&gt;，再继续你的下一步操作吗？这样&lt;strong&gt;显然不合理&lt;/strong&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们参考&lt;strong&gt;IO多路复用模型&lt;/strong&gt;。即我们不用阻塞等待系统&lt;code&gt;B&lt;/code&gt;的接口，而是先去做别的操作。等系统&lt;code&gt;B&lt;/code&gt;的接口处理完，通过&lt;strong&gt;事件回调&lt;/strong&gt;通知，我们接口收到通知再进行对应的业务操作即可。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;7. 远程调用由串行改为并行&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;假设我们设计一个APP首页的接口，它需要查用户信息、需要查banner信息、需要查弹窗信息等等。如果是串行一个一个查，比如查用户信息&lt;code&gt;200ms&lt;/code&gt;，查banner信息&lt;code&gt;100ms&lt;/code&gt;、查弹窗信息&lt;code&gt;50ms&lt;/code&gt;，那一共就耗时&lt;code&gt;350ms&lt;/code&gt;了，如果还查其他信息，那耗时就更大了。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.20555555555555555&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpwP7aJCPYSrFvUia0Vo4NxLibTm7AKP23GGya6Mcbg27r9rRPTfaGJOmT51w86K9Bxm6ap0bhRGgmXw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1080&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其实我们可以改为并行调用，即查用户信息、查banner信息、查弹窗信息，可以同时&lt;strong&gt;并行发起&lt;/strong&gt;。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5670731707317073&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpwP7aJCPYSrFvUia0Vo4NxLibAXl1VeaT5P3POibOmLnnSFkvkHgEzt7eOMfbAIBt2LY8NQh6IDFGkhA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;820&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;最后接口耗时将大大降低&lt;/strong&gt;。有些小伙伴说，不知道如何使用并行优化接口?&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;8. 锁粒度避免过粗&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在高并发场景，为了防止&lt;strong&gt;超卖等情况&lt;/strong&gt;，我们经常需要&lt;strong&gt;加锁来保护共享资源&lt;/strong&gt;。但是，如果加锁的粒度过粗，是很影响接口性能的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;什么是加锁粒度呢？&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;其实就是就是你要锁住的范围是多大。&lt;strong&gt;比如你在家上卫生间，你只要锁住卫生间就可以了吧&lt;/strong&gt;，不需要将整个家都锁起来不让家人进门吧，卫生间就是你的加锁粒度。&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;不管你是&lt;code&gt;synchronized&lt;/code&gt;加锁还是&lt;code&gt;redis&lt;/code&gt;分布式锁，只需要在共享临界资源加锁即可，不涉及共享资源的，就不必要加锁。&lt;strong&gt;这就好像你上卫生间，不用把整个家都锁住，锁住卫生间门就可以了。&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;比如，在业务代码中，有一个&lt;code&gt;ArrayList&lt;/code&gt;因为涉及到多线程操作，所以需要加锁操作，假设刚好又有一段比较耗时的操作（代码中的&lt;code&gt;slowNotShare&lt;/code&gt;方法）不涉及线程安全问题。&lt;strong&gt;反例加锁，就是一锅端，全锁住&lt;/strong&gt;:&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;//不涉及共享资源的慢方法&lt;br/&gt;private void &lt;span&gt;&lt;span&gt;slowNotShare&lt;/span&gt;&lt;/span&gt;() {&lt;br/&gt;    try {&lt;br/&gt;        TimeUnit.MILLISECONDS.sleep(100);&lt;br/&gt;    } catch (InterruptedException e) {&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;//错误的加锁方法&lt;br/&gt;public int &lt;span&gt;&lt;span&gt;wrong&lt;/span&gt;&lt;/span&gt;() {&lt;br/&gt;    long beginTime = System.currentTimeMillis();&lt;br/&gt;    IntStream.rangeClosed(1, 10000).parallel().forEach(i -&amp;gt; {&lt;br/&gt;        //加锁粒度太粗了，slowNotShare其实不涉及共享资源&lt;br/&gt;        synchronized (this) {&lt;br/&gt;            slowNotShare();&lt;br/&gt;            data.add(i);&lt;br/&gt;        }&lt;br/&gt;    });&lt;br/&gt;    log.info(&lt;span&gt;&quot;cosume time:{}&quot;&lt;/span&gt;, System.currentTimeMillis() - beginTime);&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; data.size();&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;正例：&lt;/strong&gt;&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;public int &lt;span&gt;&lt;span&gt;right&lt;/span&gt;&lt;/span&gt;() {&lt;br/&gt;    long beginTime = System.currentTimeMillis();&lt;br/&gt;    IntStream.rangeClosed(1, 10000).parallel().forEach(i -&amp;gt; {&lt;br/&gt;        slowNotShare();//可以不加锁&lt;br/&gt;        //只对List这部分加锁&lt;br/&gt;        synchronized (data) {&lt;br/&gt;            data.add(i);&lt;br/&gt;        }&lt;br/&gt;    });&lt;br/&gt;    log.info(&lt;span&gt;&quot;cosume time:{}&quot;&lt;/span&gt;, System.currentTimeMillis() - beginTime);&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; data.size();&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;9. 切换存储方式：文件中转暂存数据&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果数据太大，落地数据库实在是慢的话，&lt;strong&gt;就可以考虑先用文件的方式暂存&lt;/strong&gt;。先保存文件，再异步&lt;strong&gt;下载文件，慢慢保存到数据库&lt;/strong&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这里可能会有点抽象，给大家分享一个，我之前的一个&lt;strong&gt;真实的优化案例&lt;/strong&gt;吧。&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;之前开发了一个转账接口。如果是并发开启，10个并发度，每个批次&lt;code&gt;1000&lt;/code&gt;笔转账明细数据，数据库插入会特别耗时，&lt;strong&gt;大概6秒左右&lt;/strong&gt;；这个跟我们公司的数据库同步机制有关，并发情况下，因为优先保证同步，所以并行的插入变成串行啦，就很耗时。&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;优化前&lt;/strong&gt;，&lt;code&gt;1000&lt;/code&gt;笔明细转账数据，先落地&lt;code&gt;DB&lt;/code&gt;数据库，返回处理中给用户，再异步转账。如图：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.8794688457609806&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpwP7aJCPYSrFvUia0Vo4NxLibx0y6JOmed407ic0EPjWGbhch11hWnzpaONjvPZ14FJ6Hicic7E3WoEGrg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;979&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;记得当时压测的时候，高并发情况，这&lt;code&gt;1000&lt;/code&gt;笔明细入库，耗时都比较大。所以我转换了一下思路，&lt;strong&gt;把批量的明细转账记录保存的文件服务器，然后记录一笔转账总记录到数据库即可&lt;/strong&gt;。接着异步再把明细下载下来，进行转账和明细入库。最后优化后，性能提升了&lt;strong&gt;十几倍&lt;/strong&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;优化后&lt;/strong&gt;，流程图如下：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;1.0397727272727273&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpwP7aJCPYSrFvUia0Vo4NxLibkglC7Zib9Ania7I4ia3EV80CeS0oSF3CJic20DhqaoO2fh12nxLBrgNzibQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;880&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果你的接口耗时瓶颈就&lt;strong&gt;在数据库插入操作这里&lt;/strong&gt;，用来批量操作等，还是效果还不理想，就可以考虑用文件或者&lt;code&gt;MQ&lt;/code&gt;等暂存。有时候批量数据放到文件，会比插入数据库效率更高。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;10. 索引&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;提到接口优化，很多小伙伴都会想到&lt;strong&gt;添加索引&lt;/strong&gt;。没错，&lt;strong&gt;添加索引是成本最小的优化&lt;/strong&gt;，而且一般优化效果都很不错。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;索引优化这块的话，一般从这几个维度去思考：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;你的SQL加索引了没？&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;你的索引是否真的生效？&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;你的索引建立是否合理？&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;10.1 SQL没加索引&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们开发的时候，容易疏忽而忘记给SQL添加索引。所以我们在写完&lt;code&gt;SQL&lt;/code&gt;的时候，就顺手查看一下 &lt;code&gt;explain&lt;/code&gt;执行计划。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;explain select * from user_info &lt;span&gt;where&lt;/span&gt; userId like &lt;span&gt;&#x27;%123&#x27;&lt;/span&gt;;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;你也可以通过命令&lt;code&gt;show create table &lt;/code&gt;，整张表的索引情况。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;show create table user_info;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果某个表忘记添加某个索引，可以通过&lt;code&gt;alter table add index&lt;/code&gt;命令添加索引&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;alter table user_info add index idx_name (name);&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;一般就是：&lt;code&gt;SQL&lt;/code&gt;的&lt;code&gt;where&lt;/code&gt;条件的字段，或者是&lt;code&gt;order by 、group by&lt;/code&gt;后面的字段需需要添加索引。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;10.2 索引不生效&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;有时候，即使你添加了索引，但是索引会失效的。&lt;strong&gt;田螺哥整理了索引失效的常见原因&lt;/strong&gt;：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;10.3 索引设计不合理&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们的索引不是越多越好，需要合理设计。比如：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;删除冗余和重复索引。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;索引一般不能超过&lt;code&gt;5&lt;/code&gt;个&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;索引不适合建在有大量重复数据的字段上、如性别字段&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;适当使用覆盖索引&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如果需要使用&lt;code&gt;force index&lt;/code&gt;强制走某个索引，那就需要思考你的索引设计是否真的合理了&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;11. 优化SQL&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;处了索引优化，其实SQL还有很多其他有优化的空间。比如这些：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;1.1148491879350348&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpwP7aJCPYSrFvUia0Vo4NxLibI8PKz3jHyPY2l4rhojL1F5BwzoodMbhZrpbSGUsQ4x4TjYPz2ueb9w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;862&quot;/&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;12.避免大事务问题&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;为了保证数据库数据的一致性，在涉及到多个&lt;strong&gt;数据库修改&lt;/strong&gt;操作时，我们经常需要用到事务。而使用&lt;code&gt;spring&lt;/code&gt;声明式事务，又非常简单，只需要用一个注解就行&lt;code&gt;@Transactional&lt;/code&gt;，如下面的例子：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;@Transactional&lt;br/&gt;public int createUser(User user){&lt;br/&gt;    //保存用户信息&lt;br/&gt;    userDao.save(user);&lt;br/&gt;    passCertDao.updateFlag(user.getPassId());&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; user.getUserId();&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这块代码主要逻辑就是创建个用户，然后更新一个通行证&lt;code&gt;pass&lt;/code&gt;的标记。如果现在新增一个需求，创建完用户，调用远程接口发送一个&lt;code&gt;email&lt;/code&gt;消息通知，很多小伙伴会这么写：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;@Transactional&lt;br/&gt;public int createUser(User user){&lt;br/&gt;    //保存用户信息&lt;br/&gt;    userDao.save(user);&lt;br/&gt;    passCertDao.updateFlag(user.getPassId());&lt;br/&gt;    sendEmailRpc(user.getEmail());&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; user.getUserId();&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这样实现可能会有坑，事务中嵌套&lt;code&gt;RPC&lt;/code&gt;远程调用，即事务嵌套了一些非&lt;code&gt;DB&lt;/code&gt;操作。如果这些非&lt;code&gt;DB&lt;/code&gt;操作耗时比较大的话，可能会出现&lt;strong&gt;大事务问题&lt;/strong&gt;。&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;所谓大事务问题就是，就是&lt;strong&gt;运行时间长的事务&lt;/strong&gt;。由于事务一致不提交，就会导致数据库连接被占用，即并发场景下，数据库连接池被占满，影响到别的请求访问数据库，&lt;strong&gt;影响别的接口性能&lt;/strong&gt;。&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;大事务引发的问题主要有：&lt;strong&gt;接口超时、死锁、主从延迟&lt;/strong&gt;等等。因此，为了优化接口，我们要规避大事务问题。我们可以通过这些方案来规避大事务：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;RPC远程调用不要放到事务里面&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;一些查询相关的操作，尽量放到事务之外&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;事务中避免处理太多数据&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;13. 深分页问题&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在以前公司分析过几个接口耗时长的问题，最终结论都是因为&lt;strong&gt;深分页问题&lt;/strong&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;深分页问题，为什么会慢？我们看下这个SQL&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;select id,name,balance from account &lt;span&gt;where&lt;/span&gt; create_time&amp;gt; &lt;span&gt;&#x27;2020-09-19&#x27;&lt;/span&gt; &lt;span&gt;limit&lt;/span&gt; 100000,10;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;limit 100000,10&lt;/code&gt;意味着会扫描&lt;code&gt;100010&lt;/code&gt;行，丢弃掉前&lt;code&gt;100000&lt;/code&gt;行，最后返回&lt;code&gt;10&lt;/code&gt;行。即使&lt;code&gt;create_time&lt;/code&gt;，也会回表很多次。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们可以通过&lt;strong&gt;标签记录法和延迟关联法&lt;/strong&gt;来优化深分页问题。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;13.1 标签记录法&lt;span/&gt;&lt;/h3&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;就是标记一下上次查询到哪一条了，下次再来查的时候，从该条开始往下扫描。就好像看书一样，上次看到哪里了，你就折叠一下或者夹个书签，下次来看的时候，直接就翻到啦。&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;假设上一次记录到&lt;code&gt;100000&lt;/code&gt;，则SQL可以修改为：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;select  id,name,balance FROM account &lt;span&gt;where&lt;/span&gt; id &amp;gt; 100000 &lt;span&gt;limit&lt;/span&gt; 10;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这样的话，后面无论翻多少页，性能都会不错的，因为命中了&lt;code&gt;id&lt;/code&gt;主键索引。但是这种方式有局限性：&lt;strong&gt;需要一种类似连续自增的字段。&lt;/strong&gt;&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;13.2 延迟关联法&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;延迟关联法，就是把条件转移到主键索引树，然后减少回表。优化后的SQL如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;select  acct1.id,acct1.name,acct1.balance FROM account acct1 INNER JOIN (SELECT a.id FROM account a WHERE a.create_time &amp;gt; &lt;span&gt;&#x27;2020-09-19&#x27;&lt;/span&gt; &lt;span&gt;limit&lt;/span&gt; 100000, 10) AS acct2 on acct1.id= acct2.id;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;优化思路就是&lt;/strong&gt;，先通过&lt;code&gt;idx_create_time&lt;/code&gt;二级索引树查询到满足条件的主键ID，再与原表通过主键ID内连接，这样后面直接走了主键索引了，同时也减少了回表。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;14. 优化程序结构&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;优化程序逻辑、程序代码，是可以节省耗时的。比如，&lt;strong&gt;你的程序创建多不必要的对象、或者程序逻辑混乱，多次重复查数据库、又或者你的实现逻辑算法不是最高效的&lt;/strong&gt;，等等。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我举个简单的例子：&lt;strong&gt;复杂的逻辑条件，有时候调整一下顺序，就能让你的程序更加高效。&lt;/strong&gt;&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;假设业务需求是这样：如果用户是会员，第一次登陆时，需要发一条感谢短信。如果没有经过思考，代码直接这样写了&lt;/p&gt;&lt;/blockquote&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;if&lt;/span&gt;(isUserVip &amp;amp;&amp;amp; isFirstLogin){&lt;br/&gt;    sendSmsMsg();&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;假设有&lt;code&gt;5&lt;/code&gt;个请求过来，&lt;code&gt;isUserVip&lt;/code&gt;判断通过的有&lt;code&gt;3&lt;/code&gt;个请求，&lt;code&gt;isFirstLogin&lt;/code&gt;通过的只有&lt;code&gt;1&lt;/code&gt;个请求。那么以上代码，&lt;code&gt;isUserVip&lt;/code&gt;执行的次数为&lt;code&gt;5&lt;/code&gt;次，&lt;code&gt;isFirstLogin&lt;/code&gt;执行的次数也是&lt;code&gt;3&lt;/code&gt;次，如下：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.1346153846153846&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpwP7aJCPYSrFvUia0Vo4NxLibIXhAeweBewjndBKiaAA7RvKgJibZS7nicmftQCXkfW8FRiauLbu3AYlPCA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;832&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果调整一下&lt;code&gt;isUserVip&lt;/code&gt;和&lt;code&gt;isFirstLogin&lt;/code&gt;的顺序：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;if&lt;/span&gt;(isFirstLogin &amp;amp;&amp;amp; isUserVip ){&lt;br/&gt;    sendMsg();&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;isFirstLogin&lt;/code&gt;执行的次数是&lt;code&gt;5&lt;/code&gt;次，&lt;code&gt;isUserVip&lt;/code&gt;执行的次数是&lt;code&gt;1&lt;/code&gt;次：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.12776412776412777&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpwP7aJCPYSrFvUia0Vo4NxLibz8ocQeiagnZk72M9GL3ZWnyqHgWMBicZJeicZoibwqiczPmwRZGm3Ew4Hzw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;814&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;酱紫程序是不是变得更高效了呢？&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;15. 压缩传输内容&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;压缩传输内容，传输报文变得更小，因此传输会更快啦。&lt;code&gt;10M&lt;/code&gt;带宽，传输&lt;code&gt;10k&lt;/code&gt;的报文，一般比传输&lt;code&gt;1M&lt;/code&gt;的会快呀。&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;打个比喻，一匹千里马，它驮着100斤的货跑得快，还是驮着10斤的货物跑得快呢？&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;再举个视频网站的例子：&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;如果不对视频做任何压缩编码，因为带宽又是有限的。&lt;strong&gt;巨大的数据量在网络传输的耗时会比编码压缩后，慢好多倍&lt;/strong&gt;。&lt;/p&gt;&lt;/blockquote&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;16. 海量数据处理，考虑NoSQL&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;之前看过几个慢&lt;code&gt;SQL&lt;/code&gt;，都是跟深分页问题有关的。&lt;strong&gt;发现用来标签记录法和延迟关联法，效果不是很明显&lt;/strong&gt;，原因是要统计和模糊搜索，并且统计的数据是真的大。最后跟组长对齐方案，就把数据同步到&lt;code&gt;Elasticsearch&lt;/code&gt;，然后这些模糊搜索需求，都走&lt;code&gt;Elasticsearch&lt;/code&gt;去查询了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我想表达的就是，如果数据量过大，一定要用关系型数据库存储的话，就可以分库分表。但是有时候，我们也可以使用&lt;code&gt;NoSQL，如Elasticsearch、Hbase&lt;/code&gt;等。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;17. 线程池设计要合理&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们使用线程池，就是让&lt;strong&gt;任务并行处理，更高效地完成任务&lt;/strong&gt;。但是有时候，如果线程池设计不合理，接口执行效率则不太理想。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;一般我们需要关注线程池的这几个参数：&lt;strong&gt;核心线程、最大线程数量、阻塞队列&lt;/strong&gt;。&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;如果核心线程过小，则达不到很好的并行效果。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如果阻塞队列不合理，不仅仅是阻塞的问题，甚至可能会&lt;code&gt;OOM&lt;/code&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如果线程池不区分业务隔离，&lt;strong&gt;有可能核心业务被边缘业务拖垮&lt;/strong&gt;。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;大家可以看下我之前两篇有关于线程池的文章：&lt;/p&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;18.机器问题 （fullGC、线程打满、太多IO资源没关闭等等）。&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;有时候，我们的接口慢，就是机器处理问题。主要有&lt;code&gt;fullGC&lt;/code&gt;、线程打满、太多IO资源没关闭等等。&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;之前排查过一个&lt;code&gt;fullGC&lt;/code&gt;问题：运营小姐姐导出&lt;code&gt;60多万&lt;/code&gt;的&lt;code&gt;excel&lt;/code&gt;的时候，说&lt;strong&gt;卡死&lt;/strong&gt;了，接着我们就收到监控告警。后面排查得出，我们老代码是&lt;code&gt;Apache POI&lt;/code&gt;生成的&lt;code&gt;excel&lt;/code&gt;，导出&lt;code&gt;excel&lt;/code&gt;数据量很大时，当时JVM内存吃紧会直接&lt;code&gt;Full GC&lt;/code&gt;了。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如果线程打满了，也会导致接口都在等待了。所以。如果是高并发场景，&lt;strong&gt;我们需要接入限流，把多余的请求拒绝掉&lt;/strong&gt;。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如果&lt;strong&gt;IO资源没关闭，也会导致耗时增加&lt;/strong&gt;。这个大家可以看下，平时你的电脑一直打开很多很多文件，是不是会觉得很卡。&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>658b81adcf4679229d35c2c404ef3735</guid>
+<title>计算存储分离在京东云消息中间件 JCQ 上的应用</title>
+<link>https://toutiao.io/k/vg47ljm</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;p&gt;&lt;strong&gt;作者：田寄远&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;JCQ 全名 JD Cloud Message Queue，是京东云自研、具有 CloudNative 特性的分布式消息中间件。 JCQ 设计初衷即为适应云特性的消息中间件；具有高可用、数据可靠性、副本物理隔离、服务自治、健康状态汇报、少运维或无运维、容器部署、弹性伸缩、租户隔离、按量付费、云账户体系、授权等特性。&lt;/p&gt;
+
+&lt;h1&gt;演进过程&lt;/h1&gt;
+
+&lt;p&gt;2017 年中开始开发 JCQ 1.0 版本，2018 年 11 月正式 GA 上线对外售卖，1.0 版本中 Topic 受限于单台服务器限制，满足不了用户超大规格 topic 的需求。&lt;/p&gt;
+
+&lt;p&gt;2019 年 4 月 JCQ 2.0 正式上线，主要新增特性是 topic 扩缩容能力、热点 Topic 在 Broker 间的负载均衡、热点 Broker 的流量转移。&lt;/p&gt;
+
+&lt;p&gt;2019 年 7 月 JCQ 做了一次大的架构演进 —— 计算存储分离，大版本号为 JCQ 3.0, 于 2019 年底上线。计算存储分离对架构带来了比较明显的好处，解决了日常遇到许多的痛点问题。下文详细介绍此次演进带来的好处及解决的痛点问题。&lt;/p&gt;
+
+&lt;h1&gt;升级影响范围尽可能小&lt;/h1&gt;
+
+&lt;p&gt;在 JCQ2.0 中计算模块与存储模块处于同一个进程，升级计算模块势必将存储模块一起升级。而存储模块重启是比较重的动作，需要做的工作有：加载大量数据、进行消息数据与消息索引数据比对、脏数据截断等操作。往往修复计算模块一个小的 Bug，就需要做上述非常重的存储模块重启。而在现实工作中，大部分升级工作都是由于计算模块功能更新或 Bugfix 引起的。&lt;/p&gt;
+
+&lt;p&gt;为了解决这个问题， JCQ3.0 将计算模块、存储模块独立部署，之间通过 RPC 调用。各自升级互不影响。如下图所示：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a562b9cadd1840bfbdfdb50b7611a471%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;计算节点 Broker 只负责生产消息、推送消息、鉴权、认证、限流、拥塞控制、客户端负载均衡等业务逻辑，属于无状态服务。比较轻量，升级速度快。&lt;/p&gt;
+
+&lt;p&gt;存储节点 Store 只负责数据写入、副本同步、数据读取。因为业务逻辑简单，功能稳定后，除优化外基本无需改动，也就无需升级。&lt;/p&gt;
+
+&lt;h1&gt;成本降低&lt;/h1&gt;
+
+&lt;p&gt;JCQ 是共享消息中间件，用户申请的是不同规格 TPS 的 Topic，并不感知 cpu、memory、disk 等硬件指标。 所以，JCQ 服务方需要考虑如何合理的使用这些硬件指标。&lt;/p&gt;
+
+&lt;p&gt;JCQ 是容器部署，有多种类型的组件，这些组件对硬件的需求也是多样化的，其中对资源消耗最多的是计算模块和存储模块。在 JCQ2.0 版本计算模块和存储模块部署在一起，选择机型时要兼顾 cpu、memory、disk 等指标，机型要求单一，很难与其他产品线混合部署。即使是同一资源池，也存在因为调度顺序，造成调度失败的情况。如一台机器剩余资源恰好能调度一个需要大规格磁盘的 A 容器，但是因为 B 容器先被调度到这台机器上，剩余资源就不够创建一个 A 容器，那这台机器上的磁盘就浪费了。&lt;/p&gt;
+
+&lt;p&gt;JCQ3.0 后，计算节点 Broker，与存储节点 Store 独立部署。这两个组件可以各自选择适合自己业务的机型，部署在相应资源池中；最终，可以做到与其他产品混合部署，共用资源池水位，而不用独自承担资源水位线。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/2178ae2323e14114bd7f7976e53b6846%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt; &lt;/p&gt;
+
+&lt;h1&gt;架构改进带来的成本降低&lt;/h1&gt;
+
+&lt;p&gt;JCQ3.0 中计算节点 Broker 是无状态服务，主从切换比较轻量，能在秒级完成故障转移；且部署时考虑了物理设备反亲和，如跨 Rack、跨 AZ 部署。所以，可以在可用性、资源成本之间做一定的权衡；如可以使用 M:1 方式做高可用冷备，而不必 1：1 的比例高可用冷备，进而达到节省硬件资源的目的。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f186617cbc544829bd797eef28b206d0%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt; &lt;/p&gt;
+
+&lt;h1&gt;解决 Raft 性能问题&lt;/h1&gt;
+
+&lt;p&gt;JCQ 1.0 设计之初就采用 Raft 算法，来解决服务高可用、数据一致性的问题。Message Log 与 Raft Log 有很多共同的特性，如顺序写、随机读、末端热数据。所以，直接用 Raft Log 当成 Message Log 是非常合适的。&lt;/p&gt;
+
+&lt;p&gt;在 JCQ 演进中我们也发现了 Raft 本身的一些性能问题，如顺序复制、顺序 commit、有的流程只能用单线程处理等限制。针对这些问题，最直接有效的办法就是扩展 Raft 的数目、扩展单线程流程数目，在一定数量级内，并发能力随着 Raft Group 数目的增长，呈线性增长关系，称之 MultiRaft，如下图所示。&lt;/p&gt;
+
+&lt;p&gt;****&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/98c079025a1e42e787957216492cdb2c%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt; &lt;/p&gt;
+
+&lt;p&gt;上图中，每个 StoreNode 节点是一个独立进程，内部有四组逻辑 RaftGroup（橙色的节点为 RaftGroup 的 Leader），各组 RaftGroup 之间是并行关系，可以做到 Group 间并行复制、并行 commit。&lt;/p&gt;
+
+&lt;p&gt;由于大量使用了 NIO，这些 RaftGroup 之间可以共享通信线程池，扩充 RaftGroup 数目并不会带来线程资源线性增长的问题。&lt;/p&gt;
+
+&lt;h1&gt;快速故障恢复、轻量的负载均衡&lt;/h1&gt;
+
+&lt;p&gt;在 JCQ3.0 中，Broker 为轻量的无状态服务，在主从切换、故障恢复方面相对 2.0 更为轻量，本身能更快的恢复对外服务能力。&lt;/p&gt;
+
+&lt;p&gt;同时，Broker 将 Producer、Consumer 的连接请求，抽象为 PubTask 和 SubTask，后文统称为 Task。Task 的概念非常轻量，仅描述 Client 与 Broker 的对应关系，由元数据管理器 Manager 统一调度、管理。转移 Task 只需要修改 Task 的内容，客户端重新连接新 Broker 即可。&lt;/p&gt;
+
+&lt;p&gt;一般来说，Broker 的主要瓶颈在于网络带宽。Broker 定期统计网络入口流量与出口流量，并上报给管理节点 Manager。Manager 根据入口流量、出口流量与带宽阈值进行裁决，发现超过阈值后，通过一定策略将相应的 Task 转移到较小负载的 Broker 上，并通知相应的 Producer 与 Consumer；Producer 与 Consumer 收到通知后，重新获取 Task 的路由信息，自动重连到新的 Broker 继续进行生产、消费。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a25855ca88404ee994b9c97269414954%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt; &lt;/p&gt;
+
+&lt;h1&gt;高扇出需求&lt;/h1&gt;
+
+&lt;p&gt;设想一个场景，有一个大规格的 topic，创建了 n 个消费组。消费总 TPS 是生产总 TPS 的 n 倍。增加消费组，会导致消费总 TPS 线性增长。到达一定消费组规模后，单 Broker 由于网卡带宽的原因，无法满足这种高扇出的场景。单服务器是无法解决这个问题。&lt;/p&gt;
+
+&lt;p&gt;在 JCQ 3.0 可以将这些不同的消费组对应的 SubTask 分散到若干个 Broker 上，每个 Broker 负责一部分 SubTask，单 Broker 从 Store 预读消息，将数据推送给 Consumer。这样多个 Broker 共同完成所有消费组的消息流量，协作一起提供高扇出的能力。&lt;/p&gt;
+
+&lt;h1&gt;支持多种存储引擎&lt;/h1&gt;
+
+&lt;p&gt;消息中间件很大的特点是：大部分场景下，热数据都在末端，而回溯几天之前的消息这个功能是不常用的。所以，就有冷热数据之分。&lt;/p&gt;
+
+&lt;p&gt;JCQ 计算节点设计了一层存储抽象层 Store Bridge 可以接入不同的存储引擎，可以接入 Remote Raft Cluster，或者分布式文件系统 WOS、或者 S3。甚者可以将冷数据定期从昂贵的本地盘卸载到廉价的存储引擎上。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/cd929e01f6b447d49801036b9a274853%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;h1&gt;副作用&lt;/h1&gt;
+
+&lt;p&gt;相对于 JCQ2.0，计算节点与存储节点之间的通信方式，由接口调用变为 RPC 调用，在延迟方面会有一定损失。经过测试，绝大部分延迟都在 1ms 左右，在大多数场景下 牺牲 1ms 左右的延迟并不会给业务带来太大的影响。&lt;/p&gt;
+
+&lt;h1&gt;后续发展规划&lt;/h1&gt;
+
+&lt;p&gt;JCQ 后续会主要在多协议兼容，按需自动扩缩容、云原生等方面演进。&lt;/p&gt;
+
+&lt;h1&gt;多协议兼容&lt;/h1&gt;
+
+&lt;p&gt;JCQ 协议为私有协议，在引导用户迁移方面有比较大的障碍。后续会抽离 JCQ Kernel，外部提供不同的协议接入层。方便用户从其他 MQ 接入 JCQ。目前已兼容 RocketMQ 协议，SQS 协议&lt;/p&gt;
+
+&lt;h1&gt;自动扩缩容&lt;/h1&gt;
+
+&lt;p&gt;JCQ 是共享消息中间件，但缺少 Serverless 自动扩缩容的特性。每逢大促，如 618，双 11，服贸会等重要活动。业务方很难预估自己的业务量峰值，或者估计不足，会造成 topic 限流等问题。如在保证 JCQ 服务本身能力情况下，能做到 topic 灵活的自动扩缩容，将对用户有极大的帮助，起到真正的削峰填谷作用。&lt;/p&gt;
+
+&lt;h1&gt;云原生&lt;/h1&gt;
+
+&lt;p&gt;支持在 kubernetes 环境部署与交付，提供原生的 Operator，能够快速的部署在 k8s 环境中，更好的交付私有云、混合云项目。&lt;/p&gt;
+&lt;/div&gt;
+  &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>1cf5fcdbfb36d2adeae0e905f31f3b83</guid>
-<title>浅谈 Remote Work</title>
-<link>https://toutiao.io/k/qn17x2c</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content             autoTypeSetting24psection&amp;#10;            &quot; id=&quot;js_content&quot;&gt;&lt;section&gt;&lt;span&gt;今天，来聊一下 &lt;strong&gt;&lt;span&gt;Remote Work&lt;/span&gt;&lt;/strong&gt;。&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.5294117647058824&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/la8s6uvJibdSEHaQmoV09x0BeUWhxibRSvicl9zGDzPwWMn1f5QXz7vO7vsicfbqQc2ozLnQ0107aaroUHyM7icBCiaQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;850&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Remote Work &lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;(远程办公) 近几年慢慢为人熟知，一定程度上和 &lt;span&gt;&lt;strong&gt;&lt;span&gt;Work From Home &lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;(居家办公) 有很大关系。但事实上, &lt;strong&gt;&lt;span&gt;Remote Work &lt;/span&gt;&lt;/strong&gt;和 &lt;strong&gt;&lt;span&gt;Work From Home &lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;并不是一回事。&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Remote Work&lt;/span&gt;&lt;/strong&gt;，&lt;/span&gt;&lt;span&gt;指的是在公司办公室外进行的工作。是的，远程可能发生在家里，但也可能发生在旅途、咖啡馆、酒店等，办公地点完全由员工选择。而&lt;/span&gt;&lt;span&gt; &lt;span&gt;&lt;strong&gt;&lt;span&gt;Work From Home &lt;/span&gt;&lt;/strong&gt;专指团队成员必须在家中或居住地工作的工作模式，&lt;/span&gt;&lt;/span&gt;&lt;span&gt;一般仅作为 &lt;strong&gt;&lt;span&gt;On-site&lt;/span&gt;&lt;/strong&gt; 一个替代方案。你看，疫情好转后，很多公司取消了 &lt;strong&gt;&lt;span&gt;Work From Home &lt;/span&gt;&lt;/strong&gt;的政策，要求大家继续去办公室搬砖。&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;下面，我结合自己最近远程工作的经历，来聊聊：&lt;/span&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Remote Work &lt;/span&gt;&lt;/strong&gt;的优缺点&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;申请&lt;strong&gt;&lt;span&gt;&lt;span&gt; &lt;/span&gt;Remote Work&lt;/span&gt;&lt;/strong&gt; 的常用网站&lt;/span&gt;&lt;strong&gt;&lt;span/&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;拿到&lt;/span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt; Remot&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;strong&gt;&lt;span&gt;e Work Offer &lt;/span&gt;&lt;/strong&gt;&lt;span&gt;的一些 &lt;/span&gt;&lt;strong&gt;&lt;span&gt;Tips&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;1. &lt;/span&gt;&lt;/strong&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;&lt;span&gt;Remote Work &lt;/span&gt;&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;的优缺点&lt;/span&gt;&lt;strong&gt;&lt;span/&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;优点&lt;/span&gt;&lt;span&gt;：&lt;/span&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;每天至少可以省下两个小时的通勤时间。而这两个小时，我可以用来练习英语，或者偶尔站在窗边发发呆，或者去学校接小孩；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;每天可以陪伴家人，陪孩子慢慢长大。即使工作的时候一般不和家人不说话，但你要知道，有一个大活人就坐书房，家人会觉得很心安&lt;span&gt;；&lt;/span&gt;&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;拒绝地沟油，每天都能吃到爱心早餐、午餐和晚餐；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;除了时间开销，经济开销也少了，每个月停车费+油费+餐费，可节省 2k 多；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;每天和来自不同国家，不同时区，操着不同语言的小伙伴一起工作，口语和见识多少是有些进步的；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;办公地点不受限制，如果不考虑子女教育和医疗，完全可以去三四线城市生活，看下面的画面来感受一下：&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.9143356643356644&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/la8s6uvJibdSEHaQmoV09x0BeUWhxibRSvZ8FribsSYe9DKXZjcXUz4icHicT45ZEWibe7mf4icjLhlG8RbAnotCfC8sQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2288&quot;/&gt; &lt;/section&gt;&lt;p&gt;&lt;span&gt;缺点&lt;/span&gt;&lt;span&gt;：&lt;/span&gt;&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;很难有现场办公那样的高效、及时的沟通：你明明看到那个人的 Slack 是在线的，但 Ta 可能就是临时走开了，只能等；&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;需要有完善的 O&lt;/span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;ncall&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt; 机制，不然出现问题的时候，你是找不到人的；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;工作时间一般是超过 8 小时的，尤其是晚上 12 点你准备休息的时候，可能西半球的同事早上 9 点刚上线，有很多事想找你沟通；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;该死的孤独感：快乐没有那么强烈，悲伤却可以持续一段时间，所以要找到适合自己的方式排解；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;健康问题：久坐会导致脖子酸，脊椎痛，还有肉眼可见的赘肉，不断塌陷；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;可能需要自己处理社保和税收问题: 可参考 &lt;/span&gt;&lt;span&gt;https://eleduck.com/posts/mbfBXa&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;2. &lt;/span&gt;&lt;/strong&gt;&lt;span&gt;&lt;span&gt;申请&lt;/span&gt;&lt;span&gt;&lt;span&gt; Remote Work &lt;/span&gt;&lt;span&gt;的&lt;/span&gt;&lt;/span&gt;&lt;span&gt;常用网站&lt;/span&gt;&lt;strong&gt;&lt;span/&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;国内常用网站&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;V2EX&lt;/span&gt;&lt;span&gt;:&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;  &lt;/span&gt;&lt;span&gt;https://www.v2ex.com/go/jobs&lt;/span&gt;&lt;span&gt;,  &lt;/span&gt;&lt;span&gt;需要科学上网，里面不仅有远程的职位，也有一些大厂和独角兽的内推信息。整体而言，发帖质量比较高，信息也比较可靠；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;电鸭&lt;/span&gt;&lt;span&gt;: &lt;/span&gt;&lt;span&gt;https://eleduck.com/categories/5&lt;/span&gt;&lt;span&gt;, &lt;/span&gt;&lt;span&gt;国内找远程岗位的主要阵地，但帖子的质量参差不齐。查看联系方式需要付费，建议不要去联系那些&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;span&gt;title&lt;/span&gt;&lt;span&gt; 写着高薪，但工作内容语焉不详的公司，自己需要有判断力；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;Brix Labs&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;:  &lt;/span&gt;&lt;span&gt;https://brix-zh.webflow.io&lt;/span&gt;&lt;span&gt;，&lt;/span&gt;&lt;span&gt;这其实是一个远程人才的服务平台，帮国外的雇主招聘远程人才，解决远程雇员的薪资和福利问题。需要通过平台自身的面试（算法 + 英语），然后有专人跟进，推荐到雇主再进行面试。个人经历下来，是比较靠谱的一个平台。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;国外常用网站&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;仅推荐自己使用过、投递后有反馈、有面试的网站：&lt;/span&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;LinkedIn:&lt;/span&gt;&lt;/strong&gt;&lt;span&gt; &lt;/span&gt;&lt;span&gt;https://www.linkedin.com/jobs/&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;AngelLi&lt;/span&gt;&lt;/strong&gt;&lt;strong&gt;&lt;span&gt;st：&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;https://angel.co/jobs&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;Fiverr: &lt;/span&gt;&lt;/strong&gt;&lt;span&gt;https://www.fiverr.com/&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;Upwork&lt;strong&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;:&lt;/span&gt;&lt;/strong&gt; &lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;https://www.upwork.com/&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;We Work Remotely&lt;strong&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;:&lt;/span&gt;&lt;/strong&gt;  &lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;https://weworkremotely.com/&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;Remotive&lt;strong&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;: &lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;https://remotive.com/&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Web3&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/strong&gt;&lt;strong&gt;&lt;span&gt; 远程岗位&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;https://web3.career/&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;h&lt;/span&gt;&lt;span&gt;ttps://www.marswork.xyz/&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;h&lt;/span&gt;&lt;span&gt;ttps://findweb3.com/jobs&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;h&lt;/span&gt;&lt;span&gt;ttps://www.defi.jobs/&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;3. &lt;/span&gt;&lt;/strong&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;拿到&lt;/span&gt;&lt;/strong&gt;&lt;strong&gt;&lt;span&gt;&lt;span&gt; Remote Work Offer &lt;/span&gt;&lt;span&gt;的一些 &lt;/span&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Tips&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;综合各大远程网站的招聘信息，整体而言，目前远程雇主对人才的需求：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;小伙伴们可以结合自己的技术栈，有针对性地去选择和准备。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;当然，要拿到一份适合自己的远程 &lt;/span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Offer&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt; ，接下来还要做些功课&lt;/span&gt;&lt;span&gt;：&lt;/span&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;练好口语！练好口语！练好口语！&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;重要的事情说三遍。英语口语真的很重要，特别是对于我们国内那些技术能力比较强，书面英语也不错，但就是不会开口说的工程师来说，口语可以说是打开远程世界的一扇窗。当然，我得承认，我的口语目前也不溜，但一年多下来，基本能 hold 住每天近 &lt;/span&gt;&lt;span&gt;30&lt;/span&gt;&lt;span&gt; 分钟的晨会了；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;LeetCode &lt;/span&gt;&lt;/strong&gt;&lt;span&gt;&lt;span&gt;上&lt;/span&gt;&lt;span&gt;的 &lt;/span&gt;&lt;/span&gt;&lt;strong&gt;&lt;span&gt;HOT 100 &lt;/span&gt;&lt;/strong&gt;&lt;span&gt;算法题，建议多刷几遍。因为国外的技术面试基本需要考 1-2 轮的算法, 没有一定的题量输入的话，面试时很难临场想出破解之法；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;准备一些 &lt;/span&gt;&lt;strong&gt;&lt;span&gt;System Design&lt;/span&gt;&lt;/strong&gt;&lt;span&gt; 的题目，尤其是像 &lt;/span&gt;&lt;strong&gt;&lt;span&gt;Twitter timeline&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;, &lt;/span&gt;&lt;strong&gt;&lt;span&gt;K-V storage&lt;/span&gt;&lt;/strong&gt;&lt;span&gt; 这些，理清思路后多用英语对着镜子说几遍，面试时不要忘了要和面试官多互动互动。当然，面试之前找个人 &lt;/span&gt;&lt;strong&gt;&lt;span&gt;mock interview&lt;/span&gt;&lt;/strong&gt;&lt;span&gt; 一下也是不错的建议；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;准备一些 &lt;/span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Behavioural Questions&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;，比如：以往工作中遇到冲突怎么处理？遇到任务延期怎么处理？等等。油管上有很多好的视频，可以移步去学习。 &lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;span&gt;等拿到了远程的 &lt;/span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;offer&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;，接下来就得为自己准备一个舒服的办公环境了，个人觉得这个投入是必要的：&lt;/span&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;一把舒服的人体工程学椅子：能缓解久坐对脊柱和腰椎的部分伤害；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;一个可以肆意敲击，再也不用担心会干扰到其他同事的机械键盘。它可以提醒你，你在好好工作！&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;至少备两个能&lt;/span&gt;&lt;span&gt;科&lt;/span&gt;&lt;span&gt;学&lt;/span&gt;&lt;span&gt;上网的&lt;/span&gt;&lt;span&gt;软件；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;一个番茄钟，防止自己走神；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;熟悉 &lt;/span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Google Suit&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;：&lt;/span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Google meeting + Google Doc + Google Calendar&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;熟悉 &lt;/span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Slack&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;：&lt;/span&gt;&lt;span&gt;外企常用工作沟通软件。&lt;/span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;By the way&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;，&lt;/span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Slack&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt; 有个抱团功能很好用，在 &lt;/span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Slack &lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;上&lt;span&gt;拉&lt;/span&gt;几个人开会很方便，一定程度上可以代替 &lt;/span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Zoom&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;熟悉 &lt;/span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Jira + Confluence&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;：外企产研部门必备套件。用于日常研发任务管理以及一些工作文档的沉淀。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;Good Luck, Guys!&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;strong&gt;&lt;span/&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span/&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;mp-style-type data-value=&quot;3&quot;/&gt;&lt;/p&gt;&lt;/div&gt;
+<guid>cebbddf68496432499aa07df9f7016ec</guid>
+<title>最强开源 OLAP 数据库，你应该选择的 10 个理由</title>
+<link>https://toutiao.io/k/h1z5lkl</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;col-md-10 col-sm-12&quot;&gt;
+            &lt;h1&gt; 最强开源 OLAP 数据库，你应该选择的 10 个理由&lt;/h1&gt;
+            &lt;hr/&gt;
+            &lt;p&gt;作者: 康凯森&lt;/p&gt;
+            &lt;p&gt;日期: 2022-12-13&lt;/p&gt;
+            &lt;p&gt;分类: &lt;a href=&quot;../tag/OLAP.html&quot; target=&quot;_blank&quot;&gt;OLAP&lt;/a&gt;&lt;/p&gt;
+            &lt;hr/&gt;
+            
 
-          
+
+&lt;p&gt;2022 年即将结束，疫情持续了 3 年，StarRocks 也创立了快 3 年，今天就总结下 StarRocks 用户侧可以感知的十大 Fature 和 优化，也希望大家对 StarRocks 有一个更全面的认知。&lt;/p&gt;
+&lt;h2 id=&quot;一-极速-olap&quot;&gt;一 极速 OLAP&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&quot;media/16679811340710/16688670975989.jpg&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;图中是我们官网展示的 SSB 单表的查询性能对比，可以看到，相比业界其他优秀的 OLAP 数据库，我们 StarRcoks 在性能上有着明显的优势，不止是 SSB 单表查询，SSB 多表，TPC-H 查询，TPC-DS 等复杂的多表查询，我们同样拥有极致的性能。TPC-DS 查询在 100G 和 1T 规模下，StarRcoks 相比 Snowflake 有2到3倍的性能优势。&lt;/p&gt;
+&lt;p&gt;极致的性能不仅可以带来更好的用户体验，让之前难以实现的需求可以实现，更重要的是，可以节省大量的机器，为企业降本增效。&lt;/p&gt;
+&lt;p&gt;我们 StarRcoks 能拥有极致的 OLAP 分析性能，是因为2年多来，我们在以下几个方面做了大量持续深入的优化：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;MPP 分布式执行&lt;/strong&gt;：StarRocks 拥有 MPP 的分布式执行框架，保证了 StarRocks 可以充分发挥多机 scale out 的能力&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Pipeline 并行执行框架&lt;/strong&gt;：我们从零打造了 pipeline 并行框架，可以让  StarRocks 充分发挥多核 scale up 的能力&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;向量化执行&lt;/strong&gt;：我们从零打造了 StarRocks 的向量化执行引擎，让 StarRocks 单核可以拥有极致的执行性能&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;CBO 优化器&lt;/strong&gt;：通过 MPP 分布式执行， Pipeline 并行执行 和 向量化执行，我们拥有了世界领先的查询执行器，但是对于复杂的SQL，优化器产生的 Plan 好坏对查询性能影响更大，所以我们又从零打造了 CBO 优化器，让 StarRocks 对于复杂查询可以产生足够好的 Plan，进而对于复杂查询，StarRocks 也可以拥有极佳的查询性能&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Global Runtime Filter&lt;/strong&gt; : Runtime Filter 对复杂的join 查询影响极大，开关 Runtime filter，可以有几十倍的查询，我们在 Global 和 Local Runtime Filter 上都做了挺多深度优化和创新&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;全局低基数字典优化&lt;/strong&gt;：目前主要是可以优化包含低基数字符串的各类查询，整体会有2到3倍的性能提升，面向的场景主要是业务的维表中有大量的低基数字符串列。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;对上面技术原理感兴趣的可以参考我们 StarRocks 官方微信公众号和 B 站的相关技术分享。&lt;/p&gt;
+&lt;h2 id=&quot;二-极速数据湖分析&quot;&gt;二 极速数据湖分析&lt;/h2&gt;
+&lt;p&gt;当我们拥有了一个极速的查询引擎，可以实现极速 Olap 分析后，一个自然而然的想法就是，我们是不是也可以直接查询 Apache Hive、Apache Iceberg 和 Apache Hudi 等开源数据湖或数据仓库的数据上呢？ 答案是 Yes ! 这样的一个巨大好处是用户省去了数据导入或者同步这个工作，对用户的易用性大大增强。&lt;/p&gt;
+&lt;p&gt;所以从21年开始，我们就成立了专门的数据湖分析团队，致力于提供开箱即用的极速数据湖分析体验。一年多来，用户侧可以感知的优化和功能如下：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;1 各种外部数据源接入更加简单&lt;/strong&gt;：开发了全新的 Connector 框架和 Catalog 机制，访问外部数据源变得很容易，只需要配置下 Catalog，就可以查询到对应 DB 下的所有表数据，而不是最初一张表一张表配置，极大提升了用户的易用性。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;media/16679811340710/16688650649458.jpg&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;2 更加极致的性能&lt;/strong&gt;：除了查询引擎本身的持续性能提升，数据湖分析额外在 Scan 算子和外表元数据访问上做了大量优化，在有 Local Cache的情况下，外表查询性能可以媲美本地的 OLAP 表。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;media/16679811340710/16679830144946.jpg&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;3 更加弹性&lt;/strong&gt;： 当 BE 不负责数据存储时，就变成了一个无状态的计算节点，弹性伸缩就变得十分自然和容易，而且数据湖分析大多属于 Adhoc 查询，查询范式不固定，相比与传统的 Olap 查询，更需要弹性伸缩的能力。所以我们就新增了一种新的节点：Compute Node —— 是将 BE 的存储功能移除，只保留计算模块。 并和 K8S 结合，做到了弹性伸缩。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;media/16679811340710/16709203320364.jpg&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;4 更加安全&lt;/strong&gt;： 我们更好地支持了 Kerberos 认证，接入了云厂商托管的 IAM 服务。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;三-主键更新&quot;&gt;三 主键更新&lt;/h2&gt;
+&lt;p&gt;过去两年来，我们从零实现了全新的 基于列存的 Delete-and-Insert 模式的主键更新模型，可以同时支持实时更新和极致的查询性能，在大规模实时数据写入的同时，查询性能可以做到其他行业领先 OLAP 数据库的 3-5 倍。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;media/16679811340710/16709237307812.jpg&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;两年来，我们的主键模型做了如下优化：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;主键索引持久化：减少了主键索引的内存使用量，可以支持更大数据量的单表&lt;/li&gt;
+&lt;li&gt;部分列更新：以现有的 Delete + Insert 模式为基础，通过读取老版本数据，来填充缺失列&lt;/li&gt;
+&lt;li&gt;条件更新：当满足某个固定条件时才更新对应行，否则就不更新&lt;/li&gt;
+&lt;li&gt;高频导入优化：对 Publish version 过程，compaction 过程，合并事务数等优化&lt;/li&gt;
+&lt;li&gt;Update 和 Delete 语句支持复杂表达式和子查询&lt;/li&gt;
+&lt;li&gt;主键和排序键分离&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;实时化是整个数据分析的大趋势，而更新的需求也越来越多，有了 StarRocks 优秀的主键模型，你可以更好的支持下面的业务场景：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;CDC 实时同步 TP 数据到 StarRocks 中，这也是使用最广泛的场景&lt;/li&gt;
+&lt;li&gt;数据处理范式从 ETL 变成 ELT，也需要强大的更新能力&lt;/li&gt;
+&lt;li&gt;实时流中通过多表 Join 更新数据的场景，有了 Partial-Update，就可以代替部分多表 Join 的需求&lt;/li&gt;
+&lt;li&gt;根据某个时间戳进行条件更新&lt;/li&gt;
+&lt;li&gt;。。。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&quot;四-资源隔离&quot;&gt;四 资源隔离&lt;/h2&gt;
+&lt;p&gt;在生产环境中，大家一般都会遇到大查询的问题： 几个大查询吃满了整个集群的资源，影响了正常的小查询，大查询很难及时熔断和定位。 针对大查询的问题，我们从 2.3 版本开始，基于 Pipeline 执行引擎，实现了资源隔离。 目前 StarRocks 支持了内存资源的硬隔离，CPU 和 IO 资源的软隔离。&lt;/p&gt;
+&lt;p&gt;我们引入了 Work Group 的概念，每个 Work Group 可以配置使用的 CPU 和 IO 比例，我们通过两级队列调度和类型 Linux CFS 调度的算法基本保证了每个 Work Group在查询运行时，使用的资源可以符合配置的比例。&lt;/p&gt;
+&lt;p&gt;同时为了提高资源的利用率，在集群资源空闲时，每个 work group 可以使用到更多资源，对集群资源的利用率和隔离性进行了兼顾。&lt;/p&gt;
+&lt;p&gt;对一些高优业务，用户可能期望隔离性更高，我们也支持了短查询 Work Group 的 CPU 硬隔离，任何情况下，其对应的 CPU 资源都不会被占用。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;media/16679811340710/16709327441519.jpg&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;h2 id=&quot;五-物化视图&quot;&gt;五 物化视图&lt;/h2&gt;
+&lt;p&gt;StarRocks 第一版的物化视图是从 Rollup 转换而来，只能用来透明加速查询，不能显示直接查询某个物化视图，也就是说物化视图只有物化的语义，没有视图的语义。&lt;/p&gt;
+&lt;p&gt;我们物化视图 2.0 版本进行了5方面的加强：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;让物化视图可以直接被查询&lt;/strong&gt;：将物化视图也视为一张表，这样在复杂的 ELT 或者 ELT 的数据处理过程中，就可以使用物化视图来简化 SQL&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;在数据建模场景下，支持任意复杂的SQL&lt;/strong&gt;：也就是说，物化视图里面可以定义任意复杂的SQL，但是不保证每个物化视图都支持透明的查询改写加速&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;在透明加速场景下，支持更复杂的SQL:&lt;/strong&gt; 目前 StarRocks 已经可以支持 Aggregate, Join, Filter, Union 等复杂查询的物化视图透明改写&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;支持对数据湖上的数据建立物化视图&lt;/strong&gt;：对数据湖上的近期热点数据利用物化视图进行强有力的透明加速&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;物化视图支持异步刷新和自动刷新&lt;/strong&gt;：让物化视图的创建过程和刷新过程更加简单&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;在 StarRocks 3.0 中，物化视图将会有一个质变，成为 StarRocks 的 Killer Feature，大家敬请期待。&lt;/p&gt;
+&lt;h2 id=&quot;六-tablet-level-query-cache&quot;&gt;六 Tablet Level Query Cache&lt;/h2&gt;
+&lt;p&gt;在实时报表分析和时序查询中，大家经常会遇到分析最近某几天的数据，或者分析今天从零点一直到现在的数据这种场景，在这类查询中，最近某几天的分区 或者 最近某几个小时的数据可能被高频查询到，这种场景很适合 Query Cache 发挥作用，StarRocks 是基于 Tablet 粒度实现的 Query Cache，具有以下亮点：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;media/16679811340710/44ebdb2c-950e-400f-8b68-aca5e7c8aa76.png&quot; alt=&quot;44ebdb2c-950e-400f-8b68-aca5e7c8aa76&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Cache 命中率高&lt;/strong&gt; ：因为 Cache 粒度是 Tablet 粒度，比较细，不是整个查询结果集，或者某个分区的查询结果集，Cache 命中率理论上会更高。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;支持多版本&lt;/strong&gt;：支持多版本有多个好处，首先是可以支持高频实时导入，因为 tablet 旧版本的对应的 Cache 内容可以复用，只需要旧版本的 Cache 结果和新版本的增量结果合并即可&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;支持 Join 等多表复杂查询的结果集Cache&lt;/strong&gt;：不像大多数系统只能支持单表查询的 Query Cache.&lt;/p&gt;
+&lt;p&gt;StarRocks 的 Query Cache 已经在 2.5 版本发布，欢迎大家使用。&lt;/p&gt;
+&lt;h2 id=&quot;七-半结构化数据分析&quot;&gt;七 半结构化数据分析&lt;/h2&gt;
+&lt;p&gt;过去两年来，StarRocks 在持续完善半结构化数据分析能力：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;支持了 Array, Map, Struct, Json 数据类型&lt;/li&gt;
+&lt;li&gt;支持了大量 Array, Map, Struct, Json 相关函数&lt;/li&gt;
+&lt;li&gt;支持了 Lateral Join 和 Unnest Table Function，详情可以参考 &lt;a href=&quot;https://docs.starrocks.io/zh-cn/latest/using_starrocks/Lateral_join&quot;&gt;https://docs.starrocks.io/zh-cn/latest/using_starrocks/Lateral_join&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;支持了 Lambda 函数，  详情可以参考 StarRocks Lambda 函数用户文档&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;有了这些基础能力，你可以用 StarRocks 做一些更强大的事情：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;StarRocks 可以更好地支持用户行为分析（留存及漏斗分析，路径分析等）&lt;/li&gt;
+&lt;li&gt;StarRocks 可以更好地支持 Parquet, ORC 等文件导入和分析&lt;/li&gt;
+&lt;li&gt;支持 Map 和 Json 类型可以让 StarRocks 更容易进行 Schema 变更&lt;/li&gt;
+&lt;li&gt;支持 Json 类型让 StarRocks 对日志分析，事件分析等场景支持更加友好&lt;/li&gt;
+&lt;li&gt;。。。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;StarRocks 明年也会持续在半结构化数据分析上发力。&lt;/p&gt;
+&lt;h2 id=&quot;八-查询并行度自适应&quot;&gt;八 查询并行度自适应&lt;/h2&gt;
+&lt;p&gt;StarRocks 的查询一开始是 Fragment 并行机制，将每个查询的并行度设置交给了用户，但是这个具体的并行度值用户很难设置，简单查询串行执行时并行度高点性能会好，但是高并发时，并行度高性能反而会更差，因为旧版的执行框架，是每个 fragment 一个执行线程，fragment 数越多，执行线程会更多，线程切换和竞争的开销会更大。&lt;/p&gt;
+&lt;p&gt;为了解决这个问题，StarRocks 一年多来分三步走解决了这个问题：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;实现 Pipeline 并行引擎&lt;/strong&gt;：将执行线程数固定成 CPU 核数，查询默认的并行度改成核数的一半，用户不需要再关心并行度的设置，但是还存在一些优化空间&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;单 Tablet 内部并行&lt;/strong&gt;：支持单个 Tablet 可以并行查询，将查询的并行度和 Tablet 数解耦，解决了 Tablet 数较少时无法设置更高并行度的问题&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;查询并行度自适应（下个版本支持）&lt;/strong&gt;: 根据不同的集群复杂和查询类型，自动设置最合理的并行度。默认并行度设置成为核数，当数据量比较少时 或者 集群负载比较高时，自动减少并行度；&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;经过这三步，当你在 StarRocks 时就再也不用自己操心查询并发度的设置了，无论是 Benchmark 场景，还是高并发场景，无论是复杂的大查询，还是简单的小查询，StarRocks 都会自动为你提供&lt;strong&gt;开箱即用的极致性能体验&lt;/strong&gt;。&lt;/p&gt;
+&lt;h2 id=&quot;九-云原生存储分离&quot;&gt;九 云原生存储分离&lt;/h2&gt;
+&lt;p&gt;大家都知道，Cloud Native 是大势所趋，而要支持 Cloud Native，StarRocks 就必须从之前的 Shared-Nothing 架构转向存算分离架构。从 21 年初，StarRocks 就组建了专门的 Cloud 团队全力打造全新的存算分离架构，历经我们 Cloud 团队长达两年的设计和研发，存算分离的 StarRocks 第一版已经开发测试完成，目前已经交付部分用户进行试用测试，有想提前尝鲜的用户也欢迎联系我们。&lt;/p&gt;
+&lt;p&gt;如上图所示（由于官方还未公开过图，我就不放了，大家可以根据 《Data-Parallel Actors：千行代码构建高性能 OLAP 数据库》一文中的描述脑补下），是我们 StarRocks 新一代的全新架构，我们新一代存算分离架构的核心是 StarOS, StarOS 一个极具野心的项目，简单来说，StarOS 会对分布式相关逻辑进行抽象和统一，对云上存储进行抽象和统一，让我们未来打造一个存算分离服务变得十分简单。 具体的技术内幕大家可以期待我们 Cloud 团队同学之后的深度分享。&lt;/p&gt;
+&lt;p&gt;那么从用户视角来看，我们全新的存算分离架构会提供什么独特的优势呢？&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;在可以弹性伸缩的同时，可以提供媲美 Shared-Nothing 架构的性能&lt;/li&gt;
+&lt;li&gt;依靠 StarOS, 同时支持云上部署和本地部署&lt;/li&gt;
+&lt;li&gt;实时更新能力&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;当然，普遍存储架构的优点我们已经或即将具备：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;极致弹性&lt;/li&gt;
+&lt;li&gt;更低成本&lt;/li&gt;
+&lt;li&gt;多租户&lt;/li&gt;
+&lt;li&gt;读写分离&lt;/li&gt;
+&lt;li&gt;Serverless&lt;/li&gt;
+&lt;li&gt;。。。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&quot;十-saas-byoc&quot;&gt;十 SAAS BYOC&lt;/h2&gt;
+&lt;p&gt;所谓云原生的存算分离，我们除了存储分离的内核，还需要在云上将数据库服务化，所以在一边打造存算分离内核的同时，我们也成立了一个专门的团队在打造 SAAS 服务，我们目前已经推出了 BYOC 的 SASS 模式。 BYOC 是 bring-your-own-cloud 的缩写，也就是&lt;strong&gt;使用用户自己的云，这样会有更好的数据隐私，更好的安全性&lt;/strong&gt;。如图所示（由于官方还未公开过图，我就不放了），整个架构分为控制面板和数据面板，控制面板在 StarRocks 的 VPC， 数据面板在用户的 VPC，目前已经有多个用户在正式使用。&lt;/p&gt;
+&lt;p&gt;我们即将迎来2023年，在新的一年里， StarRocks 会带来更多的 Killer Feature，也会大力提升稳定性和易用性，努力让 StarRocks 成为最受欢迎的 OLAP 数据库。&lt;/p&gt;
+
+            &lt;hr/&gt;
+            &lt;h3&gt;欢迎来知识星球和我交流&lt;/h3&gt;
+            
+        &lt;/div&gt;
         &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>a8482f4f881adde76936a1bade11046e</guid>
-<title>JVM 垃圾回收器：分代堆内存管理，堆设计+分代边界+回收设计思路</title>
-<link>https://toutiao.io/k/y5v6q06</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content             autoTypeSetting24psection&amp;#10;            &quot; id=&quot;js_content&quot;&gt;&lt;p&gt;&lt;img class=&quot;__bg_gif rich_pages wxw-img&quot; data-fileid=&quot;100032171&quot; data-ratio=&quot;0.271875&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/RQueXibgo0KP4mOic3fe02VJ1icuIJYLUIUUENk0IicFwiaWH8ZOV5RkvNoBoictFGmBqTtbwHpwybGMZ6e0vlPgpBsw/640?wx_fmt=gif&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&quot; data-type=&quot;gif&quot; data-w=&quot;640&quot;/&gt;&lt;/p&gt;&lt;h1 data-track=&quot;4&quot;&gt;&lt;span&gt;◆ &lt;/span&gt;JVM垃圾回&lt;span&gt;收器详解&lt;/span&gt;&lt;/h1&gt;&lt;p data-track=&quot;5&quot;&gt;&lt;span&gt;垃圾回收器是JVM中最重要的组件之一，几乎每一个JDK的大版本都对垃圾回收进行重大的更新。另外，由于JDK发布策略的改变，在最近3年的版本发布中，每一个大版本都至少合入一个（甚至数个）关于垃圾回收的JEP。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;44&quot;&gt;&lt;span&gt;垃圾回收的快速发展主要受两个方面的影响：一方面是现代计算机的配置越来越好，应用实际可使用的内存也越来越多（虽然微服务架构改变了这一现象，但是微服务拆分过多，将导致公共资源消耗过多，这是JDK的另外一个发展方向）；另一方面是应用性能要求也越来越高，期望垃圾回收尽可能少的暂停。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;46&quot;&gt;&lt;span&gt;这些诉求要求不断优化垃圾回收，甚至出现新的垃圾回收实现。根据JDK版本支持的策略，JDK 8、JDK 11和JDK 17是目前长期支持的版本。目前这3个版本共支持7个垃圾回收器，分别是串行回收（简称SerialGC）、并行回收（Parallel Scavenge，简称Parallel GC）、并发标记清除（Concurrent Mark Sweep，简称CMS）、垃圾优先（Garbage First，简称G1）、Shenandoah GC、ZGC、Epsilon（实验特性，仅支持分配不回收，实际场景中不会采用）。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;45&quot;&gt;&lt;span&gt;由于垃圾回收技术发展很快，所以这3个版本中JDK支持的垃圾回收器并不完全相同，其中CMS仅在JDK 8和JDK 11中支持，ZGC在JDK11中为实验特性，在JDK 17中为正式产品，Shenandoah在JDK 17中为正式产品，Epsilon在JDK 11和JDK 17中为实验特性。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;22&quot;&gt;&lt;span&gt;JVM实现的垃圾回收算法从不同的角度可以归属到不同的类别。通常会从执行角度和内存管理角度进行划分。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;24&quot;&gt;&lt;span&gt;从执行角度可以分为以下3种：&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;25&quot;&gt;&lt;span&gt;串行执行：串行指的是当垃圾回收启动时，只有一个垃圾回收线程在工作，而Java应用程序则暂停执行。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;27&quot;&gt;&lt;span&gt;并行执行：JVM中的并行指多个垃圾回收相关线程在OS之上并发地运行。这里的并行强调的是只有垃圾回收线程工作，Java应用程序暂停执行。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;30&quot;&gt;&lt;span&gt;并发执行：JVM中的并发指垃圾回收相关的线程并发地运行（如果启动多个线程），且这些工作线程会与Java应用程序并发地运行。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;32&quot;&gt;&lt;span&gt;从内存管理角度可以分为以下两种：&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;33&quot;&gt;&lt;span&gt;连续内存管理：JVM管理一块内存区域，在对象分配时会请求一块可容纳对象大小的内存块才能分配成功，在回收时会一次性回收整个内存区域。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;36&quot;&gt;&lt;span&gt;分区内存管理：内存区域被划分成多个分区，在进行对象分配时，对象所需的内存可以由多个不连续的内存分区组成，在回收时一般也只回收部分分区。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;39&quot;&gt;&lt;span&gt;按照执行和内存管理的角度，JVM支持的垃圾回收可以归纳如下：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.18733153638814015&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/RQueXibgo0KNBubb61Y1jPCgl8iaQ1vqjiaMFvoYv1tIOVnQdTFibnRtC90O6BFLb8ZefMdIwgGmbb04vZmxyYWQEA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1484&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p data-track=&quot;40&quot;&gt;&lt;span&gt;在垃圾回收的实现中，可能会根据对象的生命周期管理实现分代，不同生命周期的对象放入不同的内存区域，不同的内存区域通常采用不同的回收算法。按照分代可以将垃圾回收器划分为单代内存回收器和两代内存回收器。单代内存回收器采用一种回收算法，两代内存回收器通常采用两种算法或者采用同一种算法但不同的回收策略。按照分代的划分，JVM支持的垃圾回收可以归纳如下：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.14052953156822812&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/RQueXibgo0KNBubb61Y1jPCgl8iaQ1vqjiaibichVAIyQU6tLVXibkib1GVDyCfiaZgGaY5lnNdu9K7eW9DichU0ibKrYOlw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1473&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;h1 data-track=&quot;4&quot;&gt;&lt;span&gt;◆ &lt;/span&gt;串行回收&lt;/h1&gt;&lt;p data-track=&quot;51&quot;&gt;&lt;span&gt;串行回收器是JVM中最早实现的垃圾回收器。从工程实现角度看，它是最简单的垃圾回收器，但目前串行回收器的使用场景已经非常有限，除了少部分特殊的场景以外几乎都不会考虑使用它。串行回收器是一款暂停应用执行的垃圾回收器，且在垃圾回收执行过程仅有一个GC工作线程执行垃圾回收的动作，它逻辑清晰、实现简单，是学习和研究垃圾回收器的首选。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;56&quot;&gt;&lt;span&gt;虽然串行回收器是JVM中最简单的垃圾回收器，但它也包含了很多有意思的设计，而且这些设计和后面介绍的其他垃圾回收器有许多共同的地方。通常对于一款垃圾回收器的实现，需要回答以下问题：如何进行分代内存管理？新生代如何进行内存管理？老生代（或者整个堆空间）如何进行内存管理？新生代和老生代之间是否需要交互？怎样交互？这些问题在本章中都有回答。&lt;/span&gt;&lt;/p&gt;&lt;h1 data-track=&quot;4&quot;&gt;&lt;span&gt;◆ &lt;/span&gt;分代堆内存管理概述&lt;/h1&gt;&lt;p data-track=&quot;63&quot;&gt;&lt;span&gt;在2.3.4节介绍分代回收时，提到分代有一些问题需要回答，最简单的问题是分代边界是否固定？串行回收采用边界固定的分代方法，将整个堆空间划分为两个代：新生代和老生代。在内存管理方面，新生代采用复制算法进行垃圾回收，整个堆空间采用标记压缩算法进行垃圾回收，复制算法采用的是变异的Cheney复制算法。整个堆内存管理示意图如图3-1所示。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.4889908256880734&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/RQueXibgo0KNBubb61Y1jPCgl8iaQ1vqjiaJ4iaVEU1O7biabU7e1leszDpRYbBnq0Pfz58Xodd9Pb6XibBEzkTHdg8g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1090&quot;/&gt;&lt;/p&gt;&lt;p&gt;图3-1 串行回收堆空间管理示意图&lt;/p&gt;&lt;p data-track=&quot;68&quot;&gt;&lt;span&gt;串行回收的特点如下：&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;69&quot;&gt;&lt;span&gt;1）内存是连续的。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;70&quot;&gt;&lt;span&gt;2）新生代和老生代&lt;/span&gt;&lt;span&gt;边界固定，边界在JVM启动时确定&lt;/span&gt;&lt;span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;71&quot;&gt;&lt;span&gt;3）新生代空间划分为3个子空间，分别是Eden、From、To空间，并且Eden、From、To空间的大小在&lt;/span&gt;&lt;span&gt;启动时确定&lt;/span&gt;&lt;span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;73&quot;&gt;&lt;span&gt;4）新生代空间的垃圾回收采用的是&lt;/span&gt;&lt;span&gt;复制算法&lt;/span&gt;&lt;span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;74&quot;&gt;&lt;span&gt;5）整个堆空间的垃圾回收采用的是&lt;/span&gt;&lt;span&gt;标记压缩算法&lt;/span&gt;&lt;span&gt;。注意，标记压缩算法针对的是整个堆空间，串行回收中没有只回收老生代的算法，具体原因后文讨论。&lt;/span&gt;&lt;/p&gt;&lt;h1 data-track=&quot;4&quot;&gt;&lt;span&gt;◆ &lt;/span&gt;堆设计&lt;/h1&gt;&lt;p data-track=&quot;78&quot;&gt;&lt;span&gt;从应用程序运行的角度来说，应用所需的堆空间大小与应用程序中对象的分配速率和运行时间相关。由于应用对象分配速率和运行时间不同，且对于堆空间大小的需求不尽相同，因此应用启动时应该告诉JVM需要多少堆空间，常见的做法是在应用启动时通过参数设置堆空间大小。除了需要确定堆空间的大小以外，使用者还需要根据垃圾回收器堆的设计了解如何使用堆空间，才能充分利用堆空间。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;84&quot;&gt;&lt;span&gt;JVM管理的堆空间是基于OS管理的内存之上的，应用在启动时向OS请求整个运行期所需要的全部内存。当然这样的设计并非完美，至少存在两个问题：其一，从OS直接请求内存是相对耗时的操作，请求运行时全部内存将导致JVM启动时间过长；其二，JVM启动时从OS请求了内存但并不会立即使用，实际上造成了资源浪费。JVM如此设计的原因在于：应用都是较长时间运行，期望通过启动初始化运行时所需的内存加快运行的效率。那么有没有比较好的方案既能保证应用的执行效率，又能兼顾应用启动速度和内存利用率呢？&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;91&quot;&gt;&lt;span&gt;JVM通过细化堆空间设计解决这个问题。JVM提供了两个参数：一个是最小的堆空间，另一个是最大的堆空间。假定这两个参数分别记为InitialHeapSize和MaxHeapSize&lt;/span&gt;&lt;span&gt;[1]&lt;/span&gt;&lt;span&gt;。设计思路修改为：JVM启动时向OS请求最小的堆空间，并在运行时根据内存使用的情况逐步扩展，直到堆空间达到参数设置的最大堆空间。这样的设计在一定程度上解决了JVM启动慢、资源利用率低的问题，其本质是把应用启动时的内存资源初始化请求推迟到应用运行时，这可能导致应用运行性能受到内存资源扩展的影响。所以在一些应用中为了减少运行时内存扩展带来的影响，会在启动时把最小堆空间和最大堆空间设置成相同的值。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;100&quot;&gt;&lt;span&gt;1.5节讨论垃圾回收工作范围时，提到垃圾回收不仅包含向OS请求内存，还包含向OS归还申请的内存。早期JVM设计主要考虑的是如何合理地向OS请求内存，很少考虑如何向OS归还内存。但这样的设计在一些场景中存在问题。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;124&quot;&gt;&lt;span&gt;例如，一个应用在运行过程中内存使用越来越多，在业务处理高峰时内存使用达到了最大堆空间，但当业务峰值下降之后，由于没有合理的内存归还机制，申请的内存一直被占用但没有再次使用，这实际上造成了资源浪费。这样的问题在云场景中表现得非常明显，在云场景中，用户按资源使用付费，不愿意也不应该为未使用的内存付费，所以最新的JVM都会考虑在什么情况下向OS归还内存。需要指出的是，向OS归还内存也是一个耗时的操作，不当的设计和实现会导致程序暂停时间过长。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;125&quot;&gt;&lt;span&gt;另外，归还时机和归还的内存数量不当，也可能导致内存归还后应用内存不足，会立即向OS再次请求内存，从而发生内存使用颠簸，这也会引起应用性能下降。针对这一问题，一个可能的设计是引入一个新的参数，假定参数记为SoftMaxHeapSize&lt;/span&gt;&lt;span&gt;[2]&lt;/span&gt;&lt;span&gt;，用于控制内存归还的边界。该参数满足条件：&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;114&quot;&gt;&lt;span&gt;InitialHeapSize≤SoftMaxHeapSize&lt;/span&gt;&lt;span&gt;[3]&lt;/span&gt;&lt;span&gt;≤MaxHeapSize，这3个参数的作用如下：&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;116&quot;&gt;&lt;span&gt;InitialHeapSize作为应用启动时最小的堆空间。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;117&quot;&gt;&lt;span&gt;根据运行的需要，应用程序使用的内存可以扩展，但最大使用量不超过MaxHeapSize。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;119&quot;&gt;&lt;span&gt;SoftMaxHeapSize作为控制参数，当内存使用超过该阈值到MaxHeapSize之间的部分，在满足一定条件的情况下，可以归还给OS。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;121&quot;&gt;&lt;span&gt;对于不支持SoftMaxHeapSize的垃圾回收器，可以简单地认为SoftMaxHeapSize等于MaxHeapSize。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;123&quot;&gt;&lt;span&gt;根据这3个参数的含义，堆空间的划分如图3-2所示。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.27812223206377323&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/RQueXibgo0KNBubb61Y1jPCgl8iaQ1vqjiaAENibXuDZbLMTErIotQiatpqYILSK2kLtpVW9sotBQLqApnKLvvN8g5A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1129&quot;/&gt;&lt;/p&gt;&lt;p&gt;图3-2 堆空间划分示意图&lt;/p&gt;&lt;p data-track=&quot;126&quot;&gt;&lt;span&gt;那么在实际工作中该如何设置这3个参数值？通常的原则如下：&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;127&quot;&gt;&lt;span&gt;1）MaxHeapSize是对应用程序&lt;/span&gt;&lt;span&gt;最大&lt;/span&gt;&lt;span&gt;内存量的估计。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;128&quot;&gt;&lt;span&gt;2）SoftMaxHeapSize是对应用程序常见&lt;/span&gt;&lt;span&gt;工作负载&lt;/span&gt;&lt;span&gt;使用的内存量的估计。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;129&quot;&gt;&lt;span&gt;3）InitialHeapSize一方面是对应用程序启动后所需&lt;/span&gt;&lt;span&gt;最小&lt;/span&gt;&lt;span&gt;内存使用量的估计（最小内存一般指应用满足最小工作负载时的内存使用量），另一方面是在启动速度和资源利用之间寻找一个平衡值（即在最小内存使用量和最大内存使用量之间寻找一个合适的值）。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;133&quot;&gt;&lt;span&gt;在JVM的实现中，应用也可以不提供这3个参数值。如果应用启动时没有提供参数值，那么JVM会为参数提供一个默认值，然后根据系统的硬件配置启发式地为参数推导一个“合适”的值。例如，JVM运行在32位系统之上，MaxHeapSize的默认值是96MB；JVM运行在64位系统之上，MaxHeapSize的默认值是124.8MB。然后JVM进一步启发式地推导：&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;154&quot;&gt;&lt;span&gt;在小内存系统中使用50%的物理内存作为MaxHeapSize的上限（小内存指的是默认值大于50%的物理内存），否则使用25%的物理内存作为MaxHeapSize的上限，然后再通过其他参数加以调整（具体公式会在第9章详细介绍）。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;141&quot;&gt;&lt;span&gt;JVM的设计者推荐Out-Of-Box（开箱即用）的使用方式，即JVM使用者无须进行任何参数配置即可较好地使用JVM。但是在实际工作中，对于堆空间这样重要的参数，使用者还是需要明确地设置，如明确设置MaxHeapSize等相关参数，既能确保资源没有浪费，又能保证资源充分利用。&lt;/span&gt;&lt;/p&gt;&lt;h1 data-track=&quot;4&quot;&gt;&lt;span&gt;◆ &lt;/span&gt;分代边界&lt;/h1&gt;&lt;p data-track=&quot;146&quot;&gt;&lt;span&gt;在固定边界的分代内存管理中，边界该如何确定？因为整个堆空间划分为新生代和老生代两个代，所以只要确定其中一个代的大小，另外一个代的大小也就确定下来，边界也就确定了。JVM通过确定新生代的大小来确定边界，假定新生代的大小记为MaxNewSize。从整体的堆空间中确定新生代空间大小常用的方法有以下两种：&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;151&quot;&gt;&lt;span&gt;1）绝对值划分：设置一个新生代的大小。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;152&quot;&gt;&lt;span&gt;2）比例划分：设置一个比例，假定记为NewRatio，假定堆大小记为HeapSize，在JVM中新生代大小可以通过公式&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.14947683109118087&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/RQueXibgo0KNBubb61Y1jPCgl8iaQ1vqjiaZ6bqxmatkpY97oh8YDyrVPibk6Dusux5YiaXNfAIrZfGZRU8R7Qicj73w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;669&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p data-track=&quot;155&quot;&gt;&lt;span&gt;计算得到。&lt;/span&gt;&lt;span&gt;该参数的含义是：新生代和老生代的比例为1∶NewRatio&lt;/span&gt;&lt;span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;156&quot;&gt;&lt;span&gt;JVM同时支持两种设置方式，这意味着使用者既可以通过设置新生代大小（绝对值方式）确定边界，也可以通过设置新生代占用整个堆空间的比例来确定边界。由于JVM同时支持两种方式，而两种方式修改的是同一个参数，如果两种方式同时使用，则会造成参数设置冲突。而在实际工作中，笔者也遇到过一些用户对于参数不了解或者错误使用的情况，同时设置这两种参数，从而造成了参数冲突。在JVM实现中，为了防止误用，需要解决这样的冲突。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;162&quot;&gt;&lt;span&gt;通常解决这类冲突的方法是对这两种参数的设置方式使用不同的优先级，当设置高优先级参数时，低优先级参数失效。在JVM中，绝对值参数设置方式优先级更高，即假设使用者同时设置了参数MaxNewSize和NewRatio，只有MaxNewSize有效，NewRatio无效。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;166&quot;&gt;&lt;span&gt;笔者在实际工作中遇到过许多JVM使用者不知道或者忘记设置新生代大小的情况，新生代大小的设置实际上对应用的性能有较大的影响（新生代用于应用程序对象的分配，所以新生代的大小会直接影响应用的效率。参考2.3节垃圾回收的基础知识）。JVM中关于新生代大小参数设置的效果如表3-1所示。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.25075711689884916&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/RQueXibgo0KNBubb61Y1jPCgl8iaQ1vqjiaiakPTmO9eP1qjLicT4qsbyReOO8hdLwSmbglaA1MtDiarKAicgzY9VRXlA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1651&quot;/&gt;&lt;/p&gt;&lt;p&gt;表3-1 新生代大小参数设置效果&lt;/p&gt;&lt;p data-track=&quot;171&quot;&gt;&lt;span&gt;在讨论分代边界的时候，我们假定堆空间大小固定为HeapSize，并根据上面的方法计算新生代和老生代的大小，进而确定边界。但是在上一节的讨论中，使用的堆空间并不固定，存在最大堆空间和最小堆空间。那么边界是与最大堆空间相关，一直保持不变，还是与实际使用的堆空间相关，随着使用堆空间的大小变化而变化呢？其实这个问题并没有一个绝对的设计原则。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;176&quot;&gt;&lt;span&gt;串行回收使用固定的边界，其好处如下：&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;49&quot;&gt;&lt;span&gt;1）新生代扩展处理简单。假设边界随着堆空间的实际使用量的变化而变化，在新生代需要扩展的时候该如何处理？根据图3-1所示的内存对象布局，为了保持新生代和老生代管理内存的连续性，只能把老生代管理的内存向后移动，移动出的空闲部分归新生代扩展使用。移动内存是非常耗时的操作，而使用固定边界可以避免内存移动，从而获得更高性能。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;181&quot;&gt;&lt;span&gt;2）代际信息管理简单。通常为了高效地进行垃圾回收，可以使用引用集管理代际之间的引用，例如使用卡表。当边界固定时，卡表相关的写屏障处理简单，通过比较对象地址和边界的关系，非常容易判断对象是位于新生代中还是老生代中，从而减少写屏障的额外消耗。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;185&quot;&gt;&lt;span&gt;固定新生代大小最大的缺点是内存管理的灵活性差，应用在启动时就需要确定新生代大小，这通常并不容易。当然垃圾回收算法可以增强，将固定边界优化为浮动边界。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;189&quot;&gt;&lt;span&gt;结合堆空间大小动态变化和边界固定的特点，将图3-1和图3-2组合后，&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;190&quot;&gt;&lt;span&gt;应用堆空间的内存布局如图3-3所示。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.31101094655505473&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/RQueXibgo0KNBubb61Y1jPCgl8iaQ1vqjiaWNH3K46sAkpmCiaWVibqpYBaEfv6zibDFt7Y8OnmIsBc6TgwujYT1EPAQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1553&quot;/&gt;&lt;/p&gt;&lt;p&gt;图3-3 增加分代后的堆空间设计&lt;/p&gt;&lt;h1 data-track=&quot;4&quot;&gt;&lt;span&gt;◆ &lt;/span&gt;回收设计思路&lt;/h1&gt;&lt;p data-track=&quot;192&quot;&gt;&lt;span&gt;在上文中提到，分代后针对不同的内存空间使用不同的垃圾回收算法。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;193&quot;&gt;&lt;span&gt;这需要进一步考虑两个代使用的场景，以及何时可以启动垃圾回收。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;194&quot;&gt;&lt;span&gt;1）新生代的内存主要用于响应应用程序内存的分配请求，所以新生代的回收时机是在无法响应应用的内存分配请求时。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;196&quot;&gt;&lt;span&gt;2）老生代的内存主要用于新生代垃圾回收以后对象的晋升，老生代GC对象晋升导致空间不足，所以老生代回收的时机一般是无法响应新生代回收中对象的晋升请求时。另外，在一些特殊情况下（如超大对象的分配），Mutator也可以直接在老生代中直接分配对象。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;200&quot;&gt;&lt;span&gt;从两个内存代的使用场景来说，希望针对新生代的垃圾回收（称为MinorGC）触发更为频繁，针对老生代的垃圾回收（Major GC）触发次数少一些。&lt;/span&gt;&lt;/p&gt;&lt;p data-track=&quot;202&quot;&gt;&lt;span&gt;通常两种GC工作方式如图3-4所示。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.28035043804755944&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/RQueXibgo0KNBubb61Y1jPCgl8iaQ1vqjialmFB61D2GkT6yvATYVFMguLu2wvvm3bDW9vu1yb3SrkmD6d6dWxnEA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;799&quot;/&gt;&lt;/p&gt;&lt;p&gt;图3-4 Minor GC和Major GC理论触发模型&lt;/p&gt;&lt;p data-track=&quot;203&quot;&gt;&lt;span&gt;在JVM中通常使用Major GC指代老生代的回收，用Full GC指代整个堆空间的回收。上面提到串行回收上并不存在Major GC，当老生代无法响应MinorGC对象晋升时直接触发Full GC。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;来源&lt;/span&gt;&lt;span&gt;：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span/&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;https://www.toutiao.com/article/7175781049492931110/?log_from=567d419a87628_1671152862870&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;p&gt;&lt;span&gt;“IT大咖说”欢迎广大技术人员投稿，投稿邮箱：aliang@itdks.com&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-role=&quot;outer&quot; label=&quot;Powered by 135editor.com&quot;&gt;&lt;section data-role=&quot;outer&quot; label=&quot;Powered by 135editor.com&quot;&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;94329&quot;&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;img class=&quot;__bg_gif rich_pages wxw-img&quot; data-fileid=&quot;100032172&quot; data-ratio=&quot;0.3208955223880597&quot; data-type=&quot;gif&quot; data-w=&quot;134&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/RQueXibgo0KNrzPFsmantZnUrxKJEnD7KM7UXUc0VMDKiaguau3uRf6zm5msPR7GJgQKViaUBU1fIXu2qj5IdOa8A/640?wx_fmt=gif&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&quot;/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;来都来了，走啥走，留个言呗~&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt; IT大咖说  | &lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;&lt;strong&gt; 关于版权&lt;/strong&gt;&lt;strong&gt; &lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;由“IT大咖说（ID：itdakashuo）”原创的文章，转载时请注明作者、出处及微信公众号。&lt;/span&gt;&lt;/strong&gt;&lt;strong&gt;&lt;span&gt;投稿、约稿、转载请加微信：ITDKS10（备注：投稿），茉莉小姐姐会及时与您联系！&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;感谢您对IT大咖说的热心支持！&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-source=&quot;bj.96weixin.com&quot;&gt;&lt;blockquote&gt;&lt;section&gt;&lt;section/&gt;&lt;/section&gt;&lt;/blockquote&gt;&lt;/section&gt;&lt;p&gt;&lt;mp-style-type data-value=&quot;3&quot;/&gt;&lt;/p&gt;&lt;/div&gt;
+<guid>9f79bc780e22524d5af8f1b0ae03c23c</guid>
+<title>如何用 Java 实现一致性 hash 算法 (consistent hashing)（上）</title>
+<link>https://toutiao.io/k/zcezqpo</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div id=&quot;article_content&quot; class=&quot;article_content clearfix&quot;&gt;
+        
+        
+                &lt;div id=&quot;content_views&quot; class=&quot;markdown_views prism-tomorrow-night&quot;&gt;
+                    &lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot;&gt;
+                        &lt;path stroke-linecap=&quot;round&quot; d=&quot;M5,0 0,2.5 5,5z&quot; id=&quot;raphael-marker-block&quot;/&gt;
+                    &lt;/svg&gt;
+                    &lt;h3&gt;&lt;a id=&quot;hash_0&quot;/&gt;一致性hash的历史&lt;/h3&gt; 
+&lt;p&gt;【Consistent Hashing算法】早在 1997 年就在论文 Consistent hashing and random trees 中被提出，目前在 cache 系统中应用越来越广泛；&lt;/p&gt; 
+&lt;h3&gt;&lt;a id=&quot;hash_4&quot;/&gt;一致性hash的目的&lt;/h3&gt; 
+&lt;p&gt;一致性哈希算法是分布式系统中常用的算法，一致性哈希算法解决了普通余数Hash算法伸缩性差的问题，可以保证在上线、下线服务器的情况下尽量有多的请求命中原来路由到的服务器。&lt;/p&gt; 
+&lt;h3&gt;&lt;a id=&quot;_8&quot;/&gt;问题背景&lt;/h3&gt; 
+&lt;p&gt;业务开发中，我们常把数据持久化到数据库中，如果需要读取这些数据，除了直接从数据库中读取外，为了减轻数据库的访问压力以及提高访问速度，更多地引入缓存来对数据进行存取。&lt;/p&gt; 
+&lt;h3&gt;&lt;a id=&quot;_12&quot;/&gt;分布式缓存&lt;/h3&gt; 
+&lt;p&gt;分布式缓存，不同机器上存储不同对象的数据。为了实现这些缓存机器的负载均衡，一般就会存在两种Hash算法进行均匀分配数据节点存储：普通Hash算法&lt;/p&gt; 
+&lt;h3&gt;&lt;a id=&quot;Hash_16&quot;/&gt;普通的Hash算法的&lt;/h3&gt; 
+&lt;h4&gt;&lt;a id=&quot;Hash_18&quot;/&gt;Hash取模做法的缺陷&lt;/h4&gt; 
+&lt;p&gt;一个Redis集群中，如果我们把一条数据经过Hash，然后再根据集群节点数取模得出应该放在哪个节点，这种做法的缺陷在于：扩容(增加一个节点)之后，有大量缓存失效。&lt;/p&gt; 
+&lt;h4&gt;&lt;a id=&quot;Hash_22&quot;/&gt;普通Hash的案例分析&lt;/h4&gt; 
+&lt;p&gt;比如你有 N 个 cache 服务器（后面简称 cache ），那么如何将一个对象 object 映射到 N 个 cache 上呢，你很可能会采用类似下面的通用方法计算 object 的 hash 值，然后均匀的映射到到 N 个 cache ；&lt;/p&gt; 
+&lt;pre&gt;&lt;code&gt;hash(object)%N 
+&lt;/code&gt;&lt;/pre&gt; 
+&lt;p&gt;一切都运行正常，再考虑如下的两种情况；&lt;/p&gt; 
+&lt;ul&gt;&lt;li&gt; &lt;p&gt;一个 cache 服务器 m down 掉了（在实际应用中必须要考虑这种情况），这样所有映射到 cache m 的对象都会失效，怎么办，需要把 cache m 从 cache 中移除，这时候 cache 是 N-1 台，映射公式变成了 hash(object)%(N-1) ；&lt;/p&gt; &lt;/li&gt;&lt;li&gt; &lt;p&gt;由于访问加重，需要添加 cache ，这时候 cache 是 N+1 台，映射公式变成了 hash(object)%(N+1) ；&lt;/p&gt; &lt;/li&gt;&lt;li&gt; &lt;p&gt;这意味着突然之间几乎所有的 cache 都失效了。对于服务器而言，这是一场灾难，洪水般的访问都会直接冲向后台服务器；（造成缓存雪崩机制）&lt;/p&gt; &lt;/li&gt;&lt;/ul&gt; 
+&lt;p&gt;&lt;img src=&quot;https://img-blog.csdnimg.cn/img_convert/630daeb47f55c834998ff223edd3b962.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt; 
+&lt;h3&gt;&lt;a id=&quot;Hash_40&quot;/&gt;一致性Hash算法&lt;/h3&gt; 
+&lt;blockquote&gt; 
+ &lt;p&gt;&lt;strong&gt;一致性hash算法正是为了解决此类问题的方法，它可以保证当机器增加或者减少时，对缓存访问命中的概率影响减至很小。下面我们来详细说一下一致性hash算法的具体过程。&lt;/strong&gt;&lt;/p&gt; 
+&lt;/blockquote&gt; 
+&lt;ul&gt;&lt;li&gt; &lt;p&gt;一致性hash算法通过一个叫作一致性hash环的数据结构实现。这个环的起点是0，终点是2^32 - 1，并且起点与终点连接，环的中间的整数按逆时针分布，故这个环的整数分布范围是[0, 2^32-1]&lt;/p&gt; &lt;/li&gt;&lt;li&gt; &lt;p&gt;整个哈希值空间组织成一个虚拟的圆环，将节点的IP地址或主机名作为关键字进行哈希计算，得出的结果作为节点在环上的位置。数据经过hash后按顺时针方向找到最近一个节点存放，如图data的hash位置，应该存放在node2。&lt;/p&gt; &lt;/li&gt;&lt;/ul&gt; 
+&lt;p&gt;&lt;img src=&quot;https://img-blog.csdnimg.cn/img_convert/5c52e347ec775107e3ff9a8a3f4b05c3.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt; 
+ 
+&lt;h3&gt;&lt;a id=&quot;Hash_54&quot;/&gt;改良版一致性Hash算法&lt;/h3&gt; 
+&lt;h4&gt;&lt;a id=&quot;Hash___56&quot;/&gt;一致性Hash算法 + 虚拟节点&lt;/h4&gt; 
+&lt;p&gt;为了解决数据分布不均的问题，我们引入虚拟节点的概念。我们对每一个服务节点计算多个哈希，每个计算结果位置都放置一个此服务节点，称为虚拟节点。定位到虚拟节点的数据就存到该虚拟节点对应的真实节点上，这样数据分布就相对均匀了，虚拟节点数越多，分布越均匀。&lt;/p&gt; 
+&lt;p&gt;引入“虚拟节点”后，映射关系就从 { 对象 -&amp;gt; 节点 } 转换到了 { 对象 -&amp;gt; 虚拟节点 } 。查询物体所在 cache 时的映射关系&lt;/p&gt; 
+&lt;p&gt;&lt;img src=&quot;https://img-blog.csdnimg.cn/img_convert/e8220e34bd5e99215199ec5828271951.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt; 
+&lt;blockquote&gt; 
+ &lt;p&gt;&lt;strong&gt;一般虚拟节点数32个以上，dubbo是160个。&lt;/strong&gt;&lt;/p&gt; 
+&lt;/blockquote&gt; 
+&lt;p&gt;&lt;img src=&quot;https://img-blog.csdnimg.cn/img_convert/7dec7ba4b09e633d77c6684220b032e4.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt; 
+&lt;h4&gt;&lt;a id=&quot;_68&quot;/&gt;处理机器增减的情况&lt;/h4&gt; 
+&lt;p&gt;对于线上的业务，增加或者减少一台机器的部署是常有的事情。&lt;/p&gt; 
+&lt;p&gt;例如，增加机器c4的部署并将机器c4加入到hash环的机器c3与c2之间。这时，只有机器c3与c4之间的对象需要重新分配新的机器。对于我们的例子，只有对象o4被重新分配到了c4，其他对象仍在原有机器上。&lt;/p&gt; 
+&lt;h3&gt;&lt;a id=&quot;Hash_75&quot;/&gt;一致性Hash算法的实现原理&lt;/h3&gt; 
+&lt;p&gt;在业务开发中，我们常把数据持久化到数据库中。如果需要读取这些数据，除了直接从数据库中读取外，为了减轻数据库的访问压力以及提高访问速度，我们更多地引入缓存来对数据进行存取。读取数据的过程一般为：&lt;/p&gt; 
+&lt;h3&gt;&lt;a id=&quot;JavaHash_79&quot;/&gt;Java代码实现Hash算法的实现&lt;/h3&gt; 
+&lt;p&gt;用一个TreeMap来作为环，key为虚拟节点下标，value为真实节点的hash。个人感觉可以加一个Map&amp;lt;T, Set&amp;gt;来维护真实节点-虚拟节点的关系。&lt;/p&gt; 
+&lt;pre&gt;&lt;code class=&quot;prism language-java&quot;&gt;
+&lt;span class=&quot;token keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;ConsistentHash&lt;/span&gt;&lt;span class=&quot;token generics&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;token class-name&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;gt;&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;implements&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;Serializable&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;token keyword&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;long&lt;/span&gt; serialVersionUID &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;1L&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+    
+    
+    &lt;span class=&quot;token class-name&quot;&gt;Hash32&lt;/span&gt;&lt;span class=&quot;token generics&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;token class-name&quot;&gt;Object&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;gt;&lt;/span&gt;&lt;/span&gt; hashFunc&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+    
+    &lt;span class=&quot;token keyword&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;int&lt;/span&gt; numberOfReplicas&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+    
+    &lt;span class=&quot;token keyword&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;SortedMap&lt;/span&gt;&lt;span class=&quot;token generics&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;token class-name&quot;&gt;Integer&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;gt;&lt;/span&gt;&lt;/span&gt; circle &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;TreeMap&lt;/span&gt;&lt;span class=&quot;token generics&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+    
+    
+    &lt;span class=&quot;token keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;ConsistentHash&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;int&lt;/span&gt; numberOfReplicas&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;Collection&lt;/span&gt;&lt;span class=&quot;token generics&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;token class-name&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;gt;&lt;/span&gt;&lt;/span&gt; nodes&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;token keyword&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;numberOfReplicas &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; numberOfReplicas&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;token keyword&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;hashFunc &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; key &lt;span class=&quot;token operator&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+            
+            &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;HashUtil&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;fnvHash&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;key&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;toString&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+        
+        &lt;span class=&quot;token keyword&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token class-name&quot;&gt;T&lt;/span&gt; node &lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; nodes&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;token function&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;node&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
 
-          
+    
+    &lt;span class=&quot;token keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;ConsistentHash&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token class-name&quot;&gt;Hash32&lt;/span&gt;&lt;span class=&quot;token generics&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;token class-name&quot;&gt;Object&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;gt;&lt;/span&gt;&lt;/span&gt; hashFunc&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;int&lt;/span&gt; numberOfReplicas&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;Collection&lt;/span&gt;&lt;span class=&quot;token generics&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;token class-name&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;gt;&lt;/span&gt;&lt;/span&gt; nodes&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;token keyword&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;numberOfReplicas &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; numberOfReplicas&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;token keyword&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;hashFunc &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; hashFunc&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+        
+        &lt;span class=&quot;token keyword&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token class-name&quot;&gt;T&lt;/span&gt; node &lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; nodes&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;token function&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;node&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+
+    
+    &lt;span class=&quot;token keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token class-name&quot;&gt;T&lt;/span&gt; node&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;token keyword&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;int&lt;/span&gt; i &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt; i &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt; numberOfReplicas&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt; i&lt;span class=&quot;token operator&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+            circle&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;put&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;hashFunc&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;hash32&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;node&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;toString&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;+&lt;/span&gt; i&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; node&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+
+    
+    &lt;span class=&quot;token keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;remove&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token class-name&quot;&gt;T&lt;/span&gt; node&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;token keyword&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;int&lt;/span&gt; i &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt; i &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt; numberOfReplicas&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt; i&lt;span class=&quot;token operator&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+            circle&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;remove&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;hashFunc&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;hash32&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;node&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;toString&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;+&lt;/span&gt; i&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+
+    
+    &lt;span class=&quot;token keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;T&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token class-name&quot;&gt;Object&lt;/span&gt; key&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;token keyword&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;circle&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;isEmpty&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;token keyword&quot;&gt;int&lt;/span&gt; hash &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; hashFunc&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;hash32&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;key&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;token keyword&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token boolean&quot;&gt;false&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;==&lt;/span&gt; circle&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;containsKey&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;hash&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;token class-name&quot;&gt;SortedMap&lt;/span&gt;&lt;span class=&quot;token generics&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;token class-name&quot;&gt;Integer&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&amp;gt;&lt;/span&gt;&lt;/span&gt; tailMap &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; circle&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;tailMap&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;hash&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;   
+            hash &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; tailMap&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;isEmpty&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;?&lt;/span&gt; circle&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;firstKey&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; tailMap&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;firstKey&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+        
+        &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; circle&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;hash&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+                &lt;/div&gt;
+                
+                
+        &lt;/div&gt;
         &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>567198f84adbf1df4212aab63e1bbcb1</guid>
-<title>PHP 的 Docker 容器感染 kdevtmpfsi 挖矿病毒</title>
-<link>https://toutiao.io/k/64iy18c</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div itemprop=&quot;articleBody&quot; class=&quot;post-content&quot;&gt; &lt;span id=&quot;bnp_i_1&quot;/&gt;&lt;h2&gt;感染kdevtmpfsi挖矿病毒&lt;/h2&gt;&lt;p&gt;昨天闲着无事，登陆服务器，发现一个名为 &lt;code&gt;kdevtmpfsi&lt;/code&gt; 的进程占据了全部的CPU资源。第一眼还以为是调度类系统进程，过了一会还占据这么高资源，于是猜到应该是挖矿病毒。&lt;/p&gt;&lt;p&gt;Google了一下，确实是挖矿病毒，被感染的不在少数。其有名为 &lt;code&gt;kinsing&lt;/code&gt; 的守护进程，当 &lt;code&gt;kdevtmpfsi&lt;/code&gt; 被杀掉后，会自动唤起。再细查，由于本站运行在&lt;a href=&quot;/tag/docker&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Docker&lt;/a&gt;容器内，该病毒的进程也都是在容器内，宿主机内没发现被感染。&lt;/p&gt; &lt;span id=&quot;bnp_i_2&quot;/&gt;&lt;h2&gt;PHP的Docker容器被挖矿原因&lt;/h2&gt;&lt;p&gt;清除病毒容易，但要搞清楚怎么被感染的，否则很容易又被黑。网上不少文章都说是由于 &lt;a href=&quot;/tag/redis&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;redis&lt;/a&gt; 端口暴露在外网且没有权限认证导致。本人的情况应该不是redis导致，因为以下两点：&lt;/p&gt;&lt;p&gt;1. 容器内确实有redis实例，但并不对外开放端口；&lt;/p&gt;&lt;p&gt;2. 如果是redis实例导致的，病毒程序的运行用户应该是redis而非运行PHP-FPM的www-data！&lt;/p&gt;&lt;p&gt;为了证明和redis无关，重新使用了没有redis的镜像。运行一段时间后，还是被感染了，说明和redis无关。&lt;/p&gt;&lt;p&gt;那到底是什么原因呢？应该不是Nginx，其只提供静态请求及转发；和&lt;a href=&quot;/category/php&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;PHP&lt;/a&gt;的版本也无关，不管PHP 7还是PHP 8，运行一段时间后都会被感染；和php/fpm设置也无关，之前没有用Docker部署前，一直都很正常…&lt;/p&gt;&lt;p&gt;就在快要放弃的时候，忽然看到网上说Docker的&lt;code&gt;-p&lt;/code&gt;端口映射会绕过ufw直接对外开放。马上测试一下，发现果然可以从外部机器&lt;code&gt;telnet&lt;/code&gt;到FPM监听的9000端口。觉得天雷滚滚的同时，又感到有点欣慰：终于找到被感染的原因了！&lt;/p&gt; &lt;span id=&quot;bnp_i_3&quot;/&gt;&lt;h2&gt;不可暴露于外望的FastCGI协议&lt;/h2&gt;&lt;p&gt;开始聊具体原因和复现之前，先说一下本人的防火墙设置。&lt;code&gt;ufw&lt;/code&gt; 命令输出如下：&lt;/p&gt;&lt;pre&gt;root@dmit:~# ufw status
-Status: active
-
-To                         Action      From
---                         ------      ----
-80/tcp                     ALLOW       Anywhere
-443                        ALLOW       Anywhere
-xxx/tcp cc                 ALLOW       Anywhere
-Anywhere                   ALLOW       172.17.0.0/24
-80/tcp (v6)                ALLOW       Anywhere (v6)
-443 (v6)                   ALLOW       Anywhere (v6)
-xxx/tcp (v6)cc             ALLOW       Anywhere (v6)&lt;/pre&gt;&lt;p&gt;可以看到，除了SSH、HTTP(s)及Docker容器，理论上屏蔽了所有外部的主动连接。&lt;/p&gt;&lt;p&gt;网站通过自制的FPM镜像部署，启动时将FPM监听的9000端口暴露出来：&lt;/p&gt;&lt;pre&gt;docker run -d -p 9000:9000 xxxxx fpm&lt;/pre&gt;&lt;p&gt;没发生这个病毒感染前，我一直以为如上配置的防火墙能够屏蔽外网对9000端口的访问。实际上是我错了！Docker上述方式暴露的端口会绕过ufw直接暴露出去，且不会出现在 &lt;code&gt;ufw&lt;/code&gt; 命令输出中！要验证也很简单，直接从外网 &lt;code&gt;telnet&lt;/code&gt; 一下，想深究的可以通过 &lt;code&gt;iptables&lt;/code&gt; 命令看到9000端口确实接受任何外部连接！&lt;/p&gt;&lt;p&gt;但是PHP-FPM的FastCGI协议应该仅在内网使用，暴露在外网是致命的！例如多年前的这篇文章 &lt;a href=&quot;https://www.leavesongs.com/PENETRATION/fastcgi-and-php-fpm.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Fastcgi协议分析 &amp;amp;&amp;amp; PHP-FPM未授权访问漏洞 &amp;amp;&amp;amp; Exp编写&lt;/a&gt; 就分析了FastCGI的问题，根据里面的方法，能很轻松的getshell并实现RCE！&lt;/p&gt;&lt;p&gt;接下来使用实例说明就是暴露的9000端口导致被挖矿病毒感染。首先创建一个开放9000端口的FPM容器：&lt;/p&gt;&lt;pre&gt;docker run -d --rm -p 9000:9000 bitnami/php-fpm:7.4.33&lt;/pre&gt;&lt;p&gt;下载证明FastCGI漏洞的POC脚本：&lt;/p&gt;&lt;pre&gt;wget https://gist.githubusercontent.com/phith0n/9615e2420f31048f7e30f3937356cf75/raw/ffd7aa5b3a75ea903a0bb9cc106688da738722c5/fpm.py&lt;/pre&gt;&lt;p&gt;运行脚本执行任意代码：&lt;/p&gt;&lt;pre&gt;python3 fpm.py -p 9000 127.0.0.1 /opt/bitnami/php/lib/php/PEAR.php \
--c &#x27;&amp;lt;?php echo `ls -l`; exit; ?&amp;gt;&#x27;&lt;/pre&gt;&lt;p&gt;输出如下：&lt;/p&gt;&lt;pre&gt;X-Powered-By: PHP/7.4.33
-Content-type: text/html; charset=UTF-8
-
-total 120
-drwxr-xr-x  2 root root  4096 Nov 23 20:31 Archive
-drwxr-xr-x  2 root root  4096 Nov 23 20:31 Console
-drwxr-xr-x  2 root root  4096 Nov 23 20:31 OS
-drwxr-xr-x 11 root root  4096 Nov 23 20:31 PEAR
--rw-r--r--  1 root root 36171 Nov 23 19:46 PEAR.php
-drwxr-xr-x  3 root root  4096 Nov 23 20:31 Structures
--rw-r--r--  1 root root 20694 Nov 23 19:46 System.php
-drwxr-xr-x  2 root root  4096 Nov 23 20:31 XML
-drwxr-xr-x  2 root root  4096 Nov 23 20:31 build
-drwxr-xr-x  3 root root  4096 Nov 23 20:31 data
-drwxr-xr-x  2 root root  4096 Nov 23 20:31 extensions
--rw-r--r--  1 root root 14845 Nov 23 19:46 pearcmd.php
--rw-r--r--  1 root root  1113 Nov 23 19:46 peclcmd.php
-drwxr-xr-x  5 root root  4096 Nov 23 20:31 test&lt;/pre&gt;&lt;p&gt;可以看到，我们顺利的执行了任意代码！&lt;/p&gt;&lt;p&gt;此外有两个值得说明的地方：&lt;/p&gt;&lt;p&gt;1. 执行攻击时并不需要和FPM容器在同一台机器上，只要能访问到暴露出来的FastCGI端口即可。对于上面的例子，从外网攻击也是同样的效果；&lt;/p&gt;&lt;p&gt;2. 触发的文件可以是任意有效的PHP文件（登录容器后执行find / -name *.php可查看容器自带的PHP文件）；甚至还可以不是PHP文件，例如将文件从 &lt;code&gt;/opt/bitnami/php/lib/php/PEAR.php&lt;/code&gt; 换成 &lt;code&gt;/opt/bitnami/php/bin/phar.phar&lt;/code&gt;，代码同样被运行。&lt;/p&gt;&lt;p&gt;从这个实验可以看到服务器被病毒挖矿的两个根本原因：&lt;/p&gt;&lt;p&gt;1. 运行Docker容器时，对外暴露了FastCGI端口；&lt;/p&gt;&lt;p&gt;2. Docker暴露的端口绕过了ufw的限制，导致可以从外部任意访问，进而被下载挖矿病毒。&lt;/p&gt; &lt;span id=&quot;bnp_i_4&quot;/&gt;&lt;h2&gt;解决办法&lt;/h2&gt;&lt;p&gt;找到了问题原因，接下来就比较简单了。防止再次出现的方法主要有三种：&lt;/p&gt;&lt;p&gt;1. 暴露端口时仅监听本机：&lt;code&gt;-p 127.0.0.1:9000:9000&lt;/code&gt;；&lt;/p&gt;&lt;p&gt;2. 使用unix socket文件通信，不使用端口；&lt;/p&gt;&lt;p&gt;3. 使用docker网络而不是暴露端口。&lt;/p&gt;&lt;p&gt;当然可可以让Docker不自动修改iptables等手段，但是上面三种已经足够用了。本文通过socket文件的方式重新构建了镜像并运行网站，到目前为止未发现再次被感染。&lt;/p&gt; &lt;span id=&quot;bnp_i_5&quot;/&gt;&lt;h2&gt;总结&lt;/h2&gt;&lt;p&gt;在网上搜“php docker kdevtmpfsi”，能找到许多被挖矿病毒感染的例子。其根本原因和redis无关，而是启动Docker容器时将FastCGI的通信端口直接暴露在了外网。PHP-FPM的FastCGI通信协议应当只在内网使用，暴露在外网将面临非常严重的安全风险，因此使用PHP-FPM的Docker镜像时要十分慎重。&lt;/p&gt; &lt;span id=&quot;bnp_i_6&quot;/&gt;&lt;h2&gt;参考&lt;/h2&gt;&lt;ol&gt;&lt;li class=&quot;h2 mb-3&quot;&gt;&lt;a class=&quot;text-body&quot; href=&quot;https://segmentfault.com/a/1190000042305570&quot;&gt;清除Linux服务器Docker中的kdevtmpfsi挖矿病毒&lt;/a&gt;&lt;/li&gt;&lt;li&gt;&lt;a href=&quot;https://www.leavesongs.com/PENETRATION/fastcgi-and-php-fpm.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Fastcgi协议分析 &amp;amp;&amp;amp; PHP-FPM未授权访问漏洞 &amp;amp;&amp;amp; Exp编写&lt;/a&gt;&lt;/li&gt;&lt;li&gt;&lt;a href=&quot;https://www.reddit.com/r/docker/comments/k2lwvd/protect_your_docker_containers_from_kinsing/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Protect your Docker containers from Kinsing – Kdevtmpfsi crypto mining malware&lt;/a&gt;&lt;/li&gt;&lt;li&gt;&lt;a href=&quot;https://www.blackhatworld.com/seo/problem-with-malware-on-vps-docker-php.1282016/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Problem with Malware on VPS (Docker/PHP)&lt;/a&gt;&lt;/li&gt;&lt;li&gt;&lt;a class=&quot;question-hyperlink&quot; href=&quot;https://askubuntu.com/questions/652556/uncomplicated-firewall-ufw-is-not-blocking-anything-when-using-docker&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Uncomplicated Firewall (UFW) is not blocking anything when using Docker&lt;/a&gt;&lt;/li&gt;&lt;li&gt;&lt;a href=&quot;https://itlanyan.com/server-being-hacked-log/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;记一次服务器被入侵挖矿&lt;/a&gt;&lt;/li&gt;&lt;li&gt;&lt;a href=&quot;https://itlanyan.com/do-hide-site-real-ip/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;做一个永不暴露真实IP的网站&lt;/a&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt; &lt;/p&gt;&lt;p&gt; &lt;/p&gt;&lt;p class=&quot;clear&quot;/&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>fa78302f321d2e8611a0ab96f708d0af</guid>
+<title>软件架构的 23 个基本原则</title>
+<link>https://toutiao.io/k/9c0uz2q</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;hr data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;软件体系架构基于一组适用于各种软件系统的基本原则，有经验的架构师知道这些原则，并且能够在软件产品的正确位置实现特定的原则。下面我们快速浏览一下架构师日常遵循的基本原则。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;1. 依赖倒置（Dependency Inversion）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这一原则表明依赖的方向应该是抽象的，而不是具体实现。如果编译时依赖在运行时执行的方向上流动，就形成了直接依赖。通过依赖倒置，可以反转依赖控制的方向。下面的文章更深入的讨论了这一原则：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;https://medium.com/p/de6abf20e423&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;2. 关注点分离（Separation of Concerns）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这一原则指出，软件系统应该按照所做的工作类型来划分。比方说可以按照业务逻辑、基础设施或用户界面划分为不同的部分。通过将系统划分为基于不同活动区域的不同部分，使得开发/测试/部署更加容易。SoC是软件架构模式（如领域驱动设计、六边形架构、整洁架构）背后的驱动力。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;3. 控制反转（Inversion of Control）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;该原则类似于依赖倒置原则，但适用于更广泛的背景。IoC反转了由不同的第三方框架（如Spring Framework）管理的控制流。与传统Java EE程序（由开发工程师按程序初始化Beans）不同，Spring控制Bean的配置，这意味着控制倒置。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;4. 依赖注入（Dependency Injection）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;该原则意味着依赖应该在运行时通过构造函数注入。在下面的例子中，Action Interface通过HumanAction Implementation注入到Human类中，从而决定在运行时实现哪个特定的动作。这种技术提供了控制依赖的灵活性：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;package&lt;/span&gt; az.alizeynalli.di;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;interface&lt;/span&gt; &lt;span&gt;Action&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;&lt;span&gt;void&lt;/span&gt; &lt;span&gt;do&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt;;&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;HumanAction&lt;/span&gt; &lt;span&gt;implements&lt;/span&gt; &lt;span&gt;Action&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt; &lt;br/&gt;    &lt;span&gt;@Override&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;do&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        System.out.print(&lt;span&gt;&quot;run&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;Human&lt;/span&gt;  &lt;/span&gt;{&lt;br/&gt;     &lt;br/&gt;    Action action;&lt;br/&gt;     &lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;Human&lt;/span&gt;&lt;span&gt;(Action action)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;this&lt;/span&gt;.action = action;&lt;br/&gt;    }&lt;br/&gt; &lt;br/&gt;    &lt;span&gt;@Override&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;do&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{        &lt;br/&gt;        actoin.&lt;span&gt;do&lt;/span&gt;();        &lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;(String[] args)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        Human human = &lt;span&gt;new&lt;/span&gt; Human(&lt;span&gt;new&lt;/span&gt; HumanAction);&lt;br/&gt;        human.&lt;span&gt;do&lt;/span&gt;();&lt;br/&gt;    }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;5. 单一职责（Single Responsibility）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;该原则的主要思想是限定软件系统的每个构建块只承担唯一的责任。无论构建块的作用域是什么，是插件、包、类、函数，甚至是变量，应该只有一个职责。这篇文章更深入的讨论了这一原则：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;https://medium.com/p/6b886f6d943e&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;6. DRY（Don’t Repeat Yourself）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;该原则旨在通过避免重复代码来消除冗余。如果存在针对某些行为的现有功能，则应该重复使用，而不是在多个实例中拷贝相同的代码片段。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;每个知识片段在系统中都必须有单一、明确、权威的表示。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;7. 开闭原则（Open-Closed）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;软件构件应该对扩展开放，对修改关闭。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这一原理的简单描述首先是由Bertrand Meyer提出的。每次都需要修改的软件系统只会变得一团糟，并且这种混乱的程序很容易在每次修改时出现错误。每个新功能都应该最大限度的增加新代码，最小限度减少旧代码的更改，理想情况下对旧代码的更改为零。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;8. 持久化透明（Persistence Ignorance）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;持久化透明的理念是，代码应该不受任何数据库或持久性技术的影响。业务逻辑应该与任何技术无关。如果明天，有更好、更有效、更便宜的持久化技术，应该能够以不影响上层抽象的方式改变系统的这一部分。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;9. YAGNI&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;You ain’t gonna need it. 这一原则试图避免软件系统的过早优化。开发人员通常会在系统中过度设计一些东西，以期在将来的某个时候会有帮助，但这一时刻往往不会到来。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;10. 童子军规则（Boy Scout Rule）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在离开的时候要让露营地比来的时候更干净。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这里的主要思想是，当开发时遇到反模式，要坚持重构代码。随着时间的推移，这会提高代码质量。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;11. 里氏替换原则（Liskov-Subsititution）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果对于每个类型为S的对象o1，都有一个类型为T的对象o2，这样对于用T定义的所有程序P，当o1取代o2时，P的行为不变，那么S就是T的子类型。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Barbara Liskov的这个定义可能听起来很混乱，但本质上这个原则简单易懂。如果重述上面的定义，该原则的意思是: 在使用继承时，继承的层次结构应该在功能和业务逻辑方面保持一致。子类应该是可以相互替换的，并且不能改变父类的行为。作为一个简单的例子，可以用“臭名昭著的正方形/矩形”问题。其中正方形不应该是矩形的子类型，因为这两个几何形状的高度和长度的定义是不同的（正方形的高度和长度是相等的，而矩形的高度和长度是不同的）。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;12. 封装（Encapsulation）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;软件系统的不同构建块应该通过封装来限制外界对其组件的访问，可以通过在类范围内设置组件为私有或在插件范围内设置访问限制来实现（就Java而言），从而隐藏信息。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;13. 松耦合（Loose Coupling）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;软件架构中最重要的原则之一是松耦合，这一原则表明软件系统的依赖关系应该松散，系统的一部分发生变化，对其他部分的影响应该最小。松耦合可以通过依赖倒置、异步消息中间件、事件源等实现。下面的文章深入探讨了软件工程中不同形式的耦合：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;https://medium.com/p/4d5cf2b3e99e&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;14. 内聚（Cohesion）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;内聚是指模块内的元素依赖的程度。某种意义上说，是对类的方法和数据以及该类所服务的某种统一目的或概念之间关系强度的度量。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;构建高内聚的类是一种最佳实践，有利于实现单一责任原则、松耦合等。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;15. 接口隔离（Interface Segregation）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;接口隔离原则指出，不应强迫客户端依赖不使用的方法。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;应该明确的是，这个原则主要适用于静态类型的编程语言，如Java、C等。在像Python或Ruby这样的动态类型语言中，这个原则没有太大意义。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;可以想象这样一种情况，我们的Income和Expense用例都依赖于支持这两种用例的业务逻辑功能。因此Income用例的很多依赖都和Expense用例相关，而Expense用例的依赖情况也有相同的问题。基于以上讨论，ISP违规情况如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;package&lt;/span&gt; az.alizeynalli.cashflow.core.service;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;interface&lt;/span&gt; &lt;span&gt;ConverterService&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;Income &lt;span&gt;convertIncome&lt;/span&gt;&lt;span&gt;(Income income)&lt;/span&gt;&lt;/span&gt;;&lt;br/&gt;    &lt;span&gt;Expense &lt;span&gt;convertExpense&lt;/span&gt;&lt;span&gt;(Expense expense)&lt;/span&gt;&lt;/span&gt;;&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;@Component&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;ExpenseConverterServiceImpl&lt;/span&gt; &lt;span&gt;implements&lt;/span&gt; &lt;span&gt;ConverterService&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Override&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; Income &lt;span&gt;convertIncome&lt;/span&gt;&lt;span&gt;(Income income)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;throw&lt;/span&gt; &lt;span&gt;new&lt;/span&gt; UnsupportedOperationException();&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Override&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; Expense &lt;span&gt;convertExpense&lt;/span&gt;&lt;span&gt;(Expense expense)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;// convert expense here&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; expense;&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;br/&gt;&lt;span&gt;@Component&lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;IncomeConverterServiceImpl&lt;/span&gt; &lt;span&gt;implements&lt;/span&gt; &lt;span&gt;ConverterService&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Override&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; Income &lt;span&gt;convertIncome&lt;/span&gt;&lt;span&gt;(Income income)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;// convert income here&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; income;&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;@Override&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; Expense &lt;span&gt;convertExpense&lt;/span&gt;&lt;span&gt;(Expense expense)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;br/&gt;        &lt;span&gt;throw&lt;/span&gt; &lt;span&gt;new&lt;/span&gt; UnsupportedOperationException();&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;16. 限界上下文（Bounded Context）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;限界上下文是领域驱动设计的中心模式。通过将大型应用程序或组织分解为单独的概念模块，提供了一种处理复杂性的方法。每个概念模块代表一个上下文，该上下文与其他上下文分离（因此是有边界的），并且可以独立发展。理想情况下，每个限界上下文应该可以自由的为其中的概念选择自己的名称，并且应该独占的访问自己的持久化存储。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;17. 依赖稳定原则（Stable Dependencies）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这一原则指出，软件系统的不同构建块应该只依赖于可靠、稳定的工件。这个原则在Docker镜像术语中更有意义，当我们从docker hub导入不同的依赖时，甚至不知道它们是否可靠/稳定。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;18. 多态（Polymorphism）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这实际上属于面向对象编程的4大支柱，鼓励使用可以以多种形式提供的接口，多态性意味着具有多种形式的实体。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;19. 模块化（Modularization）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;模块化是将软件系统划分为多个独立模块的过程，每个模块独立工作。这一原则是应用于软件系统静态架构的单一职责分离原则的另一种形式。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;20. 抽象（Abstraction）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这也属于面向对象编程的四大支柱:&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在研究物体或系统时去除物理的、空间的或时间的细节或属性以集中注意力于更重要的部分，本质上与泛化过程相似。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;21. KISS（Keep It Simple, Stupid）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;按照字面意思理解，这一原则激励工程师保持代码简单和愚蠢（容易理解），避免他人误解。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;22. 增量/迭代方法（Incremental/Iterative Approach）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这一原则是敏捷软件开发宣言的基础，基于软件系统应该以增量和迭代的方式开发的思想，每一次迭代都会增加系统功能并保证其运行。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;23. 最少知识原则（Least Knowledge）&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;或者叫信息嫉妒（information envying），是封装或信息隐藏原则的另一个术语，规定软件系统的不同部分应该只拥有需要的知识。&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
