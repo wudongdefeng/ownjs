@@ -225,10 +225,208 @@ kill -9 $my
         &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>098f9d631836299bc628f284659c7c59</guid>
-<title>处理RTC服务中的back-pressure</title>
-<link>https://toutiao.io/k/n2rrjyo</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;
-&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>5de22a189d04eba6140abe0076447928</guid>
+<title>gobackup数据备份</title>
+<link>https://toutiao.io/k/srsaupn</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;article class=&quot;markdown-body entry-content container-lg&quot; itemprop=&quot;text&quot;&gt;&lt;p align=&quot;center&quot; dir=&quot;auto&quot;&gt;
+&lt;a target=&quot;_blank&quot; rel=&quot;noopener noreferrer nofollow&quot; href=&quot;https://user-images.githubusercontent.com/5518/205909959-12b92929-4ac5-4bb5-9111-6f9a3ed76cf6.png&quot;&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/5518/205909959-12b92929-4ac5-4bb5-9111-6f9a3ed76cf6.png&quot;/&gt;&lt;/a&gt;
+&lt;/p&gt;&lt;h1 align=&quot;center&quot; dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-gobackup&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#gobackup&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;GoBackup&lt;/h1&gt;
+&lt;p align=&quot;center&quot; dir=&quot;auto&quot;&gt;CLI tool for backup your databases, files to FTP / SCP / S3 / GCS and other cloud storages.&lt;/p&gt;
+&lt;p align=&quot;center&quot; dir=&quot;auto&quot;&gt;
+   &lt;a href=&quot;https://github.com/gobackup/gobackup/actions?query=workflow%3AGo&quot;&gt;&lt;img src=&quot;https://github.com/gobackup/gobackup/workflows/Go/badge.svg&quot; alt=&quot;Build Status&quot;/&gt;&lt;/a&gt;
+   &lt;a href=&quot;https://github.com/gobackup/gobackup/releases&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/0602f8a473912d1542c5d240387dd9a2de692c199227767dccffabc533507cf8/68747470733a2f2f696d672e736869656c64732e696f2f6769746875622f762f72656c656173652f676f6261636b75702f676f6261636b75703f6c6162656c3d56657273696f6e26636f6c6f723d31&quot; alt=&quot;GitHub release (latest by date)&quot; data-canonical-src=&quot;https://img.shields.io/github/v/release/gobackup/gobackup?label=Version&amp;amp;color=1&quot;/&gt;&lt;/a&gt;
+   &lt;a href=&quot;https://hub.docker.com/r/huacnlee/gobackup&quot; rel=&quot;nofollow&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/8320392a5273185f3b42e21c8f8ccc8b7d6bf8330b1e0ae7dc682cccbf477eb1/68747470733a2f2f696d672e736869656c64732e696f2f646f636b65722f762f687561636e6c65652f676f6261636b75703f6c6162656c3d446f636b657226636f6c6f723d626c7565&quot; alt=&quot;Docker Image Version (latest server)&quot; data-canonical-src=&quot;https://img.shields.io/docker/v/huacnlee/gobackup?label=Docker&amp;amp;color=blue&quot;/&gt;&lt;/a&gt;
+   &lt;a href=&quot;https://formulae.brew.sh/formula/gobackup&quot; rel=&quot;nofollow&quot;&gt;&lt;img alt=&quot;homebrew version&quot; src=&quot;https://camo.githubusercontent.com/5b740206b66b98f900f7fdc1e2cf9f15bcba44ed2e75df33a47b83760d3aaa32/68747470733a2f2f696d672e736869656c64732e696f2f686f6d65627265772f762f676f6261636b75703f636f6c6f723d73756363657373266c6162656c3d42726577&quot; data-canonical-src=&quot;https://img.shields.io/homebrew/v/gobackup?color=success&amp;amp;label=Brew&quot;/&gt;&lt;/a&gt;
+&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;/&gt;
+&lt;p dir=&quot;auto&quot;&gt;GoBackup is a fullstack backup tool design for application servers, to backup your databases, files to cloud storages (Local disk, FTP, SCP, S3, GCS, Aliyun OSS ...).&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p dir=&quot;auto&quot;&gt;Inspired by &lt;a href=&quot;https://github.com/backup/backup&quot;&gt;backup/backup&lt;/a&gt; and replace it for without Ruby dependency.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p dir=&quot;auto&quot;&gt;&lt;a href=&quot;https://asciinema.org/a/543564&quot; rel=&quot;nofollow&quot;&gt;&lt;img src=&quot;https://camo.githubusercontent.com/dd8f07f44fbfeabdc903f44208e0e0f9cf6eb62a26f8cb7554f26734ca9acbe3/68747470733a2f2f61736369696e656d612e6f72672f612f3534333536342e737667&quot; alt=&quot;asciicast&quot; data-canonical-src=&quot;https://asciinema.org/a/543564.svg&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;You can write a config file, run &lt;code&gt;gobackup perform&lt;/code&gt; command by once to dump database as file, archive config files, and then package them into a single file.&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;It&#x27;s allow you store the backup file to local, FTP, SCP, S3 or other cloud storages.&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;GoBackup 是一个类似 &lt;a href=&quot;https://github.com/backup/backup&quot;&gt;backup/backup&lt;/a&gt; 的一站式备份工具，为中小型服务器／个人服务器而设计，配合内置的计划任务，实现定时备份的目的。&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;使用 GoBackup 你可以通过一个简单的配置文件，一次（执行一个命令）将服务器上重要的（数据库、配置文件）东西导出、打包压缩，并备份到指定目的地（如：本地路径、FTP、云存储...）。&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;&lt;a href=&quot;https://gobackup.github.io&quot; rel=&quot;nofollow&quot;&gt;https://gobackup.github.io&lt;/a&gt;&lt;/p&gt;
+&lt;h2 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-features&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#features&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;Features&lt;/h2&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;No dependencies.&lt;/li&gt;
+&lt;li&gt;Multiple Databases source support.&lt;/li&gt;
+&lt;li&gt;Multiple Storage type support.&lt;/li&gt;
+&lt;li&gt;Archive paths or files into a tar.&lt;/li&gt;
+&lt;li&gt;Split large backup file into multiple parts.&lt;/li&gt;
+&lt;li&gt;Run as daemon to backup in schedully.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-databases&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#databases&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;Databases&lt;/h3&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;MySQL&lt;/li&gt;
+&lt;li&gt;PostgreSQL&lt;/li&gt;
+&lt;li&gt;Redis - &lt;code&gt;mode: sync/copy&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;MongoDB&lt;/li&gt;
+&lt;li&gt;SQLite&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-storages&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#storages&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;Storages&lt;/h3&gt;
+
+&lt;h2 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-notifier&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#notifier&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;Notifier&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p dir=&quot;auto&quot;&gt;since: 1.5.0&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p dir=&quot;auto&quot;&gt;Send notification when backup has success or failed.&lt;/p&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;Mail (SMTP)&lt;/li&gt;
+&lt;li&gt;Webhook&lt;/li&gt;
+&lt;li&gt;Discord&lt;/li&gt;
+&lt;li&gt;Slack&lt;/li&gt;
+&lt;li&gt;Feishu&lt;/li&gt;
+&lt;li&gt;DingTalk&lt;/li&gt;
+&lt;li&gt;GitHub (Comment on Issue)&lt;/li&gt;
+&lt;li&gt;Telegram&lt;/li&gt;
+&lt;li&gt;AWS SES&lt;/li&gt;
+&lt;li&gt;Postmark&lt;/li&gt;
+&lt;li&gt;SendGrid&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-installation&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#installation&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;Installation&lt;/h2&gt;
+&lt;div class=&quot;highlight highlight-source-shell notranslate position-relative overflow-auto&quot; dir=&quot;auto&quot; data-snippet-clipboard-copy-content=&quot;curl -sSL https://gobackup.github.io/install | sh&quot;&gt;&lt;pre&gt;curl -sSL https://gobackup.github.io/install &lt;span class=&quot;pl-k&quot;&gt;|&lt;/span&gt; sh&lt;/pre&gt;&lt;/div&gt;
+&lt;p dir=&quot;auto&quot;&gt;after that, you will get &lt;code&gt;/usr/local/bin/gobackup&lt;/code&gt; command.&lt;/p&gt;
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-install-via-homebrew&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#install-via-homebrew&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;Install via Homebrew&lt;/h3&gt;
+
+&lt;div class=&quot;highlight highlight-source-shell notranslate position-relative overflow-auto&quot; dir=&quot;auto&quot; data-snippet-clipboard-copy-content=&quot;$ gobackup -h&amp;#10;NAME:&amp;#10;   gobackup - Backup your databases, files to FTP / SCP / S3 / GCS and other cloud storages.&amp;#10;&amp;#10;USAGE:&amp;#10;   gobackup [global options] command [command options] [arguments...]&amp;#10;&amp;#10;VERSION:&amp;#10;   1.3.0&amp;#10;&amp;#10;COMMANDS:&amp;#10;   perform&amp;#10;   start    Start as daemon&amp;#10;   run      Run GoBackup&amp;#10;   help, h  Shows a list of commands or help for one command&amp;#10;&amp;#10;GLOBAL OPTIONS:&amp;#10;   --help, -h     show help (default: false)&amp;#10;   --version, -v  print the version (default: false)&quot;&gt;&lt;pre&gt;$ gobackup -h
+NAME:
+   gobackup - Backup your databases, files to FTP / SCP / S3 / GCS and other cloud storages.
+
+USAGE:
+   gobackup [global options] &lt;span class=&quot;pl-c1&quot;&gt;command&lt;/span&gt; [command options] [arguments...]
+
+VERSION:
+   1.3.0
+
+COMMANDS:
+   perform
+   start    Start as daemon
+   run      Run GoBackup
+   help, h  Shows a list of commands or &lt;span class=&quot;pl-c1&quot;&gt;help&lt;/span&gt; &lt;span class=&quot;pl-k&quot;&gt;for&lt;/span&gt; one &lt;span class=&quot;pl-c1&quot;&gt;command&lt;/span&gt;
+
+GLOBAL OPTIONS:
+   --help, -h     show &lt;span class=&quot;pl-c1&quot;&gt;help&lt;/span&gt; (default: false)
+   --version, -v  print the version (default: false)&lt;/pre&gt;&lt;/div&gt;
+&lt;h2 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-configuration&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#configuration&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;Configuration&lt;/h2&gt;
+&lt;p dir=&quot;auto&quot;&gt;GoBackup will seek config files in:&lt;/p&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;~/.gobackup/gobackup.yml&lt;/li&gt;
+&lt;li&gt;/etc/gobackup/gobackup.yml&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p dir=&quot;auto&quot;&gt;Example config: &lt;a href=&quot;https://github.com/huacnlee/gobackup/blob/master/gobackup_test.yml&quot;&gt;gobackup_test.yml&lt;/a&gt;&lt;/p&gt;
+&lt;div class=&quot;highlight highlight-source-yaml notranslate position-relative overflow-auto&quot; dir=&quot;auto&quot; data-snippet-clipboard-copy-content=&quot;models:&amp;#10;  gitlab:&amp;#10;    compress_with:&amp;#10;      type: tgz&amp;#10;    storages:&amp;#10;      scp1:&amp;#10;        type: scp&amp;#10;        path: ~/backup&amp;#10;        host: your-host.com&amp;#10;        private_key: ~/.ssh/id_rsa&amp;#10;        username: ubuntu&amp;#10;        password: password&amp;#10;        timeout: 300&amp;#10;    databases:&amp;#10;      gitlab:&amp;#10;        type: mysql&amp;#10;        host: localhost&amp;#10;        port: 3306&amp;#10;        database: gitlab_production&amp;#10;        username: root&amp;#10;        password:&amp;#10;        additional_options: --single-transaction --quick&amp;#10;      gitlab_redis:&amp;#10;        type: redis&amp;#10;        mode: sync&amp;#10;        rdb_path: /var/db/redis/dump.rdb&amp;#10;        invoke_save: true&amp;#10;        password:&amp;#10;    archive:&amp;#10;      includes:&amp;#10;        - /home/git/.ssh/&amp;#10;        - /etc/mysql/my.conf&amp;#10;        - /etc/nginx/nginx.conf&amp;#10;        - /etc/nginx/conf.d&amp;#10;        - /etc/redis/redis.conf&amp;#10;        - /etc/logrotate.d/&amp;#10;      excludes:&amp;#10;        - /home/ubuntu/.ssh/known_hosts&amp;#10;        - /etc/logrotate.d/syslog&amp;#10;  gitlab_repos:&amp;#10;    storages:&amp;#10;      local:&amp;#10;        type: local&amp;#10;        path: /data/backups/gitlab-repos/&amp;#10;    archive:&amp;#10;      includes:&amp;#10;        - /home/git/repositories&quot;&gt;&lt;pre&gt;&lt;span class=&quot;pl-ent&quot;&gt;models&lt;/span&gt;:
+  &lt;span class=&quot;pl-ent&quot;&gt;gitlab&lt;/span&gt;:
+    &lt;span class=&quot;pl-ent&quot;&gt;compress_with&lt;/span&gt;:
+      &lt;span class=&quot;pl-ent&quot;&gt;type&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;tgz&lt;/span&gt;
+    &lt;span class=&quot;pl-ent&quot;&gt;storages&lt;/span&gt;:
+      &lt;span class=&quot;pl-ent&quot;&gt;scp1&lt;/span&gt;:
+        &lt;span class=&quot;pl-ent&quot;&gt;type&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;scp&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;path&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;~/backup&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;host&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;your-host.com&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;private_key&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;~/.ssh/id_rsa&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;username&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;ubuntu&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;password&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;password&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;timeout&lt;/span&gt;: &lt;span class=&quot;pl-c1&quot;&gt;300&lt;/span&gt;
+    &lt;span class=&quot;pl-ent&quot;&gt;databases&lt;/span&gt;:
+      &lt;span class=&quot;pl-ent&quot;&gt;gitlab&lt;/span&gt;:
+        &lt;span class=&quot;pl-ent&quot;&gt;type&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;mysql&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;host&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;localhost&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;port&lt;/span&gt;: &lt;span class=&quot;pl-c1&quot;&gt;3306&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;database&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;gitlab_production&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;username&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;root&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;password&lt;/span&gt;:
+        &lt;span class=&quot;pl-ent&quot;&gt;additional_options&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;--single-transaction --quick&lt;/span&gt;
+      &lt;span class=&quot;pl-ent&quot;&gt;gitlab_redis&lt;/span&gt;:
+        &lt;span class=&quot;pl-ent&quot;&gt;type&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;redis&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;mode&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;sync&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;rdb_path&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;/var/db/redis/dump.rdb&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;invoke_save&lt;/span&gt;: &lt;span class=&quot;pl-c1&quot;&gt;true&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;password&lt;/span&gt;:
+    &lt;span class=&quot;pl-ent&quot;&gt;archive&lt;/span&gt;:
+      &lt;span class=&quot;pl-ent&quot;&gt;includes&lt;/span&gt;:
+        - &lt;span class=&quot;pl-s&quot;&gt;/home/git/.ssh/&lt;/span&gt;
+        - &lt;span class=&quot;pl-s&quot;&gt;/etc/mysql/my.conf&lt;/span&gt;
+        - &lt;span class=&quot;pl-s&quot;&gt;/etc/nginx/nginx.conf&lt;/span&gt;
+        - &lt;span class=&quot;pl-s&quot;&gt;/etc/nginx/conf.d&lt;/span&gt;
+        - &lt;span class=&quot;pl-s&quot;&gt;/etc/redis/redis.conf&lt;/span&gt;
+        - &lt;span class=&quot;pl-s&quot;&gt;/etc/logrotate.d/&lt;/span&gt;
+      &lt;span class=&quot;pl-ent&quot;&gt;excludes&lt;/span&gt;:
+        - &lt;span class=&quot;pl-s&quot;&gt;/home/ubuntu/.ssh/known_hosts&lt;/span&gt;
+        - &lt;span class=&quot;pl-s&quot;&gt;/etc/logrotate.d/syslog&lt;/span&gt;
+  &lt;span class=&quot;pl-ent&quot;&gt;gitlab_repos&lt;/span&gt;:
+    &lt;span class=&quot;pl-ent&quot;&gt;storages&lt;/span&gt;:
+      &lt;span class=&quot;pl-ent&quot;&gt;local&lt;/span&gt;:
+        &lt;span class=&quot;pl-ent&quot;&gt;type&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;local&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;path&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;/data/backups/gitlab-repos/&lt;/span&gt;
+    &lt;span class=&quot;pl-ent&quot;&gt;archive&lt;/span&gt;:
+      &lt;span class=&quot;pl-ent&quot;&gt;includes&lt;/span&gt;:
+        - &lt;span class=&quot;pl-s&quot;&gt;/home/git/repositories&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h2 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-usage&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#usage&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;Usage&lt;/h2&gt;
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-perform-backup&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#perform-backup&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;Perform backup&lt;/h3&gt;
+
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-backup-schedule&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#backup-schedule&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;Backup schedule&lt;/h3&gt;
+&lt;p dir=&quot;auto&quot;&gt;GoBackup built in a daemon mode, you can use &lt;code&gt;gobackup start&lt;/code&gt; to start it.&lt;/p&gt;
+&lt;p dir=&quot;auto&quot;&gt;You can configure the &lt;code&gt;schedule&lt;/code&gt; for each models, it will run backup task at the time you set.&lt;/p&gt;
+&lt;h4 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-for-example&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#for-example&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;For example&lt;/h4&gt;
+&lt;p dir=&quot;auto&quot;&gt;Configure your schedule in &lt;code&gt;gobackup.yml&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&quot;highlight highlight-source-yaml notranslate position-relative overflow-auto&quot; dir=&quot;auto&quot; data-snippet-clipboard-copy-content=&quot;models:&amp;#10;  my_backup:&amp;#10;    schedule:&amp;#10;      # At 04:05 on Sunday.&amp;#10;      cron: &amp;quot;5 4 * * sun&amp;quot;&amp;#10;    storages:&amp;#10;      local:&amp;#10;        type: local&amp;#10;        path: /path/to/backups&amp;#10;    databases:&amp;#10;      mysql:&amp;#10;        type: mysql&amp;#10;        host: localhost&amp;#10;        port: 3306&amp;#10;        database: my_database&amp;#10;        username: root&amp;#10;        password: password&amp;#10;  other_backup:&amp;#10;    # At 04:05 on every day.&amp;#10;    schedule:&amp;#10;      every: &amp;quot;1day&amp;quot;,&amp;#10;      at: &amp;quot;04:05&amp;quot;&amp;#10;    storages:&amp;#10;      local:&amp;#10;        type: local&amp;#10;        path: /path/to/backups&amp;#10;    databases:&amp;#10;      mysql:&amp;#10;        type: mysql&amp;#10;        host: localhost&amp;#10;        port: 3306&amp;#10;        database: my_database&amp;#10;        username: root&amp;#10;        password: password&quot;&gt;&lt;pre&gt;&lt;span class=&quot;pl-ent&quot;&gt;models&lt;/span&gt;:
+  &lt;span class=&quot;pl-ent&quot;&gt;my_backup&lt;/span&gt;:
+    &lt;span class=&quot;pl-ent&quot;&gt;schedule&lt;/span&gt;:
+      &lt;span class=&quot;pl-c&quot;&gt;&lt;span class=&quot;pl-c&quot;&gt;#&lt;/span&gt; At 04:05 on Sunday.&lt;/span&gt;
+      &lt;span class=&quot;pl-ent&quot;&gt;cron&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;5 4 * * sun&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;
+    &lt;span class=&quot;pl-ent&quot;&gt;storages&lt;/span&gt;:
+      &lt;span class=&quot;pl-ent&quot;&gt;local&lt;/span&gt;:
+        &lt;span class=&quot;pl-ent&quot;&gt;type&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;local&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;path&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;/path/to/backups&lt;/span&gt;
+    &lt;span class=&quot;pl-ent&quot;&gt;databases&lt;/span&gt;:
+      &lt;span class=&quot;pl-ent&quot;&gt;mysql&lt;/span&gt;:
+        &lt;span class=&quot;pl-ent&quot;&gt;type&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;mysql&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;host&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;localhost&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;port&lt;/span&gt;: &lt;span class=&quot;pl-c1&quot;&gt;3306&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;database&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;my_database&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;username&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;root&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;password&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;password&lt;/span&gt;
+  &lt;span class=&quot;pl-ent&quot;&gt;other_backup&lt;/span&gt;:
+    &lt;span class=&quot;pl-c&quot;&gt;&lt;span class=&quot;pl-c&quot;&gt;#&lt;/span&gt; At 04:05 on every day.&lt;/span&gt;
+    &lt;span class=&quot;pl-ent&quot;&gt;schedule&lt;/span&gt;:
+      &lt;span class=&quot;pl-ent&quot;&gt;every&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;1day&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;pl-s&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;pl-ent&quot;&gt;at&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;04:05&lt;span class=&quot;pl-pds&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;
+    &lt;span class=&quot;pl-ent&quot;&gt;storages&lt;/span&gt;:
+      &lt;span class=&quot;pl-ent&quot;&gt;local&lt;/span&gt;:
+        &lt;span class=&quot;pl-ent&quot;&gt;type&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;local&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;path&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;/path/to/backups&lt;/span&gt;
+    &lt;span class=&quot;pl-ent&quot;&gt;databases&lt;/span&gt;:
+      &lt;span class=&quot;pl-ent&quot;&gt;mysql&lt;/span&gt;:
+        &lt;span class=&quot;pl-ent&quot;&gt;type&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;mysql&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;host&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;localhost&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;port&lt;/span&gt;: &lt;span class=&quot;pl-c1&quot;&gt;3306&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;database&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;my_database&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;username&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;root&lt;/span&gt;
+        &lt;span class=&quot;pl-ent&quot;&gt;password&lt;/span&gt;: &lt;span class=&quot;pl-s&quot;&gt;password&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-start-daemon&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#start-daemon&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;Start daemon&lt;/h3&gt;
+
+&lt;blockquote&gt;
+&lt;p dir=&quot;auto&quot;&gt;NOTE: If you wants start without daemon, use &lt;code&gt;gobackup run&lt;/code&gt; instead.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-signal-handling&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#signal-handling&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;Signal handling&lt;/h3&gt;
+&lt;p dir=&quot;auto&quot;&gt;GoBackup will handle the following signals:&lt;/p&gt;
+&lt;ul dir=&quot;auto&quot;&gt;
+&lt;li&gt;&lt;code&gt;HUP&lt;/code&gt; - Hot reload configuration.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;QUIT&lt;/code&gt; - Graceful shutdown.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&quot;highlight highlight-source-shell notranslate position-relative overflow-auto&quot; dir=&quot;auto&quot; data-snippet-clipboard-copy-content=&quot;$ ps aux | grep gobackup&amp;#10;jason            20443   0.0  0.1 409232800   8912   ??  Ss    7:47PM   0:00.02 gobackup run&amp;#10;&amp;#10;# Reload configuration&amp;#10;$ kill -HUP 20443&amp;#10;# Exit daemon&amp;#10;$ kill -QUIT 20443&quot;&gt;&lt;pre&gt;$ ps aux &lt;span class=&quot;pl-k&quot;&gt;|&lt;/span&gt; grep gobackup
+jason            20443   0.0  0.1 409232800   8912   &lt;span class=&quot;pl-k&quot;&gt;??&lt;/span&gt;  Ss    7:47PM   0:00.02 gobackup run
+
+&lt;span class=&quot;pl-c&quot;&gt;&lt;span class=&quot;pl-c&quot;&gt;#&lt;/span&gt; Reload configuration&lt;/span&gt;
+$ &lt;span class=&quot;pl-c1&quot;&gt;kill&lt;/span&gt; -HUP 20443
+&lt;span class=&quot;pl-c&quot;&gt;&lt;span class=&quot;pl-c&quot;&gt;#&lt;/span&gt; Exit daemon&lt;/span&gt;
+$ &lt;span class=&quot;pl-c1&quot;&gt;kill&lt;/span&gt; -QUIT 20443&lt;/pre&gt;&lt;/div&gt;
+&lt;h2 dir=&quot;auto&quot;&gt;&lt;a id=&quot;user-content-license&quot; class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#license&quot;&gt;&lt;svg class=&quot;octicon octicon-link&quot; viewbox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z&quot;/&gt;&lt;/svg&gt;&lt;/a&gt;License&lt;/h2&gt;
+&lt;p dir=&quot;auto&quot;&gt;MIT&lt;/p&gt;
+&lt;/article&gt;
+          &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
