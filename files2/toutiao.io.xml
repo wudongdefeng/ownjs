@@ -38,103 +38,12 @@
         &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>8500a5a12c13d6b4af963f41a99877a4</guid>
-<title>百万并发场景中倒排索引与位图计算的实践</title>
-<link>https://toutiao.io/k/dfgdurs</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;h6&gt;作者：京东物流 郎元辉&lt;/h6&gt;
+<guid>dc081ff88459460eb94e86bd84d2bccf</guid>
+<title>为啥 Linux 服务器可用磁盘空间越来越小</title>
+<link>https://toutiao.io/k/3bpapfv</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content             autoTypeSetting24psection&amp;#10;            &quot; id=&quot;js_content&quot;&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mp-common-profile class=&quot;custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mp-common-profile&quot; data-from=&quot;0&quot; data-id=&quot;MzAwOTU4NzM5Ng==&quot; data-alias=&quot;yudadanwx&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/5Wib5Wh04ugwID68icb2oFcuc8rPmySWAHaWnQsQD8ax6PxocJ6nruWaMfxoarXh1eicga9ENlQrUPFTh8LFeEX7w/0?wx_fmt=png&quot; data-nickname=&quot;虞大胆的叽叽喳喳&quot; data-signature=&quot;《深入浅出HTTPS：从原理到实战》作者。&quot; data-weuitheme=&quot;light&quot; data-weui-theme=&quot;light&quot;/&gt;&lt;/section&gt;&lt;p&gt;收到磁盘报警，提示使用率已经达到90%，登录服务器后，使用du命令找出相对较大的文件然后删除。&lt;/p&gt;&lt;p&gt;删除后发现du记录的空间和df记录的磁盘空间差距很大，意思就是du没有占用多少，但df磁盘可使用率却很少，那么这些“丢失”的空间去哪儿了？&lt;/p&gt;&lt;p&gt;有三种可能性，接下去分别看一看。&lt;/p&gt;&lt;p&gt;首先文件inode也是会占用磁盘空间的，会不会小文件导致磁盘inode占用过多呢？&lt;/p&gt;&lt;pre&gt;&lt;code&gt;$ df -h -i &lt;br/&gt;&lt;br/&gt;Filesystem     Inodes IUsed IFree IUse% Mounted on&lt;br/&gt;/dev/vdb1        6.3M   518  6.3M    1% /mnt&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;可实际上这是一台web，没有太多的小文件，占用空间不大。&lt;/p&gt;&lt;p&gt;其次du不计算隐藏文件，所以输入：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;$ du -ah&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;发现并没有隐藏文件。&lt;/p&gt;&lt;p&gt;最后一种情况，有时候某个进程还在运行中，手动删除其生成的文件，此时文件并没有真正删除，但du会计算大小，那如何找出这些文件呢？使用lsof命令查询处于deleted状态的文件，输入：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;$ lsof |grep deleted&lt;br/&gt;&lt;br/&gt;filebeat  11502  root 5r REG 253,17 146439193 6029593 20220810.log (deleted)&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;还真发现很多大文件，把对应的程序重新启动后，du和df的计算趋向一致。&lt;/p&gt;&lt;p&gt;最后也建议如果要删除某个进程生成的文件，用下面的命令：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;$ echo &#x27;&#x27; &amp;gt; file.log&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;mp-style-type data-value=&quot;3&quot;/&gt;&lt;/p&gt;&lt;/div&gt;
 
-&lt;h2&gt;背景&lt;/h2&gt;
-
-&lt;p&gt;Promise时效控单系统作为时效域的控制系统，在用户下单前、下单后等多个节点均提供服务，是用户下单黄金链路上的重要节点；控单系统主要逻辑是针对用户请求从规则库中找出符合条件的最优规则，并将该规则的时效控制结果返回客户端，比如因为临时疫情等原因针对仓、配、商家、客户四级地址等不同维度进行精细粒度的时效控制。&lt;/p&gt;
-
-&lt;p&gt;该系统也是Promise侧并发量最大的系统，双11高峰集群流量TPS在百万级别，对系统的性能要求非常高，SLA要求在5ms以内，因此&lt;strong&gt;对海量请求在规则库(几十万)中如何快速正确匹配规则是该系统的技术挑战点&lt;/strong&gt;。&lt;/p&gt;
-
-&lt;h2&gt;朴素的解决方案&lt;/h2&gt;
-
-&lt;p&gt;按照朴素的思想，在工程建设上，通过异步方式将规则库逐行缓存到Redis，Key为规则条件,Value为规则对应结果；当用户请求过来时，对请求Request(a,b,c,d..)中的参数做全组合，根据全组合出的Key尝试找出所有可能命中的规则，再从中筛选出最优的规则。如下图所示&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6e67282f34ac4ab09513d8d8e5cc78b0%7Etplv-k3u1fbpfcp-watermark.image?&quot; alt=&quot;31.png&quot;/&gt;
-﻿﻿&lt;/p&gt;
-
-&lt;p&gt;该方案面临的问题是全组合的时间复杂度是2&lt;strong&gt;n,n≈12；&lt;/strong&gt;算法的时间复杂度高且算法稳定性差**，最差情况一次请求需要4096次计算和读取操作。当然在工程上我们可以使用本地缓存做一些优化，但是无法解决最根本的性能问题。架构简图如下所示：&lt;/p&gt;
-
-&lt;p&gt;[]()&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/13ad4bf2cef04104b0a098b7497c7f00%7Etplv-k3u1fbpfcp-watermark.image?&quot; alt=&quot;32.png&quot;/&gt;
-﻿﻿&lt;/p&gt;
-
-&lt;h2&gt;新的解决方案&lt;/h2&gt;
-
-&lt;p&gt;上面方案是从行的角度看待匹配定位的，能够命中的行的每一列必然也是符合条件的，这里面存在某种隐约的内在联系。能否反过来思考这个问题，为此我们尝试进行新的方案，当然架构简图依然如上图所示，核心优化的是命中算法。&lt;/p&gt;
-
-&lt;p&gt;新的方案整体采用&lt;strong&gt;列的倒排索引和倒排索引位运算&lt;/strong&gt;的方式，使得&lt;strong&gt;计算复杂度由原来的2&lt;/strong&gt;n降至n**，且算法稳定性有非常好的保证。其中列的倒排索引是对每列的值和所分布的行ID(即Posting List)建立KV关系，倒排索引位运算是对符合条件的列倒排索引进行列间的位运算，即通过联合查询以便快速找到符合条件的规则行。&lt;/p&gt;
-
-&lt;h2&gt;算法详细设计&lt;/h2&gt;
-
-&lt;h3&gt;1.预计算生成列的倒排索引和位图&lt;/h3&gt;
-
-&lt;p&gt;通过对每列的值进行分组合并生成Posting List，建立列值和Posting List的KV关系。以下图为例,列A可生成的倒排索引为：301={1},201={2,3,4,5}等，需要说明的一点，空值也是一种候选项，也需要生成KV关系，如nil={7}。&lt;/p&gt;
-
-&lt;p&gt;﻿﻿&lt;br/&gt;
-&lt;img src=&quot;https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/da5be9d1ad444642902b0dd12f924d43%7Etplv-k3u1fbpfcp-watermark.image?&quot; alt=&quot;33.png&quot;/&gt;&lt;/p&gt;
-
-&lt;h3&gt;2.生成列的倒排索引对应位图&lt;/h3&gt;
-
-&lt;p&gt;将步骤1的倒排索引转成成位图，方便后续的位图计算，转换规则为行ID对应位图的下标位（步骤1、2可以合并操作）。&lt;/p&gt;
-
-&lt;p&gt;﻿&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/e1137f2a3e8c4d6396f1a713d29ecd5c%7Etplv-k3u1fbpfcp-watermark.image?&quot; alt=&quot;34.png&quot;/&gt;
-﻿﻿  &lt;/p&gt;
-
-&lt;h3&gt;3.根据用户请求查找列位图，通过位图计算生成候选规则集&lt;/h3&gt;
-
-&lt;p&gt;将用户请求中的入参作为Key，查找符合条件的位图，对每一列进行列内和空值做||运算，最后列间位图做&amp;amp;运算，得到的结果是候选规则集，如下图所示：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/132a206090f948d59fce31522a8475f3%7Etplv-k3u1fbpfcp-watermark.image?&quot; alt=&quot;45.png&quot;/&gt;
-[]()&lt;/p&gt;
-
-&lt;p&gt;﻿﻿  &lt;/p&gt;
-
-&lt;h3&gt;4.从候选规则库中，根据业务优先级排序，查找最优的规则&lt;/h3&gt;
-
-&lt;p&gt;以候选规则为基点，按照业务优先级排序，进行逐级位运算&amp;amp;，当遍历完或位运算为0时，找到最后不为空的即为最优规则，该过程是从候选规则库逐渐缩小最优范围的过程。需要说明某列当用户请求位图不存在时，需要使用对应的空位图进行参与，以B列为例，入参B_1102不存在，需要使用B_nil参与&amp;amp;。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4ecd134aaba54ecdada9c4f6678f67c4%7Etplv-k3u1fbpfcp-watermark.image?&quot; alt=&quot;56.png&quot;/&gt;
-﻿﻿  &lt;/p&gt;
-
-&lt;h2&gt;复杂度分析&lt;/h2&gt;
-
-&lt;p&gt;通过上面的例子我们可以看到，在时间复杂度方面查找候选规则集时，进行一轮||运算，一轮&amp;amp;运算；在查找最优规则时进行一轮&amp;amp;运算，所以&lt;strong&gt;整体复杂度是3n≈n&lt;/strong&gt;。&lt;/p&gt;
-
-&lt;p&gt;在空间复杂度方面，相比原来的行式存储，倒排索引的存储方式，每列都需要存储行ID，相当于多了 &lt;strong&gt;(n-1)*Posting List存储空间&lt;/strong&gt;，当然这是粗略计算，因为实际上行ID的存储最终转换为位图存储，在空间上有非常大的压缩空间。&lt;/p&gt;
-
-&lt;h2&gt;工程问题-压缩位图&lt;/h2&gt;
-
-&lt;p&gt;如果倒排索引位图非常稀疏，系统会存在非常大的空间浪费。我们举一个极端case，若千万规则库中命中的行ID是第1000万位，按照传统方式BitSet进行存储，需要消耗1.2MB空间，在内存中占用存在严重浪费，有没有压缩优化方案，在RoaringBitMap压缩位图方案中我们找到，相同场景在压缩位图方式下仅占144bytes；即使在1000万的位图空间，我们随机存储1万个值，两者比也是在31K vs 2MB，&lt;strong&gt;近100倍的差距&lt;/strong&gt;，总的来说RoaringBitMap压缩率非常大。&lt;/p&gt;
-
-&lt;p&gt;RoaringBitMap本质上是将大块的bitmap拆分成各个小块，其中每个小块在需要存储数据的时候才会存在，所以当进行交集或并集运算的时候，RoaringBitMap只需要去计算存在的块而不需要像bitmap那样对整个大块进行计算，既做到了压缩的存储又做到计算性能的提升。&lt;/p&gt;
-
-&lt;p&gt;以下图821697800为例，对应的16进制数为30FA1D08， 其中高16 位为30FA，低16位为1D08。先用二分查找从一级索引（即Container Array）中找到数值为 30FA 的容器，该容器是一个Bitmap容器,然后在该容器查找低16位的数值1D08，即十进制下7432，在Bitmap中找到相应的位置，将其置为1即可。&lt;/p&gt;
-
-&lt;p&gt;﻿
-&lt;img src=&quot;https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/10a65df52f9c45dda9e33aa780889e74%7Etplv-k3u1fbpfcp-watermark.image?&quot; alt=&quot;57.png&quot;/&gt;
-﻿﻿  &lt;/p&gt;
-
-&lt;p&gt;﻿  &lt;/p&gt;
-
-&lt;h2&gt;适用场景分析&lt;/h2&gt;
-
-&lt;p&gt;回顾上面的设计方案我们可以看到，这种方式仅适用于PostingList简单如行ID的形式，如果是复杂对象就不适合用位图来存储。另外仅适用于等值查询，不适用于like、in的范围查询，为什么有这种局限性？因为这种方式依赖于搜索条件的空间，在方案中我们将值的条件作为搜索的Key，值的条件空间希望尽可能是一个有限的、方便穷举的、小的空间。而范围查询导致这个空间变成难以穷举、近乎无限扩张的、所以不适用。&lt;/p&gt;
-
-&lt;h2&gt;其他优化方式&lt;/h2&gt;
-
-&lt;p&gt;除了使用位运算的方式对倒排索引加速，考虑到Posting List的有序性，还有其他的方式比如使用跳表、Hash表等方式，以ES中采用的跳表为例，进行&amp;amp;运算实际就是在查找两个有序Posting List公共部分，以相互二分查找的形式，将时间复杂度控制在log(n)的级别。&lt;/p&gt;
-
-&lt;p&gt;具体参见&lt;a href=&quot;https://time.geekbang.org/column/article/221292?utm_source=related_read&amp;amp;utm_medium=article&amp;amp;utm_term=related_read&quot;&gt;工业界如何利用跳表、哈希表、位图进行倒排索引加速？&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/02c121b520dd4af3823805ee026a68f8%7Etplv-k3u1fbpfcp-watermark.image?&quot; alt=&quot;38.png&quot;/&gt;&lt;/p&gt;
-&lt;/div&gt;
-  &lt;/div&gt;&lt;/div&gt;</content:encoded>
+          
+        &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
