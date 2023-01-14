@@ -31,6 +31,83 @@
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
+<guid>8ec15e9a4a1b448aef17e4d57add465c</guid>
+<title>OpenWrt+R66s 软路由入门尝鲜</title>
+<link>https://toutiao.io/k/5mhxuan</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section class=&quot;toc-content post tag-openwrt tag-router tag-r66s tag-vpn tag-network tag-ssr no-image&quot;&gt;
+      &lt;h2 id=&quot;%E8%83%8C%E6%99%AF&quot;&gt;背景&lt;/h2&gt;&lt;figure class=&quot;kg-card kg-image-card&quot;&gt;&lt;img src=&quot;https://blog.mythsman.com/content/images/2023/01/image.png&quot; class=&quot;kg-image&quot; alt=&quot;&quot; loading=&quot;lazy&quot; srcset=&quot;https://blog.mythsman.com/content/images/size/w600/2023/01/image.png 600w, https://blog.mythsman.com/content/images/2023/01/image.png 720w&quot; sizes=&quot;(min-width: 720px) 720px&quot;/&gt;&lt;/figure&gt;&lt;p&gt;随着家里电子设备越来越多，客户端维度的科学上网配置已经逐渐支持不了日常需求了：&lt;/p&gt;&lt;ol&gt;&lt;li&gt;设备数量越来越多；配置不过来，且容易触发机场的客户端连接上限。&lt;/li&gt;&lt;li&gt;设备类型越来越多；安卓端、IPhone端、IPAD端、Mac端、树莓派端、PC端、Kindle端，需要的客户端各不相同，配置的思维负担太大，甚至有些类型的设备没有靠谱的客户端。&lt;/li&gt;&lt;li&gt;PAC规则越来越多；自己通常会有一个主要用的PAC规则，但是当换设备后，就需要重新配置，非常麻烦。&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;于是趁着工作之闲，研究了一下软路由，一站式解决了家庭上网问题。&lt;/p&gt;&lt;h2 id=&quot;%E7%A1%AC%E4%BB%B6%E9%80%89%E8%B4%AD&quot;&gt;硬件选购&lt;/h2&gt;&lt;p&gt;市场上的可自由刷机的路由器还是很多的，不过对于入门级屌丝租客党来说，明白自己到底需要什么是很重要的：&lt;/p&gt;&lt;ol&gt;&lt;li&gt;不需要 WIFI 功能。移动光猫自带 WIFI 功能，软路由只需专注做网关服务器即可。后续如果对 WIFI 有更高要求再另买专用的 WIFI。所谓专业的东西做专业的事。&lt;/li&gt;&lt;li&gt;不需要 HDMI 功能。带 HDMI 功能的基本都是定位于&lt;strong&gt;迷你主机&lt;/strong&gt;或者&lt;strong&gt;电视盒子&lt;/strong&gt;的，其实做路由器根本用不到。&lt;/li&gt;&lt;li&gt;网口并不需要太多。考虑到家庭设备都是用光猫自带的WIFI连接，因此不需要很多网口。最低一个 LAN 口其实就足矣。&lt;/li&gt;&lt;li&gt;性能并不需要太高。毕竟租房的时候办的也就是200M带宽，网线再快也没用。同时家里也没搞什么视频工作站，内网也基本没啥带宽。况且性能高了的话、耗电、散热、占地都是问题。&lt;/li&gt;&lt;li&gt;芯片尽可能新一点。芯片类产品买新不买旧，就算不太在乎性能，也得考虑性价比，少买老古董不做垃圾佬。&lt;/li&gt;&lt;li&gt;尽量支持卡刷。线刷基本都需要去官方文档上查流程，比较麻烦。而卡刷的流程几乎都是一样的，拔卡写镜像开机即可。&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;基于上述原则，类似小米AX6000之类的 WIFI 路由器基本不会考虑了；类似J4125之类的性能较强、耗电较高的基于 X86 的路由器基本也不会考虑了；类似 R2s ,N1盒子之类的老东西也不考虑了。&lt;/p&gt;&lt;p&gt;搜寻了一番，发现电犀牛（FastRhino）的 &lt;a href=&quot;http://r68s.cn/&quot;&gt;R66s&lt;/a&gt; 刚好符合我的基本要求。&lt;/p&gt;&lt;ul&gt;&lt;li&gt;接口和大小刚合适。两个2.5G网口、两个USB3.0口、使用SD卡、无HDMI口，因此十分小巧。&lt;/li&gt;&lt;li&gt;产品和芯片比较新。产品是2022年5月发布，瑞芯微（Rockchip）RK3568芯片。&lt;/li&gt;&lt;li&gt;性价比较高。2G内存+32G卡配置到手320¥不到。&lt;/li&gt;&lt;/ul&gt;&lt;figure class=&quot;kg-card kg-image-card&quot;&gt;&lt;img src=&quot;https://blog.mythsman.com/content/images/2023/01/image-3.png&quot; class=&quot;kg-image&quot; alt=&quot;&quot; loading=&quot;lazy&quot;/&gt;&lt;/figure&gt;&lt;p&gt;相比一些从电视盒子改来的玩意、或者羞羞答答才放开刷机功能的WIFI路由器、或者是仗着原装OpenWrt割韭菜的路由器来说，这个产品还是比较大胆和良心的。&lt;/p&gt;&lt;h2 id=&quot;%E5%9B%BA%E4%BB%B6%E9%80%89%E6%8B%A9&quot;&gt;固件选择&lt;/h2&gt;&lt;p&gt;OpenWrt官方固件自然也是可以的，不过考虑到国人的常用需求，一般都是用国内维护的固件。常见的固件有：&lt;/p&gt;&lt;ol&gt;&lt;li&gt;Lean 的 LEDE 固件（&lt;a href=&quot;https://github.com/coolsnowwolf/lede&quot;&gt;官网&lt;/a&gt;）。&lt;/li&gt;&lt;li&gt;易有云的 iStoreOS 固件（&lt;a href=&quot;https://fw.koolcenter.com/iStoreOS/&quot;&gt;官网&lt;/a&gt;）。&lt;/li&gt;&lt;li&gt;Flippy 的固件（&lt;a href=&quot;https://github.com/unifreq/openwrt_packit&quot;&gt;官网&lt;/a&gt;）。&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;个人感觉这些固件其实都大同小异，主要区别还是上游的 OpenWrt 版本不同、Linux 内核版本不同、默认自带的软件包不同（尤其是 iStoreOS 自带了很多私货应用）。其实 R66s 出厂自带的镜像也是够用的（其实就是 Lean 的固件），只是出于政策原因，没有自带科学上网工具。这些东西动动小手自己装下也行，不过为了方便大家开箱即用，直接写到固件里用起来更方便而已。&lt;/p&gt;&lt;p&gt;如果需要自己刷机，其实也不复杂。用读卡器插入PC，用 &lt;a href=&quot;https://rufus.ie/en/&quot;&gt;rufus&lt;/a&gt; 工具直接写入指定镜像即可。&lt;/p&gt;&lt;figure class=&quot;kg-card kg-image-card&quot;&gt;&lt;img src=&quot;https://blog.mythsman.com/content/images/2023/01/image-4.png&quot; class=&quot;kg-image&quot; alt=&quot;&quot; loading=&quot;lazy&quot;/&gt;&lt;/figure&gt;&lt;p&gt;这里还遇到了有一个有意思的点，原装的 32G SD 卡插进来之后，Windows系统的文件管理器只识别出了 64MB。原本以为是遇到了奸商，但是用磁盘管理工具一看的确是 32G 的盘。后来研究后才发现是因为这个是系统引导盘，因此有时只会识别系统主分区的大小，有时甚至不会被识别为外部存储，不影响使用。&lt;/p&gt;&lt;p&gt;正常刷完后，SD 卡分区大致如下。只使用了主分区，还有大量未分配的区域，如有需要等启动后再新增分区即可。&lt;/p&gt;&lt;figure class=&quot;kg-card kg-image-card&quot;&gt;&lt;img src=&quot;https://blog.mythsman.com/content/images/2023/01/image-5.png&quot; class=&quot;kg-image&quot; alt=&quot;&quot; loading=&quot;lazy&quot; srcset=&quot;https://blog.mythsman.com/content/images/size/w600/2023/01/image-5.png 600w, https://blog.mythsman.com/content/images/2023/01/image-5.png 941w&quot; sizes=&quot;(min-width: 720px) 720px&quot;/&gt;&lt;/figure&gt;&lt;h2 id=&quot;%E7%BD%91%E7%BB%9C%E8%AE%BE%E8%AE%A1&quot;&gt;网络设计&lt;/h2&gt;&lt;p&gt;相关背景知识可以先看一下油管 &lt;a href=&quot;https://www.youtube.com/watch?v=OPG47_wT3XI&amp;amp;t=941s&quot;&gt;jack stone的家庭网络设计&lt;/a&gt;，讲的挺好，颇有老司机风范。&lt;/p&gt;&lt;p&gt;考虑到我这里光猫自带的WIFI也够用，但是光猫后台没有admin权限，很多东西不好改。并且出于社恐也不想打电话找宽带师傅把光猫的路由模式改桥接模式。因此我还是采用了 &lt;strong&gt;光猫做主路由+R66s做旁路由&lt;/strong&gt; 的方案：&lt;/p&gt;&lt;ol&gt;&lt;li&gt;软路由和光猫以 LAN口-LAN口相连。&lt;/li&gt;&lt;li&gt;整个网络中只使用光猫的网段和光猫的DHCP服务。&lt;/li&gt;&lt;li&gt;光猫不做任何配置，由接入的客户端手动配置网关和 DNS 到软路由。&lt;/li&gt;&lt;/ol&gt;&lt;h2 id=&quot;%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE&quot;&gt;网络配置&lt;/h2&gt;&lt;p&gt;对于新手小白来说，这一步最容易踩坑。尤其是当接线和配置不对时，连后台都打不开，这是最让人沮丧的。我个人也是尝试了很多姿势才了解其中的弯弯绕。&lt;/p&gt;&lt;h3 id=&quot;%E9%94%99%E8%AF%AF%E5%A7%BF%E5%8A%BF%EF%BC%9A%E8%BD%AF%E8%B7%AF%E7%94%B1lan%E5%8F%A3%E7%9B%B4%E6%8E%A5%E6%8E%A5%E5%85%89%E7%8C%ABlan%E5%8F%A3&quot;&gt;错误姿势：软路由LAN口直接接光猫LAN口&lt;/h3&gt;&lt;p&gt;唉？前面不是说软路由和光猫就是要LAN口相连么？没错，但那是指的配置完成后的连接方式。&lt;/p&gt;&lt;p&gt;在设备出厂、或者刷了新固件后，说明书或文档上都会写清楚当前固件默认配置的IP。例如 R66s 刷的 Lean 固件默认 IP 就是 192.168.100.1。这个配置的意思是，当前设备的 LAN 口配置的是 192.168.100.1 的静态 IP。&lt;/p&gt;&lt;p&gt;而我这边光猫的网段是 192.168.1.0/24 ，软路由的静态 IP 不在这个网段内。这就导致连接光猫的PC设备和软路由是无法连接的，自然也就访问不到后台了。&lt;/p&gt;&lt;h3 id=&quot;%E9%94%99%E8%AF%AF%E5%A7%BF%E5%8A%BF%EF%BC%9A%E8%BD%AF%E8%B7%AF%E7%94%B1wan%E5%8F%A3%E7%9B%B4%E6%8E%A5%E6%8E%A5%E5%85%89%E7%8C%ABlan%E5%8F%A3&quot;&gt;错误姿势：软路由WAN口直接接光猫LAN口&lt;/h3&gt;&lt;p&gt;既然软路由配置静态IP不行，那是不是直接用 WAN 口和光猫的 LAN 口相连就行了？毕竟 WAN 口的默认配置是 DHCP 协议，肯定可以直接加到光猫的网段中。&lt;/p&gt;&lt;p&gt;理论上说当然可以，但是实际上还是要看固件的配置。因为出于安全考虑，很多固件的默认防火墙配置是只允许从 LAN 口访问后台，不允许从 WAN 口访问。&lt;/p&gt;&lt;figure class=&quot;kg-card kg-image-card&quot;&gt;&lt;img src=&quot;https://blog.mythsman.com/content/images/2023/01/image-6.png&quot; class=&quot;kg-image&quot; alt=&quot;&quot; loading=&quot;lazy&quot; srcset=&quot;https://blog.mythsman.com/content/images/size/w600/2023/01/image-6.png 600w, https://blog.mythsman.com/content/images/size/w1000/2023/01/image-6.png 1000w, https://blog.mythsman.com/content/images/2023/01/image-6.png 1386w&quot; sizes=&quot;(min-width: 720px) 720px&quot;/&gt;&lt;/figure&gt;&lt;p&gt;如果我记得不错的话，iStore OS 默认是允许从 WAN 口访问的，而 Lean 固件默认是不允许从 WAN 口访问的。&lt;/p&gt;&lt;h3 id=&quot;%E6%AD%A3%E7%A1%AE%E5%A7%BF%E5%8A%BF%EF%BC%9A%E8%BD%AF%E8%B7%AF%E7%94%B1lan%E5%8F%A3%E5%85%88%E5%92%8C%E7%94%B5%E8%84%91%E7%9B%B4%E8%BF%9E%E9%85%8D%E7%BD%AE%E5%A5%BD%E5%90%8E%E5%86%8D%E6%8E%A5%E5%85%89%E7%8C%ABlan%E5%8F%A3&quot;&gt;正确姿势：软路由LAN口先和电脑直连配置好后再接光猫LAN口&lt;/h3&gt;&lt;p&gt;为了避免上面的各种问题，最稳妥的方法还是电脑端直接和光猫LAN口相连（或者通过交换机相连），这样就避免了各种上面的幺蛾子。如果一不小心光猫的静态IP还和光猫的IP冲突了，直接断开光猫即可。&lt;/p&gt;&lt;p&gt;首次连接到软路由后台后，按照旁路由的配置思路，需要在 网络-&amp;gt; 接口 -&amp;gt; LAN 中进行如下配置：&lt;/p&gt;&lt;ol&gt;&lt;li&gt;配置协议为静态地址。&lt;/li&gt;&lt;li&gt;配置 IPV4 地址为&lt;strong&gt;当前光猫网段&lt;/strong&gt;下的一个未被占用的IP地址。&lt;/li&gt;&lt;li&gt;配置子网掩码为光猫的掩码。&lt;/li&gt;&lt;li&gt;配置 IPV4 网关为光猫的 IP 地址。&lt;/li&gt;&lt;li&gt;配置 DNS 服务器为光猫的 IP 地址。&lt;/li&gt;&lt;li&gt;关闭 DHCP 开关。&lt;/li&gt;&lt;/ol&gt;&lt;figure class=&quot;kg-card kg-image-card&quot;&gt;&lt;img src=&quot;https://blog.mythsman.com/content/images/2023/01/image-9.png&quot; class=&quot;kg-image&quot; alt=&quot;&quot; loading=&quot;lazy&quot; srcset=&quot;https://blog.mythsman.com/content/images/size/w600/2023/01/image-9.png 600w, https://blog.mythsman.com/content/images/size/w1000/2023/01/image-9.png 1000w, https://blog.mythsman.com/content/images/2023/01/image-9.png 1188w&quot; sizes=&quot;(min-width: 720px) 720px&quot;/&gt;&lt;/figure&gt;&lt;p&gt;配置完成后，当前页面应当就加载不出来了，这时候将软路由和光猫 LAN-LAN 相连，然后通过这里配置的静态IP就又可访问了。&lt;/p&gt;&lt;h2 id=&quot;openwrt%E9%87%8D%E8%A6%81%E8%B7%AF%E5%BE%84&quot;&gt;OpenWrt重要路径&lt;/h2&gt;&lt;p&gt;OpenWrt 基于 Linux，但是一些重要的配置和Linux 还是有些区别的。重点要关注下面路径下的文件：&lt;/p&gt;&lt;ol&gt;&lt;li&gt;&lt;code&gt;/etc/config&lt;/code&gt; 这里记录了各个应用的通用配置。操作这里的文件和在 luci 页面中操作是等价的。&lt;/li&gt;&lt;li&gt;&lt;code&gt;/etc/init.d&lt;/code&gt; 这里记录了各个应用的启动命令，类似 service 或是 systemctl 的功能。&lt;/li&gt;&lt;li&gt;&lt;code&gt;/usr/lib/lua/luci/&lt;/code&gt; 这里记录了 luci 的页面信息，用于操作 &lt;code&gt;/etc/config&lt;/code&gt; 的配置。&lt;/li&gt;&lt;/ol&gt;&lt;h2 id=&quot;%E9%85%8D%E7%BD%AE-ssr-plus&quot;&gt;配置 SSR-PLUS&lt;/h2&gt;&lt;p&gt;Lean 国际版固件自带，或者直接在软件包下搜索安装下面两个包，配置上自己准备好的机场，就能开心使用了。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;luci-app-ssr-plus
+luci-i18n-ssr-plus-zh-cn&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;由于 SSR 会深入影响 DNS 解析，路由转发等基础功能。因此一般来说，SSR可以算是家庭网络的最大不稳定因素。所以这里有必要简单了解下 SSR-PLUS 的工作原理，方便定位网络问题。&lt;/p&gt;&lt;p&gt;单纯的 SSR 其实就是一个基于 libshadowsocks 的加密 socks 代理。不过仅此而已肯定不够，毕竟更重要的问题是“选择哪些流量走代理，哪些流量不走代理“。因此我理解 SSR-PLUS 就是 OpenWrt 下 SSR 结合了 iptables + ipset + dnsmasq 的组合工具。&lt;/p&gt;&lt;p&gt;SSR-PLUS 在启动时会加载两个外部订阅的数据。这些配置可以在 &lt;code&gt;/etc/ssrplus&lt;/code&gt; 下看到：&lt;/p&gt;&lt;ol&gt;&lt;li&gt;国内IP列表。里面记录了部署在国内不会被墙的IP网段。&lt;/li&gt;&lt;li&gt;GFW 列表。里面记录了被墙的域名。&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;国内IP列表比较简单，就是在 ipset 里添加一个 china 的路由规则集，方便后续进行 iptables 设置。而GFW 列表除了设置 ipset 之外，还要进行 DNS 选路。&lt;/p&gt;&lt;h3 id=&quot;%E8%BF%9B%E8%A1%8C-dns-%E9%80%89%E8%B7%AF&quot;&gt;进行 DNS 选路&lt;/h3&gt;&lt;p&gt;众所周知，DNS 是明文报文，无良运营商可以很方便的进行 DNS 污染，导致直接解析到错误 IP，更别提后续的连接了。&lt;/p&gt;&lt;p&gt;一种简单的解决方案是将所有 DNS 请求都走 SSR 的 socks 代理，但这样毕竟效率较低。因此实践中常用的办法就是：&lt;/p&gt;&lt;ol&gt;&lt;li&gt;本地启动一个走 SSR 代理的 DNS 服务。可以用 dns2tcp 或者 dns2socks 之类的工具。通常暴露的是 5335 端口。&lt;/li&gt;&lt;li&gt;根据预先配置的 GFW 列表，告知本地的 dnsmasq 服务，对 GFW 列表内的域名走加密通道，对GFW列表外的域名走普通通道。SSR-PLUS 对 dnsmasq 的配置可以参见 &lt;code&gt;/tmp/dnsmasq.d/dnsmasq-ssrplus.d&lt;/code&gt; 。&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;这样就能做到安全的 DNS 了。&lt;/p&gt;&lt;h3 id=&quot;%E9%85%8D%E7%BD%AE-ipset-%E8%A7%84%E5%88%99&quot;&gt;配置 ipset 规则&lt;/h3&gt;&lt;p&gt;我们知道 GFW 列表只记录域名，而在用 iptables 对流量路由转发时只能拿到 IP。因此 dnsmasq 在解析 GFW 后，还会将解析出来的 IP 加入到一个名为 gfwlist 的 ipset 规则。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;root@OpenWrt:~# ipset list gfwlist
+Name: gfwlist
+Type: hash:net
+Revision: 6
+Header: family inet hashsize 1024 maxelem 65536
+Size in memory: 56232
+References: 2
+Number of entries: 1686
+Members:
+20.198.162.78
+65.21.236.8
+142.250.186.54
+203.77.190.0
+54.148.90.231
+....&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这样一来，再配合 iptables 的 NAT 的 PREROUTING 设置，就能做到针对 GFW 内的域名进行代理转发：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;root@OpenWrt:~# iptables -L -t nat
+Chain PREROUTING (policy ACCEPT)
+target     prot opt source               destination
+SS_SPEC_WAN_AC  tcp  --  anywhere             anywhere             /* _SS_SPEC_RULE_ */
+...
+
+Chain SS_SPEC_WAN_AC (2 references)
+SS_SPEC_WAN_FW  all  --  anywhere             anywhere             match-set gfwlist dst
+...
+
+Chain SS_SPEC_WAN_FW (4 references)
+target     prot opt source               destination         
+RETURN     all  --  anywhere             0.0.0.0/8           
+RETURN     all  --  anywhere             10.0.0.0/8          
+RETURN     all  --  anywhere             127.0.0.0/8         
+RETURN     all  --  anywhere             169.254.0.0/16      
+RETURN     all  --  anywhere             172.16.0.0/12       
+RETURN     all  --  anywhere             192.168.0.0/16      
+RETURN     all  --  anywhere             0.0.0.224.in-addr.arpa/4 
+RETURN     all  --  anywhere             240.0.0.0/4         
+REDIRECT   tcp  --  anywhere             anywhere             redir ports 1234
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;gfw%E6%A8%A1%E5%BC%8F%E5%92%8C%E7%BB%95%E8%BF%87%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86ip%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%8C%BA%E5%88%AB&quot;&gt;GFW模式和绕过中国大陆IP模式的区别&lt;/h3&gt;&lt;p&gt;有了上面的基础，我们就明白了其实这两种模式的区别也很简单。看下两种模式下的 iptables 表就清楚了。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;GFW模式&lt;/strong&gt;：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;Chain SS_SPEC_WAN_AC (2 references)                 
+target     prot opt source               destination                  
+RETURN     all  --  anywhere             anywhere             match-set whitelist dst
+SS_SPEC_WAN_FW  all  --  anywhere             anywhere             match-set blacklist dst
+RETURN     all  --  anywhere             anywhere             match-set bplan src         
+SS_SPEC_WAN_FW  all  --  anywhere             anywhere             match-set fplan src    
+RETURN     tcp  --  anywhere             36.156.102.177       tcp dpt:!domain              
+RETURN     all  --  anywhere             anywhere             match-set china dst         
+SS_SPEC_WAN_FW  all  --  anywhere             anywhere             match-set gfwlist dst  
+                                                               &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;简要的工作流程是：&lt;/p&gt;&lt;ol&gt;&lt;li&gt;判断目的地址是否在白名单，如果是则不转发。&lt;/li&gt;&lt;li&gt;判断目的地址是否在黑名单，如果是则直接转发。&lt;/li&gt;&lt;li&gt;判断目的地址是否是大陆IP，如果是则不转发。&lt;/li&gt;&lt;li&gt;判断目的地址是否在GFW列表中，如果是则直接转发。&lt;/li&gt;&lt;li&gt;最后默认&lt;strong&gt;不转发&lt;/strong&gt;。&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;strong&gt;绕过中国大陆IP模式&lt;/strong&gt;：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;Chain SS_SPEC_WAN_AC (2 references)                 
+target     prot opt source               destination                     
+RETURN     all  --  anywhere             anywhere             match-set whitelist dst
+SS_SPEC_WAN_FW  all  --  anywhere             anywhere             match-set blacklist dst
+RETURN     all  --  anywhere             anywhere             match-set bplan src         
+SS_SPEC_WAN_FW  all  --  anywhere             anywhere             match-set fplan src    
+RETURN     tcp  --  anywhere             36.156.102.177       tcp dpt:!domain              
+RETURN     all  --  anywhere             anywhere             match-set ss_spec_wan_ac dst
+RETURN     all  --  anywhere             anywhere             match-set china dst         
+SS_SPEC_WAN_FW  all  --  anywhere             anywhere &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;简要的工作流程是：&lt;/p&gt;&lt;ol&gt;&lt;li&gt;判断目的地址是否在白名单，如果是则不转发。&lt;/li&gt;&lt;li&gt;判断目的地址是否在黑名单，如果是则直接转发。&lt;/li&gt;&lt;li&gt;判断目的地址是否是大陆IP，如果是则不转发。&lt;/li&gt;&lt;li&gt;最后默认&lt;strong&gt;转发&lt;/strong&gt;。&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;大白话总结就是：&lt;/p&gt;&lt;ol&gt;&lt;li&gt;GFW 列表模式是：默认不翻墙，除非你在GFW列表中配置。&lt;/li&gt;&lt;li&gt;绕过大陆IP模式是：默认翻墙，除非你在国内。&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;那么具体家里选哪个更合适呢？我个人建议选 GFW 列表模式。虽然绕过大陆IP模式看起来方便，但是：&lt;/p&gt;&lt;ol&gt;&lt;li&gt;考虑到正常大部分流量还是不希望转发的，任何网站只有在GFW列表中、或者你配置的黑名单中才会翻墙。这样你会明确的知道哪些是翻的，哪些是不翻的。&lt;/li&gt;&lt;li&gt;中国大陆IP列表其实并不完善，很多运营商会偷摸摸使用一些&lt;strong&gt;保留IP&lt;/strong&gt;作为局域网IP（例如类似 224.0.0.68 这类地址）。这就导致这些局域网IP会被中国大陆IP列表当成是海外IP进行转发。这显然就会导致难以排查的网络问题。（尤其是使用 N2N 之类的 P2P VPN 工具时）&lt;/li&gt;&lt;/ol&gt;&lt;h2 id=&quot;%E9%85%8D%E7%BD%AE-n2n&quot;&gt;配置 n2n&lt;/h2&gt;&lt;p&gt;使用 v3 版的 n2n 需要先更新下 opkg 的源，否则拉不到适配 v3 版本的 luci-app 。虽然可以直接改 &lt;code&gt;/etc/config/n2n&lt;/code&gt; 配置文件，不过毕竟不太优雅。&lt;/p&gt;&lt;p&gt;不知道为啥固件自带的源长这样，luci 的版本都跟其他的不一样。。。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;src/gz openwrt_base https://downloads.immortalwrt.org/releases/21.02.1/packages/aarch64_generic/base
+src/gz openwrt_luci src/gz openwrt_luci https://downloads.immortalwrt.org/releases/packages-18.06-k5.4/aarch64_generic/luci
+src/gz openwrt_packages https://downloads.immortalwrt.org/releases/21.02.1/packages/aarch64_generic/packages
+src/gz openwrt_routing https://downloads.immortalwrt.org/releases/21.02.1/packages/aarch64_generic/routing
+src/gz openwrt_telephony https://downloads.immortalwrt.org/releases/21.02.1/packages/aarch64_generic/telephony&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;改成一样即可：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;src/gz openwrt_base https://downloads.immortalwrt.org/releases/21.02.1/packages/aarch64_generic/base
+src/gz openwrt_luci https://downloads.immortalwrt.org/releases/21.02.1/packages/aarch64_generic/luci
+src/gz openwrt_packages https://downloads.immortalwrt.org/releases/21.02.1/packages/aarch64_generic/packages
+src/gz openwrt_routing https://downloads.immortalwrt.org/releases/21.02.1/packages/aarch64_generic/routing
+src/gz openwrt_telephony https://downloads.immortalwrt.org/releases/21.02.1/packages/aarch64_generic/telephony&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;配置好 n2n 客户端后，再在服务端配置好 nginx，挂上 ssl 域名 ，就能从远端访问家里的 OpenWrt 配置后台了。&lt;/p&gt;&lt;p&gt;当然，由于有些 luci 组件是需要额外暴露端口的，因此直挂 80 端口的 nginx 的话，实时监控、tty终端之类的功能还是没法用的。&lt;/p&gt;&lt;h2 id=&quot;%E9%85%8D%E7%BD%AE-dropbear&quot;&gt;配置 Dropbear&lt;/h2&gt;&lt;p&gt;Dropbear 可以理解是 OpenWrt 下的 sshd 。为了安全起见，dropbear 默认只对 lan 口过来的请求开放 ssh 连接。因此在配置好 n2n 之后，也是无法直接访问这个服务的。这里需要先关闭下 dropbear 对 lan 口的绑定：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;root@OpenWrt:/etc/config# cat /etc/config/dropbear 
+config dropbear
+        option PasswordAuth &#x27;on&#x27;
+        option RootPasswordAuth &#x27;on&#x27;
+        option Port         &#x27;22&#x27;
+#        option Interface    &#x27;lan&#x27;
+#       option BannerFile   &#x27;/etc/banner&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;配置好后 restart 即可生效。&lt;/p&gt;&lt;pre&gt;&lt;code&gt;root@OpenWrt:/etc/config# /etc/init.d/dropbear restart&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;%E9%85%8D%E7%BD%AE%E5%90%84%E4%B8%AA%E5%AE%A2%E6%88%B7%E7%AB%AF&quot;&gt;配置各个客户端&lt;/h2&gt;&lt;p&gt;软路由配置好了后先不要急着连接设备。建议先重启几次路由器，确保配置正常生效，且重启不丢失。确认完成后，各个需要连接的客户端再手动配置下：&lt;/p&gt;&lt;ol&gt;&lt;li&gt;关闭 DHCP，IP 地址设置为原先自动分配的IP即可。&lt;/li&gt;&lt;li&gt;将网关/路由器设置为软路由IP。&lt;/li&gt;&lt;li&gt;将子网掩码设置为和主路由一致。&lt;/li&gt;&lt;li&gt;将 DNS 设置为软路由IP。&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;正常情况下，配置好后即可感受科学的魅力，不过偶尔也可能出现一些奇怪的坑。此时可以先尝试：&lt;/p&gt;&lt;ol&gt;&lt;li&gt;关闭 IPV6。SSR 不支持 IPV6 ，如果一不小心走了 IPV6，则基本上是翻不出去的。&lt;/li&gt;&lt;li&gt;重启设备。像 IPhone 这类的设备似乎配置完后要重启一下，否则容易报诸如 SSL Error 之类的错。&lt;/li&gt;&lt;/ol&gt;
+    &lt;/section&gt;
+  &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
 <guid>665486035cac24f579d734cc813580f2</guid>
 <title>4种MySQL数据同步ES的方法，学废了！！</title>
 <link>https://toutiao.io/k/v2yq07i</link>
@@ -165,36 +242,5 @@ Average: dev253-6 3.00 0.00 24.00 8.00 1.30 393.67 261.33 78.40
                 
                 
         &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>8123a06d181173b4f8b787b1275a271b</guid>
-<title>一分钟读论文：《重新思考移动客⼾端的网页缓存》 | Micropaper一分钟读论文：《重新思考移动客⼾端的网页缓存》 | Micropaper</title>
-<link>https://toutiao.io/k/saiehbr</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;article class=&quot;article-post&quot;&gt;                
-&lt;p&gt;最高约&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;49%&lt;/code&gt;的 JS 运算可以在网页上重用。美国密歇根⼤学和加州⼤学洛杉矶分校的论文&lt;a href=&quot;http://web.eecs.umich.edu/~harshavm/papers/hotmobile21.pdf&quot;&gt;《Rethinking Client-Side Caching for the Mobile Web》&lt;/a&gt; 提出了一个新的客户端缓存架构，该架构主张直接&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;缓存运行时的 JS&lt;/code&gt;。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/screenshot-20230112-185611.jpg&quot; alt=&quot;arch&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;该架构原理：&lt;/strong&gt;&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;当用户加载页面时，浏览器将获取并缓存以前未缓存的资源，就像现在一样。&lt;/li&gt;
-  &lt;li&gt;浏览器可以使用（离线）静态程序分析来检测缓存的脚本，以跟踪每个 JavaScript 函数访问或修改的状态。&lt;/li&gt;
-  &lt;li&gt;当在任何页面加载中执行检测脚本时，在执行每个检测函数之前，浏览器可以执行计算缓存查找以搜索匹配的文件。&lt;/li&gt;
-  &lt;li&gt;如果找到匹配项，浏览器将应用该缓存而不是执行该函数，不匹配它将执行该函数并将新条目添加到缓存中。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/screenshot-20230112-203427.jpg&quot; alt=&quot;Quantifying&quot;/&gt;
-该论文并未实现此架构以验证，仅是通过分析 Aleax Top 1000 的网站来衡量潜在收益：&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;同一个网站1天的运行时缓存能节省&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;57%&lt;/code&gt;的 JavaScript 执⾏时间，⼀天后可重⽤的 JavaScript 执⾏部分更⾼&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;（75%）&lt;/code&gt;；&lt;/li&gt;
-  &lt;li&gt;不同网站&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;15%&lt;/code&gt;的 JS 执行可以在1天的时间内重⽤&lt;/li&gt;
-  &lt;li&gt;JavaScript 执⾏占中等复杂度页面的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;65%&lt;/code&gt;，估计中等复杂度⻚⾯最高可节省&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;49%&lt;/code&gt;；&lt;/li&gt;
-&lt;/ul&gt;
-
-                
-&lt;/article&gt;
-
-
-&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
