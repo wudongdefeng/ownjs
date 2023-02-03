@@ -41,23 +41,293 @@ B 树，而偏偏是 B+树呢？&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&qu
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6667239601237539&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xBgIbW1vdNP8w8S4jIhxN7Ng7A12FNkG3ibuPLKw17ngU2iazxZrer9eDLFsS1cxhSvobZka043lmRiab8bfRFwTg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;5818&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;作者：HelloGitHub-小鱼干&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;大开眼界的一期 GitHub 热门项目，类似 Django 存在的 pynecone，搞定 Windows、Office 激活的 Microsoft-Activation-Scripts，都让我的收藏夹蠢蠢欲动。最不能错过的应该是 hyperswitch，搞定你的支付业务。当然，还有 GitHub Trending 常客 ui 项目 ui，有着漂亮的画风和过硬的技术背景。最后是压轴的密钥找寻器——trufflehog，翻遍记录也要帮你把那些敏感信息找出来。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;以下内容摘录自微博&lt;/span&gt;&lt;span&gt;@HelloGitHub&lt;/span&gt;&lt;span&gt; 的 GitHub Trending 及 Hacker News 热帖（简称 HN 热帖），选项标准：&lt;/span&gt;&lt;code&gt;&lt;span&gt;新发布&lt;/span&gt;&lt;/code&gt;&lt;span&gt; | &lt;/span&gt;&lt;code&gt;&lt;span&gt;实用&lt;/span&gt;&lt;/code&gt;&lt;span&gt; | &lt;/span&gt;&lt;code&gt;&lt;span&gt;有趣&lt;/span&gt;&lt;/code&gt;&lt;span&gt;，根据项目 release 时间分类，发布时间不超过 14 day 的项目会标注 &lt;/span&gt;&lt;code&gt;&lt;span&gt;New&lt;/span&gt;&lt;/code&gt;&lt;span&gt;，无该标志则说明项目 release 超过半月。由于本文篇幅有限，还有部分项目未能在本文展示，望周知 🌝&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.8781609195402299&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/xBgIbW1vdNP8w8S4jIhxN7Ng7A12FNkGqyUqNq4VlasHQ2lZgbsI7ico4MEZlEjwJamyIFvOOibSRtJ2icCEmPiaRg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;870&quot;/&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;1. 本周特推&lt;/span&gt;&lt;/h2&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;1.1 纯 Python 应用：pynecone&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;主语言：Python&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;Pynecone 是一个全栈 Python 框架，可以在几分钟内轻松构建和部署 Web 应用程序。有了它，你即便不会 JavaScript 也可以构建 Web 应用，项目内置 60+ 个组件。不过按照 Hacker News 上的讨论，Pynecone 能做得到的事情你基于 Django 和 HTMX 也能做。此外，Pynecone 似乎用到了 FastAPI，如果你对 FastAPI 哲学更认可，不妨试试 Pynecone。这里留一个 HN 的讨论帖子：&lt;/span&gt;&lt;span&gt;https://news.ycombinator.com/item?id=33922754&lt;/span&gt;&lt;span&gt; 可以去了解更多这个框架的内容。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;下面是一个示例，生成下图的 Python 代码：&lt;/span&gt;&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;# Add state and page to the app.&lt;/span&gt;&lt;br/&gt;app = pc.App(state=State)&lt;br/&gt;app.add_page(index, title=&lt;span&gt;&quot;Pynecone:DALL·E&quot;&lt;/span&gt;)&lt;br/&gt;app.compile()&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;GitHub 地址→https://github.com/pynecone-io/pynecone&lt;/p&gt;&lt;/blockquote&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.845&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/xBgIbW1vdNP8w8S4jIhxN7Ng7A12FNkGLFUrcP4R28dsFwalpNtnjMerNJUIYPd7bEFAAyFwJLq7Tm3XU5tj5Q/640?wx_fmt=gif&quot; data-type=&quot;gif&quot; data-w=&quot;600&quot;/&gt;&lt;/figure&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;1.2 PDF 生成：QuestPDF&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;主语言：C#&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;QuestPDF 是一个生成 PDF 的现代 .NET 库，powered by C# 实现的 Fluent API。QuestPDF 支持热加载 hot-reload 大大地节约了你的时间，此外，它无需重编译代码就能支持在线实时浏览 PDF。&lt;/span&gt;&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;GitHub 地址→https://github.com/QuestPDF/QuestPDF&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.5625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/xBgIbW1vdNP8w8S4jIhxN7Ng7A12FNkG2WibyMjWeg3dYmrBOwB7BH7juwTM4UoKLOQPU2L3ic0NN8JacayKFjXg/640?wx_fmt=gif&quot; data-type=&quot;gif&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;2. GitHub Trending 周榜&lt;/span&gt;&lt;/h2&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;2.1 Windows 激活：Microsoft-Activation-Scripts&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;本周 star 增长数：450+&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;用 HWID/KMS38/ 在线 KMS 等方式永久激活 Windows、Office，除了开源之外，它还有一个亮点：更少的反病毒检测。MAS（Microsoft Activation Scripts）支持两种方式：命令和程序激活 Windows 10、Windows 11。&lt;/span&gt;&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;GitHub 地址→https://github.com/massgravel/Microsoft-Activation-Scripts&lt;/p&gt;&lt;/blockquote&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.684596577017115&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/xBgIbW1vdNP8w8S4jIhxN7Ng7A12FNkGkJLltZOeHj65B4zKtfClM57cibvbzWV3lP9AgicoTsibNJpZEXKqFhE1A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;818&quot;/&gt;&lt;/figure&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;2.2 支付集成：hyperswitch&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;本周 star 增长数：500+&lt;strong&gt;，&lt;/strong&gt;主语言：Rust&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;New&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 一个金融开关，让你的支付更快、更可靠、更低成本。它通过 API 让你轻松接入多个支付处理器、合理分配流量。部分特性：&lt;/span&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;减少单点依赖，可以用多个处理器；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;研发人员可减少 90% 力气来增加、维护集成；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;故障无缝转移；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;自定义付款流程；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;GitHub 地址→https://github.com/juspay/hyperswitch&lt;/p&gt;&lt;/blockquote&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.7909090909090909&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/xBgIbW1vdNP8w8S4jIhxN7Ng7A12FNkG2lhM7uCD6RP5dhhq0JAybUSwIwSJkohMuTxeiauLfQXBjoHb0a7H0ibQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;4840&quot;/&gt;&lt;/figure&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;2.3 漂亮组件：ui&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;本周 star 增长数：4,400+&lt;strong&gt;，&lt;/strong&gt;主语言：TypeScript&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;New&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 用 Radix UI 和 Tailwind CSS 构建的漂亮设计组件。部分特性：&lt;/span&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;采用 &lt;/span&gt;&lt;span&gt;Lucide&lt;/span&gt;&lt;span&gt; 图标；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;字体用 &lt;/span&gt;&lt;code&gt;&lt;span&gt;@next/font&lt;/span&gt;&lt;/code&gt;&lt;span&gt;；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;暗黑模式 &lt;/span&gt;&lt;code&gt;&lt;span&gt;next-themes&lt;/span&gt;&lt;/code&gt;&lt;span&gt;；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;动画基于 &lt;/span&gt;&lt;code&gt;&lt;span&gt;tailwindcss-animate&lt;/span&gt;&lt;/code&gt;&lt;span&gt;；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;GitHub 地址→https://github.com/shadcn/ui&lt;/p&gt;&lt;/blockquote&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5233333333333333&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/xBgIbW1vdNP8w8S4jIhxN7Ng7A12FNkGUtG4d34rwOkajmO76uUwibLfXlokaicl7zjia7VBTLwnJKGu95ibwymcxQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;2400&quot;/&gt;&lt;/figure&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;2.4 邮件系统：react-email&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;本周 star 增长数：1,000+&lt;strong&gt;，&lt;/strong&gt;主语言：TypeScript&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;用 React 构建的邮件系统来收发邮件吧~ react-email 作为下一代邮件系统，它有着更高质量、无样式组件来创建邮件。&lt;/span&gt;&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;GitHub 地址→https://github.com/resendlabs/react-email&lt;/p&gt;&lt;/blockquote&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/xBgIbW1vdNP8w8S4jIhxN7Ng7A12FNkGcbG07Dxd9PD0lugTuYXW8GkJz0PTWiayoR9qN2M5wh5NiaufZhMlZoFA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1600&quot;/&gt;&lt;/figure&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;2.5 另类密钥守护：trufflehog&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;本周 star 增长数：50+&lt;strong&gt;，&lt;/strong&gt;主语言：Golang&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;trufflehog 可以找到藏在你 git 中的敏感凭证，以此保护你的这些密钥们。它能在某个仓库、某个组织下扫描验证秘密，也能扫描 S3 桶的验证密钥。&lt;/span&gt;&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;GitHub 地址→https://github.com/trufflesecurity/trufflehog&lt;/p&gt;&lt;/blockquote&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.528125&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/xBgIbW1vdNP8w8S4jIhxN7Ng7A12FNkGxXUIK1JpD7tBP7U5jJOpGng1XRspgjFaScuVQWGhILS78MeHBhtXcw/640?wx_fmt=gif&quot; data-type=&quot;gif&quot; data-w=&quot;640&quot;/&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;3. 往期回顾&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;往期回顾：&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;以上为 2023 年第 4 个工作周的 GitHub Trending 🎉如果你 Pick 其他好玩、实用的 GitHub 项目，记得来 &lt;/span&gt;&lt;span&gt;HelloGitHub&lt;/span&gt;&lt;span&gt; 和我们分享下哟 🌝&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;最后，记得你在本文留言区留下你想看的主题 Repo（限公众号），例如：AI 换头。👀 和之前的送书活动类似，留言点赞 Top3 的小伙伴(&lt;span&gt;棒&lt;/span&gt;），小鱼干会努力去找 Repo 的^^&lt;/span&gt;&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;HelloGitHub 交流群现已全面开放，添加微信号：HelloGitHub001 为好友入群，可同前端、Java、Go 等各界大佬谈笑风生、切磋技术~&lt;/p&gt;&lt;/blockquote&gt;&lt;span&gt;- END -&lt;/span&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>7ef2fbde73adb00263cadfe8ee7ba084</guid>
-<title>携程 MySQL 迁移 OceanBase 最佳实践</title>
-<link>https://toutiao.io/k/7vydt80</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;profile_inner&quot;&gt;
-                  &lt;strong class=&quot;profile_nickname&quot;&gt;携程技术&lt;/strong&gt;
-                  &lt;img class=&quot;profile_avatar&quot; id=&quot;js_profile_qrcode_img&quot; src=&quot;&quot; alt=&quot;&quot;/&gt;
+<guid>4040e5b8d60e897dd40f269c1d54d60d</guid>
+<title>一种基于图片搜索视频的方案</title>
+<link>https://toutiao.io/k/d0jftv6</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;p&gt;&lt;strong&gt;作者：京东零售 谷伟&lt;/strong&gt;&lt;/p&gt;
 
-                  &lt;p class=&quot;profile_meta&quot;&gt;
-                  &lt;label class=&quot;profile_meta_label&quot;&gt;Weixin ID&lt;/label&gt;
-                  &lt;span class=&quot;profile_meta_value&quot;&gt;ctriptech&lt;/span&gt;
-                  &lt;/p&gt;
+&lt;h1&gt;1.商品搜索&lt;/h1&gt;
 
-                  &lt;p class=&quot;profile_meta&quot;&gt;
-                  &lt;label class=&quot;profile_meta_label&quot;&gt;About Feature&lt;/label&gt;
-                  &lt;span class=&quot;profile_meta_value&quot;&gt;携程技术官方账号，分享交流成长。&lt;/span&gt;
-                  &lt;/p&gt;
-                &lt;/div&gt;
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+&lt;p&gt;1.1网络购物的搜索手段&lt;/p&gt;
+
+&lt;p&gt;随着移动互联网发展，手机端购物已成为人们生活的常态。人们在搜索商品时采用的手段也越来越丰富，当前的主要搜索方式是文本搜索与拍照搜索。&lt;/p&gt;
+
+&lt;p&gt;1.2文本搜索&lt;/p&gt;
+
+&lt;p&gt;文本搜索应用比较广泛，较为常用的是关键字匹配，针对商品信息的相关描述进行分词，并对分词建立索引库，从而达到查找的目的。随着人工智能的发展，语义搜索得到了快速的发展，它通过用户输入的搜索内容来理解用户真正的意图，从而获得更有价值的内容。其本质是将所有要搜索的内容转化为高维数学向量，用统一的特征向量来描述不同内容，把检索输入的内容向量化，并与要搜索的内容进行向量匹配，把相似度最高的结果展现出来。&lt;/p&gt;
+
+&lt;p&gt;1.3拍照搜索&lt;/p&gt;
+
+&lt;p&gt;拍照搜索也就是以图搜图，是近几年的视觉AI发展的一个产物。用户登录电商平台，可以通过上传图片，经过图像分析与识别来查找相似的商品主图，从而找出相关的商品。其基本原理是经图像分析抽取图像的颜色、形状、纹理等特征，建立特征索引库，对用户上传的图像进行特征化描述，从索引库中查找出与之近似的特征图像。&lt;/p&gt;
+
+&lt;h1&gt;2. 现状分析&lt;/h1&gt;
+
+&lt;p&gt;2.1需要专业人员参与&lt;/p&gt;
+
+&lt;p&gt;文本搜索需要文本描述的支持，也就是需要对短视频进行文本描述，需要人员对短视频进行准确的文本描述，尤其描述中要含有代表其商品的关键词，否则可能难以被搜索引擎所命中，这对视频的发布人员产生了一定的门槛，增加搜索命中的难度。&lt;/p&gt;
+
+&lt;p&gt;拍照搜索主要是对商品的主图进行特征匹配，这也就需要商品发布人员要制作尽可能与之匹配的图片，尤其需要美工设计人员的参与，从而增加了人力成本。&lt;/p&gt;
+
+&lt;p&gt;2.2难以支持短视频搜索&lt;/p&gt;
+
+&lt;p&gt;随着近几年自媒体的发展，短视频逐渐成为互联网信息传播的主要手段。而短视频可以认为是大量图片的集合，不可能对短视频的每张图片建立特征索引，因为这会浪费大量的计算机算力。&lt;/p&gt;
+
+&lt;h1&gt;3. 技术方案&lt;/h1&gt;
+
+&lt;h2&gt;3.1 技术问题&lt;/h2&gt;
+
+&lt;p&gt;以前商品介绍主要以图文方式来展现商品，不仅要展示商品主图还要配细节图，以及产品参数，从而达到全面涵盖产品信息的能力。而短视频能够全方位的展示商品，并搭配语言描述以及背景音乐，可进一步形象的给消费者介绍商品的功能，给顾客更直观的体验，有助于促进下单。同时商家制作的短视频可将其推送到自媒体平台上，便于给商品引流，提高商品销量，从而拓宽了销售市场。&lt;/p&gt;
+
+&lt;p&gt;因此短视频营销相对于图文营销更有优势，如何让顾客能够更快更便捷地搜索到其感兴趣的商品短视频，是本发明所要解决的主要问题。本方案主要解决的是商品短视频搜索，按照类目维度对商品短视频进行筛选，并提高视频搜索的命中率，为商品短视频搜索建立桥梁。&lt;/p&gt;
+
+&lt;h2&gt;3.2 技术方案&lt;/h2&gt;
+
+&lt;h3&gt;3.2.1 流程图&lt;/h3&gt;
+
+&lt;p&gt;流程图：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/d369840ad31d41888411365b90a55e17%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;﻿﻿&lt;/p&gt;
+
+&lt;h3&gt;3.2.2 详细描述&lt;/h3&gt;
+
+&lt;p&gt;1.关键帧提取&lt;/p&gt;
+
+&lt;p&gt;卖家在制作好商品介绍的短视频后，在发布商品时对短视频进行上传，视频时长不能超过2分钟。对该视频进行关键帧提取。视频是由一组连续的图像组成，如果每张图片都存储下来，则会导致视频文件过大，因此视频都会被压缩，在压缩过程中，产生了I帧、P帧、B帧。I帧是画面的完整保存，它尽可能去除了图像空间的冗余信息；P帧则是记录与前一个关键帧的差别；B帧是记录本帧与上一帧和下一帧的差别。&lt;/p&gt;
+
+&lt;p&gt;因此只需提取出I帧即可。在MPEG-4标准中，stss部分标识了哪些sample是关键帧，如果没有stss则全部sample是关键帧。当获取的关键帧太多时，以时间轴维度，随机选取20帧的图像供商家选择，把商家选取的5张图片与视频文件一同保存到文件数据库中。&lt;/p&gt;
+
+&lt;p&gt;Mp4标准&lt;/p&gt;
+
+&lt;table&gt;&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Box类型&lt;/th&gt;
+&lt;th&gt;说明&lt;/th&gt;
+&lt;th/&gt;
+&lt;th/&gt;
+&lt;th/&gt;
+&lt;th/&gt;
+&lt;th/&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;ftyp&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;文件类型&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;moov&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;记录媒体信息&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;mvhd&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;视频文件信息，如时长、创建时间等&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;track&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;存放视频的容器&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;tkhd&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;媒体总体信息，如宽高等&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;mdia&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;媒体容器&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;mdhd&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;换算真实事件&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;hdlr&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;媒体类型，指明是video、audio、hint&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;minf&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;媒体信息容器&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;stbl&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;偏移映射关系表&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;stsd&lt;/td&gt;
+&lt;td&gt;sample描述&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;stts&lt;/td&gt;
+&lt;td&gt;时戳-sample序号映射表&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;stsc&lt;/td&gt;
+&lt;td&gt;sample与chunk的映射表&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;stsz&lt;/td&gt;
+&lt;td&gt;sample的大小&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;stz2&lt;/td&gt;
+&lt;td&gt;另一种存储sample的大小，更节省空间&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;stss&lt;/td&gt;
+&lt;td&gt;关键帧列表（从该处获得I帧）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;stco&lt;/td&gt;
+&lt;td&gt;每个chunk的偏移&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;co64&lt;/td&gt;
+&lt;td&gt;64位chunk的偏移&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;mdat&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;﻿&lt;/td&gt;
+&lt;td&gt;具体的媒体数据&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;
+
+&lt;p&gt;2.特征向量计算&lt;/p&gt;
+
+&lt;p&gt;本次的特征向量计算采用的是VGG16模型。由于关键帧的图片都是彩色图片，因此采用3通道。卷积核为3×3，池化核为2×2。以224×224的视频图像为例，过程如下：&lt;/p&gt;
+
+&lt;p&gt;1) 输入图像大小为224×224×3，经64个通道的卷积核3×3，步长为1，共卷积2次，输出尺寸为224×224×64的特征向量。进行池化，采用池化核2×2，步长为2，输出尺寸为112×112×64的特征向量。&lt;/p&gt;
+
+&lt;p&gt;2) 经128个3×3的卷积核，步长为1，卷积2次，尺寸变为112×112×128，进行池化，步长为2，输出尺寸为56×56×128。&lt;/p&gt;
+
+&lt;p&gt;3) 经256个3×3的卷积核，步长为1，卷积3次，尺寸变为56×56×256，进行池化，步长为2，输出尺寸为28×28×256。&lt;/p&gt;
+
+&lt;p&gt;4) 经512个3×3的卷积核，步长为1，卷积3次，尺寸变为28×28×512，进行池化，步长为2，输出尺寸为14×14×256。&lt;/p&gt;
+
+&lt;p&gt;5) 经512个3×3的卷积核，步长为1，卷积3次，尺寸变为14×14×512，进行池化，步长为2，输出尺寸为7×7×256。&lt;/p&gt;
+
+&lt;p&gt;6) 将数据拉平成一维数组，7×7×256=25088。&lt;/p&gt;
+
+&lt;p&gt;7) 经两层1×1×4096与一层1×1×1000的全连接层，最终输出1×1000的特征向量。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f888d0a15f3c4c80b8d23fafa1f89c7d%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;﻿﻿&lt;/p&gt;
+
+&lt;p&gt;3.向量数据库&lt;/p&gt;
+
+&lt;p&gt;向量在存储时要把文件数据库中的ID同时存下来，以及商品ID，从而建立向量、文件、商品的关系。向量搜索都是相似性搜索，通过两个向量在高位空间的距离来做判断，其实就是在高维空间中找到与目标向量最接近的K个向量，一般采用欧式距离计算，其公式：&lt;/p&gt;
+
+&lt;p&gt;﻿&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f9491d859e7b42d2ae8a02913d998084%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;﻿﻿  &lt;/p&gt;
+
+&lt;p&gt;为了召回精度高，暴力搜索的是最好的选择。但这会产生大量的不必要的计算，浪费了计算机资源。因此本方案采用类目维度进行切割。减少搜索范围。&lt;/p&gt;
+
+&lt;p&gt;4.视频搜索&lt;/p&gt;
+
+&lt;p&gt;买家需要选择要搜索的类目再进行图片上传，通过VGG16模型计算出特征向量，然后基于类目维度进行暴力搜索把最接近的K个向量筛选出来。最后再根据向量与文件的关系，把视频文件查找出来，返回给买家。&lt;/p&gt;
+
+&lt;p&gt;5.视频淘汰策略&lt;/p&gt;
+
+&lt;p&gt;每日进行定时巡检，对于长时间没有流量或者流量低于阈值的商品，需要从向量库中对其短视频进行逻辑删除，尽可能减少搜索的体积，减少计算资源的浪费。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/448d8089a0fa45ceac16369f01b44757%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;/div&gt;
+  &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
