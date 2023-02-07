@@ -14,6 +14,550 @@
         &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
+<guid>432dfb8e1eb26e74e0558acb4a5e2136</guid>
+<title>从实战出发，聊聊缓存数据库一致性</title>
+<link>https://toutiao.io/k/bp2hkj2</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;profile_inner&quot;&gt;
+                  &lt;strong class=&quot;profile_nickname&quot;&gt;又拍云&lt;/strong&gt;
+                  &lt;img class=&quot;profile_avatar&quot; id=&quot;js_profile_qrcode_img&quot; src=&quot;&quot; alt=&quot;&quot;/&gt;
+
+                  &lt;p class=&quot;profile_meta&quot;&gt;
+                  &lt;label class=&quot;profile_meta_label&quot;&gt;Weixin ID&lt;/label&gt;
+                  &lt;span class=&quot;profile_meta_value&quot;&gt;upaiyun&lt;/span&gt;
+                  &lt;/p&gt;
+
+                  &lt;p class=&quot;profile_meta&quot;&gt;
+                  &lt;label class=&quot;profile_meta_label&quot;&gt;About Feature&lt;/label&gt;
+                  &lt;span class=&quot;profile_meta_value&quot;&gt;加速在线业务。为客户提供CDN、PrismCDN、云存储、SSL证书、云处理、直播云、点播云等服务。&lt;/span&gt;
+                  &lt;/p&gt;
+                &lt;/div&gt;
+                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>35bbbb3cd83b3863fa5310a98e705be3</guid>
+<title>从历代 GC 算法角度刨析 ZGC</title>
+<link>https://toutiao.io/k/led7tbg</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;p&gt;&lt;strong&gt;作者：京东科技 文涛&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h1&gt;&lt;strong&gt;前言&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;本文所有介绍仅限于HotSpot虚拟机，
+本文先介绍了垃圾回收的必要手段，基于这些手段讲解了历代垃圾回收算法是如何工作的，
+每一种算法不会讲的特别详细，只为读者从算法角度理解工作原理，从而引出ZGC，方便读者循序渐进地了解。
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;GC是Garbage Collection的缩写，顾名思义垃圾回收机制，即当需要分配的内存空间不再使用的时候，JVM将调用垃圾回收机制来回收内存空间。&lt;/p&gt;
+
+&lt;p&gt;那么JVM的垃圾机制是如何工作的呢？&lt;/p&gt;
+
+&lt;p&gt;第一步识别出哪些空间不再使用（识别并标记出哪些对象已死）；&lt;/p&gt;
+
+&lt;p&gt;第二步回收不再使用空间（清除已死对象 ）&lt;/p&gt;
+
+&lt;h1&gt;&lt;strong&gt;判断对象是否已死&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;p&gt;判断对象是否已死通常有两种方式 ,引用计数法和可达性分析法&lt;/p&gt;
+
+&lt;h2&gt;&lt;strong&gt;引用计数法&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;给对象中添加一个引用计数器,每当有一个地方引用它时,计数器值就加1:当引用失效时,计数器值就减1;任何时刻计数器为0的对象就是不能再被使用的。&lt;/p&gt;
+
+&lt;p&gt;简单高效，但无法解决循环引用问题，a=b,b=a&lt;/p&gt;
+
+&lt;p&gt;引用计数法并没有在产品级的JVM中得到应用&lt;/p&gt;
+
+&lt;h2&gt;&lt;strong&gt;可达性分析法&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;这个算法的基本思路就是通过一系列的称为“ GC Roots”的对象作为起始点,从这些节点开始向下搜索,搜索所走过的路径称为引用链( Reference Chain),当一个对象到 GC Roots没有任何引用链相连(用图论的话来说,就是从 GC Roots到这个对象不可达)时,则证明此对象是不可用的。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-63a6e07b33c15c401e93efdc4e2ff512cfe.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;不过可达性算法中的对象并不是立即死亡的，对象拥有一次自我拯救的机会，对象被系统宣告死亡至少要经历两次标记过程，第一次是经过可达性分析之后没有与GC Roots相连的引用链，第二次是在由虚拟机自动建立的Finalize队列中判断是否需要执行finalize()方法。&lt;/p&gt;
+
+&lt;p&gt;HotSopt虚拟机采用该算法。&lt;/p&gt;
+
+&lt;h1&gt;&lt;strong&gt;清除已死对象的方式&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;h2&gt;&lt;strong&gt;标记清除算法&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;先标记再清除&lt;/p&gt;
+
+&lt;p&gt;不足：1 效率问题，标记和清除效率都不高。2 空间问题，产生大量空间碎片&lt;/p&gt;
+
+&lt;h2&gt;&lt;strong&gt;复制算法&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;内存分两块，A,B&lt;/p&gt;
+
+&lt;p&gt;A用完了，将存活对象拷贝到B,A清理掉&lt;/p&gt;
+
+&lt;p&gt;代价：内存少了一半。&lt;/p&gt;
+
+&lt;p&gt;HotSopt虚拟机用此算法回收新生代。将新生代内存划分为8：1：1的Eden和Survivor解决复制算法内存使用率低的问题&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-fa45c48c40004eaae7966ab9b229b40f8a3.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;h2&gt;&lt;strong&gt;标记整理算法&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;老年代使用，方式和标记清除类似，只是不直接清除，而是将后续对象向一端移动，并清理掉边界以外的内存。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-754d7ae260f04360b22a4f57eec0677ab48.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;h3&gt;&lt;strong&gt;分代收集算法&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;分代收集是一个算法方案，整合了以上算法的优点，一般是把Java堆分为新生代和老年代,在新生代中,使用复制算法老年代“标记一清理”或者“标记一整理”&lt;/p&gt;
+
+&lt;h1&gt;&lt;strong&gt;历代垃圾收集器简介&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;p&gt;通过上文我们了解了怎样识别垃圾，怎样清理垃圾，接下来，讲ZGC之前，我们回顾一下历代垃圾回收是怎样做的，主要是想给读者一种历史的视角，任何技术都不是凭空产生的，更多的是在前人成果之上进行优化整合&lt;/p&gt;
+
+&lt;p&gt;我们先看一个历代JDK垃圾收集器对比表格，以下表格着重说明或引出几个问题：&lt;/p&gt;
+
+&lt;p&gt;1 CMS从来未被当作默认GC，且已废弃&lt;/p&gt;
+
+&lt;p&gt;2 CMS的思想其实部分被ZGC吸收，CMS已死，但他的魂还在&lt;/p&gt;
+
+&lt;p&gt;3 JDK11、JDK17为长期迭代版本，项目中应优先使用这两个版本&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://img.toutiao.io/attachment/5f8f7617e1624254b486ffe1524ddeba/w600&quot; alt=&quot;file&quot;/&gt;&lt;/p&gt;
+
+&lt;h2&gt;&lt;strong&gt;GC分类&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;我们经常在各种场景听到以下几种GC名词，Young GC、Old GC、Mixed GC、Full GC、Major GC、Minor GC，他们到底什么意思，本人进行了以下梳理&lt;/p&gt;
+
+&lt;p&gt;首先GC分两类，Partial GC（部分回收），Full GC&lt;/p&gt;
+
+&lt;p&gt;Partial GC：并不收集整个GC堆的模式，以下全是Partial GC的子集&lt;/p&gt;
+
+&lt;p&gt;Young GC：只收集young gen的GC&lt;/p&gt;
+
+&lt;p&gt;Old GC：只收集old gen的GC。只有CMS的concurrent collection是这个模式&lt;/p&gt;
+
+&lt;p&gt;Mixed GC：只有G1有这个模式，收集整个young gen以及部分old gen的GC。&lt;/p&gt;
+
+&lt;p&gt;Minor GC：只有G1有这个模式，收集整个young gen&lt;/p&gt;
+
+&lt;p&gt;Full GC：收集整个堆，包括young gen、old gen、perm gen（如果存在的话）等所有部分的模式。&lt;/p&gt;
+
+&lt;p&gt;Major GC：通常是跟full GC是等价的&lt;/p&gt;
+
+&lt;h2&gt;&lt;strong&gt;serial收集器&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;单线程收集器，“单线程”的意义并不仅仅说明它只会使用一个CPU或一条收集线程去完成垃圾收集工作,更重要的是在它进行垃圾收集时,必须&lt;strong&gt;暂停其他所有的工作线程&lt;/strong&gt;,直到它收集结束。它依然是虚拟机运行在 Client模式下的默认新生代收集器。它也有着优于其他收集器的地方:简单而高效(与其他收集器的单线程比),对于限定单个CPU的环境来说, Serial I收集器由于没有线程交互的开销,专心做垃圾收集自然可以获得最高的单线程收集效率。&lt;/p&gt;
+
+&lt;p&gt;下图彩色部分说明了它的算法，简单粗暴&lt;/p&gt;
+
+&lt;p&gt;1 停止用户线程&lt;/p&gt;
+
+&lt;p&gt;2 单线程垃圾回收新生代&lt;/p&gt;
+
+&lt;p&gt;3 重启用户线程&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-012d8f19d0603ea725eb40ad8589b203073.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;h2&gt;&lt;strong&gt;ParNew收集器&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Parnew收集器其实就是 Serial l收集器的多线程版本。它是许多运行在 Server模式下的虚拟机中首选的新生代收集器,其中有一个与性能无关但很重要的原因是,除了 Serial 收集器外,目前只有它能与CMS收集器配合工作。Pardew收集器在单CPU的环境中绝对不会有比 Serial收集器更好的效果。它默认开启的收集线程数与CPU的数量相同,在CPU非常多(臂如32个)的环境下,可以使用-XX: ParallelGCThreads参数来限制垃圾收集的线程数。&lt;/p&gt;
+
+&lt;p&gt;ParNew收集器&lt;strong&gt;追求降低GC时用户线程的停顿时间,&lt;/strong&gt;适合交互式应用,良好的反应速度提升用户体验.&lt;/p&gt;
+
+&lt;p&gt;下图彩色部分说明了它的算法，同样简单粗暴&lt;/p&gt;
+
+&lt;p&gt;1 停止用户线程&lt;/p&gt;
+
+&lt;p&gt;2 多线程垃圾回收新生代&lt;/p&gt;
+
+&lt;p&gt;3 重启用户线程&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-2c119f92ead677b561299a76bed048a7656.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;h2&gt;&lt;strong&gt;Parallel Scavenge 收集器&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Parallel Scavenge收集器是一个新生代收集器,它也是使用复制算法的收集器,又是并行的多线程收集器。算法的角度它和ParNew一样，在此就不画图解释了&lt;/p&gt;
+
+&lt;p&gt;Parallel Scavenge收集器的目标则是达到&lt;strong&gt;一个可控制的吞吐量&lt;/strong&gt;( Throughput)&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;吞吐量是指用户线程运行时间占CPU总时间的比例&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;通过以下两种方式可达到目的：&lt;/p&gt;
+
+&lt;p&gt;1.在多CPU环境中使用多条GC线程,从而垃圾回收的时间减少,从而用户线程停顿的时间也减少;&lt;/p&gt;
+
+&lt;p&gt;2.实现GC线程与用户线程并发执行。&lt;/p&gt;
+
+&lt;h2&gt;&lt;strong&gt;Serial Old收集器&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Serial Old是 Serial 收集器的老年代版本,它同样是一个单线程收集器,使用“标记整理”算法。这个收集器的主要意义也是在于给 Client模式下的虚拟机使用。&lt;/p&gt;
+
+&lt;p&gt;如果在 Server模式下,那么它主要还有两大用途:&lt;/p&gt;
+
+&lt;p&gt;一种用途是在JDK1.5以及之前的版本中与 ParallelScavenge收集器搭配使用,&lt;/p&gt;
+
+&lt;p&gt;另一种用途就是作为CMS收集器的后备预案,在并发收集发生Concurrent Mode Failure时使用&lt;/p&gt;
+
+&lt;p&gt;下图彩色部分说明了它的算法，同样简单粗暴&lt;/p&gt;
+
+&lt;p&gt;1 停止用户线程&lt;/p&gt;
+
+&lt;p&gt;2 单线程垃圾回收老年代&lt;/p&gt;
+
+&lt;p&gt;3 重启用户线程&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-7c1522951dde9768b14b6f4a3e49d767626.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;h2&gt;&lt;strong&gt;Parallel Old收集器&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Paralle Old是 Parallel Scavenge收集器的老年代版本,一般它们搭配使用,追求CPU吞吐量,使用多线程和“标记一整理”算法。&lt;/p&gt;
+
+&lt;p&gt;下图彩色部分说明了它的算法，同样简单粗暴&lt;/p&gt;
+
+&lt;p&gt;1 停止用户线程&lt;/p&gt;
+
+&lt;p&gt;2 多线程垃圾回收老年代&lt;/p&gt;
+
+&lt;p&gt;3 重启用户线程&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-9e688d2f440308ff08a15794bbecaca2f33.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;h2&gt;&lt;strong&gt;CMS收集器&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;以上5种垃圾回收原理不难理解，算法之所以如此简单个人理解在当时使用这种算法就够了，随着JAVA的攻城略地，有一种垃圾回收需求出现，即使用尽量短的回收停顿时间，以避免过久的影响用户线程，CMS登场了。&lt;/p&gt;
+
+&lt;p&gt;CMS( Concurrent Mark Sweep)收集器是一种以获取最短回收停顿时间为目标的收集器。&lt;/p&gt;
+
+&lt;p&gt;想要达到目的，就要分析GC时最占用时间的是什么操作，比较浪费时间的是标记已死对象、清除对象，那么如果可以和用户线程并发的进行，GC的停顿基本就限制在了标记所花费的时间。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-d8de16803a7beba877489d0e65dcdf37c6b.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;如上图，CMS收集器是基于“标记一清除”法实现的,它的运作过程分为4个步骤&lt;/p&gt;
+
+&lt;p&gt;• 初始标记( EMS initial mark) stop the world&lt;/p&gt;
+
+&lt;p&gt;• 并发标记( CMS concurrent mark)&lt;/p&gt;
+
+&lt;p&gt;• 重新标记( CMS remark) stop the world&lt;/p&gt;
+
+&lt;p&gt;• 并发清除( CMS concurrent sweep)&lt;/p&gt;
+
+&lt;p&gt;初始标记的作用是查找GC Roots集合的过程，这个过程处理对象相对较少，速度很快。(为什么要进行初始标记：枚举根结点。&lt;a href=&quot;https://www.zhihu.com/question/502729840&quot;&gt;https://www.zhihu.com/question/502729840&lt;/a&gt;)&lt;/p&gt;
+
+&lt;p&gt;并发标记是实际标记所有对象是否已死的过程，比较耗时，所以采用并发的方式。&lt;/p&gt;
+
+&lt;p&gt;重新标记主要是处理并发标记期间所产生的新的垃圾。重新标记阶段不需要再重新标记所有对象，只对并发标记阶段改动过的对象做标记即可。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;优点:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;并发收集、低停顿&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;缺点：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;CMS收集器对CPU资源非常敏感。&lt;/p&gt;
+
+&lt;p&gt;CMS收集器无法处理浮动垃圾( Floating Garbage),可能出现“Concurrent ModeFailure”失败而导致另一次 Full GC的产生。&lt;/p&gt;
+
+&lt;p&gt;“标记一清除”法导致大量空间碎片产生，以至于老年代还有大量空间，却没有整块空间存储某对象。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Concurrent ModeFailure可能原因及方案
+原因1：CMS触发太晚
+方案：将-XX:CMSInitiatingOccupancyFraction=N调小 (达到百分比进行垃圾回收)；
+原因2：空间碎片太多
+方案：开启空间碎片整理，并将空间碎片整理周期设置在合理范围；
+-XX:+UseCMSCompactAtFullCollection （空间碎片整理）
+-XX:CMSFullGCsBeforeCompaction=n
+原因3：垃圾产生速度超过清理速度
+晋升阈值过小；
+Survivor空间过小，导致溢出；
+Eden区过小，导致晋升速率提高；存在大对象；
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2&gt;&lt;strong&gt;G1收集器&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;G1是一款面向服务端应用的垃圾收集器。下文会简单讲解一下它的“特点”和“内存分配与回收策略”，有基础或不感兴趣的同学直接跳到“G1垃圾回收流程”&lt;/p&gt;
+
+&lt;h3&gt;&lt;strong&gt;特点&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;并行与并发&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;G1能充分利用多CPU、多核环境下的硬件优势,使用多个CPU(CPU或者CPU核心)来缩短Stop-The- World停顿的时间,部分其他收集器原本需要停顿Java线程执行的GC动作,G1收集器仍然可以通过并发的方式让Java程序继续执行。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;分代收集&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;与其他收集器一样,分代概念在G1中依然得以保留。虽然G1可以不需要其他收集器配合就能独立管理整个GC堆,但它能够采用不同的方式去处理新创建的对象和已经存活了一段时间、熬过多次GC的旧对象以获取更好的收集效果。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;空间整合&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;与CMS的“标记一清理”算法不同,G1从整体来看是基于“标记一整理”算法实现的收集器,从局部(两个 Region之间)上来看是基于“复制”算法实现的,但无论如何,这两种算法都意味着G1运作期间不会产生内存空间碎片,收集后能提供规整的可用内存。这种特性有利于程序长时间运行,分配大对象时不会因为无法找到连续内存空间而提前触发下一次GC。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;可预测的停顿&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;这是G1相对于CMS的另一大优势,降低停顿时间是G1和CMS共同的关注点,但G1除了追求低停顿外,还能建立可预测的停顿时间模型,能让使用者明确指定在一个长度为M毫秒的时间片段内,消耗在垃圾收集上的时间不得超过N毫秒,这几乎已经是实时Java(RTSJ)的垃圾收集器的特征了。&lt;/p&gt;
+
+&lt;p&gt;在G1之前的其他收集器进行收集的范围都是整个新生代或者老年代,而G1不再是这样。使用G1收集器时,Java堆的内存布局就与其他收集器有很大差别,它将整个Java堆划分为多个大小相等的独立区域( Region),虽然还保留有新生代和老年代的概念,但新生代和老年代不再是物理隔离的了,它们都是一部分 Region(不需要连续)的集合&lt;/p&gt;
+
+&lt;h3&gt;&lt;strong&gt;内存分配与回收策略&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;对象优先在Eden分配&lt;/p&gt;
+
+&lt;p&gt;大多数情况下,对象在新生代Eden区中分配。当Eden区没有足够空间进行分配时,虚拟机将发起一次 Minor[ˈmaɪnə(r)] GC&lt;/p&gt;
+
+&lt;p&gt;大对象直接进入老年代&lt;/p&gt;
+
+&lt;p&gt;所谓的大对象是指,需要大量连续内存空间的Java对象,最典型的大对象就是那种很长的字符串以及数组。大对象对虚拟机的内存分配来说就是一个坏消息(比遇到一个大对象更加坏的消息就是遇到一群“朝生夕灭”的“短命大对象”写程序的时候应当避免),经常出现大对象容易导致内存还有不少空间时就提前触发垃圾收集以获取足够的连续空间来“安置”它们。&lt;/p&gt;
+
+&lt;p&gt;长期存活的对象将进入老年代&lt;/p&gt;
+
+&lt;p&gt;虚拟机给每个对象定义了一个对象年龄(Age)计数器。如果对象在Eden出生并经过第一次 Minor GC后仍然存活,并且能被 Survivor容纳的话,将被移动到 Survivor空间中,并且对象年龄设为1。对象在 Survivor区中每“熬过”一次 Minor GC,年龄就增加1岁,当它的年龄增加到一定程度（默认15岁）会被晋升到老年代中。对象晋升老年代的年龄阈值,可以通过参数据-XX : MaxTenuringThreshold设置&lt;/p&gt;
+
+&lt;p&gt;动态对象年龄判定&lt;/p&gt;
+
+&lt;p&gt;为了能更好地适应不同程序的内存状况,虚拟机并不是水远地要求对象的年龄必须达到了 MaxTenuringThreshold才能晋升老年代,如果在 Survivor空间中相同年龄所有对象大小的总和大于 Survivor空间的一半,年龄大于或等于该年龄的对象就可以直接进入老年代,无须等到 MaxTenuringThreshold中要求的年龄。&lt;/p&gt;
+
+&lt;p&gt;空间分配担保&lt;/p&gt;
+
+&lt;p&gt;在发生 Minor GC之前,虚拟机会先检査老年代最大可用的连续空间是否大于新生代所有对象总空间,如果这个条件成立,那么 Minor GC可以确保是安全的。如果不成立,则虚拟机会查看 HandlePromotionFailure设置值是否允许担保失败。如果允许,那么会继续检查老年代最大可用的连续空间是否大于历次晋升到老年代对象的平均大小,如果大于,将尝试着进行一次 Minor GC,尽管这次 Minor GC是有风险的;如果小于,或者HandlePromotionFailure设置不允许冒险,那这时也要改为进行一次 Full GC.&lt;/p&gt;
+
+&lt;p&gt;为什么要担保:&lt;/p&gt;
+
+&lt;p&gt;Minor GC后还有大量对象存活且空间不够存放新对象，就要直接在老年代存放&lt;/p&gt;
+
+&lt;p&gt;为什么是历次晋升到老年代对象的平均大小:&lt;/p&gt;
+
+&lt;p&gt;取平均值进行比较其实仍然是一种动态概率的手段,也就是说,如果某次 Minor GCd存活后的对象突增,远远高于平均值的话,依然会导致担保失败( HandlePromotionFailure)如果出现了 HandlePromotionFailure失败,那就只好在失败后重新发起一次 Full GC。虽然担保失败时绕的子是最大的,但大部分情况下都还是会将 HandlePromotionFailure开关打开,避免 Full GC过于频繁。&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;eden的大小范围默认是 =【-XX:G1NewSizePercent，-XX:G1MaxNewSizePercent】=【整堆5%，整堆60%】&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;humongous如果一个对象的大小已经超过Region大小的50%了，那么就会被放入大对象专门的Region中，这种Region我们叫humongous&lt;/em&gt;&lt;/p&gt;
+
+&lt;h3&gt;&lt;strong&gt;G1垃圾回收流程&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-79e7a6b4736e8df36b81fdad2f1177e0d66.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;网上对G1的回收阶段有不同的说法，参考Oracle JVM工程师的一个说法：&lt;/p&gt;
+
+&lt;p&gt;他把整个 G1 的垃圾回收阶段分成了这么三个，第一个叫 Minor GC，就是对新生代的垃圾收集，第二个阶段呢叫 Minor GC + Concurrent Mark，就是新生代的垃圾收集同时呢会执行一些并发的标记，这是第二个阶段，第三个阶段呢它叫 Mixed GC 混合收集，这三个阶段是一个循环的过程。刚开始是这个新生代的垃圾收集，经过一段时间，当老年代的内存超过一个阈值了，它会在新生代垃圾收集的同时进行并发的标记，等这个阶段完成了以后，它会进行一个混合收集，混合收集就是会对新生代、幸存区还有老年代都来进行一个规模较大的一次收集，等内存释放掉了，混合收集结束。这时候伊甸园的内存都被释放掉，它会再次进入新生代的一个垃圾收集过程，那我们先来看看这个新生代的收集 Minor GC。&lt;/p&gt;
+
+&lt;h4&gt;&lt;strong&gt;Minor GC的回收过程（eden满了回收）&lt;/strong&gt;&lt;/h4&gt;
+
+&lt;p&gt;选定所有Eden Region放入CSet，使用多线程复制算法将CSet的存活对象复制到Survivor Region或者晋升到Old Region。&lt;/p&gt;
+
+&lt;p&gt;下图分7步演示了这个过程&lt;/p&gt;
+
+&lt;p&gt;1 初始状态，堆无占用&lt;/p&gt;
+
+&lt;p&gt;2 Eden Region满了进行标记&lt;/p&gt;
+
+&lt;p&gt;3 将存活对象复制到Survivor Region&lt;/p&gt;
+
+&lt;p&gt;4 清理Eden Region&lt;/p&gt;
+
+&lt;p&gt;5 Eden Region又满了进行再次标记，此时会连带Survivor Region一起标记&lt;/p&gt;
+
+&lt;p&gt;6 将存活对象复制到另一个Survivor Region&lt;/p&gt;
+
+&lt;p&gt;7 再次清理Eden Region和被标记过的Survivor Region&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-b2e5fe53522ef688777d414392adcd262eb.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;Minor GC结束后自动进行并发标记，为以后可能的Mixed GC做准备&lt;/p&gt;
+
+&lt;h4&gt;&lt;strong&gt;Mixed GC的回收过程（专注垃圾最多的分区）&lt;/strong&gt;&lt;/h4&gt;
+
+&lt;p&gt;选定所有Eden Region和全局并发标记计算得到的收益较高的部分Old Region放入CSet，使用多线程复制算法将CSet的存活对象复制到Survivor Region或者晋升到Old Region。&lt;/p&gt;
+
+&lt;p&gt;当堆空间的占用率达到一定阈值后会触发Mixed GC（默认45%，由参数决定）&lt;/p&gt;
+
+&lt;p&gt;Mixed GC它一定会回收年轻代，并会采集部分老年代的Region进行回收的，所以它是一个“混合”GC。&lt;/p&gt;
+
+&lt;p&gt;下图分3步演示了这个过程&lt;/p&gt;
+
+&lt;p&gt;1 并发标记所有Region&lt;/p&gt;
+
+&lt;p&gt;2 并发复制&lt;/p&gt;
+
+&lt;p&gt;3 并发清理&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-01-13-51Wd141B7V1yLiWeyR.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;h1&gt;&lt;strong&gt;ZGC&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;p&gt;ZGC（Z Garbage Collector） 是一款性能比 G1 更加优秀的垃圾收集器。ZGC 第一次出现是在 JDK 11 中以实验性的特性引入，这也是 JDK 11 中最大的亮点。在 JDK 15 中 ZGC 不再是实验功能，可以正式投入生产使用了。&lt;/p&gt;
+
+&lt;h2&gt;&lt;strong&gt;目标低延迟&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;• 保证最大停顿时间在几毫秒之内，不管你堆多大或者存活的对象有多少。&lt;/p&gt;
+
+&lt;p&gt;• 可以处理 8MB-16TB 的堆&lt;/p&gt;
+
+&lt;p&gt;通过以上历代垃圾回收器的讲解，我们大致了解到减少延迟的底层思想不外乎将stop the world进行极限压缩，将能并行的部分全部采用和用户线程并行的方式处理，然而ZGC更&quot;过分&quot;它甚至把一分部垃圾回收的工作交给了用户线程去做，那么它是怎么做到的呢？ZGC的标记和清理工作同CMS、G1大致差不多，仔细看下图的过程，和CMS特别像，这就是我在上文说的CMS其实并没有真正被抛弃，它的部分思想在ZGC 有发扬。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-cd1c070b495b682ef951820a1eb8343b846.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;ZGC 的步骤大致可分为三大阶段分别是标记、转移、重定位。&lt;/p&gt;
+
+&lt;p&gt;标记：从根开始标记所有存活对象&lt;/p&gt;
+
+&lt;p&gt;转移：选择部分活跃对象转移到新的内存空间上&lt;/p&gt;
+
+&lt;p&gt;重定位：因为对象地址变了，所以之前指向老对象的指针都要换到新对象地址上。&lt;/p&gt;
+
+&lt;p&gt;并且这三个阶段都是并发的。&lt;/p&gt;
+
+&lt;p&gt;初始转移需要扫描 GC Roots 直接引用的对象并进行转移，这个过程需要 STW，STW 时间跟 GC Roots 成正比。&lt;/p&gt;
+
+&lt;p&gt;并发转移准备 ：分析最有回收价值GC分页（无STW） 初始转移应对初始标记的数据&lt;/p&gt;
+
+&lt;p&gt;并发转移应对并发标记的数据&lt;/p&gt;
+
+&lt;p&gt;除了标记清理过程继承了CMS和G1的思想，ZGC要做了以下优化&lt;/p&gt;
+
+&lt;h2&gt;&lt;strong&gt;并发清理（转移对象）&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;在 CMS 和 G1 中都用到了写屏障，而 ZGC 用到了读屏障。&lt;/p&gt;
+
+&lt;p&gt;写屏障是在对象引用赋值时候的 AOP，而读屏障是在读取引用时的 AOP。&lt;/p&gt;
+
+&lt;p&gt;比如 &lt;code&gt;Object a = obj.foo;&lt;/code&gt;，这个过程就会触发读屏障。&lt;/p&gt;
+
+&lt;p&gt;也正是用了读屏障，ZGC 可以并发转移对象，而 G1 用的是写屏障，所以转移对象时候只能 STW。&lt;/p&gt;
+
+&lt;p&gt;简单的说就是 GC 线程转移对象之后，应用线程读取对象时，可以利用读屏障通过指针上的标志来判断对象是否被转移。&lt;/p&gt;
+
+&lt;p&gt;读屏障会对应用程序的性能有一定影响，据测试，对性能的最高影响达到 4%，但提高了 GC 并发能力，降低了 STW。这就是上面所说的ZGC“过分”地将部分垃圾回收工作交给用户线程的原因。&lt;/p&gt;
+
+&lt;h2&gt;&lt;strong&gt;染色指针&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;染色指针其实就是从 64 位的指针中，拿几位来标识对象此时的情况，分别表示 Marked0、Marked1、Remapped、Finalizable。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-27f4c95fd3bfa9f4a9868f506f7aec00f69.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;0-41 这 42 位就是正常的地址，所以说 ZGC 最大支持 4TB (理论上可以16TB)的内存，因为就 42 位用来表示地址&lt;/p&gt;
+
+&lt;p&gt;也因此 ZGC 不支持 32 位指针，也不支持指针压缩。&lt;/p&gt;
+
+&lt;p&gt;其实对象只需要两个状态Marked，Remapped，对象被标记了，对象被重新映射了，为什么会有M0，M1，用来区分本次GC标记和上次GC标记&lt;/p&gt;
+
+&lt;p&gt;以下是标记转移算法说明：&lt;/p&gt;
+
+&lt;p&gt;1 在垃圾回收开始前：Remapped&lt;/p&gt;
+
+&lt;p&gt;2 标记过程：&lt;/p&gt;
+
+&lt;p&gt;标记线程访问&lt;/p&gt;
+
+&lt;p&gt;发现对象地址视图是 Remapped 这时候将指针标记为 M0&lt;/p&gt;
+
+&lt;p&gt;发现对象地址视图是 M0，则说明这个对象是标记开始之后新分配的或者已经标记过的对象，所以无需处理&lt;/p&gt;
+
+&lt;p&gt;应用线程&lt;/p&gt;
+
+&lt;p&gt;如果创建新对象，则将其地址视图置为 M0&lt;/p&gt;
+
+&lt;p&gt;3 标记阶段结束后&lt;/p&gt;
+
+&lt;p&gt;ZGC 会使用一个对象活跃表来存储这些对象地址，此时活跃的对象地址视图是 M0&lt;/p&gt;
+
+&lt;p&gt;4 并发转移阶段&lt;/p&gt;
+
+&lt;p&gt;转移线程：&lt;/p&gt;
+
+&lt;p&gt;转移成功后对象地址视图被置为 Remapped（也就是说 GC 线程如果访问到对象，此时对象地址视图是 M0，并且存在或活跃表中，则将其转移，并将地址视图置为 Remapped ）&lt;/p&gt;
+
+&lt;p&gt;如果在活跃表中，但是地址视图已经是 Remapped 说明已经被转移了，不做处理。&lt;/p&gt;
+
+&lt;p&gt;应用线程：&lt;/p&gt;
+
+&lt;p&gt;如果创建新对象，地址视图会设为 Remapped&lt;/p&gt;
+
+&lt;p&gt;5 下次标记使用M1&lt;/p&gt;
+
+&lt;p&gt;M1 标识本次垃圾回收中活跃的对象&lt;/p&gt;
+
+&lt;p&gt;M0 是上一次回收被标记的对象，但是没有被转移，且在本次回收中也没有被标记活跃的对象。&lt;/p&gt;
+
+&lt;p&gt;下图展示了Marked，Remapped的过程，&lt;/p&gt;
+
+&lt;p&gt;初始化时A，B，C三个对象处于Remapped状态&lt;/p&gt;
+
+&lt;p&gt;第一次GC，A被转移，B未被转移，C无引用将被回收&lt;/p&gt;
+
+&lt;p&gt;第二次GC，由于A被转移过了（Remapped状态），所以被标记M1，此时恰好B为不活跃对象，将被清理&lt;/p&gt;
+
+&lt;p&gt;第三次GC，A又被标记成M0&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-741544ab8c5236c385bcf9fd22845238e33.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;h2&gt;&lt;strong&gt;多重映射&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Marked0、Marked1和Remapped三个视图&lt;/p&gt;
+
+&lt;p&gt;ZGC为了能高效、灵活地管理内存，实现了两级内存管理：虚拟内存和物理内存，并且实现了物理内存和虚拟内存的映射关系 在ZGC中这三个空间在同一时间点有且仅有一个空间有效，利用虚拟空间换时间，这三个空间的切换是由垃圾回收的不同阶段触发的，通过限定三个空间在同一时间点有且仅有一个空间有效高效的完成GC过程的并发操作&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-1511a5277d3fe55b43a51c5e0ee2f792c21.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;h2&gt;&lt;strong&gt;支持NUMA&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;NUMA是非一致内存访问的缩写 （Non-Uniform Memory Access，NUMA）&lt;/p&gt;
+
+&lt;p&gt;早年如下图：SMP架构 （Symmetric Multi-Processor），因为任一个 CPU 对内存的访问速度是一致的，不用考虑不同内存地址之间的差异，所以也称一致内存访问（Uniform Memory Access， UMA ）。这个核心越加越多，渐渐的总线和北桥就成为瓶颈，那不能够啊，于是就想了个办法。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-289bd0c9046afe3dc7a6afce9b30491c23b.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;把 CPU 和内存集成到一个单元上，这个就是非一致内存访问 （Non-Uniform Memory Access，NUMA）。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-6b324232a1aaff643cf5ee5f54d47569007.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;ZGC 对 NUMA 的支持是小分区分配时会优先从本地内存分配，如果本地内存不足则从远程内存分配。&lt;/p&gt;
+
+&lt;h2&gt;&lt;strong&gt;ZGC优劣&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;综上分析，ZGC在战略上沿用了上几代GC的算法策略，采用并发标记，并发清理的思路，在战术上，通过染色指针、多重映射，读屏障等优化达到更理想的并发清理，通过支持NUMA达到了更快的内存操作。但ZGC同样不是银弹，它也有自身的优缺点，如下&lt;/p&gt;
+
+&lt;p&gt;优势：&lt;/p&gt;
+
+&lt;p&gt;1、一旦某个Region的存活对象被移走之后，这个Region立即就能够被释放和重用掉，而不必等待整个堆中所有指向该Region的引用都被修正后才能清理，这使得理论上只要还有一个空闲Region，ZGC就能完成收集。&lt;/p&gt;
+
+&lt;p&gt;2、颜色指针可以大幅减少在垃圾收集过程中内存屏障的使用数量，ZGC只使用了读屏障。&lt;/p&gt;
+
+&lt;p&gt;3、颜色指针具备强大的扩展性，它可以作为一种可扩展的存储结构用来记录更多与对象标记、重定位过程相关的数据，以便日后进一步提高性能。&lt;/p&gt;
+
+&lt;p&gt;劣势：&lt;/p&gt;
+
+&lt;p&gt;1、它能承受的对象分配速率不会太高&lt;/p&gt;
+
+&lt;p&gt;ZGC准备要对一个很大的堆做一次完整的并发收集。在这段时间里面，由于应用的对象分配速率很高，将创造大量的新对象，这些新对象很难进入当次收集的标记范围，通常就只能全部当作存活对象来看待——尽管其中绝大部分对象都是朝生夕灭的，这就产生了大量的浮动垃圾。如果这种高速分配持续维持的话，每一次完整的并发收集周期都会很长，回收到的内存空间持续小于期间并发产生的浮动垃圾所占的空间，堆中剩余可腾挪的空间就越来越小了。目前唯一的办法就是尽可能地增加堆容量大小，获得更多喘息的时间。&lt;/p&gt;
+
+&lt;p&gt;2、吞吐量低于G1 GC&lt;/p&gt;
+
+&lt;p&gt;一般来说，可能会下降5%-15%。对于堆越小，这个效应越明显，堆非常大的时候，比如100G，其他GC可能一次Major或Full GC要几十秒以上，但是对于ZGC不需要那么大暂停。这种细粒度的优化带来的副作用就是，把很多环节其他GC里的STW整体处理，拆碎了，放到了更大时间范围内里去跟业务线程并发执行，甚至会直接让业务线程帮忙做一些GC的操作，从而降低了业务线程的处理能力。&lt;/p&gt;
+
+&lt;h1&gt;总结&lt;/h1&gt;
+
+&lt;p&gt;综上，其实ZGC并不是一个凭空冒出的全新垃圾回收，它结合前几代GC的思想，同时在战术上做了优化以达到极限的STW，ZGC的优秀表现有可能会改变未来程序编写方式，站在垃圾收集器的角度，垃圾收集器特别喜欢不可变对象，原有编程方式鉴于内存、GC能力所限使用可变对象来复用对象而不是销毁重建，试想如果有了ZGC的强大回收能力的加持，是不是我们就可以无脑的使用不可变对象进行代码编写&lt;/p&gt;
+
+&lt;p&gt;参考：&lt;/p&gt;
+
+&lt;p&gt;《深入理解java虚拟机》&lt;/p&gt;
+
+&lt;p&gt;《JAVA性能权威指南》&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://blog.csdn.net/Baron_ND/article/details/125993457&quot;&gt;JDK 发展至今的垃圾回收机制&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://blog.51cto.com/u_11440114/5103211&quot;&gt;全网最全JDK1~JDK15十一种JVM垃圾收集器的原理总结&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://www.zhihu.com/question/502729840&quot;&gt;为什么CMS需要初始标记？&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://zhuanlan.zhihu.com/p/405142523&quot;&gt;一步一图带你理清G1垃圾回收流程&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://baijiahao.baidu.com/s?id=1708808098014477777&amp;amp;wfr=spider&amp;amp;for=pc&quot;&gt;美团面试官问我：ZGC 的 Z 是什么意思？&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://www.zhihu.com/question/356585590/answer/2298574930?utm_campaign=shareopn&amp;amp;utm_content=group1_Answer&amp;amp;utm_medium=social&amp;amp;utm_oi=36325755453440&amp;amp;utm_psn=1576361293098979328&amp;amp;utm_source=wechat_session&quot;&gt;ZGC有什么缺点?&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://www.zhihu.com/question/287945354/answer/458761494?utm_campaign=shareopn&amp;amp;utm_content=group3_Answer&amp;amp;utm_medium=social&amp;amp;utm_oi=36325755453440&amp;amp;utm_psn=1576355927254675456&amp;amp;utm_source=wechat_session&quot;&gt;ZGC 原理是什么，它为什么能做到低延时？&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;本文档示意图原型：&lt;a href=&quot;https://www.processon.com/view/link/63771d355653bb3a840c4027&quot;&gt;https://www.processon.com/view/link/63771d355653bb3a840c4027&lt;/a&gt;&lt;/p&gt;
+&lt;/div&gt;
+  &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
 <guid>c46beae4050a8b572ab3df63490a3b68</guid>
 <title>七款云上共享文件系统 POSIX 兼容性大比拼</title>
 <link>https://toutiao.io/k/83x9jgr</link>
@@ -131,61 +675,17 @@ expect 0 unlink ${n0}&lt;/code&gt;&lt;/pre&gt;
                     &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>432dfb8e1eb26e74e0558acb4a5e2136</guid>
-<title>从实战出发，聊聊缓存数据库一致性</title>
-<link>https://toutiao.io/k/bp2hkj2</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;profile_inner&quot;&gt;
-                  &lt;strong class=&quot;profile_nickname&quot;&gt;又拍云&lt;/strong&gt;
-                  &lt;img class=&quot;profile_avatar&quot; id=&quot;js_profile_qrcode_img&quot; src=&quot;&quot; alt=&quot;&quot;/&gt;
-
-                  &lt;p class=&quot;profile_meta&quot;&gt;
-                  &lt;label class=&quot;profile_meta_label&quot;&gt;Weixin ID&lt;/label&gt;
-                  &lt;span class=&quot;profile_meta_value&quot;&gt;upaiyun&lt;/span&gt;
-                  &lt;/p&gt;
-
-                  &lt;p class=&quot;profile_meta&quot;&gt;
-                  &lt;label class=&quot;profile_meta_label&quot;&gt;About Feature&lt;/label&gt;
-                  &lt;span class=&quot;profile_meta_value&quot;&gt;加速在线业务。为客户提供CDN、PrismCDN、云存储、SSL证书、云处理、直播云、点播云等服务。&lt;/span&gt;
-                  &lt;/p&gt;
-                &lt;/div&gt;
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>a30383b5648518bcdf64d7cf315cf706</guid>
-<title>JVM G1GC 小册子</title>
-<link>https://toutiao.io/k/9y33xk8</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div id=&quot;content&quot; class=&quot;content&quot;&gt;
-                    &lt;main&gt;
-                        
-&lt;p&gt;最近在看中村成洋的《深入 Java 虚拟机 -- JVM G1GC 的算法与实现》，把 G1 算法介绍得比较明白。这本书算是读书笔记，也算是教程，把自己之前的理解结合书里讲解的内容，重新表述，进而增进自己的理解，也算是在践行费曼学习法。&lt;/p&gt;
-&lt;p&gt;有很多看书时认为理解的内容，在写作过程中发现其实一窍不通，只能不断通过查其它资料、源码来增进自己的理解。因此读者如果时间允许，也欢迎像我一样写个教程来增进自己的理解。&lt;/p&gt;
-&lt;p&gt;GC 一直在不断发展，一些机制、源码都在不断更新。《深入 Java 虚拟机》里的一些内容也已经过时，本书的一些内容基于对 OpenJDK 11 源码的理解做了更新。当然这些内容可能在最新的 JDK 中也已经有了变化，这点也请读者注意。&lt;/p&gt;
-&lt;p&gt;另外由于我并不是专业做虚拟机的，对 GC 中一些机制的理解难免有误，欢迎批评指正。&lt;/p&gt;
-
-                    &lt;/main&gt;
-
-                    &lt;nav class=&quot;nav-wrapper&quot; aria-label=&quot;Page navigation&quot;&gt;
-                        
-                        
-
-                        
-                            &lt;a rel=&quot;next&quot; href=&quot;algo/gcs.html&quot; class=&quot;mobile-nav-chapters next&quot; title=&quot;Next chapter&quot; aria-label=&quot;Next chapter&quot; aria-keyshortcuts=&quot;Right&quot;&gt;
-                                &lt;i class=&quot;fa fa-angle-right&quot;/&gt;
-                            &lt;/a&gt;
-                        
-
-                        &lt;p/&gt;
-                    &lt;/nav&gt;
-                &lt;/div&gt;
-            &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>07c2b54819b29365749476e7050e33c2</guid>
-<title>现代 C++ 并发编程基础</title>
-<link>https://toutiao.io/k/2dogx44</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content             defaultNoSetting&amp;#10;            &quot; id=&quot;js_content&quot;&gt;&lt;section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5118110236220472&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/0m4YX595Fom7dUgDLM0OJCxo425I9OKv3jfAgDFAcZH1cfSbV7rKJYKF8qgPJ7phxn55jLQhyRnicECicm1mOzIQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;508&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;你好，我是飞宇。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;今天分享一些现代C++并发编程基础的知识。&lt;/span&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;https://mp.weixin.qq.com/s?__biz=MzkxNzQzNDM2Ng==&amp;amp;mid=2247494314&amp;amp;idx=1&amp;amp;sn=1e03593dc5ba6fc9ff62d261ef73af7f&amp;amp;chksm=c142103bf635992dded667f4fcc080afe522b60fbca0f6eeee110408086fd102568850af3c8e&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;分享一个我自己维护的Linux C/C++学习仓库以及计算机免费PDF电子书仓库&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;span&gt;分享一个我自己维护的Linux C/C++学习仓库以及计算机免费PDF电子书仓库&lt;/span&gt;&lt;/a&gt;&lt;span&gt;，点此查看详情&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;/section&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;/section&gt;&lt;h3&gt;&lt;span&gt;并行基础&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;std::thread&lt;/span&gt;&lt;/strong&gt;&lt;span&gt; 用于创建一个执行的线程实例，所以它是一切并发编程的基础，使用时需要包含 &lt;strong&gt;&amp;lt;thread&amp;gt;&lt;/strong&gt; 头文件， 它提供了很多基本的线程操作，例如&lt;strong&gt; get_id() &lt;/strong&gt;来获取所创建线程的线程 ID，使用&lt;strong&gt; join() &lt;/strong&gt;来加入一个线程等等，例如：&lt;/span&gt;&lt;/p&gt;&lt;figure&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;&lt;pre&gt;&lt;span&gt;#include &amp;lt;iostream&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;#include &amp;lt;thread&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;int&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;() {&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;std&lt;/span&gt;::thread &lt;span&gt;t&lt;/span&gt;([](){&lt;/span&gt;&lt;br/&gt;&lt;span&gt;        &lt;span&gt;std&lt;/span&gt;::&lt;span&gt;cout&lt;/span&gt; &amp;lt;&amp;lt; &lt;span&gt;&quot;hello world.&quot;&lt;/span&gt; &amp;lt;&amp;lt; &lt;span&gt;std&lt;/span&gt;::&lt;span&gt;endl&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    });&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    t.join();&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;return&lt;/span&gt; &lt;span&gt;0&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;}&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;span/&gt;&lt;/figure&gt;&lt;h3&gt;&lt;span&gt;互斥量与临界区&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;span&gt;我们在操作系统、亦或是数据库的相关知识中已经了解过了有关并发技术的基本知识，mutex 就是其中的核心之一。&lt;strong&gt;C++11 引入了 mutex 相关的类&lt;/strong&gt;，其所有相关的函数都放在 &lt;strong&gt;&amp;lt;mutex&amp;gt;&lt;/strong&gt; 头文件中。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;std::mutex &lt;/span&gt;&lt;/strong&gt;&lt;span&gt;是 C++11 中最基本的 mutex 类，通过实例化 &lt;strong&gt;std::mutex &lt;/strong&gt;可以创建互斥量， 而通过其成员函数 lock() 可以进行上锁，unlock() 可以进行解锁。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;但是在实际编写代码的过程中，最好不去直接调用成员函数， 因为调用成员函数就需要在每个临界区的出口处调用 unlock()，当然，还包括异常。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这时候 C++11 还为互斥量提供了一个 RAII 语法的模板类 std::lock_guard。RAII 在不失代码简洁性的同时，很好的保证了代码的异常安全性。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在 RAII 用法下，对于临界区的互斥量的创建只需要在作用域的开始部分，例如：&lt;/span&gt;&lt;/p&gt;&lt;figure&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;&lt;pre&gt;&lt;span&gt;#include &amp;lt;iostream&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;#include &amp;lt;thread&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;int&lt;/span&gt; v = &lt;span&gt;1&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;void&lt;/span&gt; &lt;span&gt;critical_section&lt;/span&gt;(&lt;span&gt;int&lt;/span&gt; change_v) {&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;static&lt;/span&gt; &lt;span&gt;std&lt;/span&gt;::mutex mtx;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;std&lt;/span&gt;::lock_guard&amp;lt;&lt;span&gt;std&lt;/span&gt;::mutex&amp;gt; &lt;span&gt;lock&lt;/span&gt;(mtx);&lt;/span&gt;&lt;br/&gt;&lt;span/&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;// 执行竞争操作&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    v = change_v;&lt;/span&gt;&lt;br/&gt;&lt;span/&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;// 离开此作用域后 mtx 会被释放&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;}&lt;/span&gt;&lt;br/&gt;&lt;span/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;int&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;() {&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    std::thread t1(critical_section, 2), t2(critical_section, 3);&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    t1.join();&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    t2.join();&lt;/span&gt;&lt;br/&gt;&lt;span/&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;std&lt;/span&gt;::&lt;span&gt;cout&lt;/span&gt; &amp;lt;&amp;lt; v &amp;lt;&amp;lt; &lt;span&gt;std&lt;/span&gt;::&lt;span&gt;endl&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;return&lt;/span&gt; &lt;span&gt;0&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;}&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/figure&gt;&lt;p&gt;&lt;span&gt;由于 C++ 保证了所有栈对象在生命周期结束时会被销毁，所以这样的代码也是异常安全的。无论 critical_section() 正常返回、还是在中途抛出异常，都会引发堆栈回退，也就自动调用了 unlock()。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;而 std::unique_lock 则相对于 std::lock_guard 出现的，std::unique_lock 更加灵活， std::unique_lock 的对象会以独占所有权&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;（没有其他的 unique_lock 对象同时拥有某个 mutex 对象的所有权） 的方式管理 mutex 对象上的上锁和解锁的操作。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;所以在并发编程中，推荐使用 std::unique_lock。&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;std::lock_guard 不能显式的调用 lock 和 unlock， 而 std::unique_lock 可以在声明后的任意位置调用， 可以缩小锁的作用范围，提供更高的并发度&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;如果你用到了条件变量 std::condition_variable::wait 则必须使用 std::unique_lock 作为参数。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;例如：&lt;/span&gt;&lt;/p&gt;&lt;figure&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;&lt;pre&gt;&lt;span&gt;#include &amp;lt;iostream&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;#include &amp;lt;thread&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;int&lt;/span&gt; v = &lt;span&gt;1&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;void&lt;/span&gt; &lt;span&gt;critical_section&lt;/span&gt;(&lt;span&gt;int&lt;/span&gt; change_v) {&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;static&lt;/span&gt; &lt;span&gt;std&lt;/span&gt;::mutex mtx;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;std&lt;/span&gt;::unique_lock&amp;lt;&lt;span&gt;std&lt;/span&gt;::mutex&amp;gt; &lt;span&gt;lock&lt;/span&gt;(mtx);&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;// 执行竞争操作&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    v = change_v;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;std&lt;/span&gt;::&lt;span&gt;cout&lt;/span&gt; &amp;lt;&amp;lt; v &amp;lt;&amp;lt; &lt;span&gt;std&lt;/span&gt;::&lt;span&gt;endl&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;// 将锁进行释放&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    lock.unlock();&lt;/span&gt;&lt;br/&gt;&lt;span/&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;// 在此期间，任何人都可以抢夺 v 的持有权&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span/&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;// 开始另一组竞争操作，再次加锁&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    lock.lock();&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    v += &lt;span&gt;1&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;std&lt;/span&gt;::&lt;span&gt;cout&lt;/span&gt; &amp;lt;&amp;lt; v &amp;lt;&amp;lt; &lt;span&gt;std&lt;/span&gt;::&lt;span&gt;endl&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;}&lt;/span&gt;&lt;br/&gt;&lt;span/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;int&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;() {&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    std::thread t1(critical_section, 2), t2(critical_section, 3);&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    t1.join();&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    t2.join();&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;return&lt;/span&gt; &lt;span&gt;0&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;}&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/figure&gt;&lt;h3&gt;&lt;span&gt;期物&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;期物（Future）表现为 std::future，它提供了一个访问异步操作结果的途径&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;，这句话很不好理解。为了理解这个特性，我们需要先理解一下在 C++11 之前的多线程行为。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;试想，如果我们的主线程 A 希望新开辟一个线程 B 去执行某个我们预期的任务，并返回我一个结果。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;而这时候，线程 A 可能正在忙其他的事情，无暇顾及 B 的结果， 所以&lt;strong&gt;我们会很自然的希望能够在某个特定的时间获得线程 B 的结果&lt;/strong&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在 C++11 的 std::future 被引入之前，通常的做法是：创建一个线程 A，在线程 A 里启动任务 B，当准备完毕后发送一个事件，并将结果保存在全局变量中。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;而主函数线程 A 里正在做其他的事情，当需要结果的时候，调用一个线程等待函数来获得执行的结果。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;而 C++11 提供的 std::future 简化了这个流程，可以用来获取异步任务的结果&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;。自然地，我们很容易能够想象到把它作为一种简单的线程同步手段，即屏障（barrier）。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;为了看一个例子，我们这里额外使用 std::packaged_task，它可以用来封装任何可以调用的目标，从而用于实现异步的调用。举例来说：&lt;/span&gt;&lt;/p&gt;&lt;figure&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;&lt;pre&gt;&lt;span&gt;#include &amp;lt;iostream&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;#include &amp;lt;future&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;#include &amp;lt;thread&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;int&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;() {&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;// 将一个返回值为7的 lambda 表达式封装到 task 中&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;// std::packaged_task 的模板参数为要封装函数的类型&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;std&lt;/span&gt;::packaged_task&amp;lt;&lt;span&gt;int&lt;/span&gt;()&amp;gt; &lt;span&gt;task&lt;/span&gt;([](){&lt;span&gt;return&lt;/span&gt; &lt;span&gt;7&lt;/span&gt;;});&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;// 获得 task 的期物&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;std&lt;/span&gt;::&lt;span&gt;future&lt;/span&gt;&amp;lt;&lt;span&gt;int&lt;/span&gt;&amp;gt; result = task.get_future(); &lt;span&gt;// 在一个线程中执行 task&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;std&lt;/span&gt;::thread(&lt;span&gt;std&lt;/span&gt;::move(task)).detach();&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;std&lt;/span&gt;::&lt;span&gt;cout&lt;/span&gt; &amp;lt;&amp;lt; &lt;span&gt;&quot;waiting...&quot;&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    result.wait(); &lt;span&gt;// 在此设置屏障，阻塞到期物的完成&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;// 输出执行结果&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;std&lt;/span&gt;::&lt;span&gt;cout&lt;/span&gt; &amp;lt;&amp;lt; &lt;span&gt;&quot;done!&quot;&lt;/span&gt; &amp;lt;&amp;lt; &lt;span&gt;std&lt;/span&gt;:: &lt;span&gt;endl&lt;/span&gt; &amp;lt;&amp;lt; &lt;span&gt;&quot;future result is &quot;&lt;/span&gt; &amp;lt;&amp;lt; result.get() &amp;lt;&amp;lt; &lt;span&gt;std&lt;/span&gt;::&lt;span&gt;endl&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;return&lt;/span&gt; &lt;span&gt;0&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;}&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/figure&gt;&lt;p&gt;&lt;span&gt;在封装好要调用的目标后，&lt;strong&gt;可以使用 get_future() 来获得一个 std::future 对象&lt;/strong&gt;，以便之后实施线程同步。&lt;/span&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;条件变量&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;条件变量 std::condition_variable 是为了解决死锁而生，当互斥操作不够用而引入的&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;。比如，线程可能需要等待某个条件为真才能继续执行， 而一个忙等待循环中可能会导致所有其他线程都无法进入临界区使得条件为真时，就会发生死锁。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;所以，&lt;strong&gt;condition_variable 实例被创建出现主要就是用于唤醒等待线程从而避免死锁&lt;/strong&gt;。 &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;std::condition_variable的 notify_one() 用于唤醒一个线程；notify_all() 则是通知所有线程。下面是一个生产者和消费者模型的例子：&lt;/span&gt;&lt;/p&gt;&lt;figure&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;&lt;pre&gt;&lt;span&gt;#include &amp;lt;queue&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;#include &amp;lt;chrono&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;#include &amp;lt;mutex&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;#include &amp;lt;thread&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;#include &amp;lt;iostream&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;#include &amp;lt;condition_variable&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span/&gt;&lt;br/&gt;&lt;span/&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;int&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;() {&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;std&lt;/span&gt;::&lt;span&gt;queue&lt;/span&gt;&amp;lt;&lt;span&gt;int&lt;/span&gt;&amp;gt; produced_nums;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;std&lt;/span&gt;::mutex mtx;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;std&lt;/span&gt;::condition_variable cv;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;bool&lt;/span&gt; notified = &lt;span&gt;false&lt;/span&gt;;  &lt;span&gt;// 通知信号&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span/&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;// 生产者&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;auto&lt;/span&gt; producer = [&amp;amp;]() {&lt;/span&gt;&lt;br/&gt;&lt;span&gt;        &lt;span&gt;for&lt;/span&gt; (&lt;span&gt;int&lt;/span&gt; i = &lt;span&gt;0&lt;/span&gt;; ; i++) {&lt;/span&gt;&lt;br/&gt;&lt;span&gt;            &lt;span&gt;std&lt;/span&gt;::this_thread::sleep_for(&lt;span&gt;std&lt;/span&gt;::chrono::milliseconds(&lt;span&gt;900&lt;/span&gt;));&lt;/span&gt;&lt;br/&gt;&lt;span&gt;            &lt;span&gt;std&lt;/span&gt;::unique_lock&amp;lt;&lt;span&gt;std&lt;/span&gt;::mutex&amp;gt; &lt;span&gt;lock&lt;/span&gt;(mtx);&lt;/span&gt;&lt;br/&gt;&lt;span&gt;            &lt;span&gt;std&lt;/span&gt;::&lt;span&gt;cout&lt;/span&gt; &amp;lt;&amp;lt; &lt;span&gt;&quot;producing &quot;&lt;/span&gt; &amp;lt;&amp;lt; i &amp;lt;&amp;lt; &lt;span&gt;std&lt;/span&gt;::&lt;span&gt;endl&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;            produced_nums.push(i);&lt;/span&gt;&lt;br/&gt;&lt;span&gt;            notified = &lt;span&gt;true&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;            cv.notify_all(); &lt;span&gt;// 此处也可以使用 notify_one&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;        }&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    };&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;// 消费者&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;auto&lt;/span&gt; consumer = [&amp;amp;]() {&lt;/span&gt;&lt;br/&gt;&lt;span&gt;        &lt;span&gt;while&lt;/span&gt; (&lt;span&gt;true&lt;/span&gt;) {&lt;/span&gt;&lt;br/&gt;&lt;span&gt;            &lt;span&gt;std&lt;/span&gt;::unique_lock&amp;lt;&lt;span&gt;std&lt;/span&gt;::mutex&amp;gt; lock(mtx);&lt;/span&gt;&lt;br/&gt;&lt;span&gt;            &lt;span&gt;while&lt;/span&gt; (!notified) {  &lt;span&gt;// 避免虚假唤醒&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;                cv.wait(lock);&lt;/span&gt;&lt;br/&gt;&lt;span&gt;            }&lt;/span&gt;&lt;br/&gt;&lt;span&gt;            &lt;span&gt;// 短暂取消锁，使得生产者有机会在消费者消费空前继续生产&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;            lock.unlock();&lt;/span&gt;&lt;br/&gt;&lt;span&gt;            &lt;span&gt;std&lt;/span&gt;::this_thread::sleep_for(&lt;span&gt;std&lt;/span&gt;::chrono::milliseconds(&lt;span&gt;1000&lt;/span&gt;)); &lt;span&gt;// 消费者慢于生产者&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;            lock.lock();&lt;/span&gt;&lt;br/&gt;&lt;span&gt;            &lt;span&gt;while&lt;/span&gt; (!produced_nums.empty()) {&lt;/span&gt;&lt;br/&gt;&lt;span&gt;                &lt;span&gt;std&lt;/span&gt;::&lt;span&gt;cout&lt;/span&gt; &amp;lt;&amp;lt; &lt;span&gt;&quot;consuming &quot;&lt;/span&gt; &amp;lt;&amp;lt; produced_nums.front() &amp;lt;&amp;lt; &lt;span&gt;std&lt;/span&gt;::&lt;span&gt;endl&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;                produced_nums.pop();&lt;/span&gt;&lt;br/&gt;&lt;span&gt;            }&lt;/span&gt;&lt;br/&gt;&lt;span&gt;            notified = &lt;span&gt;false&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;        }&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    };&lt;/span&gt;&lt;br/&gt;&lt;span/&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;// 分别在不同的线程中运行&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;std&lt;/span&gt;::thread &lt;span&gt;p&lt;/span&gt;(producer);&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;std&lt;/span&gt;::thread cs[&lt;span&gt;2&lt;/span&gt;];&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;for&lt;/span&gt; (&lt;span&gt;int&lt;/span&gt; i = &lt;span&gt;0&lt;/span&gt;; i &amp;lt; &lt;span&gt;2&lt;/span&gt;; ++i) {&lt;/span&gt;&lt;br/&gt;&lt;span&gt;        cs[i] = &lt;span&gt;std&lt;/span&gt;::thread(consumer);&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    }&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    p.join();&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;for&lt;/span&gt; (&lt;span&gt;int&lt;/span&gt; i = &lt;span&gt;0&lt;/span&gt;; i &amp;lt; &lt;span&gt;2&lt;/span&gt;; ++i) {&lt;/span&gt;&lt;br/&gt;&lt;span&gt;        cs[i].join();&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    }&lt;/span&gt;&lt;br/&gt;&lt;span&gt;    &lt;span&gt;return&lt;/span&gt; &lt;span&gt;0&lt;/span&gt;;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;}&lt;/span&gt;&lt;br/&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/figure&gt;&lt;p&gt;&lt;span&gt;值得一提的是，&lt;strong&gt;在生产者中我们虽然可以使用 notify_one()，但实际上并不建议在此处使用， 因为在多消费者的情况下，我们的消费者实现中简单放弃了锁的持有，这使得可能让其他消费者 争夺此锁&lt;/strong&gt;，从而更好的利用多个消费者之间的并发。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;话虽如此，但实际上因为 std::mutex 的排他性， 我们根本无法期待多个消费者能真正意义上的并行消费队列的中生产的内容，我们仍需要粒度更细的手段。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;来自：现代 C++ 教程：高速上手 C++ 11/14/17/20&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;链接：https://changkun.de/modern-cpp/zh-cn/07-thread/&lt;/span&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;section data-custom=&quot;rgb(172, 29, 16)&quot; data-style=&quot;white-space: normal; background-color: rgb(255, 255, 255); font-family: -apple-system-font, system-ui, &amp;quot;Helvetica Neue&amp;quot;, &amp;quot;PingFang SC&amp;quot;, &amp;quot;Hiragino Sans GB&amp;quot;, &amp;quot;Microsoft YaHei UI&amp;quot;, &amp;quot;Microsoft YaHei&amp;quot;, Arial, sans-serif; caret-color: rgb(51, 51, 51); color: rgb(160, 160, 160); widows: 1; letter-spacing: 0.54px; text-align: center; font-size: 18px; line-height: 28.8px;&quot;&gt;&lt;section data-style=&quot;margin-right: auto; margin-bottom: 10px; margin-left: auto; border-bottom: 1px solid rgb(221, 221, 221);&quot;&gt;&lt;section data-style=&quot;margin-bottom: -1px; padding-right: 5px; padding-bottom: 6px; padding-left: 5px; line-height: 1.1; border-bottom: 2px solid rgb(34, 18, 166); display: inline-block; text-align: left;&quot;&gt;&lt;span data-style=&quot;letter-spacing: 0.544px; font-size: 12px; color: rgb(2, 30, 170);&quot;&gt;&lt;span&gt;—&lt;/span&gt;—&lt;/span&gt;&lt;/section&gt;&lt;section data-style=&quot;margin-bottom: -1px; padding-right: 5px; padding-bottom: 6px; padding-left: 5px; line-height: 1.1; border-bottom: 2px solid rgb(34, 18, 166); display: inline-block; text-align: left;&quot;&gt;&lt;span&gt;EOF&lt;/span&gt;&lt;/section&gt;&lt;section data-style=&quot;margin-bottom: -1px; padding-right: 5px; padding-bottom: 6px; padding-left: 5px; line-height: 1.1; border-bottom: 2px solid rgb(34, 18, 166); display: inline-block; text-align: left;&quot;&gt;&lt;span data-style=&quot;letter-spacing: 0.544px; font-size: 12px; color: rgb(2, 30, 170);&quot;&gt;—&lt;span&gt;—&lt;/span&gt;&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.9908883826879271&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibLeYZx8Co5IVdlbI2kibmkpdP1oZRJibUNW3AIzx3wHsCEfnIahm9WlDwUbicMNRKL3LpdcgeHOlrdJFVhicwBPM0Q/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-type=&quot;png&quot; data-w=&quot;878&quot;/&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;我的私人微信&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;你好，我是飞宇，本硕均于某中流985 CS就读，先后于百度搜索以及字节某电商部门担任Linux C/C++后端研发工程师。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;同时，我也是知乎博主@韩飞宇，日常分享C/C++、计算机学习经验、工作体会，欢迎点击&lt;span&gt;阅读原文&lt;/span&gt;围观我分享的C/C++学习知识&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-cropselx1=&quot;0&quot; data-cropselx2=&quot;546&quot; data-cropsely1=&quot;0&quot; data-cropsely2=&quot;66&quot; data-ratio=&quot;0.15789473684210525&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_gif/ociaaribHd5oeoAmgtZ7uuu57CCa12tmv1nHO32caCXZ71hZFDIX22ZEia27lfeFHTPrLjsKjetibblCZBWdhcK3lQ/640?wx_fmt=gif&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-type=&quot;gif&quot; data-w=&quot;950&quot;/&gt;&lt;span&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;span&gt;👇点击&lt;/span&gt;&lt;span&gt;&lt;span&gt;阅读原文&lt;/span&gt;&lt;/span&gt;&lt;span&gt;查看你错过的C/C++知识&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;mp-style-type data-value=&quot;10000&quot;/&gt;&lt;/p&gt;&lt;/div&gt;
-
-          
-        &lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>abd7c6295d43c86b9e9a72b998cd1948</guid>
+<title>try/catch/finally：“前端的好厚米，我觉得你们不够了解我呀~”</title>
+<link>https://toutiao.io/k/b9ourrc</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这篇文章想跟大家一起重新温习一下关于使用 &lt;code&gt;try...catch&lt;/code&gt; 进行异常捕获的一些知识点。为了提升大家的阅读兴趣，我们先来做三个小练习题，如果你都做对的话，那么表明你这一部分的知识掌握的很熟练，可以不用读这篇文章啦~
+如果做错了某道题的话，说明我们还有一些知识点需要再次巩固一下，话不多说，我们先来看看这三道题：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;function&lt;/span&gt; &lt;span&gt;doTask&lt;/span&gt; (&lt;span/&gt;) &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;try&lt;/span&gt; {&lt;br/&gt;        &lt;span&gt;console&lt;/span&gt;.log(&lt;span&gt;&#x27;1 in try block&#x27;&lt;/span&gt;);&lt;br/&gt;        &lt;span&gt;throw&lt;/span&gt; &lt;span&gt;&#x27;2 test error&#x27;&lt;/span&gt;;&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; &lt;span&gt;3&lt;/span&gt;;&lt;br/&gt;    } &lt;span&gt;catch&lt;/span&gt; (e) {&lt;br/&gt;        &lt;span&gt;console&lt;/span&gt;.log(&lt;span&gt;&#x27;4 in catch block&#x27;&lt;/span&gt;);&lt;br/&gt;        &lt;span&gt;console&lt;/span&gt;.log(e);&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; &lt;span&gt;5&lt;/span&gt;;&lt;br/&gt;    } &lt;span&gt;finally&lt;/span&gt; {&lt;br/&gt;        &lt;span&gt;console&lt;/span&gt;.log(&lt;span&gt;&#x27;6 in finally block&#x27;&lt;/span&gt;);&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; &lt;span&gt;7&lt;/span&gt;;&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;// 控制台输出的结果是什么呢？&lt;/span&gt;&lt;br/&gt;&lt;span&gt;console&lt;/span&gt;.log(doTask());&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;function&lt;/span&gt; &lt;span&gt;doWork&lt;/span&gt; (&lt;span/&gt;) &lt;/span&gt;{&lt;br/&gt;  &lt;span&gt;try&lt;/span&gt; {&lt;br/&gt;    &lt;span&gt;console&lt;/span&gt;.log(&lt;span&gt;1&lt;/span&gt;);&lt;br/&gt;    &lt;span&gt;try&lt;/span&gt; {&lt;br/&gt;      &lt;span&gt;console&lt;/span&gt;.log(&lt;span&gt;2&lt;/span&gt;);&lt;br/&gt;      &lt;span&gt;throw&lt;/span&gt; &lt;span&gt;3&lt;/span&gt;;&lt;br/&gt;    } &lt;span&gt;finally&lt;/span&gt; {&lt;br/&gt;      &lt;span&gt;console&lt;/span&gt;.log(&lt;span&gt;4&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;console&lt;/span&gt;.log(&lt;span&gt;5&lt;/span&gt;);&lt;br/&gt;  } &lt;span&gt;catch&lt;/span&gt; (e) {&lt;br/&gt;    &lt;span&gt;console&lt;/span&gt;.log(e);&lt;br/&gt;  }&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;// 控制台输出的结果是什么呢？&lt;/span&gt;&lt;br/&gt;doWork();&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;function&lt;/span&gt; &lt;span&gt;doRepeat&lt;/span&gt; (&lt;span/&gt;) &lt;/span&gt;{&lt;br/&gt;  &lt;span&gt;for&lt;/span&gt; (&lt;span&gt;let&lt;/span&gt; i = &lt;span&gt;0&lt;/span&gt;; i &amp;lt; &lt;span&gt;2&lt;/span&gt;; i++) {&lt;br/&gt;    &lt;span&gt;try&lt;/span&gt; {&lt;br/&gt;      &lt;span&gt;if&lt;/span&gt; (i === &lt;span&gt;1&lt;/span&gt;) {&lt;br/&gt;        &lt;span&gt;continue&lt;/span&gt;;&lt;br/&gt;      }&lt;br/&gt;      &lt;span&gt;console&lt;/span&gt;.log(&lt;span&gt;`&lt;span&gt;${i}&lt;/span&gt; in try`&lt;/span&gt;);&lt;br/&gt;    } &lt;span&gt;finally&lt;/span&gt; {&lt;br/&gt;      &lt;span&gt;console&lt;/span&gt;.log(&lt;span&gt;`&lt;span&gt;${i}&lt;/span&gt; in finally`&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;  }&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;// 控制台的输出结果是什么呢？&lt;/span&gt;&lt;br/&gt;doRepeat();&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上面的每一道题目都有它的小心思，一不小心就容易出错。大家可以把自己测试的结果在评论区晒一晒。如果你做错了某道题，没有关系，通过这篇文章我们一起再来复习一下相关的知识点。看到就是学到，让我们开始吧。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;try/catch/finally 的各种形式&lt;span/&gt;&lt;/h3&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;try...catch&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这种形式应该是我们在开发中最经常使用的形式了，当我们需要执行一些可能会抛出错误的方法或者语句的时候，就会使用 &lt;strong&gt;&lt;code&gt;try&lt;/code&gt;&lt;/strong&gt; 将
+要执行的语句包裹起来，然后紧跟着 &lt;strong&gt;&lt;code&gt;catch&lt;/code&gt;&lt;/strong&gt; 去捕获对应的异常。形式大概如下所示：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;try&lt;/span&gt; {&lt;br/&gt;  &lt;span&gt;// 有概率抛出异常的操作&lt;/span&gt;&lt;br/&gt;  someErrorProneFn();&lt;br/&gt;} &lt;span&gt;catch&lt;/span&gt; (e) {&lt;br/&gt;  &lt;span&gt;// 打印并且上报接日志&lt;/span&gt;&lt;br/&gt;  logAndReportError(e);&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们也可以判断 &lt;strong&gt;&lt;code&gt;e&lt;/code&gt;&lt;/strong&gt; 的类型，进而根据不同的错误类型进行不同的操作。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;还有一点需要注意的是，**&lt;code&gt;catch&lt;/code&gt;** 也是可以不接收异常信息的。如下所示：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;try&lt;/span&gt; {&lt;br/&gt;    &lt;span&gt;// 有概率抛出异常的操作&lt;/span&gt;&lt;br/&gt;    someErrorProneFn();&lt;br/&gt;} &lt;span&gt;catch&lt;/span&gt; {&lt;br/&gt;    &lt;span&gt;// 不管上面的操作出现了什么问题，都直接通知用户&lt;/span&gt;&lt;br/&gt;    remindUser();&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这种形式大家在平时开发中用的比较多，所以用起来是没有什么大问题的。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;try...finally&lt;span/&gt;&lt;/h4&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;try&lt;/span&gt; {&lt;br/&gt;  connectChannel();&lt;br/&gt;  doSomething();&lt;br/&gt;} &lt;span&gt;finally&lt;/span&gt; {&lt;br/&gt;  &lt;span&gt;// 最后做一些清理的工作&lt;/span&gt;&lt;br/&gt;  cleanup();&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;第二种形式就是 **&lt;code&gt;try...finally&lt;/code&gt;**，这种形式估计大家平时用的比较少；这种形式一般用于执行一个操作，
+一般情况下这个操作可能是占用内存比较高，或者是操作完需要进行内存回收或者关闭连接或者是关闭数据库之类的。但是我们可能不是很关注操作过程中出现的异常。那么我们就可以在操作完成的时候，进行一些尾部的处理工作。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当前 &lt;strong&gt;&lt;code&gt;try&lt;/code&gt;&lt;/strong&gt; 代码块里面的异常还是会抛出到外部的，需要外部进行捕获和处理。这一点知识点跟上面的第二、第三题有一些关联，我们稍后会详细跟大家讲解一下。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;try...catch...finally&lt;span/&gt;&lt;/h4&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这种形式是异常捕获最全的一种形式，我们通过 &lt;strong&gt;&lt;code&gt;try&lt;/code&gt;&lt;/strong&gt; 代码块执行容易出错的代码，通过 &lt;strong&gt;&lt;code&gt;catch&lt;/code&gt;&lt;/strong&gt; 代码块捕获异常，
+根据异常的类型分别进行不同的处理；通过 &lt;strong&gt;&lt;code&gt;finally&lt;/code&gt;&lt;/strong&gt; 代码块执行最后的操作，一般用来做一些清理的工作。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;code&gt;try...catch...finally&lt;/code&gt;&lt;/strong&gt; 我们以这种最全的形式作为示例，来讲解几个核心的知识点。&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;&lt;code&gt;try&lt;/code&gt;&lt;/strong&gt; 代码块的执行是最先执行，只有当 &lt;code&gt;try&lt;/code&gt; 代码块抛出了异常，才会进入 &lt;code&gt;catch&lt;/code&gt; 代码块。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;&lt;code&gt;try...finally&lt;/code&gt; 中，如果 &lt;code&gt;try&lt;/code&gt; 代码块中抛出了异常，那么这个异常会被外层最近的 &lt;code&gt;catch&lt;/code&gt; 代码块捕获。&lt;/strong&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;&lt;code&gt;finally&lt;/code&gt; 代码块总是会执行的，不管 &lt;code&gt;try&lt;/code&gt; 代码块是否抛出异常，以及 &lt;code&gt;catch&lt;/code&gt; 代码块是否执行。&lt;/strong&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;&lt;code&gt;finally&lt;/code&gt; 代码块的执行时机：如果 &lt;code&gt;try&lt;/code&gt;/&lt;code&gt;catch&lt;/code&gt; 代码块中包含流程控制语句（例如：&lt;code&gt;return&lt;/code&gt;，&lt;code&gt;break&lt;/code&gt;，&lt;code&gt;continue&lt;/code&gt;，&lt;code&gt;throw&lt;/code&gt;），
+那么 &lt;code&gt;finally&lt;/code&gt; 代码块会在这些流程控制语句执行之前执行。如果不包含流程控制语句，则在对应的代码块执行完成之后开始执行。如果 &lt;code&gt;finally&lt;/code&gt; 代码块
+包含流程控制语句，那么 &lt;code&gt;finally&lt;/code&gt; 代码块的流程控制语句就会先执行，进而替换掉原来 &lt;code&gt;try&lt;/code&gt;/&lt;code&gt;catch&lt;/code&gt; 中的流程控制语句。这个需要注意。&lt;/strong&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果上面的文字描述对你来说还是有点不好理解，那么我们可以看下面这个我制作的流程图，希望可以加强你对这一块知识的理解。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.8828125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/fj9xyC53hPWlXb523meqddAhHYxadoTWQIkiaiaM596GGbqzseibIVo7MupqxL3yKHaWU0TSEpticECpmqz1xuxWnA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;figcaption&gt;流程图&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上面这些知识点很重要， 如果你知道上面这些知识点的话，那么上面那三道题对你来说是很容易的事情啦。我们来详细讲解一下上面的三道题目。&lt;/p&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;第1道题目&lt;span/&gt;&lt;/h4&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;首先运行 &lt;code&gt;doTask&lt;/code&gt; 函数，进入 &lt;code&gt;try&lt;/code&gt; block，打印 &lt;code&gt;1 in try block&lt;/code&gt;；然后执行 &lt;code&gt;throw &#x27;2 test error&#x27;&lt;/code&gt;，后面的 &lt;code&gt;return 3&lt;/code&gt; 不会再执行，
+所以 &lt;code&gt;try&lt;/code&gt; block 就只打印了 &lt;code&gt;1 in try block&lt;/code&gt;。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;因为 &lt;code&gt;try&lt;/code&gt; block 抛出了异常，所以会进入 &lt;code&gt;catch&lt;/code&gt; block，然后打印 &lt;code&gt;4 in catch block&lt;/code&gt;，接着打印 &lt;code&gt;e&lt;/code&gt;，也就是 &lt;code&gt;2 test error&lt;/code&gt;，接着准备
+开始执行 &lt;code&gt;return 5&lt;/code&gt;，因为 &lt;code&gt;return 5&lt;/code&gt; 是流程控制语句，所以接下来开始执行后面的 &lt;code&gt;finally&lt;/code&gt; block。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;接着打印 &lt;code&gt;6 in finally block&lt;/code&gt;，又因为这个 &lt;code&gt;finally&lt;/code&gt; block 含有流程控制语句，所以会替换掉 &lt;code&gt;catch&lt;/code&gt; 里面的 &lt;code&gt;return 5&lt;/code&gt;。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;最后打印 &lt;code&gt;doTask&lt;/code&gt; 函数的返回值：&lt;code&gt;7&lt;/code&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;所以最终的运算输出的结果是：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;1 &lt;span&gt;in&lt;/span&gt; try block&lt;br/&gt;4 &lt;span&gt;in&lt;/span&gt; catch block&lt;br/&gt;2 &lt;span&gt;test&lt;/span&gt; error&lt;br/&gt;6 &lt;span&gt;in&lt;/span&gt; finally block&lt;br/&gt;7&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;第2道题目&lt;span/&gt;&lt;/h4&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;运行 &lt;code&gt;doWork&lt;/code&gt; 函数，进入 &lt;code&gt;try&lt;/code&gt; block，开始打印：&lt;code&gt;1&lt;/code&gt;；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;进入内部的 &lt;code&gt;try&lt;/code&gt; block，打印：&lt;code&gt;2&lt;/code&gt;；开始执行 &lt;code&gt;throw 3&lt;/code&gt; 之前，因为 &lt;code&gt;throw 3&lt;/code&gt; 是流程控制语句，所以首先运行 &lt;code&gt;finally&lt;/code&gt; block 里面的语句，打印：&lt;code&gt;4&lt;/code&gt;；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;然后开始执行 &lt;code&gt;throw 3&lt;/code&gt;，后面的 &lt;code&gt;console.log(5)&lt;/code&gt;执行不到，直接跳过。异常被最近的外层 &lt;code&gt;catch&lt;/code&gt; 捕获，打印：&lt;code&gt;3&lt;/code&gt;。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;所以最终的运算输出结果是：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;1&lt;br/&gt;2&lt;br/&gt;4&lt;br/&gt;3&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h4 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;第3道题目&lt;span/&gt;&lt;/h4&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;运行函数 &lt;code&gt;doRepeat&lt;/code&gt;，进入第一次循环，&lt;code&gt;i&lt;/code&gt; 的值为 0；第一次循环 &lt;code&gt;try&lt;/code&gt;/&lt;code&gt;finally&lt;/code&gt; block 都执行，所以先打印：&lt;code&gt;0 in try&lt;/code&gt;，然后打印：&lt;code&gt;0 in finally&lt;/code&gt;；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;第二次循环，&lt;code&gt;try&lt;/code&gt; block 中遇到了 &lt;code&gt;continue&lt;/code&gt;，因为 &lt;code&gt;continue&lt;/code&gt; 是流程控制语句，所以接下来先执行 &lt;code&gt;finally&lt;/code&gt; block 的语句，打印：&lt;code&gt;1 in finally&lt;/code&gt;；然后执行 &lt;code&gt;continue&lt;/code&gt;，循环结束。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;所以最终的运算输出结果是：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;0 &lt;span&gt;in&lt;/span&gt; try&lt;br/&gt;0 &lt;span&gt;in&lt;/span&gt; finally&lt;br/&gt;1 &lt;span&gt;in&lt;/span&gt; finally&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;前端的好厚米，关于 &lt;code&gt;try/catch/finally&lt;/code&gt; 的内容到这里就结束啦，如果你有什么建议和意见欢迎在文章下面评论和留言；如果这篇文章你觉得对你有帮助，那就帮忙点赞转发一下，我们下次再见。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;参考链接：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;Exception handling statements&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;try...catch&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
