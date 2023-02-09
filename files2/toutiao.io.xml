@@ -5,1881 +5,308 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>e651ea9ec44d445584ecab3bcf68ce02</guid>
-<title>一文搞懂 Redis</title>
-<link>https://toutiao.io/k/kn8zedh</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;p&gt;作者： 京东物流 刘丽侠 姚再毅 康睿 刘斌 李振&lt;/p&gt;
+<guid>aebf18c0cc938ae2e83074772983a573</guid>
+<title>Redis 异步客户端选型及落地实践</title>
+<link>https://toutiao.io/k/7uwb6h6</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;h4&gt;作者：京东科技 王晨&lt;/h4&gt;
 
-&lt;h1&gt;一、Redis的特性&lt;/h1&gt;
+&lt;h1&gt;Redis异步客户端选型及落地实践&lt;/h1&gt;
 
-&lt;h2&gt;1.1 Redis为什么快？&lt;/h2&gt;
+&lt;p&gt;可视化服务编排系统是能够通过线上可视化拖拽、配置的方式完成对接口的编排，可在线完成服务的调试、测试，实现业务需求的交付，详细内容可参考：&lt;a href=&quot;https://mp.weixin.qq.com/s/5oN9JqWN7n-4Zv6B9K8kWQ%E3%80%82&quot;&gt;https://mp.weixin.qq.com/s/5oN9JqWN7n-4Zv6B9K8kWQ。&lt;/a&gt;&lt;/p&gt;
 
+&lt;p&gt;为了支持更加广泛的业务场景，可视化编排系统近期需要支持对缓存的操作功能，为保证编排系统的性能，服务的执行过程采用了异步的方式，因此我们考虑使用Redis的异步客户端来完成对缓存的操作。&lt;/p&gt;
 
+&lt;h2&gt;Redis客户端&lt;/h2&gt;
 
+&lt;h3&gt;Jedis/Lettuce&lt;/h3&gt;
 
+&lt;p&gt;Redis官方推荐的Redis客户端有Jedis、Lettuce等等，其中Jedis 是老牌的 Redis 的 Java 实现客户端，提供了比较全面的 Redis 命令的支持，在spring-boot 1.x 默认使用Jedis。&lt;/p&gt;
 
-&lt;ul&gt;
-&lt;li&gt;  命令执行是单线程，因为是基于内存操作，单次执行的时间快于线程切换时间，同时通信采用多路复用&lt;/li&gt;
-&lt;/ul&gt;
+&lt;p&gt;但是Jedis使用阻塞的 IO，且其方法调用都是同步的，程序流需要等到 sockets 处理完 IO 才能执行，不支持异步，在并发场景下，使用Jedis客户端会耗费较多的资源。&lt;/p&gt;
 
+&lt;p&gt;此外，Jedis 客户端实例不是线程安全的，要想保证线程安全，必须要使用连接池，每个线程需要时从连接池取出连接实例，完成操作后或者遇到异常归还实例。当连接数随着业务不断上升时，对物理连接的消耗也会成为性能和稳定性的潜在风险点。因此在spring-boot 2.x中，redis客户端默认改用了Lettuce。&lt;/p&gt;
 
+&lt;p&gt;我们可以看下 Spring Data Redis 帮助文档给出的对比表格，里面详细地记录了两个主流Redis客户端之间的差异。&lt;/p&gt;
 
-&lt;ul&gt;
-&lt;li&gt;  Redis本身就是一个k-v结构，类似于hashMap，所以查询性能接近于O(1)&lt;/li&gt;
-&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-c87340655018894435308642340140c43c5.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
 
+&lt;h3&gt;异步客户端Lettuce&lt;/h3&gt;
 
+&lt;p&gt;Spring Boot自2.0版本开始默认使用Lettuce作为Redis的客户端。Lettuce客户端基于Netty的NIO框架实现，对于大多数的Redis操作，只需要维持单一的连接即可高效支持业务端的并发请求 —— 这点与Jedis的连接池模式有很大不同。同时，Lettuce支持的特性更加全面，且其性能表现并不逊于，甚至优于Jedis。&lt;/p&gt;
 
-&lt;ul&gt;
-&lt;li&gt;  同时redis自己底层数据结构支持，比如跳表、SDS&lt;/li&gt;
-&lt;/ul&gt;
+&lt;p&gt;Netty是由JBOSS提供的一个java开源框架，现为 Github上的独立项目。Netty提供异步的、事件驱动的网络应用程序框架和工具，用以快速开发高性能、高可靠性的网络服务器和客户端程序。&lt;/p&gt;
 
+&lt;p&gt;也就是说，Netty 是一个基于NIO的客户、服务器端的编程框架，使用Netty 可以确保你快速和简单的开发出一个网络应用，例如实现了某种协议的客户、服务端应用。Netty相当于简化和流线化了网络应用的编程开发过程，例如：基于TCP和UDP的socket服务开发。&lt;/p&gt;
 
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-4e13d32114e6b3cebff848e45fe2188c26d.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
 
-&lt;ul&gt;
-&lt;li&gt;  lO多路复用，单个线程中通过记录跟踪每一个sock（I/O流）的状态来管理多个I/O流&lt;/li&gt;
-&lt;/ul&gt;
+&lt;p&gt;上图展示了Netty NIO的核心逻辑。NIO通常被理解为non-blocking I/O的缩写，表示非阻塞I/O操作。图中Channel表示一个连接通道，用于承载连接管理及读写操作；EventLoop则是事件处理的核心抽象。一个EventLoop可以服务于多个Channel，但它只会与单一线程绑定。EventLoop中所有I/O事件和用户任务的处理都在该线程上进行；其中除了选择器Selector的事件监听动作外，对连接通道的读写操作均以非阻塞的方式进行 —— 这是NIO与BIO（blocking I/O，即阻塞式I/O）的重要区别，也是NIO模式性能优异的原因。&lt;/p&gt;
 
-&lt;h2&gt;1.2 Redis其他特性&lt;/h2&gt;
+&lt;p&gt;Lettuce凭借单一连接就可以支持业务端的大部分并发需求，这依赖于以下几个因素的共同作用：&lt;/p&gt;
 
-&lt;ul&gt;
-&lt;li&gt;  更丰富的数据类型，虽然都是k、v结构，value可以存储很多的数据类型&lt;/li&gt;
-&lt;/ul&gt;
+&lt;p&gt;1.Netty的单个EventLoop仅与单一线程绑定，业务端的并发请求均会被放入EventLoop的任务队列中，最终被该线程顺序处理。同时，Lettuce自身也会维护一个队列，当其通过EventLoop向Redis发送指令时，成功发送的指令会被放入该队列；当收到服务端的响应时，Lettuce又会以FIFO的方式从队列的头部取出对应的指令，进行后续处理。&lt;/p&gt;
 
+&lt;p&gt;2.Redis服务端本身也是基于NIO模型，使用单一线程处理客户端请求。虽然Redis能同时维持成百上千个客户端连接，但是在某一时刻，某个客户端连接的请求均是被顺序处理及响应的。&lt;/p&gt;
 
+&lt;p&gt;3.Redis客户端与服务端通过TCP协议连接，而TCP协议本身会保证数据传输的顺序性。&lt;/p&gt;
 
-&lt;ul&gt;
-&lt;li&gt;  完善的内存管理机制、保证数据一致性：持久化机制、过期策略&lt;/li&gt;
-&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-1a84895cc63423612699ed2126523169255.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
 
+&lt;p&gt;如此，Lettuce在保证请求处理顺序的基础上，天然地使用了&lt;strong&gt;管道模式&lt;/strong&gt;（pipelining）与Redis交互 —— 在多个业务线程并发请求的情况下，客户端不必等待服务端对当前请求的响应，即可在同一个连接上发出下一个请求。这在加速了Redis请求处理的同时，也高效地利用了TCP连接的全双工特性（full-duplex）。而与之相对的，在没有显式指定使用管道模式的情况下，Jedis只能在处理完某个Redis连接上当前请求的响应后，才能继续使用该连接发起下一个请求。&lt;/p&gt;
 
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-dd5e45cc92614f05454db4ceabdd08e1cb8.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
 
+&lt;p&gt;在并发场景下，业务系统短时间内可能会发出大量请求，在管道模式中，这些请求被统一发送至Redis服务端，待处理完成后统一返回，能够大大提升业务系统的运行效率，突破性能瓶颈。R2M采用了Redis Cluster模式，在通过Lettuce连接R2M之前，应该先对Redis Cluster模式有一定的了解。&lt;/p&gt;
 
+&lt;h2&gt;Redis Cluster模式&lt;/h2&gt;
 
+&lt;p&gt;在redis3.0之前，如果想搭建一个集群架构还是挺复杂的，就算是基于一些第三方的中间件搭建的集群总感觉有那么点差强人意，或者基于sentinel哨兵搭建的主从架构在高可用上表现又不是很好，尤其是当数据量越来越大，单纯主从结构无法满足对性能的需求时，矛盾便产生了。&lt;/p&gt;
 
+&lt;p&gt;随着redis cluster的推出，这种海量数据+高并发+高可用的场景真正从根本上得到了有效的支持。&lt;/p&gt;
 
+&lt;p&gt;cluster 模式是redis官方提供的集群模式，使用了Sharding 技术，不仅实现了高可用、读写分离、也实现了真正的分布式存储。&lt;/p&gt;
 
+&lt;h3&gt;集群内部通信&lt;/h3&gt;
 
-&lt;h2&gt;1.3 Redis高可用&lt;/h2&gt;
+&lt;p&gt;在redis cluster集群内部通过gossip协议进行通信，集群元数据分散的存在于各个节点，通过gossip进行元数据的交换。&lt;/p&gt;
 
+&lt;p&gt;不同于zookeeper分布式协调中间件，采用集中式的集群元数据存储。redis cluster采用分布式的元数据管理，优缺点还是比较明显的。在redis中集中式的元数据管理类似sentinel主从架构模式。集中式有点在于元数据更新实效性更高，但容错性不如分布式管理。gossip协议优点在于大大增强集群容错性。&lt;/p&gt;
 
+&lt;p&gt;redis cluster集群中单节点一般配置两个端口，一个端口如6379对外提供api，另一个一般是加1w，比如16379进行节点间的元数据交换即用于gossip协议通讯。&lt;/p&gt;
 
+&lt;p&gt;gossip协议包含多种消息，如ping pong，meet，fail等。&lt;/p&gt;
 
+&lt;p&gt;1.meet：集群中节点通过向新加入节点发送meet消息，将新节点加入集群中。&lt;/p&gt;
 
+&lt;p&gt;2.ping：节点间通过ping命令交换元数据。&lt;/p&gt;
 
+&lt;p&gt;3.pong：响应ping。&lt;/p&gt;
 
-&lt;h1&gt;二、Redis数据类型以及使用场景&lt;/h1&gt;
+&lt;p&gt;4.fail：某个节点主观认为某个节点宕机，会向其他节点发送fail消息，进行客观宕机判定。&lt;/p&gt;
 
-&lt;p&gt;Redis的数据类型有String、Hash、Set、List、Zset、bitMap（基于String类型）、 Hyperloglog（基于String类型）、Geo（地理位置）、Streams流。&lt;/p&gt;
+&lt;h3&gt;分片和寻址算法&lt;/h3&gt;
 
-&lt;h2&gt;2.1 String&lt;/h2&gt;
+&lt;p&gt;hash slot即hash槽。redis cluster采用的正式这种hash槽算法实现的寻址。在redis cluster中固定的存在16384个hash slot。&lt;/p&gt;
 
-&lt;h3&gt;2.1.1 基本指令&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-d27caaac98de2192a4c3bf4860b1b1651f0.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;// 批量设置
-&amp;gt; mset key1 value1 key2 value2
-// 批量获取
-&amp;gt; mget key1 key2
-// 获取长度
-&amp;gt; strlen key  
-//  字符串追加内容
-&amp;gt; append key xxx
-// 获取指定区间的字符
-&amp;gt; getrange key 0 5
-// 整数值递增 (递增指定的值)
-&amp;gt; incr intkey (incrby intkey 10)
-// 当key 存在时将覆盖
-&amp;gt; SETEX key seconds value
-// 将 key 的值设为 value ，当且仅当 key 不存在。
-&amp;gt; SETNX key value
-&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;如上图所示，如果我们有三个节点，每个节点都是一主一从的主从结构。redis cluster初始化时会自动均分给每个节点16384个slot。当增加一个节点4，只需要将原来node1~node3节点部分slot上的数据迁移到节点4即可。在redis cluster中数据迁移并不会阻塞主进程。对性能影响是十分有限的。总结一句话就是hash slot算法有效的减少了当节点发生变化导致的数据漂移带来的性能开销。&lt;/p&gt;
 
-&lt;h3&gt;2.1.2 应用场景&lt;/h3&gt;
+&lt;h3&gt;集群高可用和主备切换&lt;/h3&gt;
 
-&lt;ol&gt;
-&lt;li&gt; 缓存相关场景 缓存、 token（跟过期属性完美契合）&lt;/li&gt;
-&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;主观宕机和客观宕机：&lt;/strong&gt;&lt;/p&gt;
 
+&lt;p&gt;某个节点会周期性的向其他节点发送ping消息，当在一定时间内未收到pong消息会主观认为该节点宕机，即主观宕机。然后该节点向其他节点发送fail消息，其他超过半数节点也确认该节点宕机，即客观宕机。十分类似sentinel的sdown和odown。&lt;/p&gt;
 
+&lt;p&gt;客观宕机确认后进入主备切换阶段及从节点选举。&lt;/p&gt;
 
-&lt;ol&gt;
-&lt;li&gt; 线程安全的计数场景 （软限流、分布式ID等）&lt;/li&gt;
-&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;节点选举：&lt;/strong&gt;&lt;/p&gt;
 
-&lt;h2&gt;2.2 Hash&lt;/h2&gt;
+&lt;p&gt;检查每个 slave node 与 master node 断开连接的时间，如果超过了 cluster-node-timeout * cluster-slave-validity-factor，那么就没有资格切换成 master。&lt;/p&gt;
 
-&lt;h3&gt;2.2.1 基本指令&lt;/h3&gt;
+&lt;p&gt;每个从节点，都根据自己对 master 复制数据的 offset，来设置一个选举时间，offset 越大（复制数据越多）的从节点，选举时间越靠前，优先进行选举。&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;// 将哈希表 key 中的域 field 的值设为 value 。
-&amp;gt; HSET key field value
-// 返回哈希表 key 中给定域 field 的值。
-&amp;gt;  HGET key field
-// 返回哈希表 key 中的所有域。
-&amp;gt; HKEYS key
-// 返回哈希表 key 中所有域的值。
-&amp;gt;  HVALS key
-// 为哈希表 key 中的域 field 的值加上增量 increment 。
-&amp;gt; HINCRBY key field increment
-// 查看哈希表 key 中，给定域 field 是否存在。
-&amp;gt; HEXISTS key field
-&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;所有的 master node 开始 slave 选举投票，给要进行选举的 slave 进行投票，如果大部分 master node（N/2 + 1）都投票给了某个从节点，那么选举通过，那个从节点可以切换成 master。&lt;/p&gt;
 
-&lt;h3&gt;2.2.2 应用场景&lt;/h3&gt;
+&lt;p&gt;从节点执行主备切换，从节点切换为主节点。&lt;/p&gt;
 
-&lt;ol&gt;
-&lt;li&gt; 存储对象类的数据(官网说的）比如一个对象下有多个字段&lt;/li&gt;
-&lt;/ol&gt;
+&lt;h2&gt;Lettuce的使用&lt;/h2&gt;
 
-
-
-&lt;ol&gt;
-&lt;li&gt; 统计类的数据，可以对单个统计数据进行单独操作&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2&gt;2.3 List&lt;/h2&gt;
-
-&lt;p&gt;存储有序的字符串列表，元素可以重复。列表的最大长度为 2^32 - 1 个元素（4294967295，每个列表超过 40 亿个元素）。&lt;/p&gt;
-
-&lt;h3&gt;2.3.1 基本指令&lt;/h3&gt;
-
-&lt;pre&gt;&lt;code&gt;// 将一个或多个值 value 插入到列表 key 的表头
-&amp;gt; LPUSH key value [value ...]
-// 将一个或多个值 value 插入到列表 key 的表尾(最右边)。
-&amp;gt; RPUSH key value [value ...]
-// 移除并返回列表 key 的头元素。
-&amp;gt; LPOP key
-// 移除并返回列表 key 的尾元素。
-&amp;gt; RPOP key
-// BLPOP 是列表的阻塞式(blocking)弹出原语。
-&amp;gt; BLPOP key [key ...] timeout
-// BRPOP 是列表的阻塞式(blocking)弹出原语。
-&amp;gt; BRPOP key [key ...] timeout
-// 获取指点位置元素
-&amp;gt; LINDEX key index
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;2.3.2 应用场景&lt;/h3&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 用户消息时间线&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;因为list是有序的，所以我们可以先进先出，先进后出的列表都可以做&lt;/p&gt;
-
-&lt;h2&gt;2.4 Set&lt;/h2&gt;
-
-&lt;h3&gt;2.4.1 基本指令&lt;/h3&gt;
-
-&lt;pre&gt;&lt;code&gt;// 将一个或多个 member 元素加入到集合 key 当中，已经存在于集合的 member 元素将被忽略。
-&amp;gt; SADD key member [member ...]
-// 返回集合 key 中的所有成员。
-&amp;gt; SMEMBERS key
-// 返回集合 key 的基数(集合中元素的数量)。
-&amp;gt; SCARD key
-// 如果命令执行时，只提供了 key 参数，那么返回集合中的一个随机元素。
-&amp;gt; SRANDMEMBER key [count]
-// 移除并返回集合中的一个随机元素。
-&amp;gt; SPOP key
-// 移除集合 key 中的一个或多个 member 元素，不存在的 member 元素会被忽略。
-&amp;gt; SREM key member [member ...]
-// 判断 member 元素是否集合 key 的成员。
-&amp;gt; SISMEMBER key member
-// 获取前一个集合有而后面1个集合没有的
-&amp;gt; sdiff huihuiset huihuiset1
-// 获取交集
-&amp;gt; sinter huihuiset huihuiset1
-// 获取并集
-&amp;gt; sunion huihuiset huihuiset1
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;2.4.2 应用场景&lt;/h3&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 抽奖 spop跟srandmember随机弹出或者获取元素&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 点赞、签到等，sadd集合存储&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 交集并集 关注等场景&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2&gt;2.5 ZSet(SortedSet)&lt;/h2&gt;
-
-&lt;p&gt;sorted set，有序的set，每个元素有个score。&lt;/p&gt;
+&lt;h3&gt;建立连接&lt;/h3&gt;
 
-&lt;p&gt;score相同时，按照key的ASCII码排序。&lt;/p&gt;
-
-&lt;h3&gt;2.5.1 基本指令&lt;/h3&gt;
-
-&lt;pre&gt;&lt;code&gt;//将一个或多个 member 元素及其 score 值加入到有序集 key 当中。
-&amp;gt; ZADD key score member [[score member] [score member] ...]
-// 返回有序集 key 中，指定区间内的成员。其中成员的位置按 score 值递增(从小到大)来排序
-&amp;gt; ZRANGE key start stop [WITHSCORES]
-// 返回有序集 key 中，指定区间内的成员。其中成员的位置按 score 值递减(从大到小)来排列。
-&amp;gt; ZREVRANGE key start stop [WITHSCORES]
-// 返回有序集 key 中，所有 score 值介于 min 和 max 之间(包括等于 min 或 max )的成员。有序集成员按 score 值递增(从小到大)次序排列。
-&amp;gt;  ZRANGEBYSCORE key min max [WITHSCORES] [LIMIT offset count]
-// 移除有序集 key 中的一个或多个成员，不存在的成员将被忽略。
-&amp;gt; ZREM key member [member ...]
-// 返回有序集 key 的基数。
-&amp;gt; ZCARD key
-// 为有序集 key 的成员 member 的 score 值加上增量 increment 。
-&amp;gt; ZINCRBY key increment member
-// 返回有序集 key 中， score 值在 min 和 max 之间(默认包括 score 值等于 min 或 max )的成员的数量。
-&amp;gt; ZCOUNT key min max
-// 返回有序集 key 中成员 member 的排名。其中有序集成员按 score 值递增(从小到大)顺序排列。
-&amp;gt; ZRANK key member
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;2.5.2 应用场景&lt;/h3&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 排行榜&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h1&gt;三、Redis的事务&lt;/h1&gt;
-
-&lt;h2&gt;3.1 事务基本操作&lt;/h2&gt;
-
-&lt;pre&gt;&lt;code&gt;// 1. multi命令开启事务，exec命令提交事务
-127.0.0.1:6379&amp;gt; multi
-OK
-127.0.0.1:6379(TX)&amp;gt; set k1 v1
-QUEUED
-127.0.0.1:6379(TX)&amp;gt; set k2 v2
-QUEUED
-127.0.0.1:6379(TX)&amp;gt; exec
-1) OK
-2) OK
-// 2. 组队的过程中可以通过discard来放弃组队。
- 127.0.0.1:6379&amp;gt; multi
-OK
- 127.0.0.1:6379(TX)&amp;gt; set k3 v3
-QUEUED
- 127.0.0.1:6379(TX)&amp;gt; set k4 v4
-QUEUED
- 127.0.0.1:6379(TX)&amp;gt; discard
-OK
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2&gt;3.2 Redis事务特性&lt;/h2&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 单独的隔离操作&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;事务中的所有命令都会序列化、按顺序地执行。&lt;/p&gt;
-
-&lt;p&gt;事务在执行过程中，不会被其他客户端发送来的命令请求所打断。&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 没有隔离级别的概念&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;队列中的命令没有提交之前，都不会被实际地执行，因为事务提交之前任何指令都不会被实际执行，也就不存在“事务内的查询要看到事务里的更新，在事务外查询不能看到”这个让人万分头疼的问题。&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 不保证原子性&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;Redis同一个事务中如果有一条命令执行失败，其后的命令仍然会被执行，没有回滚。&lt;/p&gt;
-
-&lt;h1&gt;四、Redis 分布式锁&lt;/h1&gt;
-
-&lt;h2&gt;4.1 Lua 实现分布式锁&lt;/h2&gt;
-
-&lt;pre&gt;&lt;code&gt;local lockSet = redis.call(&#x27;exists&#x27;, KEYS[1])
-if lockSet == 0 
-    then
-        redis.call(&#x27;set&#x27;, KEYS[1], ARG[1])
-        redis.call(&#x27;expire&#x27;, KEYS[1], ARG[2])
-    end
-return lockSet
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h1&gt;五、Redis总体数据结构&lt;/h1&gt;
-
-&lt;h2&gt;5.1 Redis dict字典&lt;/h2&gt;
-
-&lt;h3&gt;5.1.1 RedisDb数据接口（server.h文件）&lt;/h3&gt;
-
-&lt;p&gt;数据最外层的结构为RedisDb&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;typedef struct redisDb {
-    dict *dict; /* The keyspace for this DB */ //数据库的键
-    dict *expires; /* Timeout of keys with a timeout set */ //设置了超时时间的键
-    dict *blocking_keys; /* Keys with clients waiting for data (BLPOP)*/ //客户端等待的keys
-    dict *ready_keys; /* Blocked keys that received a PUSH */
-    dict *watched_keys; /* WATCHED keys for MULTI/EXEC CAS */
-    int id; /* Database ID */ //所在数 据库ID
-    long long avg_ttl; /* Average TTL, just for tats */ //平均TTL，仅用于统计
-    unsigned long expires_cursor; /* Cursor of the active expire cycle. */
-    list *defrag_later; /* List of key names to attempt to defrag one by one, gradually. */
-} redisDb;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;5.1.2 dict数据结构（dict.h文件）&lt;/h3&gt;
-
-&lt;p&gt;我们发现数据存储在dict中&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;typedef struct dict {
-    dictType *type; //理解为面向对象思想，为支持不同的数据类型对应dictType抽象方法，不同的数据类型可以不同实现
-    void *privdata; //也可不同的数据类型相关，不同类型特定函数的可选参数。
-    dictht ht[2]; //2个hash表，用来数据存储 2个dictht
-    long rehashidx; /* rehashing not in progress if rehashidx == -1 */ // rehash标记 -1代表不再rehash
-    unsigned long iterators; /* number of iterators currently running */
-} dict;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;5.1.3 dictht结构（dict.h文件）&lt;/h3&gt;
-
-&lt;pre&gt;&lt;code&gt;typedef struct dictht {
-    dictEntry **table; //dictEntry 数组
-    unsigned long size; //数组大小 默认为4 #define DICT_HT_INITIAL_SIZE 4
-    unsigned long sizemask; //size-1 用来取模得到数据的下标值
-    unsigned long used; //改hash表中已有的节点数据
-} dictht;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;5.1.4 dictEntry节点结构（dict.h文件）&lt;/h3&gt;
-
-&lt;pre&gt;&lt;code&gt;typedef struct dictEntry {
-    void *key; //key
-    union {
-        void *val;
-        uint64_t u64;
-        int64_t s64;
-        double d;
-    } v; //value
-    struct dictEntry *next; //指向下一个节点
-} dictEntry;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;5.1.5 RedisObject（service.h文件）&lt;/h3&gt;
-
-&lt;pre&gt;&lt;code&gt;/* Objects encoding. Some kind of objects like Strings and
-Hashes can be
-* internally represented in multiple ways. The &#x27;encoding&#x27;
-field of the object
-* is set to one of this fields for this object. */
-#define OBJ_ENCODING_RAW 0 /* Raw representation */
-#define OBJ_ENCODING_INT 1 /* Encoded as integer */
-#define OBJ_ENCODING_HT 2 /* Encoded as hash table */
-#define OBJ_ENCODING_ZIPMAP 3 /* Encoded as zipmap */
-#define OBJ_ENCODING_LINKEDLIST 4 /* No longer used: old
-list encoding. */
-#define OBJ_ENCODING_ZIPLIST 5 /* Encoded as ziplist */
-#define OBJ_ENCODING_INTSET 6 /* Encoded as intset */
-#define OBJ_ENCODING_SKIPLIST 7 /* Encoded as skiplist */
-#define OBJ_ENCODING_EMBSTR 8 /* Embedded sds string
-encoding */
-#define OBJ_ENCODING_QUICKLIST 9 /* Encoded as linked list
-of ziplists */
-#define OBJ_ENCODING_STREAM 10 /* Encoded as a radix tree
-of listpacks */
-#define LRU_BITS 24
-#define LRU_CLOCK_MAX ((1&amp;lt;&amp;lt;LRU_BITS)-1) /* Max value of
-obj-&amp;gt;lru */
-#define LRU_CLOCK_RESOLUTION 1000 /* LRU clock resolution
-in ms */
-#define OBJ_SHARED_REFCOUNT INT_MAX /* Global object
-never destroyed. */
-#define OBJ_STATIC_REFCOUNT (INT_MAX-1) /* Object
-allocated in the stack. */
-#define OBJ_FIRST_SPECIAL_REFCOUNT OBJ_STATIC_REFCOUNT
-typedef struct redisObject {
-unsigned type:4; //数据类型 string hash list
-unsigned encoding:4; //底层的数据结构 跳表
-unsigned lru:LRU_BITS; /* LRU time (relative to global
-lru_clock) or
-* LFU data (least significant
-8 bits frequency
-* and most significant 16 bits
-access time). */
-int refcount; //用于回收，引用计数法
-void *ptr; //指向具体的数据结构的内存地址 比如 跳表、压缩列表
-} robj;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2&gt;5.2 Redis数据结构图&lt;/h2&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/9f19ecd561f94d7099b38881b122cc92%7Etplv-k3u1fbpfcp-watermark.image?&quot; alt=&quot;2.jpg&quot;/&gt;&lt;/p&gt;
-
-&lt;h2&gt;5.3 Redis扩容机制&lt;/h2&gt;
-
-&lt;p&gt;因为我们的dictEntry数组默认大小是4，如果不进行扩容，那么我们所有的数据都会以链表的形式添加至数组下标 随着数据量越来越大，之前只需要hash取模就能得到下标位置，现在得去循环我下标的链表，所以性能会越来越慢，当我们的数据量达到一定程度后，我们就得去触发扩容操作。&lt;/p&gt;
-
-&lt;h3&gt;5.3.1 什么时候扩容&lt;/h3&gt;
-
-&lt;h4&gt;5.3.1.1 扩容机制&lt;/h4&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 当没有fork子进程在进行RDB或AOF持久化时，ht[0]的used大于size时，触发扩容&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 如果有子进程在进行RDB或者AOF时，ht[0]的used大于等于size的5倍的时候，会触发扩容&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h4&gt;5.3.1.2 源码验证&lt;/h4&gt;
-
-&lt;p&gt;扩容，肯定是在添加数据的时候才会扩容，所以我们找一个添加数据的入口。&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 入口，添加或替换dictReplace (dict.c文件)&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;pre&gt;&lt;code&gt;int dictReplace(dict *d, void *key, void *val) {
-    dictEntry *entry, *existing, auxentry;
-    /* Try to add the element. If the key
-    * does not exists dictAdd will succeed. */
-    entry = dictAddRaw(d,key,&amp;amp;existing);
-    if (entry) {
-        dictSetVal(d, entry, val);
-        return 1;
-    }
-    /* Set the new value and free the old one. Note that
-    it is important
-    * to do that in this order, as the value may just be
-    exactly the same
-    * as the previous one. In this context, think to
-    reference counting,
-    * you want to increment (set), and then decrement
-    (free), and not the
-    * reverse. */
-    auxentry = *existing;
-    dictSetVal(d, existing, val);
-    dictFreeVal(d, &amp;amp;auxentry);
-    return 0;
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 进入dictAddRaw方法 （dict.c文件）&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;pre&gt;&lt;code&gt;dictEntry *dictAddRaw(dict *d, void *key, dictEntry **existing){
-    long index;
-    dictEntry *entry;
-    dictht *ht;
-
-    if (dictIsRehashing(d)) _dictRehashStep(d); //如果正在Rehash 进行渐进式hash 按步rehash
-
-    /* Get the index of the new element, or -1 if
-    * the element already exists. */
-    if ((index = _dictKeyIndex(d, key, dictHashKey(d,key),existing)) == -1)
-        return NULL;
-
-    /* Allocate the memory and store the new entry.
-    * Insert the element in top, with the assumption that
-    in a database
-    * system it is more likely that recently added
-    entries are accessed
-    * more frequently. */
-    //如果在hash 放在ht[1] 否则放在ht[0]
-    ht = dictIsRehashing(d) ? &amp;amp;d-&amp;gt;ht[1] : &amp;amp;d-&amp;gt;ht[0];
-    entry = zmalloc(sizeof(*entry));
-    //采用头插法插入hash桶
-    entry-&amp;gt;next = ht-&amp;gt;table[index];
-    ht-&amp;gt;table[index] = entry;
-    //已使用++
-    ht-&amp;gt;used++;
-
-    /* Set the hash entry fields. */
-    dictSetKey(d, entry, key);
-    return entry;
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 得到数据下标的方法 _dictKeyIndex (dict.c文件)&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;pre&gt;&lt;code&gt;static long _dictKeyIndex(dict *d, const void *key,uint64_t hash, dictEntry **existing){
-    unsigned long idx, table;
-    dictEntry *he;
-    if (existing) *existing = NULL;
-
-    /* Expand the hash table if needed */
-    //扩容如果需要
-    if (_dictExpandIfNeeded(d) == DICT_ERR)
-        return -1;
-    //比较是否存在这个值
-    for (table = 0; table &amp;lt;= 1; table++) {
-        idx = hash &amp;amp; d-&amp;gt;ht[table].sizemask;
-        /* Search if this slot does not already contain
-        the given key */
-        he = d-&amp;gt;ht[table].table[idx];
-        while(he) {
-            if (key==he-&amp;gt;key || dictCompareKeys(d, key,he-&amp;gt;key)) {
-                if (existing) *existing = he;
-                    return -1;
-                }
-            he = he-&amp;gt;next;
-        }
-        if (!dictIsRehashing(d)) break;
-    }
-    return idx;
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;ol&gt;
-&lt;li&gt; _dictExpandIfNeeded 验证是否需要扩容 （dict.c文件）&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;pre&gt;&lt;code&gt;/* Expand the hash table if needed */
-static int _dictExpandIfNeeded(dict *d){
-    /* Incremental rehashing already in progress. Return.*/
-    if (dictIsRehashing(d)) return DICT_OK; //正在rehash，返回
-
-    /* If the hash table is empty expand it to the initialsize. */
-    //如果ht[0]的长度为0，设置默认长度4 dictExpand为扩容的关键方法
-    if (d-&amp;gt;ht[0].size == 0) 
-            return dictExpand(d,DICT_HT_INITIAL_SIZE);
-
-    //扩容条件 hash表中已使用的数量大于等于 hash表的大小
-    //并且dict_can_resize为1 或者 已使用的大小大于hash表大小的 5倍，大于等于1倍的时候，下面2个满足一个条件即可
-    if (d-&amp;gt;ht[0].used &amp;gt;= d-&amp;gt;ht[0].size &amp;amp;&amp;amp;
-        (dict_can_resize || d-&amp;gt;ht[0].used/d-&amp;gt;ht[0].size &amp;gt;dict_force_resize_ratio)){
-        //扩容成原来的2倍
-        return dictExpand(d, d-&amp;gt;ht[0].used*2);
-    }
-    return DICT_OK;
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;5.3.2 怎么扩容&lt;/h3&gt;
-
-&lt;h4&gt;5.3.2.1 扩容步骤&lt;/h4&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 当满足我扩容条件，触发扩容时，判断是否在扩容，如果在扩容，或者 扩容的大小跟我现在的ht[0].size一样，这次扩容不做&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; new一个新的dictht，大小为ht[0].used * 2（但是必须向上2的幂，比 如6 ，那么大小为8） ，并且ht[1]=新创建的dictht&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 我们有个更大的table了，但是需要把数据迁移到ht[1].table ，所以将 dict的rehashidx（数据迁移的偏移量）赋值为0 ，代表可以进行数据迁 移了，也就是可以rehash了&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 等待数据迁移完成，数据不会马上迁移，而是采用渐进式rehash，慢慢的把数据迁移到ht[1]&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 当数据迁移完成，ht[0].table=ht[1] ，ht[1] .table = NULL、ht[1] .size = 0、ht[1] .sizemask = 0、 ht[1] .used = 0&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 把dict的rehashidex=-1&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h4&gt;5.3.2.2 源码验证&lt;/h4&gt;
-
-&lt;ol&gt;
-&lt;li&gt; dictExpand方法在_dictExpandIfNeeded 方法中调用 (dict.c文件)，为扩容的关键方法&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;pre&gt;&lt;code&gt;int dictExpand(dict *d, unsigned long size){
-    /* the size is invalid if it is smaller than the
-    number of
-    * elements already inside the hash table */
-    //正在扩容，不允许第二次扩容，或者ht[0]的数据量大于扩容后的数量，没有意义，这次不扩容
-    if (dictIsRehashing(d) || d-&amp;gt;ht[0].used &amp;gt; size)
-        return DICT_ERR;
-
-    dictht n; /* the new hash table */
-    //得到最接近2的幂 跟hashMap思想一样
-    unsigned long realsize = _dictNextPower(size);
-
-    /* Rehashing to the same table size is not useful. */
-    //如果跟ht[0]的大小一致 直接返回错误
-    if (realsize == d-&amp;gt;ht[0].size) return DICT_ERR;
-
-    /* Allocate the new hash table and initialize all
-    pointers to NULL */
-    //为新的dictht赋值
-    n.size = realsize;
-    n.sizemask = realsize-1;
-    n.table = zcalloc(realsize*sizeof(dictEntry*));
-    n.used = 0;
-
-    /* Is this the first initialization? If so it&#x27;s not
-    really a rehashing
-    * we just set the first hash table so that it can
-    accept keys. */
-    //ht[0].table为空，代表是初始化
-    if (d-&amp;gt;ht[0].table == NULL) {
-        d-&amp;gt;ht[0] = n;
-        return DICT_OK;
-    }
-
-    /* Prepare a second hash table for incremental rehashing */
-    //将扩容后的dictht赋值给ht[1]
-    d-&amp;gt;ht[1] = n;
-    //标记为0，代表可以开始rehash
-    d-&amp;gt;rehashidx = 0;
-    return DICT_OK;
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;5.3.3 数据怎么迁移（渐进式hash）&lt;/h3&gt;
-
-&lt;h4&gt;5.3.3.1 迁移方式&lt;/h4&gt;
-
-&lt;p&gt;假如一次性把数据全部迁移会很耗时间，会让单条指令等待很久，会形成阻塞。&lt;/p&gt;
-
-&lt;p&gt;所以，redis采用渐进式Rehash，所谓渐进式，就是慢慢的，不会一次性把所有数据迁移。&lt;/p&gt;
-
-&lt;p&gt;那什么时候会进行渐进式数据迁移？&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 每次进行key的crud操作都会进行一个hash桶的数据迁移&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 定时任务，进行部分数据迁移&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h4&gt;5.3.3.2 源码验证&lt;/h4&gt;
-
-&lt;h5&gt;&lt;strong&gt;CRUD触发都会触发_dictRehashStep（渐进式hash）&lt;/strong&gt;&lt;/h5&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 每次增删改的时候都会调用_dictRehashStep方法&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;pre&gt;&lt;code&gt;if (dictIsRehashing(d)) _dictRehashStep(d); //这个代码在增删改查的方法中都会调用
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;ol&gt;
-&lt;li&gt; _dictRehashStep方法&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;pre&gt;&lt;code&gt;static void _dictRehashStep(dict *d) {
-    if (d-&amp;gt;iterators == 0) dictRehash(d,1);
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;ol&gt;
-&lt;li&gt; dictRehash方法&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;pre&gt;&lt;code&gt;int dictRehash(dict *d, int n) {
-    int empty_visits = n*10; /* Max number of empty
-    buckets to visit. */ //要访问的最大的空桶数 防止此次耗时过长
-
-    if (!dictIsRehashing(d)) return 0; //如果没有在rehash返回0
-
-    //循环，最多1次，并且ht[0]的数据没有迁移完 进入循环
-    while(n-- &amp;amp;&amp;amp; d-&amp;gt;ht[0].used != 0) {
-        dictEntry *de, *nextde;
-        /* Note that rehashidx can&#x27;t overflow as we are
-        sure there are more
-        * elements because ht[0].used != 0 */
-        assert(d-&amp;gt;ht[0].size &amp;gt; (unsigned long)d-&amp;gt;rehashidx);
-        //rehashidx rehash的索引，默认0 如果hash桶为空 进入自旋 并且判断是否到了最大的访问空桶数
-        while(d-&amp;gt;ht[0].table[d-&amp;gt;rehashidx] == NULL) {
-            d-&amp;gt;rehashidx++;
-            if (--empty_visits == 0) return 1;
-        }
-        de = d-&amp;gt;ht[0].table[d-&amp;gt;rehashidx]; //得到ht[0]的下标为rehashidx桶
-        /* Move all the keys in this bucket from the old
-        to the new hash HT */
-        while(de) { //循环hash桶的链表 并且转移到ht[1]
-            uint64_t h;
-            nextde = de-&amp;gt;next;
-            /* Get the index in the new hash table */
-            h = dictHashKey(d, de-&amp;gt;key) &amp;amp; d-
-            &amp;gt;ht[1].sizemask;
-            de-&amp;gt;next = d-&amp;gt;ht[1].table[h]; //头插
-            d-&amp;gt;ht[1].table[h] = de;
-            d-&amp;gt;ht[0].used--;
-            d-&amp;gt;ht[1].used++;
-            de = nextde;
-        }
-        //转移完后 将ht[0]相对的hash桶设置为null
-        d-&amp;gt;ht[0].table[d-&amp;gt;rehashidx] = NULL;
-        d-&amp;gt;rehashidx++;
-    }
-    /* Check if we already rehashed the whole table... */
-    //ht[0].used=0 代表rehash全部完成
-    if (d-&amp;gt;ht[0].used == 0) {
-        //清空ht[0]table
-        zfree(d-&amp;gt;ht[0].table);
-        //将ht[0] 重新指向已经完成rehash的ht[1]
-        d-&amp;gt;ht[0] = d-&amp;gt;ht[1];
-        //将ht[1]所有数据重新设置
-        _dictReset(&amp;amp;d-&amp;gt;ht[1]);
-        //设置-1,代表rehash完成
-        d-&amp;gt;rehashidx = -1;
-        return 0;
-    }
-    /* More to rehash... */
-    return 1;
+&lt;p&gt;使用Lettuce大致分为以下三步：&lt;/p&gt;
+
+&lt;p&gt;1.基于Redis连接信息创建RedisClient&lt;/p&gt;
+
+&lt;p&gt;2.基于RedisClient创建StatefulRedisConnection&lt;/p&gt;
+
+&lt;p&gt;3.从Connection中获取Command，基于Command执行Redis命令操作。&lt;/p&gt;
+
+&lt;p&gt;由于Lettuce客户端提供了响应式、同步和异步三种命令，从Connection中获取Command时可以指定命令类型进行获取。&lt;/p&gt;
+
+&lt;p&gt;在本地创建Redis Cluster集群，设置主从关系如下：&lt;/p&gt;
+
+&lt;p&gt;7003(M) --&amp;gt; 7001(S)&lt;/p&gt;
+
+&lt;p&gt;7004(M) --&amp;gt; 7002(S)&lt;/p&gt;
+
+&lt;p&gt;7005(M) --&amp;gt; 7000(S)&lt;/p&gt;
+
+&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;List&amp;lt;RedisURI&amp;gt; servers = new ArrayList&amp;lt;&amp;gt;();
+servers.add(RedisURI.create(&quot;127.0.0.1&quot;, 7000));
+servers.add(RedisURI.create(&quot;127.0.0.1&quot;, 7001));
+servers.add(RedisURI.create(&quot;127.0.0.1&quot;, 7002));
+servers.add(RedisURI.create(&quot;127.0.0.1&quot;, 7003));
+servers.add(RedisURI.create(&quot;127.0.0.1&quot;, 7004));
+servers.add(RedisURI.create(&quot;127.0.0.1&quot;, 7005));
+//创建客户端
+RedisClusterClient client = RedisClusterClient.create(servers);
+//创建连接
+StatefulRedisClusterConnection&amp;lt;String, String&amp;gt; connection = client.connect();
+//获取异步命令
+RedisAdvancedClusterAsyncCommands&amp;lt;String, String&amp;gt; commands = connection.async();
+//执行GET命令
+RedisFuture&amp;lt;String&amp;gt; future = commands.get(&quot;test-lettuce-key&quot;);
+try {
+    String result = future.get();
+    log.info(&quot;Get命令返回:{}&quot;, result);
+} catch (Exception e) {
+    log.error(&quot;Get命令执行异常&quot;, e);
 }
 
-//将ht[1]的属性复位
-static void _dictReset(dictht *ht)
-{
-    ht-&amp;gt;table = NULL;
-    ht-&amp;gt;size = 0;
-    ht-&amp;gt;sizemask = 0;
-    ht-&amp;gt;used = 0;
-}
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h6&gt;&lt;strong&gt;定时任务触发&lt;/strong&gt;&lt;/h6&gt;
+&lt;p&gt;可以看到成功地获取到了值，由日志可以看出该请求发送到了7004所在的节点上，顺利拿到了对应的值并进行返回。&lt;/p&gt;
 
-&lt;p&gt;再讲定时任务之前，我们要知道Redis中有个时间事件驱动,在 server.c文件下有个serverCron 方法。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-3340d12283421854c29ed7371c04b743a5e.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
 
-&lt;p&gt;serverCron 每隔多久会执行一次，执行频率根据redis.conf中的hz配置，serverCorn中有个方法databasesCron()&lt;/p&gt;
+&lt;p&gt;作为一个需要长时间保持的客户端，保持其与集群之间连接的稳定性是至关重要的，那么集群在运行过程中会发生哪些特殊情况呢？作为客户端又应该如何应对呢？这就要引出智能客户端（smart client）这个概念了。&lt;/p&gt;
 
-&lt;ol&gt;
-&lt;li&gt; 定时方法serverCron&lt;/li&gt;
-&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;智能客户端&lt;/strong&gt;&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;int serverCron(struct aeEventLoop *eventLoop, long long id, void *clientData) {
-    //.......
-    /* We need to do a few operations on clients
-    asynchronously. */
-    clientsCron();
-    /* Handle background operations on Redis databases. */
-    databasesCron(); //处理Redis数据库上的后台操作。
-    //.......
-}
+&lt;p&gt;在Redis Cluster运行过程中，所有的数据不是永远固定地保存在某一个节点上的，比如遇到cluster扩容、节点宕机、数据迁移等情况时，都会导致集群的拓扑结构发生变化，此时作为客户端需要对这一类情况作出应对，来保证连接的稳定性以及服务的可用性。随着以上问题的出现，smart client这个概念逐渐走到了人们的视野中，智能客户端会在内部维护hash槽与节点的映射关系，大家耳熟能详的Jedis和Lettuce都属于smart client。客户端在发送请求时,会先根据CRC16(key)%16384计算key对应的hash槽,通过映射关系,本地就可实现键到节点的查找,从而保证IO效率的最大化。&lt;/p&gt;
+
+&lt;p&gt;但如果出现故障转移或者hash槽迁移时,这个映射关系是如何维护的呢？&lt;/p&gt;
+
+&lt;h3&gt;客户端重定向&lt;/h3&gt;
+
+&lt;h4&gt;MOVED&lt;/h4&gt;
+
+&lt;p&gt;当Redis集群发生数据迁移时，当对应的hash槽已经迁移到变的节点时，服务端会返回一个MOVED重定向错误，此时并告诉客户端这个hash槽迁移后的节点IP和端口是多少；客户端在接收到MOVED错误时，会更新本地的映射关系，并重新向新节点发送请求命令。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-54da863df05ceb9eb1a578969bad8ef55dc.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;h4&gt;ASK&lt;/h4&gt;
+
+&lt;p&gt;Redis集群支持在线迁移槽（slot）和数据来完成水平伸缩，当slot对应的数据从源节点到目标节点迁移过程中，客户端需要做到智能识别，保证键命令可正常执行。例如当一个slot数据从源节点迁移到目标节点时，期间可能出现一部分数据在源节点，而另一部分在目标节点，如下图所示&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://oscimg.oschina.net/oscnet/up-ac2f94c38e21d669c070767bb34addef53b.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;当出现上述情况时，客户端键命令执行流程将发生变化，如下所示：&lt;/p&gt;
+
+&lt;p&gt;1）客户端根据本地slots缓存发送命令到源节点，如果存在键对象则直 接执行并返回结果给客户端&lt;/p&gt;
+
+&lt;p&gt;2）如果键对象不存在，则可能存在于目标节点，这时源节点会回复 ASK重定向异常。&lt;/p&gt;
+
+&lt;p&gt;3）客户端从ASK重定向异常提取出目标节点信息，发送asking命令到目标节点打开客户端连接标识，再执行键命令。如果存在则执行，不存在则返回不存在信息。&lt;/p&gt;
+
+&lt;p&gt;在客户端收到ASK错误时，不会更新本地的映射关系&lt;/p&gt;
+
+&lt;h2&gt;节点宕机触发主备切换&lt;/h2&gt;
+
+&lt;p&gt;上文提到，如果redis集群在运行过程中，某个主节点由于某种原因宕机了，此时就会触发集群的节点选举机制，选举其中一个从节点作为新的主节点，进入主备切换，在主备切换期间，新的节点没有被选举出来之前，打到该节点上的请求理论上是无法得到执行的，可能会产生超时错误。在主备切换完成之后，集群拓扑更新完成，此时客户端应该向集群请求新的拓扑结构，并更新至本地的映射表中，以保证后续命令的正确执行。&lt;/p&gt;
+
+&lt;p&gt;有意思的是，Jedis在集群主备切换完成之后，是会主动拉取最新的拓扑结构并进行更新的，但是在使用Lettuce时，发现在集群主备切换完成之后，连接并没有恢复，打到该节点上的命令依旧会执行失败导致超时，必须要重启业务程序才能恢复连接。&lt;/p&gt;
+
+&lt;p&gt;在使用Lettuce时，如果不进行设置，默认是不会触发拓扑刷新的，因此在主备切换完成后，Lettuce依旧使用本地的映射表，将请求打到已经挂掉的节点上，就会导致持续的命令执行失败的情况。&lt;/p&gt;
+
+&lt;p&gt;可以通过以下代码来设置Lettuce的拓扑刷新策略，开启基于事件的自适应拓扑刷新，其中包括了MOVED、 ASK、PERSISTENT_RECONNECTS等触发器，当客户端触发这些事件，并且持续时间超过设定阈值后，触发拓扑刷新，也可以通过enablePeriodicRefresh（）设置定时刷新，不过建议这个时间不要太短。&lt;/p&gt;
+
+&lt;pre lang=&quot;java&quot;&gt;&lt;code&gt;// 设置基于事件的自适应刷新策略
+ClusterTopologyRefreshOptions topologyRefreshOptions = ClusterTopologyRefreshOptions.builder()
+        //开启自适应拓扑刷新
+        .enableAllAdaptiveRefreshTriggers()
+        //自适应拓扑刷新事件超时时间，超时后进行刷新
+        .adaptiveRefreshTriggersTimeout(Duration.ofSeconds(30))
+        .build();
+
+redisClusterClient.setOptions(ClusterClientOptions.builder()
+        .topologyRefreshOptions(topologyRefreshOptions)
+        // redis命令超时时间
+        .timeoutOptions(TimeoutOptions.enabled(Duration.ofSeconds(30)))
+        .build());
+
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;ol&gt;
-&lt;li&gt; databasesCron方法&lt;/li&gt;
-&lt;/ol&gt;
+&lt;p&gt;进行以上设置并进行验证，集群在主备切换完成后，客户端在段时间内恢复了连接，能够正常存取数据了。&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;void databasesCron(void) {
-    /* Expire keys by random sampling. Not required for
-    slaves
-    * as master will synthesize DELs for us. */
-    if (server.active_expire_enabled) {
-        if (iAmMaster()) {
-            activeExpireCycle(ACTIVE_EXPIRE_CYCLE_SLOW);
-        } else {
-            expireSlaveKeys();
-        }
-    }
-    /* Defrag keys gradually. */
-    activeDefragCycle();
-    /* Perform hash tables rehashing if needed, but only
-    if there are no
-    * other processes saving the DB on disk. Otherwise
-    rehashing is bad
-    * as will cause a lot of copy-on-write of memory
-    pages. */
-    if (!hasActiveChildProcess()) {
-        /* We use global counters so if we stop the
-        computation at a given
-        * DB we&#x27;ll be able to start from the successive
-        in the next
-        * cron loop iteration. */
-        static unsigned int resize_db = 0;
-        static unsigned int rehash_db = 0;
-        int dbs_per_call = CRON_DBS_PER_CALL;
-        int j;
-        /* Don&#x27;t test more DBs than we have. */
-        if (dbs_per_call &amp;gt; server.dbnum) 
-            dbs_per_call = server.dbnum;
-        /* Resize */
-        for (j = 0; j &amp;lt; dbs_per_call; j++) {
-            tryResizeHashTables(resize_db % server.dbnum);
-            resize_db++;
-        }
-        /* Rehash */ //Rehash逻辑
-        if (server.activerehashing) {
-            for (j = 0; j &amp;lt; dbs_per_call; j++) {
-                //进入incrementallyRehash
-                int work_done = incrementallyRehash(rehash_db);
-                if (work_done) {
-                    /* If the function did some work, stop
-                        here, we&#x27;ll do
-                        * more at the next cron loop. */
-                    break;
-                } else {
-                    /* If this db didn&#x27;t need rehash,
-                        we&#x27;ll try the next one. */
-                    rehash_db++;
-                    rehash_db %= server.dbnum;
-                }
-            }
-        }
-    }
-} 
-&lt;/code&gt;&lt;/pre&gt;
+&lt;h1&gt;总结&lt;/h1&gt;
 
-&lt;ol&gt;
-&lt;li&gt; 进入incrementallyRehash方法（server.c)&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;pre&gt;&lt;code&gt;int incrementallyRehash(int dbid) {
-    /* Keys dictionary */
-    if (dictIsRehashing(server.db[dbid].dict)) {
-        dictRehashMilliseconds(server.db[dbid].dict,1);
-        return 1; 
-        /* already used our millisecond for this
-        loop... */
-    }
-    /* Expires */
-    if (dictIsRehashing(server.db[dbid].expires)) {
-        dictRehashMilliseconds(server.db[dbid].expires,1);
-        return 1; /* already used our millisecond for this
-        loop... */
-    }
-    return 0;
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 进入dictRehashMilliseconds（dict.c）&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;pre&gt;&lt;code&gt;int dictRehashMilliseconds(dict *d, int ms) {
-    long long start = timeInMilliseconds();
-    int rehashes = 0;
-    //进入rehash方法 dictRehash 去完成渐进时HASH
-    while(dictRehash(d,100)) {
-        rehashes += 100;
-        //判断是否超时
-        if (timeInMilliseconds()-start &amp;gt; ms) break;
-    }
-    return rehashes;
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2&gt;5.4 String类型数据结构&lt;/h2&gt;
-
-&lt;p&gt;Redis中String的底层没有用c的char来实现，而是采用了SDS（simple Dynamic String）的数据结构来实现。并且提供了5种不同的类型&lt;/p&gt;
-
-&lt;h3&gt;5.4.1 SDS数据结构定义（sds.h文件）&lt;/h3&gt;
-
-&lt;pre&gt;&lt;code&gt;typedef char *sds;
-/* Note: sdshdr5 is never used, we just access the flags
-    byte directly.
-    * However is here to document the layout of type 5 SDS
-strings. */
-struct __attribute__ ((__packed__)) sdshdr5 {
-    unsigned char flags; /* 3 lsb of type, and 5 msb of
-        string length */
-    char buf[];
-}
-
-struct __attribute__ ((__packed__)) sdshdr8 {
-    uint8_t len;  /* used */ //已使用的长度
-    uint8_t alloc; /* excluding the header and null terminator */ //分配的总容量 不包含头和空终止符
-    unsigned char flags; /* 3 lsb of type, 5 unused bits */ //低三位类型 高5bit未使用
-    char buf[]; //数据buf 存储字符串数组
-};
-
-struct __attribute__ ((__packed__)) sdshdr16 {
-    uint16_t len; /* used */
-    uint16_t alloc; /* excluding the header and null
-    terminator */
-    unsigned char flags; /* 3 lsb of type, 5 unused bits
-    */
-    char buf[];
-};
-
-struct __attribute__ ((__packed__)) sdshdr32 {
-    uint32_t len; /* used */
-    uint32_t alloc; /* excluding the header and null
-    terminator */
-    unsigned char flags; /* 3 lsb of type, 5 unused bits
-    */
-    char buf[];
-};
-
-struct __attribute__ ((__packed__)) sdshdr64 {
-    uint64_t len; /* used */
-    uint64_t alloc; /* excluding the header and null
-    terminator */
-    unsigned char flags; /* 3 lsb of type, 5 unused bits
-    */
-    char buf[];
-};
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;5.4.2 SDS数据结构的优势&lt;/h3&gt;
-
-&lt;ol&gt;
-&lt;li&gt; char字符串不记录自身长度，所以获取一个字符串长度的复杂度是O(n)，但是SDS记录分配的长度alloc，已使用的长度len，获取长度为 O(1)&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 减少修改字符串带来的内存重分配次数&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 空间预分配，SDS长度如果小于1MB，预分配跟长度一样的，大于1M，每次跟len的大小多1M&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 惰性空间释放，截取的时候不马上释放空间，供下次使用！同时提供相应的释放SDS未使用空间的API&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 二进制安全&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2&gt;5.5 Hash类型数据结构&lt;/h2&gt;
-
-&lt;p&gt;Redis的字典相当于Java语言中的HashMap，他是无序字典。内部结构上同样是数组 + 链表二维结构。第一维hash的数组位置碰撞时，就会将碰撞的元素使用链表串起来。&lt;/p&gt;
-
-&lt;h3&gt;5.5.1 Hash数据结构图&lt;/h3&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/295ec2e9e069445bbf513226fd6c7e51%7Etplv-k3u1fbpfcp-watermark.image?&quot; alt=&quot;3.png&quot;/&gt;&lt;/p&gt;
-
-&lt;h3&gt;5.5.2 Hash的压缩列表&lt;/h3&gt;
-
-&lt;p&gt;压缩列表会根据存入的数据的不同类型以及不同大小，分配不同大小的空间。所以是为了节省内存而采用的。&lt;/p&gt;
-
-&lt;p&gt;因为是一块完整的内存空间，当里面的元素发生变更时，会产生连锁更新，严重影响我们的访问性能。所以，只适用于数据量比较小的场景。&lt;/p&gt;
-
-&lt;p&gt;所以，Redis会有相关配置，Hashes只有小数据量的时候才会用到ziplist，当hash对象同时满足以下两个条件的时候，使用ziplist编码：&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 哈希对象保存的键值对数量＜512个&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 所有的键值对的键和值的字符串长度都＜64byte（一个英文字母一个字节）&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;pre&gt;&lt;code&gt;hash-max-ziplist-value 64 // ziplist中最大能存放的值长度
-hash-max-ziplist-entries 512 // ziplist中最多能存放的entry节点数量
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2&gt;5.6 List类型数据结构&lt;/h2&gt;
-
-&lt;h3&gt;5.6.1 quickList快速列表&lt;/h3&gt;
-
-&lt;p&gt;兼顾了ziplist的节省内存，并且一定程度上解决了连锁更新的问题，我们的 quicklistNode节点里面是个ziplist，每个节点是分开的。那么就算发生了连锁更新，也只会发生在一个quicklistNode节点。&lt;/p&gt;
-
-&lt;p&gt;quicklist.h文件&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;typedef struct{
-    struct quicklistNode *prev; //前指针
-    struct quicklistNode *next; //后指针
-    unsigned char *zl; //数据指针 指向ziplist结果
-    unsigned int sz; //ziplist大小 /* ziplist
-    size in bytes */
-    unsigned int count : 16; /* count of items in ziplist */ //ziplist的元素
-    unsigned int encoding : 2; /* RAW==1 or LZF==2 */ //
-    是否压缩， 1没有压缩 2 lzf压缩
-    unsigned int container : 2; /* NONE==1 or ZIPLIST==2 */ //预留容器字段
-    unsigned int recompress : 1; /* was this node previous compressed? */
-    unsigned int attempted_compress : 1; /* node can&#x27;t compress; too small */
-    unsigned int extra : 10; /* more bits to steal for  future usage */ //预留字段
-} quicklistNode;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;5.6.2 list数据结构图&lt;/h3&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/9c82f046cc3a4ebeb28ed79557a9939e%7Etplv-k3u1fbpfcp-watermark.image?&quot; alt=&quot;4.png&quot;/&gt;&lt;/p&gt;
-
-&lt;h2&gt;5.7 Set类型数据结构&lt;/h2&gt;
-
-&lt;p&gt;Redis用intset或hashtable存储set。满足下面条件，就用inset存储。&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 如果不是整数类型，就用dictht hash表（数组+链表）&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 如果元素个数超过512个，也会用hashtable存储。跟一个配置有关：&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;pre&gt;&lt;code&gt;set-max-intset-entries 512
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;不满足上述条件的，都使用hash表存储，value存null。&lt;/p&gt;
-
-&lt;h2&gt;5.8 ZSet数据结构&lt;/h2&gt;
-
-&lt;h3&gt;5.8.1 ZipList&lt;/h3&gt;
-
-&lt;p&gt;默认使用ziplist编码。&lt;/p&gt;
-
-&lt;p&gt;在ziplist的内部，按照score排序递增来存储。插入的时候要移动之后的数据。&lt;/p&gt;
-
-&lt;p&gt;如果元素数量大于等于128个，或者任一member长度大于等于64字节使用 skiplist+dict存储。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;zset-max-ziplist-entries 128
-zset-max-ziplist-value 64
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;如果不满足条件，采用跳表。&lt;/p&gt;
-
-&lt;h3&gt;5.8.2 跳表（skiplist）&lt;/h3&gt;
-
-&lt;p&gt;结构定义（servier.h）&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;/* ZSETs use a specialized version of Skiplists */
-typedef struct zskiplistNode {
- sds ele; //sds数据
- double score; //score
- struct zskiplistNode *backward; //后退指针
- //层级数组
- struct zskiplistLevel {
-     struct zskiplistNode *forward; //前进指针
-     unsigned long span; //跨度
- } level[];
-} zskiplistNode;
-
-//跳表列表
-typedef struct zskiplist {
- struct zskiplistNode *header, *tail; //头尾节点
- unsigned long length; //节点数量
- int level; //最大的节点层级
-} zskiplist;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;zslInsert 添加节点方法 （t_zset.c）&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;zskiplistNode *zslInsert(zskiplist *zsl, double score, sds
-ele) {
- zskiplistNode *update[ZSKIPLIST_MAXLEVEL], *x;
- unsigned int rank[ZSKIPLIST_MAXLEVEL];
- int i, level;
- serverAssert(!isnan(score));
- x = zsl-&amp;gt;header;
- for (i = zsl-&amp;gt;level-1; i &amp;gt;= 0; i--) {
-     /* store rank that is crossed to reach the insert
-     position */
-     rank[i] = i == (zsl-&amp;gt;level-1) ? 0 : rank[i+1];
-     while (x-&amp;gt;level[i].forward &amp;amp;&amp;amp;
-         (x-&amp;gt;level[i].forward-&amp;gt;score &amp;lt; score ||
-         咕泡出品 必属精品精品属精品 咕泡出品 必属精品 咕泡出品 必属精品 咕泡咕泡
-         (x-&amp;gt;level[i].forward-&amp;gt;score == score
-         &amp;amp;&amp;amp;
-         sdscmp(x-&amp;gt;level[i].forward-&amp;gt;ele,ele) &amp;lt;
-         0)))
-         {
-         rank[i] += x-&amp;gt;level[i].span;
-         x = x-&amp;gt;level[i].forward;
-     }
-     update[i] = x;
- }
- /* we assume the element is not already inside, since
- we allow duplicated
-    * scores, reinserting the same element should never
-    happen since the
-    * caller of zslInsert() should test in the hash table
-    if the element is
-    * already inside or not. */
-    level = zslRandomLevel();
-    if (level &amp;gt; zsl-&amp;gt;level) {
-        for (i = zsl-&amp;gt;level; i &amp;lt; level; i++) {
-            rank[i] = 0;
-            update[i] = zsl-&amp;gt;header;
-            update[i]-&amp;gt;level[i].span = zsl-&amp;gt;length;
-        }
-        zsl-&amp;gt;level = level;
-    }
-    x = zslCreateNode(level,score,ele);
-    //不同层级建立链表联系
-    for (i = 0; i &amp;lt; level; i++) {
-        x-&amp;gt;level[i].forward = update[i]-&amp;gt;level[i].forward;
-        update[i]-&amp;gt;level[i].forward = x;
-        /* update span covered by update[i] as x is
-        inserted here */
-        x-&amp;gt;level[i].span = update[i]-&amp;gt;level[i].span -
-        (rank[0] - rank[i]);
-        update[i]-&amp;gt;level[i].span = (rank[0] - rank[i]) +
-        1;
-    }
-    /* increment span for untouched levels */
-    for (i = level; i &amp;lt; zsl-&amp;gt;level; i++) {
-        update[i]-&amp;gt;level[i].span++;
-    }
-    x-&amp;gt;backward = (update[0] == zsl-&amp;gt;header) ? NULL :
-    update[0];
-    if (x-&amp;gt;level[0].forward)
-        x-&amp;gt;level[0].forward-&amp;gt;backward = x;
-    else
-        zsl-&amp;gt;tail = x;
-        zsl-&amp;gt;length++;
-    return x;
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;ZSKIPLIST_MAXLEVEL默认32 定义在server.h&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;#define ZSKIPLIST_MAXLEVEL 32 /* Should be enough for 2^64
-elements */
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h1&gt;六、Redis过期策略&lt;/h1&gt;
-
-&lt;h2&gt;6.1 惰性过期&lt;/h2&gt;
-
-&lt;p&gt;所谓惰性过期，就是在每次访问操作key的时候，判断这个key是不是过期了，过期了就删除。&lt;/p&gt;
-
-&lt;h3&gt;6.1.1 源码验证&lt;/h3&gt;
-
-&lt;ol&gt;
-&lt;li&gt; expireIfNeeded方法（db.c文件）&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;pre&gt;&lt;code&gt;int expireIfNeeded(redisDb *db, robj *key) {
-    if (!keyIsExpired(db,key)) return 0;
-    /* If we are running in the context of a slave,
-    instead of
-    * evicting the expired key from the database, we
-    return ASAP:
-    * the slave key expiration is controlled by the
-    master that will
-    * send us synthesized DEL operations for expired
-    keys.
-    *
-    * Still we try to return the right information to the
-    caller,
-    * that is, 0 if we think the key should be still
-    valid, 1 if
-    * we think the key is expired at this time. */
-    // 如果配置有masterhost，说明是从节点，那么不操作删除
-    if (server.masterhost != NULL) return 1;
-    /* Delete the key */
-    server.stat_expiredkeys++;
-    propagateExpire(db,key,server.lazyfree_lazy_expire);
-    notifyKeyspaceEvent(NOTIFY_EXPIRED,
-    &quot;expired&quot;,key,db-&amp;gt;id);
-    //是否是异步删除 防止单个Key的数据量很大 阻塞主线程 是4.0之后添加的新功能，默认关闭
-    int retval = server.lazyfree_lazy_expire ? dbAsyncDelete(db,key) : dbSyncDelete(db,key);
-    if (retval) signalModifiedKey(NULL,db,key);
-    return retval;
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;每次调用到相关指令时，才会执行expireIfNeeded判断是否过期，平时不会去判断是否过期。&lt;/p&gt;
-
-&lt;p&gt;该策略可以最大化的节省CPU资源。&lt;/p&gt;
-
-&lt;p&gt;但是却对内存非常不友好。因为如果没有再次访问，就可能一直堆积再内存中。占用内存&lt;/p&gt;
-
-&lt;p&gt;所以就需要另一种策略来配合使用，就是定期过期&lt;/p&gt;
-
-&lt;h2&gt;6.2 定期过期&lt;/h2&gt;
-
-&lt;p&gt;那么多久去清除一次，我们在讲Rehash的时候，有个方法是serverCron，执行频率根据redis.conf中的hz配置。&lt;/p&gt;
-
-&lt;p&gt;这方法除了做Rehash以外，还会做很多其他的事情，比如：&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 清理数据库中的过期键值对&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 更新服务器的各类统计信息，比如时间、内存占用、数据库占用情况等&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 关闭和清理连接失效的客户端&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 尝试进行持久化操作&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h3&gt;6.2.1 实现流程&lt;/h3&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 定时serverCron方法去执行清理，执行频率根据redis.cong中的hz配置的值（默认是10，也就是1s执行10次，100ms执行一次）&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 执行清理的时候，不是去扫描所有的key，而是去扫描所有设置了过期时间的key redisDB.expires&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 如果每次去把所有的key都拿出来，那么假如过期的key很多，就会很慢，所以也不是一次性拿出所有的key&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 根据hash桶的维度去扫描key，扫到20(可配置)个key为止。假如第一个桶是15个key没有满足20，继续扫描第二个桶，第二个桶20个key，由于是以hash桶的维度扫描的，所以第二个扫到了就会全扫，总共扫描35个key&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 找到扫描的key里面过期的key，并进行删除&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 如果取了400个空桶（最多拿400个桶），或者扫描的删除比例跟扫描的总数超过10%，继续执行4、5步&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 也不能无限的循环，循环16次后回去检测时间，超过指定时间会跳出&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h3&gt;6.2.2 源码验证&lt;/h3&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 入口serverCrom&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;pre&gt;&lt;code&gt;// serverCron方法调用databasesCron方法（server.c）
-/* Handle background operations on Redis databases. */
-databasesCron();
-
-void databasesCron(void) {
-    /* Expire keys by random sampling. Not required for
-    slaves
-    * as master will synthesize DELs for us. */
-    if (server.active_expire_enabled) {
-        if (iAmMaster()) {
-            activeExpireCycle(ACTIVE_EXPIRE_CYCLE_SLOW);
-        //过期删除方法
-        } else {
-            expireSlaveKeys();
-        }
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h1&gt;七、Redis淘汰策略&lt;/h1&gt;
-
-&lt;p&gt;由于Redis内存是有大小的，并且我可能里面的数据都没有过期，当快满的时候，我又没有过期的数据进行淘汰，那么这个时候内存也会满。内存满了，Redis也会不能放入新的数据。所以，我们不得已需要一些策略来解决这个问题来保证可用性。&lt;/p&gt;
-
-&lt;h2&gt;7.1 淘汰策略&lt;/h2&gt;
-
-&lt;h3&gt;7.1.1 noeviction&lt;/h3&gt;
-
-&lt;p&gt;New values aren’t saved when memory limit is reached. When a database uses replication, this applies to the primary database.&lt;/p&gt;
-
-&lt;p&gt;默认，不淘汰 能读不能写&lt;/p&gt;
-
-&lt;h3&gt;7.1.2 allkeys-lru&lt;/h3&gt;
-
-&lt;p&gt;Keeps most recently used keys; removes least recently used (LRU) keys&lt;/p&gt;
-
-&lt;p&gt;基于伪LRU算法，在所有的key中去淘汰&lt;/p&gt;
-
-&lt;h3&gt;7.1.3 allkeys-lfu&lt;/h3&gt;
-
-&lt;p&gt;Keeps frequently used keys; removes least frequently used (LFU) keys.&lt;/p&gt;
-
-&lt;p&gt;基于伪LFU算法，在所有的key中去淘汰&lt;/p&gt;
-
-&lt;h3&gt;7.1.4 volatile-lru&lt;/h3&gt;
-
-&lt;p&gt;Removes least recently used keys with the expire field set to true.&lt;/p&gt;
-
-&lt;p&gt;基于伪LRU算法，在设置了过期时间的key中去淘汰&lt;/p&gt;
-
-&lt;h3&gt;7.1.5 volatile-lfu&lt;/h3&gt;
-
-&lt;p&gt;Removes least frequently used keys with the expire field set to true.&lt;/p&gt;
-
-&lt;p&gt;基于伪LFU算法 在设置了过期时间的key中去淘汰&lt;/p&gt;
-
-&lt;h3&gt;7.1.6 allkeys-random&lt;/h3&gt;
-
-&lt;p&gt;Randomly removes keys to make space for the new data added.&lt;/p&gt;
-
-&lt;p&gt;基于随机算法，在所有的key中去淘汰&lt;/p&gt;
-
-&lt;h3&gt;7.1.7 volatile-random&lt;/h3&gt;
-
-&lt;p&gt;Randomly removes keys with expire field set to true.&lt;/p&gt;
-
-&lt;p&gt;基于随机算法 在设置了过期时间的key中去淘汰&lt;/p&gt;
-
-&lt;h3&gt;7.1.8 volatile-ttl&lt;/h3&gt;
-
-&lt;p&gt;Removes least frequently used keys with expire field set to true and the shortest remaining time-to-live (TTL) value.&lt;/p&gt;
-
-&lt;p&gt;根据过期时间来，淘汰即将过期的&lt;/p&gt;
-
-&lt;h2&gt;7.2 淘汰流程&lt;/h2&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 首先，我们会有个淘汰池，默认大小是16，并且里面的数据是末尾淘汰制&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 每次指令操作的时候，自旋会判断当前内存是否满足指令所需要的内存&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 如果当前不满足，会从淘汰池的尾部拿一个最适合淘汰的数据&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 会取样（配置 maxmemory-samples），从Redis中获取随机获取到取样的数据，解决一次性读取所有的数据慢的问题&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 在取样的数据中，根据淘汰算法找到最适合淘汰的数据&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 将最合适的那个数据跟淘汰池中的数据进行比较，是否比淘汰池的数据更适合淘汰，如果更适合，放入淘汰池&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 按照适合的程度进行排序，最适合淘汰的放入尾部&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 将需要淘汰的数据从Redis删除，并且从淘汰池移除&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2&gt;7.3 LRU算法&lt;/h2&gt;
-
-&lt;p&gt;Lru，Least Recently Used 翻译过来是最久未使用，根据时间轴来走，仍很久没用的数据。只要最近有用过，我就默认是有效的。&lt;/p&gt;
-
-&lt;p&gt;那么它的一个衡量标准是啥？时间！根据使用时间，从近到远，越远的越容易淘汰。&lt;/p&gt;
-
-&lt;h3&gt;7.3.1 实现原理&lt;/h3&gt;
-
-&lt;p&gt;需求：得到对象隔多久没访问，隔的时间越久，越容易被淘汰&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 首先，LRU是根据这个对象的访问操作时间来进行淘汰的，那么我们需要知道这个对象最后操作的访问时间&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 知道了对象的最后操作访问时间后，我们只需要跟当前系统时间来进行对比，就能算出对象多久没访问了&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h3&gt;7.3.2 源码验证&lt;/h3&gt;
-
-&lt;p&gt;redis中，对象都会被redisObject对象包装，其中有个字段叫lru。&lt;/p&gt;
-
-&lt;p&gt;redisObject对象 （server.h文件）&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;typedef struct redisObject {
- unsigned type:4;
- unsigned encoding:4;
- unsigned lru:LRU_BITS; /* LRU time (relative to global
- lru_clock) or
- * LFU data (least significant 8 bits frequency
- * and most significant 16 bits access time). */
- int refcount;
- void *ptr;
-} robj;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;看LRU的字段的说明，那么我们大概能猜出来，redis去实现lru淘汰算法肯定跟我们这个对象的lru相关&lt;/p&gt;
-
-&lt;p&gt;并且这个字段的大小为24bit，那么这个字段记录的是对象操作访问时候的秒单位时间的后24bit&lt;/p&gt;
-
-&lt;p&gt;相当于：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;long timeMillis=System.currentTimeMillis();
-System.out.println(timeMillis/1000); //获取当前秒
-System.out.println(timeMillis/1000 &amp;amp; ((1&amp;lt;&amp;lt;24)-1)); //获取秒的后24位
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;我们知道了这个对象的最后操作访问的时间。如果我们要得到这个对象多久没访问了，我们是不是就很简单，用我当前的时间-这个对象的访问时间就可以了！但是这个访问时间是秒单位时间的后24bit 所以，也是用当前的时间的秒单位的后24bit去减。&lt;/p&gt;
-
-&lt;p&gt;estimateObjectIdleTime方法(evict.c)&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;unsigned long long estimateObjectIdleTime(robj *o) {
- //获取秒单位时间的最后24位
- unsigned long long lruclock = LRU_CLOCK();
- //因为只有24位，所有最大的值为2的24次方-1
- //超过最大值从0开始，所以需要判断lruclock（当前系统时间）跟缓存对象的lru字段的大小
- if (lruclock &amp;gt;= o-&amp;gt;lru) {
-     //如果lruclock&amp;gt;=robj.lru，返回lruclock-o-&amp;gt;lru，再转换单位
-     return (lruclock - o-&amp;gt;lru) * LRU_CLOCK_RESOLUTION;
- } else {
-     //否则采用lruclock + (LRU_CLOCK_MAX - o-&amp;gt;lru)，得到对
-     象的值越小，返回的值越大，越大越容易被淘汰
-     return (lruclock + (LRU_CLOCK_MAX - o-&amp;gt;lru)) *
-     LRU_CLOCK_RESOLUTION;
- }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;7.3.3 LRU总结&lt;/h3&gt;
-
-&lt;p&gt;用lruclock与 redisObject.lru进行比较，因为lruclock只获取了当前秒单位时间的后24位，所以肯定有个轮询。&lt;/p&gt;
-
-&lt;p&gt;所以，我们会用lruclock跟 redisObject.lru进行比较，如果lruclock&amp;gt;redisObject.lru，那么我们用lruclock- redisObject.lru，否则lruclock+(24bit的最大值-redisObject.lru)，得到lru越小，那么返回的数据越大，相差越大的越优先会被淘汰！&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://www.processon.com/view/link/5fbe0541e401fd2d6ed8fc38&quot;&gt;https://www.processon.com/view/link/5fbe0541e401fd2d6ed8fc38&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2&gt;7.4 LFU算法&lt;/h2&gt;
-
-&lt;p&gt;LFU，英文 Least Frequently Used，翻译成中文就是最不常用的优先淘汰。&lt;/p&gt;
-
-&lt;p&gt;不常用，它的衡量标准就是次数，次数越少的越容易被淘汰。&lt;/p&gt;
-
-&lt;p&gt;这个实现起来应该也很简单，对象被操作访问的时候，去记录次数，每次操作访问一次，就+1；淘汰的时候，直接去比较这个次数，次数越少的越容易淘汰！&lt;/p&gt;
-
-&lt;h3&gt;7.4.1 LFU的时效性问题&lt;/h3&gt;
-
-&lt;p&gt;何为时效性问题？就是只会去考虑数量，但是不会去考虑时间。&lt;/p&gt;
-
-&lt;p&gt;ps：去年的某个新闻很火，点击量3000W，今年有个新闻刚出来点击量100次，本来我们是想保留今年的新的新闻的，但是如果根据LFU来做的话，我们发现淘汰的是今年的新闻，明显是不合理的&lt;/p&gt;
-
-&lt;p&gt;导致的问题：新的数据进不去，旧的数据出不来。&lt;/p&gt;
-
-&lt;p&gt;那么如何解决呢，且往下看&lt;/p&gt;
-
-&lt;h3&gt;7.4.2 源码分析&lt;/h3&gt;
-
-&lt;p&gt;我们还是来看redisObject(server.h)&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;typedef struct redisObject {
-    unsigned type:4;
-    unsigned encoding:4;
-    unsigned lru:LRU_BITS; /* LRU time (relative to global
-    lru_clock) or
-    * LFU data (least significant 8 bits frequency
-    * and most significant 16 bits access time). */
-    int refcount;
-    void *ptr;
-} robj;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;我们看它的lru，它如果在LFU算法的时候！它前面16位代表的是时间，后8位代表的是一个数值，frequency是频率，应该就是代表这个对象的访问次数，我们先给它叫做counter。&lt;/p&gt;
-
-&lt;p&gt;前16bits时间有啥用?&lt;/p&gt;
-
-&lt;p&gt;跟时间相关，我猜想应该是跟解决时效性相关的，那么怎么解决的？从生活中找例子&lt;/p&gt;
-
-&lt;p&gt;大家应该充过一些会员，比如我这个年纪的，小时候喜欢充腾讯的黄钻、绿钻、蓝钻等等。但是有一个点，假如哪天我没充钱了的话，或者没有续VIP的时候，我这个钻石等级会随着时间的流失而降低。比如我本来是黄钻V6，但是一年不充钱的话，可能就变成了V4。&lt;/p&gt;
-
-&lt;p&gt;那么回到Redis，大胆的去猜测，那么这个时间是不是去记录这个对象有多久没访问了，如果多久没访问，我就去减少对应的次数。&lt;/p&gt;
-
-&lt;p&gt;LFUDecrAndReturn方法（evict.c）&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;unsigned long LFUDecrAndReturn(robj *o) {
-    //lru字段右移8位，得到前面16位的时间
-    unsigned long ldt = o-&amp;gt;lru &amp;gt;&amp;gt; 8;
-    //lru字段与255进行&amp;amp;运算（255代表8位的最大值），
-    //得到8位counter值
-    unsigned long counter = o-&amp;gt;lru &amp;amp; 255;
-    //如果配置了lfu_decay_time，用LFUTimeElapsed(ldt) 除以配置的值
-    //LFUTimeElapsed(ldt)源码见下
-    //总的没访问的分钟时间/配置值，得到每分钟没访问衰减多少
-    unsigned long num_periods = server.lfu_decay_time ?LFUTimeElapsed(ldt) / server.lfu_decay_time : 0;
-    if (num_periods)
-    //不能减少为负数，非负数用couter值减去衰减值
-    counter = (num_periods &amp;gt; counter) ? 0 : counter - num_periods;
-    return counter;
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;衰减因子由配置&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;lfu-decay-time 1 //多少分钟没操作访问就去衰减一次
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;后8bits的次数，最大值是255，够不够?&lt;/p&gt;
-
-&lt;p&gt;肯定不够，一个对象的访问操作次数肯定不止255次。&lt;/p&gt;
-
-&lt;p&gt;但是我们可以让数据达到255的很难。那么怎么做的？这个比较简单，我们先看源码，然后再总结&lt;/p&gt;
-
-&lt;p&gt;LFULogIncr方法 （evict.c 文件）&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;uint8_t LFULogIncr(uint8_t counter) {
-    //如果已经到最大值255，返回255 ，8位的最大值
-    if (counter == 255) return 255;
-    //得到随机数（0-1）
-    double r = (double)rand()/RAND_MAX;
-    //LFU_INIT_VAL表示基数值（在server.h配置）
-    double baseval = counter - LFU_INIT_VAL;
-    //如果达不到基数值，表示快不行了，baseval =0
-    if (baseval &amp;lt; 0) baseval = 0;
-    //如果快不行了，肯定给他加counter
-    //不然，按照几率是否加counter，同时跟baseval与lfu_log_factor相关
-    //都是在分子，所以2个值越大，加counter几率越小
-    double p = 1.0/(baseval*server.lfu_log_factor+1);
-    if (r &amp;lt; p) counter++;
-    return counter;
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h1&gt;八、Redis 持久化&lt;/h1&gt;
-
-&lt;h2&gt;8.1 RBD&lt;/h2&gt;
-
-&lt;h3&gt;8.1.1 何时触发RBD&lt;/h3&gt;
-
-&lt;p&gt;自动触发&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 配置触发&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;pre&gt;&lt;code&gt;save 900 1 900s检查一次，至少有1个key被修改就触发
-save 300 10 300s检查一次，至少有10个key被修改就触发
-save 60 10000 60s检查一次，至少有10000个key被修改
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;ol&gt;
-&lt;li&gt; shutdown正常关闭&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;任何组件在正常关闭的时候，都会去完成应该完成的事。比如Mysql 中的Redolog持久化，正常关闭的时候也会去持久化。&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt; flushall指令触发&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;数据清空指令会触发RDB操作，并且是触发一个空的RDB文件，所以， 如果在没有开启其他的持久化的时候，flushall是可以删库跑路的，在生产环境慎用。&lt;/p&gt;
-
-&lt;h3&gt;8.1.2 RDB的优劣&lt;/h3&gt;
-
-&lt;p&gt;优势&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 是个非常紧凑型的文件，非常适合备份与灾难恢复&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 最大限度的提升了性能，会fork一个子进程，父进程永远不会产于磁盘 IO或者类似操作&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 更快的重启&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;不足&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 数据安全性不是很高，因为是根据配置的时间来备份，假如每5分钟备份 一次，也会有5分钟数据的丢失&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 经常fork子进程，所以比较耗CPU，对CPU不是很友好&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2&gt;8.2 AOF&lt;/h2&gt;
-
-&lt;p&gt;由于RDB的数据可靠性非常低，所以Redis又提供了另外一种持久化方案： Append Only File 简称：AOF&lt;/p&gt;
-
-&lt;p&gt;AOF默认是关闭的，你可以在配置文件中进行开启：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;appendonly no //默认关闭，可以进行开启
-# The name of the append only file (default:&quot;appendonly.aof&quot;)
-appendfilename &quot;appendonly.aof&quot; //AOF文件名
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;追加文件，即每次更改的命令都会附加到我的AOF文件中。&lt;/p&gt;
-
-&lt;h3&gt;8.2.1 同步机制&lt;/h3&gt;
-
-&lt;p&gt;AOF会记录每个写操作，那么问题来了。我难道每次操作命令都要和磁盘交互？&lt;/p&gt;
-
-&lt;p&gt;当然不行，所以redis支持几种策略，由用户来决定要不要每次都和磁盘交互&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;# appendfsync always 表示每次写入都执行fsync(刷新)函数 性能会非常非常慢 但是非常安全
-appendfsync everysec 每秒执行一次fsync函数 可能丢失1s的数据
-# appendfsync no 由操作系统保证数据同步到磁盘，速度最快 你的数据只需要交给操作系统就行
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;默认1s一次，最多有1s丢失&lt;/p&gt;
-
-&lt;h3&gt;8.2.2 重写机制&lt;/h3&gt;
-
-&lt;p&gt;由于AOF是追加的形式，所以文件会越来越大，越大的话，数据加载越慢。 所以我们需要对AOF文件进行重写。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;何为重写&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;比如 我们的incr指令，假如我们incr了100次，现在数据是100，但是我们的aof文件中会有100条incr指令，但是我们发现这个100条指令用处不大， 假如我们能把最新的内存里的数据保存下来的话。所以，重写就是做了这么一件事情，把当前内存的数据重写下来，然后把之前的追加的文件删除。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;重写流程&lt;/strong&gt;&lt;/p&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; Redis fork一个子进程，在一个临时文件中写入新的AOF（当前内存的数据生成的新的AOF）&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 那么在写入新的AOF的时候，主进程还会有指令进入，那么主进程会在内存缓存区中累计新的指令 （但是同时也会写在旧的AOF文件中，就算 重写失败，也不会导致AOF损坏或者数据丢失）&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 如果子进程重写完成，父进程会收到完成信号，并且把内存缓存中的指令追加到新的AOF文件中&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt;&lt;p&gt;替换旧的AOF文件 ，并且将新的指令附加到重写好的AOF文件中&lt;/p&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 子进程开始在一个临时文件中写入新的基础AOF&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 父级打开一个新的增量 AOF 文件以继续写入更新。如果重写失败，旧的基础和增量文件（如果有的话）加上这个新打开的增量文件就代表了完整的更新数据集，所以我们是安全的&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 当子进程完成基础文件的重写后，父进程收到一个信号，并使用新打开 的增量文件和子进程生成的基础文件来构建临时清单，并将其持久化&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 现在 Redis 对清单文件进行原子交换，以便此 AOF 重写的结果生效。 Redis 还会清理旧的基础文件和任何未使用的增量文件&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;但是重写是把当前内存的数据，写入一个新的AOF文件，如果当前数据比较大，然后以指令的形式写入的话，会很慢很慢&lt;/p&gt;
-
-&lt;p&gt;所以在4.0之后，在重写的时候是采用RDB的方式去生成新的AOF文件，然 后后续追加的指令，还是以指令追加的形式追加的文件末尾&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;aof-use-rdb-preamble yes //是否开启RDB与AOF混合模式
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;什么时候重写&lt;/p&gt;
-
-&lt;p&gt;配置文件redis.conf&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;# 重写触发机制
-auto-aof-rewrite-percentage 100
-auto-aof-rewrite-min-size 64mb 就算达到了第一个百分比的大小，也必须大于 64M
-
-在 aof 文件小于64mb的时候不进行重写，当到达64mb的时候，就重写一
-次。重写后的 aof 文件可能是40mb。上面配置了auto-aof-rewritepercentag为100，即 aof 文件到了80mb的时候，进行重写。
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;8.2.3 AOF的优势与不足&lt;/h3&gt;
-
-&lt;p&gt;&lt;strong&gt;优势&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 安全性高，就算是默认的持久化同步机制，也最多只会丢失1s数据&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; AOF由于某些原因，比如磁盘满了等导致追加失败，也能通过redischeck-aof 工具来修复&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 格式都是追加的日志，所以可读性更高&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;&lt;strong&gt;不足&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 数据集一般比RDB大&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 持久化跟数据加载比RDB更慢&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 在7.0之前，重写的时候，因为重写的时候，新的指令会缓存在内存区，所以会导致大量的内存使用&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 并且重写期间，会跟磁盘进行2次IO，一个是写入老的AOF文件，一个是写入新的AOF文件&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h1&gt;九、Redis常见问题总结&lt;/h1&gt;
-
-&lt;h2&gt;9.1 Redis数据丢失场景&lt;/h2&gt;
-
-&lt;h3&gt;9.1.1 持久化丢失&lt;/h3&gt;
-
-&lt;p&gt;采用RDB或者不持久化， 会有数据丢失，因为是手动或者配置以快照的形式来进行备份。&lt;/p&gt;
-
-&lt;p&gt;解决：启用AOF，以命令追加的形式进行备份，但是默认也会有1s丢失， 这是在性能与数据安全性中寻求的一个最适合的方案，如果为了保证数据 一致性，可以将配置更改为always，但是性能很慢，一般不用。&lt;/p&gt;
-
-&lt;h3&gt;9.1.2 主从切换&lt;/h3&gt;
-
-&lt;p&gt;因为Redis的数据是主异步同步给从的，提升了性能，但是由于是异步同步到从。所以存在数据丢失的可能&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt; master写入数据k1 ,由于是异步同步到slave，当master没有同步给slave的时候，master挂了&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; slave会成为新的master，并且没有同步k1&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; master重启，会成为新master的slave，同步数据会清空自己的数据，从新的master加载&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; k1丢失&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2&gt;9.2 Redis缓存雪崩、穿透、击穿问题分析&lt;/h2&gt;
-
-&lt;h3&gt;9.2.1 缓存雪崩&lt;/h3&gt;
-
-&lt;p&gt;缓存雪崩就是Redis的大量热点数据同时过期（失效)，因为设置了相同的过期时间，刚好这个时候Redis请求的并发量又很大，就会导致所有的请求落到数据库。&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt; 保证Redis的高可用，防止由于Redis不可用导致全部打到DB&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 加互斥锁或者使用队列，针对同一个key只允许一个线程到数据库查询&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 缓存定时预先更新，避免同时失效&lt;/li&gt;
-&lt;/ol&gt;
-
-
-
-&lt;ol&gt;
-&lt;li&gt; 通过加随机数，使key在不同的时间过期&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h3&gt;9.2.2 缓存穿透&lt;/h3&gt;
-
-&lt;p&gt;缓存穿透是指缓存和数据库中都没有的数据，但是用户一直请求不存在的数据！这时的用户很可能就是攻击者，恶意搞你们公司的，攻击会导致数据库压力过大。&lt;/p&gt;
-
-&lt;p&gt;解决方案：布隆过滤器&lt;/p&gt;
-
-&lt;p&gt;布隆过滤器的思想：既然是因为你Redis跟DB都没有，然后用户恶意一直访问不存在的key，然后全部打到Redis跟DB。那么我们能不能单独把DB的数据单独存到另外一个地方，但是这个地方只存一个简单的标记，标记这个key存不存在，如果存在，就去访问Redis跟DB，否则直接返回。并且这个内存最好很小。&lt;/p&gt;
-
-&lt;h3&gt;9.2.3 缓存击穿&lt;/h3&gt;
-
-&lt;p&gt;单个key过期的时候有大量并发，使用互斥锁，回写redis，并且采用双重检查锁来提升性能！减少对DB的访问。&lt;/p&gt;
+&lt;p&gt;对于缓存的操作，客户端与集群之间连接的稳定性是保证数据不丢失的关键，Lettuce作为热门的异步客户端，对于集群中产生的一些突发状况是具备处理能力的，只不过在使用的时候需要进行设置。本文目的在于将在开发缓存操作功能时遇到的问题，以及将一些涉及到的底层知识做一下总结，也希望能给大家一些帮助。&lt;/p&gt;
 &lt;/div&gt;
   &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>88d94db86916e6c2bbffabb534abf66b</guid>
-<title>30 岁被裁，我想明白的几件事</title>
-<link>https://toutiao.io/k/c5vo8n4</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content             &quot; id=&quot;js_content&quot;&gt;&lt;section&gt;&lt;qqmusic class=&quot;js_editor_qqmusic qqmusic_iframe js_uneditable custom_select_card&quot; musicid=&quot;323942200&quot; mid=&quot;004e0zXJ1VPi3o&quot; albumurl=&quot;https://y.gtimg.cn/music/photo_new/T002R68x68M000.jpg&quot; audiourl=&quot;http://isure6.stream.qqmusic.qq.com/C200004e0zXJ1VPi3o.m4a?guid=2000000052&amp;amp;vkey=1F74733FDD05C2803F211D90132C117289DB551B096F14063B430D8F072332CD99FE304FC4C68C84945AFC05E3629B7698A14163E685AD90&amp;amp;uin=&amp;amp;fromtag=20052&quot; music_name=&quot;春天里&quot; singer=&quot;旭日阳刚&quot; play_length=&quot;268&quot; src=&quot;/mp/readtemplate?t=app_editor/music&amp;amp;singer=%E6%97%AD%E6%97%A5%E9%98%B3%E5%88%9A&amp;amp;music_name=%E6%98%A5%E5%A4%A9%E9%87%8C&amp;amp;albumurl=https%3A%2F%2Fy.gtimg.cn%2Fmusic%2Fphoto_new%2FT002R68x68M000.jpg&amp;amp;musictype=1&quot; musictype=&quot;1&quot; otherid=&quot;004e0zXJ1VPi3o&quot; albumid=&quot;&quot; jumpurlkey=&quot;&quot; data-pluginname=&quot;insertaudio&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.549074074074074&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz/ftksfIbzTWj1Vzoc5T4OeDsux380qjHLQJNlvdSib91YqR6HrUfpl9fUzM6WzP8ibHVWZbGhHGm4b17ulKDh96kQ/640?wx_fmt=other&quot; data-type=&quot;other&quot; data-w=&quot;1080&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我今年30岁，上个月底我被裁员了，也就是业内所谓的毕业，喜提大礼包。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;从HRBP约会到开始面谈再到工作的lark账号被停用，总计耗时1小时2分钟。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;然后就是走离职流程，和部分有工作往来的同事做友好告别，职场嘛，人来人往，好聚好散。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;从裁员到今天，休息了半个月。一方面在处理生活上的一些杂事，比如考驾照之类的；另一方面就是看看书，同时在思考这次裁员对我的影响，其实细细想来对我好像没太多负面影响。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;昨晚和几个前同事一起吃饭，喝了点酒，席间不免谈到这次裁员的事情。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我聊了些自己的感受，对职场生涯的回顾或者说感触，也分享了我后续的一些打算。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;都是些碎碎念，索性写篇文章，以我为例，分享下这次裁员的一些感受，以及让我明白的一些事。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;行业周期论&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;span&gt;关注我公众号大多是互联网相关的技术同学，大家对互联网和传统企业的区别，或多或少有些感触。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;今年的互联网大裁员，我的理解其实就是行业周期的变化进入了第一曲线末尾和第二曲线的交接区间。&lt;/span&gt;&lt;span&gt;第一曲线和第二曲线现在大多被认为是经济学上的术语，大意是：&lt;/span&gt;&lt;span/&gt;&lt;/p&gt;&lt;blockquote class=&quot;js_blockquote_wrap&quot; data-type=&quot;2&quot; data-url=&quot;&quot; data-author-name=&quot;&quot; data-content-utf8-length=&quot;130&quot; data-source-title=&quot;&quot;&gt;&lt;section class=&quot;js_blockquote_digest&quot;&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;世界上任何事物的产生与发展，都有一个生命周期，并形成一条曲线。在这条曲线上，有起始期、成长期、成就期、高成就期、下滑期、衰败期，整个过程犹如登山活动。为了保持成就期的生命力，就要在高成就到来或消失之前，开始另外一条新的曲线，即第二曲线。&lt;/span&gt;&lt;span&gt;                                                                                                                        ——英国：查尔斯·汉迪&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/blockquote&gt;&lt;p&gt;&lt;span&gt;国内的互联网发展，经历了2000年前后的萌芽，08年左右的web1.0时代，12年至18年的移动互联网爆发。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;虽然web3.0提出好几年了，但目前依然看不到新的增长点和爆发点。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;从增长阶段到留存阶段，之前的跑马圈地和烧钱砸市场占用率的时代一去不复返。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;粗暴运营了很多年的互联网企业，也到了精细化运营和追求利润的时候。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;有句话我觉得说的挺对的：“高速发展可以掩盖一切问题”！&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;因为高速发展，蛋糕在不断做大，大家都相信自己能随着分更多的蛋糕。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;但是当蛋糕不再变大，加入市场分蛋糕的人更多时，越是底层越是会陷入内卷。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;再叠加上目前全球的各种黑天鹅以及灰犀牛事件的不断发酵，风险会迫使人们更关注自己能分多少，而不是做大蛋糕。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我个人对于互联网未来依然很看好，互联网以及基于信息技术的未来依然是很好的行业，能创造更多更有创造力的岗位。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;但当下，是时候慢下来进行调整，以便于更好的去往未来。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们参与并分享了互联网行业第一曲线爆发时候的蛋糕，不能说自己不承受下滑调整期的动荡。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;不要和市场对抗，要跟随市场积极调整，这是我今年理财亏损以及被裁所明白的第一件事&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;在哪里很重要&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;span&gt;其实今年很多被裁的同学，并不是自己技术或者业务能力不过关，有个很大的因素，是所在的岗位不那么幸运而已。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;以我为例，我最初入职以及今年第一季度时候，在团队内负责的项目，都是内部A和S级的项目。&lt;/span&gt;&lt;span&gt;优先级高，上级重视，投入的资源多，当你能做到预期的结果时，自然能得到对应的蛋糕，重要性也会凸显。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;但第二季度开始项目盘点时候，我负责的项目优先级被调整为A和B级项目，预期和重要性下调。&lt;/span&gt;&lt;span&gt;碰到行业发展和爆冷，自然是开源节流缩减成本的第一批被切掉的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;所以我觉得，裁员其实并不是一件完全的坏事，最起码能让我明确自我定位和不足之处。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;选择核心的业务和团队，有自己的核心竞争力和不可替代性，这是我关于职场明白的第二件事&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;和领导是否合拍&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;span&gt;这点是个隐性因素，很多同学忽略了，但其实蛮重要的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;还是拿我举例子，我的直属上级和团队总监，工作上是比较会push和卷的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;不能说他们不对，在不同的位置，所要承担的压力和面临的问题不同，这只是选择而已。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;但我入职时候和领导就谈过关于工作风格和加班的事，从最开始我和领导的风格就不是一个路子。&lt;/span&gt;&lt;span&gt;起初公司业务发展较好的时候，只要我完成领导预期的结果，即使风格不同，那也是可以接受的。&lt;/span&gt;&lt;span&gt;但当公司业务发展爆冷甚至行业倒退时候，我这种不受领导完全掌控的人，自然就成为了第一个。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;无关对错和能力，只是个人的选择，仅此而已。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;如果想追求安稳长期的职场发展，钱并不是唯一重要因素，选择合拍或相处舒服的领导，是我明白的第三件事&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;职场生涯的新选择&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;span&gt;和前同事吃饭时候聊到了职场生涯感触及后续的一些打算，这里给大家分享下我的一些想法。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;“35岁努力达到职业自由”，这句话之前就和一些圈子里的朋友谈起过，我在前面的文章也有提到过这个想法。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;老实说，我认为大部分人是没有做技术的天赋的，同时对于技术也并没有太多的热爱。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;选择程序员或者技术相关岗位，无非是大学专业如此或这份工作薪资高，仅此而已。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;如果仅是这样，那今年网上甚嚣尘上的“35岁职场危机”，是一个再正常不过的现象。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;试想，你对你的工作并没有太热爱，也没有投入太多精力和时间深入钻研，凭什么就认为自己能干一辈子呢？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;那么问题来了，为什么这么多人担心35岁失业呢？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;“35岁失业”&lt;/span&gt;&lt;strong&gt;&lt;span&gt;不是担心‘不知道如何成长找不到前进方向’的问题&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;，而是&lt;/span&gt;&lt;strong&gt;&lt;span&gt;对‘失业后生活水平后退’又无能为力的恐慌和没有安全感的焦虑&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;互联网行业相比于医生、教师、律师及部分靠经验吃饭的行业来说，是“大前期行业”，即初始起步所获得的薪资水平是比较高的。再加上行业本身的轻资产以及前面十几年的快速发展，整体从业人员的物质收入相对来说是所有行业TOP1。&lt;/span&gt;&lt;strong&gt;&lt;span&gt;不能只享受行业快速发展阶段的红利，而不想背负发展放缓甚至内卷时的代价&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;几十年前下岗潮那批人，和现在担心“35岁失业”的人群，实际上本质是相同的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们为什么会对“35岁失业”恐慌和焦虑，最本质的原因就是&lt;/span&gt;&lt;strong&gt;&lt;span&gt;对当下的行业整体情况以及自身没有清晰的认识，总觉得自己十来年的工作经验是可以重复不断变现的&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;拿我自己来说，我自认是没有技术天赋的，现在的一些成就，不过是长期持续练习实践再加上一些运气使然的结果。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;技术饭吃不了一辈子，&lt;/span&gt;&lt;strong&gt;&lt;span&gt;早点找到自己的第二曲线并持续投入，是我今年明白的第四件事&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;下面分享一些我在前面的文章《&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzg2NDAwMjM1NQ==&amp;amp;mid=2247484785&amp;amp;idx=1&amp;amp;sn=71e6034737aadf141c65f04bd899e894&amp;amp;chksm=ce714d2df906c43bd950b7d05c52535509ee19087635828e65f57f5d9ac55898989ad0f6731d&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;职场焦虑之我对35岁危机的看法&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;职场焦虑之我对35岁危机的看法&lt;/a&gt;》中谈到应对“35岁失业”的建议，仅供参考。&lt;/span&gt;&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;持续学习，保持成长；&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;开源节流，寻找新的可能性；&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;打造个人品牌，树立业内影响力；&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;选择具有发展潜力的行业，甚至冒着风险；&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;降低欲望，找到工作和生活之间的平衡点；&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;自我认知的一些变化&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;span&gt;自我评价，我其实算半个理想主义者，每份工作我都会赋予它一些特别的使命或意义。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这种特殊的使命会促使我持续投入时间和精力去努力做一些事，在朋友看来可能就是努力就有收获。&lt;/span&gt;&lt;span&gt;当我完成预期目标或获得预期甚至超过预期的收获后，就会对当前工作兴致乏乏。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;然后开始动摇，看市场上其他新的机会，跳槽。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;为什么我说自己是半个理想主义者？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;一方面是每次选择跳槽，内心都会认为我是在做新的尝试，寻找新的可能性。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;另一方面，是不想被束缚在原地，想趁着年轻去不一样的地方看看，本质上我还是有一些勇敢和冒险精神的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这样做的好处是经历的故事（也可能是事故）比较丰富，不足则是风险系数会更高，在长辈看来不够稳重吧。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;理想主义者总是这样，我有理想，但缺乏一些持之以恒的耐心和坚韧。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;最后分享一段我很喜欢的话，与大家共勉：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;“&lt;/span&gt;&lt;strong&gt;&lt;span&gt;保持头脑极度开放，和聪明人一起审视问题。&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;找到问题的所有答案很重要，但提出正确的问题并向其他聪明人请教也很重要。&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;与任何人知道的任何东西相比，“不知道”区域里的东西要重要得多，令人兴奋得多”&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-id=&quot;67311&quot; data-type=&quot;lspecial02&quot; data-tools=&quot;速排小蚂蚁编辑器&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mpprofile class=&quot;js_uneditable custom_select_card&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;Mzg2NDAwMjM1NQ==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/ftksfIbzTWhnnG3FnMGxk4tujZAJv8cPZibDbChbEzPK3FJD5aM9XFQQicu4Lu3L3eo5ldtz5Q63ctdpxhAD25rw/0?wx_fmt=png&quot; data-nickname=&quot;老张的求知思考世界&quot; data-alias=&quot;Engineer_Way&quot; data-signature=&quot;专注互联网技术及相关领域，也分享职场成长、读书思考的内容。这是一个求知探索之人，在寻找更多可能性的旅途中的记录。&quot; data-from=&quot;2&quot; has-insert-preloading=&quot;1&quot; wah-hotarea=&quot;click&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;如果喜欢我文章，点赞、关注、在看三连走起。&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;如果想阅读更多的文章，可以关注我的公众号。&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;推荐阅读&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzg2NDAwMjM1NQ==&amp;amp;mid=2247485280&amp;amp;idx=1&amp;amp;sn=383bb63229b1af6553ea6732ae7da3d9&amp;amp;chksm=ce714f3cf906c62add30416a78acb3441238018b337ed1f3e6c4d8349d828fda2a6cc8baa703&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;测试的核心竞争力是什么？&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;strong&gt;&lt;span&gt;测试的核心竞争力是什么？&lt;/span&gt;&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzg2NDAwMjM1NQ==&amp;amp;mid=2247484430&amp;amp;idx=1&amp;amp;sn=4ad300bf0f9ea9fb59f23f68a2b51ba9&amp;amp;chksm=ce714c52f906c54427d907cb1a635fc11d49f239d4f7ff96519399f28a8df4adde9699c54f02&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;一个测试工程师的成长复盘&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;strong&gt;&lt;span&gt;一个测试工程师的成长复盘&lt;/span&gt;&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzg2NDAwMjM1NQ==&amp;amp;mid=2247484742&amp;amp;idx=1&amp;amp;sn=71f45e31e45ee6ef2619b1dc4dee144f&amp;amp;chksm=ce714d1af906c40c0eae4cff7014ff34bef40508535188b4fb943e8fbf261bbc3840acf74e94&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;测试工程师的职场发展二三谈&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;strong&gt;&lt;span&gt;测试工程师的职场发展二三谈&lt;/span&gt;&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzg2NDAwMjM1NQ==&amp;amp;mid=2247485178&amp;amp;idx=1&amp;amp;sn=feb5e7657f099b6ede9ef40e4ebe6851&amp;amp;chksm=ce714ea6f906c7b089c268f7fc68e105c2cdc42b476a4709ce90e8d28be85d2a936faa414973&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;技术之外的测试工程师成长指南&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;strong&gt;&lt;span&gt;技术之外的测试工程师成长指南&lt;/span&gt;&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzg2NDAwMjM1NQ==&amp;amp;mid=2247484785&amp;amp;idx=1&amp;amp;sn=71e6034737aadf141c65f04bd899e894&amp;amp;chksm=ce714d2df906c43bd950b7d05c52535509ee19087635828e65f57f5d9ac55898989ad0f6731d&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;职场焦虑之我对35岁危机的看法&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;strong&gt;&lt;span&gt;职场焦虑之我对35岁危机的看法&lt;/span&gt;&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzg2NDAwMjM1NQ==&amp;amp;mid=2247485197&amp;amp;idx=1&amp;amp;sn=5d8a112bea7502c045f0ab3494ca8a86&amp;amp;chksm=ce714f51f906c647667edc47d7c5d7ae932b9088bceb4d52723a625b20717b6b3a5e565e71c6&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;聊聊我对测试领域两级分化的看法&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;strong&gt;&lt;span&gt;聊聊我对测试领域两级分化的看法&lt;/span&gt;&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzg2NDAwMjM1NQ==&amp;amp;mid=2247484898&amp;amp;idx=1&amp;amp;sn=42ac75c57e4fd792b66ecb99c3b32285&amp;amp;chksm=ce714dbef906c4a850b6a702c6f8bbccd7a7380b96b60cb269af838b1752912c990e7abf45f4&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;优秀的测试开发应该具备的六大能力&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;strong&gt;&lt;span&gt;优秀的测试开发应该具备的六大能力&lt;/span&gt;&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzg2NDAwMjM1NQ==&amp;amp;mid=2247484174&amp;amp;idx=1&amp;amp;sn=6cdf3e3a4f9931e021bb779b4b6e17d5&amp;amp;chksm=ce714b52f906c2442f722676f81473d27508e970a897c2082f71c6a6b71a5ee962d7eb17c3bf&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;从技术专家到技术管理，我对管理的思考&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;strong&gt;&lt;span&gt;从技术专家到技术管理，我对管理的思考&lt;/span&gt;&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzg2NDAwMjM1NQ==&amp;amp;mid=2247484746&amp;amp;idx=1&amp;amp;sn=fd4bde4a1140a033d68a333f947bc50f&amp;amp;chksm=ce714d16f906c40006c541c781dc166b4e4527fe862825949b5e3aeb22e63017ef3eaca2c4de&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;再谈：我对测试行业发展和自我价值诉求的思考&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;strong&gt;&lt;span&gt;再谈：我对测试行业发展和自我价值诉求的思考&lt;/span&gt;&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;
+<guid>4ecc1d76f8f8cf60b8ee45e66a24c9ab</guid>
+<title>复盘：如何更好的进行技术面试</title>
+<link>https://toutiao.io/k/hkbzn4k</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content             &quot; id=&quot;js_content&quot;&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6245704467353952&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ftksfIbzTWj8AjbfcbjaOic54pKhjNrL3hgymNicZ3pwsTicaVlZ22XODYz9fLcqlJ4XnkeG9IGgZSkOKeTaE08MA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2328&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;最近佛系找工作中，经历了几次面试，我本人之前做过多次面试官，面试过很多候选人。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这篇文章，我想聊聊对于技术同学来说，如何更好的进行技术面试。内容仅代表个人观点，供参考。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;自我介绍&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;span&gt;面试的第一个环节，基本都是自我介绍，当然也有面试官会直奔主题。在自我介绍环节，需要明白如下三点：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;1-你是谁&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span/&gt;&lt;/strong&gt;&lt;span&gt;主要介绍自己的名字，毕业院校，专业。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;目的是让面试官快速了解你的个人信息，专业匹配和同院校或同地区上学，会有潜在的加分项。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;2-你的擅长的领域：&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span/&gt;&lt;/strong&gt;&lt;span&gt;工作年限，某个行业或领域的造诣深度，之前工作中主要做哪些具体的事情。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;比如：五年工作经验，之前主要做性能测试，在性能测试领域有丰富的实践经验，有全链路压测的落地实践经验。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;3-企业为什么要录用你&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span/&gt;&lt;/strong&gt;&lt;span&gt;换个角度理解，就是“相比于其他竞争者你的优势在哪里”。举例如下：&lt;/span&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;3年技术团队管理经验(20人)，善于流程建设&amp;amp;人才培养&amp;amp;技术体系搭建；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;对公司整体业务和系统架构有较为全面的了解，能独立解决复杂测试任务；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;能与其他团队建立良好的合作关系，保持高效协同，能主导推动完成工作落地；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;自驱能力强，持续学习，善于思考总结（后面可以附你的博客或者公众号链接）；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;具有丰富的电商、供应链、支付等业务测试经验（&lt;/span&gt;&lt;strong&gt;&lt;span&gt;从后续你的项目经验中体现&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;）；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;专业知识&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;span&gt;自我介绍环节之后，一般都是进入专业的技术知识面试环节。这个环节，问题一般集中于以下三方面：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;1-通用基础概念&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;对测试同学来说，可能会问到之前工作中的研发交付流程，比如：需求评审/工时评估/提测冒烟卡点/bug管理/质量度量等方面的知识。只要日常工作中稍加注意和总结，面试前准备一下就不会有太大问题。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;2-针对性领域知识&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这一部分&lt;/span&gt;&lt;strong&gt;&lt;span&gt;主要和候选人自己的工作实践以及面试岗位匹配度比较高&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;。举例：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;3-具体的工程实践&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这一部分，对&lt;/span&gt;&lt;strong&gt;&lt;span&gt;个人技术能力/沟通表达能力的要求最高，也隐含着对候选人思维逻辑能力和复盘总结能力的考察&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;。&lt;/span&gt;&lt;span&gt;我这段时间面试，在技术工程实践方面，主要问到了如下几个方面，都是和我的项目经验高度匹配的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;工程实践方面的问题，个人建议从如下几个方面展开回答：&lt;/span&gt;&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;项目的背景是什么，当时面临哪些问题？&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;问题如何评估分析，如何制定落地的技术方案？&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;落地过程遇到了哪些挑战，当时是如何解决的？&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;项目上线后结果如何，有哪些收获，哪里做的不足？&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;团队管理&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;span&gt;团队管理这方面，主要看个人是否有管理经验，以及面试的岗位是否有要求带团队。当然有时候面试官为了后续的工作规划，也会问到这方面的问题。下面列举几个我面试时候问到的团队管理方面的问题，供大家参考。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;1-2人和20人的团队，分别如何管理？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2-作为团队Leader，在团队管理方面要注意哪些事项？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;3-谈一谈你对OKR和KPI的理解，它们有哪些不足之处？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;4-为团队打绩效，用OKR还是KPI？如何确保团队目标和执行落地保持一致？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;团队管理方面没有统一答案，更多的看个人的理解。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这里有个坑，&lt;/span&gt;&lt;strong&gt;&lt;span&gt;如果你的回答和面试官有较大的分歧，或者管理风格差别很大，很容易减分&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;。&lt;/span&gt;&lt;span&gt;当然，有坑也有个好处就是避免掉坑里。&lt;/span&gt;&lt;span&gt;如果遇到和自己管理方式差别很大的领导，即使入职了也是个煎熬的过程。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;开放问题&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;span&gt;这个环节因人而异，有些面试官会问到下面这些问题：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;1-最近在读什么书，哪本书对你影响最大？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2-最近是否有学习某方面的技术，它有哪些特点，学习收获是什么？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;3-如何平衡工作和写公众号文章/参加技术沙龙（我本人遇掉坑里了）&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;4-假设你入职后让你负责某方面的业务/项目/团队，你打算如何做？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;开放问题比较难回答，但我建议按照自己的想法回答，但要注意和面试官多沟通，秉持互相交流的方式会更好。&lt;/span&gt;&lt;span&gt;沟通交流时要注意这几点：&lt;/span&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/h3&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;提问环节&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;span&gt;好了，面试的最后环节一般都会让候选人来主动提问，下面是我会经常问的一些问题：&lt;/span&gt;&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;请面试官点评我的面试表现，在哪些方面表现的不足，有什么建议；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;面试过程中遇到的技术盲点或者难点，请面试官给出提示或者答案；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;企业氛围/同事相处/遇到问题处理方式（前提是觉得面试感受双方都觉得不错）；&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;最后，面试结束建议进行复盘，对遇到的问题，疑难点，表现好的不好的进行全面总结思考。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;复盘的过程是不断明确自身定位和认识自己的过程，也是个很好的提升自己的方式。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-id=&quot;67311&quot; data-type=&quot;lspecial02&quot; data-tools=&quot;速排小蚂蚁编辑器&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mp-common-profile data-index=&quot;0&quot; data-id=&quot;Mzg2NDAwMjM1NQ==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/ftksfIbzTWhnnG3FnMGxk4tujZAJv8cPZibDbChbEzPK3FJD5aM9XFQQicu4Lu3L3eo5ldtz5Q63ctdpxhAD25rw/0?wx_fmt=png&amp;amp;wx_head=1&quot; data-nickname=&quot;老张的求知思考世界&quot; data-alias=&quot;Engineer_Way&quot; data-signature=&quot;专注互联网技术及相关领域，也分享职场成长、读书思考的内容。这是一个求知探索之人，在寻找更多可能性的旅途中的记录。&quot; data-origin_num=&quot;162&quot; data-is_biz_ban=&quot;0&quot; data-isban=&quot;0&quot; class=&quot;js_wx_tap_highlight&quot; data-from=&quot;2&quot; has-insert-preloading=&quot;1&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;如果喜欢我文章，点赞、关注、在看三连走起。&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;如果想阅读更多的文章，可以关注我的公众号。&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;推荐阅读&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzg2NDAwMjM1NQ==&amp;amp;mid=2247484399&amp;amp;idx=1&amp;amp;sn=976c9ac63a76a65e3ec7671af82765b2&amp;amp;chksm=ce714bb3f906c2a5f675e9f49929b919c69df92e8d5588a9eada95d2016e6674b324eb939c89&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;软件质量保障体系建设&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; hasload=&quot;1&quot;&gt;&lt;strong&gt;&lt;span&gt;软件质量保障体系建设&lt;/span&gt;&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzg2NDAwMjM1NQ==&amp;amp;mid=2247485216&amp;amp;idx=1&amp;amp;sn=90c9049c58daae3b0df9188c87b36f12&amp;amp;chksm=ce714f7cf906c66a0377662f5a2caefe72ea0af8f8bc432ef60b36e7cf25b45f1f2898aa6839&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;聊聊我对质量度量的看法&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; hasload=&quot;1&quot;&gt;&lt;strong&gt;&lt;span&gt;聊聊我对质量度量的看法&lt;/span&gt;&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzg2NDAwMjM1NQ==&amp;amp;mid=2247484975&amp;amp;idx=1&amp;amp;sn=254c19f9d5d94328e1d584b379bb8138&amp;amp;chksm=ce714e73f906c765ddc8242228f25aec791ebfc69e63f533e3a5cf2025c961b8c134ac8a17e8&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;如何建立高效的质量保障机制&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; hasload=&quot;1&quot;&gt;&lt;strong&gt;&lt;span&gt;如何建立高效的质量保障机制&lt;/span&gt;&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzg2NDAwMjM1NQ==&amp;amp;mid=2247484931&amp;amp;idx=1&amp;amp;sn=e215598ab61c56bf641549f3d68f4c5f&amp;amp;chksm=ce714e5ff906c7493b9b3691d6690f9ee4aef48de09fb3ca6deaae9be9242a07a8c415b38add&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;复盘归因，提高交付质量的秘诀&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; hasload=&quot;1&quot;&gt;&lt;strong&gt;&lt;span&gt;复盘归因，提高交付质量的秘诀&lt;/span&gt;&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;
 
           
         &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>352d7edc357b3595b61d3e6ac72873fc</guid>
-<title>Java Decompiler Online</title>
-<link>https://toutiao.io/k/lqgqlbu</link>
-<content:encoded>&lt;div&gt;&lt;body id=&quot;readabilityBody&quot;&gt;&lt;noscript&gt;You need to enable JavaScript to run this app.&lt;/noscript&gt;&lt;p id=&quot;root&quot;/&gt;&lt;/body&gt;&lt;/div&gt;</content:encoded>
+<guid>0188ea4ff0106108d15c2058112ac904</guid>
+<title>一分钟读论文：《战争与和平：世界政治对软件生态系统的影响》 | Micropaper</title>
+<link>https://toutiao.io/k/l12t8wz</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;article class=&quot;article-post&quot;&gt;                
+&lt;p&gt;两国交战，平民是否有罪？国际人道法约定“战争时要尽可能限制对妇女和儿童以及其他平民的影响”。开源许可证明确规定“不歧视个⼈或群体。License 不得歧视任何⼈”。 俄乌冲突中开源如何影响开发者呢？我们来看看日本奈良科学技术大学和澳大利亚墨尔本大学合著的论文&lt;a href=&quot;https://www.semanticscholar.org/reader/19d4db23117ccedc3d7fb7b245e2fe0ee9de86c8&quot;&gt;《In war and peace: the impact of world politics on software ecosystems》&lt;/a&gt;中研究的几个例子：当开源项目的维护者将他们的开源项目化为抗议软件（Protestware）。&lt;/p&gt;
+
+&lt;p&gt;抗议软件不仅在政治冲突的背景下具有相关性，⽽且开源维护者有自己的⽴场。&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Faker.js&lt;/code&gt; 和 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Colors.js&lt;/code&gt; 这两个拥有超过 21,000 个依赖应⽤程序和超过 2200 万每周下载量的库的维护者故意发布了⼀个更新给亚⻢逊云开发⼯具包的⽤⼾带来了问题，该更新产⽣了⼀个⽆限循环，导致依赖应⽤程序喷出以“Liberty Liberty Liberty”作为开头的乱码。作者在 README 表明自己的立场，要求6位数的年薪作为报酬。&lt;/p&gt;
+
+&lt;h2 id=&quot;俄乌冲突中的真实案例&quot;&gt;俄乌冲突中的真实案例&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;恶意抗议软件 Node-ipc：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Node-ipc 是使用广泛的 npm 开源组件，其作者出于其个人政治立场在仓库中加入将俄罗斯与白俄罗斯区域用户数据抹除的恶意代码，&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Vue.js 生态中的 vue-cli 包依赖了它使得漏洞影响范围很大（一周内上百万次下载）&lt;/code&gt;，GitHub 宣布这是一个严重漏洞，漏洞跟踪编号 CVE-2022-23812。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;温和的抗议软件：&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;其一，同样是 node-ipc 的维护者，只是这次改成在用户桌面创建反战标语，维护者还在 REAMDE 中要求开发者不喜欢就锁定使用正常的版本。&lt;/li&gt;
+  &lt;li&gt;其二，AWS terraform 的维护者在自己的项目的 License 描述中添加了反战标语。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;制裁开发者：&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;MongoDB 决定不向俄罗斯买家出其产品。&lt;/li&gt;
+  &lt;li&gt;甲骨文终止对俄罗斯用户的支持。&lt;/li&gt;
+  &lt;li&gt;GitHub 暂停了俄罗斯账⼾。被暂停的⽤⼾的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;整个活动和历史都消失了&lt;/code&gt;。更⼤的问题是 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;GitHub 没有向库维护⼈员提供任何警告&lt;/code&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;知名互联网公司的制裁：&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;微软暂停在俄罗斯的销售其产品。&lt;/li&gt;
+  &lt;li&gt;苹果暂停在俄罗斯的销售其产品。&lt;/li&gt;
+  &lt;li&gt;SAP 暂停在俄罗斯的销售其产品。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;论文引发的10个思考题&quot;&gt;论文引发的10个思考题&lt;/h2&gt;
+&lt;p&gt;在高度互连的大型软件生态系统中，平均包可以直接依赖超过五个其他包，抗议软件对整个生态系统的影响可能是毁灭性的，特别恶意软件。&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;抗议软件在传播政治⽅⾯的效果如何？&lt;/li&gt;
+  &lt;li&gt;抗议软件对软件生态系统的直接影响是什么？&lt;/li&gt;
+  &lt;li&gt;谁受到抗议软件的影响，他们与抗议软件维护者有什么关系（如果有）？&lt;/li&gt;
+  &lt;li&gt;项目使用哪些缓解策略来保护或修复其供应链，这些缓解策略的有效性如何？&lt;/li&gt;
+  &lt;li&gt;供应链冗余在提高弹性方面的效果如何？&lt;/li&gt;
+  &lt;li&gt;将库变成抗议软件的变化与其他软件演变有何不同？&lt;/li&gt;
+  &lt;li&gt;我们自动检测抗议软件的准确度如何？&lt;/li&gt;
+  &lt;li&gt;软件生态系统中其他利益相关者认为维护者的责任是什么？&lt;/li&gt;
+  &lt;li&gt;抗议软件如何影响整个生态系统的信任？&lt;/li&gt;
+  &lt;li&gt;抗议软件如何在生态系统层面受到监管？&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+
+
+                
+&lt;/article&gt;
+
+
+&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>881f12dfcace7ca6f5ae04c2ff966bba</guid>
-<title>手把手教你基于 Kubernetes 实现 CI/CD 配置</title>
-<link>https://toutiao.io/k/g58tzli</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;hr data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;基于 Kubernetes 实现 CI/CD 配置，其实和往常那些 CI/CD 配置并没有太大区别。都是通过 提交代码，拉取代码，构建代码，发布代码来实现的。 只不过要是通过 K8s 来实现的话，则是需要将构建好的代码打包成镜像，通过镜像的方式来运行。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;CI/CD 流程图：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.45693563009972804&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JdLkEI9sZfe2UZcFz9cMaXCnWbWD5BZc7PxnxG2vo1Cfub4SoLiagnvkKWJF00EsUNT5rmZhMvrTFkd6hclIfZw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1103&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;开发将代码提交代码仓库后，我们便可以通过在 Jenkins 上配置脚本或是 Pipline 的方式来实现代码发布，其中发布有两种方式，一种是通过手动发布，另外一种可以通过 WebHook 插件来实现提交代码便自动发布（生产环境不建议自动发布)&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;脚本内容一般分为：克隆代码、编译代码、将编译好的代码打包成镜像、运行镜像几个步骤。&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;基于 Spring Boot + MyBatis Plus + Vue &amp;amp; Element 实现的后台管理系统 + 用户小程序，支持 RBAC 动态权限、多租户、数据权限、工作流、三方登录、支付、短信、商城等功能&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;项目地址：https://github.com/YunaiV/ruoyi-vue-pro&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;视频教程：https://doc.iocoder.cn/video/&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;下面我们是通过容器的方式安装配置，物理安装参考：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;https://blog.csdn.net/weixin_46902396/article/details/118337250&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;1）安装 Docker-Compose&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;[root@k8s-master01 ~]&lt;span&gt;# wget &quot;https://github.com/docker/compose/releases/download/v2.3.2/docker-compose-$(uname -s)-$(uname -m)&quot; -O /usr/local/bin/docker-compose &lt;/span&gt;&lt;br/&gt;[root@k8s-master01 ~]&lt;span&gt;# chmod +x /usr/local/bin/docker-compose&lt;/span&gt;&lt;br/&gt;[root@k8s-master01 ~]&lt;span&gt;# docker-compose --version&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;2）安装 GitLab&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;[root@k8s-master01&lt;/span&gt; &lt;span&gt;~]#&lt;/span&gt; &lt;span&gt;vim&lt;/span&gt; &lt;span&gt;docker-compose.yml&lt;/span&gt;&lt;br/&gt;&lt;span&gt;version:&lt;/span&gt; &lt;span&gt;&#x27;3&#x27;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;services:&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;web:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;image:&lt;/span&gt; &lt;span&gt;&#x27;gitlab/gitlab-ce:14.8.5-ce.0&#x27;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;restart:&lt;/span&gt; &lt;span&gt;always&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;hostname:&lt;/span&gt; &lt;span&gt;192.168&lt;/span&gt;&lt;span&gt;.1&lt;/span&gt;&lt;span&gt;.1&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;environment:&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;GITLAB_OMNIBUS_CONFIG:&lt;/span&gt; &lt;span&gt;|&lt;br/&gt;        external_url &#x27;http://192.168.1.1&#x27;&lt;br/&gt;&lt;/span&gt;    &lt;span&gt;ports:&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;-&lt;/span&gt; &lt;span&gt;&#x27;1080:80&#x27;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;-&lt;/span&gt; &lt;span&gt;&#x27;1443:443&#x27;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;-&lt;/span&gt; &lt;span&gt;&#x27;1022:22&#x27;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;volumes:&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;-&lt;/span&gt; &lt;span&gt;&#x27;/app/gitlab/config:/etc/gitlab&#x27;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;-&lt;/span&gt; &lt;span&gt;&#x27;/app/gitlab/logs:/var/log/gitlab&#x27;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;-&lt;/span&gt; &lt;span&gt;&#x27;/app/gitlab/data:/var/opt/gitlab&#x27;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;[root@k8s-master01&lt;/span&gt; &lt;span&gt;~]#&lt;/span&gt; &lt;span&gt;docker-compose&lt;/span&gt; &lt;span&gt;up&lt;/span&gt; &lt;span&gt;-d&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因为博主的电脑配置不是很高，所以就不使用上面的方式安装 GitLab，而是直接使用 GitHub 上面的仓库。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;1）安装 NFS 存储，并配置共享目录&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;[root@k8s-master01 ~]&lt;span&gt;# yum -y install nfs-utils rpcbind&lt;/span&gt;&lt;br/&gt;[root@k8s-master01 ~]&lt;span&gt;# echo &quot;/app/jenkins *(rw,sync,no_root_squash)&quot; &amp;gt; /etc/exports&lt;/span&gt;&lt;br/&gt;[root@k8s-master01 ~]&lt;span&gt;# mkdir /app/jenkins&lt;/span&gt;&lt;br/&gt;[root@k8s-master01 ~]&lt;span&gt;# systemctl start rpcbind nfs&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;2）创建 PV 和 PVC&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;[root@k8s-master01&lt;/span&gt; &lt;span&gt;~]#&lt;/span&gt; &lt;span&gt;vim&lt;/span&gt; &lt;span&gt;jenkins-pv.yaml&lt;/span&gt;&lt;br/&gt;&lt;span&gt;apiVersion:&lt;/span&gt; &lt;span&gt;v1&lt;/span&gt;&lt;br/&gt;&lt;span&gt;kind:&lt;/span&gt; &lt;span&gt;PersistentVolume&lt;/span&gt;&lt;br/&gt;&lt;span&gt;metadata:&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;name:&lt;/span&gt; &lt;span&gt;jenkins-pv&lt;/span&gt;&lt;br/&gt;&lt;span&gt;spec:&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;capacity:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;storage:&lt;/span&gt; &lt;span&gt;10Gi&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;accessModes:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;-&lt;/span&gt; &lt;span&gt;ReadWriteMany&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;nfs:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;server:&lt;/span&gt; &lt;span&gt;192.168&lt;/span&gt;&lt;span&gt;.1&lt;/span&gt;&lt;span&gt;.1&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;path:&lt;/span&gt; &lt;span&gt;/app/jenkins&lt;/span&gt;&lt;br/&gt;&lt;span&gt;---&lt;/span&gt;&lt;br/&gt;&lt;span&gt;apiVersion:&lt;/span&gt; &lt;span&gt;v1&lt;/span&gt;&lt;br/&gt;&lt;span&gt;kind:&lt;/span&gt; &lt;span&gt;PersistentVolumeClaim&lt;/span&gt;&lt;br/&gt;&lt;span&gt;metadata:&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;name:&lt;/span&gt; &lt;span&gt;jenkins-pvc&lt;/span&gt;&lt;br/&gt;&lt;span&gt;spec:&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;resources:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;requests:&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;storage:&lt;/span&gt; &lt;span&gt;10Gi&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;accessModes:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;-&lt;/span&gt; &lt;span&gt;ReadWriteMany&lt;/span&gt;   &lt;br/&gt;&lt;span&gt;[root@k8s-master01&lt;/span&gt; &lt;span&gt;~]#&lt;/span&gt; &lt;span&gt;kubectl&lt;/span&gt; &lt;span&gt;create&lt;/span&gt; &lt;span&gt;-f&lt;/span&gt; &lt;span&gt;jenkins-pv.yaml&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;3）创建 RBAC 授权&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;[root@k8s-master01&lt;/span&gt; &lt;span&gt;~]#&lt;/span&gt; &lt;span&gt;vim&lt;/span&gt; &lt;span&gt;jenkins-sa.yaml&lt;/span&gt;&lt;br/&gt;&lt;span&gt;apiVersion:&lt;/span&gt; &lt;span&gt;v1&lt;/span&gt;&lt;br/&gt;&lt;span&gt;kind:&lt;/span&gt; &lt;span&gt;ServiceAccount&lt;/span&gt;&lt;br/&gt;&lt;span&gt;metadata:&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;name:&lt;/span&gt; &lt;span&gt;jenkins-sa&lt;/span&gt;&lt;br/&gt;&lt;span&gt;---&lt;/span&gt;&lt;br/&gt;&lt;span&gt;apiVersion:&lt;/span&gt; &lt;span&gt;rbac.authorization.k8s.io/v1beta1&lt;/span&gt;&lt;br/&gt;&lt;span&gt;kind:&lt;/span&gt; &lt;span&gt;ClusterRole&lt;/span&gt;&lt;br/&gt;&lt;span&gt;metadata:&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;name:&lt;/span&gt; &lt;span&gt;jenkins-cr&lt;/span&gt;&lt;br/&gt;&lt;span&gt;rules:&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;-&lt;/span&gt; &lt;span&gt;apiGroups:&lt;/span&gt; &lt;span&gt;[&quot;extensions&quot;,&quot;apps&quot;]&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;resources:&lt;/span&gt; &lt;span&gt;[&quot;deployments&quot;]&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;verbs:&lt;/span&gt; &lt;span&gt;[&quot;create&quot;,&quot;delete&quot;,&quot;get&quot;,&quot;list&quot;,&quot;watch&quot;,&quot;patch&quot;,&quot;update&quot;]&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;-&lt;/span&gt; &lt;span&gt;apiGroups:&lt;/span&gt; &lt;span&gt;[&quot;&quot;]&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;resources:&lt;/span&gt; &lt;span&gt;[&quot;services&quot;]&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;verbs:&lt;/span&gt; &lt;span&gt;[&quot;create&quot;,&quot;delete&quot;,&quot;get&quot;,&quot;list&quot;,&quot;watch&quot;,&quot;patch&quot;,&quot;update&quot;]&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;-&lt;/span&gt; &lt;span&gt;apiGroups:&lt;/span&gt; &lt;span&gt;[&quot;&quot;]&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;resources:&lt;/span&gt; &lt;span&gt;[&quot;pods&quot;]&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;verbs:&lt;/span&gt; &lt;span&gt;[&quot;create&quot;,&quot;delete&quot;,&quot;get&quot;,&quot;list&quot;,&quot;patch&quot;,&quot;update&quot;]&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;-&lt;/span&gt; &lt;span&gt;apiGroups:&lt;/span&gt; &lt;span&gt;[&quot;&quot;]&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;resources:&lt;/span&gt; &lt;span&gt;[&quot;pods/exec&quot;]&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;verbs:&lt;/span&gt; &lt;span&gt;[&quot;create&quot;,&quot;delete&quot;,&quot;get&quot;,&quot;list&quot;,&quot;patch&quot;,&quot;update&quot;]&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;-&lt;/span&gt; &lt;span&gt;apiGroups:&lt;/span&gt; &lt;span&gt;[&quot;&quot;]&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;resources:&lt;/span&gt; &lt;span&gt;[&quot;pods/log&quot;]&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;verbs:&lt;/span&gt; &lt;span&gt;[&quot;get&quot;,&quot;list&quot;,&quot;update&quot;]&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;-&lt;/span&gt; &lt;span&gt;apiGroups:&lt;/span&gt; &lt;span&gt;[&quot;&quot;]&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;resources:&lt;/span&gt; &lt;span&gt;[&quot;secrets&quot;]&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;verbs:&lt;/span&gt; &lt;span&gt;[&quot;get&quot;]&lt;/span&gt;&lt;br/&gt;&lt;span&gt;---&lt;/span&gt;&lt;br/&gt;&lt;span&gt;apiVersion:&lt;/span&gt; &lt;span&gt;rbac.authorization.k8s.io/v1beta1&lt;/span&gt;&lt;br/&gt;&lt;span&gt;kind:&lt;/span&gt; &lt;span&gt;ClusterRoleBinding&lt;/span&gt;&lt;br/&gt;&lt;span&gt;metadata:&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;name:&lt;/span&gt; &lt;span&gt;jenkins-crb&lt;/span&gt;&lt;br/&gt;&lt;span&gt;roleRef:&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;kind:&lt;/span&gt; &lt;span&gt;ClusterRole&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;name:&lt;/span&gt; &lt;span&gt;jenkins-cr&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;apiGroup:&lt;/span&gt; &lt;span&gt;rbac.authorization.k8s.io&lt;/span&gt;&lt;br/&gt;&lt;span&gt;subjects:&lt;/span&gt;&lt;br/&gt;&lt;span&gt;-&lt;/span&gt; &lt;span&gt;kind:&lt;/span&gt; &lt;span&gt;ServiceAccount&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;name:&lt;/span&gt; &lt;span&gt;jenkins-sa&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;namespace:&lt;/span&gt; &lt;span&gt;default&lt;/span&gt;&lt;br/&gt;&lt;span&gt;[root@k8s-master01&lt;/span&gt; &lt;span&gt;~]#&lt;/span&gt; &lt;span&gt;kubectl&lt;/span&gt; &lt;span&gt;create&lt;/span&gt; &lt;span&gt;-f&lt;/span&gt; &lt;span&gt;jenkins-sa.yaml&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;4）创建 StatefulSet&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;[root@k8s-master01&lt;/span&gt; &lt;span&gt;~]#&lt;/span&gt; &lt;span&gt;vim&lt;/span&gt; &lt;span&gt;jenkins-statefulset.yaml&lt;/span&gt;&lt;br/&gt;&lt;span&gt;apiVersion:&lt;/span&gt; &lt;span&gt;apps/v1&lt;/span&gt;&lt;br/&gt;&lt;span&gt;kind:&lt;/span&gt; &lt;span&gt;StatefulSet&lt;/span&gt;&lt;br/&gt;&lt;span&gt;metadata:&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;name:&lt;/span&gt; &lt;span&gt;jenkins&lt;/span&gt;&lt;br/&gt;&lt;span&gt;spec:&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;serviceName:&lt;/span&gt; &lt;span&gt;jenkins&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;replicas:&lt;/span&gt; &lt;span&gt;1&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;selector:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;matchLabels:&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;app:&lt;/span&gt; &lt;span&gt;jenkins&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;template:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;metadata:&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;name:&lt;/span&gt; &lt;span&gt;&quot;jenkins&quot;&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;labels:&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;app:&lt;/span&gt; &lt;span&gt;jenkins&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;spec:&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;serviceAccountName:&lt;/span&gt; &lt;span&gt;jenkins-sa&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;containers:&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;-&lt;/span&gt; &lt;span&gt;name:&lt;/span&gt; &lt;span&gt;jenkins&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;image:&lt;/span&gt; &lt;span&gt;jenkins/jenkins:lts&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;imagePullPolicy:&lt;/span&gt; &lt;span&gt;IfNotPresent&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;ports:&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;-&lt;/span&gt; &lt;span&gt;containerPort:&lt;/span&gt; &lt;span&gt;8080&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;-&lt;/span&gt; &lt;span&gt;containerPort:&lt;/span&gt; &lt;span&gt;50000&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;volumeMounts:&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;-&lt;/span&gt; &lt;span&gt;name:&lt;/span&gt; &lt;span&gt;jenkins&lt;/span&gt;&lt;br/&gt;          &lt;span&gt;mountPath:&lt;/span&gt; &lt;span&gt;/var/jenkins_home&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;volumes:&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;-&lt;/span&gt; &lt;span&gt;name:&lt;/span&gt; &lt;span&gt;jenkins&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;persistentVolumeClaim:&lt;/span&gt;&lt;br/&gt;          &lt;span&gt;claimName:&lt;/span&gt; &lt;span&gt;jenkins-pvc&lt;/span&gt;          &lt;br/&gt;&lt;span&gt;[root@k8s-master01&lt;/span&gt; &lt;span&gt;~]#&lt;/span&gt; &lt;span&gt;chown&lt;/span&gt; &lt;span&gt;-R&lt;/span&gt; &lt;span&gt;1000&lt;/span&gt; &lt;span&gt;/app/jenkins&lt;/span&gt;&lt;br/&gt;&lt;span&gt;[root@k8s-master01&lt;/span&gt; &lt;span&gt;~]#&lt;/span&gt; &lt;span&gt;kubectl&lt;/span&gt; &lt;span&gt;create&lt;/span&gt; &lt;span&gt;-f&lt;/span&gt; &lt;span&gt;jenkins-statefulset.yaml&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;5）创建 Service&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;[root@k8s-master01&lt;/span&gt; &lt;span&gt;~]#&lt;/span&gt; &lt;span&gt;vim&lt;/span&gt; &lt;span&gt;jenkins-svc.yaml&lt;/span&gt;&lt;br/&gt;&lt;span&gt;apiVersion:&lt;/span&gt; &lt;span&gt;v1&lt;/span&gt;&lt;br/&gt;&lt;span&gt;kind:&lt;/span&gt; &lt;span&gt;Service&lt;/span&gt;&lt;br/&gt;&lt;span&gt;metadata:&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;name:&lt;/span&gt; &lt;span&gt;jenkins&lt;/span&gt;&lt;br/&gt;&lt;span&gt;spec:&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;type:&lt;/span&gt; &lt;span&gt;NodePort&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;ports:&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;-&lt;/span&gt; &lt;span&gt;name:&lt;/span&gt; &lt;span&gt;http&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;port:&lt;/span&gt; &lt;span&gt;8080&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;targetPort:&lt;/span&gt; &lt;span&gt;8080&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;nodePort:&lt;/span&gt; &lt;span&gt;30080&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;-&lt;/span&gt; &lt;span&gt;name:&lt;/span&gt; &lt;span&gt;agent&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;port:&lt;/span&gt; &lt;span&gt;50000&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;targetPort:&lt;/span&gt; &lt;span&gt;50000&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;nodePort:&lt;/span&gt; &lt;span&gt;30090&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;selector:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;app:&lt;/span&gt; &lt;span&gt;jenkins&lt;/span&gt;&lt;br/&gt;&lt;span&gt;[root@k8s-master01&lt;/span&gt; &lt;span&gt;~]#&lt;/span&gt; &lt;span&gt;kubectl&lt;/span&gt; &lt;span&gt;create&lt;/span&gt; &lt;span&gt;-f&lt;/span&gt; &lt;span&gt;jenkins-svc.yaml&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;6）配置 Jenkins&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;[root&lt;span&gt;@k&lt;/span&gt;8s-master01 ~]# cat /app/jenkins/secrets/initialAdminPassword &lt;br/&gt;a303d66e915e4ee5b26648a64fdff4be&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;http://192.168.1.1:30080/&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.4521354933726068&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JdLkEI9sZfe2UZcFz9cMaXCnWbWD5BZc7avE3icGBjTO5r33w0hU7gKnEwTPffMIrKliazlQKGicDiau4vVq3wf90A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1358&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们这里安装推荐的插件即可，后面有需求可以再进行安装&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.4521354933726068&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JdLkEI9sZfe2UZcFz9cMaXCnWbWD5BZcu0oBicnjW8Kw6kSg8XzkMStW6IpibI2uGbbRiax2B0RdA27ricic2xXw0vQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1358&quot;/&gt;&lt;/figure&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.4684615384615385&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JdLkEI9sZfe2UZcFz9cMaXCnWbWD5BZcxalG7kichVnMicic5FPQibLUGhXgLDCzma9MtzOpbcH6tw0do3e5ZquXlA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1300&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;1）在 Jenkins 宿主机上创建 SSH 密钥&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;[root@k8s-master01 ~]&lt;span&gt;# ssh-keygen -t rsa        # 三连回车&lt;/span&gt;&lt;br/&gt;[root@k8s-master01 ~]&lt;span&gt;# cat ~/.ssh/id_rsa.pub       # 查看公钥&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;2）将公钥上传到 GitLab 上&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.4721189591078067&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JdLkEI9sZfe2UZcFz9cMaXCnWbWD5BZcnXPQJcK4J15kyPR7ePUeMMa8L9qeKibnGKs48JvD1bWlHQia8q9SfO1w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1345&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;3)将仓库克隆到本地&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;[root@k8s-master01 ~]&lt;span&gt;# git clone git@github.com:ChenZhuang1217/test.git&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;4）编写 Go 代码&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;[root@k8s-master01 ~]# cd test&lt;br/&gt;[root@k8s-master01 test]# vim main.&lt;span&gt;go&lt;/span&gt;&lt;br/&gt;&lt;span&gt;package&lt;/span&gt; main&lt;br/&gt;&lt;span&gt;import&lt;/span&gt; (&lt;br/&gt; &lt;span&gt;&quot;fmt&quot;&lt;/span&gt;&lt;br/&gt; &lt;span&gt;&quot;net/http&quot;&lt;/span&gt;&lt;br/&gt;)&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;HelloHandler&lt;/span&gt;&lt;span&gt;(w http.ResponseWriter, r *http.Request)&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt; fmt.Fprintf(w, &lt;span&gt;&quot;Hello World&quot;&lt;/span&gt;)&lt;br/&gt;}&lt;br/&gt;&lt;span&gt;&lt;span&gt;func&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt; {&lt;br/&gt; http.HandleFunc(&lt;span&gt;&quot;/&quot;&lt;/span&gt;, HelloHandler)&lt;br/&gt; http.ListenAndServe(&lt;span&gt;&quot;:8080&quot;&lt;/span&gt;, &lt;span&gt;nil&lt;/span&gt;)&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;5）编写 Dockerfile&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;[root@k8s-master01 &lt;span&gt;test&lt;/span&gt;]&lt;span&gt;# vim Dockerfile&lt;/span&gt;&lt;br/&gt;FROM golang:1.16 as builder&lt;br/&gt;ENV GO111MODULE=on \&lt;br/&gt;    GOPROXY=https://goproxy.cn,direct&lt;br/&gt;WORKDIR /app&lt;br/&gt;COPY . .&lt;br/&gt;RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags=&lt;span&gt;&quot;-w -s&quot;&lt;/span&gt; -o main main.go&lt;br/&gt;&lt;br/&gt;FROM busybox:1.28.4&lt;br/&gt;WORKDIR /app&lt;br/&gt;COPY --from=builder /app/ .&lt;br/&gt;EXPOSE 8080&lt;br/&gt;CMD [&lt;span&gt;&quot;./main&quot;&lt;/span&gt;]&lt;br/&gt;[root@k8s-master01 &lt;span&gt;test&lt;/span&gt;]&lt;span&gt;# docker build -t test-web-server:devops-$(date +%Y-%m-%d-%H-%M-%S) .&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;6）提交代码&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;[root@k8s-master01 &lt;span&gt;test&lt;/span&gt;]&lt;span&gt;# git add .              # 提交到暂存区&lt;/span&gt;&lt;br/&gt;[root@k8s-master01 &lt;span&gt;test&lt;/span&gt;]&lt;span&gt;# git config --global user.email &quot;Zhuang_zz1217@163.com&quot;  # 配置用户邮箱&lt;/span&gt;&lt;br/&gt;[root@k8s-master01 &lt;span&gt;test&lt;/span&gt;]&lt;span&gt;# git commit -m &quot;This is test CI/CD&quot;       # 提交到本地仓库&lt;/span&gt;&lt;br/&gt;[root@k8s-master01 &lt;span&gt;test&lt;/span&gt;]&lt;span&gt;# git push              # 推送到远程仓库&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;7）创建 Deployment 和 Service&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;[root@k8s-master01&lt;/span&gt; &lt;span&gt;~]#&lt;/span&gt; &lt;span&gt;vim&lt;/span&gt; &lt;span&gt;test-web-server.yaml&lt;/span&gt;&lt;br/&gt;&lt;span&gt;apiVersion:&lt;/span&gt; &lt;span&gt;apps/v1&lt;/span&gt;&lt;br/&gt;&lt;span&gt;kind:&lt;/span&gt; &lt;span&gt;Deployment&lt;/span&gt;&lt;br/&gt;&lt;span&gt;metadata:&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;name:&lt;/span&gt; &lt;span&gt;test-web-server&lt;/span&gt;&lt;br/&gt;&lt;span&gt;spec:&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;replicas:&lt;/span&gt; &lt;span&gt;1&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;selector:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;matchLabels:&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;app:&lt;/span&gt; &lt;span&gt;test-web-server&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;template:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;metadata:&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;labels:&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;app:&lt;/span&gt; &lt;span&gt;test-web-server&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;spec:&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;containers:&lt;/span&gt;&lt;br/&gt;      &lt;span&gt;-&lt;/span&gt; &lt;span&gt;name:&lt;/span&gt; &lt;span&gt;test-web-server&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;image:&lt;/span&gt; &lt;span&gt;test-web-server:devops-2022-04-25-17-16-54&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;imagePullPolicy:&lt;/span&gt; &lt;span&gt;IfNotPresent&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;ports:&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;-&lt;/span&gt; &lt;span&gt;containerPort:&lt;/span&gt; &lt;span&gt;8080&lt;/span&gt;&lt;br/&gt;&lt;span&gt;---&lt;/span&gt;&lt;br/&gt;&lt;span&gt;apiVersion:&lt;/span&gt; &lt;span&gt;v1&lt;/span&gt;&lt;br/&gt;&lt;span&gt;kind:&lt;/span&gt; &lt;span&gt;Service&lt;/span&gt;&lt;br/&gt;&lt;span&gt;metadata:&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;name:&lt;/span&gt; &lt;span&gt;test-web-server&lt;/span&gt;&lt;br/&gt;&lt;span&gt;spec:&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;type:&lt;/span&gt; &lt;span&gt;NodePort&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;ports:&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;-&lt;/span&gt; &lt;span&gt;name:&lt;/span&gt; &lt;span&gt;test-web-server&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;port:&lt;/span&gt; &lt;span&gt;8080&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;targetPort:&lt;/span&gt; &lt;span&gt;8080&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;nodePort:&lt;/span&gt; &lt;span&gt;30188&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;selector:&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;app:&lt;/span&gt; &lt;span&gt;test-web-server&lt;/span&gt;&lt;br/&gt;&lt;span&gt;[root@k8s-master01&lt;/span&gt; &lt;span&gt;~]#&lt;/span&gt; &lt;span&gt;kubectl&lt;/span&gt; &lt;span&gt;create&lt;/span&gt; &lt;span&gt;-f&lt;/span&gt; &lt;span&gt;test-web-server.yaml&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.3261058109280139&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JdLkEI9sZfe2UZcFz9cMaXCnWbWD5BZcdVm5ra392sxrcxAa604csHTfdTTXIU9YUa1k5micQZc5xAujx2uia8fQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1153&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;8)编写 Jenkins 发版脚本&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;[root@k8s-master01 ~]&lt;span&gt;# vim test.sh&lt;/span&gt;&lt;br/&gt;&lt;span&gt;#!/bin/bash&lt;br/&gt;&lt;/span&gt;&lt;br/&gt;&amp;gt; 基于 Spring Cloud Alibaba + Gateway + Nacos + RocketMQ + Vue &amp;amp; Element 实现的后台管理系统 + 用户小程序，支持 RBAC 动态权限、多租户、数据权限、工作流、三方登录、支付、短信、商城等功能&lt;br/&gt;&amp;gt;&lt;br/&gt;&amp;gt; * 项目地址：&amp;lt;https://github.com/YunaiV/yudao-cloud&amp;gt;&lt;br/&gt;&amp;gt; * 视频教程：&amp;lt;https://doc.iocoder.cn/video/&amp;gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;# 固定时间格式&lt;/span&gt;&lt;br/&gt;Second=$(date +%Y-%m-%d-%H-%M-%S)&lt;br/&gt;&lt;br/&gt;&lt;span&gt;# 备份旧的镜像&lt;/span&gt;&lt;br/&gt;Image=$(kubectl -s https://192.168.1.1:6443 describe pod | grep Image: | awk &lt;span&gt;&#x27;{print $2}&#x27;&lt;/span&gt; | grep &lt;span&gt;test&lt;/span&gt;)&lt;br/&gt;&lt;span&gt;echo&lt;/span&gt; &lt;span&gt;$Image&lt;/span&gt; &amp;gt; /opt/&lt;span&gt;test&lt;/span&gt;-image-&lt;span&gt;$Second&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;# 克隆代码&lt;/span&gt;&lt;br/&gt;&lt;span&gt;cd&lt;/span&gt; /root&lt;br/&gt;&lt;span&gt;if&lt;/span&gt; [ -d &lt;span&gt;test&lt;/span&gt; ];&lt;br/&gt;&lt;span&gt;then&lt;/span&gt;&lt;br/&gt;  mv &lt;span&gt;test&lt;/span&gt; /opt/&lt;span&gt;test&lt;/span&gt;-devops-&lt;span&gt;$Second&lt;/span&gt;&lt;br/&gt;  git &lt;span&gt;clone&lt;/span&gt; git@github.com:ChenZhuang1217/test.git&lt;br/&gt;&lt;span&gt;else&lt;/span&gt;&lt;br/&gt;  git &lt;span&gt;clone&lt;/span&gt; git@github.com:ChenZhuang1217/test.git&lt;br/&gt;&lt;span&gt;fi&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;# 发布新的镜像&lt;/span&gt;&lt;br/&gt;&lt;span&gt;cd&lt;/span&gt; /root/&lt;span&gt;test&lt;/span&gt; &amp;amp;&amp;amp; docker build -t &lt;span&gt;test&lt;/span&gt;-web-server:devops-&lt;span&gt;$Second&lt;/span&gt; .&lt;br/&gt;&lt;br/&gt;&lt;span&gt;# 上传到镜像仓库&lt;/span&gt;&lt;br/&gt;&lt;span&gt;if&lt;/span&gt; [ $? -eq 0 ];&lt;br/&gt;&lt;span&gt;then&lt;/span&gt;&lt;br/&gt;  docker tag &lt;span&gt;test&lt;/span&gt;-web-server:devops-&lt;span&gt;$Second&lt;/span&gt; harbor.tianya.com:5000/&lt;span&gt;test&lt;/span&gt;-web-server:devops-&lt;span&gt;$Second&lt;/span&gt;&lt;br/&gt;  docker push harbor.tianya.com:5000/&lt;span&gt;test&lt;/span&gt;-web-server:devops-&lt;span&gt;$Second&lt;/span&gt;&lt;br/&gt;&lt;span&gt;else&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;exit&lt;/span&gt; 1   &lt;span&gt;# 退出 (防止运行下面命令)&lt;/span&gt;&lt;br/&gt;&lt;span&gt;fi&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span&gt;# 替换镜像&lt;/span&gt;&lt;br/&gt;sed -i &lt;span&gt;&#x27;s/image:.*/image: harbor.tianya.com:5000\/test-web-server:devops-&#x27;&lt;/span&gt;&lt;span&gt;$Second&lt;/span&gt;&lt;span&gt;&#x27;/g&#x27;&lt;/span&gt; /root/&lt;span&gt;test&lt;/span&gt;-web-server.yaml&lt;br/&gt;&lt;br/&gt;&lt;span&gt;# 重启应用&lt;/span&gt;&lt;br/&gt;kubectl delete -f /root/&lt;span&gt;test&lt;/span&gt;-web-server.yaml&lt;br/&gt;kubectl create -f /root/&lt;span&gt;test&lt;/span&gt;-web-server.yaml&lt;br/&gt;[root@k8s-master01 ~]&lt;span&gt;# chmod +x test.sh&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上面这个脚本有两步需要注意：&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;「上传到镜像仓库：」&lt;/strong&gt; 如果你们没有自己的镜像仓库，可以选择调整脚本或看博主前面写的文章来安装 Harbor 仓库。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;「替换镜像：」&lt;/strong&gt; 我们上面配置的脚本是针对单个模块的，多个模块可以根据 for 循环来实现。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;1）在 Jenkins 上安装 SSH 插件&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;安装 SSH 插件的原因是因为，我们这个 Jenkins 是容器安装的，而脚本是在宿主机写的，所以通过远程到宿主机来运行脚本。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.43615494978479197&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JdLkEI9sZfe2UZcFz9cMaXCnWbWD5BZcp46PEoR3YWp6wJu819Sb6Efp9Ck3sOJxJdFEvpz4PAia8YV1Swnibm9Q/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1394&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;2）配置远程主机的用户名和密码&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.44636429085673146&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JdLkEI9sZfe2UZcFz9cMaXCnWbWD5BZceeElufeY26Gqz3BIbZhRrPQDnksSjibUc8gEc8tEpcCJGoGTmmQjxibg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1389&quot;/&gt;&lt;/figure&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.4348452123830094&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JdLkEI9sZfe2UZcFz9cMaXCnWbWD5BZcDJV3XQX10iaV7lded2edZcqolbWIGwiblR4libfNl1Np7jJAPYibiccnoBg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1389&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;3）创建 Jenkins 私钥凭证（类型选择：&lt;code&gt;SSH Username with private key&lt;/code&gt;）&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.4589337175792507&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JdLkEI9sZfe2UZcFz9cMaXCnWbWD5BZcia52CqaNrW6LHgX3aMaosGJpXXGiaJBJCFXRDZHc4XKlIWm3xXCaReDQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1388&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;4）配置 Jenkins 流水线&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.46708961141950833&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JdLkEI9sZfe2UZcFz9cMaXCnWbWD5BZcBAzN5O6icq5pjkmjkPKuibD2gAuymabJ6GxbfcN4w2cuhNKtnn5Iicelw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1261&quot;/&gt;&lt;/figure&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.46946867565424266&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JdLkEI9sZfe2UZcFz9cMaXCnWbWD5BZcQOVD6mJiaHVFH9dZnMQ2pj0Wa8cYyRUUyn7QsQia0CicFia62xOQQe5oYg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1261&quot;/&gt;&lt;/figure&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.4425059476605868&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JdLkEI9sZfe2UZcFz9cMaXCnWbWD5BZcmOl8IxBqkyO4yh6S8GK5LdGwBJAmcgbm7zAzRN9WFmTpNnqibxmyl1A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1261&quot;/&gt;&lt;/figure&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.4425925925925926&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JdLkEI9sZfe2UZcFz9cMaXCnWbWD5BZctLbxCbnamHtR0CLA7XmhbggicdJxICJbTic1fZBmTsgdeCoIfxwCMBWw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1080&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;5）修改代码&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.4750593824228028&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JdLkEI9sZfe2UZcFz9cMaXCnWbWD5BZcINiaeIUZOic5PT3DxqbRJJ14pkmeNK718sicfzMTic5dTtGDA1V68lu8wA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1263&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;6）在 Jenkins 上发布&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.38142857142857145&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JdLkEI9sZfe2UZcFz9cMaXCnWbWD5BZcIrN77ic3qAVmyed7oawUQKxOCtXr2zMIsemno87bxovf8CG3epGeH6A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1400&quot;/&gt;&lt;/figure&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.32556131260794474&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/JdLkEI9sZfe2UZcFz9cMaXCnWbWD5BZcJ2tafb5hhh5IqQibjFHN4r6ADq5Z92ia6Ctl53zSGpEMkoGwRqz6bWiaQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1158&quot;/&gt;&lt;/figure&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>5c78b7504e1c3be6af68c74d4b06faf6</guid>
+<title>2023 平台工程展望：开发优先、协作和 API</title>
+<link>https://toutiao.io/k/gtjuluo</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content             autoTypeSetting24psection&amp;#10;            &quot; id=&quot;js_content&quot;&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.66796875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/pQIKoiaRd0nOguPicaDpqickkwB9xgZ5RBXjmROJHYHUzrE87ZFNYeCo37jonEfI5Am4LsjWDmcBa3c6wQgmdwEVg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1024&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;平台工程不会杀死 DevOps，但会更注重开发者体验&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;开发人员体验的重要性在整个 2022 年反复强调，而且很可能在 2023 年变得更加重要。一些大胆的预测出现在 2022 年，即“DevOps 已死”等标题党的文章。这在很大程度上是因为开发者平台的兴起，当然有些预测还为时过早。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2023 年不会是平台工程与 DevOps 和 SRE等之间的主动权争夺战。相反这些理念之间并无根本矛盾，而是共同推动云原生开发格局的变化。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;对于许多组织而言，平台工程的出现已经改变了 DevOps、Ops和SRE的日常工作。&lt;/span&gt;&lt;span&gt;随着他们引入平台来减轻开发人员的工作，以开发人员平台的形式创建类似于“开箱即用的基础架构”的东西，将极大提升开发人员体验并通过“平台Ops”获得运维能力。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;开发者平台通过让99% 的开发者专注于编码，而不用担心基础设施或如何运行他们的软件来打扰开发者的开发体验。许多平台的设计也考虑到了简单和灵活的平衡，也可以让 1% 的开发人员进行深度探索和试验。由架构、DevOps和 SRE 团队支持的开发人员平台包含所有这些团队和角色的转型要素，推动开发人员体验的改进，从而推动更快、更安全的软件发布。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我认为 2023 年是开发人员体验占据中心位置、并成为业务关键需求的一年。业务相关者将了解完全集成的 DevOps、Platform Ops 团队的重要性。随着企业组织大量采用云优先开发来提高业务生产力，对于开发人员也必须有一条清晰的途径来获得更快、更频繁地安全交付软件所需的快速反馈循环。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;一些正在发生的趋势表明开发人员体验在 IT 组织和他们所属的更广泛的业务中占据重要地位。以下是我认为将在 2023 年新的趋势曲线的预测。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;预测 1：开发者至上的 Kubernetes&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在第一个云原生时代，Kubernetes 的复杂性几乎要求交付软件首先要以运维为中心。因此该行业创建了以Ops&lt;/span&gt;&lt;span&gt;为中心的工具，&lt;span&gt;当发现新的领域时&lt;/span&gt;这些工具可以帮助圈定新的地盘。&lt;/span&gt;&lt;span&gt;例如，随着容器和软件定义一切的引入，出现的更多新的问题需要运维人员使用专业知识来解决。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;因此开发人员面临相当大的学习曲线，并被要求承担额外的运维任务。虽然各种“XX左移”和 DIY 方法在许多组织中受到鼓励，但近年来在工具和开发人员平台方面所做的大部分工作简了这一过程，并帮助应对Kubernetes和云原生带来的多重挑战发展成可管理的工作流程。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;从 Ops-first 到开发人员优先的 Kubernetes 的转变，是朝着正确方向迈出的不显眼但极为必要的一步：它不仅有助于通过优化的工具和工作流程改善开发人员的体验，还有助于在更广泛和更大的组织中提高云原生开发的采用率。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;预测 2：释放更多生产力的开发人员平台&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这类改进的核心是开发人员平台概念：如果做得好它可以简化工作流程并显著降低开发人员的认知负担。在 2021到2022 年间，不同的组织认识到开发人员所面临的挑战，开始考虑转向内部开发人员平台的想法，以此作为释放开发人员生产力、加速和简化流程并提供符合最佳实践的“最佳路径”的一种方式。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;进入 2023 年，随着平台工程方法达到临界点，我们将看到更多商业开发者平台的选项加入。这会是真正推动开发人员优先的 Kubernetes，还是只是为了“产品化”一些精明的组织已经从各种可用的云原生工具中自行构建的东西而大肆宣传？毫无疑问，这将取决于平台本身的设计和能力。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;减少学习曲线并提供生产力路径和工具将简化，将为所有类型开发人员的云原生开发并丰富他们的整体体验。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;预测3：开发者与DevOps共存、DevOps 不会死&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;云原生开发社区普遍认同左移的理念，特别是对承担运营责任的开发人员，包括交付和运行他们编写的软件。Ambassador Labs 也写了很多关于这个主题的文章。也有很多人与我们分享了关于开发人员拥有他们创建的软件的整个生命周期的成功故事。但在我们的讨论中，我们也了解到只有一种技术不可能适合所有人。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们收集到的更广泛的共存协作的主张，开发人员应该了解和理解运营问题。例如，在出现问题时能够更快、更轻松地查明发生了什么，但他们工作的核心重点不是运营或平台构建。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这种在不影响开发人员的情况下赋予开发人员权力的需求，让我们了解了开发人员控制平面 (DCP)或开发人员平台，以指导开发人员的工作，而不是强迫他们深入了解运行软件的本质。平台工程是必要但不充分的步骤。对 2023 年的一个关键预测是，以开发人员为中心的标准和实施将获得进一步发展。例如用于可观察性的OpenTelemetry和用于软件材料清单的SPDX，将变得越来越重要，并减轻开发人员的一些额外责任。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;对开发人员“左移”的关注释放了开发人员的注意力，避免他们被跨功能需求（包括可观察性、安全性和可扩展性）淹没。因此也这导致了关于 DevOps 死亡的标题党预言。毕竟如果开发人员进入以运营为中心的世界，为自己构建平台，谁还在乎 DevOps？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这个想法是让开发人员能够“向左移动”而不是“向右移动”。在这里，我们不仅要回顾开发人员的生产力和经验，还要考虑随着开发人员平台成为标准而改变 DevOps 团队的角色，为开发人员提供完成工作所需的抽象和工具。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;预测 4：API 刺客——微服务测试&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;API 优先的应用程序开发是我们日常使用的应用程序的基石，也是我们作为消费者、员工和其他人享受的日益互联的体验的基石。虽然它为最终用户创造了更加无缝和方便的体验。但对于越来越依赖互联网连接和无数工具，来支持关键功能同时确保最高级别的安全性和性能的开发人员来说，它仍然是一个复杂而混乱的网络。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;API 存在于许多不同的环境中，更改它们可能会产生意想不到的后果，这些后果会波及它们所属的关联系统。仅仅理解并全面了解这些管理的系统是很困难的。随着跟踪系统的扩张和维护会使错综复杂的网络变得更加混乱和难以管理。开发人员必须不断地验证他们的假设（并改变它们），以便始终如一地交付可靠的、高性能的基于 API 的应用程序。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;原文链接：&lt;/span&gt;&lt;span&gt;&lt;em&gt;&lt;span&gt;https://thenewstack.io/platform-engineering-in-2023-dev-first-collaboration-and-apis/&lt;/span&gt;&lt;/em&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzkyMDM5Mjk2Mw==&amp;amp;mid=2247484404&amp;amp;idx=1&amp;amp;sn=0acff093b0b9ae86c464448eb2dbed25&amp;amp;chksm=c192c798f6e54e8e6a804ebb7d7d7709043055a66a90f7546c88f875cfd6c4ec2a16efdfd3a7&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;你已选中了添加链接的内容&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;1&quot;&gt;&lt;span class=&quot;js_jump_icon h5_image_link&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5946666666666667&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/pQIKoiaRd0nOguPicaDpqickkwB9xgZ5RBXSFaeTvWjlMgo9NDttdPBpmnPiam5gIIppjJQMmZDgiaicL8jpXm85mS9A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;750&quot;/&gt;&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzkyMDM5Mjk2Mw==&amp;amp;mid=2247483913&amp;amp;idx=1&amp;amp;sn=449a1ecf29e2964139dcc05f3c3a696f&amp;amp;chksm=c192c665f6e54f7359585791a2f2ad6c5512038b3a5b7a9cba152678a2485cc60111f3573c71&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;你已选中了添加链接的内容&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;1&quot;&gt;&lt;span class=&quot;js_jump_icon h5_image_link&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.6167341430499326&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/pQIKoiaRd0nOguPicaDpqickkwB9xgZ5RBX5koTXfYAPW06ZaqEa97nFPpD8yxN1kMsG12ib8zjFHok7ZibkoZ8ibM7w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;741&quot;/&gt;&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzkyMDM5Mjk2Mw==&amp;amp;mid=2247484194&amp;amp;idx=1&amp;amp;sn=c1612faaebb5f6fb3d4260228e07d8cd&amp;amp;chksm=c192c74ef6e54e5836f13396ba58bc25f8125e10e6f3355eed804185cd05eb8b62753f33401a&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;你已选中了添加链接的内容&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;11&quot; tab=&quot;innerlink&quot; data-linktype=&quot;1&quot;&gt;&lt;span class=&quot;js_jump_icon h5_image_link&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5565693430656934&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/pQIKoiaRd0nPwsmQtHuCj2KSthxRgiaeXgw1AKsibArTYDiaq4o9eyuPpt7njbNsb7Q6kDHNm8wPn8HP4TsSHgYCPg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1096&quot;/&gt;&lt;/span&gt;&lt;/a&gt;&lt;em&gt;&lt;span/&gt;&lt;/em&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzkyMDM5Mjk2Mw==&amp;amp;mid=2247483650&amp;amp;idx=1&amp;amp;sn=76933185ae43ff183548791596255c03&amp;amp;chksm=c192c56ef6e54c78143116716150912d634bb9f03a36269e6b31457acc1e5716553b72f47cb8&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;你已选中了添加链接的内容&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;11&quot; tab=&quot;innerlink&quot; data-linktype=&quot;1&quot;&gt;&lt;span class=&quot;js_jump_icon h5_image_link&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.475&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/pQIKoiaRd0nPxQ3Vhse1xNbL9dxADoDgM79HRsa9XXpFBNBia5HAwQ7QicmjghutbQZt1aK4ib6MAwcoVuSTO3KSwA/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-w=&quot;720&quot;/&gt;&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;mp-style-type data-value=&quot;3&quot;/&gt;&lt;/p&gt;&lt;/div&gt;
+
+          
+        &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>a4c6b493b3e5b2b8243dc2c30e04de72</guid>
-<title>作为研发 Leader，如何做迭代管理</title>
-<link>https://toutiao.io/k/13892qp</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content             autoTypeSetting24psection&amp;#10;            &quot; id=&quot;js_content&quot;&gt;&lt;h1&gt;写在前面&lt;/h1&gt;&lt;p&gt;「迭代流程管理」在每个公司的情况都不一样，随着产品发展阶段、团队规模、资源情况等变化，会进行各种实践和优化。我的团队一般会以半年为单位，进行迭代管理流程的Review，进行相关的流程调整和优化。&lt;/p&gt;&lt;p&gt;以下是我的团队在2023年初，刚刚优化过的迭代流程。&lt;/p&gt;&lt;h1&gt;迭代管理在解决什么问题&lt;/h1&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.705945945945946&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Jq6sJhMhoXVLgicEBw3VRKPT5VX4wo8N3IOMk5GxaMFoOzyiaalCjSQVq8Ix3Rs5y73y2vL1sxYYIe1wtODDRH1A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;925&quot;/&gt;&lt;/p&gt;&lt;figure&gt;&lt;strong&gt;上图中，共分为3个阶段，其中「产品开发」这个阶段，是下文中描述的「迭代流程」部分。&lt;/strong&gt;&lt;/figure&gt;&lt;h1&gt;开发过程方法论&lt;/h1&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.40809443507588533&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Jq6sJhMhoXVLgicEBw3VRKPT5VX4wo8N3RTWL3bekRZE5GDg5k6icCEM2ztcAhBiczTwuzLvAITHLtwc5BNyC1G9A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;593&quot;/&gt;&lt;/p&gt;&lt;h1&gt;原则和框架&lt;/h1&gt;&lt;hr/&gt;&lt;p&gt;&lt;strong&gt;说明：&lt;/strong&gt;&lt;strong&gt;在整体迭代阶段上，我们采用类似「瀑布」方式进行了大阶段的拆分；&lt;/strong&gt;&lt;strong&gt;在需求的理解、交付上，我们采用「敏捷」方式，以故事的粒度进行交付和验收。&lt;/strong&gt;&lt;/p&gt;&lt;h2&gt;遵循的原则&lt;/h2&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;以「人的主观能动性」为核心，高效、高质量交付更有价值的产品，让团队成员成为更好的自己&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;h2&gt;使用的框架&lt;/h2&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;Scrum + Kanban&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;敏捷（Agile）的目标是为了：帮助我们尽早了解我们到底有多糟糕，尽早管理这种局面。&lt;/strong&gt;&lt;/p&gt;&lt;h1&gt;流程概览&lt;/h1&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.51171875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Jq6sJhMhoXVLgicEBw3VRKPT5VX4wo8N3CfI0S2pX13XtKLkHQicJ96VMzH69tibxDibzFxq9Oql3hEgljUxBxSzkg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1280&quot;/&gt;&lt;/p&gt;&lt;h1&gt;角色说明&lt;/h1&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.6294736842105263&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Jq6sJhMhoXVLgicEBw3VRKPT5VX4wo8N3tfUvnzvrX2ASmPUkKTwicmj6zmIlZJVOLGJZfnbict64VB0jzkQy0FJw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;950&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;td&gt;角色&lt;/td&gt;&lt;td&gt;职责&lt;/td&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Scrum Master&lt;/td&gt;&lt;td&gt;敏捷教练，推动迭代的进行，目前QA兼任&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;PM&lt;/td&gt;&lt;td&gt;产品经理，进行PRD的输出和讲解&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;RD&lt;/td&gt;&lt;td&gt;服务端工程师，负责后端代码实现&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;FE&lt;/td&gt;&lt;td&gt;前端工程师，负责前端代码实现&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;QA&lt;/td&gt;&lt;td&gt;测试工程师，负责迭代质量&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;UI&lt;/td&gt;&lt;td&gt;UI设计师，负责交互和界面设计&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/section&gt;&lt;h1&gt;详细说明&lt;/h1&gt;&lt;h2&gt;需求阶段&lt;/h2&gt;&lt;h3&gt;启动会 Kick Off Meeting&lt;/h3&gt;&lt;section&gt;&lt;strong&gt;会议目标：&lt;/strong&gt;顾名思义，开球。主要是传达产品价值，以及为什么要做，和本次迭代的目标，不会深入产品细节和原型细节等。&lt;/section&gt;&lt;section&gt;&lt;strong&gt;参加人员：&lt;/strong&gt;全体&lt;/section&gt;&lt;section&gt;&lt;strong&gt;相关动作&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;「PM」→ 输出PRD中的产品价值&lt;/section&gt;&lt;section&gt;&lt;span&gt;「Master」→ 在 &lt;/span&gt;&lt;strong&gt;项目管理平台&lt;/strong&gt;&lt;span&gt; 创建迭代版本&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;「Master」→ 在 &lt;/span&gt;&lt;strong&gt;沟通工具&lt;/strong&gt;&lt;span&gt; 创建沟通群&lt;/span&gt;&lt;/section&gt;&lt;h3&gt;需求影响分析会 Impact Analysis Meeting&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;会议目标：&lt;/strong&gt;熟悉系统现有功能，分析本次迭代变动的影响&lt;/p&gt;&lt;p&gt;&lt;strong&gt;参加人员：&lt;/strong&gt;RD、FE、QA&lt;/p&gt;&lt;p&gt;&lt;strong&gt;相关动作&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;「RD 或 FE」→ 讲解系统现有功能，分析影响&lt;/span&gt;&lt;/p&gt;&lt;h3&gt;需求评审会 PRD Review Meeting&lt;/h3&gt;&lt;section&gt;&lt;strong&gt;会议目标：&lt;/strong&gt;讨论需求、实现逻辑和规则细节，达成整体团队对于本次需求理解的共识（会议次数原则上不应不超过2次）。&lt;/section&gt;&lt;section&gt;&lt;strong&gt;参加人员：&lt;/strong&gt;全体&lt;/section&gt;&lt;section&gt;&lt;strong&gt;相关动作&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;「PM」→ 输出 Final PRD&lt;/span&gt;&lt;/section&gt;&lt;h3&gt;UI评审会 UI Review Meeting&lt;/h3&gt;&lt;section&gt;&lt;strong&gt;会议目标：&lt;/strong&gt;讨论页面和交互的实现，达成团队对于本次页面和交互设计的理解共识（会议次数原则上不应不超过2次）。&lt;/section&gt;&lt;section&gt;&lt;strong&gt;参加人员：&lt;/strong&gt;全体&lt;/section&gt;&lt;section&gt;&lt;strong&gt;相关动作&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;「UI」→ 输出页面和交互设计&lt;/span&gt;&lt;/section&gt;&lt;h2&gt;设计及评估阶段&lt;/h2&gt;&lt;h3&gt;计划会 Plan Meeting&lt;/h3&gt;&lt;section&gt;&lt;strong&gt;会议目标：&lt;/strong&gt;进行本次迭代内容的确认，可能包含：业务部分、技术部分、遗留问题或Bug等。&lt;/section&gt;&lt;section&gt;&lt;strong&gt;参加人员：&lt;/strong&gt;全体&lt;/section&gt;&lt;section&gt;&lt;strong&gt;相关动作&lt;/strong&gt;&lt;/section&gt;&lt;p&gt;「Master」→ 组织计划会，确定本次迭代的范围（Review 项目管理平台 内的遗留问题和Bug）&lt;/p&gt;&lt;h3&gt;设计评审会 Design Review Meeting&lt;/h3&gt;&lt;section&gt;&lt;strong&gt;会议目标：&lt;/strong&gt;讨论设计、规范、实现、数据迁移、历史技术债务、上线发布等多方面。&lt;/section&gt;&lt;section&gt;&lt;strong&gt;参加人员：&lt;/strong&gt;RD 或 FE、QA&lt;/section&gt;&lt;section&gt;&lt;strong&gt;相关动作&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;「RD」→ 输出设计文档，并评审（按需）&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;「FE」 → 输出设计文档，并评审&lt;span&gt;（按需）&lt;/span&gt;&lt;/span&gt;&lt;/section&gt;&lt;h3&gt;工作量评估会 Estimate Meeting&lt;/h3&gt;&lt;section&gt;&lt;strong&gt;会议目标：&lt;/strong&gt;根据计划会的确认的开发范围，进行工作量估算，并分配任务优先级和具体开发人员。&lt;/section&gt;&lt;section&gt;&lt;strong&gt;参加人员：&lt;/strong&gt;RD、FE、QA&lt;/section&gt;&lt;section&gt;&lt;strong&gt;相关动作&lt;/strong&gt;&lt;/section&gt;&lt;p&gt;「Master」→ 组织工作量评估会，确定本次迭代的工作量（评估方式：计划扑克）&lt;/p&gt;&lt;h3&gt;「研发周期」计划发布 Plan Deploy&lt;/h3&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;相关动作&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;「QA」→ 发布本次迭代的「研发周期」计划&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;span&gt;「Master」→ 把各类迭代信息，更新到 &lt;/span&gt;&lt;strong&gt;项目管理平台&lt;/strong&gt;&lt;span&gt;，正式进入编码&lt;/span&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.4170008019246191&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Jq6sJhMhoXVLgicEBw3VRKPT5VX4wo8N3xuqP7SkrVJmublBC8kklzCM5xiaQ3MwVEXn9flAzg2soVrdicuiamYuFA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1247&quot;/&gt;&lt;/p&gt;&lt;h3&gt;测试用例评审会 Test Case Review Meeting&lt;/h3&gt;&lt;section&gt;&lt;strong&gt;会议目标：&lt;/strong&gt;评审测试用例的完整性和合理性。&lt;/section&gt;&lt;section&gt;&lt;strong&gt;参加人员：&lt;/strong&gt;RD、FE、QA&lt;/section&gt;&lt;section&gt;&lt;strong&gt;相关动作&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;「QA」→ 组织评审（测试用例维护在 &lt;span&gt;&lt;strong&gt;测试用例管理平台&lt;/strong&gt;&lt;/span&gt;）&lt;/section&gt;&lt;h2&gt;开发阶段&lt;/h2&gt;&lt;h3&gt;每日站会 Stand Up Meeting&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;会议目标：&lt;/strong&gt;顺畅、高质量地交付产品价值。聚焦于价值（需求/故事）的流动，而非个人工作。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;参加人员：&lt;/strong&gt;全体&lt;/p&gt;&lt;p&gt;&lt;strong&gt;相关动作&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;「Master」→ 组织会议，主要沟通依赖、Block、风险等&lt;/span&gt;&lt;/p&gt;&lt;h3&gt;故事验收 &amp;amp; 测试 Desk Check &amp;amp; Story Testing&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;相关动作&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;「RD &amp;amp; FE」→ 发起故事验收（Desk Check）通过后，部署FAT环境进行测试，「QA」记录结果&lt;/span&gt;&lt;span&gt;「QA」→ 针对故事进行测试，当故事没有功能相关问题时，结束此故事测试&lt;/span&gt;&lt;/p&gt;&lt;h3&gt;中期检查 Mid-term Check&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;会议目标：&lt;/strong&gt;沟通问题，预知风险&lt;/p&gt;&lt;p&gt;&lt;strong&gt;相关动作&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;「Master」→ 在迭代进行到中段，组织研发人员进行工作进度的Review，预知Delay风险&lt;/span&gt;&lt;/p&gt;&lt;h2&gt;测试 &amp;amp; 验收阶段&lt;/h2&gt;&lt;h3&gt;系统测试 System Testing&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;相关动作&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;「RD &amp;amp; FE」→ 整理部署文档，提交部署工单&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;「QA」→ 在FAT：&lt;/span&gt;&lt;span&gt;验证部署文档、&lt;/span&gt;&lt;span&gt;冒烟测试、&lt;/span&gt;&lt;span&gt;用例测试（黑盒、白盒）、&lt;/span&gt;&lt;span&gt;回归测试（黑盒、白盒）&lt;/span&gt;&lt;/p&gt;&lt;h3&gt;验收 Acceptance&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;相关动作&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;「QA」→ 在UAT，&lt;span&gt;验证部署文档&lt;/span&gt;&lt;/span&gt;&lt;span&gt;「PM」→ 进行产品验收&lt;/span&gt;&lt;span&gt;「UI」→ 进行UI验收&lt;/span&gt;&lt;span&gt;「QA」→ 在UAT，&lt;span&gt;回归测试（黑盒、白盒）&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;h2&gt;发布阶段&lt;/h2&gt;&lt;h3&gt;发布 Release&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;相关动作&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;「QA」→ 提交部署工单进行审核，通过后进行发布动作，&lt;/span&gt;&lt;span&gt;填写本次发布说明（对内）&lt;/span&gt;&lt;/p&gt;&lt;h2&gt;迭代回顾阶段&lt;/h2&gt;&lt;h3&gt;迭代回顾会 Review Meeting&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;会议目标：&lt;/strong&gt;总结迭代流程和质量问题，进行复盘，优化迭代流程、代码质量、协作方式等。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;参加人员：&lt;/strong&gt;全体&lt;/p&gt;&lt;p&gt;&lt;strong&gt;相关动作&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;「Master」→ 汇总迭代数据，进行报告和总结的编写&lt;/span&gt;&lt;span&gt;「Master」→ 组织迭代全部人员进行迭代数据的Review和问题的讨论&lt;/span&gt;&lt;/p&gt;&lt;h1&gt;使用的相关工具或平台&lt;/h1&gt;&lt;section&gt;&lt;span&gt;‍&lt;/span&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;td&gt;&lt;br/&gt;&lt;/td&gt;&lt;td&gt;工具或平台&lt;/td&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;项目管理平台&lt;/td&gt;&lt;td&gt;https://www.teambition.com/&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;沟通工具&lt;/td&gt;&lt;td&gt;钉钉&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;测试用例管理平台&lt;/td&gt;&lt;td&gt;https://metersphere.io&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/section&gt;&lt;p&gt;&lt;mp-style-type data-value=&quot;3&quot;/&gt;&lt;/p&gt;&lt;/div&gt;
+<guid>c644b8083f53d6507e3c784cf7d360f1</guid>
+<title>万字长文：AI 产品经理视角的 ChatGPT 全解析</title>
+<link>https://toutiao.io/k/7ev21h2</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content             autoTypeSetting24psection&amp;#10;            &quot; id=&quot;js_content&quot;&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;最近一段时间持续在关注两个技术方向：&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;ChatGPT所代表的大语言模型对NLP领域的推动&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Diffusion算法对图像领域的推动&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;今天这篇会先展开说一说ChatGPT，大致上包含以下方面：&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;讲明白ChatGPT的技术原理（放心，是科普向的原理，没有任何公式）&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;说明白ChatGPT的技术到底牛在哪里&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;ChatGPT可能的落地应用方向&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;AI产品经理在这波浪潮中可以做些什么&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;br/&gt;全文10389个字，阅读需要几分钟我也不知道哈哈。&lt;/p&gt;&lt;p&gt;对技术不感兴趣的可以直接滑动到屏幕将近一半的位置阅读第三部分和第四部分。&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;前言 一个AI产品经理的触动&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2022年11月30日，chatgpt发布，5天内涌入100W用户。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;他拥有持续的上下文对话能力，同时支持文章写作、诗词生成、代码生成等能力。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;如果用旧技术去理解他，我们通常会认为他的背后是由&lt;strong&gt;复合Agent&lt;/strong&gt;组合起来支撑的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;复合Agent是什么意思呢？即有若干个术业有专攻的Agent：有一个负责聊天对话的，一个负责诗词生成的，一个负责代码生成的， 一个负责写营销文案的等等等等。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;每个Agent只擅长做自己的那部分事情，而在用户使用的过程中，系统会先判定用户的意图是什么，应该是哪个Agent，然后再将用户的命令分发给对应的agent去解决并提供答案。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;因此看起来是很厉害的机器人，背后其实是若干个术业有专攻的机器人。事实上Siri、小爱、小度，小冰甚至包括各个平台的客服机器人都是这种模式。这样当你要上线一个新能力（例如写古诗），你只需要新增训练一个Agent，然后将这个Agent接入到总控的分类意图器下就行。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这也是当前时代的一个缩影，不管外行人如何看待你从事的行业，不管媒体是如何一次次人云亦云地说警惕AI取代人类，你一直都知道，你在做的只是训练出一个术业有专攻的机器人而已，离真正的人工智能十万八千里。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;但ChatGPT的能力不再是这种模式了，他所采用的模式是大语言模型+Prompting。所有的能力通过一个模型实现，背后只有一个什么都会的机器人（即大语言模型），并支持用户借助文字下达命令（即Prompting，提示/指示）。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;虽然这种能力的表现还不算完美，但是他开启了一条一种通向“通用型人工智能”的道路，曾经科幻故事里的Jarvis，moss好像真的有了那么一点可能。而这才是7年前，我踏入这个行业所憧憬的东西啊。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;可能你对我的震撼有点无法理解，我接下来会讲明白他的技术原理，带你慢慢感知这项技术的牛逼之处，下面正式进入正文。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;第一部分 ChatGPT的技术原理&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;首先，我们要弄明白，NLP&lt;span&gt;任务&lt;/span&gt;（自然语言处理，AI的一个技术领域，即文本类的AI任务）的核心逻辑是一个“猜概率”的游戏。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;比如说，“我今天被我老板___”，经过大量的数据训练后，AI预测空格出会出现的最高概率的词是“CPU了”，那么CPU就会被填到这个空格中，从而答案产生——“我今天被我老板CPU了”&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;虽然非常不可思议，但事实就是这样，现阶段所有的NLP任务，都不意味着机器真正理解这个世界，他只是在玩文字游戏，进行一次又一次的概率解谜，本质上和我们玩报纸上的填字游戏是一个逻辑。只是我们靠知识和智慧，AI靠概率计算。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;而在目前的“猜概率”游戏环境下，基于大型语言模型（LLM，Large Language Model）演进出了最主流的两个方向，即Bert和GPT。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;其中BERT是之前最流行的方向，几乎统治了所有NLP领域，并在自然语言理解类任务中发挥出色（例如文本分类，情感倾向判断等）。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;而GPT方向则较为薄弱，最知名的玩家就是OpenAI了，事实上在GPT3.0发布前，GPT方向一直是弱于BERT的（GPT3.0是ChatGPT背后模型GPT3.5的前身）。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;接下来我们详细说说BERT和GPT两者之间的差别。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;BERT&lt;/span&gt;&lt;/strong&gt;&lt;strong&gt;&lt;span&gt;：&lt;/span&gt;&lt;strong&gt;&lt;span&gt;双向 预训练&lt;strong&gt;语言&lt;/strong&gt;模型+fine-tuning（微调）&lt;/span&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;strong&gt;&lt;span&gt;GPT：&lt;span&gt;自回归 预训练语言模型+Prompting（指示/提示）&lt;/span&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;每个字都认识，连到一起就不认识了是吗哈哈。没关系，接下来我们把这些术语逐个拆解一遍就懂了：&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;「预训练&lt;strong&gt;语言&lt;/strong&gt;模型」&lt;/strong&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我们通常认知里的AI，是针对具体任务进行训练。例如一个能分辨猫品种的Agent，需要你提供A-缅因猫，B-豹猫这样的数据集给他，让它学习不同品种之间的特征差异，从而学会分辨猫品种这项能力。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;但大语言模型不是这样运作的，他是通过一个大一统模型先来认识这个世界。再带着对这个世界的认知对具体领域进行降维打击。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在这里让我们先从从NLP领域的中间任务说起。&lt;/span&gt;&lt;span&gt;像中文分词，词性标注，NER，句法分析等NLP任务。他们本身无法直接应用，不产生用户价值，但这些任务又是NLP所依赖的，所以称之为中间任务。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在以前，这些中间任务都是NLP领域必不可少的。但是随着大型语言模型的出现，这些中间任务事实上已经逐步消亡。而大型语言模型其实就是标题中的“语言预训练模型”。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;他的实现方式是将海量的文本语料，直接喂给模型进行学习，在这其中模型对词性、句法的学习自然而然会沉淀在模型的参数当中。我们看到媒体对ChatGPT铺天盖地的宣传里总是离不开这样一句话——在拥有&lt;strong&gt;3000亿单词&lt;/strong&gt;的语料基础上预训练出的拥有&lt;strong&gt;1750亿参数&lt;/strong&gt;的模型。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这里面3000亿单词就是训练数据。而1750亿参数就是沉淀下来的AI对这个世界的理解，其中一部分沉淀了Agent对各类语法、句法的学习（例如应该是两个馒头，而不是二个馒头，这也是中间任务为什么消亡的原因）。而另外一部分参数参数则储存了AI对于事实的认知（例如美国总统是拜登）。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;也就是经过预训练出一个这样的大语言模型后，AI理解了人类对语言的使用技巧（句法、语法、词性等），也理解了各种事实知识，甚至还懂得了代码编程，并最终在这样的一个大语言模型的基础上，直接降维作用于垂直领域的应用（例如闲聊对话，代码生成，文章生成等）。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;而BERT和GPT两者都是基于大语言模型的，他们在这一点上是相同的。他们的不同在于双向/自回归，fine-tuning/Prompting这两个维度，我们接下来会重点弄明白这四个术语。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;「双向 VS 自回归」&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;BERT：双向。双向是指这个模型在“猜概率的时候”，他是两个方向的信息利用起来同时猜测。例如“我__20号回家”，他在预测的时候，是同时利用“我”+“20号回家”两端的信息来预测空格中的词可能为“打算”。有点像我们做英文的完形填空，通常都是结合空格两端的信息来猜测空格内应该是哪个单词。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;GPT：自回归。自回归就是猜概率的时候&lt;span&gt;从左往右做预测，不会利用文本中右侧的内容，和BERT相反。这就有点像我们写作文的时候，我们肯定是一边写一边想。&lt;/span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;两者基本理念的区别导致BERT在&lt;strong&gt;之前&lt;/strong&gt;更擅长自然语言理解类任务，而GPT更擅长自然语言生成类任务（例如聊天、写作文）。——注意，我说的是之前，后面的章节我会介绍现在的情况发生了什么变化。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;「fine-tuning VS Prompting」&lt;/strong&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;假设现在预训练好的大模型要针对具体领域工作了，他被安排成为一名鉴黄师，要分辨文章到底有没有在搞黄色。那么BERT和GPT的区别在哪里呢？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;BERT：fine-tuning（微调）。微调是指模型要做某个专业领域任务时，需要收集相关的专业领域数据，做模型的小幅调整，更新相关参数。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;例如，我收集一大堆标注数据，A-是黄色，B-没有搞黄色，然后喂给模型进行训练，调整他的参数。经过一段时间的针对性学习后，模型对于分辨你们是否搞黄色的能力更出色了。这就是fine-tuning，二次学习微调。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;GPT：Prompting。prompt是指当模型要做某个专业领域的任务时，我提供给他一些示例、或者引导。但不用更新模型参数，AI只是看看。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;例如，我提供给AI模型10张黄色图片，告诉他这些是搞黄色的。模型看一下，效果就提升了。大家可能会说，这不就是fine-tuning吗？不是一样要额外给一些标注数据吗？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;两者最大的区别就是：这种模式下，模型的参数不会做任何变化升级，这些数据就好像仅仅是给AI看了一眼——嘿，兄弟，参考下这个，但是别往心里去。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;不可思议吧，但他成功了！而&lt;span&gt;更令人疯狂的是，到目前为止，关于prompt明明没有对参数产生任何影响，但确实又明显提升了任务的效果，还是一个未解之谜。&lt;/span&gt;暂时而言大家就像程序员对待bug一样——I don&#x27;t know why , but it work lol .&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这种Prompt其实就是ICT（in-Context Learning），或者你也可以称为Few shot Promot，用大白话说就是“给你一点小提示”。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;同时还有另外一种Promot，称之为Zero shot Promot。&lt;span&gt;ChatGPT就是Zero shot promot模式，目前一般称之为instruct了。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这种模式下用户直接用人类的语言下达命令，例如“给我写首诗”，“给我做个请教条”，但是你可以在命令的过程中用一些人类语言增强AI的效果，例如“在输出答案之前，你先每一步都想一想”。就只是增加这样一句话，AI的答案效果就会明显提升。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;你可能会问这是什么魔法咒语？！&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;有一个比较靠谱的猜测是这句话可能让AI回想起了学习的资料中那些推理知识好像前面都会有这句话。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;然后这一切莫名激活起了他死去的记忆，不自觉开始仿造那些严密的推理过程中一步步推导。而这些推导会将一个复杂问题分解成若干子问题，AI因为对这些子问题的推导，从而导致最终答案效果提升。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;综上对比下来，你会发现好像GPT这种模式比起BERT模式更符合我们对人工智能的想象：通过海量的知识成长起来，然后经过稍微引导（Prompt），他就能具备不同领域的强大能力。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;最后总结一下，ChatGPT背后的GPT模型是什么？&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在一个超大语料基础上预训练出的&lt;strong&gt;大语言模型（LLM）&lt;/strong&gt;，采用从左到右进行填字概率预测的&lt;strong&gt;自回归语言模型&lt;/strong&gt;，并基于&lt;strong&gt;prompting&lt;/strong&gt;（提示）来适应不同领域的任务。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;如果只基于上面的描述，你可能大概弄懂了他背后的原理，但是对于为什么他这么牛逼，你仍然无法理解。没关系，我们接着进入第二部分。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;第二部分 GPT牛逼在哪里&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;他可能是通用型人工智能的开始&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在我们原始的幻想里，AI是基于对海量数据的学习，锻炼出一个无所不知无所不能的模型，并借助计算机的优势（计算速度、并发可能）等碾压人类。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;但我们目前的AI，不管是AlphaGo还是图像识别算法，本质上都是服务于专业领域的技术工人。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5616666666666666&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/dzhS9Lf5dlVjTl3HONdBcTBAEMRWJS5iahfibicxL11WiamQpmJC91rZribqgLKROAjGENTym8EsoLmSCK6EGUqgXRQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;600&quot;/&gt;&lt;br/&gt;&lt;span&gt;我们心目中的机器人，无所不能&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6811989100817438&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/dzhS9Lf5dlVjTl3HONdBcTBAEMRWJS5iav31ljqkFYXicm7Kib07FRW7jl4znsx9THhbMRxyeEmBS3nE0N0PoxU2g/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;734&quot;/&gt;&lt;br/&gt;&lt;span&gt;现实里的机器人，只解决某个领域的问题&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;而GPT目前看似只能解决自然生成领域的任务，但实际上，他展现出了通用型人工智能的潜力。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在前面，我们讲过，&lt;strong&gt;目前而言&lt;/strong&gt;，BERT擅长自然语言理解类任务（完形填空），GPT擅长自然语言生成类任务（写作文）。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;但在Google的FLAN-T5模型上已经实现了两类任务在输入输出形式上的统一，从而使得用GPT来做完形填空成为可能。也就是可以用一个大模型来解决所有NLP领域的问题。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.3439767779390421&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/dzhS9Lf5dlVjTl3HONdBcTBAEMRWJS5iaqiclqNBEEhTWxMCN5lNlqKvVI7evodEJDCFLqGiav279mlgN3DSkJ9cA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1378&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;那么再进一步地，是否GPT可以从NLP领域走向其他AI领域呢？当然有可能！在去年年中爆火的AI绘画，其中一个关键技术门槛其实就是Text-图像的转化，这同样是来自OpenAI所开源的CLIP模型实现。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;因此GPT在图像领域的能力同样也令人期待。同理在多模态如音频、视频，本质上也能转化为Text-everthing的问题去求解，从而让大语言模型发挥成吨的威力。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;当然你可能会问，那么只要大语言模型就可以呀，为什么是GPT，而不是BERT呢？接着往下看。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;Promot模式相较fine-tuning更具生命力&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;事实上，BERT的fine-tuning模式有两个痛点。&lt;strong&gt;&lt;br/&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;我需要准备某个专业领域的标注数据，这个数据还不能少，如果太少，AI模型训练后就会形成过拟合（就是AI直接背下了整本习题册，册里的问题100%正确回答，但是稍微变幻题型就GG&lt;span&gt;）&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;我需要部署大语言模型，才能对他进行进行微调，那么部署大语言模型的成本，甚至进一步对他进行微调的能力，并不是所有公司都具备的。这注定是一个只有少数玩家能参与的游戏。&lt;br/&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;span&gt;而Promot模式恰恰相反，不需要太多的数据量，不需要对模型参数进行改动（也就意味着可以不部署模型，而是接入公开的大语言模型服务）。那么他的调试就会呈现百花齐放的姿态，玩家越多，创造力涌现就越猛烈&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;全新的人机交互方式&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这里的人机交互，指的是人-模型之间的交互。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;目前ChatGPT采用的是模型侧的Few shot prompt，即给一点示例提示，让AI提升表现，虽然暂时未知为什么不更新模型仅仅只是给AI看一眼就能带来巨幅提升，但这种交互模式无疑是更友好的。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;而更具颠覆性的是输入端的Zero shot prompt，即我们用人类的语言逐步引导AI思考——比如我们可以说，你仔细想好步骤，再给出答案。就仅仅是多加一句“你仔细想好步骤”，AI的答案靠谱率就会明显提升。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;而这种交互方式的演变，就是我们梦想中的人机交互模式。我不需要专业的能力，不需要高端的设备，我就是开口，说出我的诉求，AI就能够理解并帮我实现。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;GPT开始尝试讨好人类，并成功了&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在12月的媒体通稿里，一大堆对ChatGPT的溢美集中于他的“仿真性”，仿佛通过了图灵测试一般。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;而这种仿真性，直观来说，我们会认为是AI的“智力”提升了，他更聪明了。但实际上，ChatGPT背后的GPT3.5，更多的提升在于“用人类所喜欢的方式回答”。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;事实上ChatGPT背后的GPT3.5的模型，相较GPT3.0，他并没有在原始训练语句上增加太多（还是那3000亿语料）并且模型参数也没有太大变化（还是1750亿参数，甚至参数可能都没有变化）。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;之所以他会让人产生质变的感觉是因为他做了人类偏好处理。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;例如以前的输入模式可能需要这样：&lt;br/&gt;&amp;gt; 执行翻译任务&lt;br/&gt;&amp;gt; 输入是“我爱北京天安门（中文）”&lt;br/&gt;&amp;gt; 翻译目标语种是英文”&lt;br/&gt;&lt;br/&gt;而现在你直接说：&lt;br/&gt;&amp;gt; 帮我把我爱北京天安门翻译成法语&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;又或者是，以前你提一个问题，他会不加选择的回答，而现在他会考虑答案有害性：&lt;br/&gt;&amp;gt; 如何毁灭世界——你可以召唤三体人降临（此处应有一个潘寒hhh）&lt;br/&gt;&amp;gt; 如何毁灭世界——亲，请不要毁灭世界，地球是人类共同的家园&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;而这些对于人类偏好的攻略依赖于三个步骤：&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;创建人类偏好数据。随机挑选一些问题，并由标注人员给出高质量回答，形成“人类表达-任务结果”的标注数据，喂给模型，让它学习——这批数据数量仅有数万，并通过Prompt模式进行，即模型参数不产生变化。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;训练一个回报模型。随机挑选一些问题，让原始模型输出答案，再由标注人员基于“人类偏好标准”（例如相关性，信息丰富程度，答案有害，负面情感等），对原始模型的答案做一个排序。&lt;br/&gt;然后我们利用这批标注好的“人类偏好”数据，训练一个回报模型，这个回报模型会对原始模型的结果进行打分，告诉他什么答案分高，什么答案分低。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;通过强化学习循环整个过程。强化学习会将回报模型和原始模型链接到一起，当原始模型输出的结果，在回报模型中获得较低分值，他就收到惩罚，被要求重新学习。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;span&gt;后续不断循环步骤2和步骤3，原始模型就会脱胎换骨，学习到人类的偏好，变成一个人类所喜欢的模型，也就是我们最终所看到的ChatGPT。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这让我们有理由相信，模型的表现不好，不一定是他没学到知识，可能只是他不知道对于人类而言，哪种答案才是人类想要的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;而这种人类偏好学习，目前来看是集中在Prompt模式下的GPT的，而非fine-tuning模式下的BERT。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;最后请不要着急焦虑，还没到AI取代全世界的时候&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在过去的一段时间，我看到大量的噱头文章，美国高校封禁ChatGPT，技术论坛封禁ChatGPT。&lt;span&gt;媒体迎合着公众的狂欢情绪，照旧掀起一波AI毁灭一切的氛围。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.46495726495726497&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/dzhS9Lf5dlWo1goq0EHicX3S7rjjORvbhIg5JtIUnawvlfNV0AJhLMnFFzC5Gibic6P7GibNVJOONoRZtHNFCScY0Q/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1170&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;但实际上，就目前而言，GPT暂时还只是一种很有潜力的趋势。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;首先，人家自己都说不行&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;附上openAI CEO的回复。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.8662420382165605&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/dzhS9Lf5dlWo1goq0EHicX3S7rjjORvbh2qUzmaia0Bz7HrajAiaj2ibYRpfXTHRCQnTEcsYulru2tCou2JrjDW6fQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1256&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;其次，落地成本高&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;ChatGPT的复现依托于大模型，他的落地有三种路径：&lt;/span&gt;&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;基于instruct GPT复现（ChatGPT的姐妹模型，有公开paper）&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;基于OpenAI目前开放的GPT3.0付费接口落地，再结合具体场景进行fine-tuning，目前刊例价费用是25000token/美元，换算国内价格约3700token/元&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;基于OpenAI试点中的ChatGPT PRO落地，42美元/月，换算后约284元/月&lt;br/&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;span&gt;第一种路径依赖于新玩家的进入，但大概只能是大玩家的赛道。&lt;br/&gt;第二种和第三种路径需要打平付费接口的成本，需要针对的场景具备足够价值。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;当然成本的问题可以期待被快速解决，就像AI绘画领域一样。不过目前而言，成本仍然是ChatGPT落地的一个制约因素。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;最后&lt;/strong&gt;&lt;strong&gt;，最重要的是ChatGPT目前的能力仍然存在缺陷：&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;结果不稳定。这会导致无法直接应用，必定需要人工review，更多是瞄准辅助性场景或本身就不追求稳定的场景。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;推理能力有限。例如询问现在的美国总统是谁，会回答奥巴马，或特朗普，但又能回答出拜登是46届总统。我们可以发现模型中事实存在，但他无法推理出正确答案。&lt;br/&gt;如果要优化，一方面是输入的时候，可以通过Prompt逐步引导，另一方面是在模型侧的Few Shot Prompt环节中采用思维链技术（CoT,&lt;span&gt;Chain of Thought&lt;/span&gt;）或采用代码数据集来改进。就目前而言，进展可喜，但能力仍然有限。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;知识更新困难。一方面整个模型的重新训练成本很大，另一方面知识更新也会带来知识遗忘的隐忧，即你不知道他这次更新是不是在学会什么的同时，也忘记了什么。也就是说ChatGPT在解决这个问题之前，他的知识将始终落后一段时间。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;综上，ChatGPT很惊艳，但更多在于它的潜力和未来，基于当下要做应用的话是需要做非常多适配和场景探索的。接下来进入我们第三部分，探索ChatGPT为代表的GPT大语言模型应用方向。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;第三部分 ChatGPT所代表的大语言模型应用方向&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;从目前来看，应用方向可以分成三种&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;模型服务&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;以OpenAI为典型代表，孵化大模型后，开放接口，提供公共模型能力。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;目前OpenAI的接口支持GPT3.0的能力调用，同时支持二次tuning。而在大规模的商业合作上，notion、office全家桶、bing都在推进当中。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;2B垂直工具&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;以COPY AI，Jasper为例，主打生成内容，并且瞄准了有明确价值需求的领域。例如自动生成SEO文章、广告创意、ins文案等等。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这一类目前海外发展得较好，一方面受益于对SaaS付费的接受度，另一方面也是因为瞄准了明确的用户群——电商从业者。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;事实上代码校验提示，会议纪要生成，专业文档写作等都可能是这个方向的扩展。但一方面要看fine-tuning效果如何，另一方面商业价值确实也不如电商领域高。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;C端娱乐类&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;C端应该说是场景最匹配ChatGPT应用的方向了，毕竟用户的忍受度相当高，智障音箱都能忍，何况升级后的GPT。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;但困难的在于两方面：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;第一，要找到可供能力落地的C端场景，毕竟单纯聊天是没有价值的，附加了场景才产生价值。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;第二，要找到商业模式突破成本线。按照GPT3.0的刊例价来算，要求这个产品每输出3700个字，就要从用户身上赚到1块钱（作为参考：目前国内头部小说网站起点的付费阅读是20000字/元）。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;海外的C端娱乐应用我不太了解（之前用的账号过期了，最近懒得弄）。搜索了一下国内应用，最近社交分类Glow这个APP冲上了第7名，扩展往下看会发现主流的娱乐类Chat基本上是围绕二次元/宅群体进行的。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;如果围绕这个用户群稍作扩展，在年轻/黏性/新事物尝试等维度的组合下，明星粉丝也是一个可能的方向。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;但也不好说就锁死在这些群体上——你猜猜给一个独居的二大爷尝试ChatGPT他会喜欢吗？给一个流水线的工人尝试呢？毕竟孤独，一直是人类永恒的命题，谁也不知道下一个爆款来自哪里。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;strong&gt;第四部分 AI产品经理能做什么？&lt;/strong&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;商业层&lt;/strong&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;现在的互联网环境，收益已经是第一位的事情了，不管是外部投融资还是内部项目盘点，商业变现都是最核心的问题。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;商业上的事情其实又可以拆成两个模块，战略上的，战术上的，依据公司的规模和团队结构不同，AI PM的话语权会有不同程度的衰减。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;举例子说明一下。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;战略层的问题：&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;我要启动一个ChatGPT项目，用户群是什么，商业模式是什么，壁垒在哪里，演进的步骤是什么？&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这些问题的产生在“决定项目做不做”，“接下来项目往哪走”的环节。假设对这方面有话语权，不管大还是小，那么都会是一件非常锻炼人的事情。这个环节中无非就是两种能力：知识获取以及知识的推理。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;知识获取包括你过往的行业经验，业务经验，以及临时抱佛脚所调研的行业信息。这方面依赖的是知识的挖掘、辨别、结构化整理能力，特别是现在这个时代的信息环境，真的是屎山里找金。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;知识的推理是对这些知识有选择地推导，从知识中得出商业答案。这个环节可以利用一些思维工具去结构化推导（例如商业画布），多推几次后，本身自己会沉淀下来一些商业分析的肌肉记忆，工具反而退居其次了。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;战术层的问题&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;：产品做出来了，甚至免费运作一段时间了，那么接下来产品怎么定价？价格阶梯如何设置？个体消费者和企业消费者的价格会不同吗？渠道服务商的价格和直售的价格一样吗？我的成本线是多少，盈利线是多少？&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;只是围绕一个价格，就会延伸出一堆细碎繁杂的问题。更何况关联产生的产品方案，渠道政策，广告ROI等模块。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;战术层的问题因其细碎和宽泛，会被拆成非常多不同的方向，每个方向其实都没那么复杂，只是需要一些敲门进去的方法论，剩下的就是一些实战经验。所以我们会看到，现在大厂招人，往往倾向在垂直细分方向找一个有相关经验的人，这样会节约上手时间和试错成本，例如会员产品经理。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;技术层&lt;/strong&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这里的技术其实没那么技术。AI产品经理和传统产品经理最大的不同就在于，他所依赖的产品核心是AI技术，因此将商业、用户需求转化为算法需求是他的主要职责。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这里面我们所提出的问题，是会有技术层面的深浅不同的。举个例子，我们遇到了一个问题“需要Chatbot能够记住用户的偏好知识，例如他喜欢下雨天，喜欢达芬奇，喜欢黄金时代”，现在我们需要算法团队帮我们实现，那么可能有不同层次的提法：&lt;/span&gt;&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;chatbot要支持记忆用户输入的偏好信息，例如喜欢黄金时代，储存时间为永久，并且支持知识的互斥与整合（例如先说喜欢下雨天，后面又说讨厌下雨天）&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;需要chatbot支持记忆用户输入的偏好信息，并且这个能否不要用模型参数去学习，而是搭建一个独立的知识库，再通过模型另外调用？这样用户可以可视化地修正自己的偏好知识。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;加装一个意图识别器，发现是用户偏好知识的时候转到知识库进行储存和整合，如果非偏好知识则正常走大模型结果。意图识别器这里可以用xxx技术，你看看这篇paper，是有相关实现经验的。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;大家会发现三个层次在技术层面是由浅到深的。那么什么时候深什么时候浅取决于什么呢？&lt;/span&gt;&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;取决于产品的技术实力。有时候你的技术实力就决定了你深不了。没关系，其实到第三个层次并不是必须的，一般到第二个层次就够用了，甚至到不了第二层次，就在第一个层次上你把需求讲明白，也是能跑的下去。只是这样产品的权威性，你对需求的判断，ROI的平衡判断都会产生很大的问题。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;取决于需求的目的，例如第一个层次的需求没有专门提及知识库，那这个时候用模型去学习记录也可以，用知识库也可以。但是第二个需求中就明确要求了基于知识库的实现方法，因为他需要用户可视化修改自己的偏好知识。（甚至有时候最后不一定是用知识库的方法，但没关系，提出你的idea，与算法团队深入讨论，多少都是一种启发）&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;取决于你和算法团队磨合出的边界。要找到你们之间最舒适的交织区域，一般而言是产品往技术多走几步，算法往业务多走几步，这样能发挥1+1＞2的结果。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;span&gt;当然，不管是需求提到哪种技术层次，都需要铭记一个基本原则，说明白你这个需求的背景、目的、价值。例如第二个例子中，其实是要额外说明用户可视化修正偏好知识到底能带来什么，值不值得做，这些业务价值会与技术实现的成本互相PK，取得平衡。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;AI产品经理在技术层能做的事情有点像在做fine-tuning，在模型不那么适配场景，或者场景延伸出新能力诉求的时候，发现他，分析他，并与算法团队深度讨论后方案后在成本和收益之间做平衡。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;应用层&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;应用层的事情其实和技术层有点交织，因为大部分时候你上一个新的应用功能，背后多数是需要技术支撑的。&lt;strong&gt;&lt;br/&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;不过这里我们搞简单点，把有技术诉求的那部分剔除掉，只保留无技术依赖或低技术依赖的来讨论。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我举个大家习以为常，但效果巨大的例子：当我们做人脸验证，或者银行卡图像识别的时候，他一定会有一个虚拟框，要求你将脸或者银行卡摆放在固定位置。这个功能毫无技术要求，就是加一个透明浮层而已。但是他能极大提升采集图像的质量，从而提升算法效果。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;在chatbot里面其实也可以类似的做法。例如ChatGPT有时候会崩溃，输出结果在一半的时候就中断。他的原理其实就是自然语言生成本质上是持续性在预测下一个字是什么，然后预测出一篇文章。那么当模型在还不应该结束的时候不小心预测出一个END字符的时候，AI就认为我可以在这里停止了。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;解决方案有高大上的技术方案，我们这里可以土肥圆做个low一点的——加装一个按钮“你还没说完呢”，用户点击后，AI就会自动再次重跑一遍这个input，输出结果。这样顺便还能采集一下对于这种END崩溃的bad case数据。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;增长层&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;只要你做的产品是给人用的，不管是2B还是2C，那么就离不开增长。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;只是2B和2C的增长是两套完全不同的方法论。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2B其实更多应该被归到商业层，你需要做产品定价，做渠道政策，做客户成功，并打磨你整个销售链路，找到薄弱点优化他。在这个过程中你要清晰认识到2B与2C在付费决策上的显著不同，2B是多用户下关键决策人掌握公有资产进行付费判断，而2C是用户个体掌握私有资产进行付费资产。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;不过教育行业这个市场会和2B有一点点相似，他是学生使用，家长付费，学校/机构影响，也是一个多用户下关键决策人的结构，不过掌握的是私有资产。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;而2C就更不用说了，2C的增长产品是一个非常独立细分的行业。&lt;span&gt;可以通过投放，SEO，新客进入，老客留存，社交裂变等等命题去做努力，反正核心就是拉更多的人赚更多的钱。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;只是目前而言，我们在说ChatGPT，那么他大概还是一个新项目新产品。那么大概率初始不会配备相应的增长产品，AI产品也需要兼顾关注。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;最后大家如果想做一些练习，可以找这个领域的一些C端应用试试看，例如glow，糖盒等（可能还有更多，欢迎私信指点我）。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;但是我个人不建议拿各类市面上的chatbot或B端产品来尝试，前者发展到现在很成熟了，后者则很多时候需要面对B端特殊的场景，没有做过B端很难明白里面的细节。而glow、糖盒这类C端新起步的产品会是一个比较好的练手对象。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;我这里就不罗列对这两个产品的分析或者产品建议了，我个人觉得站在局外做产品建议是很扯淡的事情。产品的魅力在于根据有限的资源和环境，选择局部最优解来推动demo慢慢成长。如果不在局内的话，很多建议和迭代我都倾向于不公开，否则局内人看起来会很蠢。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;比如说觉得对话不智能，需要提升智能，建议接入GPT3.0。那么会不会这个产品的受众其实不那么需要智能，或者他们的需求无法与接入GPT3.0的费用平衡呢？这个需求有可能不是一个技术问题，而是一个商业问题。所以我觉得教张小龙做产品其实是个伪命题。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;但是自己练习一下还是可以的，有一个具现的产品做逻辑推导的练习，会比只阅读理论文章来得更有效。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;em&gt;&lt;span&gt;&lt;strong&gt;【彩蛋】&lt;/strong&gt;&lt;/span&gt;&lt;/em&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;近期，我们在“&lt;strong&gt;AI产品经理大本营&lt;/strong&gt;”里整理了一份“&lt;span&gt;&lt;strong&gt;AIGC精华资料包&lt;/strong&gt;&lt;/span&gt;”（&lt;span&gt;&lt;strong&gt;34份干货报告&lt;/strong&gt;&lt;/span&gt;）。&lt;/p&gt;&lt;p&gt;其中，不仅包含常见的行业报告，还有 AIGC / OpenAI /ChatGPT 等相关核心内容的图表展示，以及我们在付费社群里的部分原创内容——&lt;span&gt;‍‍‍‍‍‍‍‍‍&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.6299212598425197&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/TS56qMjSfEgOYxynWo8mL2u8TmXsozKH14oqt5SCRUNhPZAPQF2lGo2stXgKxEQz7ryybgoiajEUXe1NUSznuicw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1270&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;领取方式&lt;/strong&gt;&lt;/span&gt;：&lt;strong&gt;在本公众号（hanniman）后台回复“&lt;/strong&gt;&lt;span&gt;&lt;strong&gt;1234&lt;/strong&gt;&lt;/span&gt;&lt;strong&gt;”&lt;/strong&gt;，即可&lt;strong&gt;返回下载链接&lt;/strong&gt;&lt;span&gt;（无需添加微信好友）&lt;/span&gt;。&lt;/p&gt;&lt;p&gt;最后，如果这篇文章对你有帮助，期望点赞、在看、转发，一键三连~ 好运连连～&lt;/p&gt;&lt;p&gt;&lt;span&gt;---------------------&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;黄钊hanniman，前腾讯PM，前图灵机器人-人才战略官/AI产品经理，10年AI、13年互联网背景；垂直于“AI产品经理”的第一社群（知识星球“&lt;/span&gt;&lt;span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MjM5NzA5OTAwMA==&amp;amp;mid=2650007403&amp;amp;idx=1&amp;amp;sn=332709a833e0efc221566a79c5fc28ef&amp;amp;chksm=bed863fc89afeaea39e9c16da3b03b66d324ea8fce5a5a87e340a796bd26e75a43e53930a67c&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;AI产品经理大本营&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;AI产品经理大本营&lt;/a&gt;&lt;/span&gt;&lt;span&gt;”，5年），作品有《&lt;/span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MjM5NzA5OTAwMA==&amp;amp;mid=2650007401&amp;amp;idx=1&amp;amp;sn=19a57c27e997cf15e4b53a93797ae543&amp;amp;chksm=bed863fe89afeae81e50b56c879f6f6fa72a9263742a8c182564635593abaaebf4472c03a29b&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;AI产品经理的实操手册&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;&lt;span&gt;AI产品经理的实操手册&lt;/span&gt;&lt;/a&gt;&lt;span&gt;》、《人工智能产品经理的新起点》。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;mp-style-type data-value=&quot;3&quot;/&gt;&lt;/p&gt;&lt;/div&gt;
 
           
         &lt;/div&gt;&lt;/div&gt;</content:encoded>
