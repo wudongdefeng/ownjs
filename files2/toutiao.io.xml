@@ -5,436 +5,643 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>81b7065974f063cf297fee3b99142919</guid>
-<title>JVM 说：直接内存的使用</title>
-<link>https://toutiao.io/k/rhlsm4e</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;p&gt;作者：京东物流 刘作龙 &lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;前言：&lt;/strong&gt;&lt;br/&gt;
-学习底层原理有的时候不一定你是要用到他，而是学习他的设计思想和思路。再或者，当你在日常工作中遇到棘手的问题时候，可以多一条解决问题的方式  &lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;分享大纲：&lt;/strong&gt;&lt;br/&gt;
-本次分享主要由io与nio读取文件速度差异的情况，去了解nio为什么读取大文件的时候效率较高，查看nio是如何使用直接内存的,再深入到如何使用直接内存&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/65415848fa8143cd8ea89b6d8bc5d4b4%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;h1&gt;&lt;a href=&quot;&quot;/&gt;1 nio与io读写文件的效率比对&lt;/h1&gt;
-
-&lt;p&gt;首先上代码，有兴趣的同学可以将代码拿下来进行调试查看  &lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;package com.lzl.netty.study.jvm;
-
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.StopWatch;
-
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-
-/**
- * java对于直接内存使用的测试类
- *
- * @author liuzuolong
- * @date 2022/6/29
- **/
-@Slf4j
-public class DirectBufferTest {
-
-
-    private static final int SIZE_10MB = 10 * 1024 * 1024;
-
-
-    public static void main(String[] args) throws InterruptedException {
-        //读取和写入不同的文件,保证互不影响
-        String filePath1 = &quot;/Users/liuzuolong/CODE/OWN/netty-study/src/main/resources/ioInputFile.zip&quot;;
-        String filePath2 = &quot;/Users/liuzuolong/CODE/OWN/netty-study/src/main/resources/nioDirectInputFile.zip&quot;;
-        String filePath3 = &quot;/Users/liuzuolong/CODE/OWN/netty-study/src/main/resources/nioHeapInputFile.zip&quot;;
-        String toPath1 = &quot;/Users/liuzuolong/CODE/OWN/netty-study/src/main/resources/ioOutputFile.zip&quot;;
-        String toPath2 = &quot;/Users/liuzuolong/CODE/OWN/netty-study/src/main/resources/nioDirectOutputFile.zip&quot;;
-        String toPath3 = &quot;/Users/liuzuolong/CODE/OWN/netty-study/src/main/resources/nioHeapOutputFile.zip&quot;;
-        Integer fileByteLength = SIZE_10MB;
-        //新建io读取文件的线程
-        Thread commonIo = new Thread(() -&amp;gt; {
-            commonIo(filePath1, fileByteLength, toPath1);
-        });
-        //新建nio使用直接内存读取文件的线程
-        Thread nioWithDirectBuffer = new Thread(() -&amp;gt; {
-            nioWithDirectBuffer(filePath2, fileByteLength, toPath2);
-        });
-        //新建nio使用堆内存读取文件的线程
-        Thread nioWithHeapBuffer = new Thread(() -&amp;gt; {
-            nioWithHeapBuffer(filePath3, fileByteLength, toPath3);
-        });
-        nioWithDirectBuffer.start();
-        commonIo.start();
-        nioWithHeapBuffer.start();
-    }
-
-    public static void commonIo(String filePath, Integer byteLength, String toPath) {
-        //进行时间监控
-        StopWatch ioTimeWatch = new StopWatch();
-        ioTimeWatch.start(&quot;ioTimeWatch&quot;);
-        try (FileInputStream fis = new FileInputStream(filePath);
-             FileOutputStream fos = new FileOutputStream(toPath);
-        ) {
-            byte[] readByte = new byte[byteLength];
-            int readCount = 0;
-            while ((readCount = fis.read(readByte)) != -1) {
-                // 读取了多少个字节，转换多少个。
-                fos.write(readByte, 0, readCount);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        ioTimeWatch.stop();
-        log.info(ioTimeWatch.prettyPrint());
-    }
-
-
-
-
-
-    public static void nioWithDirectBuffer(String filePath, Integer byteLength, String toPath) {
-        StopWatch nioTimeWatch = new StopWatch();
-        nioTimeWatch.start(&quot;nioDirectTimeWatch&quot;);
-        try (FileChannel fci = new RandomAccessFile(filePath, &quot;rw&quot;).getChannel();
-             FileChannel fco = new RandomAccessFile(toPath, &quot;rw&quot;).getChannel();
-        ) {
-            // 读写的缓冲区（分配一块儿直接内存）
-            //要与allocate进行区分
-            //进入到函数中
-            ByteBuffer bb = ByteBuffer.allocateDirect(byteLength);
-            while (true) {
-                int len = fci.read(bb);
-                if (len == -1) {
-                    break;
-                }
-                bb.flip();
-                fco.write(bb);
-                bb.clear();
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        nioTimeWatch.stop();
-        log.info(nioTimeWatch.prettyPrint());
-    }
-
-
-
-
-    public static void nioWithHeapBuffer(String filePath, Integer byteLength, String toPath) {
-        StopWatch nioTimeWatch = new StopWatch();
-        nioTimeWatch.start(&quot;nioHeapTimeWatch&quot;);
-        try (FileChannel fci = new RandomAccessFile(filePath, &quot;rw&quot;).getChannel();
-             FileChannel fco = new RandomAccessFile(toPath, &quot;rw&quot;).getChannel();
-        ) {
-            // 读写的缓冲区（分配一块儿直接内存）
-            //要与allocate进行区分
-            ByteBuffer bb = ByteBuffer.allocate(byteLength);
-            while (true) {
-                int len = fci.read(bb);
-                if (len == -1) {
-                    break;
-                }
-                bb.flip();
-                fco.write(bb);
-                bb.clear();
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        nioTimeWatch.stop();
-        log.info(nioTimeWatch.prettyPrint());
-    }
-
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;1.主函数调用&lt;br/&gt;
-为排除当前环境不同导致的文件读写效率不同问题，使用多线程分别调用io方法和nio方法&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/098b428412e94b44b5c93a95baec747d%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;2.分别进行IO调用和NIO调用&lt;br/&gt;
-通过nio和io的读取写入文件方式进行操作&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/ab994366de954c1dbb02764cf6617fd7%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;3.结果&lt;br/&gt;
-经过多次测试后，发现nio读取文件的效率是高于io的，尤其是读取大文件的时候&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;11:12:26.606 [Thread-1] INFO com.lzl.netty.study.jvm.DirectBufferTest - StopWatch &#x27;&#x27;: running time (millis) = 1157-----------------------------------------ms     %     Task name-----------------------------------------01157  100%  nioDirectTimeWatch11:12:27.146 [Thread-0] INFO com.lzl.netty.study.jvm.DirectBufferTest - StopWatch &#x27;&#x27;: running time (millis) = 1704-----------------------------------------ms     %     Task name-----------------------------------------01704  100%  ioTimeWatch
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;4 提出疑问&lt;br/&gt;
-那到底为什么nio的速度要快于普通的io呢，结合源码查看以及网上的资料，核心原因是：&lt;br/&gt;
-nio读取文件的时候，使用直接内存进行读取，那么，如果在nio中也不使用直接内存的话，会是什么情况呢？&lt;/p&gt;
-
-&lt;p&gt;5.再次验证&lt;br/&gt;
-新增使用堆内存读取文件&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/33385d7a8d0f47149f6f9aef479f9564%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;执行时间验证如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;11:30:35.050 [Thread-1] INFO com.lzl.netty.study.jvm.DirectBufferTest - StopWatch &#x27;&#x27;: running time (millis) = 2653-----------------------------------------ms     %     Task name-----------------------------------------02653  100%  nioDirectTimeWatch11:30:35.399 [Thread-2] INFO com.lzl.netty.study.jvm.DirectBufferTest - StopWatch &#x27;&#x27;: running time (millis) = 3038-----------------------------------------ms     %     Task name-----------------------------------------03038  100%  nioHeapTimeWatch11:30:35.457 [Thread-0] INFO com.lzl.netty.study.jvm.DirectBufferTest - StopWatch &#x27;&#x27;: running time (millis) = 3096-----------------------------------------ms     %     Task name-----------------------------------------03096  100%  ioTimeWatch
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;根据上述的实际验证，nio读写文件比较快的主要原因还是在于使用了直接内存，那么为什么会出现这种情况呢？&lt;/p&gt;
-
-&lt;h1&gt;&lt;a href=&quot;&quot;/&gt;2 直接内存的读写性能强的原理&lt;/h1&gt;
-
-&lt;p&gt;直接上图说明&lt;br/&gt;
-1.堆内存读写文件&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/bc973155e8774be7a603247ae8e16d81%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;堆内存读写文件的步骤：&lt;br/&gt;
-当JVM想要去和磁盘进行交互的时候，因为JVM和操作系统之间存在读写屏障，所以在进行数据交互的时候需要进行频繁的复制&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;  先由操作系统进行磁盘的读取，将读取数据放入系统内存缓冲区中&lt;/li&gt;
-&lt;li&gt;  JVM与系统内存缓冲区进行数据拷贝&lt;/li&gt;
-&lt;li&gt;  应用程序再到JVM的堆内存空间中进行数据的获取&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;2.直接内存读写文件&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/26b4f1a786b642419150ba4ec821984a%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;直接内存读写文件的步骤&lt;br/&gt;
-如果使用直接内存进行文件读取的时候，步骤如下&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;  会直接调用native方法allocateMemory进行直接内存的分配&lt;/li&gt;
-&lt;li&gt;  操作系统将文件读取到这部分的直接内存中&lt;/li&gt;
-&lt;li&gt;  应用程序可以通过JVM堆空间的DirectByteBuffer进行读取&lt;br/&gt;
-与使用对堆内存读写文件的步骤相比减少了数据拷贝的过程，避免了不必要的性能开销，因此NIO中使用了直接内存，对于性能提升很多&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;那么，直接内存的使用方式是什么样的呢？&lt;/p&gt;
-
-&lt;h1&gt;&lt;a href=&quot;&quot;/&gt;3 nio使用直接内存的源码解读&lt;/h1&gt;
-
-&lt;p&gt;在阅读源码之前呢，我们首先对于两个知识进行补充&lt;/p&gt;
-
-&lt;p&gt;1.虚引用Cleaner sun.misc.Cleaner&lt;/p&gt;
-
-&lt;p&gt;什么是虚引用&lt;br/&gt;
-虚引用所引用的对象，永远不会被回收，除非指向这个对象的所有虚引用都调用了clean函数，或者所有这些虚引用都不可达&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;必须关联一个引用队列&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Cleaner继承自虚引用PhantomReference，关联引用队列ReferenceQueue&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3fbf737f1cb244c99dc7fcba1e425a5c%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;概述的说一下，他的作用就是，JVM会将其对应的Cleaner加入到pending-Reference链表中，同时通知ReferenceHandler线程处理，ReferenceHandler收到通知后，会调用Cleaner#clean方法&lt;/p&gt;
-
-&lt;p&gt;2.Unsafesun misc.Unsafe&lt;br/&gt;
-位于sun.misc包下的一个类，主要提供一些用于执行低级别、不安全操作的方法，如直接访问系统内存资源、自主管理内存资源等，这些方法在提升Java运行效率、增强Java语言底层资源操作能力方面起到了很大的作用。&lt;/p&gt;
-
-&lt;p&gt;3.直接内存是如何进行申请的 java.nio.DirectByteBuffer&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/ba82a5466ed14e04855a29c9ef9c9274%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/7ec7e93faf97435c9961fa7bb409020b%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;进入到DirectBuffer中进行查看&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/e893671790764e01bc928228153df120%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;源码解读&lt;br/&gt;
-PS:只需要读核心的划红框的位置的源码，其他内容按个人兴趣阅读&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;  直接调用ByteBuffer.allocateDirect方法&lt;/li&gt;
-&lt;li&gt;  声明一个一个DirectByteBuffer对象&lt;/li&gt;
-&lt;li&gt;  在DirectByteBuffer的构造方法中主要进行三个步骤&lt;br/&gt;
-步骤1：调用Unsafe的native方法allocateMemory进行缓存空间的申请,获取到的base为内存的地址&lt;br/&gt;
-步骤2：设置内存空间需要和步骤1联合进行使用&lt;br/&gt;
-步骤3：使用虚引用Cleaner类型，创建一个缓存的释放的虚引用&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;strong&gt;直接缓存是如何释放的&lt;/strong&gt;&lt;br/&gt;
-我们前面说的了Cleaner的使用方式，那么cleaner在直接内存的释放中的流程是什么样的呢？&lt;/p&gt;
-
-&lt;h2&gt;&lt;a href=&quot;&quot;/&gt;3.1 新建虚引用&lt;/h2&gt;
-
-&lt;p&gt;java.nio.DirectByteBuffer&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/aee64c8c029242a1b83870759fe54a42%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;步骤如下&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;  调用Cleaner.create()方法&lt;/li&gt;
-&lt;li&gt;  将当前新建的Cleaner加入到链表中&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2&gt;&lt;a href=&quot;&quot;/&gt;3.2 声明清理缓存任务&lt;/h2&gt;
-
-&lt;p&gt;查看java.nio.DirectByteBuffer.Deallocator的方法&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/1214cead592f41a2bda70e3d1118d8f8%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;  实现了Runnable接口&lt;/li&gt;
-&lt;li&gt;  run方法中调用了unsafe的native方法freeMemory()进行内存的释放&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2&gt;&lt;a href=&quot;&quot;/&gt;3.3 ReferenceHandler进行调用&lt;/h2&gt;
-
-&lt;p&gt;首先进入：java.lang.ref.Reference.ReferenceHandler&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/80041ec6821a408eb3aa90621b25b1c3%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;当前线程优先级最高，调用方法tryHandlePending&lt;/p&gt;
-
-&lt;p&gt;进入方法中，会调用c.clean c—&amp;gt;(Cleaner)&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/36801648880544f9a9e687b55f9d8df5%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;clean方法为Cleaner中声明的Runnable，调用其run()方法&lt;br/&gt;
-Cleaner中的声明：private final Runnable thunk;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/1c883562179c4264b048dbbfa654dee5%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;回到《声明清理缓存任务》这一节，查看Deallocator，使用unsafe的native方法freeMemory进行缓存的释放&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/b5787c9bac164b229bd58995e37e92e2%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;h1&gt;&lt;a href=&quot;&quot;/&gt;4 直接内存的使用方式&lt;/h1&gt;
-
-&lt;p&gt;直接内存特性&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;  nio中比较经常使用，用于数据缓冲区ByteBuffer&lt;/li&gt;
-&lt;li&gt;  因为其不受JVM的垃圾回收管理，故分配和回收的成本较高&lt;/li&gt;
-&lt;li&gt;  使用直接内存的读写性能非常高&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;直接内存是否会内存溢出&lt;br/&gt;
-直接内存是跟系统内存相关的，如果不做控制的话，走的是当前系统的内存，当然JVM中也可以对其使用的大小进行控制，设置JVM参数-XX:MaxDirectMemorySize=5M，再执行的时候就会出现内存溢出&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/9671e2ef10fb455687f1cb35c5179110%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;直接内存是否会被JVM的GC影响&lt;br/&gt;
-如果在直接内存声明的下面调用System.gc();因为会触发一次FullGC，则对象会被回收，则ReferenceHandler中的会被调用，直接内存会被释放。&lt;/p&gt;
-
-&lt;p&gt;我想使用直接内存，怎么办&lt;br/&gt;
-如果你很想使用直接内存，又想让直接内存尽快的释放，是不是我直接调用System.gc();就行？&lt;br/&gt;
-答案是不行的&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;  首先调用System.gc();会触发FullGC，造成stop the world，影响系统性能&lt;/li&gt;
-&lt;li&gt;  系统怕有初级研发显式调用System.gc();会配置JVM参数：-XX:+DisableExplicitGC，禁止显式调用&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;如果还想调用的话，自己使用Unsafe进行操作，以下为示例代码&lt;br/&gt;
-PS:仅为建议，如果没有对于Unsafe有很高的理解，请勿尝试&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/e4801c3205804aa0b27c5a2e6bf6bff1%7Etplv-k3u1fbpfcp-watermark.image?&quot; alt=&quot;代码.png&quot;/&gt;&lt;/p&gt;
-
-&lt;h1&gt;5 总结&lt;/h1&gt;
-
-&lt;p&gt;JVM相关知识是中高级研发人员必备的知识，学习他的一些运行原理，对我们的日常工作会有很大的帮助&lt;/p&gt;
-&lt;/div&gt;
-  &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>595c06a2cea1a05a3cd30ca8280a2ef5</guid>
-<title>别再折腾 ChatGpt 的微信机器人了，你看到的全是假的</title>
-<link>https://toutiao.io/k/fmepfiv</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content             autoTypeSetting24psection&amp;#10;            &quot; id=&quot;js_content&quot;&gt;&lt;h1&gt;别再折腾ChatGpt的微信机器人了，你看到的全是假的&lt;/h1&gt;&lt;p&gt;ChatGPT去年先是在程序员圈子里小众出圈，当时本拐还写了两篇文章：&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzI3OTI5MzU3Mw==&amp;amp;mid=2247484021&amp;amp;idx=1&amp;amp;sn=28b7d78fca4007dfdb5a7dbee2ed6480&amp;amp;chksm=eb48b99fdc3f30899896a50dea6d8db55c4727b281147876b96b9402f33ee94c18425e4347b9&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;跟着ChatGPT手把实现一个websocket连接管理器！ 毛骨悚然&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;跟着ChatGPT手把实现一个websocket连接管理器！毛骨悚然&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzI3OTI5MzU3Mw==&amp;amp;mid=2247484025&amp;amp;idx=1&amp;amp;sn=0fc03ed9ae32d786c620653f0c0cea9d&amp;amp;chksm=eb48b993dc3f3085afd10837530886b6ffd1f621d347c3a044eecaeedb4a96134b5ffe2b8451&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;我当PM,把ChatGPT玩冒(bà)烟(gōng)了&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;我当PM,把ChatGPT玩冒(bà)烟(gōng)了&lt;/a&gt;&lt;/p&gt;&lt;p&gt;2023年后，被各路资本，各种官圈带动以后，各种出圈。&lt;/p&gt;&lt;h2&gt;关于微信机器人&lt;/h2&gt;&lt;p&gt;很多人想要体验一下这种牛逼的AI到底有多牛逼，由于众所周知的原因，国内没办法直接使用，于是出现了很多微信机器人和H5的聊天。&lt;/p&gt;&lt;p&gt;不能免俗，本拐也架设过，除了不稳定以外，回答也总是感觉怪怪，总和web上直接使用有区别，经过研究后，有如下的结论：&lt;/p&gt;&lt;p&gt;微信机器人或H5桥接chatGPT的原理，有两种：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;1. 扒chatGPT的网页上的cookie，然后使用网页api调用，作为对外提供的服务，这种形式显然是不稳定的。&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;2.调用openai的API，实现相应对话，显然这种是更可取的。&lt;/p&gt;&lt;p&gt;但是我们调用API时，总感觉与web上返回的有些区别：&lt;/p&gt;&lt;p&gt;比如。&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;&lt;strong&gt;提问&lt;/strong&gt; 白灼大虾怎么做?&lt;/p&gt;&lt;/blockquote&gt;&lt;blockquote&gt;&lt;p&gt;&lt;strong&gt;API回答&lt;/strong&gt;&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;1. 将大虾洗净，去除虾黄。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;2. 用刀背将虾身轻轻剥开，去除虾线。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;3. 将虾身放入盘中，加入生抽、盐、料酒、姜片腌制。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;4. 起锅烧水，放入虾身焯水后捞起。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;5. 把葱姜切成小块，放入锅中炒香。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;6. 倒入虾身，翻炒均匀。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;7. 倒入适量清水，加入盐、白糖、醋调味。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;8. 小火焖煮至水收干即可。&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;/blockquote&gt;&lt;blockquote&gt;&lt;p&gt;&lt;strong&gt;网页回答&lt;/strong&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;blockquote&gt;&lt;p&gt;白灼大虾是一道经典的中国菜式，非常受欢迎。下面是一份做白灼大虾的基本步骤。&lt;/p&gt;&lt;p&gt;材料：&lt;/p&gt;&lt;p&gt;1 只大虾（去壳）&lt;br/&gt;2 大勺生姜（切碎）&lt;br/&gt;2 大勺生蒜（切碎）&lt;br/&gt;2 茶勺生抽&lt;br/&gt;2 茶勺玉米淀粉&lt;br/&gt;2 茶勺料酒&lt;br/&gt;适量盐&lt;br/&gt;适量白胡椒粉&lt;br/&gt;适量葱花&lt;br/&gt;适量熟油&lt;br/&gt;适量生粉&lt;br/&gt;步骤：&lt;/p&gt;&lt;p&gt;将大虾洗净，加入料酒、生抽、盐、白胡椒粉腌制 15 分钟。&lt;br/&gt;热锅，加入熟油，放入姜蒜碎炒香。&lt;br/&gt;加入大虾煎至两面变红。&lt;br/&gt;加入生抽、玉米淀粉、盐调味，翻煎均匀。&lt;br/&gt;加入适量的水，搅拌均匀，煮沸后熄火。&lt;br/&gt;加入葱花，翻炒均匀。&lt;br/&gt;倒入盘中，撒上生粉，即可享用。&lt;br/&gt;希望这份白灼大虾的做法对您有所帮助！&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;虽然&lt;code&gt;1只大虾&lt;/code&gt;这种说法很扯淡，但是可以看出来，从文案组织上，网页版的要远好于API的结果的，而且在提问的过程中，网页版还有所纠正。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;1.540197461212976&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/399sxLagOt9nSNfVbE4UtCADibYTDibQBNknZ0ubiaINF4DwwLCicn8tm7BrjbvygfLanPZbFYpGvGRbc7k3ewexpw/640?wx_fmt=jpeg&quot; data-type=&quot;png&quot; data-w=&quot;1418&quot;/&gt;&lt;/p&gt;&lt;p&gt;本着寻根问底的精神，本拐仔细看了机器人的源码以及openai的说明，发现，调用用对话的API时，会有一个传参，&lt;code&gt;model&lt;/code&gt;，在api中，这个model的选项&lt;span&gt;如下：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.6695544554455446&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/399sxLagOt9nSNfVbE4UtCADibYTDibQBNk11icVkNwEx4cVwyZMicHDricBZwNWn6YHnBkl7nhZ1b6pv2VmR4TFz1w/640?wx_fmt=jpeg&quot; data-type=&quot;png&quot; data-w=&quot;1616&quot;/&gt;&lt;/p&gt;&lt;p&gt;而在网页中，这个model的参数如下：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.30452261306532663&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/399sxLagOt9nSNfVbE4UtCADibYTDibQBNHDJJZ8G1bLpSZiaRSbB9LDaqfKjGcvgxRMVXDXdCwl03qHiav0qHSb6Q/640?wx_fmt=jpeg&quot; data-type=&quot;png&quot; data-w=&quot;1990&quot;/&gt;&lt;/p&gt;&lt;p&gt;可以看出区别了吧，api的最多只能使&lt;code&gt;text-davinci-003&lt;/code&gt;这个模型，而这个模型也是剪枝版本，通过测试，发现&lt;code&gt;text-davinci-002&lt;/code&gt;这个模型也可以调用通，关于两个模型的区别，&lt;code&gt;ChatGPT&lt;/code&gt;的回答如下：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.6149914821124361&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/399sxLagOt9nSNfVbE4UtCADibYTDibQBNWrO0c3rUvN80etd0oHCCYFicojD6Mia1CicgicfSsQpx07x7RdLbd1gGicQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1174&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;code&gt;&lt;span&gt;而网页使用的模型是&lt;/span&gt;&lt;/code&gt;&lt;code&gt;text-davinci-002-render&lt;/code&gt;&lt;span&gt;&lt;span&gt; ,关于这个模型，则是如下回答：&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5244865718799369&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/399sxLagOt9nSNfVbE4UtCADibYTDibQBNRy3yJic4MNYictkia2qQaYD9UrleOGAd0bYXP4SlH48ViahLrte3KEz3Pw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1266&quot;/&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;因此，可以看出来，由于调用的模型不同，我们没办法在微信机器人上达到与网页一致的对话效果。&lt;/p&gt;&lt;p&gt;最终，在各种测试后，本拐不得不放弃了相应的努力 。&lt;/p&gt;&lt;h2&gt;关于费用&lt;/h2&gt;&lt;p&gt;我一开始天真的以为api调用是免费的，直到看到了这个页面。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.6455266138165345&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/399sxLagOt9nSNfVbE4UtCADibYTDibQBNAWSwmGdNdt6G7jV5fv2c5j7w9DBqib9pfmMq1KyJ445UGVWacic7e2xQ/640?wx_fmt=jpeg&quot; data-type=&quot;png&quot; data-w=&quot;1766&quot;/&gt;&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;1. 原来api调用是有费用的。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;2. 对于新注册的开发者，有18美元的试用额度。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;3. 他们用了一种复杂的模式来计算调用费用，基本上要看每个请求的 prompt和completion ，这两个值具体是什么本拐没有去细研究，但是，在两天的测试时间里，我在2022.2.8调用189次api(即189个request),费用是1.33美元，我在2023.2.9调用116次，费用是0.98美元。计算成下表：&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;section&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;td&gt;时间&lt;/td&gt;&lt;td&gt;requests&lt;/td&gt;&lt;td&gt;费用&lt;/td&gt;&lt;td&gt;平均每次请求&lt;br/&gt;费用(美元)&lt;/td&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;2023-2-8&lt;/td&gt;&lt;td&gt;189&lt;/td&gt;&lt;td&gt;1.33&lt;/td&gt;&lt;td&gt;0.007037037&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;2023-2-9&lt;/td&gt;&lt;td&gt;119&lt;/td&gt;&lt;td&gt;0.98&lt;/td&gt;&lt;td&gt;0.008235294&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;合计&lt;/td&gt;&lt;td&gt;308&lt;/td&gt;&lt;td&gt;2.31&lt;/td&gt;&lt;td&gt;0.0075&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/section&gt;&lt;p&gt;&lt;strong&gt;每问一个问题应该算是一次request&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;0.0075美元一次的请求，我觉得这个费用是大多数国内公司以及开发者承受不起的，所以即便是缩减版的chatGPT ，估计也会很快下线。&lt;/p&gt;&lt;h2&gt;结论&lt;/h2&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;1. 折腾机器人和使用机器人的兄弟姐妹们，可以歇一歇了。&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;2.有条件的同学还是可以自己在网页上真正体验一下。3.即使真正模型供调用了，对于国内开发商也承受不起。&lt;/p&gt;&lt;p&gt;至于国内宣布的一众跟进的各个巨头，能不能做出与之比肩的产品，拭目以待吧。&lt;/p&gt;&lt;h2&gt;关于老拐瘦&lt;/h2&gt;&lt;p&gt;中年争取不油不丧积极向上的码农一名&lt;/p&gt;&lt;p&gt;咖啡，摄影，骑行，音乐&lt;/p&gt;&lt;p&gt;样样通，样样松&lt;/p&gt;&lt;p&gt;喜欢可以关注一下公众号 &lt;strong&gt;IT老拐瘦&lt;/strong&gt;&lt;/p&gt;&lt;section&gt;&lt;mp-common-profile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-weui-theme=&quot;light&quot; data-id=&quot;MzI3OTI5MzU3Mw==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/399sxLagOticTGIGeRVDb75NJlMGNKdib48BYHS0t3kiaV3Q5q984FGb2ZvTVIwib5d6x1AlkDoMibA1vibArg9WDMCw/0?wx_fmt=png&quot; data-nickname=&quot;IT老拐瘦&quot; data-alias=&quot;CODELGS&quot; data-signature=&quot;代码，摄影，咖啡，以及各种不搭&quot; data-from=&quot;0&quot; data-is_biz_ban=&quot;0&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;strong/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;mp-style-type data-value=&quot;3&quot;/&gt;&lt;/p&gt;&lt;/div&gt;
+<guid>d5c186ea33f5dec05a19afdedaa2153f</guid>
+<title>使用 SDN 技术替代价值百万人民币的负载均衡硬件（网关、LVS、交换机）</title>
+<link>https://toutiao.io/k/v4yc231</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content             autoTypeSetting24psection&amp;#10;            &quot; id=&quot;js_content&quot;&gt;&lt;p&gt;&lt;span&gt;本文共 11000 字，阅读大约需要 40 分钟。&lt;/span&gt;&lt;/p&gt;&lt;hr/&gt;&lt;section&gt;上一篇文章的末尾，我们利用负载均衡器打造了一个五万 QPS 的系统，本篇文章我们就来了解一下负载均衡技术的发展历程，并一起用 SDN（软件定义网络）技术打造出一个能够抗住 200Gbps 的负载均衡集群。&lt;/section&gt;&lt;h2&gt;负载均衡发展史&lt;/h2&gt;&lt;h3&gt;F5 创业史&lt;/h3&gt;&lt;p&gt;1996 年，华盛顿大学的几个学生共同创建了一家生产负载均衡设备的公司，并用美国人民的老朋友——飓风的最高等级 F5 作为品牌名，以表示他们的设备可以抗住最狂暴的网络流量。彼时，互联网的规模每 100 天增长一倍，这也让 F5 在成立三年后火速上市。2001 年，F5 公司在经历了互联网泡沫后，顺利地把设备卖进了银行等大型机构，因为 F5 比微软和甲骨文都更有前瞻性：他们的 iControl 系统可以提供 API，让大型机构自己开发软件来控制通过负载均衡设备的所有流量。&lt;/p&gt;&lt;p&gt;早在 2001 年，软件的威力就已经开始展现。&lt;/p&gt;&lt;h4&gt;TMOS 软件平台&lt;/h4&gt;&lt;p&gt;&lt;span&gt;2003 年非典&lt;/span&gt;暴&lt;span&gt;发，电子商务，网络点餐甚至是网络新闻都迎来了爆发式的增长。&lt;/span&gt;&lt;span&gt;2004 年，F5 上市了新一代产品：&lt;/span&gt;&lt;span&gt;包含 TMOS 软件平台的全套硬件设备，一次性解决了网络访问、数据中心同步访问、远程办公、应用防火墙等多种需求。&lt;/span&gt;&lt;span&gt;此后，市场上 F5 公司的产品越来越具有统治力。&lt;/span&gt;&lt;/p&gt;&lt;h4&gt;迈向应用交付&lt;/h4&gt;&lt;p&gt;2006 年以后，传统的 IP 层负载均衡技术开始向应用层发展，F5 等相关设备厂商也紧跟潮流开始推广“应用交付”的概念，开发了很多结合了负载均衡和应用网关的产品，这之后的十年，是传统负载均衡硬件厂商的最后荣光。&lt;/p&gt;&lt;p&gt;2019 年，F5 Networks 以 6.7 亿美金的价格收购了 Nginx，硬件厂商和软件厂商实现了一次梦幻联动，也侧面说明了我们确实已经迎来了软件定义网络的大时代。&lt;/p&gt;&lt;h4&gt;顺便提一句防火墙&lt;/h4&gt;&lt;p&gt;实际上，在今天的企业网络架构中，专业的网关设备都已经消失，取而代之的是一个看起来不是网络设备的网络设备：防火墙。特别是具备应用识别能力的“下一代防火墙”（没错，就是这个中二的名字），更是将防火墙设备的价值推上了巅峰，并一次性让企业级路由器和中低端负载均衡全部退场，这又是一个软件战胜硬件的故事。&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;一个小八卦，下一代防火墙行业的个中翘楚 Fortinet 公司，由两名出生于北京的清华大学老师的孩子 2000 年在美国创办。&lt;/p&gt;&lt;/blockquote&gt;&lt;h3&gt;负载均衡一代目：硬件负载均衡&lt;/h3&gt;&lt;p&gt;&lt;span&gt;2002 年 2 月，戴尔为 PowerEdge 1650 服务器第一次配上了千兆以太网。当时，负载均衡的主流实现还是基于硬件的，或者说是基于“软硬件一体化解决方案”的。在当时，服务器 CPU 的单核性能还很低，甚至核心数都很少，网卡芯片技术也没有今天这般牛皮（相比于下面&lt;/span&gt;讲&lt;span&gt;的 NPU），所以当时想用运行在标准操作系统(Windows/Linux)内的软件来实现千兆软网关还是一个“前沿探索项目”。&lt;/span&gt;&lt;span&gt;更不要说万兆负载均衡了：&lt;/span&gt;&lt;span&gt;PowerEdge 1650 发布&lt;/span&gt;的&lt;span&gt;四个月后，万兆以太网的标准“IEEE 802.3ae 10 Gb/s 光纤以太网”才首次发布，距离万兆网卡在服务器端普及更是还有十多年的光景。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;不为人知的是，千兆以太网的光纤标准 1998 年才发布，千兆以太网的双绞线标准 1999 年才发布，而到了 2002 年，万兆以太网光纤标准就已经发布了。实际上，千兆以太网在消费端开始普及，也已经是 2010 年的事情了。&lt;/p&gt;&lt;p&gt;21 世纪的头十年，最优秀的超千兆解决方案是：利用二层网络的链路聚合协议，使用多个千兆口同时负载均衡，实现超千兆的速度。而且当时能做到数 G 带宽的负载均衡设备动辄上百万，价格惊人，有需求的终端客户简直就是大冤种，不过在那个移动通信基站都要完全进口的年代，哪个中国人不是大冤种呢。&lt;/p&gt;&lt;p&gt;这些网络硬件厂商，其实都是软件厂商，只不过他们选择将自己的软件装在这些黑色的铁盒子里面卖，这样的产品质量更稳定，更重要的是：这样更贵。相比于买一个看起来可以随意拷贝盗版又虚无缥缈的软件，人类社会落后的官僚体系也更容易接受购买昂贵的实物。具体的技术分析请往下看。&lt;/p&gt;&lt;h3&gt;负载均衡二代目：软件负载均衡&lt;/h3&gt;&lt;p&gt;最近十年，随着云计算的兴起，从硬件设备到 IT 基础设施都发生了翻天覆地的变化，现在，硬件负载均衡已经开始逐步退场：云服务商们使用软件定义网络（SDN）技术，构建出了一个低成本高性能的新世界。&lt;/p&gt;&lt;p&gt;今天，一台总价 3 万元的通用 X86 服务器搭配 100G 以太网卡，使用基于 DPDK 开发的用户态应用程序在 Linux 上发小包，很容易就可以跑满 100Gbps 的网卡带宽¹。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;1.0822784810126582&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA2dFWZAhfzT9Hvdg53dx3CNM7nMMu1Aib6AJLtUdEVZyWssZwuvHvAA4ldpZuxHPKQ3BzBv0tnCdvQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;632&quot;/&gt;&lt;/p&gt;&lt;p&gt;这个 tweet 也许有些夸张，但是这就是我们当下的世界：软件正在定义网络的一切。&lt;/p&gt;&lt;h3&gt;价值百万的硬件设备&lt;/h3&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.17342342342342343&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA2dFWZAhfzT9Hvdg53dx3CNnDG9QJVDxxU57FGaTwWWq0NdH8vUeqTiaw73vpEAPu1w8qmaAbk2EtA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1776&quot;/&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.7074030552291422&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA2dFWZAhfzT9Hvdg53dx3CNjastvibYtGaGicAcy4olbTHaOL4nXppSLs6NBDXNHVdDw3BnhlpUGG7Q/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1702&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这是一台 F5 生产的售价百万的硬件负载均衡设备，它只用了一颗 4 &lt;/span&gt;核&lt;span&gt; 8 线程的志强 x86 CPU，就实现了 40G 的四层负载均衡能力和 18G 的七层负载均衡（应用网关）能力。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;这台设备内部有两个控制器和四个接口插槽，可以实现“全双活”，即控制流量的“CPU 内存主板”和“网络接口”都是双份，在任意一个资源意外宕机后，另一个备用资源可以无缝顶上，可以实现无丢包的硬件级高可用。同时，这台设备背后的电源适配器应该至少有四个，可以实现运行时热替换，甚至连风扇模组都是冗余的，可热替换的。&lt;/p&gt;&lt;p&gt;下面我们正式开始利用软件的力量，一步一步在标准 x86 服务器上面跑的标准 Linux 系统内，构建出一个和这台硬件负载均衡设备高可用性一致，且带宽可以达到 200G 的负载均衡集群。&lt;/p&gt;&lt;p&gt;让我们先从交换机技术开始讲起。&lt;/p&gt;&lt;h2&gt;交换机&lt;/h2&gt;&lt;p&gt;大家还记得上一篇文章中的负载均衡架构图吗：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.8775252525252525&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA2dFWZAhfzT9Hvdg53dx3CNhJUroSyg5Q4nhQH6jgD0KEhhtud9NCLXMlH6yR9cSJIM2FNatfH5nA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1584&quot;/&gt;&lt;/p&gt;&lt;p&gt;这张图里就暗藏了一个交换机。&lt;/p&gt;&lt;p&gt;左侧，客户端和负载均衡器之间是使用公网 ip 通信的，他们俩是在全球互联网内的两台对等设备，只是数据包经过了很多个真·路由器的“路由”操作，双方才能收到对方发送的数据包。&lt;/p&gt;&lt;p&gt;右侧，负载均衡器和上游服务器通信的时候采用的是内网 ip：&lt;code&gt;10.0.0.100&lt;/code&gt; 和 &lt;code&gt;10.0.0.1&lt;/code&gt;，他们俩是怎么通信的呢？通过交换机。&lt;/p&gt;&lt;h3&gt;路由器和交换机巨大的价格落差&lt;/h3&gt;&lt;p&gt;一台能够跑满千兆 NAT 的路由器，最低价格大概在 300 块，但是一个所有口都能同时跑满全双工千兆（上下行同时跑满千兆）的五口交换机，你知道多少钱吗？39 块钱，包邮。&lt;/p&gt;&lt;p&gt;为什么呢？因为交换机干的事情更为简单，可以用非常低端的芯片满足需求。&lt;/p&gt;&lt;h3&gt;交换机的工作原理&lt;/h3&gt;&lt;p&gt;网关是通过关联两个五元组，再对数据进行修改而发挥作用的。交换机则更简单：只维护一个 MAC 地址在哪个网口上的 HASH 表即可，无需对数据进行任何修改。该表的 key 为 48 位长，value 是个 tinyint：4 口交换机可用 2 bit 表示，8 口交换机可用 3 bit 表示，现在知道为什么家用交换机都是 8 口的了吧。&lt;/p&gt;&lt;p&gt;交换机的工作模式简单表述如下：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;当交换机收到一个 MAC 包时，会查询目的 MAC 地址在哪个网口上&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;若查询不到，交换机会把这个 MAC 包发送到所有口上，包含发来数据包的那个口&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;等到这个 MAC 包被响应，这个 MAC 地址和口的关系就被交换机学习到了，下次就不需要发给所有口了&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;若查询到了，则单独发送到目标网口上&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;全程不会对数据包进行任何修改&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;除了不需要修改数据包之外，交换机也不需要和任何设备通信来建立和更新 MAC 表，只需要监听途径交换机的所有数据包的源 MAC 地址即可。&lt;/p&gt;&lt;h3&gt;交换机技术的优缺点&lt;/h3&gt;&lt;p&gt;优点&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;足够简单，所以硬件成本可以做到足够低&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;不需要和任何设备通信即可支持新设备接入，完全自学习&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;扩展性无敌，交换机可以随便级联，只要 MAC 表容量够，理论上可以插成一颗无限层级的树&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;缺点&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;有网络风暴的风险：数据包被无脑的发到所有口，可能会被别的交换机再发回来，到时候你来我往，跑满线速，造成正常数据包的拥堵&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;网络回环非常恐怖：如果把交换机的两个口用一根线插在一起，那这台交换机会瞬间断网，左右互搏之术对交换机这种低层级设备来说过于困难了&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;当然，现在主流的商用二层交换机已经拥有了很多的三层特性，这些缺点通过各种检测技术都已经解决了。&lt;/p&gt;&lt;h4&gt;大家不要觉得交换机原理没什么用，SDN 是一种跨越了一二三层的技术，MAC 层也是我们构建 200G 负载均衡集群的重要技术战场&lt;/h4&gt;&lt;p&gt;准备工作做完了，下面我们开始搭建负载均衡集群。先从这一切的基础—— LVS 开源软件说起。&lt;/p&gt;&lt;h2&gt;LVS 登场&lt;/h2&gt;&lt;h3&gt;章文嵩创建 IPVS&lt;/h3&gt;&lt;p&gt;1998 年，在章文嵩博士二年级的时候，他发现 Cisco 的硬件负载均衡器要卖几万美金，觉得这玩意儿不难写，于是利用两周的课余时间创建并开源了 LVS（当时叫 IPVS）。时至今日，LVS 技术创造的商业价值已经无法计算，互联网上的绝大部分数据包，都会被 LVS 或者承袭 LVS 思想的软件处理。&lt;/p&gt;&lt;h3&gt;合并进 Linux kernel&lt;/h3&gt;&lt;p&gt;2004 年，LVS（IPVS）被合并进了 kernel 2.4，从此开始，所有 Linux 都拥有了变身为负载均衡器的能力。&lt;/p&gt;&lt;h3&gt;LVS 基本原理&lt;/h3&gt;&lt;p&gt;其实一句话就能说清：通过修改 MAC 层、IP 层、TCP 层的数据包，即实现了一部分交换机和网关的功能，指挥流量到达真正的服务器上。&lt;/p&gt;&lt;p&gt;LVS 有三个常用模式：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;NAT 模式：即网关模式，双向流量均经过网关转发，性能开销最大&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;TUN 模式：类似于单臂路由，性能高且可跨越机房&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;DR 模式：只能用在局域网，但是性能惊人，因为回程流量直接走局域网&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;我们以最能体现 LVS 思想的 DR 模式为例，展示 LVS 的基本原理。&lt;/p&gt;&lt;h3&gt;DR 模式架构图&lt;/h3&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6046758767268863&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA2dFWZAhfzT9Hvdg53dx3CNMicLIKf9icjfeEcPibvuBLfIBqPib09Bxs2FnFIbxDAbV6P4KIqtHBYNEw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1882&quot;/&gt;&lt;/p&gt;&lt;h3&gt;DR 模式数据包推演&lt;/h3&gt;&lt;p&gt;DR 模式下，LVS 只负责篡改数据包，不负责充当网关，所以我们还是需要一个网关在公网 ip 和私网 ip 之间进行 NAT 转换。我们依然假设客户端 ip 为 123.123.123.123，它发起了一个针对 110.242.68.3 的 80 端口的 HTTP 请求。&lt;/p&gt;&lt;p&gt;当网关接收到一个发送给 110.242.68.3 的数据包时，发现协议为 TCP，目标端口为 80，查询自己的 NAT 表发现内部 ip 为 10.0.0.100（VIP，即虚拟ip），内部端口为 80，于是网关向局域网发出了一个 ip 包。由于端口都是 80 不变，协议都是 TCP 不变，所以本次网络请求中，有四个数据非常关键：源 ip 地址，目的 ip 地址，源 MAC 地址，目的 MAC 地址。&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;客户端发给网关的数据包情况为：&lt;/p&gt;&lt;/li&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;源 ip：123.123.123.123&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;目的 ip：110.242.68.3&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;源 MAC：客户端 MAC&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;目的 MAC：网关 MAC&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;li&gt;&lt;p&gt;网关向局域网发出的数据包情况为：&lt;/p&gt;&lt;/li&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;源 ip：123.123.123.123&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;目的 ip：10.0.0.100（变了）&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;源 MAC：网关 MAC（变了）&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;目的 MAC：LVS MAC（变了）&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;li&gt;&lt;p&gt;LVS 接到该数据包后，会选择一个后端服务器，假设它选中的是 10.0.0.1 来真正处理请求，则 LVS 会对数据包进行如下修改后，再发送给 10.0.0.1：&lt;/p&gt;&lt;/li&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;源 ip：123.123.123.123&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;目的 ip：10.0.0.100&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;源 MAC：LVS MAC（变了）&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;目的 MAC：10.0.0.1 的 MAC（变了）&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;li&gt;&lt;p&gt;10.0.0.1 在收到该数据包后，发现这个包的目的 MAC 地址确实是自己，而且目的 ip 10.0.0.100（VIP）也是自己，于是对该数据包进行正常的处理，然后将处理结果发送出去：&lt;/p&gt;&lt;/li&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;源 ip：10.0.0.100&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;目的 ip：123.123.123.123&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;源 MAC：10.0.0.1 的 MAC&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;目的 MAC：网关 MAC（因为目的 ip 不在“ip+子网掩码”所确定的局域网范围内，所以该数据包会被发送给网关）&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;li&gt;&lt;p&gt;网关收到返回的数据包后，通过查询“五元组关系表”，对端口和 ip 信息做出正常的 NAT 修改后，将数据包发送回 123.123.123.123，请求结束。&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;大家可以看出 DR 模式的特点：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;LVS 只需要处理正向数据包，通常正向数据包（请求）要远小于反向数据包（响应），所以带宽占用较低&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;反向数据包走的是标准的二层以太网，每台上游服务器都可以跑满自己的线速&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;只能在同一个二层网络下工作（即同一个局域网），且安全性较差&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;需要在每一台上游服务器上都将该 VIP（10.0.0.100）配置为 lo（本地回环）接口的 ip&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;需要让每一台上游服务器都只响应真实 ip 如 10.0.0.1 的 ARP 查询请求，如果一不小心回复了针对 VIP 的 ARP 请求，将会立刻天下大乱：局域网内有多台机器同时声称自己拥有 10.0.0.100 这个 ip，交换机直接疯掉&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;在生产环境部署中，由于 LVS 集群是所有流量的入口，所以其可用性需要做到非常高，一般不会只部署在一个机房里，所以现实中最常用的是 NAT 模式：双向流量均经过 LVS 集群，这样便可以实现多地多中心的跨公网多活。&lt;/p&gt;&lt;h3&gt;LVS 设计思想&lt;/h3&gt;&lt;p&gt;通过上面的过程，你应该能看出来 LVS 的运行原理了：它通过在 LVS 和上游服务器上配置&lt;code&gt;虚拟 ip&lt;/code&gt;，以&lt;code&gt;对数据包进行篡改后再发送&lt;/code&gt;为手段，在标准以太网模型下构建出了一个可行的负载均衡系统。它不像交换机那样完全不修改数据包，也不像网关那样维持一个对应关系并修改很多东西，它篡改了数据包，但不多，所以可以实现非常高的性能。&lt;/p&gt;&lt;h4&gt;内核态&lt;/h4&gt;&lt;p&gt;LVS 的数据处理组件 IPVS 运行在内核态，避免了用户态的进程切换开销，再配合低负载的 DR 模式，可以进一步提升性能。&lt;/p&gt;&lt;p&gt;由于有内核态加持，LVS 比 HAProxy 和 Nginx 的单机性能都要强很多。&lt;/p&gt;&lt;h3&gt;专业的负载均衡协议：OSPF/ECMP&lt;/h3&gt;&lt;p&gt;OSPF：开放式最短路径优先协议，一种基于链路状态的内部网关协议。每个OSPF路由器都包含了整个网络的拓扑。并计算通过网络的最短路径。OSPF会通过多播的方式自动对外传播检测到的网络变化。&lt;/p&gt;&lt;p&gt;ECMP：等价多路径协议。即当存在多条不同的链路到达同一目的地址时，利用ECMP可以同时使用多条链路，不仅增加了传输带宽，还可以无时延、无丢包的备份失效链路的数据传输。如果利用传统的路由算法，只能利用其中的一条链路进行数据的传输。&lt;/p&gt;&lt;p&gt;LVS 是运行在标准以太网模型下的负载均衡软件，配合 Keepalived 可以实现高可用。而 ECMP 协议是专业的多链路路由协议，可以实现不丢包的多活，我们下面还会用到。&lt;/p&gt;&lt;h4&gt;LVS 将网关这个单点拆成了“定向”和“转发”&lt;/h4&gt;&lt;p&gt;LVS 就是网关型负载均衡继续拆单点的结果：LVS 自己只承担数据包重定向工作，将转发留给基础网以太网来解决，在单机上实现了非常高的系统容量。在最新的服务器硬件上，单个 LVS 即便在开销更大的 NAT 模式下也可以实现大约 20G 的 TCP 带宽²。&lt;/p&gt;&lt;h2&gt;Keepalived 高可用&lt;/h2&gt;&lt;p&gt;LVS 单机 20G 的带宽显然和我们 200G 的目标还相去甚远，但是我们接下来要做的第一件事并不是提升系统容量，而是先提升系统的稳定性：搭建高可用架构。&lt;/p&gt;&lt;p&gt;Keepalived 是一个非常优秀的搭建高可用集群的开源软件，它最开始就是为了和 LVS 配合而出现的，主要的作用是构建一个自选举集群。它支持 3 台控制器集群独立部署，也支持部署到应用机器上。它和 LVS 一样基于虚拟 ip 技术，可以在任意标准以太网内运行。&lt;/p&gt;&lt;h3&gt;Keepalived 运行原理&lt;/h3&gt;&lt;p&gt;Keepalived 运行原理说起来其实非常简单：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;两台机器上都配置同一个虚拟 ip（VIP）：即两台机器的真实 ip 分别是 10.0.0.101 和 10.0.0.102，但是虚拟出一个 ip 10.0.0.100，这个 ip 不属于任何物理设备，可以在两台机器之间任意切换绑定&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;两台机器频繁通信，通过分数计算确定哪台机器的分数更高，由这台机器向局域网发送 VRRP 组播报文宣称 VIP 在我这里&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;当分数高的那台机器宕机，或者断网，或者检测到服务进程消失（例如 Nginx 挂掉），分数低的那台机器会在极短时间内立刻顶上，宣称 VIP 在自己这里&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;发送给 VIP 的数据包会在短时间失效之后由新机器承接（实测中断时间小于 1 秒），实现集群高可用&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;h4&gt;高可用 LVS 集群&lt;/h4&gt;&lt;p&gt;LVS 和 Keepalived 配合，基于多台物理机，可以实现一个高可用的负载均衡集群，架构图如下：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.502532928064843&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA2dFWZAhfzT9Hvdg53dx3CNKmltic1Peqicgia0csxjVx7iaPsC6xNQOmT4eqsxxgjiaE1TCScsmf2L7ibg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1974&quot;/&gt;&lt;/p&gt;&lt;p&gt;如果 Master 因为任何原因失效（硬件故障，机房断电，人为误操作，光缆挖断，火灾地震），Standby 机器就会迅速顶上，接管流量，实现高可用的目的。&lt;/p&gt;&lt;p&gt;金融级项目可以在一个城市跨三个机房做三节点的 Keepalived 集群。为什么不做多城市集群？因为多城市已经属于“两地三中心”的高可用技术领域，一般不在二层网络上做，跨城市专用光纤的建设费用是非常高的，城市内拉光纤就便宜多了。我们最后一篇文章会讲终极高可用架构。&lt;/p&gt;&lt;h3&gt;Keepalived 也可以用在其他组件上实现高可用&lt;/h3&gt;&lt;p&gt;我司办公区自建机房内也部署了一些非关键业务，其性能要求并不高，所以我选择单独部署 Keepalived：和 Kong 网关配合提供高可用网关；和 MySQL 配合做双主双活集群；和 Apache 配合做一个跨越 4 台物理机的虚拟机集群，提供高可用 HTTP 服务；等等其它案例不再赘述。&lt;/p&gt;&lt;h2&gt;从 20G 到 200G&lt;/h2&gt;&lt;p&gt;有了 Keepalived，我们就有了集群高可用的基础，下面我们开始啃硬骨头：从 20G 到 200G。&lt;/p&gt;&lt;h3&gt;LVS 单机性能为何会卡在 20G&lt;/h3&gt;&lt;p&gt;最新的 AMD EPYC 9654 服务器 CPU 有 96 个物理核心，双路平台共有 384 个 vCore，但是 LVS 单机性能依旧徘徊在 20G 附近，为何性能无法继续提升呢？因为 Linux 网络栈已经达到性能极限了。&lt;/p&gt;&lt;h3&gt;Linux 网络栈优化&lt;/h3&gt;&lt;p&gt;由于 LVS 基于 kernel 里的 netfilter，依赖 Linux 网络栈，导致进程切换需要读写内存，数据包的发送和接收也要读写内存，在极高的带宽需求之下，相对耗时的内存读写就成了阻碍性能进一步提升的最大障碍。DPDK 和 NPU 硬件卸载就是这个问题的两个解决方案。&lt;/p&gt;&lt;h4&gt;DPDK&lt;/h4&gt;&lt;p&gt;DPDK 是 Intel 开源的高性能网络数据处理框架，运行在用户态的进程通过申请大页内存和轮询代替中断两个关键特性，给高速率网卡提供了一个高性能解决方案。它的 CPU 亲和性、多核调度架构、内存 NUMA 优化等基础架构又进一步推高了性能，最终让它成功脱颖而出成为用户态网络界面框架的首选。&lt;/p&gt;&lt;p&gt;爱奇艺开源的 DPVS https://github.com/iqiyi/dpvs 就是 DPDK 技术在负载均衡领域的成功运用。在 10G 网络下发送 64 字节的小包进行测试，DPVS 可以做到标准 LVS 的五倍性能。在这里我们保守一点，对折一下 2.5 倍，那 DPVS 的单网卡性能极限就是 50G。&lt;/p&gt;&lt;h4&gt;网卡芯片硬件卸载&lt;/h4&gt;&lt;p&gt;最新的 NPU 已经可以支持很多的硬件卸载特性：IP 分片、TCP 分段、小包重组、checksum 校验、硬件 QOS，以及最重要的 VXLAN 的剥离和插入：此功能是 DPVS 的重要组成部分，可以减少数据流互相干扰，大幅提升系统总容量。&lt;/p&gt;&lt;p&gt;此外，RDMA 技术也是网卡芯片的一大进步方向，我们将会在后面讲数据库的计算和存储分离的时候详细了解。&lt;/p&gt;&lt;h3&gt;全局锁优化&lt;/h3&gt;&lt;p&gt;除了 Linux 网络栈的限制，LVS 本身架构上的全局锁也是一个突破口，全局锁导致了海量的 CPU 核心无法被利用，我们可以借鉴阿里云的处理思路：&lt;/p&gt;&lt;h4&gt;数据包亲和性优化&lt;/h4&gt;&lt;p&gt;阿里云通过 RSS 技术把同一个五源组报文扔到同一个 CPU 上处理，保证入方向的所有相同连接上的报文都能交给相同的 CPU 处理。同时在每个核在转发出去时都用当前 CPU 上的 Local 地址，通过设置一些 fdir 规则，报文回来时后端服务器访问的目的地址就是对应 CPU 上的 local 地址。这样就能实现这一条连接上面左右方向的报文都被同一个 CPU 处理，将存储“五元组对应关系”的内存数据库在不同的 CPU 核心上隔离开，这样就可以利用多个 VIP 来实现整体系统容量的线性提升³。&lt;/p&gt;&lt;h3&gt;性能问题还是要靠架构解决&lt;/h3&gt;&lt;p&gt;当单网卡性能极限来到了 50G，该怎么将集群性能提升到 200G 呢？插四块网卡行不行呢？理论上可行，但是现实中这么大的流量的系统一定要使用架构来提升系统容量，因为还需要解决高可用问题。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.9093023255813953&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA2dFWZAhfzT9Hvdg53dx3CNicC1DrNpKKmJ82Ayysox4FVMIYkhof41GrwiajpVicWUQ3mvKRJ4q9pKQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1720&quot;/&gt;&lt;/p&gt;&lt;center&gt;200G 负载均衡集群架构图&lt;/center&gt;&lt;p&gt;下面我们从左到右对这个架构进行解析。&lt;/p&gt;&lt;h4&gt;1. 拆除 ip 单点：朴素的 DNS&lt;/h4&gt;&lt;p&gt;基于 DNS 技术做单域名多 ip 扩容曾是第一代负载均衡技术：朴素的 DNS 协议可以将用户的终端流量直接导向全国多个机房，实现真·性能倍增，这种技术特别适合 web 1.0 时代的静态网页，也适合搜索引擎等没有数据同步需求的服务。&lt;/p&gt;&lt;p&gt;在当年电信、网通、铁通、教育网之间只有 40G 小水管的年代，DNS 技术极大地提升了普通用户获取网络资源的速度，提升了用户体验：引导每个运营商的用户访问放在该运营商机房的服务器，可以实现“手搓 CDN 架构”。最后一篇文章我们还会谈到 DNS 技术在终极高可用架构中的价值。&lt;/p&gt;&lt;p&gt;经过 DNS 拆分，每个路由拥有一个公网 ip，承载 100G 带宽，注意，此处的路由真的是路由，并不是网关，它只需要告诉每一个数据包该到哪儿去即可。这个架构中的网关其实是后面的 LVS 充当的。而硬件路由设备承受住 200G 带宽甚至都不需要上高端的数据中心核心设备。&lt;/p&gt;&lt;h4&gt;2. 拆除交换机单点：OSPF/ECMP 路由技术&lt;/h4&gt;&lt;p&gt;上图中的&lt;code&gt;路由_1&lt;/code&gt;和&lt;code&gt;路由_2&lt;/code&gt;采用支持 ECMP 的硬件设备或者软件路由来充当，他们会把流量平均分给两个交换机。每台交换机承载 100G 带宽，对交换机来说简直就是洒洒水，2 万块人民币的硬件交换机就能接近 24 x 100G 全线速交换（二手的甚至只要六千块）。&lt;/p&gt;&lt;h4&gt;3. 拆除服务器单点：LVS 单机双网卡四网口&lt;/h4&gt;&lt;p&gt;每台 LVS 服务器都安装双口 100G 网卡 2 张，共有四个网口，这样单机可以实现 50G x 2 的极限性能。每个网卡上面的两个网口，分别连接两台交换机，可以在实现了高可用的同时保证协议速度(线速)不会成为瓶颈。&lt;/p&gt;&lt;h4&gt;4. 天下无单点：全冗余架构&lt;/h4&gt;&lt;p&gt;大家可以看到，从左至右，整个架构的每一层的每一个节点，都和左边一层的所有节点进行连接，这种全冗余架构可以满足在任意一台设备宕机的情况下，整个系统依然可用，甚至系统容量都能维持不变。&lt;/p&gt;&lt;p&gt;如果某台路由宕机，则另一台路由会将它的公网 ip 接过来，可以实现分钟级故障恢复（主要是公网路由表可能更新缓慢）。&lt;/p&gt;&lt;p&gt;如果某台交换机宕机，则左侧的路由通过 ECMP 及时调整路由配置，可以实现秒级切换。&lt;/p&gt;&lt;p&gt;如果某台 LVS 服务器宕机：Keepalived 机制会让 Standby 设备在 1 秒之内顶上。&lt;/p&gt;&lt;h4&gt;系统容量计算&lt;/h4&gt;&lt;p&gt;对于整个系统来说，四台安装了双网卡的 LVS 服务器，2 主 2 备，在两个公网 ip 入口的情况下，可以实现 50G x 2 x 2 = 200G 的总带宽，并且任意一台设备宕机不影响系统总容量。&lt;/p&gt;&lt;p&gt;200G 并不是这个系统的极限，如果我们让一组的两台 LVS 服务器使用两个 VIP 做互为主备的双活的话，可以把整个系统的容量提升到理论极限 400G。下面我们分析一下各种单项资源的性能极限：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;单个公网 ip：最大带宽为系统最大容量 200G&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;单个 VIP：最大带宽为 100G&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;单个数据流：最大带宽为单网卡性能极限 50G&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;还记得上面那台 100 万的硬件负载均衡器吗，他的最大 L4 带宽只有 40G，而我们这一套 200/400G 的设备要多少钱呢？&lt;/p&gt;&lt;p&gt;1x2 + 2x2 + 3x4 = 18万&lt;/p&gt;&lt;h4&gt;额外的优势&lt;/h4&gt;&lt;p&gt;花 18 万搭建一套图中的设备，不仅可以搞出一套 200G 的集群，而且图中的路由和交换机还有大量的容量可以用于其他业务。&lt;/p&gt;&lt;p&gt;更重要的是：LVS 集群相比于硬件负载均衡设备是可以轻松控制的，是可编程的，这对于右侧上游服务器的网络架构规划十分有利。对于云计算厂商来说，可以开发更丰富的功能来提供更复杂的服务（例如计算和存储分离的数据库），提升硬件资源的利用率，同时可以提供更复杂的功能给云平台用户使用：&lt;/p&gt;&lt;p&gt;软件带来的无限可能才是这套配置最核心的价值！&lt;/p&gt;&lt;h2&gt;彩蛋&lt;/h2&gt;&lt;h3&gt;殊途共归：硬件厂商的软件设计&lt;/h3&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5247863247863248&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA2dFWZAhfzT9Hvdg53dx3CNxfRde5X7b05M6tI8tDxcGa8Gs90CiaCDfkv0pHrYXCGJDkQ8qftwib3A/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;2340&quot;/&gt;&lt;/p&gt;&lt;p&gt;这是 H3C 集团 ComwareV7 通用操作系统的架构图，当下 H3C 正在销售的产品中，除了网络边界设备（如防火墙）外，其余几乎所有的交换机、AC、AP 等以局域网为主战场的设备已经全面采用了该系统。和上一代 V5 相比，最大的变化就是把系统内核切换到了 Linux kernel。&lt;/p&gt;&lt;p&gt;这张图中最重要的就是那根“细细的红线”：网络管理进程完全位于用户态。这其实就是 DPDK 思想：传统的 UNIX 网络模型已经无法应付单机 10G 的速度了，需要读写内存的进程切换太慢了，必须要从底层网络数据处理流程上革命：抛弃操作系统提供的网络栈，直接在用户态接管所有网络流量，实现更高性能。&lt;/p&gt;&lt;p&gt;为了提高软件稳定性，H3C 也在系统内开发了一些高可用技术，和我们负载均衡集群高可用的设计思想不谋而合，异曲同工：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;支持单播、组播和热迁移的高可靠 IPC(进程间通信)技术：对应的是双机热备以及 OSPF/ECMP、VRRP 协议等&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;多进程主备选举：对应的是 Keepalived 集群选举&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;进程级内存备份(实时热备进程的内存，用于快速故障恢复和主从切换)：对应的是 OSPF/ECMP 不丢包多活技术、服务器的内存镜像技术&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;h3&gt;我对于设备故障的经验&lt;/h3&gt;&lt;p&gt;在机房硬件设备中，最容易损坏的肯定是磁盘（硬盘），因为它是在不断磨损的，即便是 SSD 也会随着时间的流逝寿命逐渐丢失，哪怕装在盒子里不通电也一样。但是硬盘之后，容易宕机或者损坏的是什么大家应该就猜不到了。&lt;/p&gt;&lt;p&gt;首先是断电：数据中心因为各种问题断电是最常见的故障，这个故障的概率甚至要高于软件引发的故障和电源适配器的故障。&lt;/p&gt;&lt;p&gt;其次是内存失效：内存以及内存插槽，内存电路，似乎是今天服务器硬件之中除了磁盘之外最容易坏的东西，马上就要进入 DDR5 时代，内存功耗又上了一个台阶，恐怕故障率会进一步上升。&lt;/p&gt;&lt;p&gt;然后是网络线材和供电线材接口的问题，时间长了松了或者进灰了，就会丢包或者重启。2011 年震惊世界的中微子超光速事件，就是插头松了导致的。&lt;/p&gt;&lt;p&gt;最后是高温引发的宕机：特别是 GPU 服务器，一旦服务器或者机房的散热系统出现问题，服务器很容易就主动限制性能甚至关机。&lt;/p&gt;&lt;p&gt;其它的，硬件网络设备（路由器交换机）故障、彻底挖断光纤、CPU 损坏、电源转换器寿命耗尽、主板电池故障、地震火灾洪水等，可能在一台服务器的上架寿命之中都完全无法遇到。&lt;/p&gt;&lt;h3&gt;还记得我们的目标吗？一百万 QPS&lt;/h3&gt;&lt;p&gt;通过本文构建的这个 200/400G 负载均衡集群，配合多个应用网关，以及后面海量的物理服务器，我们终于成功实现了一百万 QPS 的目标。但是，这就是一百万 QPS 的全部了吗？当然不是，这只是 web 服务层面的百万 QPS，在真实世界中，数据库才是那个最难解决的单点。&lt;/p&gt;&lt;h3&gt;接下来&lt;/h3&gt;&lt;p&gt;下一篇文章，我们将直面最难以解决的单点：数据库以及它背后的存储，探寻&lt;code&gt;IOE&lt;/code&gt;中最难去掉的那个&lt;code&gt;E&lt;/code&gt;。&lt;/p&gt;&lt;h3&gt;参考资料&lt;/h3&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;Envoy 作者 Matt Klein 2017 年的一篇英文博客 Introduction to modern network load balancing and proxying https://blog.envoyproxy.io/introduction-to-modern-network-load-balancing-and-proxying-a57f6ff80236&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;用dperf测试LVS的性能数据 &lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=Mzg5MjcyNzY4Mg==&amp;amp;mid=2247483684&amp;amp;idx=1&amp;amp;sn=9a065f97f1a239efbb371fedde3b8d3e&amp;amp;scene=21#wechat_redirect&quot; target=&quot;_blank&quot; data-linktype=&quot;2&quot;&gt;https://mp.weixin.qq.com/s?__biz=Mzg5MjcyNzY4Mg==&amp;amp;mid=2247483684&amp;amp;idx=1&amp;amp;sn=9a065f97f1a239efbb371fedde3b8d3e&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;高性能负载均衡设计与实现 https://zhuanlan.zhihu.com/p/29949340&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;本系列文章已经汇总成开源技术书《PPHC》发布在 Github：https://github.com/johnlui/PPHC&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;mp-style-type data-value=&quot;3&quot;/&gt;&lt;/p&gt;&lt;/div&gt;
 
           
         &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>d2365cdd5ddda546b36cd9832a1fe709</guid>
-<title>测试左移之需求质量</title>
-<link>https://toutiao.io/k/f9yh0up</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entry-content&quot; itemprop=&quot;articleBody&quot;&gt;&amp;#13;
-&lt;h2&gt;测试左移的由来&lt;/h2&gt;
-&lt;h3&gt;缺陷的修复成本逐步升高&lt;/h3&gt;
-&lt;p&gt;下面是质量领域司空见惯的一张图，看图说话，容易得出：大部分缺陷都是早期引入的，同时大部分缺陷都是中晚期发现的，而缺陷发现的越晚，其修复成本就越高。因此，为了降低缺陷修复成本，我们期望在更早的时间发现缺陷。&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/02/shift-left-testing-1.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/02/shift-left-testing-1.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;那么上图是否完全没问题呢？不是的，这张图来源于1996年的一本书《&lt;a href=&quot;https://www.amazon.com/Applied-Software-Measurement-Analysis-Productivity/dp/0071502440&quot;&gt;Applied Software Measurement&lt;/a&gt;》，这张图画成的时候，&lt;a href=&quot;https://insights.thoughtworks.cn/how-many-words-in-agile-manifesto/&quot;&gt;敏捷宣言&lt;/a&gt;还没诞生呢（敏捷宣言诞生于2001年）。在传统背景下，需求是明确且相对固定的，需求产生的缺陷可以忽略不计。同时，在需求阶段产生的问题可能会引起整体方案的返工，因此，需求产生的问题不太会以软件缺陷的形式来体现。&lt;/p&gt;
-&lt;h3&gt;需求质量呼唤测试左移&lt;/h3&gt;
-&lt;p&gt;随着软件生态的发展，软件需求越来越复杂多变，需求的有效性和传递效率也备受挑战。受大环境影响，需求阶段引入的缺陷就对软件的研发成本造成了影响。同时，软件的研发过程越来越成为一个需要高效协作的整体，各角色之间的界限也变得相对模糊。&lt;/p&gt;
-&lt;p&gt;为了让质量理念更早的介入软件研发过程，也为了降低缺陷修复的成本、减少不必要的返工，需求的质量变得尤为重要。&lt;a href=&quot;https://insights.thoughtworks.cn/agile-testing-manifesto/&quot;&gt;测试左移&lt;/a&gt;因此而生，需求分析人员与测试人员需要协同工作，共同保证需求的质量。&lt;/p&gt;
-&lt;p&gt;加上需求阶段重画一下上面的图，理想情况下，我们容易得出以下结论：&lt;/p&gt;
+<guid>102dade5263cb75c6e930abe43ce013d</guid>
+<title>一文读懂 Guava EventBus（订阅\发布事件）</title>
+<link>https://toutiao.io/k/pgpwokb</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;h4&gt;作者：京东科技 刘子洋&lt;/h4&gt;
+
+&lt;h1&gt;背景&lt;/h1&gt;
+
+&lt;p&gt;最近项目出现同一消息发送多次的现象，对下游业务方造成困扰，经过排查发现使用EventBus方式不正确。也借此机会学习了下EventBus并进行分享。以下为分享内容，本文主要分为五个部分，篇幅较长，望大家耐心阅读。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;1、简述：简单介绍EventBus及其组成部分。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;2、原理解析：主要对listener注册流程及Event发布流程进行解析。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;3、使用指导：EventBus简单的使用指导。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;4、注意事项：在使用EventBus中需要注意的一些隐藏逻辑。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;5、分享时提问的问题&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;6、项目中遇到的问题：上述问题进行详细描述并复现场景。&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;1、简述&lt;/h1&gt;
+
+&lt;h2&gt;1.1、概念&lt;/h2&gt;
+
+&lt;p&gt;下文摘自EventBus源码注释，从注释中可以直观了解到他的&lt;strong&gt;功能、特性、注意事项&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;【源码注释】&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Dispatches events to listeners, and provides ways for listeners to register themselves.&lt;/p&gt;
+
+&lt;p&gt;The EventBus allows publish-subscribe-style communication between components without requiring the components to explicitly register with one another (and thus be aware of each other). It is designed exclusively to replace traditional Java in-process event distribution using explicit registration. It is not a general-purpose publish-subscribe system, nor is it intended for interprocess communication.&lt;/p&gt;
+
+&lt;p&gt;Receiving Events&lt;/p&gt;
+
+&lt;p&gt;To receive events, an object should:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Expose a public method, known as the event subscriber, which accepts a single argument of the type of event desired;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Mark it with a Subscribe annotation;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Pass itself to an EventBus instance&#x27;s register(Object) method.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Posting Events&lt;/p&gt;
+
+&lt;p&gt;To post an event, simply provide the event object to the post(Object) method. The EventBus instance will determine the type of event and route it to all registered listeners.&lt;/p&gt;
+
+&lt;p&gt;Events are routed based on their type — an event will be delivered to any subscriber for any type to which the event is assignable. This includes implemented interfaces, all superclasses, and all interfaces implemented by superclasses.&lt;/p&gt;
+
+&lt;p&gt;When post is called, all registered subscribers for an event are run in sequence, so subscribers should be reasonably quick. If an event may trigger an extended process (such as a database load), spawn a thread or queue it for later. (For a convenient way to do this, use an AsyncEventBus.)&lt;/p&gt;
+
+&lt;p&gt;Subscriber Methods&lt;/p&gt;
+
+&lt;p&gt;Event subscriber methods must accept only one argument: the event.&lt;/p&gt;
+
+&lt;p&gt;Subscribers should not, in general, throw. If they do, the EventBus will catch and log the exception. This is rarely the right solution for error handling and should not be relied upon; it is intended solely to help find problems during development.&lt;/p&gt;
+
+&lt;p&gt;The EventBus guarantees that it will not call a subscriber method from multiple threads simultaneously, unless the method explicitly allows it by bearing the AllowConcurrentEvents annotation. If this annotation is not present, subscriber methods need not worry about being reentrant, unless also called from outside the EventBus.&lt;/p&gt;
+
+&lt;p&gt;Dead Events&lt;/p&gt;
+
+&lt;p&gt;If an event is posted, but no registered subscribers can accept it, it is considered &quot;dead.&quot; To give the system a second chance to handle dead events, they are wrapped in an instance of DeadEvent and reposted.&lt;/p&gt;
+
+&lt;p&gt;If a subscriber for a supertype of all events (such as Object) is registered, no event will ever be considered dead, and no DeadEvents will be generated. Accordingly, while DeadEvent extends Object, a subscriber registered to receive any Object will never receive a DeadEvent.&lt;/p&gt;
+
+&lt;p&gt;This class is safe for concurrent use.&lt;/p&gt;
+
+&lt;p&gt;See the Guava User Guide article on EventBus.&lt;br/&gt;
+Since:&lt;br/&gt;
+10.0&lt;br/&gt;
+Author:&lt;br/&gt;
+Cliff Biffle&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2&gt;1.2、系统流程&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-34hhFYGHy2tAeI3jh.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+
+&lt;h2&gt;1.3、组成部分&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-35CNd87spqws8i8Xi.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+
+&lt;h3&gt;1.3.1、调度器&lt;/h3&gt;
+
+&lt;p&gt;EventBus、AsyncEventBus都是一个调度的角色，区别是一个同步一个异步。&lt;/p&gt;
+
+
+
+&lt;pre&gt;&lt;code&gt;源码注释：
+&amp;gt; Dispatches events to listeners, and provides ways for listeners to register themselves.
+
+意思是说EventBus分发事件（Event）给listeners处理，并且提供listeners注册自己的方法。从这里我们可以看出EventBus主要是一个调度的角色。
+
+**EventBus总结**
+- 1.同步执行，事件发送方在发出事件之后，会等待所有的事件消费方执行完毕后，才会回来继续执行自己后面的代码。
+- 2.事件发送方和事件消费方会在同一个线程中执行，消费方的执行线程取决于发送方。
+- 3.同一个事件的多个订阅者，在接收到事件的顺序上面有不同。谁先注册到EventBus的，谁先执行，如果是在同一个类中的两个订阅者一起被注册到EventBus的情况，收到事件的顺序跟方法名有关。
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+
+
+&lt;pre&gt;&lt;code&gt;源码注释：
+&amp;gt; An {@link EventBus} that takes the Executor of your choice and uses it to dispatch events, allowing dispatch to occur asynchronously.
+
+意思是说AsyncEventBus就是EventBus，只不过AsyncEventBus使用你指定的线程池（不指定使用默认线程池）去分发事件（Event），并且是异步进行的。
+
+**AsyncEventBus总结**
+- 1.异步执行，事件发送方异步发出事件，不会等待事件消费方是否收到，直接执行自己后面的代码。
+- 2.在定义AsyncEventBus时，构造函数中会传入一个线程池。事件消费方收到异步事件时，消费方会从线程池中获取一个新的线程来执行自己的任务。
+- 3.同一个事件的多个订阅者，它们的注册顺序跟接收到事件的顺序上没有任何联系，都会同时收到事件，并且都是在新的线程中，**异步并发**的执行自己的任务。
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;1.3.2、事件承载器&lt;/h3&gt;
+
+
+
+&lt;pre&gt;&lt;code&gt;事件主体，用于承载消息。
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+
+
+&lt;pre&gt;&lt;code&gt; 源码注释：
+&amp;gt;Wraps an event that was posted, but which had no subscribers and thus could not be delivered, Registering a DeadEvent subscriber is useful for debugging or logging, as it can detect misconfigurations in a system&#x27;s event distribution.
+
+意思是说DeadEvent就是一个被包装的event，只不过是一个没有订阅者无法被分发的event。我们可以在开发时注册一个DeadEvent，因为它可以检测系统事件分布中的错误配置。
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;1.3.3、事件注册中心&lt;/h3&gt;
+
+&lt;p&gt;SubscriberRegistry&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt; 源码注释：
+&amp;gt;  Registry of subscribers to a single event bus.
+意思是说SubscriberRegistry是单个事件总线（EventBus）的订阅者注册表。
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;1.3.4、事件分发器&lt;/h3&gt;
+
+&lt;p&gt;Dispatcher&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;源码注释：
+&amp;gt;Handler for dispatching events to subscribers, providing different event ordering guarantees that make sense for different situations.
+
+&amp;gt;Note: The dispatcher is orthogonal to the subscriber&#x27;s Executor. The dispatcher controls the order in which events are dispatched, while the executor controls how (i.e. on which thread) the subscriber is actually called when an event is dispatched to it.
+
+意思是说Dispatcher主要任务是将事件分发到订阅者，并且可以不同的情况，按不同的顺序分发。
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Dispatcher有三个子类，用以满足不同的分发情况&lt;/p&gt;
+
+&lt;p&gt;1.PerThreadQueuedDispatcher&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;源码注释：
+&amp;gt; Returns a dispatcher that queues events that are posted reentrantly on a thread that is already dispatching an event, guaranteeing that all events posted on a single thread are dispatched to all subscribers in the order they are posted.
+
+&amp;gt; When all subscribers are dispatched to using a direct executor (which dispatches on the same thread that posts the event), this yields a breadth-first dispatch order on each thread. That is, all subscribers to a single event A will be called before any subscribers to any events B and C that are posted to the event bus by the subscribers to A.
+
+意思是说一个线程在处理事件过程中又发布了一个事件，PerThreadQueuedDispatcher会将后面这个事件放到最后，从而保证在单个线程上发布的所有事件都按其发布顺序分发给订阅者。**注意，每个线程都要自己存储事件的队列。**
+
+第二段是说PerThreadQueuedDispatcher按**广度优先**分发事件。并给了一个例子：
+代码中发布了事件A，订阅者收到后，在执行过程中又发布了事件B和事件C，PerThreadQueuedDispatcher会确保事件A分发给所有订阅者后，再分发B、C事件。
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;2.LegacyAsyncDispatcher&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;源码注释：
+&amp;gt; Returns a dispatcher that queues events that are posted in a single global queue. This behavior matches the original behavior of AsyncEventBus exactly, but is otherwise not especially useful. For async dispatch, an immediate dispatcher should generally be preferable.
+
+意思是说LegacyAsyncDispatcher有一个全局队列用于存放所有事件，LegacyAsyncDispatcher特性与AsyncEventBus特性完全相符，除此之外没有其他什么特性。如果异步分发的话，最好用immediate dispatcher。
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;3.ImmediateDispatcher&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;源码注释：
+&amp;gt; Returns a dispatcher that dispatches events to subscribers immediately as they&#x27;re posted without using an intermediate queue to change the dispatch order. This is effectively a depth-first dispatch order, vs. breadth-first when using a queue.
+
+意思是说ImmediateDispatcher在发布事件时立即将事件分发给订阅者，而不使用中间队列更改分发顺序。这实际上是**深度优先**的调度顺序，而不是使用队列时的**广度优先**。
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;1.3.4、订阅者&lt;/h3&gt;
+
+
+
+&lt;pre&gt;&lt;code&gt;源码注释：
+&amp;gt; A subscriber method on a specific object, plus the executor that should be used for dispatching events to it.
+
+Two subscribers are equivalent when they refer to the same method on the same object (not class). This property is used to ensure that no subscriber method is registered more than once.
+
+第一段意思是说，Subscriber是特定对象（Event）的订阅方法，用于执行被分发事件。第二段说当两个订阅者在同一对象 **（不是类）** 上引用相同的方法时，它们是等效的，此属性用于确保不会多次注册任何订阅者方法，主要说明会对订阅者进行判重，如果是同一个对象的同一个方法，则认为是同一个订阅者，不会进行重复注册。
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+
+
+&lt;pre&gt;&lt;code&gt;源码注释：
+&amp;gt; Subscriber that synchronizes invocations of a method to ensure that only one thread may enter the method at a time.
+
+意思是说同步方法调用以确保一次只有一个线程可以执行订阅者方法（线程安全）。
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1&gt;2、原理解析&lt;/h1&gt;
+
+&lt;h2&gt;2.1、主体流程&lt;/h2&gt;
+
 &lt;ol&gt;
-&lt;li&gt;缺陷的引入从需求阶段就开始持续，到研发阶段达到峰值，然后趋于平缓&lt;/li&gt;
-&lt;li&gt;缺陷从需求阶段就开始陆续被发现，到测试阶段达到峰值，然后趋于平缓&lt;/li&gt;
-&lt;li&gt;从需求阶段到研发初期，缺陷修复的成本极低&lt;/li&gt;
-&lt;li&gt;开发后期到上线，缺陷修复成本一路攀升至高点&lt;/li&gt;
-&lt;li&gt;缺陷发现的数量少于引入的数量，但在上线前后，缺陷发现数量大于引入数量&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;listener 通过EventBus进行注册。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;SubscriberRegister 会根据listener、listener中含有【@Subscribe】注解的方法及各方法参数创建Subscriber 对象，并将其维护在Subscribers（ConcurrentMap类型，key为event类对象，value为subscriber集合）中。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;publisher发布事件Event。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;发布Event后，EventBus会从SubscriberRegister中查找出所有订阅此事件的Subscriber，然后让Dispatcher分发Event到每一个Subscriber。&lt;/p&gt;&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/02/shift-left-testing-2.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/02/shift-left-testing-2.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;因此，为了获得更经济的资源投入产出比，我们认为应该在需求阶段和编码初期更多的发现缺陷，从而减少修复成本和返工，这也正是测试左移的价值所在。&lt;/p&gt;
-&lt;p&gt;那么，该如何保证需求的质量呢？我们在不同的时期面临的需求，其形态是有差异的，所以需要深刻理解这些差异，并有针对性的设计质量活动加以验证。&lt;/p&gt;
-&lt;h2&gt;需求的几个层次&lt;/h2&gt;
-&lt;h3&gt;一个很现实的例子&lt;/h3&gt;
-&lt;p&gt;一天，大老板说：“微信小程序不错，我们内部OA流程得做一个，你们安排一下，年内发布就行。” 这就是一个来自大老板的一句话需求。&lt;/p&gt;
-&lt;p&gt;项目经理拿到这个需求，看到“年内发布”，需求管理看板上就可以多一张卡，只有几个字“OA小程序”，排期可能暂时安排在第三季度。&lt;/p&gt;
-&lt;p&gt;过了俩月，送走了一批艰难的需求，暂时松口气的项目经理扫到这张卡，瞬间头皮发麻，这还有一个老板亲生的大坑呢，得尽快填上。喊来产品经理，快出一版方案，再找技术经理大致估一下工作量。&lt;/p&gt;
-&lt;p&gt;只有一句话显然是没法出方案的，产品经理和技术经理各自焦头烂额的研究了两天，又花了半天暂时碰出了OA小程序的初版方案。一周后，方案通过评审。这时，根据既定方案，产品经理细化了一些需求：用户管理，组织管理，流程管理，表单配置，权限配置，审批配置，微信登录等。&lt;/p&gt;
-&lt;p&gt;即将进入研发阶段，需求又会被再次细化。以用户提交请假单的场景为例，需求可被细化如下图。进入研发后，开发以一定的优先级顺序来领取需求进行研发。&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/02/shift-left-testing-3.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/02/shift-left-testing-3.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h3&gt;需求的三种粒度&lt;/h3&gt;
-&lt;p&gt;在上面的故事中，为了服务产品规划和不同的管理诉求，需求呈现出以下三个粒度：&lt;/p&gt;
-&lt;p&gt;史诗故事 &amp;gt; 特性故事 &amp;gt; 用户故事&lt;/p&gt;
+
+&lt;p&gt;流程如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-35ZoCIOMPMZ3XFjO35.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+
+&lt;h2&gt;2.2、listener注册原理&lt;/h2&gt;
+
+&lt;h3&gt;2.2.1、listener注册流程&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;缓存所有含有@Subscribe注解方法到subscriberMethodsCache（LoadingCache&lt;class&gt;, ImmutableList&amp;gt;， key为listener，value为method集合）。&lt;/class&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;listener注册。&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-35vFAQZ28dWGeyCzk.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+
+&lt;h3&gt;2.2.2、原理分析&lt;/h3&gt;
+
 &lt;ul&gt;
-&lt;li&gt;史诗故事 Epic：粗粒度的描述需求，通常需要多个迭代才能完成，主要用于版本规划时记录和跟踪该功能&lt;/li&gt;
-&lt;li&gt;特性故事 Feature：也叫主题故事，是一系列相同主题用户故事的集合，主要用于迭代规划、优先级排序和整体估算&lt;/li&gt;
-&lt;li&gt;用户故事 Story：迭代开发的最小单元，是较细粒度的需求描述，主要用于迭代交付过程中的估算、跟踪和管理&lt;/li&gt;
+&lt;li&gt;  获取含有@Subscribe注释的方法进行缓存&lt;br/&gt;
+找到所有被【@Subscribe】修饰的方法，并进行缓存&lt;br/&gt;
+&lt;strong&gt;注意！！！这两个方法被static修饰，类加载的时候就进行寻找&lt;/strong&gt;&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-363632jcSA363HmIqDrO.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-36qD8hcLnttDbTKkH.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/02/shift-left-testing-4.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/02/shift-left-testing-4.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h2&gt;不同粒度需求的质量保障&lt;/h2&gt;
-&lt;h3&gt;史诗故事：方案验证 &amp;amp; 测试设计&lt;/h3&gt;
-&lt;p&gt;在产品演进过程中，当面临的需求还是一句话时，测试人员能做的事情并不多。当史诗故事即将进入迭代规划，进行方案设计时，测试人员就可以参与进来了。&lt;/p&gt;
-&lt;p&gt;方案成型初期，测试人员可以参与方案讨论和技术可行性研究，贡献既有业务流程或潜在业务逻辑，针对有较大质量风险的方案，测试人员有责任提出质疑，并给出建议。&lt;/p&gt;
-&lt;p&gt;方案确定后，测试人员就可以着手进行测试设计了，测试设计包括但不限于：针对该功能的质量预期，大致的测试规划，现有的测试资源评估，主要的质量风险及响应方式等。&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/02/shift-left-testing-5.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/02/shift-left-testing-5.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h3&gt;特性故事：需求评审 &amp;amp; 测试计划&lt;/h3&gt;
-&lt;p&gt;临近迭代，需求会以特性的形式体现，此时测试人员可以参与需求评审：&lt;/p&gt;
+
+&lt;p&gt;订阅者唯一标识是【方法名+入参】&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-36sYr36D8wm728xLok.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+
 &lt;ul&gt;
-&lt;li&gt;针对功能需求，测试人员先验证需求是否有效，包括需求价值确认，需求涉及场景是否完备，与现有业务逻辑是否有冲突&lt;/li&gt;
-&lt;li&gt;针对功能需求背后的支撑性需求进行澄清，确认支撑性需求的范围、验收标准、测试方式等；此外还需要考虑用户体验&lt;/li&gt;
-&lt;li&gt;考虑需求的拆分是否合理，是否便于估算和迭代管理&lt;/li&gt;
+&lt;li&gt;  注册订阅者&lt;br/&gt;
+1.注册方法&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-37CKeAug118jTsL3HR.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
+创建Subscriber时，如果method含有【@AllowConcurrentEvents】注释，则创建SynchronizedSubscriber，否则创建Subscriber&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-37FTLB9ojhgA6ajJ37.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
+2、获取所有订阅者&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-37BNnJadaGDajnlv7.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
+3、从缓存中获取所有订阅方法&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-37uJjWQomNFoAXoOc.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;质量活动方面，测试人员可以落实测试计划了，如各种测试活动的安排，测试效果的评价，测试的重点和难点，测试阶段的输入和输出等，在这个阶段都可以确认了。&lt;/p&gt;
-&lt;h3&gt;用户故事：需求验收 &amp;amp; 测试执行&lt;/h3&gt;
-&lt;p&gt;故事启动时，测试人员需要补充需求验收的用例，以及需求影响范围内的回归用例等。在这以后测试人员主要关注在需求验收和测试执行上，按照测试设计和计划进行测试，确保最终的实现质量。而在此阶段，测试人员尤其需要关注投入产出比，把有限的精力用在刀刃上。行之有效的做法是在测试计划阶段就明确好各功能的质量标准和资源投入，并在测试执行阶段时刻回顾。但计划是死的，人是活的，万一在测试过程中，我们发现计划赶不上变化，就需要随时跟团队沟通并进行灵活调整了。&lt;/p&gt;
-&lt;p&gt;当然，质量活动并不是以功能测完上线为结束，而是需要完成一个完整的闭环。测试阶段以后的质量活动不在本文讨论的范围内，在此就不做过多展开了。&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/02/shift-left-testing-6.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/02/shift-left-testing-6.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h2&gt;小结&lt;/h2&gt;
-&lt;p&gt;测试左移之所以重要，是因为我们要在缺陷引入的最初阶段就发现它，把缺陷扼杀在摇篮里，而不是等着它像雪球一样越滚越大。而这里的误区在于，测试左移要求的测试活动尽早介入，而不仅仅是把测试人员进行左移。因此，团队里的每个成员，都需要有测试左移的思想，都可以从一开始就绷紧质量这根弦，确保每个人的工件质量。&lt;/p&gt;
-&lt;p&gt;而在需求的质量保证活动中，测试人员也需要时不时换帽子，有时可能是终端用户，有时可能是产品经理，也有时可能是产品负责人。不管戴什么帽子，保证各个工件的质量，以及各工件的顺畅集成，都是测试人员可以关注的事。质量相关，我们责无旁贷。&lt;/p&gt;
-&amp;#13;
-&lt;/div&gt;&amp;#13;
-&lt;/div&gt;&lt;/div&gt;</content:encoded>
+
+&lt;h2&gt;2.3、Event发布原理&lt;/h2&gt;
+
+&lt;h3&gt;2.3.1、发布主体流程&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;publisher 发布事件Event。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;EventBus 根据Event 类对象从SubscriberRegistry中获取所有订阅者。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;将Event 和 eventSubscribers 交由Dispatcher去分发。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Dispatcher 将Event 分发给每个Subscribers。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Subscriber 利用反射执行订阅者方法。&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;图中画出了三个Dispatcher的分发原理。&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-38gUVcxWJdDxgOepS.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+
+&lt;h3&gt;2.3.2、原理分析&lt;/h3&gt;
+
+
+
+&lt;h1&gt;3、使用指导&lt;/h1&gt;
+
+&lt;h2&gt;3.1、主要流程&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-44EIcwn73n2fAw9m3.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+
+&lt;h2&gt;3.2、流程详解&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;1、创建EventBus、AsyncEventBus Bean&lt;br/&gt;
+在项目中统一配置全局单例Bean（如特殊需求，可配置多例）&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-44h0B7YvpUoluhSYt.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;2、定义EventMsg&lt;br/&gt;
+设置消息载体。&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-45WsFZ0rd456wCYQF8.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;3、注册Listener&lt;br/&gt;
+注册Listener，处理事件&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-45GWEuo09o7vFxTJ3.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
+&lt;strong&gt;注意! 在使用 PostConstruct注释进行注册时，需要注意子类会执行父类含有PostConstruct 注释的方法。&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;3、事件发布&lt;br/&gt;
+封装统一发布事件的Bean，然后通过Bean注入到需要发布的Bean里面进行事件发布。&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-45jydFrk8sCcCenv3.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-45j3wc7Z3l453cn9ai.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;此处对EventBus进行了统一封装收口操作，主要考虑的是如果做一些操作，直接改这一处就可以。如果不需要封装，可以在使用的地方直接注入EventBus即可。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h1&gt;4、注意事项&lt;/h1&gt;
+
+&lt;h2&gt;4.1、循环分发事件&lt;/h2&gt;
+
+&lt;p&gt;如果业务流程较长，切记梳理好业务流程，不要让事件循环分发。&lt;br/&gt;
+目前EventBus没有对循环事件进行处理。&lt;/p&gt;
+
+&lt;h2&gt;4.2、使用 @PostConstrucrt 注册listener&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;子类在执行实例化时，会执行父类@PostConstrucrt 注释&lt;/strong&gt;。 如果listenerSon继承listenerFather，当两者都使用@PostConstrucrt注册订阅方法时，子类也会调用父类的注册方法进行注册订阅方法。&lt;strong&gt;由于EventBus机制，子类注册订阅方法时，也会注册父类的监听方法&lt;/strong&gt;&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-46XM3CmgeO9xjpTfV.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
+Subscriber唯一标志是（listener+method），因此在对同一方法注册时，由于不是同一个listener，所以对于EventBus是两个订阅方法。&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-46f9JVHDmpmPprhGS.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-46FWvUbRg6r9U469og.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-47KJ2EDHX0zcNMVqW.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;因此，如果存在listenerSon、listenerFather两个listener，且listenerSon继承listenerFather。当都使用@PostConstrucrt注册时，会导致listenerFather里面的订阅方法注册两次。&lt;/p&gt;
+
+&lt;h2&gt;4.3、含有继承关系的listener&lt;/h2&gt;
+
+&lt;p&gt;当注册listener含有继承关系时，listener处理Event消息时，listener的父类也会处理该消息。&lt;/p&gt;
+
+&lt;h3&gt;4.3.1、继承关系的订阅者&lt;/h3&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-16-14F089qFJtgwn8Xud.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+
+&lt;h3&gt;4.3.2、原理&lt;/h3&gt;
+
+&lt;p&gt;子类listener注册，父类listener也会注册&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-5050vdLEu23zk8GfrZ.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+
+&lt;h2&gt;4.4、含有继承关系的Event&lt;/h2&gt;
+
+&lt;p&gt;如果作为参数的Event有继承关系，使用EventBus发布Event时，Event父类的监听者也会对Event进行处理。&lt;/p&gt;
+
+&lt;h3&gt;4.4.1、执行结果&lt;/h3&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-51WxPqOJjtAW93Nxz.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-51W7dZaJqQSckySbQ.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+
+&lt;h3&gt;4.4.2、原理&lt;/h3&gt;
+
+&lt;p&gt;在分发消息的时候，会获取所有订阅者数据（Event订阅者和Event超类的订阅者），然后进行分发数据。&lt;br/&gt;
+获取订阅者数据如下图：&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-52iFTw6TT52nU9w52og.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-5252c6jhLokxQybOMG.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;缓存Event及其超类的类对象，key为Event类对象。&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-520xLNddrPzK3hnKd.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+
+&lt;h1&gt;5、分享提问问题&lt;/h1&gt;
+
+&lt;h4&gt;问题1：PerThreadQueuedDispatcherd 里面的队列，是否是有界队列？&lt;/h4&gt;
+
+&lt;p&gt;有界队列，最大值为 int 的最大值 （2147483647），源码如下图：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-528QBIATdvsKU8cfm.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-52RnFOuRGdDIzkizF.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-52IQqykEEJO7AoDK57.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-53QeG3LYWhrKdGo2b.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-53MhCR2MFFuTtTBxU.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-53JTkKEqwnalveOjz.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+
+&lt;h4&gt;问题2：dispatcher 分发给订阅者是否有序？&lt;/h4&gt;
+
+&lt;p&gt;&lt;strong&gt;EventBus:同步事件总线&lt;/strong&gt;：&lt;br/&gt;
+同一个事件的多个订阅者，在接收到事件的顺序上面有不同。谁先注册到EventBus的，谁先执行（由于base使用的是PostConstruct进行注册，因此跟不同Bean之间的初始化顺序有关系）。如果是在同一个类中的两个订阅者一起被注册到EventBus的情况，收到事件的顺序跟方法名有关。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;AsyncEventBus:异步事件总线&lt;/strong&gt;：同一个事件的多个订阅者，它们的注册顺序跟接收到事件的顺序上没有任何联系，都会同时收到事件，并且都是在新的线程中，异步并发的执行自己的任务。&lt;/p&gt;
+
+&lt;h4&gt;问题3：EventBus与SpringEvent的对比？&lt;/h4&gt;
+
+
+
+&lt;table&gt;&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;项目&lt;/th&gt;
+&lt;th&gt;事件&lt;/th&gt;
+&lt;th&gt;发布者&lt;/th&gt;
+&lt;th&gt;发布方法&lt;/th&gt;
+&lt;th&gt;是否异步&lt;/th&gt;
+&lt;th&gt;监听者&lt;/th&gt;
+&lt;th&gt;注册方式&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;EventBus&lt;/td&gt;
+&lt;td&gt;任意对象&lt;/td&gt;
+&lt;td&gt;EventBus&lt;/td&gt;
+&lt;td&gt;EventBus#post&lt;/td&gt;
+&lt;td&gt;支持同步异步&lt;/td&gt;
+&lt;td&gt;注解Subscribe方法&lt;/td&gt;
+&lt;td&gt;手动注册EventBus#register&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;SpringEvent&lt;/td&gt;
+&lt;td&gt;任意对象&lt;/td&gt;
+&lt;td&gt;ApplicationEventPublisher&lt;/td&gt;
+&lt;td&gt;ApplicationEventPublisher#publishEvent&lt;/td&gt;
+&lt;td&gt;支持同步异步&lt;/td&gt;
+&lt;td&gt;注解EventListener方法&lt;/td&gt;
+&lt;td&gt;系统注册&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;
+
+
+
+&lt;table&gt;&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;项目&lt;/th&gt;
+&lt;th&gt;事件区分&lt;/th&gt;
+&lt;th&gt;是否支持事件簇&lt;/th&gt;
+&lt;th&gt;是否支持自定义event&lt;/th&gt;
+&lt;th&gt;是否支持过滤&lt;/th&gt;
+&lt;th&gt;是否支持事件隔离&lt;/th&gt;
+&lt;th&gt;是否支持事务&lt;/th&gt;
+&lt;th&gt;是否支持设置订阅者消费顺序&lt;/th&gt;
+&lt;th&gt;复杂程度&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;EventBus&lt;/td&gt;
+&lt;td&gt;Class&lt;/td&gt;
+&lt;td&gt;是&lt;/td&gt;
+&lt;td&gt;是&lt;/td&gt;
+&lt;td&gt;否&lt;/td&gt;
+&lt;td&gt;是&lt;/td&gt;
+&lt;td&gt;否&lt;/td&gt;
+&lt;td&gt;否&lt;/td&gt;
+&lt;td&gt;简单&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Spring Event&lt;/td&gt;
+&lt;td&gt;Class&lt;/td&gt;
+&lt;td&gt;是&lt;/td&gt;
+&lt;td&gt;是&lt;/td&gt;
+&lt;td&gt;是&lt;/td&gt;
+&lt;td&gt;否&lt;/td&gt;
+&lt;td&gt;是&lt;/td&gt;
+&lt;td&gt;是&lt;/td&gt;
+&lt;td&gt;复杂&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;
+
+&lt;p&gt;参考链接&lt;a href=&quot;https://www.cnblogs.com/shoren/p/eventBus_springEvent.html&quot;&gt;https://www.cnblogs.com/shoren/p/eventBus_springEvent.html&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4&gt;问题4：EventBus的使用场景，结合现有使用场景考虑是否合适？&lt;/h4&gt;
+
+&lt;p&gt;EventBus暂时不适用，主要有一下几个点:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;EventBus不支持事务，项目在更新、创建商品时，最好等事务提交成功后，再发送MQ消息（主要问题点）&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;EventBus不支持设置同一消息的订阅者消费顺序。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;EventBus不支持消息过滤。SpringEvent支持消息过滤&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;6.项目中遇到的问题&lt;/h1&gt;
+
+&lt;h2&gt;6.1、问题描述&lt;/h2&gt;
+
+&lt;p&gt;商品上架时会触发渠道分发功能，会有两步操作&lt;/p&gt;
+
+
+
+&lt;p&gt;所以分发会触发两条分发状态不同的商品变更消息，&lt;strong&gt;一条是未分发，另一条是已分发&lt;/strong&gt;。实际发送了两条分发状态相同的商品变更消息，&lt;strong&gt;状态都是已分发&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;h2&gt;6.2、原因&lt;/h2&gt;
+
+&lt;p&gt;我们先来回顾下EventBus 监听者处理事件时有三种策略，这是根本原因：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;ImmediateDispatcher：来一个事件马上进行处理。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;PerThreadQueuedDispatcher（eventBus默认选项，项目中使用此策略）&lt;/strong&gt;：在同一个线程post的Event,执行的顺序是有序的。用ThreadLocal&lt;queue&gt; queue来实现每个线程post的Event是有序的，在把事件添加到queue后会有一个ThreadLocal dispatching来判断当前线程是否正在分发，如果正在分发，则这次添加的event不会马上进行分发而是等到dispatching的值为false才进行。&lt;/queue&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;LegacyAsyncDispatcher（AsyncEventBus默认选项）：会有一个全局的队列ConcurrentLinkedQueue queue保存EventWithSubscriber(事件和subscriber),如果被不同的线程poll 不能保证在queue队列中的event是有序发布的。&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;详情可见上文中的【2.3.4、事件分发】&lt;/p&gt;
+
+&lt;p&gt;再看下项目中的逻辑：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;商品自动分发在商品变更的Listener里操作。
+
+由于当前分发操作处于商品上架事件处理过程中，因此对于添加分发记录事件不会立马处理，而是将其放入队列。
+
+上架操作完成，分发状态变为已分发。
+
+等上架操作完成后，商品变更Listener处理分发事件(此时有两条EventMsg，一个是添加分发记录另一个是修改分发状态)，分发状态实时查询，对于第一个分发事件，查询到的分发记录是已分发状态。
+
+最终导致两条消息都是已分发状态。
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2&gt;6.3、场景复现&lt;/h2&gt;
+
+&lt;p&gt;在handler中对静态变量进行两次+1 操作，每操作一步发送一条事件，此处假设静态变量为分发状态。&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-540RxH6GrJonnQumZ.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-540y52wuOzKzDrnHD0.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+
+&lt;h2&gt;6.4、解决办法&lt;/h2&gt;
+
+&lt;p&gt;目前 Dispatcher 包用default 修饰，使用者无法指定Dispatcher 策略。并且 ImmediateDispatcher 使用private修饰。&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-55bN2K2k29TXyBO6qi.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-553Neic8TdTNhiaYV.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-55RSoMbmTslSC87bm.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;因此目前暂无解决非同步问题，只能在业务逻辑上进行规避。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;其实可以修改源码并发布一个包自己使用，但是公司安全规定不允许这样做，只能通过业务逻辑上进行规避，下图是github上对此问题的讨论。&lt;br/&gt;
+&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-55n3PfPRrhHoYg8Xj.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+
+&lt;h1&gt;7、总结&lt;/h1&gt;
+
+&lt;p&gt;如果项目中需要使用异步解耦处理一些事项，使用EventBus还是比较方便的。&lt;/p&gt;
+&lt;/div&gt;
+  &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>f738e5628d5c12c93b4215a4b41b7f33</guid>
-<title>如何简单理解  Redis 的缓存穿透、击穿和雪崩？</title>
-<link>https://toutiao.io/k/430l5ox</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;span class=&quot;RichText ztext CopyrightRichText-richText css-1g0fqss&quot; options=&quot;[object Object]&quot; itemprop=&quot;text&quot;&gt;&lt;blockquote data-first-child=&quot;&quot; data-pid=&quot;2RwyLl_K&quot;&gt;作者：小林coding&lt;br/&gt;来源原创文章：&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//xiaolincoding.com/redis/cluster/cache_problem.html&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;什么是缓存雪崩、击穿、穿透？&lt;/a&gt;&lt;/blockquote&gt;&lt;p data-pid=&quot;thA0eXn9&quot;&gt;用户的数据一般都是存储于数据库，数据库的数据是落在磁盘上的，磁盘的读写速度可以说是计算机里最慢的硬件了。&lt;/p&gt;&lt;p data-pid=&quot;XQSmlPiC&quot;&gt;当用户的请求，都访问数据库的话，请求数量一上来，数据库很容易就奔溃的了，所以为了避免用户直接访问数据库，会用 Redis 作为缓存层。&lt;/p&gt;&lt;p data-pid=&quot;WliVI3nB&quot;&gt;因为 Redis 是内存数据库，我们可以将数据库的数据缓存在 Redis 里，相当于数据缓存在内存，内存的读写速度比硬盘快好几个数量级，这样大大提高了系统性能。&lt;/p&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic1.zhimg.com/50/v2-dbd36b96694a311dc6a80c030d6f0348_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;377&quot; data-rawheight=&quot;686&quot; data-default-watermark-src=&quot;https://pica.zhimg.com/50/v2-6600a7c87eef20e8dc7623340a91ae37_720w.jpg?source=1940ef5c&quot; class=&quot;content_image&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;377&quot; data-rawheight=&quot;686&quot; data-default-watermark-src=&quot;https://pica.zhimg.com/50/v2-6600a7c87eef20e8dc7623340a91ae37_720w.jpg?source=1940ef5c&quot; class=&quot;content_image lazy&quot; data-actualsrc=&quot;https://pic1.zhimg.com/50/v2-dbd36b96694a311dc6a80c030d6f0348_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;p data-pid=&quot;Jw6tZN_X&quot;&gt;引入了缓存层，就会有缓存异常的三个问题，分别是&lt;b&gt;缓存雪崩、缓存击穿、缓存穿透&lt;/b&gt;。&lt;/p&gt;&lt;p data-pid=&quot;L69eV4Xw&quot;&gt;这三个问题也是面试中很常考察的问题，我们不光要清楚地知道它们是怎么发生，还需要知道如何解决它们。&lt;/p&gt;&lt;p data-pid=&quot;SyMOl7ed&quot;&gt;话不多说，&lt;b&gt;发车！&lt;/b&gt;&lt;/p&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://picx.zhimg.com/50/v2-e6c2599cdcddd5a9ee3e6e66bec512f8_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;527&quot; data-default-watermark-src=&quot;https://picx.zhimg.com/50/v2-808ca62cc578e2f683f2804fe9dc8d97_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic1.zhimg.com/v2-e6c2599cdcddd5a9ee3e6e66bec512f8_r.jpg?source=1940ef5c&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;527&quot; data-default-watermark-src=&quot;https://picx.zhimg.com/50/v2-808ca62cc578e2f683f2804fe9dc8d97_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic1.zhimg.com/v2-e6c2599cdcddd5a9ee3e6e66bec512f8_r.jpg?source=1940ef5c&quot; data-actualsrc=&quot;https://picx.zhimg.com/50/v2-e6c2599cdcddd5a9ee3e6e66bec512f8_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;hr/&gt;&lt;h2&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//xiaolincoding.com/redis/cluster/cache_problem.html%23%25E7%25BC%2593%25E5%25AD%2598%25E9%259B%25AA%25E5%25B4%25A9&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;#&lt;/a&gt;缓存雪崩&lt;/h2&gt;&lt;p data-pid=&quot;t2ik_iPw&quot;&gt;通常我们为了保证缓存中的数据与数据库中的数据一致性，会给 Redis 里的数据设置过期时间，当缓存数据过期后，用户访问的数据如果不在缓存里，业务系统需要重新生成缓存，因此就会访问数据库，并将数据更新到 Redis 里，这样后续请求都可以直接命中缓存。&lt;/p&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://picx.zhimg.com/50/v2-b41ae95e11e7b916edd3298dcef3a060_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;692&quot; data-rawheight=&quot;438&quot; data-default-watermark-src=&quot;https://pica.zhimg.com/50/v2-8b50d9a80a39047fc23a87a3b6cb5d9b_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://picx.zhimg.com/v2-b41ae95e11e7b916edd3298dcef3a060_r.jpg?source=1940ef5c&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;692&quot; data-rawheight=&quot;438&quot; data-default-watermark-src=&quot;https://pica.zhimg.com/50/v2-8b50d9a80a39047fc23a87a3b6cb5d9b_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://picx.zhimg.com/v2-b41ae95e11e7b916edd3298dcef3a060_r.jpg?source=1940ef5c&quot; data-actualsrc=&quot;https://picx.zhimg.com/50/v2-b41ae95e11e7b916edd3298dcef3a060_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;p data-pid=&quot;hAmPe5e_&quot;&gt;那么，当&lt;b&gt;大量缓存数据在同一时间过期（失效）或者 Redis 故障宕机&lt;/b&gt;时，如果此时有大量的用户请求，都无法在 Redis 中处理，于是全部请求都直接访问数据库，从而导致数据库的压力骤增，严重的会造成数据库宕机，从而形成一系列连锁反应，造成整个系统崩溃，这就是&lt;b&gt;缓存雪崩&lt;/b&gt;的问题。&lt;/p&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://picx.zhimg.com/50/v2-a735a6a9a599057515db7731ecdeea1e_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;660&quot; data-default-watermark-src=&quot;https://pic1.zhimg.com/50/v2-e548f6e3a3be30616e3715841e4e5a9d_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic1.zhimg.com/v2-a735a6a9a599057515db7731ecdeea1e_r.jpg?source=1940ef5c&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;660&quot; data-default-watermark-src=&quot;https://pic1.zhimg.com/50/v2-e548f6e3a3be30616e3715841e4e5a9d_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic1.zhimg.com/v2-a735a6a9a599057515db7731ecdeea1e_r.jpg?source=1940ef5c&quot; data-actualsrc=&quot;https://picx.zhimg.com/50/v2-a735a6a9a599057515db7731ecdeea1e_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;p data-pid=&quot;I-O4zfGl&quot;&gt;可以看到，发生缓存雪崩有两个原因：&lt;/p&gt;&lt;p data-pid=&quot;sGVQQ_HQ&quot;&gt;不同的诱因，应对的策略也会不同。&lt;/p&gt;&lt;h3&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//xiaolincoding.com/redis/cluster/cache_problem.html%23%25E5%25A4%25A7%25E9%2587%258F%25E6%2595%25B0%25E6%258D%25AE%25E5%2590%258C%25E6%2597%25B6%25E8%25BF%2587%25E6%259C%259F&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;#&lt;/a&gt;大量数据同时过期&lt;/h3&gt;&lt;p data-pid=&quot;pB3ATzeo&quot;&gt;针对大量数据同时过期而引发的缓存雪崩问题，常见的应对方法有下面这几种：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;VJjyPHwl&quot;&gt;均匀设置过期时间；&lt;/li&gt;&lt;li data-pid=&quot;pnrpXiFz&quot;&gt;互斥锁；&lt;/li&gt;&lt;li data-pid=&quot;eTRiXBUz&quot;&gt;双 key 策略；&lt;/li&gt;&lt;li data-pid=&quot;vE7xSJh3&quot;&gt;后台更新缓存；&lt;/li&gt;&lt;/ul&gt;&lt;p data-pid=&quot;BneFlCW7&quot;&gt;&lt;i&gt;1. 均匀设置过期时间&lt;/i&gt;&lt;/p&gt;&lt;p data-pid=&quot;DbgIypjr&quot;&gt;如果要给缓存数据设置过期时间，应该避免将大量的数据设置成同一个过期时间。我们可以在对缓存数据设置过期时间时，&lt;b&gt;给这些数据的过期时间加上一个随机数&lt;/b&gt;，这样就保证数据不会在同一时间过期。&lt;/p&gt;&lt;p data-pid=&quot;t1vj3dqc&quot;&gt;&lt;i&gt;2. 互斥锁&lt;/i&gt;&lt;/p&gt;&lt;p data-pid=&quot;_L4hpQtr&quot;&gt;当业务线程在处理用户请求时，&lt;b&gt;如果发现访问的数据不在 Redis 里，就加个互斥锁，保证同一时间内只有一个请求来构建缓存&lt;/b&gt;（从数据库读取数据，再将数据更新到 Redis 里），当缓存构建完成后，再释放锁。未能获取互斥锁的请求，要么等待锁释放后重新读取缓存，要么就返回空值或者默认值。&lt;/p&gt;&lt;p data-pid=&quot;gzOzF2HN&quot;&gt;实现互斥锁的时候，最好设置&lt;b&gt;超时时间&lt;/b&gt;，不然第一个请求拿到了锁，然后这个请求发生了某种意外而一直阻塞，一直不释放锁，这时其他请求也一直拿不到锁，整个系统就会出现无响应的现象。&lt;/p&gt;&lt;p data-pid=&quot;-sbmE_25&quot;&gt;&lt;i&gt;3. 双 key 策略&lt;/i&gt;&lt;/p&gt;&lt;p data-pid=&quot;UASjcIpg&quot;&gt;我们对缓存数据可以使用两个 key，一个是&lt;b&gt;主 key，会设置过期时间&lt;/b&gt;，一个是&lt;b&gt;备 key，不会设置过期&lt;/b&gt;，它们只是 key 不一样，但是 value 值是一样的，相当于给缓存数据做了个副本。&lt;/p&gt;&lt;p data-pid=&quot;MbFdV4Z8&quot;&gt;当业务线程访问不到「主 key 」的缓存数据时，就直接返回「备 key 」的缓存数据，然后在更新缓存的时候，&lt;b&gt;同时更新「主 key 」和「备 key 」的数据。&lt;/b&gt;&lt;/p&gt;&lt;p data-pid=&quot;R5PNJiuA&quot;&gt;&lt;i&gt;4. 后台更新缓存&lt;/i&gt;&lt;/p&gt;&lt;p data-pid=&quot;BLayIES2&quot;&gt;业务线程不再负责更新缓存，缓存也不设置有效期，而是&lt;b&gt;让缓存“永久有效”，并将更新缓存的工作交由后台线程定时更新&lt;/b&gt;。&lt;/p&gt;&lt;p data-pid=&quot;L06RiMTi&quot;&gt;事实上，缓存数据不设置有效期，并不是意味着数据一直能在内存里，因为&lt;b&gt;当系统内存紧张的时候，有些缓存数据会被“淘汰”&lt;/b&gt;，而在缓存被“淘汰”到下一次后台定时更新缓存的这段时间内，业务线程读取缓存失败就返回空值，业务的视角就以为是数据丢失了。&lt;/p&gt;&lt;p data-pid=&quot;AcDEBcHI&quot;&gt;解决上面的问题的方式有两种。&lt;/p&gt;&lt;p data-pid=&quot;wKpIoBcM&quot;&gt;第一种方式，后台线程不仅负责定时更新缓存，而且也负责&lt;b&gt;频繁地检测缓存是否有效&lt;/b&gt;，检测到缓存失效了，原因可能是系统紧张而被淘汰的，于是就要马上从数据库读取数据，并更新到缓存。&lt;/p&gt;&lt;p data-pid=&quot;EVCMufrL&quot;&gt;这种方式的检测时间间隔不能太长，太长也导致用户获取的数据是一个空值而不是真正的数据，所以检测的间隔最好是毫秒级的，但是总归是有个间隔时间，用户体验一般。&lt;/p&gt;&lt;p data-pid=&quot;Nhq1QY2n&quot;&gt;第二种方式，在业务线程发现缓存数据失效后（缓存数据被淘汰），&lt;b&gt;通过消息队列发送一条消息通知后台线程更新缓存&lt;/b&gt;，后台线程收到消息后，在更新缓存前可以判断缓存是否存在，存在就不执行更新缓存操作；不存在就读取数据库数据，并将数据加载到缓存。这种方式相比第一种方式缓存的更新会更及时，用户体验也比较好。&lt;/p&gt;&lt;p data-pid=&quot;fFZ-ljMf&quot;&gt;在业务刚上线的时候，我们最好提前把数据缓起来，而不是等待用户访问才来触发缓存构建，这就是所谓的&lt;b&gt;缓存预热&lt;/b&gt;，后台更新缓存的机制刚好也适合干这个事情。&lt;/p&gt;&lt;h3&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//xiaolincoding.com/redis/cluster/cache_problem.html%23redis-%25E6%2595%2585%25E9%259A%259C%25E5%25AE%2595%25E6%259C%25BA&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;#&lt;/a&gt;Redis 故障宕机&lt;/h3&gt;&lt;p data-pid=&quot;WMZ8TvtP&quot;&gt;针对 Redis 故障宕机而引发的缓存雪崩问题，常见的应对方法有下面这几种：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;JAuGca3C&quot;&gt;服务熔断或请求限流机制；&lt;/li&gt;&lt;li data-pid=&quot;zPZM6PiY&quot;&gt;构建 Redis 缓存高可靠集群；&lt;/li&gt;&lt;/ul&gt;&lt;p data-pid=&quot;MQVsYjJ4&quot;&gt;&lt;i&gt;1. 服务熔断或请求限流机制&lt;/i&gt;&lt;/p&gt;&lt;p data-pid=&quot;HXhu9d-u&quot;&gt;因为 Redis 故障宕机而导致缓存雪崩问题时，我们可以启动&lt;b&gt;服务熔断&lt;/b&gt;机制，&lt;b&gt;暂停业务应用对缓存服务的访问，直接返回错误&lt;/b&gt;，不用再继续访问数据库，从而降低对数据库的访问压力，保证数据库系统的正常运行，然后等到 Redis 恢复正常后，再允许业务应用访问缓存服务。&lt;/p&gt;&lt;p data-pid=&quot;d5HTg4ux&quot;&gt;服务熔断机制是保护数据库的正常允许，但是暂停了业务应用访问缓存服系统，全部业务都无法正常工作&lt;/p&gt;&lt;p data-pid=&quot;U_Z6kkw5&quot;&gt;为了减少对业务的影响，我们可以启用&lt;b&gt;请求限流&lt;/b&gt;机制，&lt;b&gt;只将少部分请求发送到数据库进行处理，再多的请求就在入口直接拒绝服务&lt;/b&gt;，等到 Redis 恢复正常并把缓存预热完后，再解除请求限流的机制。&lt;/p&gt;&lt;p data-pid=&quot;YU-QOQdg&quot;&gt;&lt;i&gt;2. 构建 Redis 缓存高可靠集群&lt;/i&gt;&lt;/p&gt;&lt;p data-pid=&quot;yve4FRvj&quot;&gt;服务熔断或请求限流机制是缓存雪崩发生后的应对方案，我们最好通过&lt;b&gt;主从节点的方式构建 Redis 缓存高可靠集群&lt;/b&gt;。&lt;/p&gt;&lt;p data-pid=&quot;QGdHkPHt&quot;&gt;如果 Redis 缓存的主节点故障宕机，从节点可以切换成为主节点，继续提供缓存服务，避免了由于 Redis 故障宕机而导致的缓存雪崩问题。&lt;/p&gt;&lt;hr/&gt;&lt;h2&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//xiaolincoding.com/redis/cluster/cache_problem.html%23%25E7%25BC%2593%25E5%25AD%2598%25E5%2587%25BB%25E7%25A9%25BF&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;#&lt;/a&gt;缓存击穿&lt;/h2&gt;&lt;p data-pid=&quot;QreneL7O&quot;&gt;我们的业务通常会有几个数据会被频繁地访问，比如秒杀活动，这类被频地访问的数据被称为热点数据。&lt;/p&gt;&lt;p data-pid=&quot;TsuePx4P&quot;&gt;如果缓存中的&lt;b&gt;某个热点数据过期&lt;/b&gt;了，此时大量的请求访问了该热点数据，就无法从缓存中读取，直接访问数据库，数据库很容易就被高并发的请求冲垮，这就是&lt;b&gt;缓存击穿&lt;/b&gt;的问题。&lt;/p&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pica.zhimg.com/50/v2-3e230c327a90289676767efd9a573d4f_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;707&quot; data-rawheight=&quot;836&quot; data-default-watermark-src=&quot;https://picx.zhimg.com/50/v2-2db086f310e20a06d3495812a7fe0a6e_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://picx.zhimg.com/v2-3e230c327a90289676767efd9a573d4f_r.jpg?source=1940ef5c&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;707&quot; data-rawheight=&quot;836&quot; data-default-watermark-src=&quot;https://picx.zhimg.com/50/v2-2db086f310e20a06d3495812a7fe0a6e_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://picx.zhimg.com/v2-3e230c327a90289676767efd9a573d4f_r.jpg?source=1940ef5c&quot; data-actualsrc=&quot;https://pica.zhimg.com/50/v2-3e230c327a90289676767efd9a573d4f_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;p data-pid=&quot;_-1HmdRu&quot;&gt;可以发现缓存击穿跟缓存雪崩很相似，你可以认为缓存击穿是缓存雪崩的一个子集。&lt;/p&gt;&lt;p data-pid=&quot;gq7F93BF&quot;&gt;应对缓存击穿可以采取前面说到两种方案：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;DmZciOpG&quot;&gt;互斥锁方案，保证同一时间只有一个业务线程更新缓存，未能获取互斥锁的请求，要么等待锁释放后重新读取缓存，要么就返回空值或者默认值。&lt;/li&gt;&lt;li data-pid=&quot;Y-pQ_FUU&quot;&gt;不给热点数据设置过期时间，由后台异步更新缓存，或者在热点数据准备要过期前，提前通知后台线程更新缓存以及重新设置过期时间；&lt;/li&gt;&lt;/ul&gt;&lt;hr/&gt;&lt;h2&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//xiaolincoding.com/redis/cluster/cache_problem.html%23%25E7%25BC%2593%25E5%25AD%2598%25E7%25A9%25BF%25E9%2580%258F&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;#&lt;/a&gt;缓存穿透&lt;/h2&gt;&lt;p data-pid=&quot;Cj-JsZMP&quot;&gt;当发生缓存雪崩或击穿时，数据库中还是保存了应用要访问的数据，一旦缓存恢复相对应的数据，就可以减轻数据库的压力，而缓存穿透就不一样了。&lt;/p&gt;&lt;p data-pid=&quot;Qv5Cw49E&quot;&gt;当用户访问的数据，&lt;b&gt;既不在缓存中，也不在数据库中&lt;/b&gt;，导致请求在访问缓存时，发现缓存缺失，再去访问数据库时，发现数据库中也没有要访问的数据，没办法构建缓存数据，来服务后续的请求。那么当有大量这样的请求到来时，数据库的压力骤增，这就是&lt;b&gt;缓存穿透&lt;/b&gt;的问题。&lt;/p&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://picx.zhimg.com/50/v2-4fcfdb8a60dce0d6e99792261afeab14_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;576&quot; data-rawheight=&quot;836&quot; data-default-watermark-src=&quot;https://pica.zhimg.com/50/v2-7b8922a464f761d4497feb375da7828c_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic1.zhimg.com/v2-4fcfdb8a60dce0d6e99792261afeab14_r.jpg?source=1940ef5c&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;576&quot; data-rawheight=&quot;836&quot; data-default-watermark-src=&quot;https://pica.zhimg.com/50/v2-7b8922a464f761d4497feb375da7828c_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic1.zhimg.com/v2-4fcfdb8a60dce0d6e99792261afeab14_r.jpg?source=1940ef5c&quot; data-actualsrc=&quot;https://picx.zhimg.com/50/v2-4fcfdb8a60dce0d6e99792261afeab14_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;p data-pid=&quot;xKr_Sznb&quot;&gt;缓存穿透的发生一般有这两种情况：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;3hF-RyTG&quot;&gt;业务误操作，缓存中的数据和数据库中的数据都被误删除了，所以导致缓存和数据库中都没有数据；&lt;/li&gt;&lt;li data-pid=&quot;cRKywy2m&quot;&gt;黑客恶意攻击，故意大量访问某些读取不存在数据的业务；&lt;/li&gt;&lt;/ul&gt;&lt;p data-pid=&quot;RjCqSuoC&quot;&gt;应对缓存穿透的方案，常见的方案有三种。&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;P_f-luuQ&quot;&gt;第一种方案，非法请求的限制；&lt;/li&gt;&lt;li data-pid=&quot;dMOmPQYK&quot;&gt;第二种方案，缓存空值或者默认值；&lt;/li&gt;&lt;li data-pid=&quot;BszX0vWG&quot;&gt;第三种方案，使用布隆过滤器快速判断数据是否存在，避免通过查询数据库来判断数据是否存在；&lt;/li&gt;&lt;/ul&gt;&lt;p data-pid=&quot;VAFp_xfT&quot;&gt;第一种方案，非法请求的限制&lt;/p&gt;&lt;p data-pid=&quot;pzTvx17M&quot;&gt;当有大量恶意请求访问不存在的数据的时候，也会发生缓存穿透，因此在 API 入口处我们要判断求请求参数是否合理，请求参数是否含有非法值、请求字段是否存在，如果判断出是恶意请求就直接返回错误，避免进一步访问缓存和数据库。&lt;/p&gt;&lt;p data-pid=&quot;xtQn4qTA&quot;&gt;第二种方案，缓存空值或者默认值&lt;/p&gt;&lt;p data-pid=&quot;0VdNGHGD&quot;&gt;当我们线上业务发现缓存穿透的现象时，可以针对查询的数据，在缓存中设置一个空值或者默认值，这样后续请求就可以从缓存中读取到空值或者默认值，返回给应用，而不会继续查询数据库。&lt;/p&gt;&lt;p data-pid=&quot;colYt8VW&quot;&gt;&lt;i&gt;第三种方案，使用布隆过滤器快速判断数据是否存在，避免通过查询数据库来判断数据是否存在。&lt;/i&gt;&lt;/p&gt;&lt;p data-pid=&quot;HcEtA3ac&quot;&gt;我们可以在写入数据库数据时，使用布隆过滤器做个标记，然后在用户请求到来时，业务线程确认缓存失效后，可以通过查询布隆过滤器快速判断数据是否存在，如果不存在，就不用通过查询数据库来判断数据是否存在。&lt;/p&gt;&lt;p data-pid=&quot;tG5t4Bkp&quot;&gt;即使发生了缓存穿透，大量请求只会查询 Redis 和布隆过滤器，而不会查询数据库，保证了数据库能正常运行，Redis 自身也是支持布隆过滤器的。&lt;/p&gt;&lt;p data-pid=&quot;c97RKmIt&quot;&gt;那问题来了，布隆过滤器是如何工作的呢？接下来，我介绍下。&lt;/p&gt;&lt;p data-pid=&quot;4ZuXvxTz&quot;&gt;布隆过滤器由「初始值都为 0 的位图数组」和「 N 个哈希函数」两部分组成。当我们在写入数据库数据时，在布隆过滤器里做个标记，这样下次查询数据是否在数据库时，只需要查询布隆过滤器，如果查询到数据没有被标记，说明不在数据库中。&lt;/p&gt;&lt;p data-pid=&quot;C7tfYke6&quot;&gt;布隆过滤器会通过 3 个操作完成标记：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;DvzsP3cw&quot;&gt;第一步，使用 N 个哈希函数分别对数据做哈希计算，得到 N 个哈希值；&lt;/li&gt;&lt;li data-pid=&quot;h78SDH6G&quot;&gt;第二步，将第一步得到的 N 个哈希值对位图数组的长度取模，得到每个哈希值在位图数组的对应位置。&lt;/li&gt;&lt;li data-pid=&quot;P7HV2M0b&quot;&gt;第三步，将每个哈希值在位图数组的对应位置的值设置为 1；&lt;/li&gt;&lt;/ul&gt;&lt;p data-pid=&quot;pJ_Q0WgZ&quot;&gt;举个例子，假设有一个位图数组长度为 8，哈希函数 3 个的布隆过滤器。&lt;/p&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://picx.zhimg.com/50/v2-32058be7324f355398304501c433125b_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;977&quot; data-rawheight=&quot;287&quot; data-default-watermark-src=&quot;https://picx.zhimg.com/50/v2-2cf00fa9d6c7abf2dc9027daeb15b6de_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://picx.zhimg.com/v2-32058be7324f355398304501c433125b_r.jpg?source=1940ef5c&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;977&quot; data-rawheight=&quot;287&quot; data-default-watermark-src=&quot;https://picx.zhimg.com/50/v2-2cf00fa9d6c7abf2dc9027daeb15b6de_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://picx.zhimg.com/v2-32058be7324f355398304501c433125b_r.jpg?source=1940ef5c&quot; data-actualsrc=&quot;https://picx.zhimg.com/50/v2-32058be7324f355398304501c433125b_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;p data-pid=&quot;0dHpojEQ&quot;&gt;在数据库写入数据 x 后，把数据 x 标记在布隆过滤器时，数据 x 会被 3 个哈希函数分别计算出 3 个哈希值，然后在对这 3 个哈希值对 8 取模，假设取模的结果为 1、4、6，然后把位图数组的第 1、4、6 位置的值设置为 1。&lt;b&gt;当应用要查询数据 x 是否数据库时，通过布隆过滤器只要查到位图数组的第 1、4、6 位置的值是否全为 1，只要有一个为 0，就认为数据 x 不在数据库中&lt;/b&gt;。&lt;/p&gt;&lt;p data-pid=&quot;r9nsuJ8I&quot;&gt;布隆过滤器由于是基于哈希函数实现查找的，高效查找的同时&lt;b&gt;存在哈希冲突的可能性&lt;/b&gt;，比如数据 x 和数据 y 可能都落在第 1、4、6 位置，而事实上，可能数据库中并不存在数据 y，存在误判的情况。&lt;/p&gt;&lt;p data-pid=&quot;NxGeEAne&quot;&gt;所以，&lt;b&gt;查询布隆过滤器说数据存在，并不一定证明数据库中存在这个数据，但是查询到数据不存在，数据库中一定就不存在这个数据&lt;/b&gt;。&lt;/p&gt;&lt;hr/&gt;&lt;p data-pid=&quot;NPP8p3X_&quot;&gt;缓存异常会面临的三个问题：缓存雪崩、击穿和穿透。&lt;/p&gt;&lt;p data-pid=&quot;-fkOowh7&quot;&gt;其中，缓存雪崩和缓存击穿主要原因是数据不在缓存中，而导致大量请求访问了数据库，数据库压力骤增，容易引发一系列连锁反应，导致系统奔溃。不过，一旦数据被重新加载回缓存，应用又可以从缓存快速读取数据，不再继续访问数据库，数据库的压力也会瞬间降下来。因此，缓存雪崩和缓存击穿应对的方案比较类似。&lt;/p&gt;&lt;p data-pid=&quot;ta9SzQUx&quot;&gt;而缓存穿透主要原因是数据既不在缓存也不在数据库中。因此，缓存穿透与缓存雪崩、击穿应对的方案不太一样。&lt;/p&gt;&lt;p data-pid=&quot;G6fbBkbZ&quot;&gt;我这里整理了表格，你可以从下面这张表格很好的知道缓存雪崩、击穿和穿透的区别以及应对方案。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://picx.zhimg.com/50/v2-6fc868db09db5b408204f64f88705296_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;622&quot; data-default-watermark-src=&quot;https://pic1.zhimg.com/50/v2-908a812f5953fd8f7c0d495f33a61361_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pica.zhimg.com/v2-6fc868db09db5b408204f64f88705296_r.jpg?source=1940ef5c&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;622&quot; data-default-watermark-src=&quot;https://pic1.zhimg.com/50/v2-908a812f5953fd8f7c0d495f33a61361_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pica.zhimg.com/v2-6fc868db09db5b408204f64f88705296_r.jpg?source=1940ef5c&quot; data-actualsrc=&quot;https://picx.zhimg.com/50/v2-6fc868db09db5b408204f64f88705296_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;-b5ilCjC&quot;&gt;&lt;b&gt;推荐阅读：&lt;/b&gt;&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://picx.zhimg.com/50/v2-b059f82b3aa851a0a40d14d15713d5ee_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;2828&quot; data-rawheight=&quot;1442&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic1.zhimg.com/v2-b059f82b3aa851a0a40d14d15713d5ee_r.jpg?source=1940ef5c&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;2828&quot; data-rawheight=&quot;1442&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic1.zhimg.com/v2-b059f82b3aa851a0a40d14d15713d5ee_r.jpg?source=1940ef5c&quot; data-actualsrc=&quot;https://picx.zhimg.com/50/v2-b059f82b3aa851a0a40d14d15713d5ee_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;G250TOPo&quot;&gt;&lt;b&gt;数据类型篇&lt;/b&gt;&lt;/p&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>3338297c8fa61e2634f4fd594067fd89</guid>
+<title>前端 UI 组件库有哪些选择</title>
+<link>https://toutiao.io/k/4ehnmbv</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;lake-content&quot;&gt;
+&lt;h2 id=&quot;gPWZj&quot;&gt;&lt;a name=&quot;toc-1&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Vue 3&lt;/span&gt;&lt;/h2&gt;
+&lt;h3 id=&quot;IMkab&quot;&gt;&lt;a name=&quot;toc-2&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Element Plus&lt;/span&gt;&lt;/h3&gt;
+&lt;p id=&quot;u3c7c3090&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;基于 Vue 3，面向设计师和开发者的组件库 。&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;u5e46d077&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;饿了么团队&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;u8d069150&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://element-plus.gitee.io/zh-CN/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://element-plus.gitee.io/zh-CN/&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://element-plus.gitee.io/zh-CN/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&quot;TryxR&quot;&gt;&lt;a name=&quot;toc-3&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Ant Design Vue&lt;/span&gt;&lt;/h3&gt;
+&lt;p id=&quot;u79558178&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;ant-design-vue 为 Web 应用提供了丰富的基础 UI 组件，我们还将持续探索企业级应用的最佳 UI 实践。&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;u41371dfc&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;开源社区&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;uda566a9a&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://antdv.com/components/overview-cn&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://antdv.com/components/overview-cn&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://antdv.com/components/overview-cn&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&quot;s6VHe&quot;&gt;&lt;a name=&quot;toc-4&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Vant 4&lt;/span&gt;&lt;/h3&gt;
+&lt;p id=&quot;u537e83b9&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;轻量、可靠的移动端 Vue 组件库。&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;uf05c57ed&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;有赞团队&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;ufbd2c52e&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://vant-contrib.gitee.io/vant/#/zh-CN&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://vant-contrib.gitee.io/vant/#/zh-CN&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://vant-contrib.gitee.io/vant/#/zh-CN&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&quot;hxtO6&quot;&gt;&lt;a name=&quot;toc-5&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;VARLET&lt;/span&gt;&lt;/h3&gt;
+&lt;p id=&quot;u57cfbf36&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;Varlet 是一个基于 Vue3 开发的 Material 风格移动端组件库，全面拥抱 Vue3 生态，由社区团队维护。支持 Typescript、按需引入、暗黑模式、主题定制、国际化，并提供 VSCode 插件保障良好的开发体验。&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;ucb3bd697&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;开源社区&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;u2f6cef96&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://varlet.gitee.io/varlet-ui/#/zh-CN/index&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://varlet.gitee.io/varlet-ui/#/zh-CN/index&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://varlet.gitee.io/varlet-ui/#/zh-CN/index&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&quot;lu3d8&quot;&gt;&lt;a name=&quot;toc-6&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Naive UI&lt;/span&gt;&lt;/h3&gt;
+&lt;p id=&quot;ud5ac6612&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;一个 Vue 3 组件库，比较完整，主题可调，使用 TypeScript，快，有点意思 。&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;udb62ba7c&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt; 开源社区&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;ue81ad4a7&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://www.naiveui.com/zh-CN/light&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://www.naiveui.com/zh-CN/light&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://www.naiveui.com/zh-CN/light&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&quot;HctsK&quot;&gt;&lt;a name=&quot;toc-7&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;View UI Plus&lt;/span&gt;&lt;/h3&gt;
+&lt;p id=&quot;uab443612&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;View UI Plus 是 View Design 设计体系中基于 Vue.js 3 的一套 UI 组件库，主要用于企业级中后台系统。&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;uf9809793&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt; 长沙开发者科技有限公司&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;ue5452207&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://www.iviewui.com/view-ui-plus/guide/introduce&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://www.iviewui.com/view-ui-plus/guide/introduce&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://www.iviewui.com/view-ui-plus/guide/introduce&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&quot;IKWQz&quot;&gt;&lt;a name=&quot;toc-8&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Vuetify&lt;/span&gt;&lt;/h3&gt;
+&lt;p id=&quot;uc53864a7&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;Vuetify is a no design skills required UI Library with beautifully handcrafted Vue Components. &lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;u6863f2f2&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt; 开源社区&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;ud8b36e63&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://next.vuetifyjs.com/en/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://next.vuetifyjs.com/en/&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://next.vuetifyjs.com/en/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&quot;niFYW&quot;&gt;&lt;a name=&quot;toc-9&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Wave UI&lt;/span&gt;&lt;/h3&gt;
+&lt;p id=&quot;u29da8825&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;A Vue.js UI framework with only the bright side. &lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;u51aa5748&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;开源社区&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;uff993f06&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://antoniandre.github.io/wave-ui/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://antoniandre.github.io/wave-ui/&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://antoniandre.github.io/wave-ui/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&quot;QZ5ve&quot;&gt;&lt;a name=&quot;toc-10&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Vue 2&lt;/span&gt;&lt;/h2&gt;
+&lt;h3 id=&quot;UvZSJ&quot;&gt;&lt;a name=&quot;toc-11&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Vant&lt;/span&gt;&lt;/h3&gt;
+&lt;p id=&quot;ube417963&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;轻量、可靠的移动端 Vue 组件库。&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;u7ef34685&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;有赞团队&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;uc80078ff&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://vant-contrib.gitee.io/vant/v2/#/zh-CN/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://vant-contrib.gitee.io/vant/v2/#/zh-CN/&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://vant-contrib.gitee.io/vant/v2/#/zh-CN/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&quot;Qsupp&quot;&gt;&lt;a name=&quot;toc-12&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;AT-UI&lt;/span&gt;&lt;/h3&gt;
+&lt;p id=&quot;u7e9b64b4&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;AT-UI 是一款基于 Vue.js 2.0 的前端 UI 组件库，主要用于快速开发 PC 网站中后台产品。&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;u49437dd4&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;凹凸实验室&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;u4bf2b234&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://at-ui.github.io/at-ui/#/zh&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://at-ui.github.io/at-ui/#/zh&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://at-ui.github.io/at-ui/#/zh&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&quot;FKjII&quot;&gt;&lt;a name=&quot;toc-13&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Vuetify&lt;/span&gt;&lt;/h3&gt;
+&lt;p id=&quot;u3ad4a893&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;Vuetify is a no design skills required UI Framework with beautifully handcrafted Vue Components.&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;u1b6efddc&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;开源社区&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;u47057cb5&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://vuetifyjs.com/en/getting-started/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://vuetifyjs.com/en/getting-started/&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://vuetifyjs.com/en/getting-started/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&quot;njgUG&quot;&gt;&lt;a name=&quot;toc-14&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Element&lt;/span&gt;&lt;/h3&gt;
+&lt;p id=&quot;u213fb718&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt; Element，一套为开发者、设计师和产品经理准备的基于 Vue 2.0 的桌面端组件库。&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;u0c3469b8&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;饿了么团队&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;u7c1aec70&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://element.eleme.cn/#/zh-CN&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://element.eleme.cn/#/zh-CN&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://element.eleme.cn/#/zh-CN&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&quot;SXgXe&quot;&gt;&lt;a name=&quot;toc-15&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Wave UI&lt;/span&gt;&lt;/h3&gt;
+&lt;p id=&quot;ue72424ee&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;A Vue.js UI framework with only the bright side. &lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;u6ee88d39&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;开源社区&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;u9cc66618&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://antoniandre.github.io/wave-ui/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://antoniandre.github.io/wave-ui/&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://antoniandre.github.io/wave-ui/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&quot;BfUVg&quot;&gt;&lt;a name=&quot;toc-16&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;React&lt;/span&gt;&lt;/h2&gt;
+&lt;h3 id=&quot;DblGn&quot;&gt;&lt;a name=&quot;toc-17&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Ant Design of React&lt;/span&gt;&lt;/h3&gt;
+&lt;p id=&quot;u9e60ec56&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;antd 是基于 Ant Design 设计体系的 React UI 组件库，主要用于研发企业级中后台产品。&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;u1445bbee&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;蚂蚁金服团队&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;u2113c282&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://ant.design/docs/react/introduce-cn&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://ant.design/docs/react/introduce-cn&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://ant.design/docs/react/introduce-cn&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&quot;ZK6Yw&quot;&gt;&lt;a name=&quot;toc-18&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;React Vant&lt;/span&gt;&lt;/h3&gt;
+&lt;p id=&quot;u61cf5d37&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;根据 Vant 开发的基于 React 开发的移动端组件库。&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;ud4fcdb32&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;开源社区&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;u9cdc829d&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://react-vant-gitee.3lang.dev/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://react-vant-gitee.3lang.dev/&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://react-vant-gitee.3lang.dev/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&quot;LBgWW&quot;&gt;&lt;a name=&quot;toc-19&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Element React&lt;/span&gt;&lt;/h3&gt;
+&lt;p id=&quot;u97b6bae5&quot; class=&quot;ne-p&quot;&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://github.com/ElemeFE/element&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://github.com/ElemeFE/element&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;Element&lt;/span&gt;&lt;/a&gt;&lt;span class=&quot;ne-text&quot;&gt; was initially written in &lt;/span&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://vuejs.org/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://vuejs.org/&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;Vue&lt;/span&gt;&lt;/a&gt;&lt;span class=&quot;ne-text&quot;&gt;, which has many elegant UI components, but we also love &lt;/span&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://facebook.github.io/react/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://facebook.github.io/react/&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;React&lt;/span&gt;&lt;/a&gt;&lt;span class=&quot;ne-text&quot;&gt;, so we forked it for the React community.&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;u90aea7aa&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;开源社区&lt;/span&gt;&lt;/p&gt;
+&lt;p id=&quot;u6ed179a6&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://elemefe.github.io/element-react/index&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://elemefe.github.io/element-react/index&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://elemefe.github.io/element-react/index&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;/div&gt;
+    &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>cfcfe576cae3991d8ce4ec5d3aae1e9c</guid>
-<title>程序员加班一周休病假，犯了小错误遭开除，老板怒斥程序员不中用</title>
-<link>https://toutiao.io/k/b42dkcr</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;
+<guid>b81c0d4a7c9f14cbe50c2d2dcdc80707</guid>
+<title>如何搭建一个智能对话机器人？行业应用和问答技术梳理</title>
+<link>https://toutiao.io/k/yof6pl8</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content             autoTypeSetting24psection&amp;#10;            &quot; id=&quot;js_content&quot;&gt;&lt;section data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section data-mid=&quot;&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/nW2ZPfuYqSJuK8UUBxdZXj1c20hUg374YPgXibgDGytAy87YxvVk4WCRFWrdKJPshStrlPJp4vGEGUQodxt7ibOw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-cropselx1=&quot;0&quot; data-cropselx2=&quot;546&quot; data-cropsely1=&quot;0&quot; data-cropsely2=&quot;232&quot; data-ratio=&quot;0.40404040404040403&quot; data-w=&quot;990&quot;/&gt;&lt;/section&gt;&lt;section data-id=&quot;88212&quot; data-tools=&quot;135编辑器&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section data-style=&quot;color: #888888; font-size: 14px;&quot;&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section data-id=&quot;88212&quot; data-tools=&quot;135编辑器&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section data-style=&quot;color: #888888; font-size: 14px;&quot;&gt;&lt;section data-id=&quot;88212&quot; data-tools=&quot;135编辑器&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section data-style=&quot;color: #888888; font-size: 14px;&quot;&gt;&lt;section data-role=&quot;outer&quot; label=&quot;Powered by 135editor.com&quot;&gt;&lt;section&gt;&lt;section data-id=&quot;86005&quot; data-tools=&quot;135编辑器&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;span&gt;&lt;span&gt;&lt;span&gt;通过本文可以&lt;/span&gt;&lt;span&gt;了解：&lt;/span&gt;智能对话机器人技术进展和各行业应用情况、国内外对话平台和工具梳理、6种问答类型介绍&lt;span&gt;、各环节涉及的&lt;/span&gt;&lt;span&gt;技术栈和&lt;/span&gt;数据准备方法等。&lt;/span&gt;&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;h1 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;Part1&lt;/span&gt;&lt;span&gt;对话机器人简介&lt;/span&gt;&lt;/h1&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;1&lt;/span&gt;&lt;span&gt;对话式AI&lt;/span&gt;&lt;/h2&gt;&lt;section&gt;&lt;span&gt;对话式AI是通过语音语义技术理解人类意图，执行任务或作出回答的智能技术。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;对话系统广泛应用于各行各业，通过结合NLP与机器学习算法，实现高效智能的交互服务，如智能语音助手、聊天机器人、客服机器人、外呼机器人等。&lt;/span&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.28526148969889065&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Jib4QOicgEfRsv7944ZdLD9sBnyl39WFpcKYOPB0Kib8icjzLVbw6MQuFdxuI1UpRkQqlJiaksfTVflUL61TLianmxfA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1262&quot;/&gt;&lt;span&gt;图源：沙利文、头豹研究院&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;企业购买对话式AI机器人，为了&lt;strong&gt;降本增效&lt;/strong&gt;，即&lt;strong&gt;降低或优化人力成本，增长业务、提高服务质量和效率&lt;/strong&gt;。因此，AI对话产品核心功能往往需要&lt;strong&gt;智能调度、坐席助手、对话机器人和对话洞察&lt;/strong&gt;四大模块，实现客流分发、人机协作、对话交互、智能运营和价值挖掘。助力企业&lt;strong&gt;数字化转型升级和商业决策&lt;/strong&gt;，提升企业数字化、智能化、精细化的管理水平。想要切入智能对话服务领域的，可以参考下图。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6927374301675978&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Jib4QOicgEfRsv7944ZdLD9sBnyl39WFpcMg7T0JiaQ5PtsNgAS6pQZmrnoIMZJfTia1aveVicG2icQibvUPWeoDwUmww/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1074&quot;/&gt;&lt;span&gt;图源：&lt;/span&gt;&lt;span&gt;艾瑞咨询研究院&lt;/span&gt;&lt;/p&gt;&lt;h1 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;Part2&lt;/span&gt;&lt;span&gt;应用行业和业务场景&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;&lt;/p&gt;&lt;section&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5169340463458111&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Jib4QOicgEfRsv7944ZdLD9sBnyl39WFpc7eu3kqhxxe8KB9Hjx0con8d6So7rDH0Jl0Kozw9ls9hsgKUbbdIsTw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1122&quot;/&gt;&lt;span&gt;    &lt;/span&gt;&lt;span&gt;图源：艾瑞咨询研究院&lt;/span&gt;&lt;/section&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;section&gt;&lt;span&gt;未来离不开人工智能，AI技术已经渗透到生产生活的很多方面和环节。&lt;/span&gt;&lt;/section&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;2&lt;/span&gt;&lt;span&gt;行业痛点&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;&lt;span&gt;人工服务现存痛点：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;1）&lt;strong&gt;人力工作时长有限&lt;/strong&gt;，对话机器人可设置24小时在线，而且可实现全渠道接入，无需在多个接入渠道中来回切换；&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2）用户咨询量波动在&lt;strong&gt;高峰时期人力不足&lt;/strong&gt;会导致服务体验波动，对话机器人可快速解决重复性问题，并根据业务流程，引导用户理清复杂、模糊问题，给予用户直接清晰的问题回复；&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;3）&lt;strong&gt;数据价值没被有效利用&lt;/strong&gt;，且留存量低，对话机器人可对语音文本对话数据进行智能分析与质检，帮助企业深度挖掘数据价值。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.4916044776119403&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Jib4QOicgEfRsv7944ZdLD9sBnyl39WFpcLNgqBnvYGyuLuB2MEhx4I6EzZZqpOMSQ6sfGp8sXiaucHXRjRrgFw5A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2144&quot;/&gt;&lt;span&gt;图源：艾瑞咨询研究院&lt;/span&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;3&lt;/span&gt;&lt;span&gt;业务场景和行业应用&lt;/span&gt;&lt;/h2&gt;&lt;section&gt;&lt;span&gt;在业务场景下的一些应用有：&lt;/span&gt;&lt;/section&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;智能客服类：智能客服、商家智能聊天助手。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;智能外呼类：智能外呼助手、通知助手。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;智能呼入类：招聘面试机器人、客服接电助手。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;智能质检类：语音质检系统、通话质检。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h1 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;Part3&lt;/span&gt;&lt;span&gt;行业应用案例：&lt;/span&gt;&lt;/h1&gt;&lt;section&gt;&lt;span&gt;在&lt;strong&gt;金融财税&lt;/strong&gt;行业，主要在&lt;strong&gt;证券、银行、保险、财税、互联网金融&lt;/strong&gt;等细分领域。金融行业售前服务仍以电销为主，以SaaS模式为主且定制化需求多。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;在&lt;strong&gt;教育培训&lt;/strong&gt;行业，主要是&lt;strong&gt;培训机构、在线教育、高校网站或一些学生服务产品&lt;/strong&gt;。需求点在于售前获客转化、业务效率及服务效果，对客服系统的流程设计、数据报表分析等方面都要求较高。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;在&lt;strong&gt;电商零售商超&lt;/strong&gt;行业，主要是售前咨询和售后服务，需要对客户的数据做积累和智能分析。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;在&lt;strong&gt;生活服务&lt;/strong&gt;领域，用户使用量大、不定时，比如&lt;strong&gt;物流、旅游、酒店住宿、医疗健康&lt;/strong&gt;等生活服务平台，业务量大、用户使用频率高。比如旅游行业，相关景点信息、住宿、交通、饮食信息，涉及多个领域，咨询量很大，访客数及需求难以把控，可以根据访客咨询、浏览轨迹等信息，结合旅游相关知识库，提供套餐推荐和服务等。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;政企法务&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;方面，国家大力推行&lt;strong&gt;智慧政务&lt;/strong&gt;、提升政务办公效率。除了要靠技术和产品实力，还很考验商务和资源关系。不同地域比较分散，较难规模化，如果有一个成功案例将是一个标杆。&lt;/span&gt;&lt;/section&gt;&lt;h1 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;Part4&lt;/span&gt;&lt;span&gt;国内/外智能对话平台&lt;/span&gt;&lt;/h1&gt;&lt;section&gt;&lt;span&gt;国内外的一些企业推出了智能对话平台，满足中小企业或普通用户以较低的成本来配置一个对话机器人。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;国内比较有代表性的有：&lt;span&gt;百度UNIT&lt;/span&gt;&lt;sup&gt;[1]&lt;/sup&gt;、&lt;span&gt;阿里云小蜜&lt;/span&gt;&lt;sup&gt;[2]&lt;/sup&gt;、&lt;span&gt;腾讯TBP&lt;/span&gt;&lt;sup&gt;[3]&lt;/sup&gt;、&lt;span&gt;追一科技&lt;/span&gt;&lt;sup&gt;[4]&lt;/sup&gt;、&lt;span&gt;吾来&lt;/span&gt;&lt;sup&gt;[5]&lt;/sup&gt;、&lt;span&gt;竹间智能&lt;/span&gt;&lt;sup&gt;[6]&lt;/sup&gt;等。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;另外国内还有很多优秀对话式AI厂商，例如科大讯飞、思必驰、京东科技、沃丰科技、容联七陌、智齿科技、百应科技、一知智能、晓多科技等，就不在这里一一放链接了，感兴趣的同学可以自行搜索查找。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;国外比较有代表性的有：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;span&gt;Google Dialogflow&lt;/span&gt;&lt;sup&gt;[7]&lt;/sup&gt;、&lt;span&gt;Facebook wit.ai&lt;/span&gt;&lt;sup&gt;[8]&lt;/sup&gt;、&lt;span&gt;Microsoft Luis&lt;/span&gt;&lt;sup&gt;[9]&lt;/sup&gt;、&lt;span&gt;Amazon Lex&lt;/span&gt;&lt;sup&gt;[10]&lt;/sup&gt; 等。&lt;/span&gt;&lt;/section&gt;&lt;h1 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;Part5&lt;/span&gt;&lt;span&gt;平台文档和构建工具&lt;/span&gt;&lt;/h1&gt;&lt;section&gt;&lt;span&gt;具体链接见文末【参考资料】处：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;span&gt;Facebook Messenger&lt;/span&gt;&lt;sup&gt;[11]&lt;/sup&gt;、&lt;span&gt;Slack&lt;/span&gt;&lt;sup&gt;[12]&lt;/sup&gt;、&lt;span&gt;Discord&lt;/span&gt;&lt;sup&gt;[13]&lt;/sup&gt;、&lt;span&gt;Telegram&lt;/span&gt;&lt;sup&gt;[14]&lt;/sup&gt;、&lt;span&gt;Wechat&lt;/span&gt;&lt;sup&gt;[15]&lt;/sup&gt;、&lt;span&gt;QQ&lt;/span&gt;&lt;sup&gt;[16]&lt;/sup&gt;、&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;辅助构建工具：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;span&gt;octaneai&lt;/span&gt;&lt;sup&gt;[17]&lt;/sup&gt;、&lt;span&gt;howdy botkit&lt;/span&gt;&lt;sup&gt;[18]&lt;/sup&gt;、&lt;span&gt;textit.in&lt;/span&gt;&lt;sup&gt;[19]&lt;/sup&gt;、&lt;span&gt;Motion.ai&lt;/span&gt;&lt;sup&gt;[20]&lt;/sup&gt;、&lt;span&gt;Chatfuel&lt;/span&gt;&lt;sup&gt;[21]&lt;/sup&gt;、&lt;span&gt;IBM’s Watson&lt;/span&gt;&lt;sup&gt;[22]&lt;/sup&gt;、&lt;span&gt;Chatfuel&lt;/span&gt;&lt;sup&gt;[23]&lt;/sup&gt;、&lt;span&gt;BeepBoopHQ&lt;/span&gt;&lt;sup&gt;[24]&lt;/sup&gt;、&lt;span&gt;Gupshup&lt;/span&gt;&lt;sup&gt;[25]&lt;/sup&gt;&lt;/span&gt;&lt;/section&gt;&lt;h1 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;Part6&lt;/span&gt;&lt;span&gt;关键技术&lt;/span&gt;&lt;/h1&gt;&lt;section&gt;&lt;span&gt;上文已经介绍了应用层和产品层的相关情况，接下来我们聊聊技术方面的方案。聊天机器人所需技术涉及到自然语言处理、文本挖掘、知识图谱、深度学习等众多技术领域。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;技术层、产品层、应用层：&lt;/span&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.44341801385681295&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Jib4QOicgEfRsv7944ZdLD9sBnyl39WFpclfaickbQh9alpDGpibGjjLeabSyibLVvZvla0v68cJ8eUWZ5jtQMa0uYw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1732&quot;/&gt; &lt;span&gt;图源：沙利文、头豹研究院&lt;/span&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;4&lt;/span&gt;&lt;span&gt;对话机器人内部执行流程&lt;/span&gt;&lt;/h2&gt;&lt;section&gt;&lt;span&gt;对话机器人工作流程：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;对于一个机器人对话系统，用户说一句话，语音转成文字之后，根据文字的分词、句法、语义分析结果，去对应的知识库中，寻求或自动生成最合理的应答。&lt;/span&gt;&lt;/section&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5930451127819549&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Jib4QOicgEfRsv7944ZdLD9sBnyl39WFpcB3mg9gVwaDtIRRL76bciaGWJM8EHslXm166mKxGXQNy2lLgGhia4wXHA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2128&quot;/&gt;&lt;span&gt;图源：艾瑞咨询研究院&lt;/span&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;5&lt;/span&gt;&lt;span&gt;六种问答范式&lt;/span&gt;&lt;/h2&gt;&lt;section&gt;&lt;span&gt;问答是一种单轮的对话，用户问机器人回答。问答型对话的实现方式有：&lt;strong&gt;匹配式问答FAQ、知识图谱问答KBQA、文档问答DocQA、表格问答TableQA、任务式问答TaskQA、社区问答CQA&lt;/strong&gt;等6种问答方式。&lt;/span&gt;&lt;/section&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;① 匹配式问答FAQ&lt;/span&gt;&lt;/h3&gt;&lt;section&gt;&lt;span&gt;匹配式问答应用比较广泛，常见的客服咨询、科普问答等都有应用。首先要根据业务场景需求梳理准备问答对数据（问题与答案的组合Questions Answer Pairs），训练相似度模型，当用户问题Query与问题Questions相似时，即会输出该问答对中的答案。答案是固定的，预先设置好的。&lt;/span&gt;&lt;/section&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;② 知识图谱问答KBQA&lt;/span&gt;&lt;/h3&gt;&lt;section&gt;&lt;span&gt;基于知识图谱的问答，是解析用户问题后从知识图谱中查询或推理结构化知识，找出答案。用户问题相对复杂，有多跳、条件限制等需要解析的问题。因此基于知识图谱的问答场景，可以完成多跳、限定条件、序数类、是否类、计数类等类型的问题。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;首先要搭建知识图谱（知识图谱自动化构建技术以后再细谈啦，本文主要是基于知识图谱的对话技术），将数据转换成结构化的数据，可以使用Neo4j和Nebula Graph等图数据库存储。&lt;/span&gt;&lt;/section&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;③ 文档问答DocQA&lt;/span&gt;&lt;/h3&gt;&lt;section&gt;&lt;span&gt;基于文档的问答，基于用户问题从文档语篇中寻找对应的答案，抽取片段或者生成答案，类似于我们做阅读理解的题目。FAQ需要准备大量问答对，耗费人工，因此如果能通过模型智能搜寻答案，将大大降低人工成本。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;首先要有业务文档积累，或者爬取领域公开资料，按照某种格式存储和标记。&lt;/span&gt;&lt;/section&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;④ 表格问答TableQA&lt;/span&gt;&lt;/h3&gt;&lt;section&gt;&lt;span&gt;基于表格的问答，从表格查询和推理获取用户问题的答案。比如商品属性相关的表格，从表格中搜索商品具体属性的值。基于表格的问答也可以解决复杂问题，带约束查询、推理计算、多表联查等。&lt;/span&gt;&lt;/section&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.9483240223463687&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Jib4QOicgEfRsv7944ZdLD9sBnyl39WFpc4cBrul9VSapYXqVjPFaibNNoVGSksHV4Mm4xiccGUiboibEX2FbC2jzcicQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1432&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;图源&lt;/span&gt;&lt;span&gt;：&lt;/span&gt;&lt;strong&gt;&lt;span&gt;&lt;span&gt;阿里智能对话机器人&lt;/span&gt;&lt;/span&gt;&lt;span&gt;&lt;sup&gt;[&lt;/sup&gt;&lt;/span&gt;&lt;span&gt;&lt;sup/&gt;&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;&lt;sup&gt;26]&lt;/sup&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;表格问答相比FAQ、对话流等其他引擎，可降低知识维护成本，并具备更强推理计算能力。&lt;/span&gt;&lt;/section&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;⑤ 任务式问答TaskQA&lt;/span&gt;&lt;/h3&gt;&lt;section&gt;&lt;span&gt;任务式问答，是根据用户意图和包含的实体（词槽）执行符合其需求的任务。对于复杂的问题，可以通过多轮对话的方式进一步交互。常见的场景有：票务机器人、房屋酒店预订、订外卖、点歌等。除了需要准备一些执行任务的话术外，还需要整理一些词槽、实体类别等内容。&lt;/span&gt;&lt;/section&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;⑥ 社区问答CQA&lt;/span&gt;&lt;/h3&gt;&lt;section&gt;&lt;span&gt;社区问答，主要帮助用户从社区中寻找复杂的、与上下文相关的问题的答案。利用UGC（用户产生内容）的方式，集众人的知识和智慧，在尽可能短的时间内找到合适的答案。像国内的知乎、百度知道、国外的Quora等都是社区问答。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;上述的几种问答，都需要准备好知识和数据，但每个人的知识存在于脑子中，通过UGC的方式，内容可能并没有整理到知识库，但可以找到相关的、相似的社区内容提供给用户，或者发布出来等待用户回答。&lt;/span&gt;&lt;/section&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;6&lt;/span&gt;&lt;span&gt;问答技术梳理&lt;/span&gt;&lt;/h2&gt;&lt;section&gt;&lt;span&gt;系统在收到用户query后，首先会对用户query进行&lt;strong&gt;预处理&lt;/strong&gt;，包括&lt;strong&gt;分词、去除停用词、去除标点符号、同义词替换&lt;/strong&gt;等；&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;之后的流程，看数据量大小又有不同的方案。数据量小的可以对库中数据做全量匹配，数据量大的往往还会有&lt;strong&gt;召回、粗排、精排&lt;/strong&gt;等技术流程。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;常见处理方式梳理总结如下：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;query和库中标准问题的相似度计算方法：&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;关键字匹配；TF-idf 相似度计算；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;深度模型相似度计算；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;基于Finetune-Bert句向量的语义相似度计算；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;用户query处理:&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;利用纠错表、&lt;strong&gt;pycorrector&lt;/strong&gt;或深度学习模型等对query纠错处理；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;意图识别：&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;句子模板、意图&lt;strong&gt;分类模型&lt;/strong&gt;、以搜代分通过检索召回等方式确定query的意图。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;实体识别和填槽：&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;词典、HMM、&lt;strong&gt;Bert(+LSTM)+CRF&lt;/strong&gt;等方式；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;Embedding 表示：&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;文本转向量化：word2vec、bert系列等可以将文本转向量；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;语义召回：&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;对query特征向量索引（faiss/Milvus)，找到TopK相似的标准问题；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;多路召回：&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;关键词或关键字段召回，利用Elastic Search计算关键词相似度；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;语义召回：利用 TF-idf、BM25、DSSM、ESIM等模型计算相似度；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;问题答案获取：&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;通常会设置&lt;strong&gt;高低阈值&lt;/strong&gt;，用来判断给答案还是走推荐，&lt;strong&gt;超出高阈值给top1问题的答案，两个阈值之间走推荐（推荐相似的相关的问题），低于最低阈值就拒识走兜底&lt;/strong&gt;。这个是对话的一个业务处理逻辑，实际业务中，还有多个模型需要集成进处理链路，往往需要更复杂的执行逻辑，需要具体问题具体分析了。&lt;/span&gt;&lt;/section&gt;&lt;h1 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;Part7&lt;/span&gt;&lt;span&gt;问答数据从哪里来&lt;/span&gt;&lt;/h1&gt;&lt;section&gt;&lt;span&gt;1、专业人员撰写：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;根据业务文档、产品手册等，从中提取、总结、归纳出可能的问题，并撰写答案。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;2、从历史对话数据中挖掘：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;从log日志中提取历史数据，进行数据挖掘、聚类和统计，将一些固定方式的、高频的历史问题总结制作成“&lt;strong&gt;标准问-相似问&lt;/strong&gt;”的方式，再对应的撰写答案。例如：文本聚类后，如果某个簇所包含的样本数量超过一定量，就做为常问问题，并选择一个具有代表性的句子作为标准问，或人工编写标准问。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;3、第三方开放平台接口数据。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;4、爬取数据：针对某一领域或行业，做爬虫。网上的数据毕竟是错综复杂的，用户所需获取的信息是需要有针对性的。然后使用算法模型，把非结构化数据转换成结构化数据。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;5、使用模型生成：近期AIGC很火，通过模型生成数据再人工审核也可以获取一部分数据。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;6、购买数据。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;注：&lt;/span&gt;&lt;span&gt;本文概括性地介绍了智能对话系统在不同领域的应用和问答技术栈，由于篇幅有限，更多关于多轮对话、对话生成、对话系统细节处理等，我们今后再继续讨论。&lt;/span&gt;&lt;span&gt;&lt;span/&gt;&lt;strong&gt;&lt;span&gt;由于作者能力有限，未尽之处，还请多多指教！&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;图片来自于沙利文、头豹研究院、艾瑞咨询研究院、阿里智能对话机器人等平台，版权归原机构所有，转载请注明出处。&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;section&gt;&lt;span&gt;参考资料&lt;/span&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;span&gt;[1]&lt;/span&gt;&lt;p&gt;百度UNIT: &lt;em&gt;http://unit.baidu.com&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[2]&lt;/span&gt;&lt;p&gt;阿里云小蜜: &lt;em&gt;https://cn.aliyun.com/product/beebot&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[3]&lt;/span&gt;&lt;p&gt;腾讯TBP: &lt;em&gt;https://cloud.tencent.com/product/tbp&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[4]&lt;/span&gt;&lt;p&gt;追一: &lt;em&gt;https://zhuiyi.ai/&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[5]&lt;/span&gt;&lt;p&gt;吾来: &lt;em&gt;https://wulai.laiye.com/&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[6]&lt;/span&gt;&lt;p&gt;竹间智能: &lt;em&gt;https://www.emotibot.com/&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[7]&lt;/span&gt;&lt;p&gt;Google Dialogflow: &lt;em&gt;https://dialogflow.com&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[8]&lt;/span&gt;&lt;p&gt;Facebook wit: &lt;em&gt;https://wit.ai&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[9]&lt;/span&gt;&lt;p&gt;Microsoft Luis: &lt;em&gt;https://www.luis.ai&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[10]&lt;/span&gt;&lt;p&gt;Amazon Lex: &lt;em&gt;https://aws.amazon.com/cn/lex&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[11]&lt;/span&gt;&lt;p&gt;Messenger: &lt;em&gt;https://developers.facebook.com/products/messenger&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[12]&lt;/span&gt;&lt;p&gt;Slack: &lt;em&gt;https://api.slack.com/bot-users&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[13]&lt;/span&gt;&lt;p&gt;Discord: &lt;em&gt;https://discord.com/blog&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[14]&lt;/span&gt;&lt;p&gt;Telegram: &lt;em&gt;https://core.telegram.org/bots/api&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[15]&lt;/span&gt;&lt;p&gt;Wechat: &lt;em&gt;https://openai.weixin.qq.com/&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[16]&lt;/span&gt;&lt;p&gt;QQ: &lt;em&gt;https://q.qq.com/&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[17]&lt;/span&gt;&lt;p&gt;octaneai: &lt;em&gt;http://octaneai.com/&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[18]&lt;/span&gt;&lt;p&gt;howdy botkit: &lt;em&gt;https://github.com/howdyai/botkit&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[19]&lt;/span&gt;&lt;p&gt;textit.in: &lt;em&gt;https://textit.in/&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[20]&lt;/span&gt;&lt;p&gt;Motion.ai: &lt;em&gt;https://www.motion.ai/&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[21]&lt;/span&gt;&lt;p&gt;Chatfuel: &lt;em&gt;https://chatfuel.com/&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[22]&lt;/span&gt;&lt;p&gt;IBM’s Watson: &lt;em&gt;https://www.ibm.com/watson&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[23]&lt;/span&gt;&lt;p&gt;Chatfuel: &lt;em&gt;https://chatfuel.com/&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[24]&lt;/span&gt;&lt;p&gt;BeepBoopHQ: &lt;em&gt;https://github.com/orgs/BeepBoopHQ/repositories&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[25]&lt;/span&gt;&lt;p&gt;Gupshup: &lt;em&gt;https://www.gupshup.io/&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;span&gt;&lt;span&gt;[26]&lt;/span&gt;&lt;p&gt;阿里智能对话机器人: &lt;em&gt;https://help.aliyun.com/document_detail/450645.html&lt;/em&gt;&lt;/p&gt;&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section powered-by=&quot;xiumi.us&quot;&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;mp-common-profile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-weui-theme=&quot;light&quot; data-id=&quot;MjM5ODkzMzMwMQ==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/nW2ZPfuYqSKAnqcViaIWJ40GKChb8uoLoichr44nhO2OSPBzMxhdosvv3Ljc695woogSyoIMlsiaIRuk8ur4jpHZg/0?wx_fmt=png&quot; data-nickname=&quot;AINLP&quot; data-alias=&quot;nlpjob&quot; data-signature=&quot;一个有趣有AI的自然语言处理公众号：关注AI、NLP、机器学习、推荐系统、计算广告等相关技术。公众号可直接对话双语聊天机器人，尝试自动对联、作诗机、藏头诗生成器，调戏夸夸机器人、彩虹屁生成器，使用中英翻译，查询相似词，测试NLP相关工具包。&quot; data-from=&quot;0&quot; data-is_biz_ban=&quot;0&quot;/&gt;&lt;/section&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;进技术交流群请添加AINLP小助手微信（id: ainlp2)&lt;/strong&gt;&lt;/p&gt;&lt;/pre&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;请备注&lt;span&gt;具体方向+所用到的相关技术点&lt;/span&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-fileid=&quot;502943405&quot; data-ratio=&quot;1&quot; data-s=&quot;300,640&quot; data-type=&quot;jpeg&quot; data-w=&quot;430&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/nW2ZPfuYqSJADkmZ2IX6Z23znAibuEevotDMq9iaMxiapK7jfMibiauGFkycicAJEs6x5U9SGyDJZ0S1tRed9TPNUUDQ/640?wx_fmt=jpeg&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;关于AINLP&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;AINLP 是一个有趣有AI的自然语言处理社区，专注于 AI、NLP、机器学习、深度学习、推荐算法等相关技术的分享，主题包括文本摘要、智能问答、聊天机器人、机器翻译、自动生成、知识图谱、预训练模型、推荐系统、计算广告、招聘信息、求职经验分享等，欢迎关注！加技术交流群请添加AINLP小助手微信(id：ainlp2)，备注工作/研究方向+加群目的。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-backh=&quot;225&quot; data-backw=&quot;558&quot; data-cropselx1=&quot;0&quot; data-cropselx2=&quot;558&quot; data-cropsely1=&quot;0&quot; data-cropsely2=&quot;225&quot; data-fileid=&quot;502943404&quot; data-ratio=&quot;0.40404040404040403&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/nW2ZPfuYqSKABHCqVVQkVYPrM4XY1vsd0iaeuXzyJnoFc8cibd5mYb4wdA3WMQtiaPVmr0XLZHMuVibqWncibpnTSnQ/640?wx_fmt=jpeg&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-type=&quot;jpeg&quot; data-w=&quot;990&quot;/&gt;&lt;p&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;阅读至此了，分享、点赞、在看三选一吧🙏&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;/pre&gt;&lt;/pre&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;mp-style-type data-value=&quot;3&quot;/&gt;&lt;/p&gt;&lt;/div&gt;
+
+          
+        &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>81857415a6189974b205f74197c2425f</guid>
+<title>盘点 3 个 .Net 开发的 WMS 仓库管理系统</title>
+<link>https://toutiao.io/k/zu6dznx</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content             autoTypeSetting24psection&amp;#10;            &quot; id=&quot;js_content&quot;&gt;&lt;blockquote class=&quot;js_blockquote_wrap&quot; data-type=&quot;2&quot; data-url=&quot;&quot; data-author-name=&quot;&quot; data-content-utf8-length=&quot;26&quot; data-source-title=&quot;&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;section class=&quot;js_blockquote_digest&quot;&gt;&lt;section&gt;&lt;span&gt;欢迎加入 &lt;/span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MjM5MDE5MDM5NA==&amp;amp;mid=2449941541&amp;amp;idx=1&amp;amp;sn=768ea96dc2ab18c3312a6e618182c9a5&amp;amp;chksm=b1bb1a7086cc9366b3f4724d99ba78859eab80e6c56ec10fc8fb712141397058182567ce126f&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;学习小圈子&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; hasload=&quot;1&quot;&gt;&lt;span&gt;.Net编程学习小圈子&lt;/span&gt;&lt;/a&gt;&lt;span&gt; &lt;/span&gt;&lt;span&gt;，一起打卡交流学习。&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;/blockquote&gt;&lt;p&gt;&lt;span&gt;仓库管理系统在企业中，重要性越来越高，不仅可以提高效率，还能降低企业的压力，企业&lt;span&gt;通过协调和优化资源使用和物料流动，能&lt;/span&gt;极大程度地提升了管理效率，节约了成本。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;特别是最近这两年，WMS仓库管理系统特别受到关注，所以盘点下之前分享的3个开源的仓库管理系统。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.3626707132018209&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_png/tJJDa2wmJiapAk3I1jR3O64bvEMJicwgM9M4R9VUDlt7JvJEWuBvickRickN2858aKg8voo12vRhVVMKEYqVaVBqgQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1318&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;一、&lt;span&gt;KopSoft - &lt;span&gt;基于&lt;/span&gt;Asp.net MVC+Vue开发&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;该项目系统功能完整，界面简单、采用多层架构。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;h2&gt;&lt;span&gt;&lt;strong&gt;技术框架：&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;section&gt;&lt;span&gt;1、基于.Net Core 2.2~6.0开发；&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;2、支持Sqlserver、Mysql数据库；&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;3、前端采用 vue、polyfill、qs、 axios、 bootstrap、adminlte、layer、bootstrap-datetimepicker、bootstrap-table、bootstrap-select等；&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;4、后端采用 asp.net mvc core、fluentValidation、nlog、Jil、DI、Ganss、雪花算法、Xunit、npoi；&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;5、ORM 采用 一款简单易用的开源ORM框架 SqlSugar。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;详细介绍：&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MjM5MDE5MDM5NA==&amp;amp;mid=2449938961&amp;amp;idx=1&amp;amp;sn=d677cf8dae6d3bfe43df44426024b34b&amp;amp;chksm=b1bb244486ccad52456e2b75b8d2f10b42052937836cb63f7b6dfbc0658d65fe9dd6c7dfa682&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;开源免费WMS仓库管理系统【推荐】&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;开源免费WMS仓库管理系统&lt;/a&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.3333333333333333&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_png/tJJDa2wmJiaoxic1tw8zqHROn4dmSWwUuwSYHPWXvlss2nHGlkUhwBbvgcFhWqMlZibibzibuw2Y8BopspCICfDO28g/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-w=&quot;1080&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;二、SwebWMS - 基于.Net+SWEBUI开发&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;这是基于.Net FrameWork开发的，UI采用SWEBUI平台，SwebDesigner采用component组件的方式。系统整体界面简洁、大气，系统功能完善、报表统计完备，完全可以满足需求，简单进行二次开发，可直接使用于项目中。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;h1&gt;&lt;span&gt;&lt;strong&gt;技术架构&lt;/strong&gt;&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;&lt;span&gt;1、跨平台：这是基于.Net Core开发的系统，可以部署在Docker, Windows, Linux, Mac。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2、数据库支持：MySQL、Sqlserver。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;3、&lt;/span&gt;&lt;span&gt;基于.Net4.5 +Autofac +&lt;span&gt;SWEBUI&lt;/span&gt;+&lt;span&gt;SwebDesigner&lt;/span&gt;。&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;详细介绍：&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MjM5MDE5MDM5NA==&amp;amp;mid=2449940176&amp;amp;idx=1&amp;amp;sn=bc9fe3df1d5cd93491aacde5ce3fa91e&amp;amp;chksm=b1bb208586cca993cd9a29704499f77b323393dee82727a23b86ec74252dd1d60e3d88bed3ed&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;基于.Net+SWEBUI开发的开源WMS仓库管理系统&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;基于.Net+SWEBUI开发的开源WMS仓库管理系统&lt;/a&gt;&lt;/span&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5101851851851852&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_png/tJJDa2wmJiarEeavj0AibUpLZXJDQ07bvcD13NkQfc4UI49omJFHp5auap6HcWoiaUIEgxAP8VibqMtJfibDjc1TfeA/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-w=&quot;1080&quot;/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;三、ModernWMS - 基于.NetCore 7 +Vue 3开发&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;这是基于.NetCore 7、Vue 3开发的开源项目，支持中英文，界面简单清爽，采用前后端分离架构。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;该项目主要是针对小型物流仓储供应链流程，采用的技术也都比较新，另外作为一个学习项目也不错。&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;技术架构&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;1、跨平台：这是基于.NetCore开发的系统，可以部署在Docker,Windows,Linux,Mac；&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;2、后端基于.Net core7 + EF Core；&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;3、数据库支持：MySQL；&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;4、前端：Vue 3 + VXETable + &lt;span&gt;Vite + &lt;span&gt;Vuetify/Cli&lt;/span&gt;&lt;/span&gt; 。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;详细介绍：&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MjM5MDE5MDM5NA==&amp;amp;mid=2449941268&amp;amp;idx=1&amp;amp;sn=5c1695f3848374f01eaaed827104a4af&amp;amp;chksm=b1bb1d4186cc945776d6dd2cb2147962525ae7988d862cc3ff2deee6f890dbbc147841ed3d20&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;一个简单、功能完整的WMS仓库管理系统&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;一个简单、功能完整的WMS仓库管理系统&lt;/a&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5101851851851852&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_png/tJJDa2wmJiapktKiaymPstXS0CoxkJPA7W8RQdKniaAiba9WSJRLNECsAnjxZKfelMg37Lu1LkU3X7ticibKlnIvZKcw/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-w=&quot;1080&quot;/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;- End -&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;欢迎加入 &lt;/span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MjM5MDE5MDM5NA==&amp;amp;mid=2449941541&amp;amp;idx=1&amp;amp;sn=768ea96dc2ab18c3312a6e618182c9a5&amp;amp;chksm=b1bb1a7086cc9366b3f4724d99ba78859eab80e6c56ec10fc8fb712141397058182567ce126f&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;学习小圈子&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; hasload=&quot;1&quot;&gt;&lt;span&gt;.Net编程学习小圈子&lt;/span&gt;&lt;/a&gt; &lt;span&gt;，获取海量的编程学习资源、学习路线，和大家一起打卡、分享编程知识、共同进步。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;分享一套.NetCore从入门到精通视频教程&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;点击下方公众号卡片，关注我&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;span&gt;回复“&lt;/span&gt;&lt;span&gt;888&lt;/span&gt;&lt;span&gt;”，免费领取&lt;/span&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;mp-common-profile class=&quot;js_uneditable js_wx_tap_highlight&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MjM5MDE5MDM5NA==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/sz_mmbiz_png/tJJDa2wmJiaoiaJkdNNMfIKwQBC4fGYyxicqesxYXOCOOnGtiaibfu39oV4XbCUt6JewstuFjGQtjvzhX7hiaweZeYFA/0?wx_fmt=png&quot; data-nickname=&quot;编程乐趣&quot; data-alias=&quot;zhaobiaonews&quot; data-signature=&quot;专注分享.NET和.NET Core编程知识、有趣热门的开源项目。&quot; data-from=&quot;2&quot; data-is_biz_ban=&quot;0&quot; has-insert-preloading=&quot;1&quot; data-index=&quot;0&quot; data-origin_num=&quot;113&quot; data-isban=&quot;0&quot; data-weui-theme=&quot;light&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;推荐阅读&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MjM5MDE5MDM5NA==&amp;amp;mid=2449941578&amp;amp;idx=1&amp;amp;sn=89afd0efa4cefac3ecfc32a82fc89b5f&amp;amp;chksm=b1bb1a1f86cc93095900ed1e5b9a59f304f1b955056986bd90fc0acc23a390be3731ee159941&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;一款WPF开发的B站视频下载开源项目&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; hasload=&quot;1&quot;&gt;&lt;span&gt;一款WPF开发的B站视频下载开源项目&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MjM5MDE5MDM5NA==&amp;amp;mid=2449941439&amp;amp;idx=1&amp;amp;sn=d13b91167552bed9e65c8c63568dea78&amp;amp;chksm=b1bb1dea86cc94fc3dd161542dcffe423e45569e62578aa49c8c50b9afe8a6366a675be75b80&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;推荐一个跨平台支持Word, Excel, CSV, Email等30多种格式的操作库&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; hasload=&quot;1&quot;&gt;&lt;span&gt;推荐一个跨平台支持Word, Excel, CSV, Email等30多种格式的操作库&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MjM5MDE5MDM5NA==&amp;amp;mid=2449941045&amp;amp;idx=1&amp;amp;sn=47ed113b17ca72d05e3d23d294a0c401&amp;amp;chksm=b1bb1c6086cc9576e490dffced89a88b8ed9f0adf8f65cfb0803fb68a16bbb16043fcf6be89d&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;一个基于.Net开发的Windows截屏录制工具&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; hasload=&quot;1&quot;&gt;&lt;span&gt;一个基于.Net开发的Windows截屏录制工具&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MjM5MDE5MDM5NA==&amp;amp;mid=2449940997&amp;amp;idx=1&amp;amp;sn=778275b92c8336a0e0e320e550e2b032&amp;amp;chksm=b1bb1c5086cc95461a15e7756e26d060c77cac8fee6c3c6bd7fc471004d932b2b301519c094a&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;推荐一个.Net分布式微服务开发框架&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; hasload=&quot;1&quot;&gt;&lt;span&gt;推荐一个.Net分布式微服务开发框架&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MjM5MDE5MDM5NA==&amp;amp;mid=2449940849&amp;amp;idx=1&amp;amp;sn=4c9f7346b9d6d1fe9bc3a63dbc714d29&amp;amp;chksm=b1bb1f2486cc9632a7bcac0fba43e238d2684c08be8e8049c61806f864448cb968dadb7aaba1&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;一个基于.Net高性能跨平台内网穿透工具&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; hasload=&quot;1&quot;&gt;&lt;span&gt;一个基于.Net高性能跨平台内网穿透工具&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;觉得好看 点个在看👇&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;mp-style-type data-value=&quot;3&quot;/&gt;&lt;/p&gt;&lt;/div&gt;
 
           
         &lt;/div&gt;&lt;/div&gt;</content:encoded>
