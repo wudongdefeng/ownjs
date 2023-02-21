@@ -5,489 +5,283 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>b4969266726505089d411ce9f8408440</guid>
-<title>高并发架构中最难以拆分的单点：数据库以及它背后的存储</title>
-<link>https://toutiao.io/k/ajuued6</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content             autoTypeSetting24psection&amp;#10;            &quot; id=&quot;js_content&quot;&gt;&lt;p&gt;&lt;span/&gt;&lt;span&gt;本文共 6500 字，阅读大约需要 22 分钟。&lt;/span&gt;&lt;/p&gt;&lt;hr/&gt;&lt;section&gt;前面六篇文章，我们解决了 web 服务的百万 QPS 问题，从本文开始，我们将用三篇文章，尝试构建出百万 QPS 后端系统所需要的数据库。首先要明确，这里的数据库指的是关系型数据库，即满足 ACID 原则并用 SQL 语言进行操作的持久性（掉电数据不丢）数据库。当然，在追求高并发的过程中，我们将不可避免地接触到内存数据库，但我们一定要知道，内存数据库只是架构设计的一部分，而且不是最重要的部分。&lt;/section&gt;&lt;h2&gt;数据库是个大单点&lt;/h2&gt;&lt;p&gt;所有 web 系统都会经常面临这种需求：用户要一个一个注册，ID 不能一样；订单要一个一个下，两个订单的信息不能错乱。这其实就是最原始的需求——排队。逻辑上，无论数据库如何拆分，微服务如何设计，一定有一个资源是必须排队的，哪怕我们可以用“现在的时间换未来的时间”这种方式来进行性能优化（后面的文章还会提到），排队是必须存在的。&lt;/p&gt;&lt;p&gt;在常见的 web 系统架构中，关系型数据库就是那个最大的无法拆分的单点：在一个系统内，多个 API 调用所产生的多种行为，最终都要作用到同一张表上，这个系统的运行才能符合逻辑。这也是数据库最核心的价值：API 可以并发，数据库必须排队一个一个来。就像 Redis 之于 golang 协程，就像 Node.js 的单线程排队执行，数据库才是 web 服务的根，是保证最终计算结果符合预期的那个“队列”。&lt;/p&gt;&lt;p&gt;无论进程/线程/协程如何并发，数据库的自增、事务和锁都是原子化的。这种原子化能力恰好是前面的业务服务器能够多台并发的基础，也是多台服务器能够被称为“一个系统”的&lt;code&gt;逻辑基础&lt;/code&gt;：如果两个系统的数据库不在一起，那他们就不是一个系统，就像拼多多有 7.5 亿月活用户，淘宝有 8.5 亿，你不能说“拼宝宝”电商系统有 16 亿月活用户一样。&lt;/p&gt;&lt;p&gt;这种哲学思想我们在最后一篇文章的终极高可用架构中还会用到。&lt;/p&gt;&lt;h3&gt;数据库为什么是单点&lt;/h3&gt;&lt;p&gt;数据库成为数据单点并不是自己决定的，而是系统架构“需要”一个数据单点，而数据库就是为了满足“数据单点”这个需求而被设计出来的。对于大部分需要记录到数据库里的信息来说，基于先来后到进行排队入库都是一个不可妥协的硬需求，否则在逻辑上数据就会出错。对于所谓的 NoSQL 数据库来说，连一个简单的 ID 自增都需要扫描全表才能做到，它是不能承担数据单点角色的。由于它不是为了承担数据单点而设计的，NoSQL 注定只能是关系型数据库用来提升性能的的副手。&lt;/p&gt;&lt;p&gt;关系型数据库的“关系”二字，指的是一个表内部的这些数据之间，拥有行和列两个方向的关系，这其实是另一种形式的“时间换空间”、“空间换时间”思想：提前约束这些数据，让他们以一定的规则存储在一起，写入的时候会慢一点，但是这样调用起来就简单又高效：例如无需全表扫描瞬间找出最大 ID、例如即便将海量数据存储在磁盘上，依然能够以很快的速度检索到满足某个条件的某一行、例如在快速定位到某一行后便可以快速取出连续多行的数据等等。&lt;/p&gt;&lt;h3&gt;数据库是一个非常复杂的软件&lt;/h3&gt;&lt;p&gt;关系型数据库就像空气一样充斥在后端技术里，但是可能很少有人想过一个惊人的事实：99.9% 使用 MySQL 的系统，其业务代码的复杂度都没有 MySQL 本身的复杂度高。&lt;/p&gt;&lt;p&gt;MySQL 为了实现关系型数据库四大原则，几乎把计算机的每一种资源都用到了极致：进程、线程、多核、网络、寄存器、内存、机械磁盘、固态磁盘。&lt;/p&gt;&lt;p&gt;写到这里，如果我们开始分析 ACID 实现的细节，岂不是落入了俗套，我们要不走寻常路，不背面试八股文，直接分析 MySQL 的底层原理。&lt;/p&gt;&lt;h3&gt;数据库这个单点，单在哪里？&lt;/h3&gt;&lt;p&gt;一般的技术文章一说到持久性原子性，就是什么 undo log、redo log、多版本并发、锁。我不这么看，下面我们从 MySQL 的基础功能开始思考。&lt;/p&gt;&lt;p&gt;MySQL 是整个 web 系统中唯一一个在意外掉电重启以后，还能保持数据不丢的组件，那它是怎么做到的呢？很简单，基于计算机上唯一一个断电不丢数据的磁盘实现的。所以，不用看什么&lt;code&gt;*do log&lt;/code&gt;了，把它们全部当做磁盘文件就行了。&lt;/p&gt;&lt;h4&gt;掉电不丢数据是磁盘的重要特性&lt;/h4&gt;&lt;p&gt;事实上 MySQL 确实是完全依靠磁盘不丢数据的特性来实现的：如果你执行了&lt;code&gt;update&lt;/code&gt;语句，那无论 MySQL 有多少级的缓存，多少种的日志，都得等到它成功将此次数据修改写入到磁盘上以后，才会给客户端返回成功状态。而文件的修改是有队列的，可以保证每一次写操作的可靠性。&lt;/p&gt;&lt;p&gt;当然，这里的写入磁盘，不一定指的是真的存到了那张表对应的数据文件里，也可以是&lt;code&gt;*do log&lt;/code&gt;。如果此时服务器意外重启，那在 MySQL 启动以后，它还是会把自己刚才记录的这些&lt;code&gt;*do log&lt;/code&gt;里的信息再默默地写入到磁盘上真正的表数据文件里。&lt;/p&gt;&lt;p&gt;“数据库单点单在哪里”的答案已经呼之欲出了：数据库的单点就单在了磁盘上。&lt;/p&gt;&lt;h2&gt;存储技术简史&lt;/h2&gt;&lt;p&gt;既然数据库的单点就是磁盘，那接下来我们就看看存储技术的发展简史。&lt;/p&gt;&lt;h3&gt;集中式存储&lt;/h3&gt;&lt;p&gt;集中式存储是一种采用独立的控制器（即计算机）控制大量的硬盘，再通过控制器对外提供多种不同层级的接口（硬件层面的 SAS/FC，软件层面的 SCSI/iSCSI/InfiniBand 等），以同时满足多个客户端、多种不同存储需求的产品。&lt;/p&gt;&lt;p&gt;集中式存储的兴起让&lt;code&gt;IOE&lt;/code&gt;中的&lt;code&gt;E&lt;/code&gt;大放异彩：就像前面提到的那台价值百万的负载均衡设备一样，EMC 的集中式存储通过双控制器开机热备 + 全冗余网络连接，再配合 SAN 交换机和双 HBA 卡，可以实现全冗余的存储网络架构，它性能很好，可以支持多台服务器连接使用，还非常稳定，只有一个缺点：贵。光是一个普通的 16 口 16G SAN 交换机，价格就已经超过了 40G 以太网交换机（交换容量甚至可以达到&lt;code&gt;50Tbps&lt;/code&gt;以上）。更不要说一年也卖不出去几片的 HBA 卡了。而且，集中式存储设备本身更贵，非常贵，比两台标准 x86 服务器还要贵。&lt;/p&gt;&lt;p&gt;为什么集中式存储这么贵呢？因为它用非常高的硬件成本和服务成本，真的解决了大多数企业面临的存储问题：厂家负责上门部署，定期维护，你负责出高价，然后用就行了。集中式存储的本质是用高水平的硬件 + 硬件级全冗余 + 保姆式的技术服务，彻底搞定了存储这件难事。&lt;/p&gt;&lt;h3&gt;分布式存储&lt;/h3&gt;&lt;p&gt;进入云计算时代，分布式存储大放异彩：反正海量的 x86 服务器已经在机柜里运行着了，为什么不拿出一点点计算资源构建出一个省钱的分布式存储呢？而且从需求的角度来看，云计算的规模是在快速增长的，集中式存储很难满足这种速度的规模扩张。这个时候就需要分布式存储登场了。&lt;/p&gt;&lt;p&gt;分布式存储选择通过&lt;code&gt;海量普通可靠性的硬件 + 软件&lt;/code&gt;的方式，将一群 x86 服务器通过以太网或者 InfiniBand 相互连接，将分散在每一台服务器上的机械磁盘和固态磁盘组织到一起，形成一个巨大的硬盘资源池。这个软件定义的存储集群可以做到和集中式存储一样的三高：高可靠性、高可用率、高性能。&lt;/p&gt;&lt;h4&gt;高性能靠什么？&lt;/h4&gt;&lt;p&gt;虽然我们说分布式存储也有高性能特性，但是，x86 架构下磁盘的性能其实不怎么样。近些年，随着分布式存储的市场占有率越来越高，单系统规模也越来越大，从云计算厂商到服务器厂商，都在想办法提升分布式存储各个部分的性能。除了“网络性能”和“缓存”在快速进步之外，x86 IO 系统的“绝对性能”也在快速进步，现在（2023 年 1 月），我们就站在 x86 IO 性能爆炸的前夜。&lt;/p&gt;&lt;h2&gt;小型机的优势，x86 的劣势：IO 性能&lt;/h2&gt;&lt;p&gt;《性能之殇》里面提到过 x86 的 IO 性能被架构锁死了¹。而小型机那边，IO 性能的上限非常高，甚至可以为存储子系统配置专门的 CPU。&lt;/p&gt;&lt;p&gt;今天，海量廉价的 x86 服务器集群在越来越快的网卡速率的协助下，在系统总容量和可用性方面已经超过了小型机，让小型机只能在它比较有优势的特定规模、特定行业的业务背后生存。但是，IO 性能不足是 x86 从娘胎里面带出来的弱点，而这个弱点直到最近两年才有了一些改善。&lt;/p&gt;&lt;h3&gt;突飞猛进的 PCIe&lt;/h3&gt;&lt;p&gt;最近几年，已经沿用了十年的 PCIe 3.0 突然开始大踏步换代，以两年一代的速度疯狂推进，每一次带宽都能翻倍，看起来进步很大。但是，当我们的目光从那惊人的 128GB/s（PCIe 5.0 x32） 的数字上移开后，再仔细地端详一块主板上同时存在的 5.0、4.0 和 3.0 的插槽，就会发现一个更惊人的事实：4.0 和 5.0，是在基础电气属性不变，金手指的数量都完全保持不变的情况下，通过重定时器和重驱动器组件，“强上陆地神仙”的结果。而且，5.0 的插槽它就是 5.0 的，并不能拆成两个 4.0 来用，如果想插 4.0 的设备，也可以，但只能插一个：因为并不是水管变粗了，而是水管支持的流速提高了，这对接收端设备的容错能力也提出了更高的要求。&lt;/p&gt;&lt;p&gt;为什么英特尔一屁股坐到 PCIe 牙膏上了呢？为了下一代超级 IO 架构：CXL。&lt;/p&gt;&lt;h3&gt;全村的希望 CXL&lt;/h3&gt;&lt;p&gt;虽然第一颗支持 CXL 的服务器 CPU 刚刚上市两个月(AMD EPYC 9004 系列)，但不影响 CXL 技术成为“全村的希望”。虽然直到 2019 年英特尔才推出了 CXL 标准，但它不仅推动业界在三年之内火速推出了兼容 CXL 技术的 CPU（而且还是友商开发的），还吸纳了同样技术方向的两个竞争对手：OpenCAPI 联盟和 Gen-Z 联盟，成为了唯一的“新一代通用 IO 标准”。&lt;/p&gt;&lt;p&gt;凭什么呢？就凭 CXL 是英特尔向业界投入的一颗重磅炸弹：一次性放开了从 CPU 直接驱动的 DDR 内存到 NVME SSD 之间广阔的“无人地带”——基于 PCIe 5.0 技术，将 IO 技术推入了一个新时代。别忘了，PCIe 协议也是英特尔定义的。&lt;/p&gt;&lt;h4&gt;内存、磁盘正在双向奔赴&lt;/h4&gt;&lt;p&gt;最近几年，随着 NVME SSD 在服务器端的普及，内存和磁盘的性能边界正在逐渐模糊：十年前 SATA SSD 刚刚普及的时代，内存带宽和延迟大概为 100GB/S 60ns，而 SATA SSD 为 500MB/S 200μs，速度和延迟分别为&lt;code&gt;1/200&lt;/code&gt;和&lt;code&gt;3000倍&lt;/code&gt;；而今天内存和 PCIe 4.0 NVME 磁盘的对比为 150GB/S 100ns 和 7GB/S 18μs，这个差距已经缩小到了&lt;code&gt;1/21&lt;/code&gt;和&lt;code&gt;180倍&lt;/code&gt;。&lt;/p&gt;&lt;h4&gt;CXL 补上了“存储器山”上 DDR 内存和 NVME SSD 之间的巨大空隙&lt;/h4&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.611271676300578&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA0a03icTEUiaCGTicPicEVibMw3W7tUZXU234via4h4OCIz1eFo9icS1t329PQQDPRycWklWueKP9sBzvN8w/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;692&quot;/&gt;&lt;/p&gt;&lt;p&gt;神书《CS:APP》在第六章中提出了著名的“存储器山”理论²：离 CPU 越远的存储器容量更大延迟更高。&lt;/p&gt;&lt;p&gt;两个月前刚刚发布的 AMD 9004 系列处理器引入了 12 通道的 DRAM 内存，这对电路板的设计能力和制造成本提出了非常高的要求，同时对 CPU 内部的内存控制器的驱动能力也提出了很大的挑战，基本可以确定 DRAM 这个将一大块 DRAM 芯片在 Z 轴进行折叠而增加容量的技术已经走到了尽头，以后就是 CXL 的天下了。&lt;/p&gt;&lt;p&gt;CXL 提供了 IO（设备发现、初始化、中断等基础功能）、缓存（低延迟数据复制）、内存（统一地址编码）三个模块，一次性解决了海量内存扩展和多个级别缓存的需求。目前，支持 CXL 1.1 协议的扩展内存已经上市。&lt;/p&gt;&lt;p&gt;未来，双向奔赴的内存和磁盘将在 CXL 技术里胜利会师：容量和延迟的分布将会更加均匀，系统的宏观性能将进一步提升。&lt;/p&gt;&lt;h4&gt;奋三世之余烈的终极目标&lt;/h4&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.49676724137931033&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA0a03icTEUiaCGTicPicEVibMw3W5nobM8mN2hRDnD9qkKjZZA1YiaFfFehn3ia7XdFfpLbib5YdPUiacnraUg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1856&quot;/&gt;&lt;/p&gt;&lt;p&gt;CXL 1 时代主要解决的是基本功能，2.0 要实现类似于 SAN 交换机技术的多对多内存池化，3.0 要构建 CXL 互联网络：实现软件定义内存集群，简单来说，就像上面说的那个分布式存储一样，用软件把内存给集群化。&lt;/p&gt;&lt;p&gt;内存被软件给集群化之后，还会给数据库架构带来巨大的变化：现在基于独立的 RDMA 网卡技术的计算与存储分离架构已经涌现出了 Snowflake、Amazon Aurora、阿里云 PolarDB 等优秀的商用数据库产品，如果内存都能被集群化，那“计算与存储分离”中的“计算”也会被颠覆，届时，“主从同步”四个字将会拥有全新的意义。&lt;/p&gt;&lt;h3&gt;超高速网卡也需要 CXL 来解决&lt;/h3&gt;&lt;p&gt;当下，x86 服务器界的各路厂商，都在绞尽脑汁地想办法将 400G 网卡塞进机箱。如果说，在不进行任何优化的情况下，利用 Linux 网络栈跑 TCP 只能跑到 5G 是因为软件架构的话，那 400G 网卡用不了就是纯纯的硬件限制了：400G 已经比八路内存的理论带宽都要高了，只要网卡数据还需要经过 CPU，只要还在用 DDR4/DDR5 内存，那 400G 网卡就是非常难以实现的。&lt;/p&gt;&lt;p&gt;CXL 技术给出了 400G 网卡的解决方案：将网卡和 CPU 分离，让他们各自拥有自己的内存空间，并且让 CPU 可以无障碍读写网卡芯片的内存空间。本质上，相当于重新定义了“网卡接到数据后存入内存”这句话里面“内存”二字的含义。&lt;/p&gt;&lt;p&gt;这个思想其实我们早就见识过了：浮点运算能力数百倍于 CPU 的 GPU，就是单独设计内存架构（称为显存），在自己体系内实现了超高性能的，然后直接使用 DP 协议输出 8K 画面，不需要让大量数据经过 CPU 和内存，就不会有性能瓶颈。&lt;/p&gt;&lt;h2&gt;x86 内存技术演进番外篇&lt;/h2&gt;&lt;h3&gt;1. 最近十年内存其实一直在变慢&lt;/h3&gt;&lt;p&gt;我们都知道，最近 10 年服务器 CPU 的核数开始爆炸，内存通道也从最开始的双通道一步一步发展到了今天的 12 通道，但是，和内存带宽比，还是 CPU 核数增长的更快一些：这些年，每个 CPU 核心能够分到的内存带宽一直在持续下降，这相当于每台虚拟机能使用的内存读写速度反而在变慢。&lt;/p&gt;&lt;h3&gt;2. 英特尔对于 x86 内存体系的限制&lt;/h3&gt;&lt;p&gt;前几年，微软统计了自己的服务器各项部件的总成本，惊讶地发现超过 50% 的服务器费用都拿来买内存条了³。内存不仅硬件成本高，现有的内存架构还让内存在虚拟机内部存在巨大的浪费：几乎每台物理服务器都浪费了大约 50% 的内存。而这其实是英特尔故意的。&lt;/p&gt;&lt;p&gt;x86 的内存子系统一直保持着封闭，直到这几年机器学习的崛起让人类社会对于服务器内存的需求又上了一个台阶，在英伟达的股价一次次冲高以后，英特尔才被迫开放了 CXL 标准，基于 PCIe 5.0 的高带宽，才让内存能够像硬盘一样自由扩充。&lt;/p&gt;&lt;h3&gt;还记得我们的目标吗？一百万 QPS&lt;/h3&gt;&lt;p&gt;一百万 QPS 的 API，在经过性能优化的电商业务中，我们假设每次 API 调用平均执行五条 SQL，那数据库 QPS 就是 500 万。稍微接触过一些高并发系统的人都能一眼看出，这是一个多么惊人的数字，对于开源 MySQL 来说，单机一万的 QPS 就已经非常惊人，500 万，简直就像开玩笑。别急，慢慢往后看，这真的有可能实现。&lt;/p&gt;&lt;h3&gt;接下来&lt;/h3&gt;&lt;p&gt;下一篇文章，我们将开始探寻数据库性能优化技术：我们会讨论 innodb 三级索引、内存缓存等传统性能优化技术，还会讨论 KV、列存储等从底层引擎入手的新技术，结合“找出单点，进行拆分”思想，尽可能地提升单台数据库的极限性能。&lt;/p&gt;&lt;h3&gt;参考资料&lt;/h3&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;x86 的 IO 性能被架构锁死了 https://lvwenhan.com/tech-epic/498.html&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;CS:APP 的存储器山理论 http://csappbook.blogspot.com/2017/05/a-gallery-of-memory-mountains.html&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;微软超过 50% 的服务器费用都拿来买内存条了 https://www.semianalysis.com/p/cxl-enables-microsoft-azure-to-cut&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;本系列文章已经汇总成开源技术书《PPHC》发布在 Github：https://github.com/johnlui/PPHC&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;mp-style-type data-value=&quot;3&quot;/&gt;&lt;/p&gt;&lt;/div&gt;
+<guid>c79950ed653a3e8aa170a75d2c3f272c</guid>
+<title>PHP 源码加密与解密方式比较</title>
+<link>https://toutiao.io/k/uuy3q1r</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content             autoTypeSetting24psection&amp;#10;            &quot; id=&quot;js_content&quot;&gt;&lt;section&gt;&lt;mp-common-profile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-weui-theme=&quot;light&quot; data-id=&quot;MzI0MzA2OTc4MQ==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/Bfv9smoHwth5nBzNr9kZshQ25yhLz08JicGiaeuWY5k8z6JHS4KYxQ2zp2lU9mjSC6PsvBlib658u3CnrSQsuCzAg/0?wx_fmt=png&quot; data-nickname=&quot;码农UP2U&quot; data-alias=&quot;&quot; data-signature=&quot;努力成为一个初级程序员！&quot; data-from=&quot;0&quot; data-is_biz_ban=&quot;0&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;早期文章&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        代码的保护一直是软件公司所担心的问题，因为很多源码对于公司来说就是命脉，而有些公司则弱化了代码的保护，转而将更多的精力花在服务上。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        最近研究了一两天 PHP 代码的加解密问题，因为 PHP 编写的程序是直接通过源码发布的，并没有编译生成二进制文件或者是字节码文件（虽然二进制和字节码一样可以通过其他方式得到，但至少不是源码那么直接）。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        PHP 代码的保护大概分为三种吧，至少我是这么了解的。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        第一种是三种里面最简单的一种，基本就是混淆变换之类的。混淆的方式就是将代码就是变量名、方法名进行粉碎，将代码进行变换（也可以称之为加密，我为什么称它为变换呢，因为它并不一定是只用加密，也可能只是进行了其他的编码），再加一些花指令（花指令就是让人眼花的指令，加一些无关紧要的代码进行），指令乱序（正常逻辑顺序的代码语句打乱后，用 goto 重新连接使之执行时依然正确）。上面的一些词不一定准确，基本能表达清楚就行。这种方式我认为兼容性比较好，因为都是在 PHP 代码层面进行；问题是，还原的代码也在 PHP 代码文件中，虽然还原代码也进行了混淆变换之类，但是毕竟还是有下手的地方。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        关于上面这种加密的解密方式，这里有两篇以前的文章，可供参考：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        第二种是使用 PHP 扩展进行代码的混淆变换等，这种方式对代码的处理和第一种的方式基本一样，只不过代码的加解密放在 PHP 扩展层面了。&lt;/span&gt;&lt;span&gt;这种方式已经算是比较底层了。&lt;/span&gt;&lt;span&gt;因为处理方式已经不在 PHP 代码的层面了，也就是在执行代码时对代码进行还原，也是 PHP 的扩展完成的。&lt;/span&gt;&lt;span&gt;因为 PHP 扩展大部分是使用 C 语言来编写的（貌似有其他语言可以写，据说好像还有类似 PHP 的语言还是框架可以写 PHP 扩展，记不清楚了），而且发布使用的是二进制文件，比如是 .so 文件，或者是 .dll 文件。&lt;/span&gt;&lt;span&gt;这样就已经有门槛了。&lt;/span&gt;&lt;span&gt;毕竟二进制文件是无法直接通过文本文件能看懂的（还是有人能看懂的，只是少）。&lt;/span&gt;&lt;span&gt;这种方法我认为是最好的，这种方法比较折中，安全这种东西本身没有绝对的，也只有在性价比方面最合适的吧。&lt;/span&gt;&lt;span&gt;因为，它在代码层面无法直接查看（用文本编辑器打开没法看），再者对于 PHP 而言它只是一个扩展一个插件。&lt;/span&gt;&lt;span&gt;但是缺点是，貌似需要版本兼容，也就是这个扩展需要跟指定的 PHP 版本或者一个版本范围要兼容，但是也不完全算是缺点，毕竟能满足主流的版本就可以了。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;        &lt;span&gt;关于上面这种&lt;/span&gt;&lt;span&gt;加密&lt;/span&gt;&lt;span&gt;的解密方式，在网上也有相关的文章，这里就不给出了，自己搜索吧。解密的基本思路是，分析加密后代码的文件结构，确定加密体、加密体长度、加密算法、加密密钥，从而进行解密。&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        第三种是 PHP 引擎级别的，这种级别对于 PHP 而言应该是最底层的了。在底层实现一套自己的解释引擎，然后将 PHP 源码生成为自己实现的解释引擎可以识别的字节码从而到达加密的效果。这种加密效果较上面两种效果是最好的，但是实现难度也是最大的。对于版本的要求也是更严格的；对于技术要求也是最难的。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        以上三种加密方式的破解难度是递增的，实现难度也是递增的。个人感觉上拿到加密后的文件和运行环境是应该可以破解的，毕竟最终都是要实际运行的。但是具体肯定视水平而定。毕竟加解密是加密者和解密者水平的一个较量。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;        最后再补充一下，据说有的程序员在写 PHP 程序员时，部分代码专门用 C 写，然后用 PHP 调用，精力足够，貌似也不错。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.0712962962962963&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Bfv9smoHwthBDooApBDUM9yqM6BWHMOaJyrXzMxqibI7B90xNgZswWSVSatF56vMAicAA56UmJkc2rQlDUARycYQ/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-type=&quot;png&quot; data-w=&quot;1080&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;公众号内回复 【mongo】 下载 SpringBoot 整合操作 MongoDB 的文档。&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;公众号内回复 【&lt;/strong&gt;&lt;strong&gt;cisp知识整理&lt;/strong&gt;&lt;strong&gt;】 下载 CISP 读书笔记。&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;公众号内&lt;/strong&gt;&lt;/span&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;回复【java开发手册】获取《Java开发手册》黄山版。&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;mp-common-profile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-weui-theme=&quot;light&quot; data-id=&quot;MzI0MzA2OTc4MQ==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/Bfv9smoHwth5nBzNr9kZshQ25yhLz08JicGiaeuWY5k8z6JHS4KYxQ2zp2lU9mjSC6PsvBlib658u3CnrSQsuCzAg/0?wx_fmt=png&quot; data-nickname=&quot;码农UP2U&quot; data-alias=&quot;&quot; data-signature=&quot;努力成为一个初级程序员！&quot; data-from=&quot;0&quot; data-is_biz_ban=&quot;0&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span/&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.36484375&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/Bfv9smoHwth5nBzNr9kZshQ25yhLz08JHWsQdz8yVn3MVh22hia7NFoPyNJz4ZI7XUnMa9xM50TJRqPkWf7BRibQ/640?wx_fmt=jpeg&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-type=&quot;jpeg&quot; data-w=&quot;1280&quot;/&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;mp-style-type data-value=&quot;3&quot;/&gt;&lt;/p&gt;&lt;/div&gt;
 
           
         &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>dbeb04b48ea6b9805867272469b1b9e8</guid>
-<title>面试官：宕机了，Redis 如何避免数据丢失？</title>
-<link>https://toutiao.io/k/y93fzdb</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;pre&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;span&gt;原文：juejin.cn/post/7193597571305046071&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;/pre&gt;&lt;p&gt;&lt;strong&gt;&lt;span&gt;第1-100期：&lt;/span&gt;&lt;/strong&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzIwNjg4MzY4NA==&amp;amp;mid=2247515699&amp;amp;idx=1&amp;amp;sn=bc6df9c194639e61064adaa128ba2d5d&amp;amp;chksm=97182038a06fa92ec564f291afdc2dc22b6e8d0ad466ce02e5c109602aba68c6f8eeb6c5ae52&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;100期Ja‍va项目整理&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; hasload=&quot;1&quot;&gt;&lt;strong&gt;Java面试题及答案整理&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;br/&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;前言&lt;/span&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;br/&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;如果有人问你：&lt;span&gt;&quot;你会把 Redis 用在什么业务场景下？&quot;&lt;/span&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;br/&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;我想你大概率会说：&lt;span&gt;&quot;我会把它当作缓存使用，因为它把后端数据库中的数据存储在内存中，然后直接从内存中读取数据，响应速度会非常快。&quot;&lt;/span&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;br/&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;没错，这确实是 Redis 的一个普遍使用场景，但是，这里也有一个绝对不能忽略的问题：&lt;strong&gt;「一旦服务器宕机，内存中的数据将全部丢失」&lt;/strong&gt;&lt;span&gt; 。&lt;/span&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;br/&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;目前，Redis 的持久化主要有两大机制，即 &lt;strong&gt;「AOF（&lt;code&gt;Append Only File&lt;/code&gt;）日志和 RDB（&lt;code&gt;Redis DataBase&lt;/code&gt;） 快照」&lt;/strong&gt;&lt;span&gt; 。&lt;/span&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;br/&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;AOF&lt;/span&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;br/&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;日志是如何实现的&lt;/span&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;br/&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;说到日志，我们比较熟悉的是数据库的写前日志（&lt;code&gt;Write Ahead Log, WAL&lt;/code&gt;&lt;span&gt;），在实际写数据前，先把修改的数据记到日志文件中，以便故障时进行恢复。不过，AOF 日志正好相反，它是写后日志，&quot;写后&quot;的意思是 Redis 是先执行命令，把数据写入内存，然后才记录日志。&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5559353635798633&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/x0kXIOa6owU8A81pibQI1h3SW24mVs19uenybHZLicuy1TTRyY37f64VHVLUGohQZNL6694BwibEGCNcXZFc7ic6Jw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;3218&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;AOF 里记录的是 Redis 收到的每一条命令，这些命令是以文本形式保存的。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;我们以 Redis 收到“set testkey testvalue”命令后记录的日志为例，看看 AOF 日志的内容。其中，“*3”表示当前命令有三个部分，每部分都是由“数字开头，后面紧跟着具体的命令、键或值。这里，数字表示这部分中的命令、键或值一共有多少字节。例如，3 set”表示这部分有 3 个字节，也就是“set”命令。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.7272139625080801&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/x0kXIOa6owU8A81pibQI1h3SW24mVs19u0abMgRNM1cHz1iaZxhicSOvZV0lTmQ3b6uIWB5WDvHCCFZhhNwymhMtw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;3094&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;写后日志的优势与风险&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;「为了避免额外的检查开销，Redis 在向 AOF 里面记录日志的时候，并不会先去对这些命令进行语法检查」&lt;/strong&gt; 。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;如果先记日志再执行命令的话，日志中就有可能记录了错误的命令，Redis 在使用日志恢复数据时，就可能会出错。而写后日志这种方式，就是先让系统执行命令，只有命令能执行成功，才会被记录到日志中，否则，系统就会直接向客户端报错。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;所以，Redis 使用写后日志这一方式的一大好处是，可以避免出现记录错误命令的情况。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;除此之外，写后日志一个好处：它是在命令执行后才记录日志，&lt;strong&gt;「不会阻塞当前的写操作」&lt;/strong&gt; 。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;AOF 也有两个潜在的风险：&lt;/span&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;风险一：如果刚执行完一个命令，还没有来得及记日志就宕机了，那么这个命令和相应的数据就有丢失的风险。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/li&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;如果此时 Redis 是用作缓存，还可以从后端数据库重新读入数据进行恢复。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;如果 Redis 是直接用作数据库的话，此时，因为命令没有记入日志，所以就无法用日志进行恢复了。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;li&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;风险二：AOF 虽然避免了对当前命令的阻塞，但可能会给下一个操作带来阻塞风险。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/li&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;AOF 日志也是在主线程中执行(写回策略为 always 时)，如果在把日志文件写入磁盘时，磁盘写压力大，就会导致写盘很慢，进而导致后续的操作也无法执行了。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;这两个风险都是和 AOF 写回磁盘的时机相关的。这也就意味着，如果我们能够控制一个写命令执行完后 AOF 日志写回磁盘的时机，这两个风险就解除了。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;日志的写回策略&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;AOF 机制一共有三种写回策略，也就是 AOF 配置项 &lt;/span&gt;&lt;code&gt;&lt;span&gt;appendfsync&lt;/span&gt;&lt;/code&gt;&lt;span&gt; 的三个可选值。&lt;/span&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;「Always 同步写回」&lt;/strong&gt; ：每个写命令执行完，立马同步地将日志写回磁盘；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;「Everysec 每秒写回」&lt;/strong&gt; ：每个写命令执行完，只是先把日志写到 AOF 文件的内存缓冲区，每隔一秒把缓冲区中的内容写入磁盘；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;「No 操作系统控制的写回」&lt;/strong&gt; ：每个写命令执行完，只是先把日志写到 AOF 文件的内存缓冲区，由操作系统决定何时将缓冲区内容写回磁盘。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;针对避免主线程阻塞和减少数据丢失问题，这三种写回策略都无法做到两全其美。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.29859894921190894&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/x0kXIOa6owU8A81pibQI1h3SW24mVs19uqILiaaxhqxWDa88HdYWkeGxF8rmu1z9GhMNRjp3RmQND9DBZ9K0CILQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;2284&quot;/&gt;&lt;span/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;我们就可以根据系统对高性能和高可靠性的要求，来选择使用哪种写回策略了。&lt;/span&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;想要获得高性能，就选择 No 策略；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;想要得到高可靠性保证，就选择 Always 策略；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;允许数据有一点丢失，又希望性能别受太大影响的话，那么就选择 Everysec 策略。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;br/&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;日志的重写&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;br/&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;strong&gt;重写的作用&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;br/&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;AOF 是以文件的形式在记录接收到的所有写命令。&lt;strong&gt;「随着接收的写命令越来越多，AOF 文件会越来越大」&lt;/strong&gt;&lt;span&gt; 。这也就意味着，我们一定要小心 AOF 文件过大带来的性能问题，主要在于以下三个方面：&lt;/span&gt;&lt;/h2&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;一是，文件系统本身对文件大小有限制，无法保存过大的文件；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;二是，如果文件太大，之后再往里面追加命令记录的话，效率也会变低；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;三是，如果发生宕机，AOF 中记录的命令要一个个被重新执行，用于故障恢复，如果日志文件太大，整个恢复过程就会非常缓慢，这就会影响到 Redis 的正常使用。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;AOF 重写机制就是在重写时，Redis 根据数据库的现状创建一个新的 AOF 文件，也就是说，「读取数据库中的所有键值对，然后对每一个键值对用一条命令记录它的写入」 。重写机制具有“多变一”功能。所谓的“多变一”，也就是说，旧日志文件中的多条命令，在重写后的新日志中变成了一条命令。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.272&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/x0kXIOa6owU8A81pibQI1h3SW24mVs19uMias4Nl4SNrlfvBOWvHx1u1gC9v1ZHbCwFfcrxbmlBz28Fss5heKgSA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;4000&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;重写的过程&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;AOF 日志由主线程写回不同，重写过程是由&lt;strong&gt;「后台子进程 bgrewriteaof 来完成的，这也是为了避免阻塞主线程」&lt;/strong&gt; ，导致数据库性能下降。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;我把重写的过程总结为“&lt;strong&gt;「一个拷贝，两处日志」&lt;/strong&gt; ”。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;“一个拷贝”就是指，每次执行重写时，主线程 fork 出后台的 bgrewriteaof 子进程。此时，fork 会把主线程的内存拷贝一份给 bgrewriteaof 子进程，这里面就包含了数据库的最新数据。然后，bgrewriteaof 子进程就可以在不影响主线程的情况下，逐一把拷贝的数据写成操作，记入重写日志。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;第一处日志，指的是因为主线程未阻塞，仍然可以处理新来的操作，Redis 会把这个操作写到它的缓冲区。这样一来，即使宕机了，这个 AOF 日志的操作仍然是齐全的，可以用于恢复。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;第二处日志，就是指新的 AOF 重写日志。这个操作也会被写到重写日志的缓冲区。这样，重写日志也不会丢失最新的操作。等到拷贝数据的所有操作记录重写完成后，重写日志记录的这些最新操作也会写入新的 AOF 文件，以保证数据库最新状态的记录。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;此时，我们就可以用新的 AOF 文件替代旧文件了。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5206073752711496&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/x0kXIOa6owU8A81pibQI1h3SW24mVs19uEZdSibKfDYyiaAGxuIc4VU15LuLNexgmRzV0qn4YXRjO4AfbJOvn9J5Q/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;3688&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;总结来说，每次 AOF 重写时，Redis 会先执行一个内存拷贝，用于重写；然后，使用两个日志保证在重写过程中，新写入的数据不会丢失。而且，&lt;strong&gt;「因为 Redis 采用子进程进行日志重写，所以，这个过程并不会阻塞主线程」&lt;/strong&gt; 。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;正因为记录的是操作命令，而不是实际的数据，所以，用 AOF 方法进行故障恢复的时候，需要逐一把操作日志都执行一遍。如果操作日志非常多，Redis 就会恢复得很缓慢，影响到正常使用。这当然不是理想的结果。那么，还有没有既可以保证可靠性，还能在宕机时实现快速恢复的其他方法呢？&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;RDB&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;对 Redis 来说，它实现类似照片记录效果的方式，把某一时刻的状态以文件的形式写到磁盘上，也就是快照（RDB 文件）。这样一来，即使宕机，快照文件也不会丢失，数据的可靠性也就得到了保证。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;和 AOF 相比，RDB 记录的是某一时刻的数据，并不是操作，所以，在做数据恢复时，我们可以直接把 RDB 文件读入内存，很快地完成恢复。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;快照的原理&lt;/span&gt;&lt;/strong&gt;&lt;span/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;Redis 提供了两个命令来生成 RDB 文件，分别是 save 和 bgsave。&lt;/span&gt;&lt;/p&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;「save」&lt;/strong&gt; ：在主线程中执行，会导致阻塞；&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;「bgsave」&lt;/strong&gt; ：创建一个子进程，专门用于写入 RDB 文件，避免了主线程的阻塞，这也是 Redis RDB 文件生成的默认配置。&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;我们可以通过 bgsave 命令来执行全量快照，这既提供了数据的可靠性保证，也避免了对 Redis 的性能影响。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;在执行快照的同时，Redis 就会借助操作系统提供的写时复制技术（&lt;/span&gt;&lt;code&gt;&lt;span&gt;Copy-On-Write, COW&lt;/span&gt;&lt;/code&gt;&lt;span&gt;），正常处理写操作。bgsave 子进程是由主线程 fork 生成的，可以共享主线程的所有内存数据。bgsave 子进程运行后，开始读取主线程的内存数据，并把它们写入 RDB 文件。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;如果主线程对这些数据也都是读操作（例如图中的键值对 A），那么，主线程和 bgsave 子进程相互不影响。但是，如果主线程要修改一块数据（例如图中的键值对 C），那么，这块数据就会被复制一份，生成该数据的副本（键值对 C’）。然后，主线程在这个数据副本上进行修改。同时，bgsave 子进程可以继续把原来的数据（键值对 C）写入 RDB 文件。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.562610229276896&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/x0kXIOa6owU8A81pibQI1h3SW24mVs19urjybPSRfCiazGRHgn4OVM3eSArne30Td3AxPEb6deuPCnzxmwY2Hp2g/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;4536&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;这样既保证了快照的完整性，也允许主线程同时对数据进行修改，避免了对正常业务的影响。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;混合 AOF/RDB&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;虽然 bgsave 执行时不阻塞主线程，但是，如果频繁地执行全量快照，也会带来两方面的开销。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;一方面，频繁将全量数据写入磁盘，会给磁盘带来很大压力，多个快照竞争有限的磁盘带宽，前一个快照还没有做完，后一个又开始做了，容易造成恶性循环（所以，在 Redis 中如果有一个 bgsave 在运行，就不会再启动第二个 bgsave 子进程）。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;另一方面，bgsave 子进程需要通过 fork 操作从主线程创建出来。虽然，子进程在创建后不会再阻塞主线程，但是，&lt;strong&gt;「fork 这个创建过程本身会阻塞主线程」&lt;/strong&gt; ，而且主线程的内存越大，阻塞时间越长。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;Redis 4.0 中提出了一个混合使用 AOF 日志和内存快照的方法。简单来说，&lt;strong&gt;「内存快照以一定的频率执行，在两次快照之间，使用 AOF 日志记录这期间的所有命令操作」&lt;/strong&gt; 。这样一来，快照不用很频繁地执行，这就避免了频繁 fork 对主线程的影响。而且，AOF 日志也只用记录两次快照间的操作，也就是说，不需要记录所有操作了，因此，就不会出现文件过大的情况了，也可以避免重写开销。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6222919042189282&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/x0kXIOa6owU8A81pibQI1h3SW24mVs19u5DgXj9CcdlTkAO2OhklJWe6sKfOSlh3uAuDMI9JVCaeOkcI57WNHZw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;3508&quot;/&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;/&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;总结&lt;/span&gt;&lt;/strong&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;br/&gt;&lt;/h2&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;最后，关于 AOF 和 RDB 的选择问题，我想再给你提三点建议：&lt;/h2&gt;&lt;ul data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;数据不能丢失时，内存快照和 AOF 的混合使用是一个很好的选择；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如果允许分钟级别的数据丢失，可以只使用 RDB；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如果只用 AOF，优先使用 everysec 的配置选项，因为它在可靠性和性能之间取了一个平衡。&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;pre&gt;&lt;pre&gt;&lt;section data-id=&quot;94155&quot; mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;section mpa-from-tpl=&quot;t&quot;&gt;&lt;img class=&quot;__bg_gif rich_pages wxw-img&quot; data-fileid=&quot;100003126&quot; data-ratio=&quot;0.9831460674157303&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/b96CibCt70iabwjyojLhA03PtxUnkNPREnt2F48ywfXLpDdDAjicOTPI8Q94tVLbJ58tbRs12iaXDKhUOW9gd4NlFA/640?wx_fmt=gif&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&quot; data-type=&quot;gif&quot; data-w=&quot;178&quot; data-width=&quot;100%&quot;/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/pre&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;90215&quot;&gt;&lt;section&gt;&lt;p&gt;&lt;/p&gt;&lt;section data-mpa-template=&quot;t&quot; mpa-paragraph-type=&quot;ignored&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我是库森，校招时拿过7个大厂offer，目前在阿里做Java开发，是一名乐于分享的新时代打工人。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;库森的知识星球【&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzkyMTI3Mjc2MQ==&amp;amp;mid=2247492874&amp;amp;idx=1&amp;amp;sn=c473f44b8cd27c7a9542c6ac3f7148ce&amp;amp;chksm=c1848ddcf6f304ca324e83b1f7f897e8f1d07c5b1adaf4b63413b4f45764c326ed088967f7a7&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;库森的学习圈&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; hasload=&quot;1&quot;&gt;库森的学习圈&lt;/a&gt;】正式开始运行了，这是一个主打计算机学习和求职的社群，社群内的朋友大多数都是在校本科生和研究生。&lt;span/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;加入到库森的学习圈知识星球，你将获得：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;1、 为你定制专属的&lt;span&gt;校招求职指南和面试指导&lt;/span&gt;，我会充分利用自己的校招经验帮你少踩坑。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;2、 &lt;span&gt;一对一的免费提问交流&lt;/span&gt;，不限次数，库森每天都会优先看球友的问题，给你专属建议。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;3、 &lt;span&gt;简历修改和优化&lt;/span&gt;，提供优质简历模版，为你免费修改简历，库森帮助300+位同学修改过简历，有丰富的简历优化经验。市面上单独修改一份简历都要200，进入知识星球可以提供免费的简历修改服务。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;4、 提供GitHub星标1.3k+的开源知识库https://github.com/cosen1024/Java-Interview上所有内容的指导和帮助&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;5、提供《面试小抄》pdf版本，提供《计算机基础》pdf小册，有很多优质的教程资料不断更新&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;6、对于本科生，提供计算机专业学习规划如专业课学习、竞赛、项目，也提供考研初试、复试和调剂等指导，我是考研上岸211的，在考研方面有丰富经验。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;7、对于研究生，有论文、导师、比赛、项目、实习等方面的困扰也可以跟我聊聊。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;8、对于非科班，提供自学转码指导，帮你少走弯路。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;9、可以内推，可以介绍做私活副业&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;原价99元，使用优惠券79元就能上车。后面干货越来越多，维护成本越来越大，肯定要涨价的，现在入手非常划算。扫描下方二维码即可加入！&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;span&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;1.215625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/jLFgiat3lrvUgnkp9RaNK2dBTbUneRNOYmvZaq2bFvUx4TlqfdEib7KJWoHZyfIGvOSUuicyma0dqcE3fXuhyBEPQ/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-w=&quot;640&quot;/&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/pre&gt;&lt;/section&gt;&lt;section&gt;&lt;strong&gt;&lt;span/&gt;&lt;/strong&gt;&lt;/section&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>52561c73ce02396ccd030917afe3fb19</guid>
-<title>百万数据 excel 导出功能如何实现？</title>
-<link>https://toutiao.io/k/p1l50c0</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot; data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;前言&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;最近我做过一个MySQL&lt;code&gt;百万级别&lt;/code&gt;数据的&lt;code&gt;excel&lt;/code&gt;导出功能，已经正常上线使用了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这个功能挺有意思的，里面需要注意的细节还真不少，现在拿出来跟大家分享一下，希望对你会有所帮助。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;原始需求：用户在&lt;code&gt;UI界面&lt;/code&gt;上点击&lt;code&gt;全部导出&lt;/code&gt;按钮，就能导出所有商品数据。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;咋一看，这个需求挺简单的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但如果我告诉你，导出的记录条数，可能有一百多万，甚至两百万呢？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这时你可能会倒吸一口气。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因为你可能会面临如下问题：&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;如果同步导数据，接口很容易超时。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如果把所有数据一次性装载到内存，很容易引起OOM。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;数据量太大sql语句必定很慢。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;相同商品编号的数据要放到一起。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如果走异步，如何通知用户导出结果？&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;如果excel文件太大，目标用户打不开怎么办？&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们要如何才能解决这些问题，实现一个百万级别的excel数据快速导出功能呢？&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.9419354838709677&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5hJRQJehsX2gcV68GgHwthIib6IjpO3FyeWuwpVhazbGHOc6msD1cL8eibcickU2Wah1XvJ5hQuzNIJg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1240&quot;/&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;1.异步处理&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;做一个MySQL百万数据级别的excel导出功能，如果走接口同步导出，该接口肯定会非常容易&lt;code&gt;超时&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因此，我们在做&lt;code&gt;系统设计&lt;/code&gt;的时候，第一选择应该是接口走&lt;code&gt;异步&lt;/code&gt;处理。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;说起异步处理，其实有很多种，比如：使用开启一个&lt;code&gt;线程&lt;/code&gt;，或者使用&lt;code&gt;线程池&lt;/code&gt;，或者使用&lt;code&gt;job&lt;/code&gt;，或者使用&lt;code&gt;mq&lt;/code&gt;等。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;为了防止服务重启时数据的丢失问题，我们大多数情况下，会使用&lt;code&gt;job&lt;/code&gt;或者&lt;code&gt;mq&lt;/code&gt;来实现异步功能。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;1.1 使用job&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果使用job的话，需要增加一张&lt;code&gt;执行任务表&lt;/code&gt;，记录每次的导出任务。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;用户点击全部导出按钮，会调用一个后端接口，该接口会向表中写入一条记录，该记录的状态为：&lt;code&gt;待执行&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;有个job，每隔一段时间（比如：5分钟），扫描一次执行任务表，查出所有状态是待执行的记录。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;然后遍历这些记录，挨个执行。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;需要注意的是：如果用job的话，要避免重复执行的情况。比如job每隔5分钟执行一次，但如果数据导出的功能所花费的时间超过了5分钟，在一个job周期内执行不完，就会被下一个job执行周期执行。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;所以使用job时可能会出现重复执行的情况。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;为了防止job重复执行的情况，该执行任务需要增加一个&lt;code&gt;执行中&lt;/code&gt;的状态。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;具体的状态变化如下：&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;执行任务被刚记录到执行任务表，是&lt;code&gt;待执行&lt;/code&gt;状态。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;当job第一次执行该执行任务时，该记录再数据库中的状态改为：&lt;code&gt;执行中&lt;/code&gt;。&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;当job跑完了，该记录的状态变成：&lt;code&gt;完成&lt;/code&gt;或&lt;code&gt;失败&lt;/code&gt;。&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这样导出数据的功能，在第一个job周期内执行不完，在第二次job执行时，查询&lt;code&gt;待处理&lt;/code&gt;状态，并不会查询出&lt;code&gt;执行中&lt;/code&gt;状态的数据，也就是说不会重复执行。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;此外，使用job还有一个硬伤即：它不是立马执行的，有一定的延迟。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果对时间不太敏感的业务场景，可以考虑使用该方案。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;span&gt;1.2 使用mq&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;用户点击全部导出按钮，会调用一个后端接口，该接口会向&lt;code&gt;mq服务端&lt;/code&gt;，发送一条&lt;code&gt;mq消息&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;有个专门的&lt;code&gt;mq消费者&lt;/code&gt;，消费该消息，然后就可以实现excel的数据导出了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;相较于job方案，使用mq方案的话，实时性更好一些。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;对于mq消费者处理失败的情况，可以增加&lt;code&gt;补偿机制&lt;/code&gt;，自动发起&lt;code&gt;重试&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;RocketMQ&lt;/code&gt;自带了&lt;code&gt;失败重试功能&lt;/code&gt;，如果失败次数超过了一定的&lt;code&gt;阀值&lt;/code&gt;，则会将该消息自动放入&lt;code&gt;死信队列&lt;/code&gt;。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;2.使用easyexcel&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们知道在&lt;code&gt;Java&lt;/code&gt;中解析和生成&lt;code&gt;Excel&lt;/code&gt;，比较有名的框架有&lt;code&gt;Apache POI&lt;/code&gt;和&lt;code&gt;jxl&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但它们都存在一个严重的问题就是：&lt;code&gt;非常耗内存&lt;/code&gt;，POI有一套SAX模式的API可以一定程度的解决一些&lt;code&gt;内存溢出&lt;/code&gt;的问题，但POI还是有一些缺陷，比如07版Excel解压缩以及解压后存储都是在内存中完成的，&lt;code&gt;内存消耗&lt;/code&gt;依然很大。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;百万级别的excel数据导出功能，如果使用传统的Apache POI框架去处理，可能会消耗很大的内存，容易引发&lt;code&gt;OOM&lt;/code&gt;问题。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;而&lt;code&gt;easyexcel&lt;/code&gt;重写了POI对07版Excel的解析，之前一个3M的excel用POI sax解析，需要100M左右内存，如果改用easyexcel可以降低到几M，并且再大的Excel也不会出现内存溢出；03版依赖POI的sax模式，在上层做了模型转换的封装，让使用者更加简单方便。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;需要在&lt;code&gt;maven&lt;/code&gt;的&lt;code&gt;pom.xml&lt;/code&gt;文件中引入easyexcel的jar包：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&amp;lt;dependency&amp;gt;&lt;br/&gt;    &amp;lt;groupId&amp;gt;com.alibaba&amp;lt;/groupId&amp;gt;&lt;br/&gt;    &amp;lt;artifactId&amp;gt;easyexcel&amp;lt;/artifactId&amp;gt;&lt;br/&gt;    &amp;lt;version&amp;gt;&lt;span&gt;3.0&lt;/span&gt;&lt;span&gt;.2&lt;/span&gt;&amp;lt;/version&amp;gt;&lt;br/&gt;&amp;lt;/dependency&amp;gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;之后，使用起来非常方便。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;读excel数据非常方便：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;@Test&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;simpleRead&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    String fileName = TestFileUtil.getPath() + &lt;span&gt;&quot;demo&quot;&lt;/span&gt; + File.separator + &lt;span&gt;&quot;demo.xlsx&quot;&lt;/span&gt;;&lt;br/&gt;    &lt;span&gt;// 这里 需要指定读用哪个class去读，然后读取第一个sheet 文件流会自动关闭&lt;/span&gt;&lt;br/&gt;    EasyExcel.read(fileName, DemoData&lt;span&gt;.&lt;span&gt;class&lt;/span&gt;, &lt;span&gt;new&lt;/span&gt; &lt;span&gt;DemoDataListener&lt;/span&gt;()).&lt;span&gt;sheet&lt;/span&gt;().&lt;span&gt;doRead&lt;/span&gt;()&lt;/span&gt;;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;写excel数据也非常方便：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt; &lt;span&gt;@Test&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;simpleWrite&lt;/span&gt;&lt;span&gt;()&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    String fileName = TestFileUtil.getPath() + &lt;span&gt;&quot;write&quot;&lt;/span&gt; + System.currentTimeMillis() + &lt;span&gt;&quot;.xlsx&quot;&lt;/span&gt;;&lt;br/&gt;    &lt;span&gt;// 这里 需要指定写用哪个class去读，然后写到第一个sheet，名字为模板 然后文件流会自动关闭&lt;/span&gt;&lt;br/&gt;    &lt;span&gt;// 如果这里想使用03 则 传入excelType参数即可&lt;/span&gt;&lt;br/&gt;    EasyExcel.write(fileName, DemoData&lt;span&gt;.&lt;span&gt;class&lt;/span&gt;).&lt;span&gt;sheet&lt;/span&gt;(&quot;模板&quot;).&lt;span&gt;doWrite&lt;/span&gt;(&lt;span&gt;data&lt;/span&gt;())&lt;/span&gt;;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;easyexcel能大大减少占用内存的主要原因是：在解析Excel时没有将文件数据&lt;code&gt;一次性全部加载到内存中&lt;/code&gt;，而是从磁盘上一行行读取数据，逐个解析。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;3.分页查询&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;百万级别的数据，从数据库一次性查询出来，是一件非常耗时的工作。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;即使我们可以从数据库中一次性查询出所有数据，没出现连接超时问题，这么多的数据全部加载到应用服务的内存中，也有可能会导致应用服务出现&lt;code&gt;OOM&lt;/code&gt;问题。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因此，我们从数据库中查询数据时，有必要使用&lt;code&gt;分页查询&lt;/code&gt;。比如：每页5000条记录，分为200页查询。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; Page&amp;lt;User&amp;gt; &lt;span&gt;searchUser&lt;/span&gt;&lt;span&gt;(SearchModel searchModel)&lt;/span&gt; &lt;/span&gt;{&lt;br/&gt;    List&amp;lt;User&amp;gt; userList = userMapper.searchUser(searchModel);&lt;br/&gt;    Page&amp;lt;User&amp;gt; pageResponse = Page.create(userList, searchModel);&lt;br/&gt;    pageResponse.setTotal(userMapper.searchUserCount(searchModel));&lt;br/&gt;    &lt;span&gt;return&lt;/span&gt; pageResponse;&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;每页大小&lt;code&gt;pageSize&lt;/code&gt;和页码&lt;code&gt;pageNo&lt;/code&gt;，是SearchModel类中的成员变量，在创建searchModel对象时，可以设置设置这两个参数。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;然后在&lt;code&gt;Mybatis&lt;/code&gt;的sql文件中，通过&lt;code&gt;limit&lt;/code&gt;语句实现分页功能：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;limit #{pageStart}, #{pageSize}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其中的pagetStart参数，是通过pageNo和pageSize动态计算出来的，比如：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;pageStart = (pageNo - &lt;span&gt;1&lt;/span&gt;) * pageSize;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;4.多个sheet&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们知道，excel对一个sheet存放的最大数据量，是有做限制的，一个sheet最多可以保存&lt;code&gt;1048576&lt;/code&gt;行数据。否则在保存数据时会直接报错：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;invalid row &lt;span&gt;number&lt;/span&gt; &lt;span&gt;(&lt;span&gt;1048576&lt;/span&gt;)&lt;/span&gt; outside allowable &lt;span&gt;range&lt;/span&gt; &lt;span&gt;(&lt;span&gt;0.&lt;/span&gt;&lt;span&gt;.1048575&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果你想导出一百万以上的数据，excel的一个sheet肯定是存放不下的。&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5752212389380531&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5hJRQJehsX2gcV68GgHwthIXgvhhV9zlRKTdlvNU8f3Tb3HviaTzZS9aXibns8Nw5dNAXE3iccMJ04Wg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;452&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因此我们需要把数据保存到多个sheet中。&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.3669724770642202&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5hJRQJehsX2gcV68GgHwthInAsWH4gMS2TQ2Vzu1d9q4ric9xTr7A49Gzvel3pO2LenKm1pIjSB00A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;654&quot;/&gt;&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;5.计算limit的起始位置&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我之前说过，我们一般是通过&lt;code&gt;limit&lt;/code&gt;语句来实现分页查询功能的：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;limit #{pageStart}, #{pageSize}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其中的pagetStart参数，是通过pageNo和pageSize动态计算出来的，比如：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;pageStart = (pageNo - &lt;span&gt;1&lt;/span&gt;) * pageSize;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果只有一个sheet可以这么玩，但如果有多个sheet就会有问题。因此，我们需要重新计算&lt;code&gt;limit&lt;/code&gt;的起始位置。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;例如：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;ExcelWriter excelWriter = EasyExcelFactory.write(out).build();&lt;br/&gt;&lt;span&gt;int&lt;/span&gt; totalPage = searchUserTotalPage(searchModel);&lt;br/&gt;&lt;br/&gt;&lt;span&gt;if&lt;/span&gt;(totalPage &amp;gt; &lt;span&gt;0&lt;/span&gt;) {&lt;br/&gt;   Page&amp;lt;User&amp;gt; page = Page.create(searchModel);&lt;br/&gt;   &lt;span&gt;int&lt;/span&gt; sheet = (totalPage % maxSheetCount == &lt;span&gt;0&lt;/span&gt;) ? totalPage / maxSheetCount: (totalPage / maxSheetCount) + &lt;span&gt;1&lt;/span&gt;;&lt;br/&gt;   &lt;span&gt;for&lt;/span&gt;(&lt;span&gt;int&lt;/span&gt; i=&lt;span&gt;0&lt;/span&gt;;i&amp;lt;sheet;i++) {&lt;br/&gt;      WriterSheet writeSheet = buildSheet(i,&lt;span&gt;&quot;sheet&quot;&lt;/span&gt;+i);&lt;br/&gt;      &lt;span&gt;int&lt;/span&gt; startPageNo = i*(maxSheetCount/pageSize)+&lt;span&gt;1&lt;/span&gt;;&lt;br/&gt;      &lt;span&gt;int&lt;/span&gt; endPageNo = (i+&lt;span&gt;1&lt;/span&gt;)*(maxSheetCount/pageSize);&lt;br/&gt;      &lt;span&gt;while&lt;/span&gt;(page.getPageNo()&amp;gt;=startPageNo &amp;amp;&amp;amp; page.getPageNo()&amp;lt;=endPageNo) {&lt;br/&gt;        page = searchUser(searchModel);&lt;br/&gt;        &lt;span&gt;if&lt;/span&gt;(CollectionUtils.isEmpty(page.getList())) {&lt;br/&gt;            &lt;span&gt;break&lt;/span&gt;;&lt;br/&gt;        }&lt;br/&gt;        &lt;br/&gt;        excelWriter.write(page.getList(),writeSheet);&lt;br/&gt;        page.setPageNo(page.getPageNo()+&lt;span&gt;1&lt;/span&gt;);&lt;br/&gt;     }&lt;br/&gt;   }&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这样就能实现分页查询，将数据导出到不同的excel的sheet当中。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;6.文件上传到OSS&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;由于现在我们导出excel数据的方案改成了&lt;code&gt;异步&lt;/code&gt;，所以没法直接将excel文件，同步返回给用户。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因此我们需要先将excel文件存放到一个地方，当用户有需要时，可以访问到。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这时，我们可以直接将文件上传到&lt;code&gt;OSS&lt;/code&gt;文件服务器上。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;通过OSS提供的上传接口，将excel上传成功后，会返回&lt;code&gt;文件名称&lt;/code&gt;和&lt;code&gt;访问路径&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们可以将excel名称和访问路径保存到&lt;code&gt;表&lt;/code&gt;中，这样的话，后面就可以直接通过&lt;code&gt;浏览器&lt;/code&gt;，访问&lt;code&gt;远程&lt;/code&gt;excel文件了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;而如果将excel文件保存到&lt;code&gt;应用服务器&lt;/code&gt;，可能会占用比较多的&lt;code&gt;磁盘空间&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;一般建议将&lt;code&gt;应用服务器&lt;/code&gt;和&lt;code&gt;文件服务器&lt;/code&gt;分开，应用服务器需要更多的&lt;code&gt;内存资源&lt;/code&gt;或者&lt;code&gt;CPU资源&lt;/code&gt;，而&lt;code&gt;文件服务器&lt;/code&gt;需要更多的&lt;code&gt;磁盘资源&lt;/code&gt;。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;7.通过WebSocket推送通知&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;通过上面的功能已经导出了excel文件，并且上传到了&lt;code&gt;OSS&lt;/code&gt;文件服务器上。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;接下来的任务是要本次excel导出结果，成功还是失败，通知目标用户。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;有种做法是在页面上提示：&lt;code&gt;正在导出excel数据，请耐心等待&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;然后用户可以主动刷新当前页面，获取本地导出excel的结果。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;但这种用户交互功能，不太友好。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;还有一种方式是通过&lt;code&gt;webSocket&lt;/code&gt;建立长连接，进行实时通知推送。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果你使用了&lt;code&gt;SpringBoot&lt;/code&gt;框架，可以直接引入webSocket的相关jar包：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;&amp;lt;&lt;span&gt;dependency&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;&lt;span&gt;groupId&lt;/span&gt;&amp;gt;&lt;/span&gt;org.springframework.boot&lt;span&gt;&amp;lt;/&lt;span&gt;groupId&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;&amp;lt;&lt;span&gt;artifactId&lt;/span&gt;&amp;gt;&lt;/span&gt;spring-boot-starter-websocket&lt;span&gt;&amp;lt;/&lt;span&gt;artifactId&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;&amp;lt;/&lt;span&gt;dependency&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;使用起来挺方便的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们可以加一张专门的&lt;code&gt;通知表&lt;/code&gt;，记录通过webSocket推送的通知的标题、用户、附件地址、阅读状态、类型等信息。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;能更好的追溯通知记录。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;webSocket给客户端推送一个通知之后，用户的右上角的收件箱上，实时出现了一个小窗口，提示本次导出excel功能是成功还是失败，并且有文件下载链接。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;当前通知的阅读状态是&lt;code&gt;未读&lt;/code&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;用户点击该窗口，可以看到通知的详细内容，然后通知状态变成&lt;code&gt;已读&lt;/code&gt;。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;8.总条数可配置&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;我们在做导百万级数据这个需求时，是给用户用的，也有可能是给运营同学用的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其实我们应该站在实际用户的角度出发，去思考一下，这个需求是否合理。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;用户拿到这个百万级别的excel文件，到底有什么用途，在他们的电脑上能否打开该excel文件，电脑是否会出现太大的卡顿了，导致文件使用不了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果该功能上线之后，真的发生发生这些情况，那么导出excel也没有啥意义了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因此，非常有必要把记录的&lt;code&gt;总条数&lt;/code&gt;，做成&lt;code&gt;可配置&lt;/code&gt;的，可以根据用户的实际情况调整这个配置。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;比如：用户发现excel中有50万的数据，可以正常访问和操作excel，这时候我们可以将总条数调整成500000，把多余的数据截取掉。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其实，在&lt;code&gt;用户的操作界面&lt;/code&gt;，增加更多的查询条件，用户通过修改查询条件，多次导数据，可以实现将所有数据都导出的功能，这样可能更合理一些。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;此外，分页查询时，&lt;code&gt;每页的大小&lt;/code&gt;，也建议做成可配置的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;通过总条数和每页大小，可以动态调整记录数量和分页查询次数，有助于更好满足用户的需求。&lt;/p&gt;&lt;h2&gt;&lt;span&gt;9.order by商品编号&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;之前的需求是要将相同商品编号的数据放到一起。&lt;/p&gt;&lt;p&gt;例如：&lt;/p&gt;&lt;section&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;编号&lt;/th&gt;&lt;th&gt;商品名称&lt;/th&gt;&lt;th&gt;仓库名称&lt;/th&gt;&lt;th&gt;价格&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;笔记本&lt;/td&gt;&lt;td&gt;北京仓&lt;/td&gt;&lt;td&gt;7234&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;笔记本&lt;/td&gt;&lt;td&gt;上海仓&lt;/td&gt;&lt;td&gt;7235&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;笔记本&lt;/td&gt;&lt;td&gt;武汉仓&lt;/td&gt;&lt;td&gt;7236&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;2&lt;/td&gt;&lt;td&gt;平板电脑&lt;/td&gt;&lt;td&gt;成都仓&lt;/td&gt;&lt;td&gt;7236&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;2&lt;/td&gt;&lt;td&gt;平板电脑&lt;/td&gt;&lt;td&gt;大连仓&lt;/td&gt;&lt;td&gt;3339&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/section&gt;&lt;p&gt;但我们做了分页查询的功能，没法将数据一次性查询出来，直接在Java内存中分组或者排序。&lt;/p&gt;&lt;p&gt;因此，我们需要考虑在sql语句中使用&lt;code&gt;order by&lt;/code&gt; 商品编号，先把数据排好顺序，再查询出数据，这样就能将相同商品编号，仓库不同的数据放到一起。&lt;/p&gt;&lt;p&gt;此外，还有一种情况需要考虑一下，通过配置的总记录数将全部数据做了截取。&lt;/p&gt;&lt;p&gt;但如果最后一个商品编号在最后一页中没有查询完，可能会导致导出的最后一个商品的数据不完整。&lt;/p&gt;&lt;p&gt;因此，我们需要在程序中处理一下，将最后一个商品删除。&lt;/p&gt;&lt;p&gt;但加了order by关键字进行排序之后，如果查询sql中&lt;code&gt;join&lt;/code&gt;了很多张表，可能会导致查询性能变差。&lt;/p&gt;&lt;p&gt;那么，该怎么办呢？&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;总结&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;最后用两张图，总结一下excel异步导数据的流程。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果是使用mq导数据：&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.9130434782608695&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5hJRQJehsX2gcV68GgHwthIaHPS5jGrI6IQFUu6jmUR6OkJZZeRgPBJWTYpTwrXyYpsd4g1XhnIBQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;966&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;如果是使用job导数据：&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.9959016393442623&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5hJRQJehsX2gcV68GgHwthIlPv1UqF7UwGr5xHC4tbsYrrrfZWVibIibsMSX6FOvYeQ0wqIIeCopWtw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;976&quot;/&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这两种方式都可以，可以根据实际情况选择使用。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;我们&lt;/span&gt;&lt;span&gt;按照这套方案的&lt;/span&gt;&lt;span&gt;开发了代码，&lt;/span&gt;&lt;span&gt;发到了&lt;/span&gt;&lt;span&gt;pre&lt;/span&gt;&lt;span&gt;环境&lt;/span&gt;&lt;span&gt;，&lt;/span&gt;&lt;span&gt;原本以为&lt;/span&gt;&lt;span&gt;会非常顺利&lt;/span&gt;&lt;span&gt;，但&lt;/span&gt;&lt;span&gt;后面却还是&lt;/span&gt;&lt;span&gt;出现了性能问题。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;后来，我们用了两招轻松解决了性能问题。&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;对这个问题感兴趣的小伙伴，可以加入苏三的知识星球，查看更完整的文章。当然知识星球中还会有更多开发技巧&lt;strong&gt;，工作经验分享，&lt;/strong&gt;面试真题，面试资料，电子书，以及赚红包，送书等等活动。&lt;/span&gt;&lt;/strong&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;&lt;span&gt;扫描下方二维码，可以直接领优惠券，优惠券已经不多了。&lt;br/&gt;&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;1.215625&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5iaemIbiaCb2PJ9oc68XCEC84bstxUFcIIrZ2Rfld6ZUVu03KEBHReOibogDFgyibmxHVbNxqyn1PvyibA/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-w=&quot;640&quot;/&gt;&lt;/span&gt;&lt;/p&gt;&lt;pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;苏三的知识星球其实是一个高质量的学习社区，在这里你可以轻松获取很多&lt;strong&gt;公众号上没有的干货内容和资料&lt;/strong&gt;，也可以跟更多优秀的人一起学习，一起交流技术。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;由于刚开始运营，门槛设置得非常低，随着干货内容越来越多，后面肯定要涨价的，特地给大家申请了一波优惠券，现在入手最划算。&lt;span/&gt;&lt;/p&gt;&lt;/pre&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>ee57eee398187e1e16146bc548c0a637</guid>
-<title>程序员提交代码的 emoji 指南</title>
-<link>https://toutiao.io/k/9fz0bf7</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content             &quot; id=&quot;js_content&quot;&gt;&lt;p&gt;程序员都爱 github，而许多程序员喜欢在 github 提交代码时加入 emoji 表情。 并不是程序员喜欢故意卖萌，而是添加了 emoji 表情的提交记录真的能包含很多有用信息，阅读体验非常棒。&lt;/p&gt;&lt;p&gt;&lt;img data-src=&quot;http://mmbiz.qpic.cn/mmbiz_png/d8tibSEfhMModiaqocIbr00aAVcFibQ1OxjZY5HkOK8icnCWs99iaweMY9Ngl0liaKofkOuhtl6N2c3ThOtMdwqlr4Nw/0?wx_fmt=png&quot; class=&quot;&quot; data-type=&quot;png&quot; data-ratio=&quot;0.3558467741935484&quot; data-w=&quot;1984&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;img data-src=&quot;http://mmbiz.qpic.cn/mmbiz_png/d8tibSEfhMModiaqocIbr00aAVcFibQ1Oxjhp0KzncJd7ua6z9wUTxtsic3lRjjYcmaHO2rkDiacJsZFkTxEibc9eV8Q/0?wx_fmt=png&quot; class=&quot;&quot; data-type=&quot;png&quot; data-ratio=&quot;0.7522750252780587&quot; data-w=&quot;1978&quot;/&gt;&lt;/p&gt;&lt;p&gt;但是，emoji 表情在提交代码的时候也不能乱用，否则容易造成误解。因此开源项目 &lt;a&gt;gitmoji&lt;/a&gt; 专门规定了在 github 提交代码时应当遵循的 emoji 规范：&lt;/p&gt;&lt;p&gt;&lt;img data-src=&quot;http://mmbiz.qpic.cn/mmbiz_png/d8tibSEfhMModiaqocIbr00aAVcFibQ1OxjicLuTD8B9VuWTloMN2tlQI0qNyuNNE9h1IibYnE7BqNzTiaAlELucRWaA/0?wx_fmt=png&quot; class=&quot;&quot; data-type=&quot;png&quot; data-ratio=&quot;0.6304744525547445&quot; data-w=&quot;2192&quot;/&gt;&lt;/p&gt;&lt;ul class=&quot; list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;🎨 - 改进结构和代码格式&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;⚡️ - 优化性能&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;🔥 - 移除代码或文件&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;🐛 - 修复 bug&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;✨ - 引入新功能&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;🍎 - 修复 MacOS 下的问题&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;📝 - 写文档&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;🚀 - 部署新功能&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;img data-src=&quot;http://mmbiz.qpic.cn/mmbiz_png/d8tibSEfhMModiaqocIbr00aAVcFibQ1OxjVBv2XVPCSqFRvyfViaMPwWf35ibx3libRkUicWAleibd96FEwS0902Qrmjw/0?wx_fmt=png&quot; class=&quot;&quot; data-type=&quot;png&quot; data-ratio=&quot;0.626253418413856&quot; data-w=&quot;2194&quot;/&gt;&lt;/p&gt;&lt;ul class=&quot; list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;✅ - 添加测试用例&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;🔖 - 发版/版本标签&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;🔒 - 修复安全问题&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;🐧 - 修复 Linux 下的问题&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;🚨 - 移除 linter 的警告&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;🚧 - 工作在进行中&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;💚 - 修复 CI 构建问题&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;⬇️ - 降级依赖库&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;img data-src=&quot;http://mmbiz.qpic.cn/mmbiz_png/d8tibSEfhMModiaqocIbr00aAVcFibQ1OxjHbUPJ8bqsic6b8Inssiab2C4lngBDFRoRpibUqtibOOEARzB2Y2tG9rRxg/0?wx_fmt=png&quot; class=&quot;&quot; data-type=&quot;png&quot; data-ratio=&quot;0.6308113035551504&quot; data-w=&quot;2194&quot;/&gt;&lt;/p&gt;&lt;ul class=&quot; list-paddingleft-2&quot;&gt;&lt;li&gt;&lt;p&gt;🏁 - 修复 Windows 下的问题&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;⬆️ - 升级依赖库&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;👷 - 添加 CI 构建系统&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;🔧 - 改变配置文件&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;🔨 - 大重构&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;🎉 - 初次提交&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;💄 - 升级 UI 和样式文件&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;以上就是代码提交时使用的标准 emoji。虽然看上去脑洞很大，但是很有用，正确地使用它们的一个最大的好处就是，其他人如果熟悉规范，不用看详细提交记录，一眼看过去就知道这次提交是做什么的。&lt;/p&gt;&lt;p&gt;你们提交代码时使用 emoji 吗？欢迎讨论~&lt;/p&gt;&lt;/div&gt;
+<guid>18305e10f4eaa1341363f4ac077472a8</guid>
+<title>前端工程师扭伤了，也不忘背单词</title>
+<link>https://toutiao.io/k/ah8yqn9</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content             autoTypeSetting24psection&amp;#10;            &quot; id=&quot;js_content&quot;&gt;&lt;p data-mpa-powered-by=&quot;yiban.io&quot;&gt;看完文章，希望我的脚没有白扭，你能多记几个单词。&lt;/p&gt;&lt;p&gt;时隔上次滑板扭伤一年后，周末又扭到了脚了，英文的叫法是 &lt;code&gt;ankle twisted&lt;/code&gt; 。&lt;/p&gt;&lt;p&gt;&lt;code&gt;ankle&lt;/code&gt; （音：安可儿） 脚脖子，脚踝，&lt;code&gt;twisted&lt;/code&gt;（音：推丝贴的） 扭。直译得一塌糊涂。&lt;/p&gt;&lt;p&gt;那作为前端工程师怎么能通过这次脚扭了多记几个单词呢？&lt;/p&gt;&lt;h2&gt;Ankle&lt;/h2&gt;&lt;p&gt;首先是 &lt;code&gt;ankle&lt;/code&gt;，它的词源是 &lt;code&gt;angle&lt;/code&gt; 角，角度。看看自己的脚踝，是不是就像一个角啊。还有当初鼎鼎有名的前端框架 &lt;code&gt;Angular&lt;/code&gt; 也是一个角。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-croporisrc=&quot;https://mmbiz.qpic.cn/mmbiz_png/dlEwIVcKGs6s0DhQ6tlml8jq07cxN78D0LOeiboCywicoDjZCInUcsKe1S6ElyFldpibXxhXxwcJibd2uOFiaZfCHXQ/0?wx_fmt=png&quot; data-cropx1=&quot;0&quot; data-cropx2=&quot;294&quot; data-cropy1=&quot;29&quot; data-cropy2=&quot;141&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.3843537414965986&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/dlEwIVcKGs6s0DhQ6tlml8jq07cxN78DnVkv3xgLAKRvPCL7fT627I3qWDo9IYZ6pzHXCjjvZ6pawml3vYfmyA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;294&quot;/&gt;&lt;/p&gt;&lt;p&gt;它们都像一个角，那如果两个角呢？这个我们叫什么啊？对！锚。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.6655518394648829&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/dlEwIVcKGs6s0DhQ6tlml8jq07cxN78Dq6jX2evF6mVnYsWKLibkhbZmC7nuX8FXwkwK8gibpIhTicjcva5eVFRgg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;598&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;code&gt;anchor&lt;/code&gt; 锚，（音：安可）这个单词和前端可大有关系， &lt;code&gt;&amp;lt;a&amp;gt;&lt;/code&gt; 标签就是 &lt;code&gt;anchor&lt;/code&gt; 的简写。所以以后写一个 a 标签记得想想 pshu 肿得圆圆的脚踝。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5555555555555556&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/dlEwIVcKGs6s0DhQ6tlml8jq07cxN78Dny4tRxOGYxhd0kbsPuIRIyvzcYyibHWjfLKiaFTEYEjicaEyxgsnicHkug/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;900&quot;/&gt;&lt;/p&gt;&lt;h2&gt;Twisted&lt;/h2&gt;&lt;p&gt;&lt;code&gt;Twisted&lt;/code&gt; 动词原形是 &lt;code&gt;twist&lt;/code&gt;（音：推丝特），扭。但是它还一种翻译是 &lt;strong&gt;“拧”&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;比如把两股绳拧在一起就是一根双捻的绳子。如果绳子大家不熟悉，大家看看这个，就知道了。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.54&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/dlEwIVcKGs6s0DhQ6tlml8jq07cxN78DsvxXurX1woDLKthsQSH3B60LeoPIVSTgzE0wkwLmpCrVONJVau5KsQ/640?wx_fmt=png&quot; data-type=&quot;jpeg&quot; data-w=&quot;900&quot;/&gt;&lt;/p&gt;&lt;p&gt;这个叫双绞线的东西就是两根铜丝绞在一起，捻在一起。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.6654545454545454&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/dlEwIVcKGs6s0DhQ6tlml8jq07cxN78Dh0Hf79LlSdFb0HIqf3lgcR9W95jSI8hjqvZdT2MAaniapwUHQ0w9NFQ/640?wx_fmt=png&quot; data-type=&quot;jpeg&quot; data-w=&quot;275&quot;/&gt;&lt;/p&gt;&lt;p&gt;不过“捻”这个叫法用的更多地方是纺织行业。纺织业的原材料纱线，和前端包管理工具 &lt;span&gt;yarn&lt;/span&gt; 是同一个单词。(这一段是写给 p嫂的，她从事在纺织行业的工作，我惊讶地发现她做 yarn 的生意，而我有段时间在使用 yarn 这个命令，缘分啊！)&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.75&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/dlEwIVcKGs6s0DhQ6tlml8jq07cxN78DHibZFbrY8KP8WSicicZYetCg1ozHsHCKdWwLMiacvMjibZ0rD2KuL3SdkibA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;800&quot;/&gt;&lt;/p&gt;&lt;h2&gt;再扩展下&lt;/h2&gt;&lt;p&gt;说回扭脚踝，扭到的其实是脚踝里面的“韧带”，&lt;code&gt;ligament&lt;/code&gt;（音：立个门特）。之前的文章也提到英文单词的字母也有&lt;strong&gt;象形&lt;/strong&gt;的造词法在里面，这个 &lt;code&gt;L&lt;/code&gt; 是和线，条，带相关的（line，ladder，light，lace，leg 等等）。那这个 &lt;code&gt;ligament&lt;/code&gt; 韧带也是“带”，后面的 ment 是一个后缀表示名词。而 &lt;code&gt;liga&lt;/code&gt; 这个单词简单的形变下就变成我们前端常用的 &lt;code&gt;Link&lt;/code&gt; 组件或者 &lt;code&gt;link&lt;/code&gt; 标签。下次写 &lt;code&gt;&amp;lt;Link&amp;gt;&lt;/code&gt; 组件的时候记得想想我两次扭伤的韧带。：P&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.5225&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/dlEwIVcKGs6s0DhQ6tlml8jq07cxN78D9kHaproDVwgwTUr2ZobC3GHFcujHNc379xXtBQibK9Libib5ict4LQodZw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1200&quot;/&gt;&lt;/p&gt;&lt;p&gt;好了最后再扩展一个，扭伤的韧带是连接人骨头的组织，连接骨头的除了韧带当有肌肉，muscle （音：嘛嗖），韧带和肌肉这类东西都统称为 &lt;code&gt;connective tissue&lt;/code&gt;，结缔组织。后缀 -tive 是形容词词性后缀，&lt;code&gt;tissue&lt;/code&gt; 这个单在生物学词汇中是&lt;span&gt;组织&lt;/span&gt;。&lt;code&gt;tissue&lt;/code&gt; 大家不熟悉，但是在 Github 的 &lt;code&gt;issue&lt;/code&gt; 熟悉，以后你们看到 &lt;code&gt;issue&lt;/code&gt; 就记得我现在这个痛（T）的 &lt;code&gt;tissue&lt;/code&gt; 。&lt;/p&gt;&lt;p&gt;&lt;mpcps class=&quot;js_editor_new_cps&quot; data-templateid=&quot;list&quot; data-traceid=&quot;f1d8b955-ed0a-4d2f-949e-afcca8954f7a&quot; data-goodssouce=&quot;1&quot; data-pid=&quot;100_26976641801&quot; data-appuin=&quot;3574415453&quot; data-buffer=&quot;{&amp;quot;category_id&amp;quot;:5,&amp;quot;pid&amp;quot;:&amp;quot;100_26976641801&amp;quot;,&amp;quot;biz_uin&amp;quot;:&amp;quot;3574415453&amp;quot;,&amp;quot;trace_id&amp;quot;:&amp;quot;f1d8b955-ed0a-4d2f-949e-afcca8954f7a&amp;quot;,&amp;quot;sku_id&amp;quot;:&amp;quot;100_26976641801&amp;quot;,&amp;quot;source_id&amp;quot;:3,&amp;quot;source_name&amp;quot;:&amp;quot;拼多多&amp;quot;,&amp;quot;audit_state&amp;quot;:1,&amp;quot;main_img&amp;quot;:&amp;quot;https://pcm-img.zhls.qq.com/productcenter-1f779418--1018825-2652340823978442714/81110541710082022/f24d708c39d62bd887dced4d0989a8b0.jpg&amp;quot;,&amp;quot;product_name&amp;quot;:&amp;quot;维达棉韧纸巾6/24包餐巾纸面巾纸卫生纸家庭装家用实惠维达抽纸&amp;quot;,&amp;quot;current_price&amp;quot;:1450,&amp;quot;first_category_id&amp;quot;:&amp;quot;5&amp;quot;,&amp;quot;discount&amp;quot;:&amp;quot;600&amp;quot;,&amp;quot;product_label_name_list&amp;quot;:[&amp;quot;包邮&amp;quot;],&amp;quot;select_tag_name_list&amp;quot;:[],&amp;quot;templateId&amp;quot;:&amp;quot;list&amp;quot;,&amp;quot;appuin&amp;quot;:&amp;quot;3574415453&amp;quot;,&amp;quot;isNewCpsKOL&amp;quot;:1}&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;这是一个彩蛋：&lt;/span&gt;&lt;span&gt;tissue 用多伤 tissue&lt;/span&gt;&lt;/p&gt;&lt;p&gt;好了，去年滑板脚扭伤的时候就想写一篇类似的文章，一直拖延到再一次扭伤；看来是老天爷来催更了。赶紧写完了。&lt;/p&gt;&lt;p&gt;-完-&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;mp-style-type data-value=&quot;3&quot;/&gt;&lt;/p&gt;&lt;/div&gt;
 
           
         &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>0774b06fab52d32a16ef14978f812045</guid>
-<title>拜占庭将军问题和 Raft 共识算法讲解</title>
-<link>https://toutiao.io/k/322vevz</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;p&gt;作者： 京东物流 郭益如&lt;/p&gt;
+<guid>78ffde476203b361bebd1fc9f2bc0255</guid>
+<title>如何打造一个可以服务地球 80 亿人的高并发系统？</title>
+<link>https://toutiao.io/k/tjn3iog</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content             autoTypeSetting24psection&amp;#10;            &quot; id=&quot;js_content&quot;&gt;&lt;p&gt;&lt;span&gt;本文共 6500 字，阅读大约需要 22 分钟。&lt;/span&gt;&lt;/p&gt;&lt;hr/&gt;&lt;section&gt;前面两篇文章每一篇都花了我五十个小时以上，写的我是欲仙欲死，本文我们来务点虚，上上价值。&lt;/section&gt;&lt;p&gt;我们将从微服务架构讲起，一步一步追根溯源，找寻“分布式数据库”在另一个维度的投影，探寻基建、应用、服务、组织之间的联系，通过观察自然规律和人类社会，引出本文的中心思想，并对“找出单点，进行拆分”做出最后的升华。&lt;/p&gt;&lt;p&gt;最后，我们将得到一个可行的 100 万 API QPS、500 万数据库 QPS 的系统设计方案，并顺便简单地讨论一下“高可用”背后的哲学悖论。&lt;/p&gt;&lt;h3&gt;如何定义“一个系统”&lt;/h3&gt;&lt;p&gt;前面第七篇文章我们说过：&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;如果两个系统的数据库不在一起，那他们就不是一个系统，就像拼多多有 7.5 亿月活用户，淘宝有 8.5 亿，你不能说“拼宝宝”电商系统有 16 亿月活用户一样。&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;如果两个 API 的数据落到同一张表上，那他们两个就属于同一个系统。&lt;/p&gt;&lt;p&gt;那，在一个电商系统内，用户 API 和商品 API 似乎没有多对多交集？是的，这就是微服务架构的拆分逻辑。&lt;/p&gt;&lt;h2&gt;微服务架构&lt;/h2&gt;&lt;p&gt;我们都知道，微服务的拆分方式，反映的是其背后技术团队的组织方式。（你不知道也没关系，你现在知道了(￣▽￣)&quot; ）&lt;/p&gt;&lt;p&gt;那，技术团队的组织方式是什么决定的呢？&lt;/p&gt;&lt;p&gt;是由系统内各部分天然的内聚性决定的：用户相关的业务和商品相关的业务都有很强的内聚性，他们之间不会主动发生关联，但他们会分别和订单发生关联。&lt;/p&gt;&lt;h3&gt;数据库调用推演&lt;/h3&gt;&lt;p&gt;我们用商品下单处理流程来推演一个电商订单的生命周期内对用户、商品、订单三个部分数据库的读写情况。&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;搜索：商品数据库-读&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;点进详情：商品数据库-读，用户数据库-读（地址、会员）&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;立即购买：商品数据库-读，用户数据库-读，订单数据库-写&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;支付：订单数据库-读写，用户数据库-读&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;商家后台查看并处理订单：订单数据库-读写，用户数据库-读，商品数据库-读&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;我们可以看出，大部分情况下，每一步都只有一个主要的微服务被需要，其它微服务都处于辅助地位：只读，且大部分都是单点读取。这就为我们降低了数据库单点的负载——只要把这三个微服务部署到三个独立的数据库上，就可以通过 API 调用的形式降低单个数据库的极限 QPS。&lt;/p&gt;&lt;h3&gt;微服务背后的哲学&lt;/h3&gt;&lt;p&gt;既然我们不能把拼多多和淘宝的系统称作一个系统，那么，在拼多多和淘宝系统内，肯定还可以基于类似的逻辑继续拆分：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;在大量调用的 API 中，一次携带了数据写入的请求一定只会对单个微服务进行写入，但会对多个微服务进行数据读取&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;如果某个头部 API 请求会对两个微服务系统进行写入，那说明微服务的划分出了问题，需要调整系统结构划分&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;把几乎不相互写入的数据拆到两个数据库上，这种组织形态在人类社会随处可见：两个国家的人分别在自己国家申请护照，他们有时也可以到对方国家内的本国领事馆申领本国护照；两个村的人各自在本村的井里打水，有时也可以不怕麻烦地去隔壁村的水井里打水；你每天早上都用滴滴打车上班，万一滴滴打不到车你还可以用高德来补救...&lt;/p&gt;&lt;h3&gt;微服务照进现实&lt;/h3&gt;&lt;p&gt;微服务的拆分思想相信大家都理解了，下面我们来解决现实问题。&lt;/p&gt;&lt;p&gt;如果你真的成为了“设计百万 QPS 系统”的架构师，相信我，你第一个想到的，一定是“削峰”。&lt;/p&gt;&lt;h2&gt;削峰&lt;/h2&gt;&lt;p&gt;顾名思义，将突发的流量高峰削平。大促的时候，系统顶不住，其实就是那么一会儿顶不住，只要初期的高热度下去了，系统的整体负载会迅速下降到没那么危险的水平。所以，对付突发流量，削峰是第一要务。&lt;/p&gt;&lt;h3&gt;1. 缓存——饮鸩止渴&lt;/h3&gt;&lt;p&gt;请原谅我用饮鸩止渴这个词形容 95% 的 web 系统的真正性能顶梁柱，实际上缓存的贡献远不止于此。&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;缓存以降低数据更新频率为代价，极大地提升了读取 API 的 QPS 极限&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;缓存可以设计成多级，形成一个逻辑上的“存储器山”&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;缓存可以像事务隔离级别一样划分成好几种 性能+数据一致性 级别&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;但是，使用缓存确实是在饮鸩止渴：缓存在带来性能的同时，大幅削弱了数据库提供的“单点性”，为系统失效埋下了一堆地雷。&lt;/p&gt;&lt;p&gt;缓存的毒性无法消除，一旦系统的某些部分失效，这杯毒酒就会发作，但是会不会把自己毒死还要看架构水平和基建能力：你的机房别随便断电，你的服务器别随便宕机，你在喝下缓存毒酒之后，就能活的够长。&lt;/p&gt;&lt;h4&gt;终极缓存方案&lt;/h4&gt;&lt;p&gt;我们上一篇文章讨论的 OceanBase 就采用了一种终极缓存方案：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;内存不是快吗，那我就把所有热数据全部放到内存里&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;那对热数据的修改怎么办？redo log 落盘啊&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;你说数据库重启怎么办？上冗余，一个节点一时半会儿起不来也没问题&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;整个集群重启呢？都天灾了，集群重启后，停止服务一个小时还是可以接受的吧&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;12306 每天夜里都要维护一个小时，我有理由怀疑，它在将 redo log 落盘¹ :-D&lt;/p&gt;&lt;h3&gt;2. 队列——欢迎来到地球&lt;/h3&gt;&lt;p&gt;缓存可以削读的峰，队列就是拿来削写的峰的。&lt;/p&gt;&lt;p&gt;队列的思想其实早就贯穿在人类社会的每一个角落了：超市结账需要排队，做核酸需要排队，火车站打车需要排队，网上抢购商品也需要排队。排队的本质是将一拥而上购买变成了“异步”购买：你想买东西？先排队，过段时间轮到你了，看看商品有没有卖完，没卖完你就能买到。&lt;/p&gt;&lt;p&gt;排队的思维特别好理解，而现实中防止超售功能也确实是基于排队功能做的。传统数据库的事务隔离属于强迫用户等待，而现在大多使用队列系统来处理排队，排队这件事情才真正异步起来了。&lt;/p&gt;&lt;h3&gt;3. 奇技淫巧&lt;/h3&gt;&lt;p&gt;电商下单在普通压力下，一个队列就能解决问题，但是当你面临每秒几十万单的时候，如何让这些订单真正地下单成功，才是最需要解决的问题，这个数字就是“系统容量”。队列是无法提升系统的绝对容量的，那该怎么办呢？&lt;/p&gt;&lt;p&gt;继续找东西和信息之神交换：过去的时间换现在的时间。&lt;/p&gt;&lt;p&gt;在大促之前，先把订单生成好，然后用户下单时直接写入用户信息：不需要执行“检查库存”这个单点操作了，负载低了很多。&lt;/p&gt;&lt;p&gt;骚，实在是骚。&lt;/p&gt;&lt;h3&gt;现实世界中的削峰&lt;/h3&gt;&lt;p&gt;现实世界中，一个一百万 QPS 的电商系统，真正需要触达到数据的 QPS 其实是没有 500 万那么多的，在削峰的操作下，200 万 QPS 的 PolarDB 集群在 Redis 集群的配合下，是可以顶住 100 万 API QPS 的。史上流量最大的那一年双 11，每秒订单创建最大值仅为 58.3 万笔，这已经是这个地球上的最高记录了。&lt;/p&gt;&lt;p&gt;但是，现实世界中，一切都要讲 ROI（收益成本之比），搞一个顶配的 PolarDB 集群确实可以顶住巅峰时期一百万 API QPS，但是你老板看着账单肯定会肉痛，那，该如何省钱呢？&lt;/p&gt;&lt;p&gt;答：&lt;code&gt;站在地球表面&lt;/code&gt;。&lt;/p&gt;&lt;h2&gt;站在地球表面&lt;/h2&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.749375&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA1dcaBesl7vS0TqUkqWugicTMXGC0ib5wrgg7xks0LESCvPF1VSocXjIwe53KLekiagr6ZjQ6tFBFYibg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1600&quot;/&gt;&lt;/p&gt;&lt;center&gt;一望无际的华北平原&lt;/center&gt;&lt;p&gt;北京位于美丽的华北平原北端，生活着两千多万人，在巅峰的 2020 年双 11，天猫平台北京地区销售额为 216 亿，全国总额为 4982 亿，占比为 4.33%，略高于北京占全国 3.44% 的 GDP 比例。那我们就可以计算得出，北京的两千多万人，给天猫贡献了&lt;code&gt;583000 * 0.0433 = 25243.9&lt;/code&gt;笔/秒的并发。&lt;/p&gt;&lt;p&gt;虽然全国订单数看起来十分惊人，但是北京这一个地方的压力却只有 2.5 万单每秒，这个哪怕不用奇技淫巧硬抗，十万数据库 QPS 只用主从架构可能都能抗住。但是，系统能基于地理位置划分吗？系统不是必须全国一盘棋吗？不是的，可以划分。&lt;/p&gt;&lt;p&gt;下面我们讨论一下怎么划分。&lt;/p&gt;&lt;h3&gt;基于地理位置对应用和数据库分区&lt;/h3&gt;&lt;p&gt;为什么非要全国的用户访问同一个数据库呢？我们可以利用微服务思想对业务系统和数据进行拆分：北京的用户和上海的用户，理论上讲可以只访问“本地天猫”。&lt;/p&gt;&lt;p&gt;接下来我们分析一下，在一个标准的电商业务中，哪些地方会让一个北京的用户和一个上海的用户发生联系。&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;用户表自增 ID&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;商品库存检查&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;商家订单聚合&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;离线数据分析&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;实际上，地理上被隔开的两个人，在系统内还真没什么机会需要相互查询对方的数据，这就是我们能基于地理位置对应用和数据库进行分区的逻辑原因。下面我们一一拆除上面的单点：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;可以预分配 ID 段，也可以用算法保证，例如一奇一偶&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;预分配库存，再异步刷新缓存：这个部分能玩出花，甚至有在客户端上提前下发抢购结果的骚操作，大家可以自己探索&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;简单地从两个地方各拉一次即可&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;更不用说了，都离线了，本身也是要做很多数据同步和聚合的，不差这一点&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;基于地理位置对应用和数据库进行划分，产生出两个“本地天猫”后，就需要我们老朋友 DNS 出来表演了。&lt;/p&gt;&lt;h3&gt;进击的 DNS&lt;/h3&gt;&lt;p&gt;域名当初可能是为了方便记忆而发明的，但是域名背后的 DNS 服务却几乎是最重要的互联网高并发基础设施：不同地区的人，对同一个域名进行访问，可以获得两个公网 ip，这样“本地天猫”就实现了。&lt;/p&gt;&lt;h4&gt;类 DNS 哲学思想：Consul 和 Kong&lt;/h4&gt;&lt;p&gt;DNS 几乎完全放弃了一致性，但却实现了极高的可用性和分区容错性。其实，gossip 协议也是这个思想：让消息像病毒一样传播，能够实现最终一致性就行了，要啥自行车。&lt;/p&gt;&lt;p&gt;异曲同工的 Kong 集群思想也让我震惊：所有节点每 5 秒从数据库读取最新的配置文件，然后，这些节点就成了一个行为完全一致的集群啦。“想那么多干什么，短时间内多个节点的行为不一致，就让他们不一致好了，5 秒之后不就一致了。”&lt;/p&gt;&lt;h3&gt;高性能计算第一原则：数据离 CPU 越近，性能越高，容量越小&lt;/h3&gt;&lt;p&gt;在我们熟悉的存储器山中，这是一个大家都理解的基本特性，而这个特性引申到分布式系统中，就是：一定不能让应用和数据库分离。&lt;/p&gt;&lt;p&gt;和 InnoDB 一样，很多时候其实是“局部性”这个我们宇宙的基本属性在帮助我们提升系统的性能，让应用和数据库分布在同一个地域，也是在利用局部性获得性能增益。&lt;/p&gt;&lt;p&gt;所以，让应用去隔壁区域的数据库读数据是要极力避免的——我们应该用 API 网关直接把请求发给隔壁区域的应用服务器，这显然是在今天这个异地网络传输速度接近光速的时代最佳的选择。&lt;/p&gt;&lt;h3&gt;跟 Clickhouse 学习如何打造高并发系统&lt;/h3&gt;&lt;p&gt;Clickhouse 在亿级数据量面前丝毫不怵：MySQL、MongoDB、Hadoop，谁也没有老子快。为什么 Clickhouse 这么快呢？&lt;/p&gt;&lt;h4&gt;列存储还压缩&lt;/h4&gt;&lt;p&gt;首先，它将数据以列为单位组织起来，压缩后存入磁盘上一个又一个的 block，这些 block 就像 InnoDB 的 16KB 页一样，只是它更大（64KB~1MB）。这样，当我们 select 某个 column 的时候，Clickhouse 就能顺序读出磁盘上这个 column 下面所有行的数据。&lt;/p&gt;&lt;h4&gt;Clickhouse 对多 CPU 的利用能力非常惊人&lt;/h4&gt;&lt;p&gt;除了列存储之外，每个 block 内，Clickhouse 还用“稀疏索引”的方式，将每一列的数据划分为了多个 granularity(颗粒度)，然后给每个 granularity 分配一个 CPU 核心进行并行计算，并且它还利用 SSE4.2 指令集，利用 CPU 的 SIMD(Single Instruction Multiple Data) 指令，在 CPU 寄存器层面进行并行操作。&lt;/p&gt;&lt;h4&gt;放弃内存缓存&lt;/h4&gt;&lt;p&gt;这是 Clickhouse 整个架构中我最喜欢的部分。我们通过上一篇文章可以看出，所有的分布式数据库，其本质都是在搞“内存缓存的数据同步”，Clickhouse 直接掀桌子：老子不要内存缓存了。由于所有数据都在磁盘上，而节点的 CPU 又直接和磁盘数据打交道，所以 Clickhouse 实现了真正的并行：增加 CPU 核心数就能提升系统容量，无论在不在同一台机器上都行，反正 CPU 相互之前完全不需要通信。这样，Clickhouse 通过堆核心数就能够实现系统容量的“近线性扩展”。&lt;/p&gt;&lt;h4&gt;太暴力了，我喜欢。&lt;/h4&gt;&lt;p&gt;我们可以学习这种思想，打造一个可以线性扩展的系统架构：只要不同地区的本地系统之间完全没有“数据实时同步”需求，那其实他们就是两个系统，就可以实现性能的线性扩展。&lt;/p&gt;&lt;h3&gt;理论无限容量&lt;/h3&gt;&lt;p&gt;我们说过，关系型数据库的关系，指的就是两行数据之间的关系。现实世界中，位于异地甚至是异国的两个人之间，几乎是不会发生实时相互数据读取的。&lt;/p&gt;&lt;p&gt;站在地球表面来思考，你会发现人类社会和自然规律都是契合高并发“找出单点，进行拆分”哲学原理的：每一个人类居所，本质上都是散落在整个地球上的一个又一个点。因为这些点的存在，我们发明了国省市县乡村逐级政府，同级政府之间几乎没有相互通信。&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;将一个大系统拆成不需要实时相互通信的多个小系统，可以获得线性的性能提升。&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;当你的系统顶不住的时候，按照这个原理来拆就行了，绝对顶得住。别说区区一百万 QPS 了，服务全人类也做得到。&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;1&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/qehPQXlzsA1dcaBesl7vS0TqUkqWugicTFbscbgk3rll3FTS6Lr3Z9bOnTghEljkUNotmmQFg3ia798bcXIZAFqQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;1024&quot;/&gt;&lt;/p&gt;&lt;p&gt;价值上完了，我们最后再讨论五毛钱的高可用。&lt;/p&gt;&lt;h2&gt;番外篇：高可用&lt;/h2&gt;&lt;p&gt;我相信，很多人都像我一样做过思想实验，希望设计一个“完全高可用”的系统，但是最终可能都败下阵来，为什么？因为高可用和其它常见的分布式系统需求是互斥的。&lt;/p&gt;&lt;p&gt;数据重要如银行，也只是要求在天灾面前要尽量不丢数据、少丢数据，凭什么你就要求自己的系统永远可用呢？其实，想从架构层面实现高可用是非常困难的，终极高可用就是将数据完整地复制到世界各地的所有节点上，并用超长的时间来达到完全一致，这是什么，这是区块链呀。&lt;/p&gt;&lt;p&gt;高可用和性能、一致性都是冲突的，只能采用策略尽量压制问题。&lt;/p&gt;&lt;h3&gt;熔断&lt;/h3&gt;&lt;p&gt;这个词在技术圈的流行应该有微博一半功劳，压力一大就熔断：主动停止不重要的服务，断尾自救，争取让核心业务不挂。&lt;/p&gt;&lt;h3&gt;限流&lt;/h3&gt;&lt;p&gt;限制一部分地区、一部分用户的访问，以保护整个集群不崩，一般用于限制单个用户对系统造成的压力过大，对面很可能是机器人。&lt;/p&gt;&lt;h3&gt;Facebook 2021年 10 月 4 号宕机²&lt;/h3&gt;&lt;p&gt;Facebook 的用户不可谓不多，对高可用的投入不可谓不足，为什么还是会整个公司完全宕机 7 小时呢？&lt;/p&gt;&lt;p&gt;事故的起因是一个错误的命令意外断开了 Facebook 的 DNS 服务，结果问题大了：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;所有客户端 API 失效，用户无法获得任何信息&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;数据中心 VPN 服务失效，无法远程登录到数据中心内的设备上&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;亲自去机房，发现门禁卡刷不开门，破拆后才接触到物理设备，插上显示器和键盘才能解决问题&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;邮件、Google 文档、Zoom 都登不上&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;办公大楼的门禁卡系统也失效了，无法刷开会议室的门，甚至无法离开办公楼&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;结合阿里云香港一个数据中心因为空调故障导致整个数据中心宕机超过 24 小时³，认命吧，商业机构做不了真正的高可用的：资源使用率就是钱呐。&lt;/p&gt;&lt;h2&gt;系列收尾&lt;/h2&gt;&lt;p&gt;本系列文章一共十篇，超过八万字，对我自己来说也是一次很有价值的总结，不知道各位读者感觉如何呢？欢迎到下列位置留下你的评论：&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;Github：https://github.com/johnlui/tech-epic/issues/1&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;微博：https://weibo.com/balishengmuyuan&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;博客：https://lvwenhan.com/tech-epic/508.html&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;h3&gt;参考资料&lt;/h3&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;《12306互联网售票系统的架构优化及演进》 http://tljsjyy.xml-journal.net/article/id/3756&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;2021 年 Facebook 宕机事件 https://zh.wikipedia.org/wiki/2021%E5%B9%B4Facebook%E7%95%B6%E6%A9%9F%E4%BA%8B%E4%BB%B6&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;关于阿里云香港Region可用区C服务中断事件的说明 https://help.aliyun.com/noticelist/articleid/1061819219.html&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;【全书完】&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;mp-style-type data-value=&quot;3&quot;/&gt;&lt;/p&gt;&lt;/div&gt;
 
-&lt;h1&gt;导读&lt;/h1&gt;
+          
+        &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>43f0249cbe0a0d47538cdb8f5822c32b</guid>
+<title>C语言不支持重载，多种 main() 如何实现的呢？</title>
+<link>https://toutiao.io/k/pf2nu0p</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content             &quot; id=&quot;js_content&quot;&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mp-common-profile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;Mzk0MzI4OTI1Ng==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/p3sYCQXkuHhKgtwWvzaYZodgfpphdA6WWKEMXTn6ImCCCuEzlPKicNBcpzBUyjK1XicWwqIwusqLGpwyyOc87JPQ/0?wx_fmt=png&quot; data-nickname=&quot;高性能架构探索&quot; data-alias=&quot;gxnjgts&quot; data-signature=&quot;专注于分享干货，硬货，欢迎关注😄&quot; data-from=&quot;0&quot; data-is_biz_ban=&quot;0&quot;/&gt;&lt;/section&gt;&lt;p&gt;你好，我是雨乐！&lt;span/&gt;&lt;/p&gt;&lt;p&gt;前几天群里二哥问了个问题，如下图：&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;0.28217821782178215&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/p3sYCQXkuHgZ5sbbcHzj6VuphZnS20IdFCoVTBpZCybg4PjI2adddD90f1TOc5f93gtyr48q9RDeKRECBAJJZg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;808&quot;/&gt;&lt;/p&gt;&lt;p&gt;大家都知道，我是做上层应用的，对底层不是很了解，更别说那帮人在讨论内核的时候，根本插不上话。更多的时候，还是默默记笔记，紧跟大佬们的步伐😁。&lt;/p&gt;&lt;p&gt;于是，为了调研这个问题，也查了相关资料。今天借助本文，来分析下C语言中main()的实现，顺便解答下群里的这个问题。&lt;/p&gt;&lt;h2&gt;定义&lt;/h2&gt;&lt;p&gt;作为C/C++开发人员，都知道main()函数是一个可执行程序的入口函数，大都会像如下这样写:&lt;/p&gt;&lt;pre&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;int&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;() {}&lt;br/&gt;&lt;span&gt;int&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;(&lt;span&gt;int&lt;/span&gt; argc, &lt;span&gt;char&lt;/span&gt; *argv[]) {}&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;但是，作为一个开发老油条，也仅仅知道是这样做的，当看到二哥提出这个问题的时候，第一反应是&lt;code&gt;重载&lt;/code&gt;，但是大家都知道C语言是不支持重载的，那么有没有可能使用的是默认参数呢？如下这种：&lt;/p&gt;&lt;pre&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;int&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;(&lt;span&gt;int&lt;/span&gt; argc = &lt;span&gt;1&lt;/span&gt;, &lt;span&gt;char&lt;/span&gt; **argv = &lt;span&gt;NULL&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;好了，为了验证我的疑问，咱们着手开始进行分析。&lt;/p&gt;&lt;p&gt;ps:在&lt;span&gt;cppreference&lt;/span&gt;上对于main()的声明有第三个参数即char *envp[],该参数是环境变量相关，因为我们使用更多的是不涉及此参数的方式，所以该参数不在本文的讨论范围内。&lt;/p&gt;&lt;h2&gt;断点调试&lt;/h2&gt;&lt;p&gt;为了能够更清晰的理解main()函数的执行过程，写了一个简单的代码，通过gdb查看堆栈信息，代码如下：&lt;/p&gt;&lt;pre&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;int&lt;/span&gt; &lt;span&gt;main&lt;/span&gt;() {&lt;br/&gt;  &lt;span&gt;return&lt;/span&gt; &lt;span&gt;0&lt;/span&gt;;&lt;br/&gt;}&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;编译之后，我们通过gdb进行调试，在main()函数处设置断点，然后看堆栈信息，如下：&lt;/p&gt;&lt;pre&gt;&lt;span/&gt;&lt;code&gt;(gdb) bt&lt;br/&gt;#&lt;span&gt;0&lt;/span&gt;  main () at main.c:&lt;span&gt;2&lt;/span&gt;&lt;br/&gt;(gdb)&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;从上述gdb信息，我们看出main()位于栈顶，显然，我们的目的是分析main()的调用堆栈信息，而这种main()在栈顶的方式显然不足以解答我的疑问。&lt;/p&gt;&lt;p&gt;于是，查阅了相关资料后，发现可以通过其它方式打印出更详细的堆栈信息。&lt;/p&gt;&lt;p&gt;编译命令如下：&lt;/p&gt;&lt;pre&gt;&lt;span/&gt;&lt;code&gt;gcc -gdwarf-5 main.c  -o main&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;然后gdb的相关命令(具体的命令可以网上查阅，此处不做过多分析):&lt;/p&gt;&lt;pre&gt;&lt;span/&gt;&lt;code&gt;gdb ./main -q&lt;br/&gt;Reading symbols from /mtad/main...done.&lt;br/&gt;(gdb) set backtrace past-entry&lt;br/&gt;(gdb) set backtrace past-main&lt;br/&gt;(gdb) show backtrace past-entry&lt;br/&gt;Whether backtraces should continue past the entry point of a program is on.&lt;br/&gt;(gdb) show backtrace past-main&lt;br/&gt;Whether backtraces should continue past &quot;main&quot; is on.&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;然后在main()处设置断点，运行，查看堆栈信息，如下：&lt;/p&gt;&lt;pre&gt;&lt;span/&gt;&lt;code&gt;(gdb) bt&lt;br/&gt;#&lt;span&gt;0&lt;/span&gt;  main () at main.c:&lt;span&gt;2&lt;/span&gt;&lt;br/&gt;#&lt;span&gt;1&lt;/span&gt;  &lt;span&gt;0x00007ffff7a2f555&lt;/span&gt; in __libc_start_main () from /lib64/libc.so&lt;span&gt;.6&lt;/span&gt;&lt;br/&gt;#&lt;span&gt;2&lt;/span&gt;  &lt;span&gt;0x0000000000400429&lt;/span&gt; in _start ()&lt;br/&gt;(gdb)&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;通过如上堆栈信息，我们看到_start()--&amp;gt;__libc_start_main()--&amp;gt;main()，看来应该在这俩函数中，开始分析~~&lt;/p&gt;&lt;h2&gt;_start()&lt;/h2&gt;&lt;p&gt;为了查看_start()的详细信息，继续在_start()函数处打上断点，然后分析查看：&lt;/p&gt;&lt;pre&gt;&lt;span/&gt;&lt;code&gt;(gdb) r&lt;br/&gt;Starting program: xxx&lt;br/&gt;Missing separate debuginfos, use: debuginfo-install glibc&lt;span&gt;-2.17&lt;/span&gt;&lt;span&gt;-317.&lt;/span&gt;el7.x86_64&lt;br/&gt;&lt;br/&gt;Breakpoint &lt;span&gt;1&lt;/span&gt;, &lt;span&gt;0x0000000000400400&lt;/span&gt; in _start ()&lt;br/&gt;(gdb) s&lt;br/&gt;Single stepping until &lt;span&gt;exit&lt;/span&gt; from function _start,&lt;br/&gt;which has no line number information.&lt;br/&gt;&lt;span&gt;0x00007ffff7a2f460&lt;/span&gt; in __libc_start_main () from /lib64/libc.so&lt;span&gt;.6&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;通过如上分析，没有看到_start()函数的可执行代码，于是通过网上搜索，发现_start()是用汇编编写，于是下载了glibc2.5源码，在路径处sysdeps/i386/elf/start.S&lt;/p&gt;&lt;pre&gt;&lt;span/&gt;&lt;code&gt;#include &quot;bp-sym.h&quot;&lt;br/&gt;&lt;br/&gt;    .text&lt;br/&gt;    .globl _start&lt;br/&gt;    .type _start,@function&lt;br/&gt;_start:&lt;br/&gt;    /* Clear the frame pointer.  The ABI suggests this be done, to mark&lt;br/&gt;       the outermost frame obviously.  */&lt;br/&gt;    xorl %ebp, %ebp&lt;br/&gt;&lt;br/&gt;    /* Extract the arguments as encoded on the stack and set up&lt;br/&gt;       the arguments for `main&#x27;: argc, argv.  envp will be determined&lt;br/&gt;       later in __libc_start_main.  */&lt;br/&gt;    popl %esi  /* Pop the argument count.  */&lt;br/&gt;    movl %esp, %ecx  /* argv starts just at the current stack top.*/&lt;br/&gt;&lt;br/&gt;    /* Before pushing the arguments align the stack to a 16-byte&lt;br/&gt;    (SSE needs 16-byte alignment) boundary to avoid penalties from&lt;br/&gt;    misaligned accesses.  Thanks to Edward Seidl &amp;lt;seidl@janed.com&amp;gt;&lt;br/&gt;    for pointing this out.  */&lt;br/&gt;    andl $0xfffffff0, %esp&lt;br/&gt;    pushl %eax  /* Push garbage because we allocate&lt;br/&gt;                   28 more bytes.  */&lt;br/&gt;&lt;br/&gt;    /* Provide the highest stack address to the user code (for stacks&lt;br/&gt;       which grow downwards).  */&lt;br/&gt;    pushl %esp&lt;br/&gt;&lt;br/&gt;    pushl %edx  /* Push address of the shared library&lt;br/&gt;                   termination function.  */&lt;br/&gt;&lt;br/&gt;#ifdef SHARED&lt;br/&gt;    /* Load PIC register.  */&lt;br/&gt;    call 1f&lt;br/&gt;    addl $_GLOBAL_OFFSET_TABLE_, %ebx&lt;br/&gt;&lt;br/&gt;    /* Push address of our own entry points to .fini and .init.  */&lt;br/&gt;    leal __libc_csu_fini@GOTOFF(%ebx), %eax&lt;br/&gt;    pushl %eax&lt;br/&gt;    leal __libc_csu_init@GOTOFF(%ebx), %eax&lt;br/&gt;    pushl %eax&lt;br/&gt;&lt;br/&gt;    pushl %ecx  /* Push second argument: argv.  */&lt;br/&gt;    pushl %esi  /* Push first argument: argc.  */&lt;br/&gt;&lt;br/&gt;    pushl BP_SYM (main)@GOT(%ebx)&lt;br/&gt;&lt;br/&gt;    /* Call the user&#x27;s main function, and exit with its value.&lt;br/&gt;       But let the libc call main.    */&lt;br/&gt;    call BP_SYM (__libc_start_main)@PLT&lt;br/&gt;#else&lt;br/&gt;    /* Push address of our own entry points to .fini and .init.  */&lt;br/&gt;    pushl $__libc_csu_fini&lt;br/&gt;    pushl $__libc_csu_init&lt;br/&gt;&lt;br/&gt;    pushl %ecx  /* Push second argument: argv.  */&lt;br/&gt;    pushl %esi  /* Push first argument: argc.  */&lt;br/&gt;&lt;br/&gt;    pushl $BP_SYM (main)&lt;br/&gt;&lt;br/&gt;    /* Call the user&#x27;s main function, and exit with its value.&lt;br/&gt;       But let the libc call main.    */&lt;br/&gt;    call BP_SYM (__libc_start_main)&lt;br/&gt;#endif&lt;br/&gt;&lt;br/&gt;    hlt   /* Crash if somehow `exit&#x27; does return.  */&lt;br/&gt;&lt;br/&gt;#ifdef SHARED&lt;br/&gt;1: movl (%esp), %ebx&lt;br/&gt;    ret&lt;br/&gt;#endif&lt;br/&gt;&lt;br/&gt;/* To fulfill the System V/i386 ABI we need this symbol.  Yuck, it&#x27;s so&lt;br/&gt;   meaningless since we don&#x27;t support machines &amp;lt; 80386.  */&lt;br/&gt;    .section .rodata&lt;br/&gt;    .globl _fp_hw&lt;br/&gt;_fp_hw: .long 3&lt;br/&gt;    .size _fp_hw, 4&lt;br/&gt;    .type _fp_hw,@object&lt;br/&gt;&lt;br/&gt;/* Define a symbol for the first piece of initialized data.  */&lt;br/&gt;    .data&lt;br/&gt;    .globl __data_start&lt;br/&gt;__data_start:&lt;br/&gt;    .long 0&lt;br/&gt;    .weak data_start&lt;br/&gt;    data_start = __data_start&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;上述实现也是比较简单的：&lt;/p&gt;&lt;p&gt;xorl %ebp, %ebp：将ebp寄存器清零。&lt;/p&gt;&lt;p&gt;popl %esi、movl %esp, %ecx：装载器把用户的参数和环境变量压栈，实际上按照压栈的方法，栈顶的元素就是argc，接着其下就是argv和环境变量的数组。这两句相当于int argc = pop from stack; char **argv = top of stack。&lt;/p&gt;&lt;p&gt;call BP_SYM (__libc_start_main)：相当于调用__libc_start_main，调用的时候传入参数，包括argc、argv。&lt;/p&gt;&lt;p&gt;上述逻辑功能，伪代码实现如下：&lt;/p&gt;&lt;pre&gt;&lt;span/&gt;&lt;code&gt;&lt;span&gt;void&lt;/span&gt; _start() {&lt;br/&gt;  %ebp = &lt;span&gt;0&lt;/span&gt;;&lt;br/&gt;  &lt;span&gt;int&lt;/span&gt; argc = pop from stack&lt;br/&gt;  &lt;span&gt;char&lt;/span&gt; ** argv = top of stack;&lt;br/&gt;  __libc_start_main(main, argc, argv, __libc_csu_init, __linc_csu_fini,&lt;br/&gt;  edx, top of stack);&lt;br/&gt;}&lt;/code&gt;&lt;/pre&gt;&lt;h2&gt;__libc_start_main&lt;/h2&gt;&lt;p&gt;在上一节中，我们了解到，_start()才是整个可执行程序的入口函数，在_start()函数中调用__libc_start_main()函数，该函数声明如下：&lt;/p&gt;&lt;pre&gt;&lt;span/&gt;&lt;code&gt;STATIC &lt;span&gt;int&lt;/span&gt;&lt;br/&gt;&lt;span&gt;LIBC_START_MAIN&lt;/span&gt; (&lt;span&gt;int&lt;/span&gt; (*main) (&lt;span&gt;int&lt;/span&gt;, &lt;span&gt;char&lt;/span&gt; **, &lt;span&gt;char&lt;/span&gt; ** MAIN_AUXVEC_DECL),&lt;br/&gt;                 &lt;span&gt;int&lt;/span&gt; argc, &lt;span&gt;char&lt;/span&gt; *__unbounded *__unbounded ubp_av,&lt;br/&gt;#ifdef LIBC_START_MAIN_AUXVEC_ARG&lt;br/&gt;                 ElfW(&lt;span&gt;auxv_t&lt;/span&gt;) *__unbounded auxvec,&lt;br/&gt;#endif&lt;br/&gt;                 __typeof (main) init,&lt;br/&gt;                 &lt;span&gt;void&lt;/span&gt; (*fini) (&lt;span&gt;void&lt;/span&gt;),&lt;br/&gt;                 &lt;span&gt;void&lt;/span&gt; (*rtld_fini) (&lt;span&gt;void&lt;/span&gt;), &lt;span&gt;void&lt;/span&gt; *__unbounded stack_end)&lt;br/&gt;{&lt;br/&gt;&lt;span&gt;#&lt;span&gt;if&lt;/span&gt; __BOUNDED_POINTERS__&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;char&lt;/span&gt; **argv;&lt;br/&gt;&lt;span&gt;#&lt;span&gt;else&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;span&gt;# &lt;span&gt;define&lt;/span&gt; argv ubp_av&lt;/span&gt;&lt;br/&gt;&lt;span&gt;#&lt;span&gt;endif&lt;/span&gt;&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;  &lt;span&gt;/* Result of the &#x27;main&#x27; function.  */&lt;/span&gt;&lt;br/&gt;  &lt;span&gt;int&lt;/span&gt; result;&lt;br/&gt;&lt;br/&gt;  __libc_multiple_libcs = &amp;amp;_dl_starting_up &amp;amp;&amp;amp; !_dl_starting_up;&lt;br/&gt;&lt;br/&gt;...&lt;br/&gt;...&lt;br/&gt;  &lt;span&gt;if&lt;/span&gt; (init)&lt;br/&gt;    (*init) (argc, argv, __environ MAIN_AUXVEC_PARAM);&lt;br/&gt;...&lt;br/&gt;&lt;br/&gt;  result = main (argc, argv, __environ MAIN_AUXVEC_PARAM);&lt;br/&gt;&lt;br/&gt;  &lt;span&gt;exit&lt;/span&gt; (result);&lt;br/&gt;}&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;可以看出，在该函数中，最终调用了main()函数，并传入了相关命令行。（result = main (argc, argv, __environ MAIN_AUXVEC_PARAM);）&lt;/p&gt;&lt;p&gt;截止到此，我们了解了整个main()函数的调用过程，但是，仍然没有回答二哥的问题，main()是如何实现&lt;strong&gt;有参和无参&lt;/strong&gt;两种方式的，其实说白了，&lt;strong&gt;在标准中，main()只有一种声明方式，即有参方式。无论是否有命令行参数，都调用该函数。如果有参数，则通过压栈出栈(对于x86 32位)或者寄存器(x86 64位)的方式获取参数，然后传入main()，如果命令行为空，则对应的字段为空（即没有从栈上取得对应的数据）&lt;/strong&gt;。&lt;/p&gt;&lt;h2&gt;结语&lt;/h2&gt;&lt;p&gt;二哥一句简简单单的问题，断断续续研究了将近一个月。可能此问题对于从事嵌入式或者内核研究的同学来说非常简单。我是偏向于上层，所以这种问题研究起来非常痛苦，毕竟隔行如隔山。在期间也请教了二哥，但是难免还是有理解偏差或者错误之处，也有很多内容因为不了解，所以没有细究，担心搞不定。&lt;/p&gt;&lt;p&gt;最后借用狗哥的一句话来结束此文：&lt;strong&gt;搜广推何去何从&lt;/strong&gt;。&lt;/p&gt;&lt;p&gt;好了，今天的文章就到这，我们下期见！&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;如果对本文有疑问可以加笔者&lt;span&gt;&lt;strong&gt;微信&lt;/strong&gt;&lt;/span&gt;直接交流，笔者也建了C/C++相关的技术群，有兴趣的可以联系笔者加群。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;1&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/p3sYCQXkuHiaA3xxTGkIcH0JjQo83fJ8JZPMOM7IrSb3r6zGUQGsP6fMsBhGXeoMw43aL9OEACnPAHdSKmuDljQ/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&quot; data-type=&quot;png&quot; data-w=&quot;400&quot;/&gt;&lt;span/&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;br/&gt;&lt;/figure&gt;&lt;/section&gt;&lt;section data-tools=&quot;135编辑器&quot; data-id=&quot;90215&quot;&gt;&lt;section&gt;&lt;section data-brushtype=&quot;text&quot; data-width=&quot;100%&quot;&gt;&lt;strong&gt;往期&lt;/strong&gt;&lt;span&gt;&lt;strong&gt;精彩&lt;/strong&gt;&lt;/span&gt;&lt;strong&gt;回顾&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section data-bdless=&quot;spin&quot; data-bdlessp=&quot;280&quot; data-bdopacity=&quot;50%&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzk0MzI4OTI1Ng==&amp;amp;mid=2247488842&amp;amp;idx=1&amp;amp;sn=d39efe4a60dfc2a2146bbdfa37442e71&amp;amp;chksm=c337738df440fa9bd4000d097c76ef530b13f0d4c53ee45a03a0a033ea57b7b0b3f436af1e4a&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;惯用法之CRTP&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; hasload=&quot;1&quot;&gt;惯用法之CRTP&lt;/a&gt;&lt;/section&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzk0MzI4OTI1Ng==&amp;amp;mid=2247488826&amp;amp;idx=1&amp;amp;sn=5ec3f6e6959b51de02b850aeee609f34&amp;amp;chksm=c33773fdf440faebd97a0184c3e30ce77b3ce306d7d6dea9967ece6bef41e9f6d9d9030b2a62&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;聊聊内存模型与内存序&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; hasload=&quot;1&quot;&gt;聊聊内存模型与内存序&lt;/a&gt;&lt;/section&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzk0MzI4OTI1Ng==&amp;amp;mid=2247488441&amp;amp;idx=1&amp;amp;sn=f75be00bcd12934c2e7331956707a429&amp;amp;chksm=c337757ef440fc6816fdef3c144361a0e21ebe24da6ea497d8122ca04c81c7dcc40445ae3f1a&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;vector初始化与否导致的巨大性能差异&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; wah-hotarea=&quot;click&quot; hasload=&quot;1&quot;&gt;vector初始化与否导致的巨大性能差异&lt;/a&gt;&lt;/section&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzk0MzI4OTI1Ng==&amp;amp;mid=2247488372&amp;amp;idx=1&amp;amp;sn=f3acc2893cbafc99c21203f4db0e24ee&amp;amp;chksm=c33775b3f440fca5410edde4ce29f1cbeec7c1734357e54c02bbe549ed3f435a4243f7e8d297&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;问题解决了，我却不知道原因&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; wah-hotarea=&quot;click&quot; hasload=&quot;1&quot;&gt;问题解决了，我却不知道原因&lt;/a&gt;&lt;/section&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzk0MzI4OTI1Ng==&amp;amp;mid=2247488290&amp;amp;idx=1&amp;amp;sn=c4d2416b3ee3968303379a8cef66105d&amp;amp;chksm=c33775e5f440fcf30a3a8bef429eb199577f71a15d688ddf729ed1edbb94d119d58c470195f1&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;揭开lambda的神秘面纱&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; wah-hotarea=&quot;click&quot; hasload=&quot;1&quot;&gt;揭开lambda的神秘面纱&lt;/a&gt;&lt;br/&gt;&lt;/section&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzk0MzI4OTI1Ng==&amp;amp;mid=2247488149&amp;amp;idx=1&amp;amp;sn=4b7718a8798245b3a50e1fc9aebf5dee&amp;amp;chksm=c3377452f440fd44d13a4a99d3e16a2d06de0539b9f8365b7346de9c8037ea91b59f46df934f&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;多态实现-虚函数、函数指针以及变体&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; wah-hotarea=&quot;click&quot; hasload=&quot;1&quot;&gt;多态实现-虚函数、函数指针以及变体&lt;/a&gt;&lt;/section&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzk0MzI4OTI1Ng==&amp;amp;mid=2247488000&amp;amp;idx=1&amp;amp;sn=156cad69e290f1e898cded46cd4cedc9&amp;amp;chksm=c33774c7f440fdd1e7db21f175029adcf622fe53f1968bb8acefa027bf95f01d5e2c2bb3d7a7&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;【Modern C++】深入理解移动语义&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; wah-hotarea=&quot;click&quot; hasload=&quot;1&quot;&gt;【Modern C++】深入理解移动语义&lt;/a&gt;&lt;/section&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzk0MzI4OTI1Ng==&amp;amp;mid=2247487751&amp;amp;idx=1&amp;amp;sn=3da21227cb1a4c80e36f91dc823529af&amp;amp;chksm=c33777c0f440fed6f9ebaa7f206f1e423f68c09a809a4d30033f34bd123ccf45d9e42655e199&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;【Modern C++】深入理解左值、右值&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; wah-hotarea=&quot;click&quot; hasload=&quot;1&quot;&gt;【Modern C++】深入理解左值、右值&lt;/a&gt;&lt;br/&gt;&lt;/section&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzk0MzI4OTI1Ng==&amp;amp;mid=2247487474&amp;amp;idx=1&amp;amp;sn=e29d0178bfd4139313c44139e1cb3899&amp;amp;chksm=c3376935f440e023b96e9f8feeb34e4e22fbb74f00ca345a2b867edfd4c088bc595821fe878e&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;智能指针-使用、避坑和实现&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; wah-hotarea=&quot;click&quot; hasload=&quot;1&quot;&gt;智能指针-使用、避坑和实现&lt;/a&gt;&lt;br/&gt;&lt;/section&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzk0MzI4OTI1Ng==&amp;amp;mid=2247487009&amp;amp;idx=1&amp;amp;sn=a812d27b9d65369ce2f38375b4a4ee96&amp;amp;chksm=c33768e6f440e1f015252fecf354f9f3712f59fc04b47b03401486c86fe51875428503ee9819&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;内存泄漏-原因、避免以及定位&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; wah-hotarea=&quot;click&quot; hasload=&quot;1&quot;&gt;内存泄漏-原因、避免以及定位&lt;/a&gt;&lt;br/&gt;&lt;/section&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzk0MzI4OTI1Ng==&amp;amp;mid=2247486816&amp;amp;idx=1&amp;amp;sn=a6dfc1361ce15ce5ad1c7d7734f9c939&amp;amp;chksm=c3376ba7f440e2b18267c303c35572ab089fb97d3b2fe0adb58009637d6631020bb52bd9a28c&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;GDB调试-从入门实践到原理&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; wah-hotarea=&quot;click&quot; hasload=&quot;1&quot;&gt;GDB调试-从入门实践到原理&lt;/a&gt;&lt;br/&gt;&lt;/section&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzk0MzI4OTI1Ng==&amp;amp;mid=2247486357&amp;amp;idx=1&amp;amp;sn=3e7b88218f4416980b20add7575baa9a&amp;amp;chksm=c3376d52f440e444d28a01ef930ddfb92b5d30f26e7284012f08624ca1599e7efac1da3fb17c&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;【线上问题】P1级公司故障，年终奖不保&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; wah-hotarea=&quot;click&quot; hasload=&quot;1&quot;&gt;【线上问题】P1级公司故障，年终奖不保&lt;/a&gt;&lt;/section&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzk0MzI4OTI1Ng==&amp;amp;mid=2247486254&amp;amp;idx=1&amp;amp;sn=ebce58aa6b547af2a818faa5a6412e89&amp;amp;chksm=c3376de9f440e4ffea267926b7ce09ac439ab33a1da9dc6b4d631c971053f628cf91202d0f53&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;【性能优化】高效内存池的设计与实现&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; wah-hotarea=&quot;click&quot; hasload=&quot;1&quot;&gt;【性能优化】高效内存池的设计与实现&lt;/a&gt;&lt;/section&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=Mzk0MzI4OTI1Ng==&amp;amp;mid=2247485953&amp;amp;idx=1&amp;amp;sn=f8cd484607ab07f15247ecde773d2e1c&amp;amp;chksm=c3376cc6f440e5d047f7e648c951fd583df82ab4e3dab5767baeddef9fe7c1270f05b039d8c4&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;2万字|30张图带你领略glibc内存管理精髓&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot; wah-hotarea=&quot;click&quot; hasload=&quot;1&quot;&gt;2万字|30张图带你领略glibc内存管理精髓&lt;/a&gt;&lt;/section&gt;&lt;section data-width=&quot;100%&quot;&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;你好，我是雨乐，从业十二年有余，历经过传统行业网络研发、互联网推荐引擎研发，目前在广告行业从业8年。目前任职某互联网公司高级技术专家一职，负责广告引擎的架构和研发。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;本公众号专注于架构、技术、线上bug分析等干货，欢迎关注。&lt;/span&gt;&lt;/p&gt;&lt;section class=&quot;mp_profile_iframe_wrp&quot;&gt;&lt;mp-common-profile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;Mzk0MzI4OTI1Ng==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/p3sYCQXkuHhKgtwWvzaYZodgfpphdA6WWKEMXTn6ImCCCuEzlPKicNBcpzBUyjK1XicWwqIwusqLGpwyyOc87JPQ/0?wx_fmt=png&quot; data-nickname=&quot;高性能架构探索&quot; data-alias=&quot;gxnjgts&quot; data-signature=&quot;专注于分享干货，硬货，欢迎关注😄&quot; data-from=&quot;0&quot; data-is_biz_ban=&quot;0&quot;/&gt;&lt;/section&gt;&lt;/section&gt;&lt;/div&gt;
 
-&lt;p&gt;在分布式系统中， 什么是拜占庭将军问题？产生的场景和解决方案是什么？什么是 Raft 共识算法？Raft 算法是如何解决拜占庭将军问题的？其核心原理和算法逻辑是什么？除了 Raft，还有哪些共识算法？共识问题作为分布式系统的一大难点和痛点，本文主要介绍了其产生的背景、原因，以及通用的 Raft 算法解决方案。&lt;/p&gt;
+          
+        &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>42ad01424cf224030fd836af6362404d</guid>
+<title>前端标准化之旅</title>
+<link>https://toutiao.io/k/lrbfi6f</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;p&gt;作者：京东零售 陈艳春&lt;/p&gt;
 
-&lt;h1&gt;01 拜占庭将军问题&lt;/h1&gt;
+&lt;p&gt;本文主要是介绍前端研发的一些标准化规范，良好的代码规范，不仅能够让代码简洁清晰，还可以减少 bug 的出现，更能够让看代码的人赏心悦目，本文主要从命名规范、语法规范、后端系统开发规范、版本更新规范、上线邮件申请规范、项目启动规范来、文件目录规范七方面介绍，文档内如有错漏之处，敬请大家指正，会及时做出调整；也希望各位能够提出更宝贵意见和建议，使文档更加完善。当然如果感觉有可借鉴之处，欢迎大家采纳。&lt;/p&gt;
 
-&lt;p&gt;【分布式对等网络中的通信容错问题。&lt;/p&gt;
+&lt;p&gt;引言&lt;/p&gt;
 
-&lt;p&gt;在分布式计算中，不同的计算机通过通讯交换信息达成共识按照一套协作策略行动。有时候，系统中的成员计算机可能出错而发送错误的信息，用于传递信息的通讯网络也可能导致信息损坏，使得网络中不同的成员关于全体协作的策略得出不同结论，从而破坏系统一致性，这就是拜占庭将军问题。&lt;/p&gt;
+&lt;p&gt;前端标准化是我们践行前端工程化中重要的一部分，为什么要标准化呢？首先我们开发是需要多人开发的，每一个开发者都有各自的编码喜好和习惯，就是因为这个不同的编码习惯和喜好增加了我们项目的维护成本，所以每个项目或者团队需要明确统一的标准。&lt;/p&gt;
 
-&lt;p&gt;拜占庭将军问题被认为是容错性问题中最难的问题类型之一。】&lt;/p&gt;
+&lt;p&gt;以下是我积累的一些前端规范以及一些个人建议：&lt;/p&gt;
 
-&lt;p&gt;9 位将军兵分 9 路去打仗，他们各自有权力观测敌情并做出行动判断 —— 进攻或撤退，他们必须行动一致，即所有军队一起进攻或者一起撤退，否则部分进攻部分撤退会造成灾难性后果。&lt;/p&gt;
+&lt;p&gt;一．命名规范&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;前提：&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;好的命名是通俗易懂，见名知意，即看css能很清晰明了的看出html的结构，优雅的js命名，可以看出每个func所处理的事情，清晰的文件和文件夹命名规范，有助于理解项目结构，以下介绍下我们日常积累的一些命名规范。&lt;/p&gt;
+
+&lt;p&gt;1.文件夹使用短横杠命名法(&lt;code&gt;xxx-xxx&lt;/code&gt;)，vue、js、scss等文件使用小写加中划线命名法(&lt;code&gt;xxx-xxx&lt;/code&gt;)&lt;/p&gt;
+
+&lt;p&gt;2.组件开发规范&lt;/p&gt;
+
+&lt;p&gt;（1）根节点class必须是&quot;cp-xxx&quot;开头，xxx对应的是组件的名称,组件里面的class 以cp-xxx形式命名class,尽量不要使用scoped。&lt;/p&gt;
+
+&lt;p&gt;（2）业务组件可以放在当前业务目录的component文件夹，import导入时用bcp-xxx开头已和公共组件加以区分，其他规范和公共组件保持一致。&lt;/p&gt;
 
 &lt;ol&gt;
-&lt;li&gt;&lt;p&gt;将军之间只能通过信使互相联系，每位将军将自己的判断发送给其他将军，并接收其他将军发送的判断；&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;收到信息的将军综合所有的判断，当超过半数都选择进攻时，就决定进攻，当超过半数都选择撤退时就决定撤退；&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;方法命名:小写+驼峰(xxxXxYy)，&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;组件里面的&lt;code&gt;name&lt;/code&gt;都必须使用&lt;code&gt;Pascal&lt;/code&gt;命名法，组件使用名称类似&lt;code&gt;xxx-xxx&lt;/code&gt;这样。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;路由跳转地址，不要直接写死链接地址，使用路由链接地址对应的name进行跳转。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;css命名规范：&lt;/p&gt;&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;问题是，将军中间可能出现叛徒，他可能会选择相反的结果进行通信（投票），也可能选择性的发送信息，叛徒要达成的目标是：&lt;/p&gt;
+&lt;p&gt;1）样式：&lt;/p&gt;
+
+&lt;p&gt;a) 全局样式：app-*&lt;/p&gt;
+
+&lt;p&gt;b) 页面样式：pg-* pg-marking(marking是模块)&lt;/p&gt;
+
+&lt;p&gt;c) 组件样式：cp-*&lt;/p&gt;
+
+&lt;p&gt;d) 样式属性顺序规范：js有好的写法，推荐语法写法和不推荐语法写法&lt;/p&gt;
+
+&lt;p&gt;2）状态：&lt;/p&gt;
+
+&lt;p&gt;a) 全局样式：.show, .hide(全局状态命名尽量简单，不要有过多前缀)&lt;/p&gt;
+
+&lt;p&gt;b) 页面样式：pg-*_active(页面样式尽量只能在当前页面使用，必须添加前缀)&lt;/p&gt;
+
+&lt;p&gt;c) 组件样式：cp-*_active(组件样式尽量只能在当前组件使用，必须添加前缀)&lt;/p&gt;
+
+&lt;p&gt;d) 禁止使用scoped，无论是在全局、页面还是组件内&lt;/p&gt;
+
+&lt;p&gt;7.枚举值定义：全局事件名、本地存储的key值等需要抽离出单独的文件进行统一管理， 避免冲突。&lt;/p&gt;
+
+&lt;p&gt;二．语法规范&lt;/p&gt;
+
+&lt;p&gt;语法规范是为了提高工作效率，兼容性优良，页面性能优化，代码简洁、明了、有序，尽可能的减少服务器的负载，保证最快的解析速度。&lt;/p&gt;
 
 &lt;ol&gt;
-&lt;li&gt;&lt;p&gt;选择性的发送信息，欺骗某些将军采取进攻的行动；&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;促成一个错误的决定，比如将军们不希望进攻时进攻；&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;迷惑某些将军，使得他们无法做出决定；&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;根据当前eslint的规范编写代码。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;尽可能的少用可变变量，能用const的就不要使用let，完全不使用var。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;拥抱ES6：（举一些例子，顺带学习回顾下）&lt;/p&gt;&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;如果叛徒达成了其中之一，任何的攻击结果都是注定要失败的，只有完全达成一致的努力才能获得胜利。&lt;/p&gt;
+&lt;p&gt;（1）赋值简写：{ data: data }可以写成{ data }&lt;/p&gt;
 
-&lt;p&gt;比如，可能 9 位将军中有 8 位忠诚的将军和一名叛徒，8 位将军中 4 位选择进攻，4 位选择撤退，叛徒分别给选择进攻的将军发送进攻的信息，给选择撤退的将军发送撤退信息。这样一来，在4 位选择进攻的将军看，共 5 位将军选择进攻，从而发起进攻；而在 4 位选择撤退的将军看，共 5 位将军选择撤退，从而发起撤退，这样各个将军的一致性就遭到了破坏。&lt;/p&gt;
+&lt;p&gt;（2）函数简写：{data: function () {}}可以写成{data () {}}&lt;/p&gt;
 
-&lt;p&gt;并且，叛徒将军可能会伪造其他将军的身份发送信件；&lt;/p&gt;
+&lt;p&gt;（3）对象取值：const {a,b,c,d,e} = obj || {}&lt;/p&gt;
 
-&lt;p&gt;拜占庭将军问题描述的是，在存在信息丢失的不可靠信道上试图通过消息传递的方式达到一致性是不可能的，在系统中除了存在的消息延迟或不可送达故障外，还可能包括消息篡改、节点处理异常等潜在性异常。&lt;/p&gt;
+&lt;p&gt;（4）合并数据：&lt;/p&gt;
 
-&lt;h1&gt;1.1 拜占庭容错&lt;/h1&gt;
+&lt;p&gt;代替&lt;/p&gt;
 
-&lt;p&gt;在早期的解决方案中，一种是 &lt;strong&gt;“拜占庭容错”&lt;/strong&gt; ，它遵循“少数服从多数”的共识机制，即使出现了错误或伪造的信息，只要有问题的将军数量不到 1/3，仍可以达到“拜占庭容错”，使整个系统便可以正常运作。&lt;/p&gt;
+&lt;p&gt;（5）拼接字符串：&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;为什么是 1/3呢？&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;代替&lt;/p&gt;
 
-&lt;p&gt;其原理是这样的，假设将军总数是 N，其中正直的将军数量是 S，反叛的将军数量是 T， 那么 N=S+T；&lt;/p&gt;
+&lt;p&gt;（6）if判断条件合集：&lt;/p&gt;
 
-&lt;p&gt;为了保证即使反叛的将军都不去投票也能产生最终的结果，那么 S 必须要超过半数，这种情况下，S 都做出相同的选择，依然可以达成共识，即 S&amp;gt;T；&lt;/p&gt;
+&lt;p&gt;代替&lt;/p&gt;
 
-&lt;p&gt;如果叛徒给一半支持进攻的将军发送进攻信息，给一半支持撤退的将军发送撤退信息，这种情况要保证也能产生最终的投票结果，则 X &amp;gt; S/2 + E；&lt;/p&gt;
+&lt;p&gt;（7）列表搜索&lt;/p&gt;
 
-&lt;p&gt;综合以上关系，可以得到：&lt;/p&gt;
+&lt;p&gt;代替&lt;/p&gt;
 
-&lt;p&gt;N = S + T&lt;/p&gt;
+&lt;p&gt;（8）获取对象属性值&lt;/p&gt;
 
-&lt;p&gt;X &amp;lt; S&lt;/p&gt;
+&lt;p&gt;代替&lt;/p&gt;
 
-&lt;p&gt;X &amp;gt; S/2 + T&lt;/p&gt;
+&lt;p&gt;（9）添加对象属性&lt;/p&gt;
 
-&lt;p&gt;求解以上不等式，可以得到：&lt;/p&gt;
+&lt;p&gt;代替&lt;/p&gt;
 
-&lt;p&gt;(N-T)/2 &amp;gt; T，即 N &amp;gt; 3T&lt;/p&gt;
+&lt;p&gt;（10）输入框非空判断&lt;/p&gt;
 
-&lt;p&gt;所以要保证正直的将军至少占所有将军总数的 2/3，才有可能达成共识。&lt;/p&gt;
-
-&lt;h1&gt;1.2 拜占庭算法&lt;/h1&gt;
-
-&lt;p&gt;拜占庭算法是一种共识算法，确定共识的原则，各个节点通过这个共识原则既可以保证一致性，又能保证基本的分区容错性。&lt;/p&gt;
-
-&lt;p&gt;共识是可容错系统中的一个基本问题： 即使面对故障，服务器如何在共享状态上达成一致？&lt;/p&gt;
-
-&lt;h1&gt;02 Raft算法&lt;/h1&gt;
-
-&lt;p&gt;理解，首先 MCube 会依据模板缓存状态判断是否需要网络获取最新模板，当获取到模板后进行模板加载，加载阶段会将产物转换为视图树的结构，转换完成后将通过表达式引擎解析表达式并取得正确的值，通过事件解析引擎解析用户自定义事件并完成事件的绑定，完成解析赋值以及事件绑定后进行视图的渲染，最终将目标页面展示到屏幕。&lt;/p&gt;
-
-&lt;p&gt;【Raft 算法解决的是简化版的拜占庭将军问题，即在不考虑数据丢失、篡改的情况下的拜占庭将军问题。】&lt;/p&gt;
-
-&lt;p&gt;假设现在有 3 位将军 A、B、C，将军中没有叛徒，信使的信息可靠，但有可能被暗杀，此时将军们如何达成进攻的一致性决定？&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;方案：&lt;/strong&gt; Raft的方案是，在所有的将军中选出一个大将军，用来做出所有的决定。大将军派信使给其他将军，如果过一段时间没有回复（可能被暗杀）就再派一个信使，直到收到回复。&lt;/p&gt;
-
-&lt;p&gt;如果大将军的信使，派出去一个被干掉一个，其他将军们总也收不到大将军的信息，他们如何达成一致性决定？&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;方案：&lt;/strong&gt; 每位将军都有一个随机时间的计时器，时间一到，他就把自己当成大将军的候选人，派信使将选举结果给将军 B、C。 如果将军 B、C 还没有把选举大将军结果投给其他人（包括自己）时，他们就会把选举票投给 A。A 将军的信使返回 A 时，A 将军就知道自己收到了足够的票数，成为了新的大将军。&lt;/p&gt;
-
-&lt;p&gt;Raft 算法是一种简单易懂的共识算法，它通过首先选举一个 Leader 主节点，然后让Leader 完全负责数据同步，依靠状态机和主从同步的方式，在各个节点之间实现数据的一致性。&lt;/p&gt;
-
-&lt;p&gt;通过这种主节点进行数据同步的方式，Raft 将一致性问题拆分成了三个相对独立的子问题：&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;1. 主节点选取 Leader Election：&lt;/strong&gt; 启动集群时，或者现有主节点失败时，会启动新的投票，获得大多数选票（N/2+1）的节点会成为新的主节点；&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;2. 复制日志 Log Replication：&lt;/strong&gt; 主节点从客户端接收日志信息，再把信息复制到其他从节点上，使得日志信息都能保持数据一致；&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;3. 安全性：&lt;/strong&gt; Raft 定义了一系列规范来保证数据安全性。&lt;/p&gt;
-
-&lt;h1&gt;2.1 Raft节点&lt;/h1&gt;
-
-&lt;p&gt;Raft 算法为节点定义了三种角色： &lt;strong&gt;Leader（主节点）&lt;/strong&gt; 、&lt;strong&gt;Follower（从节点）&lt;/strong&gt; 、&lt;strong&gt;Candidate（参与投票竞争的节点）&lt;/strong&gt; ，节点的角色是可以转换的，在任意的时间，每个服务器一定处于三种状态中的一个。&lt;/p&gt;
-
-&lt;p&gt;每个节点上都有一个倒计时器（Election Timeout），随机值在 150ms ~ 300ms 之间，当节点收到选举请求，或收到 Leader 的 Heartbeat 时，就会重置倒计时。&lt;/p&gt;
-
-&lt;h1&gt;2.1.1 主节点 Leader&lt;/h1&gt;
-
-&lt;p&gt;通常情况下，系统中只有一个主节点，用来发起心跳，处理所有的客户端请求，创建日志和同步日志。&lt;/p&gt;
-
-&lt;h1&gt;2.1.2 从节点 Follower&lt;/h1&gt;
-
-&lt;p&gt;除主节点外，其他的节点都是从节点，用于接收主节点的心跳和日志数据，保证其数据状态与主节点一致，以及在 Leader 选举时，投票给 Candidate。&lt;/p&gt;
-
-&lt;p&gt;如果有客户端跟Follower 联系，那么 Follower 会把请求重定向给 Leader。&lt;/p&gt;
-
-&lt;h1&gt;2.1.3 候选人 Candidate&lt;/h1&gt;
-
-&lt;p&gt;候选人 Candidate是在 Leader 选举过程中的临时角色，由 Follower 转换而来，用于发起投票参与竞选。&lt;/p&gt;
-
-&lt;p&gt;Raft 节点状态图：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/d54affb704b6408b8bbd207e1023926b%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;a href=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;图1 Raft 节点状态图&lt;/p&gt;
-
-&lt;p&gt;启动时，或 Follower 接收不到 Leader 信息时，它就会变成 Candidate 并发起一次选举。获得集群中大多数选票的Candidate 就成为新的 Leader。&lt;/p&gt;
-
-&lt;h1&gt;2.1.4 任期 Term&lt;/h1&gt;
-
-&lt;p&gt;Raft 把时间分割成任意长度的任期 Term，用连续的整数标记。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/61a4e992566a4e15acf88815191d6013%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;a href=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;图2 各任期 Term 下的状态演变&lt;/p&gt;
-
-&lt;p&gt;每一个任期都会开始一次新的选举，一个或多个 Candidate 会尝试成为 Leader。如果一个 Candidate 赢得了选举，它就会在该任期内担任 Leader，直到任期结束或者服务器宕机。在某些情况下，没有选出 Leader（如选票瓜分等），则会开启下一个任期并立刻开始新的选举。&lt;/p&gt;
-
-&lt;p&gt;任期在 Raft 算法中充当逻辑时钟的作用，每一个节点都会存储当前的 Term 号，这一编号在整个集群时期内单调增长，服务器之间通信的时候也会交换当前的 Term 号：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;  如果一个节点发现其 Term 号比其他服务器小，那么它会更新自己的 Term 号到较大的值；&lt;/li&gt;
-&lt;li&gt;  如果一个 Candidate 或者 Leader 发现其 Term 号过期了，那么它会立即恢复成 Follower 状态；&lt;/li&gt;
-&lt;li&gt;  如果一个节点接收到的请求中 Term 号过期了，那么它会直接拒绝此次请求。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Raft 算法中服务器节点之间通信使用远程过程调用（RPCs），并且基本的一致性算法只需要两种类型的 RPCs。请求投票（RequestVote） RPCs 由候选人在选举期间发起，然后附加条目（AppendEntries）RPCs 由领导者发起，用来复制日志和提供一种心跳机制。如果未及时收到响应，则请求者有责任重试 RPC。&lt;/p&gt;
-
-&lt;h1&gt;2.1.5 事件 Entry&lt;/h1&gt;
-
-&lt;p&gt;每一个事件是一个 Entry，只有 Leader 可以创建 Entry，结构为 &lt;term index=&quot;&quot; cmd=&quot;&quot;&gt;其中 cmd 是可以应用到状态机的操作。&lt;/term&gt;&lt;/p&gt;
-
-&lt;h1&gt;2.1.6 日志 Log&lt;/h1&gt;
-
-&lt;p&gt;日志是 Raft 的核心概念，是一个由 Entry 构成的数组。只有 Leader 才可以改变其他节点的 Log。Leader 先把 Entry 添加到自己的 Log 数组中，发起共识请求，获得同意后，才会将 Entry 提交给状态机。Follower 只能从 Leader 中获取新日志和当前的 CommitIndex，然后把对应的 Entry 应用到自己的状态机中。&lt;/p&gt;
-
-&lt;h1&gt;2.2 选取主节点 Leader Election&lt;/h1&gt;
-
-&lt;h1&gt;2.2.1 选举机制&lt;/h1&gt;
-
-&lt;ul&gt;
-&lt;li&gt;  raft 通过心跳机制来触发 Leader 的选举；&lt;/li&gt;
-&lt;/ul&gt;
-
-
-
-&lt;ul&gt;
-&lt;li&gt;  Leader 会向所有的 Follower 周期性发送心跳来保证自己的 Leader 地位。&lt;/li&gt;
-&lt;/ul&gt;
-
-
-
-&lt;ul&gt;
-&lt;li&gt;  如果服务器能够收到来自 Leader 或者 Candidate 的有效信息，那么它会一直保持为 Follower 状态，并且刷新自己的 electionElapsed，重新计时。&lt;/li&gt;
-&lt;/ul&gt;
-
-
-
-&lt;ul&gt;
-&lt;li&gt;  如果一个 Follower 在一个周期内没有收到任何信息，也就是选举超时，它就会认为此时没有可用的 Leader，开始进行一次选举以选出一个新的 Leader。&lt;/li&gt;
-&lt;li&gt;  当服务器启动时，所有的节点都是 Follower。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h1&gt;2.2.2 选举过程&lt;/h1&gt;
-
-&lt;p&gt;Follower 自增的 term 号并且转换状态为 Candidate。然后他会向所有节点发起 RequestVoteRPC 请求， Candidate 的状态会持续到以下情况发生：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;  获得大多数选票（N/2 +1），赢得选举，成为 Leader&lt;/li&gt;
-&lt;li&gt;  其他节点赢得选举&lt;/li&gt;
-&lt;li&gt;  一轮选举结束，无人胜出&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;在 Candidate 等待选票的时候，它可能收到其他节点声明其是 Leader 的心跳：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;  该 Leader 的 term 号大于等于自己的 term 号，说明对方已经成为 Leader，则自己回退为 Follower。&lt;/li&gt;
-&lt;li&gt;  该 Leader 的 term 号小于自己的 term 号，那么会拒绝该请求并让该节点更新 term。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;为了避免出现“&lt;strong&gt;脑裂&lt;/strong&gt;”，即同一时刻出现多个 Candidate，导致没有 Candidate 获得大多数选票的状况，Raft 增加了随机选举超时时间的方法。每一个Candidate 在发起选举后，都会随机化一个超时时间（ 150-300 毫秒），使得各个服务器分散开来，在大多数情况下只有一个服务器会率先超时，赢得选举。&lt;/p&gt;
-
-&lt;p&gt;相关代码实现：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;【plain】
-func (rf *Raft) RequestVote(request *RequestVoteRequest, response *RequestVoteResponse) {
-  rf.mu.Lock()
-  defer rf.mu.Unlock()
-  defer rf.persist()
-  defer DPrintf(&quot;{Node %v}&#x27;s state is {state %v,term %v,commitIndex %v,lastApplied %v,firstLog %v,lastLog %v} before processing requestVoteRequest %v and reply requestVoteResponse %v&quot;, rf.me, rf.state, rf.currentTerm, rf.commitIndex, rf.lastApplied, rf.getFirstLog(), rf.getLastLog(), request, response)
-
-
-
-
-  if request.Term &amp;lt; rf.currentTerm || (request.Term == rf.currentTerm &amp;amp;&amp;amp; rf.votedFor != -1 &amp;amp;&amp;amp; rf.votedFor != request.CandidateId) {
-    response.Term, response.VoteGranted = rf.currentTerm, false
-    return
-  }
-  if request.Term &amp;gt; rf.currentTerm {
-    rf.ChangeState(StateFollower)
-    rf.currentTerm, rf.votedFor = request.Term, -1
-  }
-  if !rf.isLogUpToDate(request.LastLogTerm, request.LastLogIndex) {
-    response.Term, response.VoteGranted = rf.currentTerm, false
-    return
-  }
-  rf.votedFor = request.CandidateId
-  rf.electionTimer.Reset(RandomizedElectionTimeout())
-  response.Term, response.VoteGranted = rf.currentTerm, true
-}
-
-
-func (rf *Raft) StartElection() {
-  request := rf.genRequestVoteRequest()
-  DPrintf(&quot;{Node %v} starts election with RequestVoteRequest %v&quot;, rf.me, request)
-  // use Closure
-  grantedVotes := 1
-  rf.votedFor = rf.me
-  rf.persist()
-  for peer := range rf.peers {
-    if peer == rf.me {
-      continue
-    }
-    go func(peer int) {
-      response := new(RequestVoteResponse)
-      if rf.sendRequestVote(peer, request, response) {
-        rf.mu.Lock()
-        defer rf.mu.Unlock()
-        DPrintf(&quot;{Node %v} receives RequestVoteResponse %v from {Node %v} after sending RequestVoteRequest %v in term %v&quot;, rf.me, response, peer, request, rf.currentTerm)
-        if rf.currentTerm == request.Term &amp;amp;&amp;amp; rf.state == StateCandidate {
-          if response.VoteGranted {
-            grantedVotes += 1
-            if grantedVotes &amp;gt; len(rf.peers)/2 {
-              DPrintf(&quot;{Node %v} receives majority votes in term %v&quot;, rf.me, rf.currentTerm)
-              rf.ChangeState(StateLeader)
-              rf.BroadcastHeartbeat(true)
-            }
-          } else if response.Term &amp;gt; rf.currentTerm {
-            DPrintf(&quot;{Node %v} finds a new leader {Node %v} with term %v and steps down in term %v&quot;, rf.me, peer, response.Term, rf.currentTerm)
-            rf.ChangeState(StateFollower)
-            rf.currentTerm, rf.votedFor = response.Term, -1
-            rf.persist()
-          }
-        }
-      }
-    }(peer)
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h1&gt;2.3 日志同步 Log Replication&lt;/h1&gt;
-
-&lt;p&gt;Raft 通过Leader 向集群中所有 Follower 进行日志同步来保证整个集群数据的最终一致性。&lt;/p&gt;
-
-&lt;p&gt;只有 Leader 有权限接受客户端的请求并且同步数据给集群中其他节点。每一个客户端的请求都包含一条需要被复制状态机 RSM（Replicated State Mechine）执行的命令，Leader 收到客户端请求后，会生成一个 Entry，包含，再将这个 entry 添加到自己的日志末尾后，向所有的节点广播该 Entry，要求其他服务器复制这条 Entry。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/87d4fdfd56a44c24b4cd7df82af85891%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;a href=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;图3 主从节点进行 Entry 复制&lt;/p&gt;
-
-&lt;p&gt;如图所示，Logs 日志是一个顺序存储的 Entry 数组，方框内是任期 Term 号。&lt;/p&gt;
-
-&lt;h1&gt;2.3.1 日志同步流程&lt;/h1&gt;
-
-&lt;p&gt;例如，在 Term3 中，Leader 最后一个 Entry 的Index 为 7，x 值为 5，收到请求 set x=4时：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/5328528d39294db69084c27141385581%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;a href=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;图4 日志同步流程&lt;/p&gt;
+&lt;p&gt;代替&lt;/p&gt;
 
 &lt;ol&gt;
-&lt;li&gt;&lt;p&gt;Leader 收到客户端请求 x←4 时，Leader 会生成一条新的 Entry&amp;lt;8, 3, set x=4&amp;gt;，并将该 Entry 添加到自己的 Log 数组最后&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Leader 通过 AppendEntries RPC 广播该 Entry；&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;如果 Follower 接受该 Entry，则会将 Entry 添加到其日志后面，同时返回给 Leader 同意。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;如果 Leader 收到了多数的成功响应，Leader 认为这个 Entry 是 committed，应用到自己的状态机 RSM 中，并且向客户端返回执行结果。之后，该 commited 信息会随着之后的 AppendEntryRPC 传达到其他节点。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;committed 表示被 Leader 创建的 Entry 已经复制到了大多数的服务器上，Leader 会跟踪它记录的最大索引值 Index，并在之后的 AppendEntries RPC（包括心跳）中，包含该索引值，以此确保其他服务器同步这个 Entry 已经提交，Follower 接收到该信息后，也会按顺序同步更新到本地的状态机中。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;使用ES6的箭头函数需要注意：&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;Raft 通过这种日志机制来保证不同服务器上日志的一致性和安全性：&lt;/p&gt;
+&lt;p&gt;（1） 函数体内的 &lt;code&gt;this&lt;/code&gt; 对象就是定义时所在的对象，而不是使用时所在的对象。&lt;/p&gt;
 
-&lt;ul&gt;
-&lt;li&gt;  在两个日志里，有两个 entry 拥有相同的 index 和 term，那么它们一定有相同的 cmd；&lt;/li&gt;
-&lt;li&gt;  在两个日志里，有两个 entry 拥有相同的 index 和 term，那么它们前面的 entry 也一定相同。&lt;/li&gt;
-&lt;/ul&gt;
+&lt;p&gt;（2） 不可以当做构造函数。也就是说，不可以使用&lt;code&gt;new&lt;/code&gt;命令，否则会抛出一个错误。&lt;/p&gt;
 
-&lt;h1&gt;2.3.2 Leader Crash&lt;/h1&gt;
+&lt;p&gt;（3）不可以使用&lt;code&gt;arguments&lt;/code&gt;对象，该对象在函数体内不存在。如果要用，可以使用&lt;code&gt;rest&lt;/code&gt;参数代替。（&lt;code&gt;rest&lt;/code&gt;参数使用自行查看《ES6标准入门》）。&lt;/p&gt;
 
-&lt;p&gt;一般情况下，Leader 和 Follower 的日志保持一致，AppendEntries 的一致性检查通常不会失败。然后，Leader Crash 可能会导致数据丢失：&lt;/p&gt;
+&lt;p&gt;（4）不可以使用&lt;code&gt;yield&lt;/code&gt;命令，因此箭头函数不能用作&lt;code&gt;Generator&lt;/code&gt;函数。&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/2de1c8cbc0f644ae820045b5185f18be%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;a href=&quot;&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;（5）非必要情况，不要再元素上写&lt;code&gt;style&lt;/code&gt;。&lt;/p&gt;
 
-&lt;p&gt;图5 Leader Crash时的数据状况&lt;/p&gt;
+&lt;p&gt;三．后台系统开发规范&lt;/p&gt;
 
-&lt;p&gt;当最上面的 Leader 掌权后，Follower 日志可能有 a~f 几种情况：&lt;/p&gt;
+&lt;p&gt;以下主要是针对后端开发系统的一些开发规范，主要是将整个网站统一风格，以达到更好的性能优化。&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;1. 日志丢失&lt;/strong&gt;（a，b）；&lt;/p&gt;
+&lt;p&gt;1.二级菜单，一律加上面包屑&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;2. Follower 含有未提交数据&lt;/strong&gt;（c、d）；&lt;/p&gt;
+&lt;p&gt;2.“重置”按钮 一律是重置查询条件，不进行数据查询&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;3. 日志丢失 + Follower 含有未提交数据&lt;/strong&gt;（e、f）；&lt;/p&gt;
+&lt;p&gt;3.input 一律加上placeholder&lt;/p&gt;
 
-&lt;p&gt;场景 f 可能出现的情况为：&lt;/p&gt;
+&lt;p&gt;4.展示的table，有些数据没有的话，要使用 - 展示&lt;/p&gt;
 
-&lt;p&gt;如果一台服务器在 Term2 时是 Leader，并且向它的日志中添加了一些数据条目，然后在数据提交前宕机了；接着该 Leader 很快重启后，又称为了任期 3 的 Leader，接着又向它的日志中添加了一些数据，然后在 Term2，Term3 数据条目提交前，又宕机了，之后一直处于宕机状态，直到有新的 Leader 产生。&lt;/p&gt;
+&lt;p&gt;5.数据至少大于等于1条时，才会显示分页&lt;/p&gt;
 
-&lt;p&gt;当遇到这种一致性检查失败的情况时，Leader 通过强制 Follower 复制自己的日志来处理日志的不一致。这就意味着，在 Follower 上的冲突日志会被领导者的日志&lt;strong&gt;覆盖&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;6.table 列表里面，在接口请求过程中一律加上isLoading&lt;/p&gt;
 
-&lt;p&gt;Leader 找到 Follower 与它日志一致的地方（Index=3），然后删除 Follower 在该位置之后的日志，接着把这之后的日志发送给 Follower：&lt;/p&gt;
+&lt;p&gt;7.搜索结果为空，要加上空页面&lt;/p&gt;
 
-&lt;p&gt;Leader 给每一个Follower 维护了一个 nextIndex，它表示 Leader 将要发送给该追随者的下一条日志条目的索引。当一个 Leader 开始掌权时，它会将 nextIndex 初始化为它的最新的日志条目索引数+1。如果一个 Follower 的日志和 Leader 的不一致，AppendEntries 一致性检查会在下一次 AppendEntries RPC 时返回失败。在失败之后，Leader 会将 nextIndex 递减然后重试 AppendEntries RPC。最终 nextIndex 会达到一个 Leader 和 Follower 日志一致的地方。这时，AppendEntries 会返回成功，Follower 中冲突的日志条目都被移除了，并且添加所缺少的上了 Leader 的日志条目。一旦 AppendEntries 返回成功，Follower 和 Leader 的日志就一致了，这样的状态会保持到该任期结束。&lt;/p&gt;
+&lt;p&gt;8.全局loading：（需要加loading就在请求接口时，加上isLoading:true）&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;相关实现代码：&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;需要使用的情况：&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;【plain】
-func (rf *Raft) replicateOneRound(peer int) {
-  rf.mu.RLock()
-  if rf.state != StateLeader {
-    rf.mu.RUnlock()
-    return
-  }
-  prevLogIndex := rf.nextIndex[peer] - 1
-  if prevLogIndex &amp;lt; rf.getFirstLog().Index {
-    // only snapshot can catch up
-    request := rf.genInstallSnapshotRequest()
-    rf.mu.RUnlock()
-    response := new(InstallSnapshotResponse)
-    if rf.sendInstallSnapshot(peer, request, response) {
-      rf.mu.Lock()
-      rf.handleInstallSnapshotResponse(peer, request, response)
-      rf.mu.Unlock()
-    }
-  } else {
-    // just entries can catch up
-    request := rf.genAppendEntriesRequest(prevLogIndex)
-    rf.mu.RUnlock()
-    response := new(AppendEntriesResponse)
-    if rf.sendAppendEntries(peer, request, response) {
-      rf.mu.Lock()
-      rf.handleAppendEntriesResponse(peer, request, response)
-      rf.mu.Unlock()
-    }
-  }
-}
+&lt;p&gt;（1）进入页面记载数据&lt;/p&gt;
+
+&lt;p&gt;（2）提交表单&lt;/p&gt;
+
+&lt;p&gt;（3）接口是非幂等性的情况。&lt;/p&gt;
+
+&lt;p&gt;不需要使用的情况：&lt;/p&gt;
+
+&lt;p&gt;（1）打开弹窗时需要请求接口的&lt;/p&gt;
+
+&lt;p&gt;（2）接口是幂等性、响应快，且接口成功响应后要重新加载数据的情况&lt;/p&gt;
+
+&lt;p&gt;9.列表分页默认size:20，pageSizes:[20,50,100]，若是弹框内分页，默认size:10，pageSizes:[10,30,50]&lt;/p&gt;
+
+&lt;p&gt;10.翻页查询，比方说翻到第五页，点击查询，应该从pageNo = 1 开始&lt;/p&gt;
+
+&lt;p&gt;四．版本号更新规范&lt;/p&gt;
+
+&lt;p&gt;版本规范的意义，是让开发者一眼查看到本项目的更新次数，以及本次更新的日期，开发人员，开发分支，能够快速的定位问题，了解项目迭代版本的内容。&lt;/p&gt;
+
+&lt;p&gt;X.Y.Z （主版本号.次版本号.修订号）&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;版本号必须采用 X.Y.Z 的格式，其中 X、Y、Z为非负的整数，且禁止在数字前方补零。X是主版本号、Y是次版本号、Z为修订号。每个元素必须以数值来递增。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;修订号：当涉及原有页面修改，比如新增按钮、修改文案、bug修复时递增.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;次版本号：当涉及新增一定（少量）功能模块，比如新增栏目、新增页面时递增。次版本号递增时，修订号必须归0。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;主版本号：当涉及功能模块有较大的变动，比如增加多个功能模块或是整体架构发生变化时递增。主版本号递增时，次版本号和修订号必须归0。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Changelog写在项目的 README.md 里，采用倒序排列，即最新的写在最上边，模板如下：&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3&gt;2.0.0&lt;/h3&gt;
 
 
-func (rf *Raft) AppendEntries(request *AppendEntriesRequest, response *AppendEntriesResponse) {
-  rf.mu.Lock()
-  defer rf.mu.Unlock()
-  defer rf.persist()
-  defer DPrintf(&quot;{Node %v}&#x27;s state is {state %v,term %v,commitIndex %v,lastApplied %v,firstLog %v,lastLog %v} before processing AppendEntriesRequest %v and reply AppendEntriesResponse %v&quot;, rf.me, rf.state, rf.currentTerm, rf.commitIndex, rf.lastApplied, rf.getFirstLog(), rf.getLastLog(), request, response)
 
+&lt;p&gt;1、增加技师看板新页面&lt;/p&gt;
 
-  if request.Term &amp;lt; rf.currentTerm {
-    response.Term, response.Success = rf.currentTerm, false
-    return
-  }
+&lt;ol&gt;
+&lt;li&gt;Changelog和package.json里的版本号要同步更新&lt;/li&gt;
+&lt;/ol&gt;
 
+&lt;p&gt;五：上线规范：&lt;/p&gt;
 
-  if request.Term &amp;gt; rf.currentTerm {
-    rf.currentTerm, rf.votedFor = request.Term, -1
-  }
+&lt;p&gt;1.上线时间规范&lt;/p&gt;
 
+&lt;p&gt;每周的周二和周四为上线日,这样就为研发和产品制定了一个规范，不用考虑每天加班熬夜上线，避免产品因“项目紧急”的缘由让研发临时上线，从而减少研发的压力。&lt;/p&gt;
 
-  rf.ChangeState(StateFollower)
-  rf.electionTimer.Reset(RandomizedElectionTimeout())
+&lt;p&gt;2.上线邮件申请规范&lt;/p&gt;
 
+&lt;p&gt;比如今天上线有A项目、B项目、C项目等等多个项目的时候，如果每个人上线的同学提交一个审批邮件，对于领导来说需要每天审批很多邮件，所以此时我们不得不制定一个标准。&lt;/p&gt;
 
-  if request.PrevLogIndex &amp;lt; rf.getFirstLog().Index {
-    response.Term, response.Success = 0, false
-    DPrintf(&quot;{Node %v} receives unexpected AppendEntriesRequest %v from {Node %v} because prevLogIndex %v &amp;lt; firstLogIndex %v&quot;, rf.me, request, request.LeaderId, request.PrevLogIndex, rf.getFirstLog().Index)
-    return
-  }
+&lt;p&gt;目前的上线审批流程为：每周二和周四需求大的人负责发送当天的上线邮件申请，负责人提前收集好上线的需求，分支，review人，流程步骤等信息。汇总一起发送邮件，此时领导只需要回复一个上线邮件即可。具体模版，如下：&lt;/p&gt;
 
+&lt;p&gt;六．项目启动规范&lt;/p&gt;
 
-  if !rf.matchLog(request.PrevLogTerm, request.PrevLogIndex) {
-    response.Term, response.Success = rf.currentTerm, false
-    lastIndex := rf.getLastLog().Index
-    if lastIndex &amp;lt; request.PrevLogIndex {
-      response.ConflictTerm, response.ConflictIndex = -1, lastIndex+1
-    } else {
-      firstIndex := rf.getFirstLog().Index
-      response.ConflictTerm = rf.logs[request.PrevLogIndex-firstIndex].Term
-      index := request.PrevLogIndex - 1
-      for index &amp;gt;= firstIndex &amp;amp;&amp;amp; rf.logs[index-firstIndex].Term == response.ConflictTerm {
-        index--
-      }
-      response.ConflictIndex = index
-    }
-    return
-  }
+&lt;p&gt;项目启动对于新入职员工，以及新人还是有一定的挑战的，特别是一些项目需要配置相关的host，package.json文件里面一般只是基础的启动，不会提示配置host等，此时就需要我们制定一个规范，比如在README.md文件下写上具体的启动步骤，以及每个环境需要配置的host，具体如下：&lt;/p&gt;
 
+&lt;p&gt;有了以上的启动引导是不是不管谁开发都方便了很多，只要按照上面的步骤一步一步的进行，就不需要初次开发该项目的人员去找相关开发帮忙启动项目，并且也附加了登录账号等信息，大大提高人效数倍。&lt;/p&gt;
 
-  firstIndex := rf.getFirstLog().Index
-  for index, entry := range request.Entries {
-    if entry.Index-firstIndex &amp;gt;= len(rf.logs) || rf.logs[entry.Index-firstIndex].Term != entry.Term {
-      rf.logs = shrinkEntriesArray(append(rf.logs[:entry.Index-firstIndex], request.Entries[index:]...))
-      break
-    }
-  }
+&lt;p&gt;七：文件目录规范：&lt;/p&gt;
 
+&lt;p&gt;一个项目,有一个好的目录结构那是必不可少的。当我们项目越来越大时或者多人协作开发时,我们就更应该有一个清晰的目录结构。好的项目目录结构能够给我们带来诸多的好处,比如:每个功能或模块单独管理、代码的可读性增强、代码的可维护性增强、易于多人协作之间的沟通、接下来我将分享一下我在平时项目中总结的目录结构,当然这只是我个人的实践,欢迎大家提出更好的意见。&lt;/p&gt;
 
-  rf.advanceCommitIndexForFollower(request.LeaderCommit)
+&lt;p&gt;|---public&lt;/p&gt;
 
+&lt;p&gt;|---index.html（入口html）&lt;/p&gt;
 
-  response.Term, response.Success = rf.currentTerm,True
-}
-&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;|---src&lt;/p&gt;
 
-&lt;h1&gt;2.3.3 安全性&lt;/h1&gt;
+&lt;p&gt;|---assets（静态资源）&lt;/p&gt;
 
-&lt;p&gt;Leader 需要保证其存储全部已经提交的日志条目，保证日志条目只能从 Leader 流向 Follower，且 Leader 永远不会覆盖已经存在的日志条目。&lt;/p&gt;
+&lt;p&gt;|---css（全局样式）&lt;/p&gt;
 
-&lt;p&gt;每个 Candidate 发送 RequestVoteRPC 时，都会带上最后一个 Entry 的信息。所有节点收到投票信息时，会对该 Entry 进行比较，如果发现自己的更新，则拒绝投票给该 Candidate。&lt;/p&gt;
+&lt;p&gt;|---js（全局js）&lt;/p&gt;
 
-&lt;h1&gt;03 其他一致性算法&lt;/h1&gt;
+&lt;p&gt;|---images（静态图片）&lt;/p&gt;
 
-&lt;p&gt;理解，首先 MCube 会依据模板缓存状态判断是否需要网络获取最新模板，当获取到模板后进行模板加载，加载阶段会将产物转换为视图树的结构，转换完成后将通过表达式引擎解析表达式并取得正确的值，通过事件解析引擎解析用户自定义事件并完成事件的绑定，完成解析赋值以及事件绑定后进行视图的渲染，最终将目标页面展示到屏幕。&lt;/p&gt;
+&lt;p&gt;|---components（基础组件）&lt;/p&gt;
 
-&lt;h1&gt;3.1 Paxos 算法&lt;/h1&gt;
+&lt;p&gt;|---hocs（业务组件）&lt;/p&gt;
 
-&lt;p&gt;早期的共识算法，由拜占庭将军问题的提出者 Leslie Lamport 所发明。谷歌的分布式锁服务 Chubby 就是以 Paxos 算法为基础。&lt;/p&gt;
+&lt;p&gt;|---layout（全局布局）&lt;/p&gt;
 
-&lt;h1&gt;3.2 ZAB 算法&lt;/h1&gt;
+&lt;p&gt;|---service（axios接口封装）&lt;/p&gt;
 
-&lt;p&gt;Zookeeper 所使用的一致性算法，在流程上和 Raft 算法比较接近。&lt;/p&gt;
+&lt;p&gt;|---store（vuex）&lt;/p&gt;
 
-&lt;h1&gt;3.3 PBFT 算法&lt;/h1&gt;
+&lt;p&gt;|---views/pages（页面）&lt;/p&gt;
 
-&lt;p&gt;区块链技术所使用的共识算法之一，适用于私有链的共识。&lt;/p&gt;
+&lt;p&gt;|---App.vue&lt;/p&gt;
 
-&lt;h1&gt;04 总结&lt;/h1&gt;
+&lt;p&gt;|---main.js（入口js）&lt;/p&gt;
 
-&lt;p&gt;理解，首先 MCube 会依据模板缓存状态判断是否需要网络获取最新模板，当获取到模板后进行模板加载，加载阶段会将产物转换为视图树的结构，转换完成后将通过表达式引擎解析表达式并取得正确的值，通过事件解析引擎解析用户自定义事件并完成事件的绑定，完成解析赋值以及事件绑定后进行视图的渲染，最终将目标页面展示到屏幕。&lt;/p&gt;
+&lt;p&gt;|---.editorconfig（编辑器配置）&lt;/p&gt;
 
-&lt;p&gt;Raft 算法是很广泛的强一致性、去中心化和高可用的分布式协议，是一种 leader-based 的共识算法。通过将共识问题拆分成主节点选举和主从日志同步，以及安全流程，来提高分布式系统的数据一致性、可靠性和容错性；首先选举主节点，然后主节点负责接收外部请求、数据复制、提交，保证系统中数据都是一致的。&lt;/p&gt;
+&lt;p&gt;|---.eslintrc（代码规范的配置）&lt;/p&gt;
+
+&lt;p&gt;|---.gitignore（Git仓库忽略掉的文件或目录）&lt;/p&gt;
+
+&lt;p&gt;|---babel.config.js（babel编译的配置）&lt;/p&gt;
+
+&lt;p&gt;|---package.json（项目配置文件）&lt;/p&gt;
+
+&lt;p&gt;|---README.md（项目描述）&lt;/p&gt;
+
+&lt;p&gt;|---vue.config.js（配置文件）&lt;/p&gt;
+
+&lt;p&gt;​&lt;/p&gt;
 &lt;/div&gt;
   &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
