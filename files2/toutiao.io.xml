@@ -296,9 +296,710 @@ public class City implements Serializable{
 }&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;rnSpFOSx&quot;&gt;设置 swap 就是告诉浏览器是使用该字体的文本应该立即使用系统字体进行显示，当自定义字体准备就绪后，替换系统字体。或者使用 prefetch / preload 来提前获取字体相关资源。&lt;/p&gt;&lt;p data-pid=&quot;fTlYzT2E&quot;&gt;&lt;b&gt;Time to intercative&lt;/b&gt;&lt;/p&gt;&lt;p data-pid=&quot;eHlMtyxk&quot;&gt;TTI 标记着页面多久可以进行完全交互。这里的完全交互是指：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;L7PleZa-&quot;&gt;页面已经展示了 FCP&lt;/li&gt;&lt;li data-pid=&quot;Pc5G2WWX&quot;&gt;事件处理函数已经为大部分可见页面元素进行了注册绑定&lt;/li&gt;&lt;li data-pid=&quot;Yr1T703Y&quot;&gt;页面能够在 50ms 内对用户行为进行反应&lt;/li&gt;&lt;/ul&gt;&lt;p data-pid=&quot;Crw-nfPR&quot;&gt;同样我们在 httparchive  来看一下这个世界上网页 TTI 的中位数是多少。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-72e91ff91ed74344691ac77eefc7b5f2_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;732&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic3.zhimg.com/v2-72e91ff91ed74344691ac77eefc7b5f2_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1080&quot; data-rawheight=&quot;732&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic3.zhimg.com/v2-72e91ff91ed74344691ac77eefc7b5f2_r.jpg&quot; data-actualsrc=&quot;https://pic3.zhimg.com/v2-72e91ff91ed74344691ac77eefc7b5f2_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;TadQNHvw&quot;&gt;降低 TTI 的常见思路是代码分割、按需加载，删除未使用代码、压缩代码、压缩网络负载、减少 JS 对主线程的长时间占用。&lt;/p&gt;&lt;p data-pid=&quot;w4HDSewL&quot;&gt;&lt;b&gt;Speed Index&lt;/b&gt;&lt;/p&gt;&lt;p data-pid=&quot;B41t73qj&quot;&gt;这个指标代表了用户感知的可见区域的页面加载的快慢。也分成 0-3.4s 、 3.4 - 5.8、超过 5.8 三挡。但是得分也同样是跟全球网页数据来对比的。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-3e0f676082ca83357de9d783caddb12e_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;800&quot; data-rawheight=&quot;304&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic3.zhimg.com/v2-3e0f676082ca83357de9d783caddb12e_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;800&quot; data-rawheight=&quot;304&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic3.zhimg.com/v2-3e0f676082ca83357de9d783caddb12e_r.jpg&quot; data-actualsrc=&quot;https://pic3.zhimg.com/v2-3e0f676082ca83357de9d783caddb12e_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;JLraVcxr&quot;&gt;提高 speed index 的主要是通过减少 js 对主线程阻塞，让一些非必要的 js 在 Dom 渲染后再执行。&lt;/p&gt;&lt;p data-pid=&quot;18-vo7RG&quot;&gt;&lt;b&gt;Total Block Time&lt;/b&gt;&lt;/p&gt;&lt;p data-pid=&quot;GceRRJAx&quot;&gt;总阻塞时间。这个时间是从 FCP 到 TTI 之间所有的长任务阻塞部分的时间之和。长任务是指执行时间超过 50ms 的任务，50ms 之后的时间量就是阻塞时间。&lt;/p&gt;&lt;p data-pid=&quot;zHNFUVnR&quot;&gt;既然是阻塞时间，降低 TBT 的办法就是想办法减少不必要的 js 的加载、解析和执行。拆分大型脚本，对某些非同步必要的 js 使用 defer/async 或者 prefetch/preload 、或者允许的情况下进行懒加载/延迟加载、将静态资源部署到 CDN 等等。&lt;/p&gt;&lt;p data-pid=&quot;e8C_JC9n&quot;&gt;&lt;b&gt;Largest Contentful Paint&lt;/b&gt;&lt;/p&gt;&lt;p data-pid=&quot;XHiD2qUe&quot;&gt;最大内容绘制。记录的是视口中最大的内容元素被渲染到屏幕的时间，也大致分为 0-2.5s、2.5s-4s、超过 4s 三个大范围。&lt;/p&gt;&lt;p data-pid=&quot;8mw9m445&quot;&gt;这里的类容元素是指：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;5sT0bS1L&quot;&gt;&amp;lt;img &amp;gt;&lt;/li&gt;&lt;li data-pid=&quot;R84p8r7T&quot;&gt;&amp;lt;svg&amp;gt; 内嵌的 &amp;lt;image&amp;gt; 元素&lt;/li&gt;&lt;li data-pid=&quot;fYkHhFKy&quot;&gt;使用了封面的&amp;lt;video&amp;gt; 元素&lt;/li&gt;&lt;li data-pid=&quot;MDfgLu5b&quot;&gt;url() 加载的带背景图的元素&lt;/li&gt;&lt;li data-pid=&quot;lSs7b6xW&quot;&gt;包含文本或者其他行内文本元素子元素的块级元素&lt;/li&gt;&lt;/ul&gt;&lt;p data-pid=&quot;0mjpYMWt&quot;&gt;注意，如果元素溢出到可视区域之外，则不算 LCP。LCP 主要手4个方面的影响：&lt;/p&gt;&lt;p data-pid=&quot;cv4tShra&quot;&gt;应对方案：CDN、预加载、serviceWorker&lt;/p&gt;&lt;p data-pid=&quot;wMtY4EnE&quot;&gt;应对方案：&lt;/p&gt;&lt;ol&gt;&lt;li data-pid=&quot;r7h8Sl_Q&quot;&gt;用optimize-css-assets-Webpack-plugin、uglyifyJS之类的 Webpack 插件压缩 css、js&lt;/li&gt;&lt;li data-pid=&quot;EEtJc3rN&quot;&gt;对非必要的 js、css 延迟加载，如非必要 css 用预加载，在触发事件后再去 import xx from &#x27;xxx&#x27;。&lt;/li&gt;&lt;li data-pid=&quot;m0f9qFOC&quot;&gt;合适的情况下使用内联 css。&lt;/li&gt;&lt;/ol&gt;&lt;ul&gt;&lt;li data-pid=&quot;GiT2LUuf&quot;&gt;缓慢的资源加载速度&lt;/li&gt;&lt;ul&gt;&lt;li data-pid=&quot;khbsA9lK&quot;&gt;压缩图像&lt;/li&gt;&lt;li data-pid=&quot;KLViikM-&quot;&gt;预加载重要资源&lt;/li&gt;&lt;li data-pid=&quot;sFS-OO_Z&quot;&gt;压缩文本文件 Gzip、br&lt;/li&gt;&lt;li data-pid=&quot;KZXHyN5s&quot;&gt;serviceWorker 进行缓存&lt;/li&gt;&lt;/ul&gt;&lt;li data-pid=&quot;brX3Tgtx&quot;&gt;客户端渲染&lt;/li&gt;&lt;ul&gt;&lt;li data-pid=&quot;IsjY5QXT&quot;&gt;压缩 js&lt;/li&gt;&lt;li data-pid=&quot;kSW4_WyB&quot;&gt;延迟加载未立即使用的 js&lt;/li&gt;&lt;li data-pid=&quot;EsDpa5CC&quot;&gt;尽可能减少polyfill。&quot;targets&quot;:&quot;&amp;gt;0.25%&quot;&lt;/li&gt;&lt;/ul&gt;&lt;/ul&gt;&lt;p data-pid=&quot;qVAPEz1B&quot;&gt;&lt;b&gt;Cumulative Layout Shift&lt;/b&gt;&lt;/p&gt;&lt;p data-pid=&quot;6EEJrp6n&quot;&gt;有些时候我们会遇到，初始加载时字体忽然变大/变小， 元素位置突然移动位等。CLS 就是通过测量发生偏移的频率来表示出页面的不稳定性。常见的导致 CLS 比较差的原因有：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;yYMpA7we&quot;&gt;没指定宽高的图片&lt;/li&gt;&lt;li data-pid=&quot;YfUI2HGc&quot;&gt;没有设置宽高的 iframe&lt;/li&gt;&lt;li data-pid=&quot;e8y_nJMK&quot;&gt;没有设置宽高的资源位（顶部 banner、广告等）&lt;/li&gt;&lt;li data-pid=&quot;WeetoePC&quot;&gt;前面提到的 无样式文本闪烁（FOUT， 用默认字体替换新字体）/ 不可见文本闪烁（FOIT，获取新字体前的显示不可见文本）。&amp;lt;link rel=preload&amp;gt;和font-display: optional结合使用&lt;/li&gt;&lt;li data-pid=&quot;_-OFze7L&quot;&gt;动画使用了修改 width、height、top、right、bottom、left 等属性值的方式来实现。应优先使用 css transfrom来实现动画。&lt;/li&gt;&lt;/ul&gt;&lt;p data-pid=&quot;sIayUdZc&quot;&gt;以上就是目前 Chrome lighthouse 用来判断页面体验的 6 个指标。如果我们要优化页面，也应从这 6 个方面来入手，逐一改进，在现有的可量化指标下有的放矢。&lt;/p&gt;&lt;p data-pid=&quot;4pgOihcw&quot;&gt;参考资料：&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//www.debugbear.com/blog/devtools-performance&quot; class=&quot; external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;&lt;span class=&quot;invisible&quot;&gt;https://www.&lt;/span&gt;&lt;span class=&quot;visible&quot;&gt;debugbear.com/blog/devt&lt;/span&gt;&lt;span class=&quot;invisible&quot;&gt;ools-performance&lt;/span&gt;&lt;span class=&quot;ellipsis&quot;/&gt;&lt;/a&gt;&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>cb4131454078d02a0b3234dcabcbf350</guid>
-<title>MySQL 单表过亿条数据，如何优化查询速度？</title>
-<link>https://toutiao.io/k/br9i097</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;span class=&quot;RichText ztext CopyrightRichText-richText css-1g0fqss&quot; options=&quot;[object Object]&quot; itemprop=&quot;text&quot;&gt;&lt;h2 data-first-child=&quot;&quot;&gt;前言&lt;/h2&gt;&lt;p data-pid=&quot;maslq6eV&quot;&gt;在高并发系统当中，针对针对过亿的大表，分库分表是必不可少的技术手段之一，同时也是BAT等大厂面试时，经常考的热门考题。&lt;/p&gt;&lt;p data-pid=&quot;9vz3mE-b&quot;&gt;你知道我们为什么要做分库分表吗？&lt;/p&gt;&lt;p data-pid=&quot;kgvNehf7&quot;&gt;这个问题要从两条线说起：垂直方向 和 水平方向。&lt;/p&gt;&lt;h2&gt;1 垂直方向&lt;/h2&gt;&lt;p data-pid=&quot;75Gml7Sy&quot;&gt;垂直方向主要针对的是业务，下面聊聊业务的发展跟分库分表有什么关系。&lt;/p&gt;&lt;h3&gt;1.1 单库&lt;/h3&gt;&lt;p data-pid=&quot;jZk3JrCI&quot;&gt;在系统初期，业务功能相对来说比较简单，系统模块较少。&lt;/p&gt;&lt;p data-pid=&quot;XRsCZDGa&quot;&gt;为了快速满足迭代需求，减少一些不必要的依赖。更重要的是减少系统的复杂度，保证开发速度，我们通常会使用单库来保存数据。&lt;/p&gt;&lt;p data-pid=&quot;PovAyFFe&quot;&gt;系统初期的数据库架构如下：&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://picx.zhimg.com/50/v2-d15094c903aec73536de8b7e566fc2fb_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image lazy&quot; data-actualsrc=&quot;https://picx.zhimg.com/50/v2-d15094c903aec73536de8b7e566fc2fb_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;uBVqq7C9&quot;&gt;此时，使用的数据库方案是：一个数据库包含多张业务表。用户读数据请求和写数据请求，都是操作的同一个数据库。&lt;/p&gt;&lt;h3&gt;1.2 分表&lt;/h3&gt;&lt;p data-pid=&quot;onxkSYma&quot;&gt;系统上线之后，随着业务的发展，不断的添加新功能。导致单表中的字段越来越多，开始变得有点不太好维护了。&lt;/p&gt;&lt;p data-pid=&quot;ii4POqrk&quot;&gt;一个用户表就包含了几十甚至上百个字段，管理起来有点混乱。&lt;/p&gt;&lt;p data-pid=&quot;DWohWNjN&quot;&gt;这时候该怎么办呢？&lt;/p&gt;&lt;p data-pid=&quot;O30QeEqE&quot;&gt;答：分表。&lt;/p&gt;&lt;p data-pid=&quot;tmouk8K1&quot;&gt;将用户表拆分为：用户基本信息表 和 用户扩展表。&lt;/p&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pica.zhimg.com/50/v2-867f6316764416dac8c8c3b00eb9f73c_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image lazy&quot; data-actualsrc=&quot;https://pica.zhimg.com/50/v2-867f6316764416dac8c8c3b00eb9f73c_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;i2sdp62U&quot;&gt;用户基本信息表中存的是用户最主要的信息，比如：用户名、密码、别名、手机号、邮箱、年龄、性别等核心数据。&lt;/p&gt;&lt;p data-pid=&quot;Zdy1LYn8&quot;&gt;这些信息跟用户息息相关，查询的频次非常高。&lt;/p&gt;&lt;p data-pid=&quot;cqNbO_kD&quot;&gt;而用户扩展表中存的是用户的扩展信息，比如：所属单位、户口所在地、所在城市等等，非核心数据。&lt;/p&gt;&lt;p data-pid=&quot;OiKYJTKF&quot;&gt;这些信息只有在特定的业务场景才需要查询，而绝大数业务场景是不需要的。&lt;/p&gt;&lt;p data-pid=&quot;or5A-C9M&quot;&gt;所以通过分表把核心数据和非核心数据分开，让表的结构更清晰，职责更单一，更便于维护。&lt;/p&gt;&lt;p data-pid=&quot;QM7ks7Ri&quot;&gt;除了按实际业务分表之外，我们还有一个常用的分表原则是：把调用频次高的放在一张表，调用频次低的放在另一张表。&lt;/p&gt;&lt;p data-pid=&quot;nkWiPPdH&quot;&gt;有个非常经典的例子就是：订单表和订单详情表。&lt;/p&gt;&lt;p data-pid=&quot;DDXsa9lV&quot;&gt;最近无意间获得一份BAT大厂大佬写的刷题笔记，一下子打通了我的任督二脉，越来越觉得算法没有想象中那么难了。&lt;/p&gt;&lt;p data-pid=&quot;uB2H7Cu4&quot;&gt;[BAT大佬写的刷题笔记，让我offer拿到手软](&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//mp.weixin.qq.com/s%3F__biz%3DMzkwNjMwMTgzMQ%3D%3D%26mid%3D2247490336%26idx%3D1%26sn%3D2f9db262746f692136cd6ce7179fc208%26source%3D41%23wechat_redirect&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;这位BAT大佬写的Leetcode刷题笔记，让我offer拿到手软&lt;/a&gt;)&lt;/p&gt;&lt;h3&gt;1.3 分库&lt;/h3&gt;&lt;p data-pid=&quot;tGpog2DV&quot;&gt;不知不觉，系统已经上线了一年多的时间了。经历了N个迭代的需求开发，功能已经非常完善。&lt;/p&gt;&lt;p data-pid=&quot;9uuvqhJu&quot;&gt;系统功能完善，意味着系统各种关联关系，错综复杂。&lt;/p&gt;&lt;p data-pid=&quot;GRFILWZC&quot;&gt;此时，如果不赶快梳理业务逻辑，后面会带来很多隐藏问题，会把自己坑死。&lt;/p&gt;&lt;p data-pid=&quot;AYY0Kd3h&quot;&gt;这就需要按业务功能，划分不同领域了。把相同领域的表放到同一个数据库，不同领域的表，放在另外的数据库。&lt;/p&gt;&lt;p data-pid=&quot;1nBNv5lS&quot;&gt;具体拆分过程如下：&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://picx.zhimg.com/50/v2-2bd3d65fb95df0fc3893ccb5fb840d53_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image lazy&quot; data-actualsrc=&quot;https://picx.zhimg.com/50/v2-2bd3d65fb95df0fc3893ccb5fb840d53_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;p data-pid=&quot;SGeA-NCq&quot;&gt;将用户、产品、物流、订单相关的表，从原来一个数据库中，拆分成单独的用户库、产品库、物流库和订单库，一共四个数据库。&lt;/p&gt;&lt;blockquote data-pid=&quot;bzhORS-v&quot;&gt;在这里为了看起来更直观，每个库我只画了一张表，实际场景可能有多张表。&lt;/blockquote&gt;&lt;p data-pid=&quot;WZHTwu30&quot;&gt;这样按领域拆分之后，每个领域只用关注自己相关的表，职责更单一了，一下子变得更好维护了。&lt;/p&gt;&lt;h3&gt;1.4 分库分表&lt;/h3&gt;&lt;p data-pid=&quot;1MbFJcRd&quot;&gt;有时候按业务，只分库，或者只分表是不够的。比如：有些财务系统，需要按月份和年份汇总，所有用户的资金。&lt;/p&gt;&lt;p data-pid=&quot;cJX1SPhG&quot;&gt;这就需要做：分库分表了。&lt;/p&gt;&lt;p data-pid=&quot;IF2kwZIi&quot;&gt;每年都有个单独的数据库，每个数据库中，都有12张表，每张表存储一个月的用户资金数据。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic1.zhimg.com/50/v2-2af63f306116af80486bee633845a252_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image lazy&quot; data-actualsrc=&quot;https://pic1.zhimg.com/50/v2-2af63f306116af80486bee633845a252_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;OqgKqr6S&quot;&gt;这样分库分表之后，就能非常高效的查询出某个用户每个月，或者每年的资金了。&lt;/p&gt;&lt;p data-pid=&quot;vl5GXLeU&quot;&gt;此外，还有些比较特殊的需求，比如需要按照地域分库，比如：华中、华北、华南等区，每个区都有一个单独的数据库。&lt;/p&gt;&lt;p data-pid=&quot;uPKniq_l&quot;&gt;甚至有些游戏平台，按接入的游戏厂商来做分库分表。&lt;/p&gt;&lt;h2&gt;2 水平方向&lt;/h2&gt;&lt;p data-pid=&quot;Pc9LETZA&quot;&gt;水分方向主要针对的是数据，下面聊聊数据跟分库分表又有什么关系。&lt;/p&gt;&lt;h3&gt;2.1 单库&lt;/h3&gt;&lt;p data-pid=&quot;pGQBaqvY&quot;&gt;在系统初期，由于用户非常少，所以系统并发量很小。并且存在表中的数据量也非常少。&lt;/p&gt;&lt;p data-pid=&quot;LuO5Tib_&quot;&gt;这时的数据库架构如下：&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://picx.zhimg.com/50/v2-d15094c903aec73536de8b7e566fc2fb_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image lazy&quot; data-actualsrc=&quot;https://picx.zhimg.com/50/v2-d15094c903aec73536de8b7e566fc2fb_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;KABiLY0X&quot;&gt;此时，使用的数据库方案同样是：一个master数据库包含多张业务表。&lt;/p&gt;&lt;p data-pid=&quot;41vMxRP5&quot;&gt;用户读数据请求和写数据请求，都是操作的同一个数据库，该方案比较适合于并发量很低的业务场景。&lt;/p&gt;&lt;h3&gt;2.2 主从读写分离&lt;/h3&gt;&lt;p data-pid=&quot;e09hn7gL&quot;&gt;系统上线一段时间后，用户数量增加了。&lt;/p&gt;&lt;p data-pid=&quot;MZ0G4Q5d&quot;&gt;此时，你会发现用户的请求当中，读数据的请求占据了大部分，真正写数据的请求占比很少。&lt;/p&gt;&lt;p data-pid=&quot;y_npZiZC&quot;&gt;众所周知，数据库连接是有限的，它是非常宝贵的资源。而每次数据库的读或写请求，都需要占用至少一个数据库连接。&lt;/p&gt;&lt;p data-pid=&quot;XDtF3XVT&quot;&gt;如果写数据请求需要的数据库连接，被读数据请求占用完了，不就写不了数据了？&lt;/p&gt;&lt;p data-pid=&quot;qjTWgq9N&quot;&gt;这样问题就严重了。&lt;/p&gt;&lt;p data-pid=&quot;OEqp8MY8&quot;&gt;为了解决该问题，我们需要把读库和写库分开。&lt;/p&gt;&lt;p data-pid=&quot;yeNcLihj&quot;&gt;于是，就出现了主从读写分离架构：&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://picx.zhimg.com/50/v2-e84ddf81fb1291a558a018c8f3aa3afb_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image lazy&quot; data-actualsrc=&quot;https://picx.zhimg.com/50/v2-e84ddf81fb1291a558a018c8f3aa3afb_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;vV1DacVW&quot;&gt;考虑刚开始用户量还没那么大，选择的是一主一从的架构，也就是常说的一个master一个slave。&lt;/p&gt;&lt;p data-pid=&quot;qju8jvt2&quot;&gt;所有的写数据请求，都指向主库。一旦主库写完数据之后，立马异步同步给从库。这样所有的读数据请求，就能及时从从库中获取到数据了（除非网络有延迟）。&lt;/p&gt;&lt;p data-pid=&quot;NRxGxX-2&quot;&gt;读写分离方案可以解决上面提到的单节点问题，相对于单库的方案，能够更好的保证系统的稳定性。&lt;/p&gt;&lt;p data-pid=&quot;FNU1GZtF&quot;&gt;因为如果主库挂了，可以升级从库为主库，将所有读写请求都指向新主库，系统又能正常运行了。&lt;/p&gt;&lt;blockquote data-pid=&quot;Ejxgnm3B&quot;&gt;读写分离方案其实也是分库的一种，它相对于为数据做了备份，它已经成为了系统初期的首先方案。&lt;/blockquote&gt;&lt;p data-pid=&quot;1gZEXgDc&quot;&gt;但这里有个问题就是：如果用户量确实有些大，如果master挂了，升级slave为master，将所有读写请求都指向新master。&lt;/p&gt;&lt;p data-pid=&quot;2G3FH-jD&quot;&gt;但此时，如果这个新master根本扛不住所有的读写请求，该怎么办？&lt;/p&gt;&lt;p data-pid=&quot;ArzTlOKo&quot;&gt;这就需要一主多从的架构了：&lt;/p&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://picx.zhimg.com/50/v2-45342073f254dd09817178b0f586a951_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image lazy&quot; data-actualsrc=&quot;https://picx.zhimg.com/50/v2-45342073f254dd09817178b0f586a951_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;ZQ_RiWJu&quot;&gt;上图中我列的是一主两从，如果master挂了，可以选择从库1或从库2中的一个，升级为新master。假如我们在这里升级从库1为新master，则原来的从库2就变成了新master的的slave了。&lt;/p&gt;&lt;p data-pid=&quot;I8pp5sTf&quot;&gt;调整之后的架构图如下：&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://picx.zhimg.com/50/v2-68c809dd4d5a66c2bf1dd05722b8837c_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image lazy&quot; data-actualsrc=&quot;https://picx.zhimg.com/50/v2-68c809dd4d5a66c2bf1dd05722b8837c_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;M3OgdF_C&quot;&gt;这样就能解决上面的问题了。&lt;/p&gt;&lt;p data-pid=&quot;eqyT-jow&quot;&gt;除此之外，如果查询请求量再增大，我们还可以将架构升级为一主三从、一主四从...一主N从等。&lt;/p&gt;&lt;h3&gt;2.3 分库&lt;/h3&gt;&lt;p data-pid=&quot;Bg7eACMC&quot;&gt;上面的读写分离方案确实可以解决读请求大于写请求时，导致master节点扛不住的问题。但如果某个领域，比如：用户库。如果注册用户的请求量非常大，即写请求本身的请求量就很大，一个master库根本无法承受住这么大的压力。&lt;/p&gt;&lt;p data-pid=&quot;E9Q6YbD_&quot;&gt;这时该怎么办呢？&lt;/p&gt;&lt;p data-pid=&quot;H16ZlaMt&quot;&gt;答：建立多个用户库。&lt;/p&gt;&lt;p data-pid=&quot;BsqhNbRv&quot;&gt;用户库的拆分过程如下：&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://picx.zhimg.com/50/v2-8324ac15363ad56d1e6fb6b85d8795d6_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image lazy&quot; data-actualsrc=&quot;https://picx.zhimg.com/50/v2-8324ac15363ad56d1e6fb6b85d8795d6_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;CqLbqufn&quot;&gt;在这里我将用户库拆分成了三个库（真实场景不一定是这样的），每个库的表结构是一模一样的，只有存储的数据不一样。&lt;/p&gt;&lt;h3&gt;2.4 分表&lt;/h3&gt;&lt;p data-pid=&quot;DkuVs8UQ&quot;&gt;用户请求量上来了，带来的势必是数据量的成本上升。即使做了分库，但有可能单个库，比如：用户库，出现了5000万的数据。&lt;/p&gt;&lt;p data-pid=&quot;mIrrT8i3&quot;&gt;根据经验值，单表的数据量应该尽量控制在1000万以内，性能是最佳的。如果有几千万级的数据量，用单表来存，性能会变得很差。&lt;/p&gt;&lt;p data-pid=&quot;dxBSG_jO&quot;&gt;如果数据量太大了，需要建立的索引也会很大，从小到大检索一次数据，会非常耗时，而且非常消耗cpu资源。&lt;/p&gt;&lt;p data-pid=&quot;Kd8afdgZ&quot;&gt;这时该怎么办呢？&lt;/p&gt;&lt;p data-pid=&quot;xjyc87Me&quot;&gt;答：分表，这样可以控制每张表的数据量，和索引大小。&lt;/p&gt;&lt;p data-pid=&quot;WMneoMxU&quot;&gt;表拆分过程如下：&lt;/p&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic1.zhimg.com/50/v2-4be693649c940e51bba9c806012d9f04_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image lazy&quot; data-actualsrc=&quot;https://pic1.zhimg.com/50/v2-4be693649c940e51bba9c806012d9f04_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;QHh3bhKV&quot;&gt;我在这里将用户库中的用户表，拆分成了四张表（真实场景不一定是这样的），每张表的表结构是一模一样的，只是存储的数据不一样。&lt;/p&gt;&lt;p data-pid=&quot;FAFxztEJ&quot;&gt;如果以后用户数据量越来越大，只需再多分几张用户表即可。&lt;/p&gt;&lt;h3&gt;2.5 分库分表&lt;/h3&gt;&lt;p data-pid=&quot;K-kgqEZe&quot;&gt;当系统发展到一定的阶段，用户并发量大，而且需要存储的数据量也很多。这时该怎么办呢？&lt;/p&gt;&lt;p data-pid=&quot;QL-Z8grn&quot;&gt;答：需要做分库分表。&lt;/p&gt;&lt;p data-pid=&quot;3pJw9EHG&quot;&gt;如下图所示：&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic1.zhimg.com/50/v2-9660150f303fd9cb0b84b5748babdfec_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image lazy&quot; data-actualsrc=&quot;https://pic1.zhimg.com/50/v2-9660150f303fd9cb0b84b5748babdfec_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;Q3rxhtw-&quot;&gt;图中将用户库拆分成了三个库，每个库都包含了四张用户表。&lt;/p&gt;&lt;p data-pid=&quot;93VSpoOy&quot;&gt;如果有用户请求过来的时候，先根据用户id路由到其中一个用户库，然后再定位到某张表。&lt;/p&gt;&lt;p data-pid=&quot;zB9ZvDeO&quot;&gt;路由的算法挺多的：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;EznVHlCR&quot;&gt;根据id取模，比如：id=7，有4张表，则7%4=3，模为3，路由到用户表3。  &lt;/li&gt;&lt;li data-pid=&quot;8kTHP7_c&quot;&gt;给id指定一个区间范围，比如：id的值是0-10万，则数据存在用户表0，id的值是10-20万，则数据存在用户表1。  &lt;/li&gt;&lt;li data-pid=&quot;GzMjbzI0&quot;&gt;一致性hash算法&lt;/li&gt;&lt;/ul&gt;&lt;p data-pid=&quot;k6Y1GHl9&quot;&gt;这篇文章就不过多介绍了，后面会有文章专门介绍这些路由算法的。&lt;/p&gt;&lt;h2&gt;3 真实案例&lt;/h2&gt;&lt;p data-pid=&quot;gFURK-En&quot;&gt;接下来，废话不多说，给大家分享三个我参与过的分库分表项目经历，给有需要的朋友一个参考。&lt;/p&gt;&lt;h3&gt;3.1 分库&lt;/h3&gt;&lt;p data-pid=&quot;t3YH54FV&quot;&gt;我之前待过一家公司，我们团队是做游戏运营的，我们公司提供平台，游戏厂商接入我们平台，推广他们的游戏。&lt;/p&gt;&lt;p data-pid=&quot;AEvo7HUk&quot;&gt;游戏玩家通过我们平台登录，成功之后跳转到游戏厂商的指定游戏页面，该玩家就能正常玩游戏了，还可以充值游戏币。&lt;/p&gt;&lt;p data-pid=&quot;QwH-ahU1&quot;&gt;这就需要建立我们的账号体系和游戏厂商的账号的映射关系，游戏玩家通过登录我们平台的游戏账号，成功之后转换成游戏厂商自己平台的账号。&lt;/p&gt;&lt;p data-pid=&quot;uZfGBxhs&quot;&gt;这里有两个问题：&lt;/p&gt;&lt;ol&gt;&lt;li data-pid=&quot;CCmJd-6n&quot;&gt;每个游戏厂商的接入方式可能都不一样，账号体系映射关系也有差异。  &lt;/li&gt;&lt;li data-pid=&quot;9L8RLuZi&quot;&gt;用户都从我们平台登录，成功之后跳转到游戏厂商的游戏页面。当时有N个游戏厂商接入了，活跃的游戏玩家比较多，登录接口的并发量不容小觑。  &lt;/li&gt;&lt;/ol&gt;&lt;p data-pid=&quot;gTvqxiE4&quot;&gt;为了解决这两个问题，我们当时采用的方案是：分库。即针对每一个游戏都单独建一个数据库，数据库中的表结构允许存在差异。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic1.zhimg.com/50/v2-33fb205f624c56d3e3968ffb2904c683_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image lazy&quot; data-actualsrc=&quot;https://pic1.zhimg.com/50/v2-33fb205f624c56d3e3968ffb2904c683_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;akPiF3QI&quot;&gt;我们当时没有进一步分表，是因为当时考虑每种游戏的用户量，还没到大到离谱的地步。不像王者荣耀这种现象级的游戏，有上亿的玩家。&lt;/p&gt;&lt;p data-pid=&quot;tJ1vvTNM&quot;&gt;其中有个比较关键的地方是：登录接口中需要传入游戏id字段，通过该字段，系统就知道要操作哪个库，因为库名中就包含了游戏id的信息。&lt;/p&gt;&lt;h3&gt;3.2 分表&lt;/h3&gt;&lt;p data-pid=&quot;9kBC5n40&quot;&gt;还是在那家游戏平台公司，我们还有另外一个业务就是：金钻会员。&lt;/p&gt;&lt;p data-pid=&quot;odN5Qco7&quot;&gt;说白了就是打造了一套跟游戏相关的会员体系，为了保持用户的活跃度，开通会员有很多福利，比如：送游戏币、充值有折扣、积分兑换、抽奖、专属客服等等。&lt;/p&gt;&lt;p data-pid=&quot;IWRRBaqY&quot;&gt;在这套会员体系当中，有个非常重要的功能就是：积分。&lt;/p&gt;&lt;p data-pid=&quot;LGnsZIjn&quot;&gt;用户有很多种途径可以获取积分，比如：签到、充值、玩游戏、抽奖、推广、参加活动等等。&lt;/p&gt;&lt;p data-pid=&quot;HUDaTqxf&quot;&gt;积分用什么用途呢？&lt;/p&gt;&lt;ol&gt;&lt;li data-pid=&quot;rR3s0wq3&quot;&gt;退换实物礼物  &lt;/li&gt;&lt;li data-pid=&quot;nHzep8Nb&quot;&gt;兑换游戏币  &lt;/li&gt;&lt;li data-pid=&quot;k23joXgW&quot;&gt;抽奖  &lt;/li&gt;&lt;/ol&gt;&lt;p data-pid=&quot;d0k9SUlU&quot;&gt;说了这么多，其实就是想说，一个用户一天当中，获取积分或消费积分都可能有很多次，那么，一个用户一天就可能会产生几十条记录。&lt;/p&gt;&lt;p data-pid=&quot;MXDc7ogD&quot;&gt;如果用户多了的话，积分相关的数据量其实挺惊人的。&lt;/p&gt;&lt;p data-pid=&quot;ivXsv-Ls&quot;&gt;我们当时考虑了，水平方向的数据量可能会很大，但是用户并发量并不大，不像登录接口那样。&lt;/p&gt;&lt;p data-pid=&quot;yBb2EDj7&quot;&gt;所以采用的方案是：分表。&lt;/p&gt;&lt;p data-pid=&quot;Ua9b2RH8&quot;&gt;当时使用一个积分数据库就够了，但是分了128张表。然后根据用户id，进行hash除以128取模。&lt;/p&gt;&lt;p data-pid=&quot;ZUbK0lsX&quot;&gt;最近无意间获得一份BAT大厂大佬写的刷题笔记，一下子打通了我的任督二脉，越来越觉得算法没有想象中那么难了。&lt;/p&gt;&lt;p data-pid=&quot;7KJN0NRB&quot;&gt;[BAT大佬写的刷题笔记，让我offer拿到手软](&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//mp.weixin.qq.com/s%3F__biz%3DMzkwNjMwMTgzMQ%3D%3D%26mid%3D2247490336%26idx%3D1%26sn%3D2f9db262746f692136cd6ce7179fc208%26source%3D41%23wechat_redirect&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;这位BAT大佬写的Leetcode刷题笔记，让我offer拿到手软&lt;/a&gt;)&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://picx.zhimg.com/50/v2-082d6c30514ee75218778940ca7c933f_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image lazy&quot; data-actualsrc=&quot;https://picx.zhimg.com/50/v2-082d6c30514ee75218778940ca7c933f_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;blockquote data-pid=&quot;z-4LRV1Z&quot;&gt;需要特别注意的是，分表的数量最好是2的幂次方，方便以后扩容。&lt;/blockquote&gt;&lt;h3&gt;3.3 分库分表&lt;/h3&gt;&lt;p data-pid=&quot;t_gOo0MA&quot;&gt;后来我去了一家从事餐饮软件开发的公司。这个公司有个特点是在每天的中午和晚上的就餐高峰期，用户的并发量很大。&lt;/p&gt;&lt;p data-pid=&quot;h8WesqfJ&quot;&gt;用户吃饭前需要通过我们系统点餐，然后下单，然后结账。当时点餐和下单的并发量挺大的。&lt;/p&gt;&lt;p data-pid=&quot;2UjQo1Hf&quot;&gt;餐厅可能会有很多人，每个人都可能下多个订单。这样就会导致用户的并发量高，并且数据量也很大。&lt;/p&gt;&lt;p data-pid=&quot;mwswuwxf&quot;&gt;所以，综合考虑了一下，当时我们采用的技术方案是：分库分表。&lt;/p&gt;&lt;p data-pid=&quot;_jxh-RXR&quot;&gt;经过调研之后，觉得使用了当当网开源的基于jdbc的中间件框架：sharding-jdbc。&lt;/p&gt;&lt;p data-pid=&quot;ia9X8A3G&quot;&gt;当时分了4个库，每个库有32张表。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://picx.zhimg.com/50/v2-79eea3c46699a47193f90823e7df833c_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; class=&quot;content_image lazy&quot; data-actualsrc=&quot;https://picx.zhimg.com/50/v2-79eea3c46699a47193f90823e7df833c_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;h2&gt;4 总结&lt;/h2&gt;&lt;p data-pid=&quot;EMh_IX4O&quot;&gt;上面主要从：垂直和水平，两个方向介绍了我们的系统为什么要分库分表。&lt;/p&gt;&lt;p data-pid=&quot;Xn6yzWzF&quot;&gt;说实话垂直方向（即业务方向）更简单。&lt;/p&gt;&lt;p data-pid=&quot;ANYgY52o&quot;&gt;在水平方向（即数据方向）上，分库和分表的作用，其实是有区别的，不能混为一谈。&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;KPF0ysWH&quot;&gt;分库：是为了解决数据库连接资源不足问题，和磁盘IO的性能瓶颈问题。  &lt;/li&gt;&lt;li data-pid=&quot;FTbeh9os&quot;&gt;分表：是为了解决单表数据量太大，sql语句查询数据时，即使走了索引也非常耗时问题。此外还可以解决消耗cpu资源问题。  &lt;/li&gt;&lt;li data-pid=&quot;kYTzdPZM&quot;&gt;分库分表：可以解决 数据库连接资源不足、磁盘IO的性能瓶颈、检索数据耗时 和 消耗cpu资源等问题。  &lt;/li&gt;&lt;/ul&gt;&lt;p data-pid=&quot;LzLeRECT&quot;&gt;如果在有些业务场景中，用户并发量很大，但是需要保存的数据量很少，这时可以只分库，不分表。&lt;/p&gt;&lt;p data-pid=&quot;iAl4ATGM&quot;&gt;如果在有些业务场景中，用户并发量不大，但是需要保存的数量很多，这时可以只分表，不分库。&lt;/p&gt;&lt;p data-pid=&quot;Uhr3O_r-&quot;&gt;如果在有些业务场景中，用户并发量大，并且需要保存的数量也很多时，可以分库分表。&lt;/p&gt;&lt;p data-pid=&quot;pxfbAo9m&quot;&gt;好了，今天的内容就先到这里。&lt;/p&gt;&lt;p data-pid=&quot;58e3OmdT&quot;&gt;是不是有点意犹未尽？&lt;/p&gt;&lt;p data-pid=&quot;YmG-16am&quot;&gt;没关系，其实分库分表相关内容挺多的，本文作为分库分表系列的第一弹，作为一个开胃小菜吧，分享给大家。&lt;/p&gt;&lt;p data-pid=&quot;l5M61qA6&quot;&gt;在文章末尾顺便提几个问题：&lt;/p&gt;&lt;ol&gt;&lt;li data-pid=&quot;irfJrCN6&quot;&gt;分库分表的具体实现方案有哪些？  &lt;/li&gt;&lt;li data-pid=&quot;1olGWFqZ&quot;&gt;分库分表后如何平滑扩容？  &lt;/li&gt;&lt;li data-pid=&quot;giPF_pVR&quot;&gt;分库分表后带来了哪些问题？  &lt;/li&gt;&lt;li data-pid=&quot;zCnmv0aH&quot;&gt;如何在项目中实现分库分表功能？  &lt;/li&gt;&lt;/ol&gt;&lt;p data-pid=&quot;uAn4irs_&quot;&gt;欢迎关注，敬请期待我的下一篇文章。&lt;/p&gt;&lt;p data-pid=&quot;g74I0hqg&quot;&gt;最近无意间获得一份BAT大厂大佬写的刷题笔记，一下子打通了我的任督二脉，越来越觉得算法没有想象中那么难了。&lt;/p&gt;&lt;p data-pid=&quot;JP7-pO9q&quot;&gt;[BAT大佬写的刷题笔记，让我offer拿到手软](&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//mp.weixin.qq.com/s/tq4HYlL5A4qL5Aka3jFNqw&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;这位BAT大佬写的Leetcode刷题笔记，让我offer拿到手软&lt;/a&gt;)&lt;/p&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;h3&gt;最后说一句(求关注，别白嫖我)&lt;/h3&gt;&lt;p data-pid=&quot;zWx1cxgh&quot;&gt;如果这篇文章对您有所帮助，或者有所启发的话，帮忙扫描下发二维码关注一下，您的支持是我坚持写作最大的动力。&lt;/p&gt;&lt;p data-pid=&quot;6RpwEam-&quot;&gt;求一键三连：点赞、转发、在看。&lt;/p&gt;&lt;p data-pid=&quot;iVlxUvon&quot;&gt;最近无意间获得一份阿里大佬写的刷题笔记，一下子打通了我的任督二脉，进大厂原来没那么难。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://picx.zhimg.com/50/v2-3fcf6914c2550b87871d4ea3d1ca3270_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1440&quot; data-rawheight=&quot;770&quot; data-default-watermark-src=&quot;https://pica.zhimg.com/50/v2-a662a96d5f942a4b2b19596ccac458b1_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://picx.zhimg.com/v2-3fcf6914c2550b87871d4ea3d1ca3270_r.jpg?source=1940ef5c&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1440&quot; data-rawheight=&quot;770&quot; data-default-watermark-src=&quot;https://pica.zhimg.com/50/v2-a662a96d5f942a4b2b19596ccac458b1_720w.jpg?source=1940ef5c&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://picx.zhimg.com/v2-3fcf6914c2550b87871d4ea3d1ca3270_r.jpg?source=1940ef5c&quot; data-actualsrc=&quot;https://picx.zhimg.com/50/v2-3fcf6914c2550b87871d4ea3d1ca3270_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p data-pid=&quot;z5PvvHPO&quot;&gt;链接：&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//pan.baidu.com/s/1UECE5yuaoTTRpJfi5LU5TQ&quot; class=&quot; external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;&lt;span class=&quot;invisible&quot;&gt;https://&lt;/span&gt;&lt;span class=&quot;visible&quot;&gt;pan.baidu.com/s/1UECE5y&lt;/span&gt;&lt;span class=&quot;invisible&quot;&gt;uaoTTRpJfi5LU5TQ&lt;/span&gt;&lt;span class=&quot;ellipsis&quot;/&gt;&lt;/a&gt;  密码：bhbe&lt;/p&gt;&lt;p data-pid=&quot;fQvnb9Sd&quot;&gt;不会有人刷到这里还想白嫖吧？点赞对我真的非常重要！在线求赞。加个关注我会非常感激！ &lt;a class=&quot;member_mention&quot; href=&quot;https://www.zhihu.com/people/5a9414fa2a7f6b243d3c790e5d1975e7&quot; data-hash=&quot;5a9414fa2a7f6b243d3c790e5d1975e7&quot; data-hovercard=&quot;p$b$5a9414fa2a7f6b243d3c790e5d1975e7&quot;&gt;@苏三说技术&lt;/a&gt; &lt;/p&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>d2caaef4174fd7a3c3e6666345f256c7</guid>
+<title>单元测试利器：手把手教你使用 Mockito</title>
+<link>https://toutiao.io/k/47g8sh5</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;p&gt;&lt;strong&gt;作者：京东零售 秦浩然&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;从你成为开发人员的那一天起，写单元测试终究是你逃不开的宿命！那开发人员为什么不喜欢写单元测试呢？究其原因，无外乎是依赖。依赖其他的服务、依赖运行的环境、等等，各种依赖都成为了我们写单元测试的绊脚石。那现在有个单元测试利器可以帮我们解决依赖的问题，你愿意使用一下吗？你愿意！那就是我们要学习的Mockito&lt;/p&gt;
+
+&lt;h2&gt;一、前期准备～&lt;/h2&gt;
+
+&lt;h3&gt;1、准备工作&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;!--mockito依赖--&amp;gt;
+&amp;lt;dependency&amp;gt;
+    &amp;lt;groupId&amp;gt;org.mockito&amp;lt;/groupId&amp;gt;
+    &amp;lt;artifactId&amp;gt;mockito-core&amp;lt;/artifactId&amp;gt;
+    &amp;lt;version&amp;gt;2.7.19&amp;lt;/version&amp;gt;
+    &amp;lt;scope&amp;gt;test&amp;lt;/scope&amp;gt;
+&amp;lt;/dependency&amp;gt;
+&amp;lt;!-- junit依赖 --&amp;gt;
+&amp;lt;dependency&amp;gt;
+    &amp;lt;groupId&amp;gt;junit&amp;lt;/groupId&amp;gt;
+    &amp;lt;artifactId&amp;gt;junit&amp;lt;/artifactId&amp;gt;
+    &amp;lt;version&amp;gt;4.12&amp;lt;/version&amp;gt;
+    &amp;lt;scope&amp;gt;test&amp;lt;/scope&amp;gt;
+&amp;lt;/dependency&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;2、入门知识&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code&gt;1）Mockito：简单轻量级的做mocking测试的框架；
+2）mock对象：在调试期间用来作为真实对象的替代品；
+3）mock测试：在测试过程中，对那些不容易构建的对象用一个虚拟对象来代替测试的方法就叫mock测试；
+4）stub：打桩，就是为mock对象的方法指定返回值（可抛出异常）；
+5）verify：行为验证，验证指定方法调用情况（是否被调用，调用次数等）；
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;3、五分钟入门Demo&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code&gt;@Test
+public void test0() {
+    //1、创建mock对象（模拟依赖的对象）
+    final List mock = Mockito.mock(List.class);
+
+    //2、使用mock对象（mock对象会对接口或类的方法给出默认实现）
+    System.out.println(&quot;mock.add result =&amp;gt; &quot; + mock.add(&quot;first&quot;));  //false
+    System.out.println(&quot;mock.size result =&amp;gt; &quot; + mock.size());       //0
+
+    //3、打桩操作（状态测试：设置该对象指定方法被调用时的返回值）
+    Mockito.when(mock.get(0)).thenReturn(&quot;second&quot;);
+    Mockito.doReturn(66).when(mock).size();
+
+    //3、使用mock对象的stub（测试打桩结果）
+    System.out.println(&quot;mock.get result =&amp;gt; &quot; + mock.get(0));    //second
+    System.out.println(&quot;mock.size result =&amp;gt; &quot; + mock.size());   //66
+
+    //4、验证交互 verification（行为测试：验证方法调用情况）
+    Mockito.verify(mock).get(Mockito.anyInt());
+    Mockito.verify(mock, Mockito.times(2)).size();
+
+    //5、验证返回的结果（这是JUnit的功能）
+    assertEquals(&quot;second&quot;, mock.get(0));
+    assertEquals(66, mock.size());
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2&gt;二、让我们开始学习吧！&lt;/h2&gt;
+
+&lt;h3&gt;1、行为验证&lt;/h3&gt;
+
+&lt;p&gt;• 一旦mock对象被创建了，mock对象会记住所有的交互，然后你就可以选择性的验证你感兴趣的交互，验证不通过则抛出异常。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;@Test
+public void test1() {
+    final List mockList = Mockito.mock(List.class);
+    mockList.add(&quot;mock1&quot;);
+    mockList.get(0);
+    mockList.size();
+    mockList.clear();
+    // 验证方法被使用（默认1次）
+    Mockito.verify(mockList).add(&quot;mock1&quot;);
+    // 验证方法被使用1次
+    Mockito.verify(mockList, Mockito.times(1)).get(0);
+    // 验证方法至少被使用1次
+    Mockito.verify(mockList, Mockito.atLeast(1)).size();
+    // 验证方法没有被使用
+    Mockito.verify(mockList, Mockito.never()).contains(&quot;mock2&quot;);
+    // 验证方法至多被使用5次
+    Mockito.verify(mockList, Mockito.atMost(5)).clear();
+    // 指定方法调用超时时间
+    Mockito.verify(mockList, timeout(100)).get(0);
+    // 指定时间内需要完成的次数
+    Mockito.verify(mockList, timeout(200).atLeastOnce()).size();
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;2、如何做一些测试桩stub&lt;/h3&gt;
+
+&lt;p&gt;• 默认情况下，所有的函数都有返回值。mock函数默认返回的是null，一个空的集合或者一个被对象类型包装的内置类型，例如0、false对应的对象类型为Integer、Boolean；&lt;/p&gt;
+
+&lt;p&gt;• 一旦测试桩函数被调用，该函数将会一致返回固定的值；&lt;/p&gt;
+
+&lt;p&gt;• 对于 static 和 final 方法， Mockito 无法对其 when(…).thenReturn(…) 操作。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;@Test
+public void test2() {
+    //静态导入，减少代码量：import static org.mockito.Mockito.*;
+    final ArrayList mockList = mock(ArrayList.class);
+
+    // 设置方法调用返回值
+    when(mockList.add(&quot;test2&quot;)).thenReturn(true);
+    doReturn(true).when(mockList).add(&quot;test2&quot;);
+    System.out.println(mockList.add(&quot;test2&quot;));  //true
+
+    // 设置方法调用抛出异常
+    when(mockList.get(0)).thenThrow(new RuntimeException());
+    doThrow(new RuntimeException()).when(mockList).get(0);
+    System.out.println(mockList.get(0));    //throw RuntimeException
+
+    // 无返回方法打桩
+    doNothing().when(mockList).clear();
+
+    // 为回调做测试桩（对方法返回进行拦截处理）
+    final Answer&amp;lt;String&amp;gt; answer = new Answer&amp;lt;String&amp;gt;() {
+        @Override
+        public String answer(InvocationOnMock invocationOnMock) throws Throwable {
+            final List mock = (List) invocationOnMock.getMock();
+            return &quot;mock.size result =&amp;gt; &quot; + mock.size();
+        }
+    };
+    when(mockList.get(1)).thenAnswer(answer);
+    doAnswer(answer).when(mockList).get(1);
+    System.out.println(mockList.get(1));    //mock.size result =&amp;gt; 0
+
+    // 对同一方法多次打桩，以最后一次为准
+    when(mockList.get(2)).thenReturn(&quot;test2_1&quot;);
+    when(mockList.get(2)).thenReturn(&quot;test2_2&quot;);
+    System.out.println(mockList.get(2));    //test2_2
+    System.out.println(mockList.get(2));    //test2_2
+
+    // 设置多次调用同类型结果
+    when(mockList.get(3)).thenReturn(&quot;test2_1&quot;, &quot;test2_2&quot;);
+    when(mockList.get(3)).thenReturn(&quot;test2_1&quot;).thenReturn(&quot;test2_2&quot;);
+    System.out.println(mockList.get(3));    //test2_1
+    System.out.println(mockList.get(3));    //test2_2
+
+    // 为连续调用做测试桩（为同一个函数调用的不同的返回值或异常做测试桩）
+    when(mockList.get(4)).thenReturn(&quot;test2&quot;).thenThrow(new RuntimeException());
+    doReturn(&quot;test2&quot;).doThrow(new RuntimeException()).when(mockList).get(4);
+    System.out.println(mockList.get(4));    //test2
+    System.out.println(mockList.get(4));    //throw RuntimeException
+
+    // 无打桩方法，返回默认值
+    System.out.println(mockList.get(99));    //null
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;3、参数匹配器&lt;/h3&gt;
+
+&lt;p&gt;• 参数匹配器使验证和测试桩变得更灵活；&lt;/p&gt;
+
+&lt;p&gt;• 为了合理的使用复杂的参数匹配，使用equals()与anyX() 的匹配器会使得测试代码更简洁、简单。有时，会迫使你重构代码以使用equals()匹配或者实现equals()函数来帮助你进行测试；&lt;/p&gt;
+
+&lt;p&gt;• 如果你使用参数匹配器,所有参数都必须由匹配器提供；&lt;/p&gt;
+
+&lt;p&gt;• 支持自定义参数匹配器；&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;@Test
+public void test3() {
+    final Map mockMap = mock(Map.class);
+
+    // 正常打桩测试
+    when(mockMap.get(&quot;key&quot;)).thenReturn(&quot;value1&quot;);
+    System.out.println(mockMap.get(&quot;key&quot;));     //value1
+
+    // 为灵活起见，可使用参数匹配器
+    when(mockMap.get(anyString())).thenReturn(&quot;value2&quot;);
+    System.out.println(mockMap.get(anyString()));   //value2
+    System.out.println(mockMap.get(&quot;test_key&quot;));    //value2
+    System.out.println(mockMap.get(0)); //null
+
+    // 多个入参时，要么都使用参数匹配器，要么都不使用，否则会异常
+    when(mockMap.put(anyString(), anyInt())).thenReturn(&quot;value3&quot;);
+    System.out.println(mockMap.put(&quot;key3&quot;, 3));     //value3
+    System.out.println(mockMap.put(anyString(), anyInt()));     //value3
+    System.out.println(mockMap.put(&quot;key3&quot;, anyInt()));    //异常
+
+    // 行为验证时，也支持使用参数匹配器
+    verify(mockMap, atLeastOnce()).get(anyString());
+    verify(mockMap).put(anyString(), eq(3));
+
+    // 自定义参数匹配器
+    final ArgumentMatcher&amp;lt;ArgumentTestRequest&amp;gt; myArgumentMatcher = new ArgumentMatcher&amp;lt;ArgumentTestRequest&amp;gt;() {
+        @Override
+        public boolean matches(ArgumentTestRequest request) {
+            return &quot;name&quot;.equals(request.getName()) || &quot;value&quot;.equals(request.getValue());
+        }
+    };
+    // 自定义参数匹配器使用
+    final ArgumentTestService mock = mock(ArgumentTestService.class);
+    when(mock.argumentTestMethod(argThat(myArgumentMatcher))).thenReturn(&quot;success&quot;);
+    doReturn(&quot;success&quot;).when(mock).argumentTestMethod(argThat(myArgumentMatcher));
+    System.out.println(mock.argumentTestMethod(new ArgumentTestRequest(&quot;name&quot;, &quot;value&quot;)));  // success
+    System.out.println(mock.argumentTestMethod(new ArgumentTestRequest()));     //null
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;4、执行顺序验证&lt;/h3&gt;
+
+&lt;p&gt;• 验证执行顺序是非常灵活的-你不需要一个一个的验证所有交互,只需要验证你感兴趣的对象即可；&lt;/p&gt;
+
+&lt;p&gt;• 你可以仅通过那些需要验证顺序的mock对象来创建InOrder对象；&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;@Test
+public void test4() {
+    // 验证同一个对象多个方法的执行顺序
+    final List mockList = mock(List.class);
+    mockList.add(&quot;first&quot;);
+    mockList.add(&quot;second&quot;);
+    final InOrder inOrder = inOrder(mockList);
+    inOrder.verify(mockList).add(&quot;first&quot;);
+    inOrder.verify(mockList).add(&quot;second&quot;);
+
+    // 验证多个对象多个方法的执行顺序
+    final List mockList1 = mock(List.class);
+    final List mockList2 = mock(List.class);
+    mockList1.get(0);
+    mockList1.get(1);
+    mockList2.get(0);
+    mockList1.get(2);
+    mockList2.get(1);
+    final InOrder inOrder1 = inOrder(mockList1, mockList2);
+    inOrder1.verify(mockList1).get(0);
+    inOrder1.verify(mockList1).get(2);
+    inOrder1.verify(mockList2).get(1);
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;5、确保交互（interaction）操作不会执行在mock对象上&lt;/h3&gt;
+
+&lt;p&gt;• 一些用户可能会在频繁地使用verifyNoMoreInteractions()，甚至在每个测试函数中都用。但是verifyNoMoreInteractions()并不建议在每个测试函数中都使用；&lt;/p&gt;
+
+&lt;p&gt;• verifyNoMoreInteractions()在交互测试套件中只是一个便利的验证，它的作用是当你需要验证是否存在冗余调用时；&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;@Test
+public void test5() {
+    // 验证某个交互是否从未被执行
+    final List mock = mock(List.class);
+    mock.add(&quot;first&quot;);
+    verify(mock, never()).add(&quot;test5&quot;);   //通过
+    verify(mock, never()).add(&quot;first&quot;);  //异常
+
+    // 验证mock对象没有交互过
+    final List mock1 = mock(List.class);
+    final List mock2 = mock(List.class);
+    verifyZeroInteractions(mock1);  //通过
+    verifyNoMoreInteractions(mock1, mock2); //通过
+    verifyZeroInteractions(mock, mock2);  //异常
+
+    // 注意：可能只想验证前面的逻辑，但是加上最后一行，会导致出现异常。建议使用方法层面的验证，如：never()；
+    //      在验证是否有冗余调用的时候，可使用此种方式。如下：
+    final List mockList = mock(List.class);
+    mockList.add(&quot;one&quot;);
+    mockList.add(&quot;two&quot;);
+    verify(mockList).add(&quot;one&quot;);    // 通过
+    verify(mockList, never()).get(0);    //通过
+    verifyZeroInteractions(mockList);   //异常
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;6、使用注解简化mock对象创建&lt;/h3&gt;
+
+&lt;p&gt;注意！下面这句代码需要在运行测试函数之前被调用,一般放到测试类的基类或者test runner中:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;MockitoAnnotations.initMocks(this);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;也可以使用内置的runner: MockitoJUnitRunner 或者一个rule : MockitoRule；&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;// 代替 mock(ArgumentTestService.class) 创建mock对象；
+@Mock
+private ArgumentTestService argumentTestService;
+// 若改注解修饰的对象有成员变量，@Mock定义的mock对象会被自动注入；
+@InjectMocks
+private MockitoAnnotationServiceImpl mockitoAnnotationService；
+
+@Test
+public void test6() {
+    // 注意！下面这句代码需要在运行测试函数之前被调用,一般放到测试类的基类或者test runner中;
+    MockitoAnnotations.initMocks(this);
+    when(argumentTestService.argumentTestMethod(new ArgumentTestRequest())).thenReturn(&quot;success&quot;);
+    System.out.println(argumentTestService.argumentTestMethod(new ArgumentTestRequest()));  //success
+    System.out.println(mockitoAnnotationService.mockitoAnnotationTestMethod()); //null
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;7、监控真实对象（部分mock）&lt;/h3&gt;
+
+&lt;p&gt;• 可以为真实对象创建一个监控(spy)对象。当你使用这个spy对象时真实的对象也会也调用，除非它的函数被stub了;&lt;/p&gt;
+
+&lt;p&gt;• 尽量少使用spy对象，使用时也需要小心形式，例如spy对象可以用来处理遗留代码;&lt;/p&gt;
+
+&lt;p&gt;• stub语法中同样提供了部分mock的方法，可以调用真实的方法;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;完全mock：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;上文讲的内容是完全mock，即创建的mock对象与真实对象无关，mock对象的方法默认都是基本的实现，返回基本类型。可基于接口、实现类创建mock对象。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;部分mock：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;所谓部分mock，即创建的mock对象时基于真实对象的，mock对象的方法都是默认使用真实对象的方法，除非stub之后，才会以stub为准。基于实现类创建mock对象，否则在没有stub的情况下，调用真实方法时，会出现异常。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;注意点：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Mockito并不会为真实对象代理函数调用，实际上它会拷贝真实对象。因此如果你保留了真实对象并且与之交互，不要期望从监控对象得到正确的结果。 当你在监控对象上调用一个没有被stub的函数时并不会调用真实对象的对应函数，你不会在真实对象上看到任何效果&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;@Test
+public void test7() {
+    // stub部分mock（stub中使用真实调用）。注意：需要mock实现类，否则会有异常
+    final StubTestService stubTestService = mock(StubTestServiceImpl.class);
+    when(stubTestService.stubTestMethodA(&quot;paramA&quot;)).thenCallRealMethod();
+    doCallRealMethod().when(stubTestService).stubTestMethodB();
+    System.out.println(stubTestService.stubTestMethodA(&quot;paramA&quot;));  //stubTestMethodA is called, param = paramA
+    System.out.println(stubTestService.stubTestMethodB());  //stubTestMethodB is called
+    System.out.println(stubTestService.stubTestMethodC());  //null
+
+    // spy部分mock
+    final LinkedList&amp;lt;String&amp;gt; linkedList = new LinkedList();
+    final LinkedList spy = spy(linkedList);
+    spy.add(&quot;one&quot;);
+    spy.add(&quot;two&quot;);
+    doReturn(100).when(spy).size();
+    when(spy.get(0)).thenReturn(&quot;one_test&quot;);
+    System.out.println(spy.size()); //100
+    System.out.println(spy.get(0)); //one_test
+    System.out.println(spy.get(1)); //two
+
+    // spy可以类比AOP。在spy中，由于默认是调用真实方法，所以第二种写法不等价于第一种写法，不推荐这种写法。
+    doReturn(&quot;two_test&quot;).when(spy).get(2);
+    when(spy.get(2)).thenReturn(&quot;two_test&quot;); //异常 java.lang.IndexOutOfBoundsException: Index: 2, Size: 2
+    System.out.println(spy.get(2));   //two_test
+
+    // spy对象只是真实对象的复制，真实对象的改变不会影响spy对象
+    final List&amp;lt;String&amp;gt; arrayList = new ArrayList&amp;lt;&amp;gt;();
+    final List&amp;lt;String&amp;gt; spy1 = spy(arrayList);
+    spy1.add(0, &quot;one&quot;);
+    System.out.println(spy1.get(0));    //one
+    arrayList.add(0, &quot;list1&quot;);
+    System.out.println(arrayList.get(0));   //list1
+    System.out.println(spy1.get(0));    //one
+
+    // 若对某个方法stub之后，又想调用真实的方法，可以使用reset(spy)
+    final ArrayList&amp;lt;String&amp;gt; arrayList1 = new ArrayList&amp;lt;&amp;gt;();
+    final ArrayList&amp;lt;String&amp;gt; spy2 = spy(arrayList1);
+    doReturn(100).when(spy2).size();
+    System.out.println(spy2.size());    //100
+    reset(spy2);
+    System.out.println(spy2.size());    //0
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;8、&lt;a href=&quot;https://my.oschina.net/mock&quot;&gt;@Mock&lt;/a&gt; 和 @Spy的使用&lt;/h3&gt;
+
+&lt;p&gt;• &lt;a href=&quot;https://my.oschina.net/mock&quot;&gt;@Mock&lt;/a&gt; 等价于 Mockito.mock(Object.class);&lt;/p&gt;
+
+&lt;p&gt;• &lt;a href=&quot;https://my.oschina.net/spy1026&quot;&gt;@Spy&lt;/a&gt; 等价于 Mockito.spy(obj);&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;区分是mock对象还是spy对象：
+Mockito.mockingDetails(someObject).isMock();
+Mockito.mockingDetails(someObject).isSpy();
+
+@Mock
+private StubTestService stubTestService;
+@Spy
+private StubTestServiceImpl stubTestServiceImpl;
+@Spy
+private StubTestService stubTestServiceImpl1 = new StubTestServiceImpl();
+@Test
+public void test8() {
+    MockitoAnnotations.initMocks(this);
+    // mock对象返回默认
+    System.out.println(stubTestService.stubTestMethodB());  //null
+    // spy对象调用真实方法
+    System.out.println(stubTestServiceImpl.stubTestMethodC());  //stubTestMethodC is called
+    System.out.println(stubTestServiceImpl1.stubTestMethodA(&quot;spy&quot;));  //stubTestMethodA is called, param = spy
+
+    // 区分是mock对象还是spy对象
+    System.out.println(mockingDetails(stubTestService).isMock());   //true
+    System.out.println(mockingDetails(stubTestService).isSpy());    //false
+    System.out.println(mockingDetails(stubTestServiceImpl).isSpy());    //true
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;9、ArgumentCaptor（参数捕获器）捕获方法参数进行验证。（可代替参数匹配器使用）&lt;/h3&gt;
+
+&lt;p&gt;• 在某些场景中，不光要对方法的返回值和调用进行验证，同时需要验证一系列交互后所传入方法的参数。那么我们可以用参数捕获器来捕获传入方法的参数进行验证，看它是否符合我们的要求。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;ArgumentCaptor介绍&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;通过ArgumentCaptor对象的forClass(Class&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;ArgumentCaptor的Api&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;argument.capture() 捕获方法参数&lt;/p&gt;
+
+&lt;p&gt;argument.getValue() 获取方法参数值，如果方法进行了多次调用，它将返回最后一个参数值&lt;/p&gt;
+
+&lt;p&gt;argument.getAllValues() 方法进行多次调用后，返回多个参数值&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;@Test
+public void test9() {
+    List mock = mock(List.class);
+    List mock1 = mock(List.class);
+    mock.add(&quot;John&quot;);
+    mock1.add(&quot;Brian&quot;);
+    mock1.add(&quot;Jim&quot;);
+    // 获取方法参数
+    ArgumentCaptor argument = ArgumentCaptor.forClass(String.class);
+    verify(mock).add(argument.capture());
+    System.out.println(argument.getValue());    //John
+
+    // 多次调用获取最后一次
+    ArgumentCaptor argument1 = ArgumentCaptor.forClass(String.class);
+    verify(mock1, times(2)).add(argument1.capture());
+    System.out.println(argument1.getValue());    //Jim
+
+    // 获取所有调用参数
+    System.out.println(argument1.getAllValues());    //[Brian, Jim]
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;10、简化 ArgumentCaptor 的创建&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code&gt;@Mock
+private List&amp;lt;String&amp;gt; captorList;
+@Captor
+private ArgumentCaptor&amp;lt;String&amp;gt; argumentCaptor;
+@Test
+public void test10() {
+    MockitoAnnotations.initMocks(this);
+    captorList.add(&quot;cap1&quot;);
+    captorList.add(&quot;cap2&quot;);
+    System.out.println(captorList.size());
+    verify(captorList, atLeastOnce()).add(argumentCaptor.capture());
+    System.out.println(argumentCaptor.getAllValues());
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;11、高级特性：自定义验证失败信息&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code&gt;@Test
+public void test11() {
+    final ArrayList arrayList = mock(ArrayList.class);
+    arrayList.add(&quot;one&quot;);
+    arrayList.add(&quot;two&quot;);
+
+    verify(arrayList, description(&quot;size()没有调用&quot;)).size();
+    // org.mockito.exceptions.base.MockitoAssertionError: size()没有调用
+
+    verify(arrayList, timeout(200).times(3).description(&quot;验证失败&quot;)).add(anyString());
+    //org.mockito.exceptions.base.MockitoAssertionError: 验证失败
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;12、高级特性：修改没有测试桩的调用的默认返回值&lt;/h3&gt;
+
+&lt;p&gt;• 可以指定策略来创建mock对象的返回值。这是一个高级特性，通常来说，你不需要写这样的测试；&lt;/p&gt;
+
+&lt;p&gt;• 它对于遗留系统来说是很有用处的。当你不需要为函数调用打桩时你可以指定一个默认的answer；&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;@Test
+public void test12(){
+    // 创建mock对象、使用默认返回
+    final ArrayList mockList = mock(ArrayList.class);
+    System.out.println(mockList.get(0));    //null
+
+    // 这个实现首先尝试全局配置,如果没有全局配置就会使用默认的回答,它返回0,空集合,null,等等。
+    // 参考返回配置：ReturnsEmptyValues
+    mock(ArrayList.class, Answers.RETURNS_DEFAULTS);
+
+    // ReturnsSmartNulls首先尝试返回普通值(0,空集合,空字符串,等等)然后它试图返回SmartNull。
+    // 如果最终返回对象，那么会简单返回null。一般用在处理遗留代码。
+    // 参考返回配置：ReturnsMoreEmptyValues
+    mock(ArrayList.class, Answers.RETURNS_SMART_NULLS);
+
+    // 未stub的方法，会调用真实方法。
+    //    注1:存根部分模拟使用时(mock.getSomething ()) .thenReturn (fakeValue)语法将调用的方法。对于部分模拟推荐使用doReturn语法。
+    //    注2:如果模拟是序列化反序列化,那么这个Answer将无法理解泛型的元数据。
+    mock(ArrayList.class, Answers.CALLS_REAL_METHODS);
+
+    // 深度stub，用于嵌套对象的mock。参考：https://www.cnblogs.com/Ming8006/p/6297333.html
+    mock(ArrayList.class, Answers.RETURNS_DEEP_STUBS);
+
+    // ReturnsMocks首先尝试返回普通值(0,空集合,空字符串,等等)然后它试图返回mock。
+    // 如果返回类型不能mocked(例如是final)然后返回null。
+    mock(ArrayList.class, Answers.RETURNS_MOCKS);
+
+    //  mock对象的方法调用后，可以返回自己（类似builder模式）
+    mock(ArrayList.class, Answers.RETURNS_SELF);
+
+    // 自定义返回
+    final Answer&amp;lt;String&amp;gt; answer = new Answer&amp;lt;String&amp;gt;() {
+        @Override
+        public String answer(InvocationOnMock invocation) throws Throwable {
+            return &quot;test_answer&quot;;
+        }
+    };
+    final ArrayList mockList1 = mock(ArrayList.class, answer);
+    System.out.println(mockList1.get(0));   //test_answer
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2&gt;三、学习了这么多，牛刀小试一下！&lt;/h2&gt;
+
+&lt;p&gt;测试实体类&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;@Data
+public class User {
+
+    /**
+     * 姓名，登录密码
+     */
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;持久层DAO&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;public interface UserDao {
+
+    /**
+     * 根据name查找user
+     * @param name
+     * @return
+     */
+    User getUserByName(String name);
+
+    /**
+     * 保存user
+     * @param user
+     * @return
+     */
+    Integer saveUser(User user);
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;业务层Service接口&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;public interface UserService {
+
+    /**
+     * 根据name查找user
+     * @param name
+     * @return
+     */
+    User getUserByName(String name);
+
+    /**
+     * 保存user
+     * @param user
+     * @return
+     */
+    Integer saveUser(User user);
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;业务层Serive实现类&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;@Service
+public class UserServiceImpl implements UserService {
+
+    //userDao
+    @Autowired
+    private UserDao userDao;
+
+    /**
+     * 根据name查找user
+     * @param name
+     * @return
+     */
+    @Override
+    public User getUserByName(String name) {
+        try {
+            return userDao.getUserByName(name);
+        } catch (Exception e) {
+            throw new RuntimeException(&quot;查询user异常&quot;);
+        }
+    }
+
+    /**
+     * 保存user
+     * @param user
+     * @return
+     */
+    @Override
+    public Integer saveUser(User user) {
+        if (userDao.getUserByName(user.getName()) != null) {
+            throw new RuntimeException(&quot;用户名已存在&quot;);
+        }
+        try {
+            return userDao.saveUser(user);
+        } catch (Exception e) {
+            throw new RuntimeException(&quot;保存用户异常&quot;);
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;现在我们的Service写好了，想要单元测试一下，但是Dao是其他人开发的，目前还没有写好，那我们如何测试呢？&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;public class UserServiceTest {
+
+    /**
+     * Mock测试：根据name查询user
+     */
+    @Test
+    public void getUserByNameTest() {
+        // mock对象
+        final UserDao userDao = mock(UserDao.class);
+        final UserServiceImpl userService = new UserServiceImpl();
+        userService.setUserDao(userDao);
+
+        // stub调用
+        final User user = new User();
+        user.setName(&quot;admin&quot;);
+        user.setPassword(&quot;pass&quot;);
+        when(userDao.getUserByName(&quot;admin&quot;)).thenReturn(user);
+
+        // 执行待测试方法
+        final User user1 = userService.getUserByName(&quot;admin&quot;);
+        System.out.println(&quot;查询结果：&quot; + JacksonUtil.obj2json(user1));  //查询结果：{&quot;name&quot;:&quot;admin&quot;,&quot;password&quot;:&quot;pass&quot;}
+
+        // 验证mock对象交互
+        verify(userDao).getUserByName(anyString());
+
+        // 验证查询结果
+        Assert.assertNotNull(&quot;查询结果为空！&quot;, user1);
+        Assert.assertEquals(&quot;查询结果错误！&quot;, &quot;admin&quot;, user1.getName());
+    }
+
+
+    /**
+     * Mock测试：保存user
+     */
+    @Mock
+    private UserDao userDao;
+    @InjectMocks
+    private UserServiceImpl userService;
+    @Test
+    public void saveUserTest() throws Exception{
+        // 执行注解初始化
+        MockitoAnnotations.initMocks(this);
+
+        // mock对象stub操作
+        final User user = new User();
+        user.setName(&quot;admin&quot;);
+        user.setPassword(&quot;pass&quot;);
+        when(userDao.getUserByName(&quot;admin&quot;)).thenReturn(user).thenReturn(null);
+        when(userDao.saveUser(any(User.class))).thenReturn(1);
+
+        // 验证用户名重复的情况
+        try {
+            userService.saveUser(user);
+            throw new Exception();  //走到这里说明验证失败
+        } catch (RuntimeException e) {
+            System.out.println(&quot;重复用户名保存失败-测试通过&quot;);   //重复用户名保存失败-测试通过
+        }
+        verify(userDao).getUserByName(&quot;admin&quot;);
+
+        // 验证正常保存的情况
+        user.setName(&quot;user&quot;);
+        final Integer integer = userService.saveUser(user);
+        System.out.println(&quot;保存结果：&quot; + integer);  //保存结果：1
+        Assert.assertEquals(&quot;保存失败！&quot;, 1, integer.longValue());
+
+        verify(userDao).saveUser(any(User.class));
+        verify(userDao, times(2)).getUserByName(anyString());
+    }
+
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;根据以上代码我们可以知道，当我们的待测类开发完成而依赖的类的实现还没有开发完成。此时，我们就可以用到我们的Mock测试，模拟我们依赖类的返回值，使我们的待测类与依赖类解耦。这样，我们就可以对我们的待测类进行单元测了。&lt;/p&gt;
+
+&lt;h2&gt;四、参考文档及进一步学习～&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code&gt;Mockito英文版javadoc：https://javadoc.io/static/org.mockito/mockito-core/3.3.3/org/mockito/Mockito.html
+Mockito中文文档(部分)：https://blog.csdn.net/bboyfeiyu/article/details/52127551#35
+
+Mockito使用教程：https://www.cnblogs.com/Ming8006/p/6297333.html
+参数捕获器使用：https://www.journaldev.com/21892/mockito-argumentcaptor-captor-annotation
+利用ArgumentCaptor（参数捕获器）捕获方法参数进行验证：https://www.iteye.com/blog/hotdog-916364
+改变mock返回值：https://www.huangyunkun.com/2014/10/25/mockito-deep-stub-with-enum/
+五分钟了解Mockito：https://www.iteye.com/blog/liuzhijun-1512780
+使用Mockito进行单元测试：https://www.iteye.com/blog/qiuguo0205-1443344
+JUnit + Mockito 单元测试：https://blog.csdn.net/zhangxin09/article/details/42422643
+Mockito中@Mock与@InjectMock：https://www.cnblogs.com/langren1992/p/9681600.html
+mockito中两种部分mock的实现，spy、callRealMethod：https://www.cnblogs.com/softidea/p/4204389.html
+Mockito 中被 Mocked 的对象属性及方法的默认值：https://www.cnblogs.com/fnlingnzb-learner/p/10635250.html
+单元测试工具之Mockito：https://blog.csdn.net/qq_32140971/article/details/90598454
+引入Mockito测试用@Spy和@Mock：https://blog.csdn.net/message_lx/article/details/83308114
+Mockito初探(含实例)：https://www.iteye.com/blog/sgq0085-2031319
+测试覆盖率统计：https://blog.csdn.net/lvyuan1234/article/details/82836052?depth_1-utm_source=distribute.pc_relevant.none-task&amp;amp;utm_source=distribute.pc_relevant.none-task
+测试覆盖率无法统计解决：https://blog.csdn.net/zhanglei082319/article/details/81536398
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+  &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
