@@ -5,6 +5,12 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
+<guid>f7194ffe547e04d399908788637a54f3</guid>
+<title>百亿数据，如何毫秒级返回？</title>
+<link>https://toutiao.io/k/xu9mtab</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;blockquote&gt;&lt;p&gt;&lt;span&gt;大家好，我是苏三，今天我想和大家聊一聊实时索引的构建之道，来自我司 PB 级索引数据的实战经验，相信对大家肯定有帮助。&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;section&gt;&lt;mp-common-profile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-weui-theme=&quot;light&quot; data-id=&quot;Mzg4NjYyODc4OA==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/J4jTHmo8Xh6qM32ASOtVbXNoiaegrI26qLRw6r6FTI7dZw6TMT7vecvnjd1O8xSsM5MiajIuQZicxSC6KFK8TMpbg/0?wx_fmt=png&quot; data-nickname=&quot;java突击队&quot; data-alias=&quot;&quot; data-signature=&quot;技术经验分享&quot; data-from=&quot;0&quot; data-is_biz_ban=&quot;0&quot;/&gt;&lt;/section&gt;&lt;p&gt;近年来公司业务迅猛发展，数据量爆炸式增长，随之而来的的是海量数据查询等带来的挑战，我们需要数据量在十亿，甚至百亿级别的规模时依然能以秒级甚至毫秒级的速度返回，这样的话显然离不开搜索引擎的帮助，在搜索引擎中，ES（ElasticSearch）毫无疑问是其中的佼佼者，连续多年在 DBRanking 的搜索引擎中评测中排名第一，也是绝大多数大公司的首选，那么它与传统的 DB 如 MySQL 相比有啥优势呢，ES 的数据又是如何生成的，数据达到 PB 时又是如何保证 ES 索引数据的实时性以更好地满足业务的需求的呢。&lt;/p&gt;&lt;p&gt;本文会结合我司在 ES 上的实践经验与大家谈谈如何构建准实时索引的一些思路，希望对大家有所启发。本文目录如下&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;为什么要用搜索引擎，传统 DB 如 MySQL 不香吗&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;ES 索引数据构建&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;PB 级的 ES 准实时索引数据构建之道&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;h3&gt;&lt;span&gt;为什么要用搜索引擎，传统 DB 如 MySQL 不香吗&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h3&gt;&lt;h4&gt;&lt;span&gt;MySQL 的不足&lt;/span&gt;&lt;/h4&gt;&lt;p&gt;MySQL 架构天生不适合海量数据查询，它只适合海量数据存储，但无法应对海量数据下各种复杂条件的查询，有人说加索引不是可以避免全表扫描，提升查询速度吗，为啥说它不适合海量数据查询呢，有两个原因：&lt;/p&gt;&lt;p&gt;&lt;em&gt;1、&lt;/em&gt;加索引确实可以提升查询速度，但在 MySQL 中加多个索引最终在执行 SQL 的时候它只会选择成本最低的那个索引，如果没有索引满足搜索条件，就会触发全表扫描，而且即便你使用了组合索引，也要符合最左前缀原则才能命中索引，但在海量数据多种查询条件下很有可能不符合最左前缀原则而导致索引失效，而且我们知道存储都是需要成本的，如果你针对每一种情况都加索引，以 innoDB 为例，每加一个索引，就会创建一颗 B+ 树，如果是海量数据，将会增加很大的存储成本，之前就有人反馈说他们公司的某个表实际内容的大小才 10G, 而索引大小却有 30G！这是多么巨大的成本！所以千万不要觉得索引建得越多越好。&lt;/p&gt;&lt;p&gt;&lt;em&gt;2、&lt;/em&gt;有些查询条件是 MySQL 加索引都解决不了的，比如我要查询商品中所有 title 带有「格力空调」的关键词，如果你用 MySQL 写，会写出如下代码&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;SELECT&lt;/span&gt; * &lt;span&gt;FROM&lt;/span&gt; product &lt;span&gt;WHERE&lt;/span&gt; title &lt;span&gt;like&lt;/span&gt; &lt;span&gt;&#x27;%格力空调%&#x27;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这样的话无法命中任何索引，会触发全表扫描，而且你不能指望所有人都能输对他想要的商品，是人就会犯错误，我们经常会犯类似把「格力空调」记成「格空间」的错误，那么 SQL 语句就会变成：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;SELECT&lt;/span&gt; * &lt;span&gt;FROM&lt;/span&gt; product &lt;span&gt;WHERE&lt;/span&gt; title &lt;span&gt;like&lt;/span&gt; &lt;span&gt;&#x27;%格空调%&#x27;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这种情况下就算你触发了全表扫描也无法查询到任何商品，综上所述，MySQL 的查询确实能力有限。&lt;/p&gt;&lt;h4&gt;&lt;span&gt;ES 简介&lt;/span&gt;&lt;/h4&gt;&lt;p&gt;与其说上面列的这些点是 MySQL 的不足，倒不如说 MySQL 本身就不是为海量数据查询而设计的，术业有专攻，海量数据查询还得用专门的搜索引擎，这其中 ES 是其中当之无愧的王者，它是基于 Lucene 引擎构建的开源分布式搜索分析引擎，可以提供针对 PB 数据的近实时查询，广泛用在全文检索、日志分析、监控分析等场景。&lt;/p&gt;&lt;p&gt;它主要有以下三个特点:&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;code&gt;轻松支持各种复杂的查询条件&lt;/code&gt;: 它是分布式实时文件存储，会把&lt;strong&gt;每一个字段&lt;/strong&gt;都编入索引（倒排索引），利用高效的倒排索引，以及自定义打分、排序能力与丰富的分词插件等，能实现任意复杂查询条件下的全文检索需求&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;code&gt;可扩展性强&lt;/code&gt;：天然支持分布式存储，通过极其简单的配置实现几百上千台服务器的分布式横向扩容，轻松处理 PB 级别的结构化或非结构化数据。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;code&gt;高可用，容灾性能好&lt;/code&gt;：通过使用主备节点，以及故障的自动探测与恢复，有力地保障了高可用&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;我们先用与 MySQL 类比的形式来理解 ES 的一些重要概念&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.64&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajIOtgQRJNdIAIPfdSV1VYz3lFpibhSFU34mkRWC2R1HIDfibXp9bVYYXeg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;450&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;通过类比的形式不难看出 ES 的以下几个概念&lt;br/&gt;&lt;em&gt;1、&lt;/em&gt; MySQL 的数据库（DataBase）相当于 Index（索引），数据的逻辑集合，ES 的工作主要也是创建索引，查询索引。&lt;br/&gt;&lt;em&gt;2、&lt;/em&gt; 一个数据库里会有多个表，同样的一个 Index 也会有多个 type&lt;br/&gt;&lt;em&gt;3、&lt;/em&gt; 一个表会有多行（Row），同样的一个 Type 也会有多个 Document。&lt;br/&gt;&lt;em&gt;4、&lt;/em&gt; Schema 指定表名，表字段，是否建立索引等，同样的 Mapping 也指定了 Type 字段的处理规则，即索引如何建立，是否分词，分词规则等&lt;br/&gt;&lt;em&gt;5、&lt;/em&gt; 在 MySQL 中索引是需要手动创建的，而在 ES 一切字段皆可被索引，只要在 Mapping 在指定即可&lt;/p&gt;&lt;p&gt;那么 ES 中的索引为何如此高效，能在海量数据下达到秒级的效果呢？它采用了多种优化手段，最主要的原因是它采用了一种叫做&lt;strong&gt;倒排索引&lt;/strong&gt;的方式来生成索引，避免了全文档扫描，那么什么是倒排索引呢，通过文档来查找关键词等数据的我们称为正排索引，返之，通过关键词来查找文档的形式我们称之为倒排索引，假设有以下三个文档（Document）&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6424116424116424&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajIHPicKc8zvj2ciaUhDavzlF8JnBNJ5uaGibROpTgKCmfDba6XiaM1TTQDWA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;481&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;要在其中找到含有 comming 的文档，如果要正排索引，那么要把每个文档的内容拿出来查找是否有此单词，毫无疑问这样的话会导致全表扫描，那么用倒排索引会怎么查找呢，它首先会将每个文档内容进行分词，小写化等，然后建立每个分词与包含有此分词的文档之前的映射关系，如果有多个文档包含此分词，那么就会按重要程度即文档的权重（通常是用 TF-IDF 给文档打分）将文档进行排序，于是我们可以得到如下关系&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.9377777777777778&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajIsQ3ON3TGMh0LfYib2sslUSpjwAufyvic6YhQX1PPhzEcu0fzetfmTSAg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;450&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;这样的话我们我要查找所有带有 comming 的文档，就只需查一次，而且这种情况下查询多个单词性能也是很好的，只要查询多个条件对应的文档列表，再取交集即可，极大地提升了查询效率。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;画外音&lt;/strong&gt;：这里简化了一些流程，实际上还要先根据单词表来定位单词等，不过这些流程都很快，可以忽略，有兴趣的读者可以查阅相关资料了解。&lt;/p&gt;&lt;p&gt;除了倒排索引外，ES 的分布式架构也天然适合海量数据查询，来看下 ES 的架构&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.4643765903307888&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajI4A90Cujyd2EtOwn9LLHDVMHls99SvKCebM4hVfE0UYUabmcrGq9mVw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;786&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;一个 ES 集群由多个 node 节点组成，每个 index 是以分片（Shard，index 子集）的数据存在于多个 node 节点上的，这样的话当一个查询请求进来，分别在各个 node 查询相应的结果并整合后即可，将查询压力分散到多个节点，避免了单个节点 CPU，磁盘，内存等处理能力的不足。&lt;/p&gt;&lt;p&gt;另外当新节点加入后，会&lt;strong&gt;自动&lt;/strong&gt;迁移部分分片至新节点，实现负载均衡，这个功能是 ES &lt;strong&gt;自动&lt;/strong&gt;完成的，对比一个下 MySQL 的分库分表需要开发人员引入 Mycat 等中间件并指定分库分表规则等繁琐的流程是不是一个巨大的进步？这也就意味着 ES 有非常强大的水平扩展的能力，集群可轻松扩展致几百上千个节点，轻松支持 PB 级的数据查询。&lt;/p&gt;&lt;p&gt;当然 ES 的强大不止于此，它还采用了比如主备分片提升搜索吞率，使用节点故障探测，Raft 选主机制等提升了容灾能力等等，这些不是本文重点，读者可自行查阅，总之经过上面的简单总结大家只需要明白一点：&lt;strong&gt;ES 的分布式架构设计天生支持海量数据查询&lt;/strong&gt;。&lt;/p&gt;&lt;p&gt;那么 ES 的索引数据（index）如何生成的呢，接下来我们一起来看看本文的重点&lt;/p&gt;&lt;h3&gt;&lt;span&gt;如何构建 ES 索引&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h3&gt;&lt;p&gt;要构建 ES 索引数据，首先得有数据源，一般我们会使用 MySQL 作为数据源，你可以直接从 MySQL 中取数据然后再写入 ES，但这种方式由于直接调用了线上的数据库查询，可能会对线上业务造成影响，比如考虑这样的一个场景：&lt;/p&gt;&lt;p&gt;在电商 APP 里用的最多的业务场景想必是用户输入关键词来查询相对应的商品了，那么商品会有哪些信息呢，一个商品会有多个 sku（sku 即同一个商品下不同规格的品类，比如苹果手机有 iPhone 6, iPhone 6s等）,会有其基本属性如价格，标题等，商品会有分类（居家，服饰等），品牌，库存等，为了保证表设计的合理性，我们会设计几张表来存储这些属性，假设有 product_sku（sku 表）, product_property（基本属性表）,sku_stock（库存表），product_category（分类表）这几张表，那么为了在商品展示列表中展示所有这些信息，就必须把这些表进行 join，然后再写入 ES，这样查询的时候就会在 ES 中获取所有的商品信息了。&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;1.3733333333333333&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajIiccmBnyRm83ebeoXjBM5XmWZiaU0ibMgQCTicBnRlesQPBnrUicPchTV4lA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;375&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;这种方案由于直接在 MySQL 中执行 join 操作，在商品达到千万级时会对线上的 DB 服务产生极大的性能影响，所以显然不可行，那该怎么生成中间表呢，既然直接在 MySQL 中操作不可行，能否把 MySQL 中的数据同步到另一个地方再做生成中间表的操作呢，也就是加一个中间层进行处理，这样就避免了对线上 DB 的直接操作，说到这相信大家又会对计算机界的名言有进一步的体会：没有什么是加一个中间层不能解决的，如果有，那就再加一层。&lt;/p&gt;&lt;p&gt;这个中间层就是 hive&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;什么是 hive&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;hive 是基于 Hadoop 的一个数据仓库工具，用来进行数据提取、转化、加载，这是一种可以存储、查询和分析存储在 Hadoop 中的&lt;strong&gt;大规模数据&lt;/strong&gt;的机制，它的意义就是把好写的 hive 的 sql 转换为复杂难写的 map-reduce 程序（map-reduce 是专门用于用于大规模数据集（大于1TB）的并行运算编程模型），也就是说&lt;strong&gt;如果数据量大&lt;/strong&gt;的话通过把 MySQL 的数据同步到 hive，再由 hive 来生成上述的 product_tmp 中间表，能极大的提升性能。hive 生成临时表存储在 hbase（一个分布式的、面向列的开源数据库） 中，生成后会定时触发 dump task 调用索引程序，然后索引程序主要从 hbase 中读入全量数据，进行业务数据处理，并刷新到 es 索引中，整个流程如下&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.9038718291054739&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajIS8FFpvtgbibhXP5SickzyDoWtiaI3tPtXoTWg3YBia0kIq3YJoXVIgbnpQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;749&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;这样构建索引看似很美好，但我们需要知道的是首先 hive 执行 join 任务是非常耗时的，在我们的生产场景上，由于数据量高达几千万，执行 join 任务通常需要几十分钟，从执行 join 任务到最终更新至 ES 整个流程常常需要至少半小时以上，如果这期间商品的价格，库存，上线状态（如被下架）等重要字段发生了变更，索引是无法更新的，这样会对用户体验产生极大影响，优化前我们经常会看到通过 ES 搜索出的中有状态是上线但实际是下架的产品，严重影响用户体验，那么怎么解决呢，有一种可行的方案：&lt;strong&gt;建立宽表&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;既然我们发现 hive join 是性能的主要瓶颈，那么能否规避掉这个流程呢，能否在 MySQL 中将 product_sku，product_property，sku_stock 等表组合成一个大表（我们称其为宽表）&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.2980392156862745&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajI22lxjo36xfphZic8jEwrAFaPpIjXvB0pA8KU1w47ymcpDbOkibumVIibQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;510&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;这样在每一行中商品涉及到的的数据都有了，所以将 MySQL 同步到 hive 后，hive 就不需要再执行耗时的 join 操作了，极大的提升了整体的处理时间，从 hive 同步 MySQL 再到 dump 到 ES 索引中从原来的半小时以上降低到了几分钟以内，看起来确实不错，但几分钟的索引延迟依然是无法接受的。&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;为什么 hive 无法做到实时导入索引&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;因为 hive 构建在基于静态批处理的Hadoop 之上，Hadoop 通常都有较高的延迟并且在作业提交和调度的时候需要大量的开销。因此，hive 并不能够在大规模数据集上实现低延迟快速的查询等操作，再且千万级别的数据全量从索引程序导入到 ES 集群至少也是分钟级。&lt;/p&gt;&lt;p&gt;另外引入了宽表，它的维护也成了一个新问题，设想 sku 库存变了，产品下架了，价格调整了，那么除了修改原表（sku_stock,product_categry 等表）记录之外，还要将所有原表变更到的记录对应到宽表中的所有记录也都更新一遍，这对代码的维护是个噩梦，因为你需要在所有商品相关的表变更的地方紧接着着变更宽表的逻辑，与宽表的变更逻辑变更紧藕合！&lt;/p&gt;&lt;h3&gt;&lt;span&gt;PB 级的 ES 准实时索引构建之道&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h3&gt;&lt;p&gt;该如何解决呢？仔细观察上面两个问题，其实都是同一个问题，如果我们能实时监听到 db 的字段变更，再将变更的内容实时同步到 ES 和宽表中不就解决了我们的问题了。&lt;/p&gt;&lt;p&gt;怎么才能实时监听到表字段的变更呢？&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;答案：binlog&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;来一起复习下 MySQL 的主从同步原理&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6699604743083004&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajI2BUZtQviaf64qt8JyFWlp32pkW1fnDL49rDIScQ7cWu6DFOg7oQdhPA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;506&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;MySQL master 将数据变更写入二进制日志( binary log, 其中记录叫做二进制日志事件binary log events，可以通过 show binlog events 进行查看)&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;MySQL slave 将 master 的 binary log events 拷贝到它的中继日志(relay log)&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;MySQL slave 重放 relay log 中事件，将数据变更反映它自己的数据&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;可以看到主从复制的原理关键是 Master 和 Slave 遵循了一套协议才能实时监听 binlog 日志来更新  slave 的表数据，那我们能不能也开发一个遵循这套协议的组件，当组件作为 Slave 来获取 binlog 日志进而实时监听表字段变更呢？阿里的开源项目 Canal 就是这个干的，它的工作原理如下:&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;canal 模拟 MySQL slave 的交互协议，伪装自己为 MySQL slave ，向 MySQL master 发送dump 协议&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;MySQL master 收到 dump 请求，开始推送 binary log 给 slave (即 canal )&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;canal 解析 binary log 对象(原始为 byte 流)&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.45414847161572053&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajInMK8ia157vOCZMzCI9S5XKt6lRmhLFwliaicSg0TYG47jZoLNDM95jrjw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;458&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;这样的话通过 canal 就能获取 binlog 日志了，当然 canal 只是获取接收了 master 过来的 binlog，还要对 binlog 进行解析过滤处理等，另外如果我们只对某些表的字段感兴趣，该如何配置，获取到 binlog 后要传给谁? 这些都需要一个统一的管理组件，阿里的 otter 就是干这件事的。&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;什么是 otter&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;Otter 是由阿里提供的基于数据库增量日志解析，准实时同步到本机房或异地机房 MySQL 数据库的一个分布式数据库同步系统，它的整体架构如下：&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6343669250645995&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajIGyexNdiblcFhKKLaeeicTrBiaUSERtlDL55JHOOOmeFD2yhP82aAJB4wg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;774&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;br/&gt;&lt;strong&gt;注：以上是我司根据 otter 改造后的业务架构，与原版 otter 稍有不同，不过大同小异&lt;/strong&gt;&lt;p&gt;主要工作流程如下&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;在 Manager 配置好 zk，要监听的表 ，负责监听表的节点，然后将配置同步到 Nodes 中&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;node 启动后则其 canal 会监听 binlog，然后经过 S（select），E（extract），T(transform)，L(load) 四个阶段后数据发送到 MQ&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;然后业务就可以订阅 MQ 消息来做相关的逻辑处理了&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;strong&gt;画外音：zookeeper 主要协调节点间的工作，如在跨机房数据同步时，可能要从 A 机房的节点将数据同步到 B 机房的节点，要用 zookeeper 来协调，&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;大家应该注意到了node 中有 S，E，T，L 四个阶段，它们的主要作用如下&lt;/p&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.2961730449251248&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajIA3pmeq3HBjMh9RPYbZYoRA9BdrdsesRaRBB7ItodRJXsoKlumBicaQQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;601&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;code&gt;Select 阶段&lt;/code&gt;: 为解决数据来源的差异性，比如接入 canal 获取增量数据，也可以接入其他系统获取其他数据等。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;code&gt;Extract阶段&lt;/code&gt;: 组装数据,针对多种数据来源，mysql,oracle,store,file等,进行数据组装和过滤。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;code&gt;Transform 阶段&lt;/code&gt;: 数据提取转换过程，把数据转换成目标数据源要求的类型&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;code&gt;Load 阶段&lt;/code&gt;: 数据载入,把数据载入到目标端，如写入迁移后的数据库， MQ，ES 等&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;以上这套基于阿里 otter 改造后的数据服务我们将它称为 DTS（Data Transfer Service），即数据传输服务。&lt;/p&gt;&lt;p&gt;搭建这套服务后我们就可以通过订阅 MQ 来实时写入 ES 让索引实时更新了，而且也可以通过订阅 MQ 来实现宽表字段的更新，解决了上文中所说的宽表字段更新与原表紧藕合的问题，基于 DTS 服务的索引改进架构如下:&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5281329923273658&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajIlIBMZtohB9H2hanBwjbPYTr6Y6JBWkZcjXJFIJkgNmT8pcM62ViarrA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;782&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;注意：「&lt;strong&gt;build 数据&lt;/strong&gt;」这一模块对实时索引更新是透明的，这个模块主要用在更新或插入 MySQL 宽表，因为对于宽表来说，它是几个表数据的并集，所以并不是监听到哪个字段变更就更新哪个，它要把所有商品涉及到的所有表数据拉回来再更新到宽表中。&lt;/p&gt;&lt;p&gt;于是，通过 MySQL 宽表全量更新+基于 DTS 的实时索引更新我们很好地解决了索引延迟的问题，能达到秒级的 ES 索引更新！&lt;/p&gt;&lt;p&gt;这里有几个问题可能大家比较关心，我简单列一下&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;需要订阅哪些字段&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;对于 MySQL 宽表来说由于它要保存商品的完整信息，所以它需要订阅所有字段，但是对于红框中的实时索引更新而言，它只需要订阅库存，价格等字段，因为这些字段如果不及时更新，会对销量产生极大的影响，所以我们实时索引只关注这些敏感字段即可。&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;有了实时索引更新，还需要全量索引更新吗&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;&lt;strong&gt;需要&lt;/strong&gt;，主要有两个原因：&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;全量索引更新的数据会覆盖实时索引吗&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;会，设想这样一种场景，你在某一时刻触发了实时索引，然后此时全量索引还在执行中，还未执行到实时索引更新的那条记录，这样在的话当全量索引执行完之后就会把之前实时索引更新的数据给覆盖掉，针对这种情况一种可行的处理方式是如果全量索引是在构建中，实时索引更新消息可以延迟处理，等全量更新结束后再消费。也正因为这个原因，全量索引我们一般会在凌晨执行，由于是业务低峰期，最大可能规避了此类问题。&lt;/p&gt;&lt;h3&gt;&lt;span&gt;总结&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h3&gt;&lt;p&gt;本文简单总结了我司在 PB 级数据下构建实时 ES 索引的一些思路，希望对大家有所帮助，文章只是简单提到了 ES，canal，otter 等阿里中间件的应用，但未对这些中间件的详细配置，原理等未作过多介绍，这些中间件的设计非常值得我们好好研究下，比如 ES 为了提高搜索效率、优化存储空间做了很多工作，再比如 canal 如何做高可用，otter 实现异地跨机房同步的原理等，建议感兴趣的读者可以之后好好研究一番，相信你会受益匪浅。&lt;/p&gt;&lt;p&gt;巨人的肩膀&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Elasticsearch简介及与MySQL查询原理对比：https://www.jianshu.com/p/116cdf5836f2&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;https://www.cnblogs.com/zhjh256/p/9261725.html&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;otter安装之otter-node安装（单机多节点安装）：https://blog.csdn.net/u014642915/article/details/96500957&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;MySQL和Lucene索引对比分析: https://developer.aliyun.com/article/50481&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;10 分钟快速入门海量数据搜索分析引擎 Elasticearch: https://www.modb.pro/db/29806&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;ElasticSearch和Mysql查询原理分析与对比:https://www.pianshen.com/article/4254917942/&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;带你走进神一样的Elasticsearch索引机制:https://zhuanlan.zhihu.com/p/137574234&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;/p&gt;&lt;pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;最近苏三的知识星球&lt;span&gt;【&lt;/span&gt;&lt;strong&gt;Java突击队&lt;/strong&gt;&lt;span&gt;】&lt;/span&gt;，每天都会更新很多干货内容。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;很多独家的干货内容，比如：Java后端学习路线，分享实战demo项目，源码分析，百万级系统设计，系统上线的一些坑，MQ专题，真实面试题，每天都会回答大家提出的问题。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这几天星球开通了3个优质专栏：痛点问题、高频面试题 和 性能优化。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;每一个专栏都是大家非常关心，和非常有价值的话题，我相信在专栏中你会学到很多东西，值回票价。&lt;/p&gt;&lt;p&gt;&lt;span&gt;3月1号就会涨价！&lt;span&gt;3月1号就会涨价&lt;/span&gt;&lt;span&gt;！&lt;span&gt;3月1号就会涨价&lt;/span&gt;&lt;span&gt;！&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;1.215625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5gN92EGIv3mqouxKLAUkLWFYqgbeOwjBtqkv3CbvoFGDOeybMlRw31dtcprWichxTGUu6CoaSwjmvw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;640&quot;/&gt;&lt;/p&gt;&lt;p&gt;目前25元优惠券所剩不多了，要上车&lt;span&gt;的小伙伴抓紧时间。&lt;/span&gt;&lt;span/&gt;&lt;/p&gt;&lt;/pre&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
 <guid>3aeca1a0885587ceab59686e32f636a4</guid>
 <title>写 Rust，有三大内伤</title>
 <link>https://toutiao.io/k/dm1bulk</link>
@@ -12,172 +18,6 @@
 
           
         &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>f7194ffe547e04d399908788637a54f3</guid>
-<title>百亿数据，如何毫秒级返回？</title>
-<link>https://toutiao.io/k/xu9mtab</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-mpa-powered-by=&quot;yiban.io&quot;&gt;&lt;blockquote&gt;&lt;p&gt;&lt;span&gt;大家好，我是苏三，今天我想和大家聊一聊实时索引的构建之道，来自我司 PB 级索引数据的实战经验，相信对大家肯定有帮助。&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;section&gt;&lt;mp-common-profile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-weui-theme=&quot;light&quot; data-id=&quot;Mzg4NjYyODc4OA==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/J4jTHmo8Xh6qM32ASOtVbXNoiaegrI26qLRw6r6FTI7dZw6TMT7vecvnjd1O8xSsM5MiajIuQZicxSC6KFK8TMpbg/0?wx_fmt=png&quot; data-nickname=&quot;java突击队&quot; data-alias=&quot;&quot; data-signature=&quot;技术经验分享&quot; data-from=&quot;0&quot; data-is_biz_ban=&quot;0&quot;/&gt;&lt;/section&gt;&lt;p&gt;近年来公司业务迅猛发展，数据量爆炸式增长，随之而来的的是海量数据查询等带来的挑战，我们需要数据量在十亿，甚至百亿级别的规模时依然能以秒级甚至毫秒级的速度返回，这样的话显然离不开搜索引擎的帮助，在搜索引擎中，ES（ElasticSearch）毫无疑问是其中的佼佼者，连续多年在 DBRanking 的搜索引擎中评测中排名第一，也是绝大多数大公司的首选，那么它与传统的 DB 如 MySQL 相比有啥优势呢，ES 的数据又是如何生成的，数据达到 PB 时又是如何保证 ES 索引数据的实时性以更好地满足业务的需求的呢。&lt;/p&gt;&lt;p&gt;本文会结合我司在 ES 上的实践经验与大家谈谈如何构建准实时索引的一些思路，希望对大家有所启发。本文目录如下&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;为什么要用搜索引擎，传统 DB 如 MySQL 不香吗&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;ES 索引数据构建&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;PB 级的 ES 准实时索引数据构建之道&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;h3&gt;&lt;span&gt;为什么要用搜索引擎，传统 DB 如 MySQL 不香吗&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h3&gt;&lt;h4&gt;&lt;span&gt;MySQL 的不足&lt;/span&gt;&lt;/h4&gt;&lt;p&gt;MySQL 架构天生不适合海量数据查询，它只适合海量数据存储，但无法应对海量数据下各种复杂条件的查询，有人说加索引不是可以避免全表扫描，提升查询速度吗，为啥说它不适合海量数据查询呢，有两个原因：&lt;/p&gt;&lt;p&gt;&lt;em&gt;1、&lt;/em&gt;加索引确实可以提升查询速度，但在 MySQL 中加多个索引最终在执行 SQL 的时候它只会选择成本最低的那个索引，如果没有索引满足搜索条件，就会触发全表扫描，而且即便你使用了组合索引，也要符合最左前缀原则才能命中索引，但在海量数据多种查询条件下很有可能不符合最左前缀原则而导致索引失效，而且我们知道存储都是需要成本的，如果你针对每一种情况都加索引，以 innoDB 为例，每加一个索引，就会创建一颗 B+ 树，如果是海量数据，将会增加很大的存储成本，之前就有人反馈说他们公司的某个表实际内容的大小才 10G, 而索引大小却有 30G！这是多么巨大的成本！所以千万不要觉得索引建得越多越好。&lt;/p&gt;&lt;p&gt;&lt;em&gt;2、&lt;/em&gt;有些查询条件是 MySQL 加索引都解决不了的，比如我要查询商品中所有 title 带有「格力空调」的关键词，如果你用 MySQL 写，会写出如下代码&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;SELECT&lt;/span&gt; * &lt;span&gt;FROM&lt;/span&gt; product &lt;span&gt;WHERE&lt;/span&gt; title &lt;span&gt;like&lt;/span&gt; &lt;span&gt;&#x27;%格力空调%&#x27;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这样的话无法命中任何索引，会触发全表扫描，而且你不能指望所有人都能输对他想要的商品，是人就会犯错误，我们经常会犯类似把「格力空调」记成「格空间」的错误，那么 SQL 语句就会变成：&lt;/p&gt;&lt;pre&gt;&lt;code&gt;&lt;span&gt;SELECT&lt;/span&gt; * &lt;span&gt;FROM&lt;/span&gt; product &lt;span&gt;WHERE&lt;/span&gt; title &lt;span&gt;like&lt;/span&gt; &lt;span&gt;&#x27;%格空调%&#x27;&lt;/span&gt;&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这种情况下就算你触发了全表扫描也无法查询到任何商品，综上所述，MySQL 的查询确实能力有限。&lt;/p&gt;&lt;h4&gt;&lt;span&gt;ES 简介&lt;/span&gt;&lt;/h4&gt;&lt;p&gt;与其说上面列的这些点是 MySQL 的不足，倒不如说 MySQL 本身就不是为海量数据查询而设计的，术业有专攻，海量数据查询还得用专门的搜索引擎，这其中 ES 是其中当之无愧的王者，它是基于 Lucene 引擎构建的开源分布式搜索分析引擎，可以提供针对 PB 数据的近实时查询，广泛用在全文检索、日志分析、监控分析等场景。&lt;/p&gt;&lt;p&gt;它主要有以下三个特点:&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;code&gt;轻松支持各种复杂的查询条件&lt;/code&gt;: 它是分布式实时文件存储，会把&lt;strong&gt;每一个字段&lt;/strong&gt;都编入索引（倒排索引），利用高效的倒排索引，以及自定义打分、排序能力与丰富的分词插件等，能实现任意复杂查询条件下的全文检索需求&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;code&gt;可扩展性强&lt;/code&gt;：天然支持分布式存储，通过极其简单的配置实现几百上千台服务器的分布式横向扩容，轻松处理 PB 级别的结构化或非结构化数据。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;code&gt;高可用，容灾性能好&lt;/code&gt;：通过使用主备节点，以及故障的自动探测与恢复，有力地保障了高可用&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;我们先用与 MySQL 类比的形式来理解 ES 的一些重要概念&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.64&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajIOtgQRJNdIAIPfdSV1VYz3lFpibhSFU34mkRWC2R1HIDfibXp9bVYYXeg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;450&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;通过类比的形式不难看出 ES 的以下几个概念&lt;br/&gt;&lt;em&gt;1、&lt;/em&gt; MySQL 的数据库（DataBase）相当于 Index（索引），数据的逻辑集合，ES 的工作主要也是创建索引，查询索引。&lt;br/&gt;&lt;em&gt;2、&lt;/em&gt; 一个数据库里会有多个表，同样的一个 Index 也会有多个 type&lt;br/&gt;&lt;em&gt;3、&lt;/em&gt; 一个表会有多行（Row），同样的一个 Type 也会有多个 Document。&lt;br/&gt;&lt;em&gt;4、&lt;/em&gt; Schema 指定表名，表字段，是否建立索引等，同样的 Mapping 也指定了 Type 字段的处理规则，即索引如何建立，是否分词，分词规则等&lt;br/&gt;&lt;em&gt;5、&lt;/em&gt; 在 MySQL 中索引是需要手动创建的，而在 ES 一切字段皆可被索引，只要在 Mapping 在指定即可&lt;/p&gt;&lt;p&gt;那么 ES 中的索引为何如此高效，能在海量数据下达到秒级的效果呢？它采用了多种优化手段，最主要的原因是它采用了一种叫做&lt;strong&gt;倒排索引&lt;/strong&gt;的方式来生成索引，避免了全文档扫描，那么什么是倒排索引呢，通过文档来查找关键词等数据的我们称为正排索引，返之，通过关键词来查找文档的形式我们称之为倒排索引，假设有以下三个文档（Document）&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6424116424116424&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajIHPicKc8zvj2ciaUhDavzlF8JnBNJ5uaGibROpTgKCmfDba6XiaM1TTQDWA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;481&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;要在其中找到含有 comming 的文档，如果要正排索引，那么要把每个文档的内容拿出来查找是否有此单词，毫无疑问这样的话会导致全表扫描，那么用倒排索引会怎么查找呢，它首先会将每个文档内容进行分词，小写化等，然后建立每个分词与包含有此分词的文档之前的映射关系，如果有多个文档包含此分词，那么就会按重要程度即文档的权重（通常是用 TF-IDF 给文档打分）将文档进行排序，于是我们可以得到如下关系&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.9377777777777778&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajIsQ3ON3TGMh0LfYib2sslUSpjwAufyvic6YhQX1PPhzEcu0fzetfmTSAg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;450&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;这样的话我们我要查找所有带有 comming 的文档，就只需查一次，而且这种情况下查询多个单词性能也是很好的，只要查询多个条件对应的文档列表，再取交集即可，极大地提升了查询效率。&lt;/p&gt;&lt;p&gt;&lt;strong&gt;画外音&lt;/strong&gt;：这里简化了一些流程，实际上还要先根据单词表来定位单词等，不过这些流程都很快，可以忽略，有兴趣的读者可以查阅相关资料了解。&lt;/p&gt;&lt;p&gt;除了倒排索引外，ES 的分布式架构也天然适合海量数据查询，来看下 ES 的架构&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.4643765903307888&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajI4A90Cujyd2EtOwn9LLHDVMHls99SvKCebM4hVfE0UYUabmcrGq9mVw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;786&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;一个 ES 集群由多个 node 节点组成，每个 index 是以分片（Shard，index 子集）的数据存在于多个 node 节点上的，这样的话当一个查询请求进来，分别在各个 node 查询相应的结果并整合后即可，将查询压力分散到多个节点，避免了单个节点 CPU，磁盘，内存等处理能力的不足。&lt;/p&gt;&lt;p&gt;另外当新节点加入后，会&lt;strong&gt;自动&lt;/strong&gt;迁移部分分片至新节点，实现负载均衡，这个功能是 ES &lt;strong&gt;自动&lt;/strong&gt;完成的，对比一个下 MySQL 的分库分表需要开发人员引入 Mycat 等中间件并指定分库分表规则等繁琐的流程是不是一个巨大的进步？这也就意味着 ES 有非常强大的水平扩展的能力，集群可轻松扩展致几百上千个节点，轻松支持 PB 级的数据查询。&lt;/p&gt;&lt;p&gt;当然 ES 的强大不止于此，它还采用了比如主备分片提升搜索吞率，使用节点故障探测，Raft 选主机制等提升了容灾能力等等，这些不是本文重点，读者可自行查阅，总之经过上面的简单总结大家只需要明白一点：&lt;strong&gt;ES 的分布式架构设计天生支持海量数据查询&lt;/strong&gt;。&lt;/p&gt;&lt;p&gt;那么 ES 的索引数据（index）如何生成的呢，接下来我们一起来看看本文的重点&lt;/p&gt;&lt;h3&gt;&lt;span&gt;如何构建 ES 索引&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h3&gt;&lt;p&gt;要构建 ES 索引数据，首先得有数据源，一般我们会使用 MySQL 作为数据源，你可以直接从 MySQL 中取数据然后再写入 ES，但这种方式由于直接调用了线上的数据库查询，可能会对线上业务造成影响，比如考虑这样的一个场景：&lt;/p&gt;&lt;p&gt;在电商 APP 里用的最多的业务场景想必是用户输入关键词来查询相对应的商品了，那么商品会有哪些信息呢，一个商品会有多个 sku（sku 即同一个商品下不同规格的品类，比如苹果手机有 iPhone 6, iPhone 6s等）,会有其基本属性如价格，标题等，商品会有分类（居家，服饰等），品牌，库存等，为了保证表设计的合理性，我们会设计几张表来存储这些属性，假设有 product_sku（sku 表）, product_property（基本属性表）,sku_stock（库存表），product_category（分类表）这几张表，那么为了在商品展示列表中展示所有这些信息，就必须把这些表进行 join，然后再写入 ES，这样查询的时候就会在 ES 中获取所有的商品信息了。&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;1.3733333333333333&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajIiccmBnyRm83ebeoXjBM5XmWZiaU0ibMgQCTicBnRlesQPBnrUicPchTV4lA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;375&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;这种方案由于直接在 MySQL 中执行 join 操作，在商品达到千万级时会对线上的 DB 服务产生极大的性能影响，所以显然不可行，那该怎么生成中间表呢，既然直接在 MySQL 中操作不可行，能否把 MySQL 中的数据同步到另一个地方再做生成中间表的操作呢，也就是加一个中间层进行处理，这样就避免了对线上 DB 的直接操作，说到这相信大家又会对计算机界的名言有进一步的体会：没有什么是加一个中间层不能解决的，如果有，那就再加一层。&lt;/p&gt;&lt;p&gt;这个中间层就是 hive&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;什么是 hive&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;hive 是基于 Hadoop 的一个数据仓库工具，用来进行数据提取、转化、加载，这是一种可以存储、查询和分析存储在 Hadoop 中的&lt;strong&gt;大规模数据&lt;/strong&gt;的机制，它的意义就是把好写的 hive 的 sql 转换为复杂难写的 map-reduce 程序（map-reduce 是专门用于用于大规模数据集（大于1TB）的并行运算编程模型），也就是说&lt;strong&gt;如果数据量大&lt;/strong&gt;的话通过把 MySQL 的数据同步到 hive，再由 hive 来生成上述的 product_tmp 中间表，能极大的提升性能。hive 生成临时表存储在 hbase（一个分布式的、面向列的开源数据库） 中，生成后会定时触发 dump task 调用索引程序，然后索引程序主要从 hbase 中读入全量数据，进行业务数据处理，并刷新到 es 索引中，整个流程如下&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.9038718291054739&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajIS8FFpvtgbibhXP5SickzyDoWtiaI3tPtXoTWg3YBia0kIq3YJoXVIgbnpQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;749&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;这样构建索引看似很美好，但我们需要知道的是首先 hive 执行 join 任务是非常耗时的，在我们的生产场景上，由于数据量高达几千万，执行 join 任务通常需要几十分钟，从执行 join 任务到最终更新至 ES 整个流程常常需要至少半小时以上，如果这期间商品的价格，库存，上线状态（如被下架）等重要字段发生了变更，索引是无法更新的，这样会对用户体验产生极大影响，优化前我们经常会看到通过 ES 搜索出的中有状态是上线但实际是下架的产品，严重影响用户体验，那么怎么解决呢，有一种可行的方案：&lt;strong&gt;建立宽表&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;既然我们发现 hive join 是性能的主要瓶颈，那么能否规避掉这个流程呢，能否在 MySQL 中将 product_sku，product_property，sku_stock 等表组合成一个大表（我们称其为宽表）&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.2980392156862745&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajI22lxjo36xfphZic8jEwrAFaPpIjXvB0pA8KU1w47ymcpDbOkibumVIibQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;510&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;这样在每一行中商品涉及到的的数据都有了，所以将 MySQL 同步到 hive 后，hive 就不需要再执行耗时的 join 操作了，极大的提升了整体的处理时间，从 hive 同步 MySQL 再到 dump 到 ES 索引中从原来的半小时以上降低到了几分钟以内，看起来确实不错，但几分钟的索引延迟依然是无法接受的。&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;为什么 hive 无法做到实时导入索引&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;因为 hive 构建在基于静态批处理的Hadoop 之上，Hadoop 通常都有较高的延迟并且在作业提交和调度的时候需要大量的开销。因此，hive 并不能够在大规模数据集上实现低延迟快速的查询等操作，再且千万级别的数据全量从索引程序导入到 ES 集群至少也是分钟级。&lt;/p&gt;&lt;p&gt;另外引入了宽表，它的维护也成了一个新问题，设想 sku 库存变了，产品下架了，价格调整了，那么除了修改原表（sku_stock,product_categry 等表）记录之外，还要将所有原表变更到的记录对应到宽表中的所有记录也都更新一遍，这对代码的维护是个噩梦，因为你需要在所有商品相关的表变更的地方紧接着着变更宽表的逻辑，与宽表的变更逻辑变更紧藕合！&lt;/p&gt;&lt;h3&gt;&lt;span&gt;PB 级的 ES 准实时索引构建之道&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h3&gt;&lt;p&gt;该如何解决呢？仔细观察上面两个问题，其实都是同一个问题，如果我们能实时监听到 db 的字段变更，再将变更的内容实时同步到 ES 和宽表中不就解决了我们的问题了。&lt;/p&gt;&lt;p&gt;怎么才能实时监听到表字段的变更呢？&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;答案：binlog&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;来一起复习下 MySQL 的主从同步原理&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6699604743083004&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajI2BUZtQviaf64qt8JyFWlp32pkW1fnDL49rDIScQ7cWu6DFOg7oQdhPA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;506&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;MySQL master 将数据变更写入二进制日志( binary log, 其中记录叫做二进制日志事件binary log events，可以通过 show binlog events 进行查看)&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;MySQL slave 将 master 的 binary log events 拷贝到它的中继日志(relay log)&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;MySQL slave 重放 relay log 中事件，将数据变更反映它自己的数据&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;可以看到主从复制的原理关键是 Master 和 Slave 遵循了一套协议才能实时监听 binlog 日志来更新  slave 的表数据，那我们能不能也开发一个遵循这套协议的组件，当组件作为 Slave 来获取 binlog 日志进而实时监听表字段变更呢？阿里的开源项目 Canal 就是这个干的，它的工作原理如下:&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;canal 模拟 MySQL slave 的交互协议，伪装自己为 MySQL slave ，向 MySQL master 发送dump 协议&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;MySQL master 收到 dump 请求，开始推送 binary log 给 slave (即 canal )&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;canal 解析 binary log 对象(原始为 byte 流)&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.45414847161572053&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajInMK8ia157vOCZMzCI9S5XKt6lRmhLFwliaicSg0TYG47jZoLNDM95jrjw/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;458&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;这样的话通过 canal 就能获取 binlog 日志了，当然 canal 只是获取接收了 master 过来的 binlog，还要对 binlog 进行解析过滤处理等，另外如果我们只对某些表的字段感兴趣，该如何配置，获取到 binlog 后要传给谁? 这些都需要一个统一的管理组件，阿里的 otter 就是干这件事的。&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;什么是 otter&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;Otter 是由阿里提供的基于数据库增量日志解析，准实时同步到本机房或异地机房 MySQL 数据库的一个分布式数据库同步系统，它的整体架构如下：&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.6343669250645995&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajIGyexNdiblcFhKKLaeeicTrBiaUSERtlDL55JHOOOmeFD2yhP82aAJB4wg/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;774&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;br/&gt;&lt;strong&gt;注：以上是我司根据 otter 改造后的业务架构，与原版 otter 稍有不同，不过大同小异&lt;/strong&gt;&lt;p&gt;主要工作流程如下&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;在 Manager 配置好 zk，要监听的表 ，负责监听表的节点，然后将配置同步到 Nodes 中&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;node 启动后则其 canal 会监听 binlog，然后经过 S（select），E（extract），T(transform)，L(load) 四个阶段后数据发送到 MQ&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;然后业务就可以订阅 MQ 消息来做相关的逻辑处理了&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;strong&gt;画外音：zookeeper 主要协调节点间的工作，如在跨机房数据同步时，可能要从 A 机房的节点将数据同步到 B 机房的节点，要用 zookeeper 来协调，&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;大家应该注意到了node 中有 S，E，T，L 四个阶段，它们的主要作用如下&lt;/p&gt;&lt;figure&gt;&lt;img data-ratio=&quot;0.2961730449251248&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajIA3pmeq3HBjMh9RPYbZYoRA9BdrdsesRaRBB7ItodRJXsoKlumBicaQQ/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;601&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;code&gt;Select 阶段&lt;/code&gt;: 为解决数据来源的差异性，比如接入 canal 获取增量数据，也可以接入其他系统获取其他数据等。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;code&gt;Extract阶段&lt;/code&gt;: 组装数据,针对多种数据来源，mysql,oracle,store,file等,进行数据组装和过滤。&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;code&gt;Transform 阶段&lt;/code&gt;: 数据提取转换过程，把数据转换成目标数据源要求的类型&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;code&gt;Load 阶段&lt;/code&gt;: 数据载入,把数据载入到目标端，如写入迁移后的数据库， MQ，ES 等&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;以上这套基于阿里 otter 改造后的数据服务我们将它称为 DTS（Data Transfer Service），即数据传输服务。&lt;/p&gt;&lt;p&gt;搭建这套服务后我们就可以通过订阅 MQ 来实时写入 ES 让索引实时更新了，而且也可以通过订阅 MQ 来实现宽表字段的更新，解决了上文中所说的宽表字段更新与原表紧藕合的问题，基于 DTS 服务的索引改进架构如下:&lt;/p&gt;&lt;figure&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.5281329923273658&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_jpg/OyweysCSeLWdu3sLGq2x6hvRqLot2ajIlIBMZtohB9H2hanBwjbPYTr6Y6JBWkZcjXJFIJkgNmT8pcM62ViarrA/640?wx_fmt=jpeg&quot; data-type=&quot;jpeg&quot; data-w=&quot;782&quot; title=&quot;&quot;/&gt;&lt;/figure&gt;&lt;p&gt;注意：「&lt;strong&gt;build 数据&lt;/strong&gt;」这一模块对实时索引更新是透明的，这个模块主要用在更新或插入 MySQL 宽表，因为对于宽表来说，它是几个表数据的并集，所以并不是监听到哪个字段变更就更新哪个，它要把所有商品涉及到的所有表数据拉回来再更新到宽表中。&lt;/p&gt;&lt;p&gt;于是，通过 MySQL 宽表全量更新+基于 DTS 的实时索引更新我们很好地解决了索引延迟的问题，能达到秒级的 ES 索引更新！&lt;/p&gt;&lt;p&gt;这里有几个问题可能大家比较关心，我简单列一下&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;需要订阅哪些字段&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;对于 MySQL 宽表来说由于它要保存商品的完整信息，所以它需要订阅所有字段，但是对于红框中的实时索引更新而言，它只需要订阅库存，价格等字段，因为这些字段如果不及时更新，会对销量产生极大的影响，所以我们实时索引只关注这些敏感字段即可。&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;有了实时索引更新，还需要全量索引更新吗&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;&lt;strong&gt;需要&lt;/strong&gt;，主要有两个原因：&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;全量索引更新的数据会覆盖实时索引吗&lt;/p&gt;&lt;/blockquote&gt;&lt;p&gt;会，设想这样一种场景，你在某一时刻触发了实时索引，然后此时全量索引还在执行中，还未执行到实时索引更新的那条记录，这样在的话当全量索引执行完之后就会把之前实时索引更新的数据给覆盖掉，针对这种情况一种可行的处理方式是如果全量索引是在构建中，实时索引更新消息可以延迟处理，等全量更新结束后再消费。也正因为这个原因，全量索引我们一般会在凌晨执行，由于是业务低峰期，最大可能规避了此类问题。&lt;/p&gt;&lt;h3&gt;&lt;span&gt;总结&lt;/span&gt;&lt;span&gt; &lt;/span&gt;&lt;/h3&gt;&lt;p&gt;本文简单总结了我司在 PB 级数据下构建实时 ES 索引的一些思路，希望对大家有所帮助，文章只是简单提到了 ES，canal，otter 等阿里中间件的应用，但未对这些中间件的详细配置，原理等未作过多介绍，这些中间件的设计非常值得我们好好研究下，比如 ES 为了提高搜索效率、优化存储空间做了很多工作，再比如 canal 如何做高可用，otter 实现异地跨机房同步的原理等，建议感兴趣的读者可以之后好好研究一番，相信你会受益匪浅。&lt;/p&gt;&lt;p&gt;巨人的肩膀&lt;/p&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Elasticsearch简介及与MySQL查询原理对比：https://www.jianshu.com/p/116cdf5836f2&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;https://www.cnblogs.com/zhjh256/p/9261725.html&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;otter安装之otter-node安装（单机多节点安装）：https://blog.csdn.net/u014642915/article/details/96500957&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;MySQL和Lucene索引对比分析: https://developer.aliyun.com/article/50481&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;10 分钟快速入门海量数据搜索分析引擎 Elasticearch: https://www.modb.pro/db/29806&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;ElasticSearch和Mysql查询原理分析与对比:https://www.pianshen.com/article/4254917942/&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;带你走进神一样的Elasticsearch索引机制:https://zhuanlan.zhihu.com/p/137574234&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;/p&gt;&lt;pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;最近苏三的知识星球&lt;span&gt;【&lt;/span&gt;&lt;strong&gt;Java突击队&lt;/strong&gt;&lt;span&gt;】&lt;/span&gt;，每天都会更新很多干货内容。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;很多独家的干货内容，比如：Java后端学习路线，分享实战demo项目，源码分析，百万级系统设计，系统上线的一些坑，MQ专题，真实面试题，每天都会回答大家提出的问题。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这几天星球开通了3个优质专栏：痛点问题、高频面试题 和 性能优化。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;每一个专栏都是大家非常关心，和非常有价值的话题，我相信在专栏中你会学到很多东西，值回票价。&lt;/p&gt;&lt;p&gt;&lt;span&gt;3月1号就会涨价！&lt;span&gt;3月1号就会涨价&lt;/span&gt;&lt;span&gt;！&lt;span&gt;3月1号就会涨价&lt;/span&gt;&lt;span&gt;！&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-galleryid=&quot;&quot; data-ratio=&quot;1.215625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/ibJZVicC7nz5gN92EGIv3mqouxKLAUkLWFYqgbeOwjBtqkv3CbvoFGDOeybMlRw31dtcprWichxTGUu6CoaSwjmvw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;640&quot;/&gt;&lt;/p&gt;&lt;p&gt;目前25元优惠券所剩不多了，要上车&lt;span&gt;的小伙伴抓紧时间。&lt;/span&gt;&lt;span/&gt;&lt;/p&gt;&lt;/pre&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>42fcc8890f89a4eb5eed3318851bcc8d</guid>
-<title>ChatGPT 的隐私安全问题及隐私保护技术</title>
-<link>https://toutiao.io/k/43iyjx9</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;p&gt;&lt;strong&gt;作者:京东科技 杨博&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;ChatGPT 才出现两个月，就已经引起了学术界的关注。微软成为ChatGPT母公司OpenAI的合作伙伴，并确认投资百亿美元。同时，微软正计划将 OpenAI 的技术整合到其产品中，包括Bing搜索引擎和其他软件，以增强它们的能力。然而，据Insider报道，微软却警告其员工不要与人工智能 (AI) 聊天机器人（ChatGPT）共享敏感数据：“请不要将敏感数据发送到 OpenAI 端点，因为他们可能会用它来训练未来的模型”。类似的，亚马逊最近也发出警告其员工提防 ChatGPT，一位亚马逊律师已敦促员工不要通过内部沟通形式与 ChatGPT 共享代码：“这很重要，因为您的输入可能会用作 ChatGPT 进一步迭代的训练数据，我们不希望它的输出包含或类似于我们的机密信息（目前我已经看到它的输出与现有机密材料非常匹配的实例）”&lt;/p&gt;
-
-&lt;p&gt;随着大公司对数据隐私的担忧日益增加，OpenAI 已将有关公司数据和隐私政策的问题转至ChatGPT 的常见问题解答页面。OpenAI 的服务条款授予了该公司使用 ChatGPT 用户生成的所有输入和输出的权利，并规定从使用的数据中删除个人身份信息 (PII)。&lt;/p&gt;
-
-&lt;p&gt;然而，在华盛顿大学教授计算语言学的 Emily Bender 表示，OpenAI 几乎不可能从提供给 ChatGPT 的数据中识别并删除所有个人信息。&lt;/p&gt;
-
-&lt;p&gt;其实，ChatGPT背后的LLM（大型语言模型）技术中的数据隐私保护问题早已受到关注。其中一个风险是如果公开使用含有隐私敏感数据训练的模型，则有可能通过模型提取出训练数据中的隐私敏感信息。这是因为这些训练数据集可能很大（数百 GB）并且来源广泛，即使是基于公共数据集上的训练，它们有时也可能包含敏感数据，包括个人身份信息 (PII)如：姓名、电话号码、地址等，这增加了使用此类数据训练的模型可能会在其输出中反映其中一些私人敏感信息的可能性。因此，重要的是要识别并最大程度地降低此类泄漏的风险，并制定解决未来模型问题的策略。&lt;/p&gt;
-
-&lt;p&gt;﻿&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/8f9bdf67a1d84a099ccb5a114d691d57%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;﻿﻿  &lt;/p&gt;
-
-&lt;p&gt;如果使用前缀“East Stroudsburg Stroudsburg...”提示GPT-2语言模型，它将自动完成一长串文本，其中包含特定人员的全名、电话号码、电子邮件地址和物理地址，其信息被包含在 GPT-2 的训练数据中。&lt;/p&gt;
-
-&lt;p&gt;在一个由谷歌、OpenAI、Apple、斯坦福、伯克利和东北大学的联合研究项目 “ Extracting Training Data from Large Language Models ”中，研究人员已经证明，只要能够查询预训练的语言模型，就可以提取特定的片段模型记忆的训练数据。该研究展示了他们对 GPT-2 的攻击，GPT-2 是一种在公共互联网的碎片上训练的语言模型，并且能够从模型的训练数据中提取数百个逐字的文本序列。这些提取的示例包括（公共）个人身份信息（姓名、电话号码和电子邮件地址）、IRC 对话、代码和 128 位 UUID。即使上述每个序列仅包含在训练数据的一个文档中，这种攻击也是有效的。令人担忧的是，该研究发现较大的模型比较小的模型更容易受到攻击。语言模型越大，就越容易记住训练数据。例如，在一项实验中研究人员发现，15 亿参数的 GPT-2 XL 模型比 1.24 亿参数的 GPT-2 Small 模型多记忆了10倍的信息。因此，训练数据提取攻击是对最先进的大型语言模型的现实威胁。&lt;/p&gt;
-
-&lt;p&gt;GPT-3 使用了 1750 亿个参数，这是迄今为止用于训练模型的最大参数数量（据现有资料显示ChatGPT使用了15 亿参数）。由于模型庞大，OpenAI社区决定不发布包含 1750 亿个参数的整个模型，而以 API 的方式公开其高级语言模型，允许用户以训练提示的形式向 GPT-3提供训练数据，模型使用该提示得出适当的结果。对于个人用户，语言模型通常将训练数据作为其在线学习功能的一部分进行存储，以使模型在运行中变得更好，这在涉及高度机密数据的用例中使用 GPT-3 时遇到了障碍。数据隐私一直是世界各地企业希望使用 GPT-3 创建特定领域应用最关心的问题。企业的担心围绕着公开的 GPT-3 API 端点不应保留或保存作为模型微调/训练过程的任何训练数据；以及通过向公开的 API 端点提供任何类型的输入，任何第三方都不应能够提取或访问作为训练提示的任何数据。&lt;/p&gt;
-
-&lt;p&gt;面对这些担忧，OpenAI 针对企业用户，允许企业与 OpenAI 签署特殊的谅解备忘录 (MoU) 和数据隐私协议 (DPA)以克服围绕数据泄露和数据隐私的担忧。幸运的是，除了制度保障，有一些技术方法可以安全地处理此类敏感数据。这正是隐私保护计算技术（简称隐私计算）的使命——用“你看不到的数据”回答问题，该技术栈包括联邦学习、安全多方计算、差分隐私、同态加密、可信执行环境等。&lt;/p&gt;
-
-&lt;p&gt;在2022年隐私联盟工作的年终总结上，中国信通院对其主导的《隐私计算白皮书（2022年）》、《隐私计算应用研究报告（2022年）》、《可信隐私计算研究报告（2022）》、《隐私计算通信应用研究报告（2022年）》、《多方数据联合风控应用能力评估要求》标准、《隐私计算应用 面向互联网场景的应用要求》标准、《隐私计算 面向金融场景的应用规范》标准等多项隐私保护计算成果进行发布、解读与进展介绍。作为国内隐私计算行业领军者，京东科技全程深度参与了「4大报告+3大标准」的编写研制工作，取得丰硕成果。&lt;/p&gt;
-
-&lt;h4&gt;&lt;strong&gt;成果一：《隐私计算白皮书（2022年）》&lt;/strong&gt;&lt;/h4&gt;
-
-&lt;p&gt;﻿&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzkwNjE4ODkxNg==&amp;amp;mid=2247488564&amp;amp;idx=1&amp;amp;sn=f12b323e4cff41b22550c5f1b3557f1d&amp;amp;scene=21#wechat_redirect&quot;&gt;《隐私计算白皮书（2022年）》&lt;/a&gt;由隐私计算联盟联合行业多家单位共同编制，京东科技作为主要牵头编写单位深度参与。《白皮书》涉及隐私计算概况、技术分析、应用分析、行业分析、热点问题分析以及总结展望等多方面，全面展现了行业成就及发展新态势，旨在为产业界应用隐私计算技术提供参考指导，推动隐私计算行业健康发展，在数据要素市场建设中发挥更大的价值。&lt;/p&gt;
-
-&lt;p&gt;﻿&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/45d85bee9b5245959763726a0ecaee98%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;﻿﻿  &lt;/p&gt;
-
-&lt;p&gt;《隐私计算白皮书（2022年）》封面及编写单位&lt;/p&gt;
-
-&lt;p&gt;《白皮书》认为，根据隐私计算技术、应用的不同发展特点，隐私计算当前正处于产业快速增长期，即将迈入前景广阔的稳定期。未来，随着我国数据要素市场的加速建设，作为数据流通的重要创新前沿技术，以隐私计算为代表的数据安全流通技术正在成为筑牢数字安全屏障的基础设施，以促进数据要素的可信安全流通。&lt;/p&gt;
-
-&lt;h4&gt;&lt;strong&gt;成果二：《隐私计算应用研究报告（2022年）》&lt;/strong&gt;&lt;/h4&gt;
-
-&lt;p&gt;近两年来，在政策驱动和市场需求同时作用下，隐私计算技术、产业、应用迅速发展，成为商业和资本竞争的热门赛道。随着隐私计算技术可用性的快速提升，市场由观望正在转向落地，金融、政务、通信、医疗、互联网等行业率先开展隐私计算应用，能源、车联网等行业也开始探索性应用。&lt;/p&gt;
-
-&lt;p&gt;在此背景下，隐私计算联盟组织京东科技等成员单位共同编写了&lt;a href=&quot;https://mp.weixin.qq.com/s/B-z_z_LqvHsj9Xg9irknaQ&quot;&gt;《隐私计算应用研究报告（2022年）》&lt;/a&gt;。主要涉及隐私计算应用背景、应用现状、项目应用部署难点及解决方案、应用展望等多个方面。&lt;/p&gt;
-
-&lt;p&gt;﻿&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/87ce55f057b444e9b5bc94ea074ffcdc%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;﻿﻿  &lt;/p&gt;
-
-&lt;p&gt;《隐私计算应用研究报告（2022年）》封面及编写单位&lt;/p&gt;
-
-&lt;h4&gt;&lt;strong&gt;成果三：《可信隐私计算研究报告（2022年）》&lt;/strong&gt;&lt;/h4&gt;
-
-&lt;p&gt;近年来，数据成为国家基础性战略资源，在政策和市场的同时作用下，隐私计算技术、产业、应用迅速发展。但是，在技术应用过程中，隐私计算因为涉及需求方、供给方、监管方等多方的参与，仍然面临着安全性、合规性、可用性等方面的挑战，由此隐私计算技术如何“可信”应用引发业界思考。&lt;/p&gt;
-
-&lt;p&gt;经过广泛调研征集和深入讨论，由京东科技等多家隐私计算联盟成员单位共同编写了&lt;a href=&quot;https://mp.weixin.qq.com/s/ItTFfLP3h8mTYZoCytyvYg&quot;&gt;《可信隐私计算研究报告（2022年）》&lt;/a&gt;，主要包括可信隐私计算的发展背景、框架、核心要素、实践路径及未来展望等内容。&lt;/p&gt;
-
-&lt;p&gt;﻿&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/5d0b933f1d7645abb1f4d0e2e76aa672%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;﻿﻿  &lt;/p&gt;
-
-&lt;p&gt;《可信隐私计算研究报告（2022年）》封面及编写单位&lt;/p&gt;
-
-&lt;h4&gt;&lt;strong&gt;成果四：《隐私计算通信应用研究报告（2022年）》&lt;/strong&gt;&lt;/h4&gt;
-
-&lt;p&gt;随着隐私计算技术应用逐渐落地，其对通信行业在保证数据安全的前提下充分发挥自身数据应用价值的意义巨大。京东科技参与编写的&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzkwNjE4ODkxNg==&amp;amp;mid=2247488748&amp;amp;idx=1&amp;amp;sn=c077759ea95a60067ec32346953bbf2b&amp;amp;scene=21#wechat_redirect&quot;&gt;《隐私计算通信应用研究报告（2022年）》&lt;/a&gt;便对隐私计算在通信行业的应用特性及典型场景进行了全面梳理，深入挖掘了潜在创新应用场景，为行业发展提供参考指引。&lt;/p&gt;
-
-&lt;p&gt;﻿&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/187b237d85b94e6c993aee255327aa47%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;﻿﻿  &lt;/p&gt;
-
-&lt;p&gt;《隐私计算通信应用研究报告》封面及编写单位&lt;/p&gt;
-
-&lt;p&gt;《报告》指出，在通信行业，通信数据具有覆盖全面、特征丰富、真实性高、数据连续性高等独特优势和应用价值。以隐私计算技术为依托，可以推动通信行业数据与金融、政务、汽车、医疗等行业共享赋能，并在风险管控、营销分析、态势洞察等多个应用场景中提供数据安全共享计算的服务，能够在保证数据安全的前提下充分发挥通信数据应用价值，助力各行业数字化发展实践，对充分释放数据要素价值和推动社会经济发展具有重大意义。&lt;/p&gt;
-
-&lt;h4&gt;&lt;strong&gt;成果五：《多方数据联合风控应用能力评估要求》标准&lt;/strong&gt;&lt;/h4&gt;
-
-&lt;p&gt;随着国家法律政策的重视、监管逐渐完善以及企业自身的经营需求，风控对于企业的重要性进一步提高。目前，风控已经从传统业务单线风控的1.0阶段、企业级单方风控体系的2.0阶段，正迈入多方数据联合风控体系的3.0阶段，其完整性、全面性、及时性都进一步提高。&lt;/p&gt;
-
-&lt;p&gt;﻿&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4570a3484e74448383957dee44e609f7%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;﻿﻿  &lt;/p&gt;
-
-&lt;p&gt;风控业务发展的三个阶段&lt;/p&gt;
-
-&lt;p&gt;为解决行业需求，中国信通院依托中国通信标准化协会大数据技术标准推进委员会、隐私计算联盟，京东科技在内的多家银行、运营商、互联网企业及技术服务商共同编制&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzkwNjE4ODkxNg==&amp;amp;mid=2247488673&amp;amp;idx=1&amp;amp;sn=03f7bd79360ca1f2339bec98f8893e25&amp;amp;scene=21#wechat_redirect&quot;&gt;《多方数据联合风控应用能力评估要求》&lt;/a&gt;标准。&lt;/p&gt;
-
-&lt;p&gt;﻿&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/b29b030cbfda44768706fad22a7e07c1%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;﻿﻿  &lt;/p&gt;
-
-&lt;p&gt;《多方数据联合风控应用能力评估要求》标准参编单位&lt;/p&gt;
-
-&lt;h4&gt;&lt;strong&gt;成果六：《隐私计算应用 面向互联网场景的应用要求》标准&lt;/strong&gt;&lt;/h4&gt;
-
-&lt;p&gt;随着政策和市场需求双重驱动，隐私计算在互联网应用场景的需求强烈，其中主要集中在联合营销场景中，具体包括洞察分析、策略制定、营销投放、效果分析等细分场景。为了更好适配，隐私计算产品应在易用性、场景支持能力、算法能力与安全性上满足相应要求。&lt;/p&gt;
-
-&lt;p&gt;﻿&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a218dcaf95374d36bcd5dc2517d7df35%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;﻿﻿  &lt;/p&gt;
-
-&lt;p&gt;隐私计算技术在互联网行业中的应用场景&lt;/p&gt;
-
-&lt;p&gt;为此，中国信通院、隐私计算联盟与京东科技等单位共同起草&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzkwNjE4ODkxNg==&amp;amp;mid=2247488791&amp;amp;idx=1&amp;amp;sn=6e874d1c8c4f1054b81091b227341700&amp;amp;scene=21#wechat_redirect&quot;&gt;《隐私计算应用 面向互联网场景的应用要求》&lt;/a&gt;标准。该标准梳理了互联网应用场景，并对适配互联网应用的隐私计算产品能力进行了规范。本标准自2022年8月启动以来，经历了框架总体设计和材料征集、场景研讨和梳理，以及标准主体讨论，目前已完成主体内容编制。&lt;/p&gt;
-
-&lt;p&gt;﻿&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/33b6200e6f4b4359bbb4791262ecb983%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;﻿﻿  &lt;/p&gt;
-
-&lt;p&gt;《隐私计算应用 面向互联网场景的应用要求》标准起草单位&lt;/p&gt;
-
-&lt;h4&gt;&lt;strong&gt;成果七：《隐私计算 面向金融场景的应用规范》标准&lt;/strong&gt;&lt;/h4&gt;
-
-&lt;p&gt;近年来隐私计算应用加速落地，其中金融场景应用最为广泛。为解决供需双方诉求，发挥桥梁作用，隐私联盟联合京东科技等几十家企业召开了多次标准讨论会，共同编制了&lt;a href=&quot;https://mp.weixin.qq.com/s/SefxBNjIv-L0QX0w7jYsmQ&quot;&gt;《隐私计算 面向金融场景的应用规范》&lt;/a&gt;。该标准旨在提升隐私计算产品在金融场景应用中的易用性、场景支持能力。&lt;/p&gt;
-
-&lt;p&gt;﻿&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/422e92f9e7884434b546402983810fc5%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;﻿﻿  &lt;/p&gt;
-
-&lt;p&gt;隐私计算技术在互联网行业中的应用场景&lt;/p&gt;
-
-&lt;p&gt;该标准主要包含四个能力域：第一个是算法实现与安全性，该能力域为场景应用奠定安全技术底座；第二个是金融场景支持能力，该能力域为完善产品已具备的基础能力项对金融场景应用的支持能力；第三个是易用性，该能力域为在已有的基础能力评测项之外进行扩展，增强隐私计算产品在实际金融应用中的易用性；第四个能力域是金融场景应用能力，该能力域为通过算法组合安全有效地完成常用金融场景的解决方案。&lt;/p&gt;
-
-&lt;p&gt;﻿&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a0d3f8a183d3472bb89d07da03fa133d%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;﻿﻿  &lt;/p&gt;
-
-&lt;p&gt;《隐私计算 面向金融场景的应用规范》标准起草单位&lt;/p&gt;
-
-&lt;h3&gt;&lt;strong&gt;结语&lt;/strong&gt;&lt;/h3&gt;
-
-&lt;p&gt;大型语言模型已持续展示出其巨大的实用性和灵活性——然而，像所有创新一样，它们也可能带来风险。负责任地开发和使用它们意味着主动识别这些风险并提供降低风险的方法。作为国内隐私计算领军者，京东科技基于自身领先的技术研发实力、优质的数据生态资源、丰富的平台建设与场景运营落地经验，始终高度重视数据流通中隐私数据的保护。&lt;/p&gt;
-
-&lt;p&gt;此次京东科技深度参编的隐私计算技术系列成果的集中发布，秉持客户利益为先的商业准则，致力于通过技术持续改进数据要素流通效率与价值，为实现数据要素在数据安全和隐私保护基础上的有序流通提供了重要参考、指引和规范。未来，京东科技将积极凝聚行业共识，共同探索隐私计算的高质量发展方向和应用路径，充分发挥隐私计算作为数字经济持续健康发展的基础设施作用。&lt;/p&gt;
-&lt;/div&gt;
-  &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
 <guid>8f3f2ad79b411c695e2649cb86c5e371</guid>
@@ -469,5 +309,165 @@
 &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;sTtWqkB8&quot;&gt;有兴趣的可以自己怼着代码把多生产多消费者的出队过程图画一下，代码写的很简单，考点还蛮多，想象一下如果让你自己实现一个无锁环形队列，你的思维过程有时如呢？&lt;/p&gt;&lt;h3 id=&quot;h_608143587_11&quot; data-into-catalog-status=&quot;&quot;&gt;6.3 32-bit 索引&lt;/h3&gt;&lt;p data-pid=&quot;FEq7PnHX&quot;&gt;上一节途中的prod_head、prod_tail、cons_head 和 cons_tail 索引用箭头表示。在实际实现中，这些值并不像假设的那样介于 0 和 size(ring)-1 之间。索引介于 0 和 2^32 -1 之间，我们在访问对象表（环本身）时屏蔽它们的值。 32 位模还意味着如果结果溢出 32 位数字范围，对索引的操作（例如，加/减）将自动执行 2^32 模。&lt;br/&gt;&lt;br/&gt;下面是两个示例，有助于解释如何在环中使用索引。&lt;/p&gt;&lt;p data-pid=&quot;yrW1Lkkl&quot;&gt;为了简化说明，使用模 16 位运算而不是模 32 位运算。此外，四个索引被定义为无符号 16 位整数，而不是更实际情况下的无符号 32 位整数。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-b1b4f9e2bf2bcae0e2bdf9b23c285d91_b.jpg&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1204&quot; data-rawheight=&quot;332&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic2.zhimg.com/v2-b1b4f9e2bf2bcae0e2bdf9b23c285d91_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1204&quot; data-rawheight=&quot;332&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic2.zhimg.com/v2-b1b4f9e2bf2bcae0e2bdf9b23c285d91_r.jpg&quot; data-actualsrc=&quot;https://pic2.zhimg.com/v2-b1b4f9e2bf2bcae0e2bdf9b23c285d91_b.jpg&quot;/&gt;&lt;figcaption&gt;第一个例子&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-pid=&quot;5OyS2B3C&quot;&gt;这个队列包含11000个对象。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-8a4386183c12c9cf6b6b48dfd290c47d_b.jpg&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1198&quot; data-rawheight=&quot;328&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic2.zhimg.com/v2-8a4386183c12c9cf6b6b48dfd290c47d_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1198&quot; data-rawheight=&quot;328&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic2.zhimg.com/v2-8a4386183c12c9cf6b6b48dfd290c47d_r.jpg&quot; data-actualsrc=&quot;https://pic2.zhimg.com/v2-8a4386183c12c9cf6b6b48dfd290c47d_b.jpg&quot;/&gt;&lt;figcaption&gt;第二个例子&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-pid=&quot;gH78mq4h&quot;&gt;这个队列包含了12536个对象。&lt;/p&gt;&lt;p data-pid=&quot;aMRA6CKA&quot;&gt;为了便于理解，我们在上面的例子中使用了模65536运算。在实际执行情况下，这是多余的，效率低下，但在结果溢出时自动完成&lt;/p&gt;&lt;p data-pid=&quot;g41armd4&quot;&gt;代码始终保持生产者和消费者之间的距离在 0 和 size(ring)-1 之间。由于这个属性，我们可以在模 32 位基数中对 2 个索引值进行减法：这就是索引溢出不是问题的原因。&lt;br/&gt;&lt;br/&gt;在任何时候，entries 和 free_entries 都在 0 和 size(ring)-1 之间，即使只有第一个减法项溢出了：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot;&gt;&lt;span class=&quot;n&quot;&gt;uint32_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;entries&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;prod_tail&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cons_head&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
 &lt;span class=&quot;n&quot;&gt;uint32_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;free_entries&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mask&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cons_tail&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;prod_head&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&quot;h_608143587_12&quot; data-into-catalog-status=&quot;&quot;&gt;7.生产者消费者模式的介绍&lt;/h2&gt;&lt;p data-pid=&quot;bB8e7g-o&quot;&gt;5.1我们提到了rte_ring 支持生产者和消费者的不同同步模式。这些模式可以在环创建/初始化时通过标志参数指定。那应该可以帮助用户以最适合其特定使用场景的方式配置环。&lt;/p&gt;&lt;ol&gt;&lt;li data-pid=&quot;EGcR6ljY&quot;&gt;MP/MC (默认模式)&lt;/li&gt;&lt;/ol&gt;&lt;p data-pid=&quot;vXcs_sFP&quot;&gt;多生产者（/多消费者）模式。这是环的默认入队（/出队）模式。在这种模式下，多个线程可以将对象入队（/出队）到（/从）环中。对于“经典”DPDK 部署（每个内核一个线程），这通常是最合适和最快的同步模式。作为一个众所周知的限制 - 它可以在一些过度使用的场景中表现得非常纯粹的呢。&lt;/p&gt;&lt;p data-pid=&quot;-DhyHVbM&quot;&gt;2. SP/SC&lt;/p&gt;&lt;p data-pid=&quot;zHooUpXw&quot;&gt;单一生产者（/单一消费者）模式。在这种模式下，一次只允许一个线程将对象入队（/出队）到（/从）环中。&lt;/p&gt;&lt;p data-pid=&quot;-d7S6kRf&quot;&gt;3.  MP_RTS/MC_RTS&lt;/p&gt;&lt;p data-pid=&quot;a3OJIF3j&quot;&gt;具有 Relaxed Tail Sync (RTS) 模式的多生产者（/多消费者）。与原始 MP/MC 算法的主要区别在于，tail 值不是由每个完成入队/出队的线程增加的，而是由最后一个线程增加的。这允许线程避免在环尾值上自旋，将实际尾值更改留给给定实例的最后一个线程。该技术有助于避免尾部更新时的 Lock-Waiter-Preemption (LWP) 问题，并改善过度使用系统的平均入队/出队时间。为实现这一点，RTS 需要 2 个 64 位 CAS 用于每个入队（/出队）操作：一个用于头部更新，第二个用于尾部更新。相比之下，原始 MP/MC 算法需要一个 32 位 CAS 来更新头部和等待/自旋尾部值。&lt;/p&gt;&lt;p data-pid=&quot;RpflEXp4&quot;&gt;4. MP_HTS/MC_HTS&lt;/p&gt;&lt;p data-pid=&quot;Fi8SD5eZ&quot;&gt;具有头/尾同步 (HTS) 模式的多生产者（/多消费者）。在那种模式下，入队/出队操作是完全序列化的：在任何给定时刻，只有一个入队/出队操作可以进行。这是通过仅当 head.value == tail.value 时允许线程继续更改 head.value 来实现的。 head 和 tail 值都自动更新（作为一个 64 位值）。为了实现 64 位 CAS，head 更新例程使用了它。该技术还避免了尾部更新时的 Lock-Waiter-Preemption (LWP) 问题，并有助于改善过度使用场景中的环入队/出队行为。完全序列化的生产者/消费者的另一个优势 - 它提供了为 rte_ring 实现 MT 安全查看 API 的能力。&lt;/p&gt;&lt;h2 id=&quot;h_608143587_13&quot; data-into-catalog-status=&quot;&quot;&gt;8.我来提问啦&lt;/h2&gt;&lt;p data-pid=&quot;kQ48Yb9i&quot;&gt;我在每篇的技术介绍都会涉及提问环节，这部分也是面试官最常问的关于此章节的一些题目，至于答案，看了木木的文章再发散一下自己的思维应该都可以，后面就不啰嗦直接问啦。&lt;/p&gt;&lt;p data-pid=&quot;_tIvIYNo&quot;&gt;1 请用你熟悉的代码实现一个无锁环形队列&lt;/p&gt;&lt;p data-pid=&quot;ThFMaCYM&quot;&gt;2 Ring Buffer是怎么保证无锁的呢，请阐述原理？&lt;/p&gt;&lt;p data-pid=&quot;P_QsFmwa&quot;&gt;3 怎么保证Ring Buffer不会被写满，如果写满了我们有什么补救措施么？&lt;/p&gt;&lt;p data-pid=&quot;ur730Klg&quot;&gt;4 DPDK的Ring Buffer一般被用来处理哪些场景和任务呢？&lt;/p&gt;&lt;h2 id=&quot;h_608143587_14&quot; data-into-catalog-status=&quot;&quot;&gt;9.参考文档&lt;/h2&gt;&lt;p data-pid=&quot;3haxxWBi&quot;&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//doc.dpdk.org/guides-21.11/prog_guide/ring_lib.html&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;https://doc.dpdk.org/guides-21.11/prog_guide/ring_lib.html7. Ring Library - Data Plane Development Kit 21.11.3 documentationhttps://doc.dpdk.org/guides-21.11/prog_guide/ring_lib.html&lt;/a&gt;&lt;/p&gt;&lt;p/&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>42fcc8890f89a4eb5eed3318851bcc8d</guid>
+<title>ChatGPT 的隐私安全问题及隐私保护技术</title>
+<link>https://toutiao.io/k/43iyjx9</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;p&gt;&lt;strong&gt;作者:京东科技 杨博&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;ChatGPT 才出现两个月，就已经引起了学术界的关注。微软成为ChatGPT母公司OpenAI的合作伙伴，并确认投资百亿美元。同时，微软正计划将 OpenAI 的技术整合到其产品中，包括Bing搜索引擎和其他软件，以增强它们的能力。然而，据Insider报道，微软却警告其员工不要与人工智能 (AI) 聊天机器人（ChatGPT）共享敏感数据：“请不要将敏感数据发送到 OpenAI 端点，因为他们可能会用它来训练未来的模型”。类似的，亚马逊最近也发出警告其员工提防 ChatGPT，一位亚马逊律师已敦促员工不要通过内部沟通形式与 ChatGPT 共享代码：“这很重要，因为您的输入可能会用作 ChatGPT 进一步迭代的训练数据，我们不希望它的输出包含或类似于我们的机密信息（目前我已经看到它的输出与现有机密材料非常匹配的实例）”&lt;/p&gt;
+
+&lt;p&gt;随着大公司对数据隐私的担忧日益增加，OpenAI 已将有关公司数据和隐私政策的问题转至ChatGPT 的常见问题解答页面。OpenAI 的服务条款授予了该公司使用 ChatGPT 用户生成的所有输入和输出的权利，并规定从使用的数据中删除个人身份信息 (PII)。&lt;/p&gt;
+
+&lt;p&gt;然而，在华盛顿大学教授计算语言学的 Emily Bender 表示，OpenAI 几乎不可能从提供给 ChatGPT 的数据中识别并删除所有个人信息。&lt;/p&gt;
+
+&lt;p&gt;其实，ChatGPT背后的LLM（大型语言模型）技术中的数据隐私保护问题早已受到关注。其中一个风险是如果公开使用含有隐私敏感数据训练的模型，则有可能通过模型提取出训练数据中的隐私敏感信息。这是因为这些训练数据集可能很大（数百 GB）并且来源广泛，即使是基于公共数据集上的训练，它们有时也可能包含敏感数据，包括个人身份信息 (PII)如：姓名、电话号码、地址等，这增加了使用此类数据训练的模型可能会在其输出中反映其中一些私人敏感信息的可能性。因此，重要的是要识别并最大程度地降低此类泄漏的风险，并制定解决未来模型问题的策略。&lt;/p&gt;
+
+&lt;p&gt;﻿&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/8f9bdf67a1d84a099ccb5a114d691d57%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;﻿﻿  &lt;/p&gt;
+
+&lt;p&gt;如果使用前缀“East Stroudsburg Stroudsburg...”提示GPT-2语言模型，它将自动完成一长串文本，其中包含特定人员的全名、电话号码、电子邮件地址和物理地址，其信息被包含在 GPT-2 的训练数据中。&lt;/p&gt;
+
+&lt;p&gt;在一个由谷歌、OpenAI、Apple、斯坦福、伯克利和东北大学的联合研究项目 “ Extracting Training Data from Large Language Models ”中，研究人员已经证明，只要能够查询预训练的语言模型，就可以提取特定的片段模型记忆的训练数据。该研究展示了他们对 GPT-2 的攻击，GPT-2 是一种在公共互联网的碎片上训练的语言模型，并且能够从模型的训练数据中提取数百个逐字的文本序列。这些提取的示例包括（公共）个人身份信息（姓名、电话号码和电子邮件地址）、IRC 对话、代码和 128 位 UUID。即使上述每个序列仅包含在训练数据的一个文档中，这种攻击也是有效的。令人担忧的是，该研究发现较大的模型比较小的模型更容易受到攻击。语言模型越大，就越容易记住训练数据。例如，在一项实验中研究人员发现，15 亿参数的 GPT-2 XL 模型比 1.24 亿参数的 GPT-2 Small 模型多记忆了10倍的信息。因此，训练数据提取攻击是对最先进的大型语言模型的现实威胁。&lt;/p&gt;
+
+&lt;p&gt;GPT-3 使用了 1750 亿个参数，这是迄今为止用于训练模型的最大参数数量（据现有资料显示ChatGPT使用了15 亿参数）。由于模型庞大，OpenAI社区决定不发布包含 1750 亿个参数的整个模型，而以 API 的方式公开其高级语言模型，允许用户以训练提示的形式向 GPT-3提供训练数据，模型使用该提示得出适当的结果。对于个人用户，语言模型通常将训练数据作为其在线学习功能的一部分进行存储，以使模型在运行中变得更好，这在涉及高度机密数据的用例中使用 GPT-3 时遇到了障碍。数据隐私一直是世界各地企业希望使用 GPT-3 创建特定领域应用最关心的问题。企业的担心围绕着公开的 GPT-3 API 端点不应保留或保存作为模型微调/训练过程的任何训练数据；以及通过向公开的 API 端点提供任何类型的输入，任何第三方都不应能够提取或访问作为训练提示的任何数据。&lt;/p&gt;
+
+&lt;p&gt;面对这些担忧，OpenAI 针对企业用户，允许企业与 OpenAI 签署特殊的谅解备忘录 (MoU) 和数据隐私协议 (DPA)以克服围绕数据泄露和数据隐私的担忧。幸运的是，除了制度保障，有一些技术方法可以安全地处理此类敏感数据。这正是隐私保护计算技术（简称隐私计算）的使命——用“你看不到的数据”回答问题，该技术栈包括联邦学习、安全多方计算、差分隐私、同态加密、可信执行环境等。&lt;/p&gt;
+
+&lt;p&gt;在2022年隐私联盟工作的年终总结上，中国信通院对其主导的《隐私计算白皮书（2022年）》、《隐私计算应用研究报告（2022年）》、《可信隐私计算研究报告（2022）》、《隐私计算通信应用研究报告（2022年）》、《多方数据联合风控应用能力评估要求》标准、《隐私计算应用 面向互联网场景的应用要求》标准、《隐私计算 面向金融场景的应用规范》标准等多项隐私保护计算成果进行发布、解读与进展介绍。作为国内隐私计算行业领军者，京东科技全程深度参与了「4大报告+3大标准」的编写研制工作，取得丰硕成果。&lt;/p&gt;
+
+&lt;h4&gt;&lt;strong&gt;成果一：《隐私计算白皮书（2022年）》&lt;/strong&gt;&lt;/h4&gt;
+
+&lt;p&gt;﻿&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzkwNjE4ODkxNg==&amp;amp;mid=2247488564&amp;amp;idx=1&amp;amp;sn=f12b323e4cff41b22550c5f1b3557f1d&amp;amp;scene=21#wechat_redirect&quot;&gt;《隐私计算白皮书（2022年）》&lt;/a&gt;由隐私计算联盟联合行业多家单位共同编制，京东科技作为主要牵头编写单位深度参与。《白皮书》涉及隐私计算概况、技术分析、应用分析、行业分析、热点问题分析以及总结展望等多方面，全面展现了行业成就及发展新态势，旨在为产业界应用隐私计算技术提供参考指导，推动隐私计算行业健康发展，在数据要素市场建设中发挥更大的价值。&lt;/p&gt;
+
+&lt;p&gt;﻿&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/45d85bee9b5245959763726a0ecaee98%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;﻿﻿  &lt;/p&gt;
+
+&lt;p&gt;《隐私计算白皮书（2022年）》封面及编写单位&lt;/p&gt;
+
+&lt;p&gt;《白皮书》认为，根据隐私计算技术、应用的不同发展特点，隐私计算当前正处于产业快速增长期，即将迈入前景广阔的稳定期。未来，随着我国数据要素市场的加速建设，作为数据流通的重要创新前沿技术，以隐私计算为代表的数据安全流通技术正在成为筑牢数字安全屏障的基础设施，以促进数据要素的可信安全流通。&lt;/p&gt;
+
+&lt;h4&gt;&lt;strong&gt;成果二：《隐私计算应用研究报告（2022年）》&lt;/strong&gt;&lt;/h4&gt;
+
+&lt;p&gt;近两年来，在政策驱动和市场需求同时作用下，隐私计算技术、产业、应用迅速发展，成为商业和资本竞争的热门赛道。随着隐私计算技术可用性的快速提升，市场由观望正在转向落地，金融、政务、通信、医疗、互联网等行业率先开展隐私计算应用，能源、车联网等行业也开始探索性应用。&lt;/p&gt;
+
+&lt;p&gt;在此背景下，隐私计算联盟组织京东科技等成员单位共同编写了&lt;a href=&quot;https://mp.weixin.qq.com/s/B-z_z_LqvHsj9Xg9irknaQ&quot;&gt;《隐私计算应用研究报告（2022年）》&lt;/a&gt;。主要涉及隐私计算应用背景、应用现状、项目应用部署难点及解决方案、应用展望等多个方面。&lt;/p&gt;
+
+&lt;p&gt;﻿&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/87ce55f057b444e9b5bc94ea074ffcdc%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;﻿﻿  &lt;/p&gt;
+
+&lt;p&gt;《隐私计算应用研究报告（2022年）》封面及编写单位&lt;/p&gt;
+
+&lt;h4&gt;&lt;strong&gt;成果三：《可信隐私计算研究报告（2022年）》&lt;/strong&gt;&lt;/h4&gt;
+
+&lt;p&gt;近年来，数据成为国家基础性战略资源，在政策和市场的同时作用下，隐私计算技术、产业、应用迅速发展。但是，在技术应用过程中，隐私计算因为涉及需求方、供给方、监管方等多方的参与，仍然面临着安全性、合规性、可用性等方面的挑战，由此隐私计算技术如何“可信”应用引发业界思考。&lt;/p&gt;
+
+&lt;p&gt;经过广泛调研征集和深入讨论，由京东科技等多家隐私计算联盟成员单位共同编写了&lt;a href=&quot;https://mp.weixin.qq.com/s/ItTFfLP3h8mTYZoCytyvYg&quot;&gt;《可信隐私计算研究报告（2022年）》&lt;/a&gt;，主要包括可信隐私计算的发展背景、框架、核心要素、实践路径及未来展望等内容。&lt;/p&gt;
+
+&lt;p&gt;﻿&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/5d0b933f1d7645abb1f4d0e2e76aa672%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;﻿﻿  &lt;/p&gt;
+
+&lt;p&gt;《可信隐私计算研究报告（2022年）》封面及编写单位&lt;/p&gt;
+
+&lt;h4&gt;&lt;strong&gt;成果四：《隐私计算通信应用研究报告（2022年）》&lt;/strong&gt;&lt;/h4&gt;
+
+&lt;p&gt;随着隐私计算技术应用逐渐落地，其对通信行业在保证数据安全的前提下充分发挥自身数据应用价值的意义巨大。京东科技参与编写的&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzkwNjE4ODkxNg==&amp;amp;mid=2247488748&amp;amp;idx=1&amp;amp;sn=c077759ea95a60067ec32346953bbf2b&amp;amp;scene=21#wechat_redirect&quot;&gt;《隐私计算通信应用研究报告（2022年）》&lt;/a&gt;便对隐私计算在通信行业的应用特性及典型场景进行了全面梳理，深入挖掘了潜在创新应用场景，为行业发展提供参考指引。&lt;/p&gt;
+
+&lt;p&gt;﻿&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/187b237d85b94e6c993aee255327aa47%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;﻿﻿  &lt;/p&gt;
+
+&lt;p&gt;《隐私计算通信应用研究报告》封面及编写单位&lt;/p&gt;
+
+&lt;p&gt;《报告》指出，在通信行业，通信数据具有覆盖全面、特征丰富、真实性高、数据连续性高等独特优势和应用价值。以隐私计算技术为依托，可以推动通信行业数据与金融、政务、汽车、医疗等行业共享赋能，并在风险管控、营销分析、态势洞察等多个应用场景中提供数据安全共享计算的服务，能够在保证数据安全的前提下充分发挥通信数据应用价值，助力各行业数字化发展实践，对充分释放数据要素价值和推动社会经济发展具有重大意义。&lt;/p&gt;
+
+&lt;h4&gt;&lt;strong&gt;成果五：《多方数据联合风控应用能力评估要求》标准&lt;/strong&gt;&lt;/h4&gt;
+
+&lt;p&gt;随着国家法律政策的重视、监管逐渐完善以及企业自身的经营需求，风控对于企业的重要性进一步提高。目前，风控已经从传统业务单线风控的1.0阶段、企业级单方风控体系的2.0阶段，正迈入多方数据联合风控体系的3.0阶段，其完整性、全面性、及时性都进一步提高。&lt;/p&gt;
+
+&lt;p&gt;﻿&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4570a3484e74448383957dee44e609f7%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;﻿﻿  &lt;/p&gt;
+
+&lt;p&gt;风控业务发展的三个阶段&lt;/p&gt;
+
+&lt;p&gt;为解决行业需求，中国信通院依托中国通信标准化协会大数据技术标准推进委员会、隐私计算联盟，京东科技在内的多家银行、运营商、互联网企业及技术服务商共同编制&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzkwNjE4ODkxNg==&amp;amp;mid=2247488673&amp;amp;idx=1&amp;amp;sn=03f7bd79360ca1f2339bec98f8893e25&amp;amp;scene=21#wechat_redirect&quot;&gt;《多方数据联合风控应用能力评估要求》&lt;/a&gt;标准。&lt;/p&gt;
+
+&lt;p&gt;﻿&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/b29b030cbfda44768706fad22a7e07c1%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;﻿﻿  &lt;/p&gt;
+
+&lt;p&gt;《多方数据联合风控应用能力评估要求》标准参编单位&lt;/p&gt;
+
+&lt;h4&gt;&lt;strong&gt;成果六：《隐私计算应用 面向互联网场景的应用要求》标准&lt;/strong&gt;&lt;/h4&gt;
+
+&lt;p&gt;随着政策和市场需求双重驱动，隐私计算在互联网应用场景的需求强烈，其中主要集中在联合营销场景中，具体包括洞察分析、策略制定、营销投放、效果分析等细分场景。为了更好适配，隐私计算产品应在易用性、场景支持能力、算法能力与安全性上满足相应要求。&lt;/p&gt;
+
+&lt;p&gt;﻿&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a218dcaf95374d36bcd5dc2517d7df35%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;﻿﻿  &lt;/p&gt;
+
+&lt;p&gt;隐私计算技术在互联网行业中的应用场景&lt;/p&gt;
+
+&lt;p&gt;为此，中国信通院、隐私计算联盟与京东科技等单位共同起草&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzkwNjE4ODkxNg==&amp;amp;mid=2247488791&amp;amp;idx=1&amp;amp;sn=6e874d1c8c4f1054b81091b227341700&amp;amp;scene=21#wechat_redirect&quot;&gt;《隐私计算应用 面向互联网场景的应用要求》&lt;/a&gt;标准。该标准梳理了互联网应用场景，并对适配互联网应用的隐私计算产品能力进行了规范。本标准自2022年8月启动以来，经历了框架总体设计和材料征集、场景研讨和梳理，以及标准主体讨论，目前已完成主体内容编制。&lt;/p&gt;
+
+&lt;p&gt;﻿&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/33b6200e6f4b4359bbb4791262ecb983%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;﻿﻿  &lt;/p&gt;
+
+&lt;p&gt;《隐私计算应用 面向互联网场景的应用要求》标准起草单位&lt;/p&gt;
+
+&lt;h4&gt;&lt;strong&gt;成果七：《隐私计算 面向金融场景的应用规范》标准&lt;/strong&gt;&lt;/h4&gt;
+
+&lt;p&gt;近年来隐私计算应用加速落地，其中金融场景应用最为广泛。为解决供需双方诉求，发挥桥梁作用，隐私联盟联合京东科技等几十家企业召开了多次标准讨论会，共同编制了&lt;a href=&quot;https://mp.weixin.qq.com/s/SefxBNjIv-L0QX0w7jYsmQ&quot;&gt;《隐私计算 面向金融场景的应用规范》&lt;/a&gt;。该标准旨在提升隐私计算产品在金融场景应用中的易用性、场景支持能力。&lt;/p&gt;
+
+&lt;p&gt;﻿&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/422e92f9e7884434b546402983810fc5%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;﻿﻿  &lt;/p&gt;
+
+&lt;p&gt;隐私计算技术在互联网行业中的应用场景&lt;/p&gt;
+
+&lt;p&gt;该标准主要包含四个能力域：第一个是算法实现与安全性，该能力域为场景应用奠定安全技术底座；第二个是金融场景支持能力，该能力域为完善产品已具备的基础能力项对金融场景应用的支持能力；第三个是易用性，该能力域为在已有的基础能力评测项之外进行扩展，增强隐私计算产品在实际金融应用中的易用性；第四个能力域是金融场景应用能力，该能力域为通过算法组合安全有效地完成常用金融场景的解决方案。&lt;/p&gt;
+
+&lt;p&gt;﻿&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a0d3f8a183d3472bb89d07da03fa133d%7Etplv-k3u1fbpfcp-zoom-1.image&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;﻿﻿  &lt;/p&gt;
+
+&lt;p&gt;《隐私计算 面向金融场景的应用规范》标准起草单位&lt;/p&gt;
+
+&lt;h3&gt;&lt;strong&gt;结语&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;大型语言模型已持续展示出其巨大的实用性和灵活性——然而，像所有创新一样，它们也可能带来风险。负责任地开发和使用它们意味着主动识别这些风险并提供降低风险的方法。作为国内隐私计算领军者，京东科技基于自身领先的技术研发实力、优质的数据生态资源、丰富的平台建设与场景运营落地经验，始终高度重视数据流通中隐私数据的保护。&lt;/p&gt;
+
+&lt;p&gt;此次京东科技深度参编的隐私计算技术系列成果的集中发布，秉持客户利益为先的商业准则，致力于通过技术持续改进数据要素流通效率与价值，为实现数据要素在数据安全和隐私保护基础上的有序流通提供了重要参考、指引和规范。未来，京东科技将积极凝聚行业共识，共同探索隐私计算的高质量发展方向和应用路径，充分发挥隐私计算作为数字经济持续健康发展的基础设施作用。&lt;/p&gt;
+&lt;/div&gt;
+  &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
