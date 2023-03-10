@@ -58,213 +58,6 @@ Java 中泛型不变：假设有 A extends B，但 &lt;code&gt;List&amp;lt;A&amp
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-v-b51c2330=&quot;&quot; data-tools=&quot;新媒体排版&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;正常情况下，每个子线程完成各自的任务就可以结束了。不过有的时候，我们希望多个线程协同工作来完成某个任务，这时就涉及到了线程间通信了。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;本文涉及到的知识点：&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;thread.join(),&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;object.wait(),&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;object.notify(),&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;CountdownLatch,&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;CyclicBarrier,&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;FutureTask,&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;Callable 。&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;本文涉及代码：https://github.com/wingjay/HelloJava/blob/master/multi-thread/src/ForArticle.java&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;下面我从几个例子作为切入点来讲解下 Java 里有哪些方法来实现线程间通信。&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;如何让两个线程依次执行？&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;那如何让 两个线程按照指定方式有序交叉运行呢？&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;四个线程 A B C D，其中 D 要等到 A B C 全执行完毕后才执行，而且 A B C 是同步运行的&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;三个运动员各自准备，等到三个人都准备好后，再一起跑&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;子线程完成某件任务后，把得到的结果回传给主线程&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;如何让两个线程依次执行？&lt;/strong&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;假设有两个线程，一个是线程 A，另一个是线程 B，两个线程分别依次打印 1-3 三个数字即可。我们来看下代码：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;private static void &lt;span&gt;&lt;span&gt;demo1&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;    Thread A = new Thread(new &lt;span&gt;&lt;span&gt;Runnable&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;        @Override  &lt;br/&gt;        public void &lt;span&gt;&lt;span&gt;run&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;            printNumber(&lt;span&gt;&quot;A&quot;&lt;/span&gt;);  &lt;br/&gt;        }  &lt;br/&gt;    });  &lt;br/&gt;    Thread B = new Thread(new &lt;span&gt;&lt;span&gt;Runnable&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;        @Override  &lt;br/&gt;        public void &lt;span&gt;&lt;span&gt;run&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;            printNumber(&lt;span&gt;&quot;B&quot;&lt;/span&gt;);  &lt;br/&gt;        }  &lt;br/&gt;    });  &lt;br/&gt;    A.start();  &lt;br/&gt;    B.start();  &lt;br/&gt;}  &lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其中的 printNumber(String) 实现如下，用来依次打印 1, 2, 3 三个数字：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;private static void printNumber(String threadName) {  &lt;br/&gt;    int i=0;  &lt;br/&gt;    &lt;span&gt;while&lt;/span&gt; (i++ &amp;lt; 3) {  &lt;br/&gt;        try {  &lt;br/&gt;            Thread.sleep(100);  &lt;br/&gt;        } catch (InterruptedException e) {  &lt;br/&gt;            e.printStackTrace();  &lt;br/&gt;        }  &lt;br/&gt;        System.out.println(threadName + &lt;span&gt;&quot; print: &quot;&lt;/span&gt; + i);  &lt;br/&gt;    }  &lt;br/&gt;}  &lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这时我们得到的结果是：&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;B print: 1 A print: 1 B print: 2 A print: 2 B print: 3 A print: 3&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;可以看到 A 和 B 是同时打印的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;那么，如果我们希望 B 在 A 全部打印 完后再开始打印呢？我们可以利用 thread.join() 方法，代码如下:&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;private static void &lt;span&gt;&lt;span&gt;demo2&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;    Thread A = new Thread(new &lt;span&gt;&lt;span&gt;Runnable&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;        @Override  &lt;br/&gt;        public void &lt;span&gt;&lt;span&gt;run&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;            printNumber(&lt;span&gt;&quot;A&quot;&lt;/span&gt;);  &lt;br/&gt;        }  &lt;br/&gt;    });  &lt;br/&gt;    Thread B = new Thread(new &lt;span&gt;&lt;span&gt;Runnable&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;        @Override  &lt;br/&gt;        public void &lt;span&gt;&lt;span&gt;run&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;            System.out.println(&lt;span&gt;&quot;B 开始等待 A&quot;&lt;/span&gt;);  &lt;br/&gt;            try {  &lt;br/&gt;                A.join();  &lt;br/&gt;            } catch (InterruptedException e) {  &lt;br/&gt;                e.printStackTrace();  &lt;br/&gt;            }  &lt;br/&gt;            printNumber(&lt;span&gt;&quot;B&quot;&lt;/span&gt;);  &lt;br/&gt;        }  &lt;br/&gt;    });  &lt;br/&gt;    B.start();  &lt;br/&gt;    A.start();  &lt;br/&gt;}  &lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;得到的结果如下：&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;B 开始等待 A A print: 1 A print: 2 A print: 3&lt;/p&gt;&lt;p&gt;B print: 1 B print: 2 B print: 3&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;所以我们能看到 A.join() 方法会让 B 一直等待直到 A 运行完毕。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;那如何让 两个线程按照指定方式有序交叉运行呢？&lt;/strong&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;还是上面那个例子，我现在希望 A 在打印完 1 后，再让 B 打印 1, 2, 3，最后再回到 A 继续打印 2, 3。这种需求下，显然 Thread.join() 已经不能满足了。我们需要更细粒度的锁来控制执行顺序。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这里，我们可以利用 object.wait() 和 object.notify() 两个方法来实现。代码如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;/**  &lt;br/&gt; * A 1, B 1, B 2, B 3, A 2, A 3  &lt;br/&gt; */  &lt;br/&gt;private static void &lt;span&gt;&lt;span&gt;demo3&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;    Object lock = new Object();  &lt;br/&gt;    Thread A = new Thread(new &lt;span&gt;&lt;span&gt;Runnable&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;        @Override  &lt;br/&gt;        public void &lt;span&gt;&lt;span&gt;run&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;            synchronized (lock) {  &lt;br/&gt;                System.out.println(&lt;span&gt;&quot;A 1&quot;&lt;/span&gt;);  &lt;br/&gt;                try {  &lt;br/&gt;                    lock.wait();  &lt;br/&gt;                } catch (InterruptedException e) {  &lt;br/&gt;                    e.printStackTrace();  &lt;br/&gt;                }  &lt;br/&gt;                System.out.println(&lt;span&gt;&quot;A 2&quot;&lt;/span&gt;);  &lt;br/&gt;                System.out.println(&lt;span&gt;&quot;A 3&quot;&lt;/span&gt;);  &lt;br/&gt;            }  &lt;br/&gt;        }  &lt;br/&gt;    });  &lt;br/&gt;    Thread B = new Thread(new &lt;span&gt;&lt;span&gt;Runnable&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;        @Override  &lt;br/&gt;        public void &lt;span&gt;&lt;span&gt;run&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;            synchronized (lock) {  &lt;br/&gt;                System.out.println(&lt;span&gt;&quot;B 1&quot;&lt;/span&gt;);  &lt;br/&gt;                System.out.println(&lt;span&gt;&quot;B 2&quot;&lt;/span&gt;);  &lt;br/&gt;                System.out.println(&lt;span&gt;&quot;B 3&quot;&lt;/span&gt;);  &lt;br/&gt;                lock.notify();  &lt;br/&gt;            }  &lt;br/&gt;        }  &lt;br/&gt;    });  &lt;br/&gt;    A.start();  &lt;br/&gt;    B.start();  &lt;br/&gt;}  &lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;打印结果如下：&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;A 1 A waiting…&lt;/p&gt;&lt;p&gt;B 1 B 2 B 3 A 2 A 3&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;正是我们要的结果。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;那么，这个过程发生了什么呢？&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;首先创建一个 A 和 B 共享的对象锁 lock = new Object();&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;当 A 得到锁后，先打印 1，然后调用 lock.wait() 方法，交出锁的控制权，进入 wait 状态；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;对 B 而言，由于 A 最开始得到了锁，导致 B 无法执行；直到 A 调用 lock.wait() 释放控制权后， B 才得到了锁；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;B 在得到锁后打印 1， 2， 3；然后调用 lock.notify() 方法，唤醒正在 wait 的 A;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;A 被唤醒后，继续打印剩下的 2，3。&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;为了更好理解，我在上面的代码里加上 log 方便读者查看。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;private static void &lt;span&gt;&lt;span&gt;demo3&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;    Object lock = new Object();  &lt;br/&gt;    Thread A = new Thread(new &lt;span&gt;&lt;span&gt;Runnable&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;        @Override  &lt;br/&gt;        public void &lt;span&gt;&lt;span&gt;run&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;            System.out.println(&lt;span&gt;&quot;INFO: A 等待锁 &quot;&lt;/span&gt;);  &lt;br/&gt;            synchronized (lock) {  &lt;br/&gt;                System.out.println(&lt;span&gt;&quot;INFO: A 得到了锁 lock&quot;&lt;/span&gt;);  &lt;br/&gt;                System.out.println(&lt;span&gt;&quot;A 1&quot;&lt;/span&gt;);  &lt;br/&gt;                try {  &lt;br/&gt;                    System.out.println(&lt;span&gt;&quot;INFO: A 准备进入等待状态，放弃锁 lock 的控制权 &quot;&lt;/span&gt;);  &lt;br/&gt;                    lock.wait();  &lt;br/&gt;                } catch (InterruptedException e) {  &lt;br/&gt;                    e.printStackTrace();  &lt;br/&gt;                }  &lt;br/&gt;                System.out.println(&lt;span&gt;&quot;INFO: 有人唤醒了 A, A 重新获得锁 lock&quot;&lt;/span&gt;);  &lt;br/&gt;                System.out.println(&lt;span&gt;&quot;A 2&quot;&lt;/span&gt;);  &lt;br/&gt;                System.out.println(&lt;span&gt;&quot;A 3&quot;&lt;/span&gt;);  &lt;br/&gt;            }  &lt;br/&gt;        }  &lt;br/&gt;    });  &lt;br/&gt;    Thread B = new Thread(new &lt;span&gt;&lt;span&gt;Runnable&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;        @Override  &lt;br/&gt;        public void &lt;span&gt;&lt;span&gt;run&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;            System.out.println(&lt;span&gt;&quot;INFO: B 等待锁 &quot;&lt;/span&gt;);  &lt;br/&gt;            synchronized (lock) {  &lt;br/&gt;                System.out.println(&lt;span&gt;&quot;INFO: B 得到了锁 lock&quot;&lt;/span&gt;);  &lt;br/&gt;                System.out.println(&lt;span&gt;&quot;B 1&quot;&lt;/span&gt;);  &lt;br/&gt;                System.out.println(&lt;span&gt;&quot;B 2&quot;&lt;/span&gt;);  &lt;br/&gt;                System.out.println(&lt;span&gt;&quot;B 3&quot;&lt;/span&gt;);  &lt;br/&gt;                System.out.println(&lt;span&gt;&quot;INFO: B 打印完毕，调用 notify 方法 &quot;&lt;/span&gt;);  &lt;br/&gt;                lock.notify();  &lt;br/&gt;            }  &lt;br/&gt;        }  &lt;br/&gt;    });  &lt;br/&gt;    A.start();  &lt;br/&gt;    B.start();  &lt;br/&gt;}  &lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;打印结果如下:&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;INFO: A 等待锁 INFO: A 得到了锁 lock A 1 INFO: A 准备进入等待状态，调用 lock.wait() 放弃锁 lock 的控制权 INFO: B 等待锁 INFO: B 得到了锁 lock B 1 B 2 B 3 INFO: B 打印完毕，调用 lock.notify() 方法 INFO: 有人唤醒了 A, A 重新获得锁 lock A 2 A 3&lt;/p&gt;&lt;/blockquote&gt;&lt;h5 data-tool=&quot;mdnice编辑器&quot;&gt;四个线程 A B C D，其中 D 要等到 A B C 全执行完毕后才执行，而且 A B C 是同步运行的&lt;/h5&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;最开始我们介绍了 thread.join()，可以让一个线程等另一个线程运行完毕后再继续执行，那我们可以在 D 线程里依次 join A B C，不过这也就使得 A B C 必须依次执行，而我们要的是这三者能同步运行。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;或者说，我们希望达到的目的是：A B C 三个线程同时运行，各自独立运行完后通知 D；对 D 而言，只要 A B C 都运行完了，D 再开始运行。针对这种情况，我们可以利用 CountdownLatch 来实现这类通信方式。它的基本用法是：&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;创建一个计数器，设置初始值，CountdownLatch countDownLatch = new CountDownLatch(2);&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;在 等待线程 里调用 countDownLatch.await() 方法，进入等待状态，直到计数值变成 0；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;在 其他线程 里，调用 countDownLatch.countDown() 方法，该方法会将计数值减小 1；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;当 其他线程 的 countDown() 方法把计数值变成 0 时，等待线程 里的 countDownLatch.await() 立即退出，继续执行下面的代码。&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;实现代码如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;private static void &lt;span&gt;&lt;span&gt;runDAfterABC&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;    int worker = 3;  &lt;br/&gt;    CountDownLatch countDownLatch = new CountDownLatch(worker);  &lt;br/&gt;    new Thread(new &lt;span&gt;&lt;span&gt;Runnable&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;        @Override  &lt;br/&gt;        public void &lt;span&gt;&lt;span&gt;run&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;            System.out.println(&lt;span&gt;&quot;D is waiting for other three threads&quot;&lt;/span&gt;);  &lt;br/&gt;            try {  &lt;br/&gt;                countDownLatch.await();  &lt;br/&gt;                System.out.println(&lt;span&gt;&quot;All done, D starts working&quot;&lt;/span&gt;);  &lt;br/&gt;            } catch (InterruptedException e) {  &lt;br/&gt;                e.printStackTrace();  &lt;br/&gt;            }  &lt;br/&gt;        }  &lt;br/&gt;    }).start();  &lt;br/&gt;    &lt;span&gt;for&lt;/span&gt; (char threadName=&lt;span&gt;&#x27;A&#x27;&lt;/span&gt;; threadName &amp;lt;= &lt;span&gt;&#x27;C&#x27;&lt;/span&gt;; threadName++) {  &lt;br/&gt;        final String tN = String.valueOf(threadName);  &lt;br/&gt;        new Thread(new &lt;span&gt;&lt;span&gt;Runnable&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;            @Override  &lt;br/&gt;            public void &lt;span&gt;&lt;span&gt;run&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;                System.out.println(tN + &lt;span&gt;&quot; is working&quot;&lt;/span&gt;);  &lt;br/&gt;                try {  &lt;br/&gt;                    Thread.sleep(100);  &lt;br/&gt;                } catch (Exception e) {  &lt;br/&gt;                    e.printStackTrace();  &lt;br/&gt;                }  &lt;br/&gt;                System.out.println(tN + &lt;span&gt;&quot; finished&quot;&lt;/span&gt;);  &lt;br/&gt;                countDownLatch.countDown();  &lt;br/&gt;            }  &lt;br/&gt;        }).start();  &lt;br/&gt;    }  &lt;br/&gt;}  &lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;下面是运行结果：&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;D is waiting for other three threads A is working B is working C is working&lt;/p&gt;&lt;p&gt;A finished C finished B finished All done, D starts working&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其实简单点来说，CountDownLatch 就是一个倒计数器，我们把初始计数值设置为3，当 D 运行时，先调用 countDownLatch.await() 检查计数器值是否为 0，若不为 0 则保持等待状态；当A B C 各自运行完后都会利用countDownLatch.countDown()，将倒计数器减 1，当三个都运行完后，计数器被减至 0；此时立即触发 D 的 await() 运行结束，继续向下执行。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因此，CountDownLatch 适用于一个线程去等待多个线程的情况。&lt;/p&gt;&lt;h5 data-tool=&quot;mdnice编辑器&quot;&gt;三个运动员各自准备，等到三个人都准备好后，再一起跑&lt;/h5&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上面是一个形象的比喻，针对 线程 A B C 各自开始准备，直到三者都准备完毕，然后再同时运行 。也就是要实现一种 线程之间互相等待 的效果，那应该怎么来实现呢？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上面的 CountDownLatch 可以用来倒计数，但当计数完毕，只有一个线程的 await() 会得到响应，无法让多个线程同时触发。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;为了实现线程间互相等待这种需求，我们可以利用 CyclicBarrier 数据结构，它的基本用法是：&lt;/p&gt;&lt;ol data-tool=&quot;mdnice编辑器&quot; class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;先创建一个公共 CyclicBarrier 对象，设置 同时等待 的线程数，CyclicBarrier cyclicBarrier = new CyclicBarrier(3);&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;这些线程同时开始自己做准备，自身准备完毕后，需要等待别人准备完毕，这时调用 cyclicBarrier.await(); 即可开始等待别人；&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;当指定的 同时等待 的线程数都调用了 cyclicBarrier.await();时，意味着这些线程都准备完毕好，然后这些线程才 同时继续执行。&lt;/section&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;实现代码如下，设想有三个跑步运动员，各自准备好后等待其他人，全部准备好后才开始跑：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;private static void &lt;span&gt;&lt;span&gt;runABCWhenAllReady&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;    int runner = 3;  &lt;br/&gt;    CyclicBarrier cyclicBarrier = new CyclicBarrier(runner);  &lt;br/&gt;    final Random random = new Random();  &lt;br/&gt;    &lt;span&gt;for&lt;/span&gt; (char runnerName=&lt;span&gt;&#x27;A&#x27;&lt;/span&gt;; runnerName &amp;lt;= &lt;span&gt;&#x27;C&#x27;&lt;/span&gt;; runnerName++) {  &lt;br/&gt;        final String rN = String.valueOf(runnerName);  &lt;br/&gt;        new Thread(new &lt;span&gt;&lt;span&gt;Runnable&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;            @Override  &lt;br/&gt;            public void &lt;span&gt;&lt;span&gt;run&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;                long prepareTime = random.nextInt(10000) + 100;  &lt;br/&gt;                System.out.println(rN + &lt;span&gt;&quot; is preparing for time: &quot;&lt;/span&gt; + prepareTime);  &lt;br/&gt;                try {  &lt;br/&gt;                    Thread.sleep(prepareTime);  &lt;br/&gt;                } catch (Exception e) {  &lt;br/&gt;                    e.printStackTrace();  &lt;br/&gt;                }  &lt;br/&gt;                try {  &lt;br/&gt;                    System.out.println(rN + &lt;span&gt;&quot; is prepared, waiting for others&quot;&lt;/span&gt;);  &lt;br/&gt;                    cyclicBarrier.await(); // 当前运动员准备完毕，等待别人准备好  &lt;br/&gt;                } catch (InterruptedException e) {  &lt;br/&gt;                    e.printStackTrace();  &lt;br/&gt;                } catch (BrokenBarrierException e) {  &lt;br/&gt;                    e.printStackTrace();  &lt;br/&gt;                }  &lt;br/&gt;                System.out.println(rN + &lt;span&gt;&quot; starts running&quot;&lt;/span&gt;); // 所有运动员都准备好了，一起开始跑  &lt;br/&gt;            }  &lt;br/&gt;        }).start();  &lt;br/&gt;    }  &lt;br/&gt;}  &lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;打印的结果如下：&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;A is preparing for time: 4131 B is preparing for time: 6349 C is preparing for time: 8206 A is prepared, waiting for others B is prepared, waiting for others C is prepared, waiting for others C starts running A starts running B starts running&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;子线程完成某件任务后，把得到的结果回传给主线程&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;实际的开发中，我们经常要创建子线程来做一些耗时任务，然后把任务执行结果回传给主线程使用，这种情况在 Java 里要如何实现呢？&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;回顾线程的创建，我们一般会把 Runnable 对象传给 Thread 去执行。Runnable定义如下：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;public interface Runnable {  &lt;br/&gt;    public abstract void run();  &lt;br/&gt;}  &lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;可以看到 run() 在执行完后不会返回任何结果。那如果希望返回结果呢？这里可以利用另一个类似的接口类 Callable：&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;@FunctionalInterface  &lt;br/&gt;public interface Callable&amp;lt;V&amp;gt; {  &lt;br/&gt;    /**  &lt;br/&gt;     * Computes a result, or throws an exception &lt;span&gt;if&lt;/span&gt; unable to &lt;span&gt;do&lt;/span&gt; so.  &lt;br/&gt;     *  &lt;br/&gt;     * @&lt;span&gt;return&lt;/span&gt; computed result  &lt;br/&gt;     * @throws Exception &lt;span&gt;if&lt;/span&gt; unable to compute a result  &lt;br/&gt;     */  &lt;br/&gt;    V call() throws Exception;  &lt;br/&gt;}  &lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;可以看出 Callable 最大区别就是返回范型 V 结果。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;那么下一个问题就是，如何把子线程的结果回传回来呢？在 Java 里，有一个类是配合 Callable 使用的：FutureTask，不过注意，它获取结果的 get 方法会阻塞主线程。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;举例，我们想让子线程去计算从 1 加到 100，并把算出的结果返回到主线程。&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;private static void &lt;span&gt;&lt;span&gt;doTaskWithResultInWorker&lt;/span&gt;&lt;/span&gt;() {  &lt;br/&gt;    Callable&amp;lt;Integer&amp;gt; callable = new Callable&amp;lt;Integer&amp;gt;() {  &lt;br/&gt;        @Override  &lt;br/&gt;        public Integer call() throws Exception {  &lt;br/&gt;            System.out.println(&lt;span&gt;&quot;Task starts&quot;&lt;/span&gt;);  &lt;br/&gt;            Thread.sleep(1000);  &lt;br/&gt;            int result = 0;  &lt;br/&gt;            &lt;span&gt;for&lt;/span&gt; (int i=0; i&amp;lt;=100; i++) {  &lt;br/&gt;                result += i;  &lt;br/&gt;            }  &lt;br/&gt;            System.out.println(&lt;span&gt;&quot;Task finished and return result&quot;&lt;/span&gt;);  &lt;br/&gt;            &lt;span&gt;return&lt;/span&gt; result;  &lt;br/&gt;        }  &lt;br/&gt;    };  &lt;br/&gt;    FutureTask&amp;lt;Integer&amp;gt; futureTask = new FutureTask&amp;lt;&amp;gt;(callable);  &lt;br/&gt;    new Thread(futureTask).start();  &lt;br/&gt;    try {  &lt;br/&gt;        System.out.println(&lt;span&gt;&quot;Before futureTask.get()&quot;&lt;/span&gt;);  &lt;br/&gt;        System.out.println(&lt;span&gt;&quot;Result: &quot;&lt;/span&gt; + futureTask.get());  &lt;br/&gt;        System.out.println(&lt;span&gt;&quot;After futureTask.get()&quot;&lt;/span&gt;);  &lt;br/&gt;    } catch (InterruptedException e) {  &lt;br/&gt;        e.printStackTrace();  &lt;br/&gt;    } catch (ExecutionException e) {  &lt;br/&gt;        e.printStackTrace();  &lt;br/&gt;    }  &lt;br/&gt;}  &lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;打印结果如下：&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;Before futureTask.get() Task starts Task finished and return result Result: 5050 After futureTask.get()&lt;/p&gt;&lt;/blockquote&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;可以看到，主线程调用 futureTask.get() 方法时阻塞主线程；然后 Callable 内部开始执行，并返回运算结果；此时 futureTask.get() 得到结果，主线程恢复运行。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;这里我们可以学到，通过 FutureTask 和 Callable 可以直接在主线程获得子线程的运算结果，只不过需要阻塞主线程。当然，如果不希望阻塞主线程，可以考虑利用 ExecutorService，把 FutureTask 放到线程池去管理执行。&lt;/p&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;小结&lt;/strong&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;多线程是现代语言的共同特性，而线程间通信、线程同步、线程安全是很重要的话题。本文针对 Java 的线程间通信进行了大致的讲解，后续还会对线程同步、线程安全进行讲解。&lt;span/&gt;&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>1aaeeb7a091be90f3d4682cf074296b1</guid>
-<title>React Hooks 源码深度解析</title>
-<link>https://toutiao.io/k/zgn1azv</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;h4&gt;作者：京东零售 郑炳懿&lt;/h4&gt;
-
-&lt;h1&gt;前言&lt;/h1&gt;
-
-&lt;p&gt;&lt;code&gt;React Hooks&lt;/code&gt;是&lt;code&gt;React&lt;/code&gt;16.8 引入的一个新特性，它允许函数组件中使用&lt;code&gt;state&lt;/code&gt;和其他 React 特性，而不必使用类组件。&lt;code&gt;Hooks&lt;/code&gt;是一个非常重要的概念，因为它们提供了更简单、更易于理解的&lt;code&gt;React&lt;/code&gt;开发体验。&lt;/p&gt;
-
-&lt;p&gt;&lt;code&gt;React Hooks&lt;/code&gt;的核心源码主要包括两个部分：&lt;strong&gt;&lt;code&gt;React&lt;/code&gt;内部的&lt;code&gt;Hook&lt;/code&gt;管理器和一系列预置的&lt;code&gt;Hook&lt;/code&gt;函数&lt;/strong&gt;。&lt;/p&gt;
-
-&lt;p&gt;首先，让我们看一下&lt;code&gt;React&lt;/code&gt;内部的&lt;code&gt;Hook&lt;/code&gt;管理器。这个管理器是&lt;code&gt;React&lt;/code&gt;内部的一个重要机制，它负责管理组件中的所有&lt;code&gt;Hook&lt;/code&gt;，并确保它们在组件渲染期间以正确的顺序调用。&lt;/p&gt;
-
-&lt;h1&gt;内部Hook管理器&lt;/h1&gt;
-
-&lt;p&gt;示例：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;const Hook = {
-  queue: [],
-  current: null,
-};
-
-function useState(initialState) {
-  const state = Hook.current[Hook.queue.length];
-  if (!state) {
-    Hook.queue.push({
-      state: typeof initialState === &#x27;function&#x27; ? initialState() : initialState,
-      setState(value) {
-        this.state = value;
-        render();
-      },
-    });
-  }
-  return [state.state, state.setState.bind(state)];
-}
-
-function useHook(callback) {
-  Hook.current = {
-    __proto__: Hook.current,
-  };
-  try {
-    callback();
-  } finally {
-    Hook.current = Hook.current.__proto__;
-  }
-}
-
-function render() {
-  useHook(() =&amp;gt; {
-    const [count, setCount] = useState(0);
-    console.log(&#x27;count:&#x27;, count);
-    setTimeout(() =&amp;gt; {
-      setCount(count + 1);
-    }, 1000);
-  });
-}
-
-render();
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;在这个示例中，&lt;code&gt;Hook&lt;/code&gt;对象有两个重要属性：&lt;code&gt;queue&lt;/code&gt;和&lt;code&gt;current&lt;/code&gt;。&lt;code&gt;queue&lt;/code&gt;存储组件中所有&lt;code&gt;Hook&lt;/code&gt;的状态和更新函数，&lt;code&gt;current&lt;/code&gt;存储当前正在渲染的组件的&lt;code&gt;Hook&lt;/code&gt;链表。&lt;code&gt;useState&lt;/code&gt;和&lt;code&gt;useHook&lt;/code&gt;函数则分别负责创建新的&lt;code&gt;Hook&lt;/code&gt;状态和在组件中使用&lt;code&gt;Hook&lt;/code&gt;。&lt;/p&gt;
-
-&lt;h1&gt;预置 Hook 函数&lt;/h1&gt;
-
-&lt;h4&gt;useState Hook&lt;/h4&gt;
-
-&lt;p&gt;以下是&lt;code&gt;useState Hook&lt;/code&gt;的实现示例：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;function useState(initialState) {
-  const hook = updateWorkInProgressHook();
-  if (!hook.memoizedState) {
-    hook.memoizedState = [
-      typeof initialState === &#x27;function&#x27; ? initialState() : initialState,
-      action =&amp;gt; {
-        hook.queue.pending = true;
-        hook.queue.dispatch = action;
-        scheduleWork();
-      },
-    ];
-  }
-  return hook.memoizedState;
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;上述代码实现了&lt;code&gt;useState Hook&lt;/code&gt;，其主要作用是返回一个&lt;code&gt;state&lt;/code&gt;和更新函数的数组，state 初始值为&lt;code&gt;initialState&lt;/code&gt;。&lt;/p&gt;
-
-&lt;p&gt;在这个实现中，&lt;code&gt;updateWorkInProgressHook()&lt;/code&gt;函数用来获取当前正在执行的函数组件的 fiber 对象并判断是否存在对应的&lt;code&gt;hook&lt;/code&gt;。它的实现如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;function updateWorkInProgressHook() {
-  const fiber = getWorkInProgressFiber();
-  let hook = fiber.memoizedState;
-  if (hook) {
-    fiber.memoizedState = hook.next;
-    hook.next = null;
-  } else {
-    hook = {
-      memoizedState: null,
-      queue: {
-        pending: null,
-        dispatch: null,
-        last: null,
-      },
-      next: null,
-    };
-  }
-  workInProgressHook = hook;
-  return hook;
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;code&gt;getWorkInProgressFiber()&lt;/code&gt;函数用来获取当前正在执行的函数组件的&lt;code&gt;fiber&lt;/code&gt;对象，&lt;code&gt;workInProgressHook&lt;/code&gt;则用来存储当前正在执行的&lt;code&gt;hook&lt;/code&gt;对象。在函数组件中，每一个&lt;code&gt;useState&lt;/code&gt;调用都会创建一个新的 hook 对象，并将其添加到&lt;code&gt;fiber&lt;/code&gt;对象的&lt;code&gt;hooks&lt;/code&gt;链表中。这个&lt;code&gt;hooks&lt;/code&gt;链表是通过&lt;code&gt;fiber&lt;/code&gt;对象的&lt;code&gt;memoizedState&lt;/code&gt;属性来维护的。&lt;/p&gt;
-
-&lt;p&gt;我们还需要注意到在&lt;code&gt;useState Hook&lt;/code&gt;的实现中，每一个&lt;code&gt;hook&lt;/code&gt;对象都包含了一个&lt;code&gt;queue&lt;/code&gt;对象，用来存储待更新的状态以及更新函数。&lt;code&gt;scheduleWork()&lt;/code&gt;函数则用来通知&lt;code&gt;React&lt;/code&gt;调度器有任务需要执行。&lt;/p&gt;
-
-&lt;p&gt;在&lt;code&gt;React&lt;/code&gt;的源码中，&lt;code&gt;useState&lt;/code&gt;函数实际上是一个叫做&lt;code&gt;useStateImpl&lt;/code&gt;的内部函数。&lt;/p&gt;
-
-&lt;p&gt;下面是&lt;code&gt;useStateImpl&lt;/code&gt;的源码：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;function useStateImpl&amp;lt;S&amp;gt;(initialState: (() =&amp;gt; S) | S): [S, Dispatch&amp;lt;SetStateAction&amp;lt;S&amp;gt;&amp;gt;] {
-  const dispatcher = resolveDispatcher();
-  return dispatcher.useState(initialState);
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;可以看到，&lt;code&gt;useStateImpl&lt;/code&gt;函数的作用就是获取当前的&lt;code&gt;dispatcher&lt;/code&gt;并调用它的&lt;code&gt;useState&lt;/code&gt;方法，返回一个数组，第一个元素是状态的值，第二个元素是一个&lt;code&gt;dispatch&lt;/code&gt;函数，用来更新状态。这里的&lt;code&gt;resolveDispatcher&lt;/code&gt;函数用来获取当前的&lt;code&gt;dispatcher&lt;/code&gt;，其实现如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;function resolveDispatcher(): Dispatcher {
-  const dispatcher = currentlyRenderingFiber?.dispatcher;
-  if (dispatcher === undefined) {
-    throw new Error(&#x27;Hooks can only be called inside the body of a function component. (https://fb.me/react-invalid-hook-call)&#x27;);
-  }
-  return dispatcher;
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;code&gt;resolveDispatcher&lt;/code&gt;函数首先尝试获取当前正在渲染的&lt;code&gt;fiber&lt;/code&gt;对象的&lt;code&gt;dispatcher&lt;/code&gt;属性，如果获取不到则说&lt;/p&gt;
-
-&lt;p&gt;明当前不在组件的渲染过程中，就会抛出一个错误。&lt;/p&gt;
-
-&lt;p&gt;最后，我们来看一下&lt;code&gt;useState&lt;/code&gt;方法在具体的&lt;code&gt;dispatcher&lt;/code&gt;实现中是如何实现的。我们以&lt;code&gt;useReducer&lt;/code&gt;的&lt;/p&gt;
-
-&lt;p&gt;&lt;code&gt;dispatcher&lt;/code&gt;为例，它的实现如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;export function useReducer&amp;lt;S, A&amp;gt;(
-  reducer: (prevState: S, action: A) =&amp;gt; S,
-  initialState: S,
-  initialAction?: A,
-): [S, Dispatch&amp;lt;A&amp;gt;] {
-  const [dispatch, currentState] = updateReducer&amp;lt;S, A&amp;gt;(
-    reducer,
-    // $FlowFixMe: Flow doesn&#x27;t like mixed types
-    [initialState, initialAction],
-    // $FlowFixMe: Flow doesn&#x27;t like mixed types
-    reducer === basicStateReducer ? basicStateReducer : updateStateReducer,
-  );
-  return [currentState, dispatch];
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;可以看到，&lt;code&gt;useReducer&lt;/code&gt;方法实际上是调用了一个叫做&lt;code&gt;updateReducer&lt;/code&gt;的函数，返回了一个包含当前状态和&lt;code&gt;dispatch&lt;/code&gt;函数的数组。&lt;code&gt;updateReducer&lt;/code&gt;的实现比较复杂，涉及到了很多细节，这里不再展开介绍。&lt;/p&gt;
-
-&lt;h4&gt;useEffect Hook&lt;/h4&gt;
-
-&lt;p&gt;&lt;code&gt;useEffect&lt;/code&gt;是&lt;code&gt;React&lt;/code&gt;中常用的一个&lt;code&gt;Hook&lt;/code&gt;函数，用于在组件中执行副作用操作，例如访问远程数据、添加/移除事件监听器、手动操作&lt;code&gt;DOM&lt;/code&gt;等等。&lt;code&gt;useEffect&lt;/code&gt;的核心功能是在组件的渲染过程结束之后异步执行回调函数，它的实现方式涉及到 React 中的异步渲染机制。&lt;/p&gt;
-
-&lt;p&gt;以下是useEffect Hook的实现示例：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;function useEffect(callback, dependencies) {
-  // 通过调用 useLayoutEffect 或者 useEffect 方法来获取当前的渲染批次
-  const batch = useContext(BatchContext);
-
-  // 根据当前的渲染批次判断是否需要执行回调函数
-  if (shouldFireEffect(batch, dependencies)) {
-    callback();
-  }
-
-  // 在组件被卸载时清除当前 effect 的状态信息
-  return () =&amp;gt; clearEffect(batch);
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;在这个示例中，&lt;code&gt;useEffect&lt;/code&gt;接收两个参数：回调函数和依赖项数组。当依赖项数组中的任何一个值发生变化时，&lt;/p&gt;
-
-&lt;p&gt;&lt;code&gt;React&lt;/code&gt;会在下一次渲染时重新执行&lt;code&gt;useEffect&lt;/code&gt;中传入的回调函数。&lt;/p&gt;
-
-&lt;p&gt;&lt;code&gt;useEffect&lt;/code&gt;函数的实现方式主要依赖于&lt;code&gt;React&lt;/code&gt;中的异步渲染机制。当一个组件需要重新渲染时，&lt;code&gt;React&lt;/code&gt;会将所有的&lt;code&gt;state&lt;/code&gt;更新操作加入到一个队列中，在当前渲染批次结束之后再异步执行这些更新操作，从而避免在同一个渲染批次中连续执行多次更新操作。&lt;/p&gt;
-
-&lt;p&gt;在&lt;code&gt;useEffect&lt;/code&gt;函数中，我们通过调用&lt;code&gt;useContext(BatchContext)&lt;/code&gt;方法来获取当前的渲染批次，并根据&lt;code&gt;shouldFireEffect&lt;/code&gt;方法判断是否需要执行回调函数。在回调函数执行完毕后，我们需要通过&lt;code&gt;clearEffect&lt;/code&gt;方法来清除当前&lt;code&gt;effect&lt;/code&gt;的状态信息，避免对后续的渲染批次产生影响。&lt;/p&gt;
-
-&lt;h1&gt;总结&lt;/h1&gt;
-
-&lt;p&gt;总的来说，&lt;code&gt;React Hooks&lt;/code&gt;的实现原理并不复杂，它主要依赖于&lt;code&gt;React&lt;/code&gt;内部的&lt;code&gt;fiber&lt;/code&gt;数据结构和调度系统，通过这些机制来实现对组件状态的管理和更新。&lt;code&gt;Hooks&lt;/code&gt;能够让我们在函数组件中使用状态和其他&lt;code&gt;React&lt;/code&gt;特性，使得函数组件的功能可以和类组件媲美。&lt;/p&gt;
-
-&lt;p&gt;除了&lt;code&gt;useState&lt;/code&gt;、&lt;code&gt;useEffect&lt;/code&gt;等&lt;code&gt;hook&lt;/code&gt;，&lt;code&gt;React&lt;/code&gt;还有&lt;code&gt;useContext&lt;/code&gt;等常用的&lt;code&gt;Hook&lt;/code&gt;。它们的实现原理也基本相似，都是利用&lt;code&gt;fiber&lt;/code&gt;架构来实现状态管理和生命周期钩子等功能。&lt;/p&gt;
-
-&lt;p&gt;以上是&lt;code&gt;hook&lt;/code&gt;简单实现示例，它们并不是&lt;code&gt;React&lt;/code&gt;中实际使用的代码，但是可以帮助我们更好地理解&lt;code&gt;hook&lt;/code&gt;的核心实现方式。&lt;/p&gt;
-&lt;/div&gt;
-  &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
 <guid>d52f7c16c129125de002fa1d08148b5a</guid>
 <title>研发在云端：淘系云研发体系实践</title>
 <link>https://toutiao.io/k/x86cza8</link>
@@ -289,5 +82,112 @@ render();
                   &lt;/p&gt;
                 &lt;/div&gt;
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>586990c832a68995e70e44afe9aa0a6b</guid>
+<title>Effective Profiling in Google Chrome</title>
+<link>https://toutiao.io/k/o1l403r</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;prose md:prose-md mx-auto&quot;&gt;&lt;p&gt;This blog post will explain how to effectively profile your website so that you can deal with performance pain points.&lt;/p&gt;
+&lt;p&gt;We&#x27;ll go through the two most used tools in Google Chrome for profiling:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The Performance tab in Google Chrome DevTools&lt;/li&gt;
+&lt;li&gt;Lighthouse—an open-source tool for improving the quality of web pages&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Imagine that you optimized your backend and everything is running smoothly. However, for some reason, the load time of your pages is still unreasonably high. Your users might be experiencing sluggish UI and long load times. This post will help you sort these issues out.&lt;/p&gt;
+&lt;h2 id=&quot;importance-of-profiling-your-website&quot;&gt;Importance of Profiling Your Website&lt;/h2&gt;
+&lt;p&gt;When you get a greenfield project and you start building frontend from scratch, chances are that your website won&#x27;t have poor performance. In moments like these, you don&#x27;t need to worry about measuring performance and profiling. But, as time goes on and more code and logic is added to the frontend, you might start experiencing some slowdown. This is fine since you cannot predict every possible outcome of the code you added. Also, piled up features and legacy code can prove problematic after some time if they are not taken care of along the way.&lt;/p&gt;
+&lt;p&gt;The thing about legacy code and old features is that very few people in your team want to deal with them. They are the dusty parts of your application and could easily break (especially if you didn&#x27;t write automated tests). But, when your application slows down, you&#x27;ll need to start looking into those deep corners of your codebase. Luckily, Google Chrome DevTools has a couple of tools that can help you.&lt;/p&gt;
+&lt;h2 id=&quot;profiling-your-pages&quot;&gt;Profiling Your Pages&lt;/h2&gt;
+&lt;p&gt;Let&#x27;s say your page is slow and you want to optimize it. To understand &lt;strong&gt;why&lt;/strong&gt; it is slow, you have to measure &lt;strong&gt;what&lt;/strong&gt; is slowing it down and &lt;strong&gt;how&lt;/strong&gt; it is slowing it down. In this blog post, we will describe how to do this with the Google Chrome browser. Mozilla Firefox also has its own set of tools for measuring performance, and you can find other resources and websites online that do the same, but today, we&#x27;ll focus on Google Chrome. What Chrome offers you for profiling is Performance profiling inside the Performance tab and Lighthouse inside the Audits tab in the Google Chrome DevTools (let&#x27;s just call them DevTools from now on).&lt;/p&gt;
+
+&lt;p&gt;The easiest way to do this is to open DevTools. There are a couple of ways to open them:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Use the Inspect option by right-clicking somewhere on your page and selecting Inspect
+&lt;figure class=&quot;mx-auto&quot;/&gt;&lt;/li&gt;
+&lt;li&gt;Or press Command+Option+C (Mac) or Control+Shift+C (Windows, Linux, Chrome OS).&lt;/li&gt;
+&lt;li&gt;Press Command+Option+J (Mac) or Control+Shift+J (Windows, Linux, Chrome OS) to jump straight into the Console panel.&lt;/li&gt;
+&lt;li&gt;Press Command+Option+I (Mac) or Control+Shift+I.&lt;/li&gt;
+&lt;li&gt;Click Customize and control Google Chrome Customize and control Google Chrome and then select More Tools &amp;gt; Developer Tools.
+&lt;figure class=&quot;mx-auto&quot;/&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&quot;recording-performance&quot;&gt;Recording Performance&lt;/h3&gt;
+&lt;p&gt;Now that we&#x27;re in the DevTools, go into the Performance tab, and press the Record button to interact with your website. For example, if you have some part of your application that&#x27;s slow, like a list of items being scrolled, try to scroll that list when the profiler is running. Once you&#x27;re done with the interaction, press Stop or the Record button again.&lt;/p&gt;
+&lt;h3 id=&quot;recording-websites-load-performance&quot;&gt;Recording Website&#x27;s Load Performance&lt;/h3&gt;
+&lt;p&gt;If you want to measure how your website loads, you can click the &lt;strong&gt;Start profiling and reload the page&lt;/strong&gt; button next to the Record button. This will record what is going on and below the page while it&#x27;s being loaded. After the application has loaded and you&#x27;re finished interacting with it, click the Stop button to get a recording.&lt;/p&gt;
+&lt;h3 id=&quot;reading-performance-recordings&quot;&gt;Reading Performance Recordings&lt;/h3&gt;
+&lt;p&gt;After you&#x27;ve simulated the behavior that affects your website&#x27;s performance and gathered the recordings, it&#x27;s time to analyze that data. You should see something like this in your browser:&lt;/p&gt;
+&lt;figure class=&quot;mx-auto&quot;/&gt;
+&lt;p&gt;This can be overwhelming at first and a bit scary, but don&#x27;t back down now! As you can see, the Performance tab offers a ton of features for you to look into, but we will only glance over a few common ones. The first thing you should get acquainted with is moving around the &lt;strong&gt;Timeline&lt;/strong&gt;. The easiest way for me was to select a specific portion of the Timeline using my mouse. You can do it like this:&lt;/p&gt;
+&lt;figure class=&quot;mx-auto&quot;/&gt;
+&lt;p&gt;As you can see in the GIF above, I&#x27;m trying to zoom in on the place in the Timeline where the most activity occurred. The Timeline shows what is going on with your website in each frame. To be able to visually identify what was going on when you profiled your website, Timeline is painted in different colors. JavaScript execution time is marked in yellow and it&#x27;s called &lt;strong&gt;Scripting&lt;/strong&gt;. The purple area shows the &lt;strong&gt;Rendering&lt;/strong&gt; and the green parts of the Timeline show the &lt;strong&gt;Painting&lt;/strong&gt; process. To better understand what these mean, let&#x27;s dive into how the browser ships pixels to your screen.&lt;/p&gt;
+&lt;figure class=&quot;mx-auto&quot;/&gt;
+&lt;p&gt;Everything begins with evaluating the JavaScript code on your page, which is what the &lt;strong&gt;Scripting&lt;/strong&gt; part of Timeline refers to. This is the JS part of your code that will result in some visual changes on your website. Then, the &lt;strong&gt;Rendering&lt;/strong&gt; part comes in with &lt;strong&gt;Style&lt;/strong&gt; and &lt;strong&gt;Layout&lt;/strong&gt; coming into place. &lt;strong&gt;Style calculations&lt;/strong&gt; is a process where the browser is figuring out which CSS rule applies to which HTML element. The &lt;strong&gt;Layout&lt;/strong&gt; process tries to come up with the sizing of your elements and where to put them on the screen. Finally, we have the &lt;strong&gt;Painting&lt;/strong&gt; part that has 2 parts—&lt;strong&gt;Paint&lt;/strong&gt; and &lt;strong&gt;Composite&lt;/strong&gt;. &lt;strong&gt;Paint&lt;/strong&gt; is a process where colors, images, text, and shadows are drawn. &lt;strong&gt;Compositing&lt;/strong&gt; is a process that ensures that layers of your website are drawn in the correct order, for example, if you have elements that overlap each other. Each of these processes can slow down, and thus slow down the whole process of showing a frame to the end-user.&lt;/p&gt;
+&lt;p&gt;You must be thinking, &quot;OK, now what?&quot; Hang on, we&#x27;re getting there. Chrome will mark the sections of the timeline where the UI was choppy with red in the FPS row of the timeline like below. Luckily, we just got familiar with what color represents which process, and with that knowledge, we can identify what might be wrong with the code behind it.&lt;/p&gt;
+&lt;figure class=&quot;mx-auto&quot;/&gt;
+&lt;p&gt;This is a clear indicator that something in there is causing poor performance. In that case, you should select the part of the Timeline that is marked as red in the FPS row and investigate the Main thread activity flame chart. If you&#x27;ve never read flame charts before, don&#x27;t worry, they are pretty intuitive. A flame chart is a data visualization of your call stack while you were profiling your app. Take a look at the call stack that is causing the most trouble by following the execution trace to the bottom. This is how you usually find the culprit.&lt;/p&gt;
+&lt;figure class=&quot;mx-auto&quot;/&gt;
+&lt;p&gt;In this case, JavaScript code was triggering expensive Style recalculation that caused UI to lag. In the Timeline, it will be marked as &lt;strong&gt;Scripting&lt;/strong&gt;. This is one of the major causes of poor performance. This happened to me when I was using React and was triggering unnecessary renders that caused a lot of Style changes. In React, you can achieve this by checking when a component should be rerendered using &lt;a href=&quot;https://reactjs.org/docs/react-component.html#shouldcomponentupdate&quot;&gt;shouldComponentUpdate&lt;/a&gt;. One of the solutions, in that case, is to stop triggering renders when they are
+not needed.&lt;/p&gt;
+&lt;p&gt;One of the guidelines for avoiding situations like these are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Let the browser do the work it can. Do not handle touch and scrolls on your own, for example.&lt;/li&gt;
+&lt;li&gt;Consider using &lt;a href=&quot;https://css-tricks.com/using-requestanimationframe/&quot;&gt;&lt;code&gt;requestAnimationFrame&lt;/code&gt;&lt;/a&gt; for those tricky DOM updates.&lt;/li&gt;
+&lt;li&gt;Delegate some of the work to &lt;a href=&quot;https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers&quot;&gt;Web Workers&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;If this is not enough, there is a great article about how to &lt;a href=&quot;https://developers.google.com/web/fundamentals/performance/rendering/optimize-javascript-execution&quot;&gt;optimize JavaScript execution&lt;/a&gt; to improve your website performance.&lt;/p&gt;
+&lt;p&gt;Another thing that might slow down your website directly is complex CSS which will show up in the Timeline as a lot of purple sections—&lt;strong&gt;Rendering&lt;/strong&gt;. One scenario where this can happen is if you have complex CSS selectors like&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;.box:nth-child(n+1) a.button.submit {
+  /* styles */
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If you have a lot of these at a bad time, the browser will have to calculate to which elements this rule applies to and will slow things down.&lt;/p&gt;
+&lt;p&gt;If you&#x27;re not careful, you can also stress the browser when constantly reading and writing to the DOM. This will cause the browser to repeatedly calculate the layout over and over again. One good solution for this would be to avoid that practice somehow or resort to the &lt;a href=&quot;https://github.com/wilsonpage/fastdom&quot;&gt;fastdom library&lt;/a&gt; which batches read/write operations to the DOM so that the browser isn&#x27;t stressed too much.&lt;/p&gt;
+&lt;p&gt;Some tips on reducing &lt;strong&gt;Rendering&lt;/strong&gt; as a bottleneck:&lt;/p&gt;
+
+&lt;p&gt;You can find more great tips on solving performance problems in an article from Google Developers about &lt;a href=&quot;https://developers.google.com/web/tools/chrome-devtools/rendering-tools&quot;&gt;analyzing runtime performance&lt;/a&gt;. Also, check out this detailed guide on &lt;a href=&quot;https://developers.google.com/web/tools/chrome-devtools/evaluate-performance/reference&quot;&gt;performance analysis&lt;/a&gt; that explains everything that happens inside the Performance tab.&lt;/p&gt;
+
+&lt;p&gt;Sometimes, performance drops are not affected by your code. Or, maybe the SEO score of your website is not that good and it&#x27;s being ranked poorly in searches. What do you do in that case? Well, there is a tool called Lighthouse that measures some crucial points of your app so that you can get a well-rounded website.&lt;/p&gt;
+&lt;p&gt;Lighthouse is an &lt;a href=&quot;https://github.com/GoogleChrome/lighthouse&quot;&gt;open source tool&lt;/a&gt; that can also be used outside the browser. It is actively maintained by Google and it&#x27;s an important tool to have under your belt.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Lighthouse analyzes web apps and web pages, collecting modern performance metrics and insights on developer best practices.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;You can use Lighthouse in other contexts, but we&#x27;ll go through the process of using it inside DevTools in Google Chrome.&lt;/p&gt;
+&lt;p&gt;The first thing you need to do is to open DevTools (we covered this part above) and go to the Audits tab inside it. You should see something like this:&lt;/p&gt;
+&lt;figure class=&quot;mx-auto&quot;/&gt;
+&lt;p&gt;To conduct an audit, click &lt;strong&gt;Perform and audit&lt;/strong&gt; and wait for the Lighthouse to finish profiling. It assesses your website using 5 categories, where you can score between 0 and 100 points for each category. Lighthouse measures:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Performance — how fast is your website?&lt;/li&gt;
+&lt;li&gt;Accessibility — how accessible is your website to others?&lt;/li&gt;
+&lt;li&gt;Best Practices — are you following the web&#x27;s best practices?&lt;/li&gt;
+&lt;li&gt;SEO — is your website SEO friendly?&lt;/li&gt;
+&lt;li&gt;Progressive Web App — is your website a PWA?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;These metrics are important to have a versatile website that will stand out when a user visits it. This can increase your standing in the searches performed by users interested in your website&#x27;s topics. You can&#x27;t go wrong with trying to score as much as you can on the Lighthouse audit.&lt;/p&gt;
+&lt;p&gt;After you run an audit, you will get something like this:&lt;/p&gt;
+&lt;figure class=&quot;mx-auto&quot;/&gt;
+&lt;p&gt;As you can see, our Performance score is not perfect, it&#x27;s in the orange range. Lighthouse then suggests which metrics attributed to this result. To learn more about the Lighthouse scoring, you can consult its &lt;a href=&quot;https://developers.google.com/web/tools/lighthouse/v3/scoring&quot;&gt;scoring guide&lt;/a&gt;. If you expand them, you can get a more detailed explanation of each metric shown.&lt;/p&gt;
+&lt;figure class=&quot;mx-auto&quot;/&gt;
+&lt;p&gt;When you click on the &lt;strong&gt;Learn more&lt;/strong&gt; links, you&#x27;ll be taken to a page that deals with potential solutions that address those problems. Most common solutions that make Lighthouse and users happy are to:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Optimize the size of images on your website. Use tools such as &lt;a href=&quot;https://imageoptim.com/&quot;&gt;ImageOptim&lt;/a&gt; or &lt;a href=&quot;https://www.jpegmini.com/&quot;&gt;JPEGmini&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Remove unused CSS. You can identify unused CSS rules by using &lt;a href=&quot;https://developers.google.com/web/tools/chrome-devtools/css/reference#coverage&quot;&gt;Coverage tab in DevTools&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Minify and compress your files&lt;/li&gt;
+&lt;li&gt;Use a &lt;a href=&quot;https://css-tricks.com/adding-a-cdn-to-your-website/&quot;&gt;Content Delivery Network (CDN)&lt;/a&gt; to manage your assets&lt;/li&gt;
+&lt;li&gt;Only run the code needed to render that page. Maybe you don&#x27;t need &lt;code&gt;lodash.js&lt;/code&gt; on your homepage after all.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;You can also configure Lighthouse to simulate being on a mobile device or having a slow CPU. This can be useful if you are interested in users who are visiting your website from slow mobile devices, for example. You can also change &lt;strong&gt;Throttling&lt;/strong&gt; where you can simulate slow internet speeds that can occur most often on mobile devices.&lt;/p&gt;
+&lt;p&gt;Once you&#x27;re done with measuring and profiling from your browser locally, it
+would be a good thing to know what is happening with your website online.
+AppSignal has great &lt;a href=&quot;https://docs.appsignal.com/front-end/&quot;&gt;support for catching errors from your front-end&lt;/a&gt; that allows you to catch errors before your users do. Make sure to check it out if you run Node, Ruby or Elixir on your back-end.&lt;/p&gt;
+&lt;h2 id=&quot;automating-performance-checks&quot;&gt;Automating Performance Checks&lt;/h2&gt;
+&lt;p&gt;After figuring out what was slowing your app down and dealing with it, the app is now similar to the time when it was brand new and lightning-fast. I&#x27;m pretty sure you will want to keep it that way. The only way to make sure it stays fast is to measure it through time. One way you can do that is by setting up automated checks that will keep your website performance at bay.&lt;/p&gt;
+&lt;p&gt;You can set up Lighthouse to run in your continuous integration (CI) by following the instructions on its
+&lt;a href=&quot;https://github.com/GoogleChrome/lighthouse-ci/blob/master/docs/getting-started.md&quot;&gt;GitHub repo&lt;/a&gt;. Then, you can set it up to show up in GitHub&#x27;s pull request as a status check and block any future changes that might jeopardize the performance of your website.&lt;/p&gt;
+&lt;h2 id=&quot;always-measure-the-performance&quot;&gt;Always Measure the Performance&lt;/h2&gt;
+&lt;p&gt;No matter how cool and beautiful your website is, nobody will get over the fact that is slow, inaccessible or dangerous. To keep these adjectives out of the proximity of your application, I strongly suggest that you always measure the performance, whether it&#x27;s through an automated CI job, or a recurring Lighthouse run.&lt;/p&gt;
+&lt;p&gt;In the end, to have a website that&#x27;s optimized and fast for all users is a journey, and profiling and reading data is just the first step in that journey. Make sure to always think of the end-user while walking on that path.&lt;/p&gt;
+&lt;p&gt;I hope this blog post helped you to better grasp how you can measure your website in Chrome.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;P.S. If you liked this post, &lt;a href=&quot;/javascript-sorcery&quot;&gt;subscribe to our new JavaScript Sorcery list&lt;/a&gt; for a monthly deep dive into more magical JavaScript tips and tricks.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;P.P.S. When we wrote this, it wasn&#x27;t out yet, but AppSignal &lt;a href=&quot;https://www.appsignal.com/nodejs&quot;&gt;monitoring for Node.js apps&lt;/a&gt; is here! If you&#x27;d love an all-in-one APM for Node, go and check it out.&lt;/strong&gt;&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
