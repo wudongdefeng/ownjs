@@ -20,133 +20,6 @@
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;白话Docker核心原理&lt;/span&gt;&lt;span/&gt;&lt;/h2&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;Docker是什么？&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;「Docker使用Google公司推出的Go语言进行开发实现，基于操作系统内核中Cgroup(资源控制)、Namespace(资源隔离)与OverlayFS(数据存储)等技术，实现了基于操作系统层面的虚拟化技术。」&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;理解的早就理解了这句话核心本质，不理解的给他这么一解释还是云里雾里。那我们先不急于搞懂&lt;code&gt;Docker&lt;/code&gt;是什么，说到&lt;code&gt;Docker&lt;/code&gt;容器，就不得不说下虚拟机(&lt;code&gt;Virtual Machine&lt;/code&gt;)，&lt;code&gt;Docker&lt;/code&gt;容器和虚拟机又有什么区别呢？&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;Docker vs 虚拟机&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;虚拟机对于我们开发者是个再熟悉不过的概念，比如我们经常使用&lt;code&gt;VMware Workstation&lt;/code&gt;搭建虚拟操作系统部署应用，使用&lt;code&gt;JVM&lt;/code&gt;虚拟机运行&lt;code&gt;Java&lt;/code&gt;应用等，如下图，&lt;strong&gt;「通常使用虚拟机管理器作为中间转换层，可以屏蔽底层操作系统或硬件设备差异」&lt;/strong&gt;，比如上层虚拟机操作系统(&lt;code&gt;Guest OS&lt;/code&gt;)执行程序或&lt;code&gt;Java&lt;/code&gt;程序运行等，&lt;strong&gt;「这个中间件转换层就像翻译家一样，将上层执行的指令解释翻译成下层操作系统对应的指令进行执行」&lt;/strong&gt;。&lt;/p&gt;&lt;img data-ratio=&quot;0.7308730873087309&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/O2TDJPu7cb33ewbjgnbpvAvFus7FlbfUUU9gvs6QpoLMZwYEDq7gic24mIRxLw0LNZOONmeiaRKdmVxLQvEkZmbg/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1111&quot;/&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;正如Java世界中吹嘘的&quot;一次编译，到处运行&quot;，&lt;strong&gt;「虚拟机本质上通过中间件转换层屏蔽了底层差异，模拟出一个新环境，实现与平台无关，达到与外界隔离的目的，这就是虚拟机实现虚拟化的核心思想」&lt;/strong&gt;。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;从虚拟机架构实现上可以看出，其存在一个很大问题：所有的指令都必须经过虚拟机管理器这个中间转换层翻译解释才能在真实操作系统上运行，这就意味着虚拟机会存在性能损耗。另外，为了模拟一个&lt;code&gt;Linux&lt;/code&gt;环境上运行的应用，需要使用VMware运行部署一个宿主机(&lt;code&gt;Guest OS&lt;/code&gt;)，再在宿主机上运行应用，宿主机本身占用好几个G的存储空间、400-500MB+内存空间，现在微服务架构动不动就是10+、100+个应用组件需要部署，那这些组件都需要做隔离部署使用虚拟机方式无疑是致命的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;上述说的虚拟机存在性能问题和资源浪费造成了虚拟机对细粒度的环境隔离有点力不从心，而这又与当前流行的微服务架构场景下，系统被拆分成几十、上百个微服务应用组件需要独立部署存在冲突。&lt;code&gt;Docker&lt;/code&gt;推崇的是一种轻量级容器的结构，即一个应用一个容器。所以，Docker一出来就被推向巅峰，那它又是如何搞定虚拟机隔离存在的问题的呢？&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;Docker容器核心技术&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Docker&lt;/code&gt;容器中进程是直接运行在底层操作系统上，没有中间转换层，所以也就不存在性能损耗的问题。关键那它是如何做到隔离的呢？&lt;/p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;1.0333863275039745&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/O2TDJPu7cb33ewbjgnbpvAvFus7FlbfU5Bdibc67Jmr1k7YJiaeWTlKNmglW6944RNu6QjdNcSx40NsuePZ7qryQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;629&quot;/&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;「这里就引出了支撑&lt;code&gt;Docker&lt;/code&gt;容器的两大内核技术：Namespace和Cgroups（Control Groups）」&lt;/strong&gt;。Namespace主要是用来进行&lt;strong&gt;「资源隔离」&lt;/strong&gt;，对于那些计算型资源，比如&lt;code&gt;CPU&lt;/code&gt;、内存、磁盘IO等不能进行隔离的资源，这时就需要采用&lt;code&gt;Cgroups&lt;/code&gt;进行&lt;strong&gt;「资源限制」&lt;/strong&gt;，防止有些资源消耗较大的容器，将整个物理机器的硬件资源(&lt;code&gt;CPU&lt;/code&gt;, &lt;code&gt;Memory&lt;/code&gt;、磁盘IO等) 占满，进而影响其它进程性能。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Namespace&lt;/code&gt;和&lt;code&gt;Cgroups&lt;/code&gt;这两个技术都是&lt;code&gt;Linux&lt;/code&gt;内核本身支持的功能，&lt;code&gt;Docker&lt;/code&gt;如果只使用这两大技术也不可能造就出道即巅峰的火热程度，&lt;code&gt;Docker&lt;/code&gt;创新点恰恰是引入镜像概念，并使用联合文件系统(&lt;code&gt;UnionFS&lt;/code&gt;)技术很好的实现了镜像分层，这样就可以将应用部署介质、依赖环境配置文件以及操作系统二进制文件进行分层叠加构建出应用运行时文件系统环境。&lt;/p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.8917631041524847&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/O2TDJPu7cb33ewbjgnbpvAvFus7FlbfUzqw3DdsUPP2rr0z3rIycibiaq4r35g6N8RErnPolibH3c3PnJ0jO1ygGw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1469&quot;/&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;镜像包含一个基础镜像(&lt;code&gt;Base Image&lt;/code&gt;)，这个一般包含操作系统介质，比如&lt;code&gt;centos&lt;/code&gt;、&lt;code&gt;debian&lt;/code&gt;，但是它只包括使用的操作系统二进制文件，并没有包括内核相关，所以，它的体积远远小于部署整个操作系统占用的空间，比如一个&lt;code&gt;centos&lt;/code&gt;基础镜像大概只有&lt;code&gt;70-80MB&lt;/code&gt;。另外，镜像分层设计进一步减少存储占用，比如现在100+应用组件都是基于&lt;code&gt;centos&lt;/code&gt;基础镜像部署，实际部署时只需要拉取一份centos基础镜像，就像搭积木一样，将每一层使用的文件进行组合叠加，最终构建出程序运行时完整的目录结构。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;白话核心技术关系&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;「&lt;code&gt;Docker&lt;/code&gt;容器技术火热的背后，其实是&lt;code&gt;Namespace&lt;/code&gt;、&lt;code&gt;Cgroups&lt;/code&gt;和&lt;code&gt;UnionFS&lt;/code&gt;三大技术创新的结合，造就出了&lt;code&gt;Docker&lt;/code&gt;这种现象级产品」&lt;/strong&gt;。下面用个比较形象的比喻来帮助你理解三大技术关系：&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;1、正常程序启动时直接运行在操作系统上，使用&lt;code&gt;Docker&lt;/code&gt;启动程序时，也是直接运行在操作系统上，但是&lt;code&gt;Docker&lt;/code&gt;引擎在启动程序时会给程序套一个立方体壳（见下图）；&lt;/p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.87627365356623&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/O2TDJPu7cb33ewbjgnbpvAvFus7FlbfULxtEtEbrlR94icIrDy1QQwtictIRRJXV1aDQMZFVYUcaY4A9SibJ4hpwA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;687&quot;/&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;2、这个立方体壳前后左右四个面使用&lt;code&gt;Namespace&lt;/code&gt;资源隔离技术打造，这样就给&lt;code&gt;Docker&lt;/code&gt;容器中进程和其它进程隔离开来，给容器中进程造成一种运行在一个独立环境中的假象（见下图）；&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;3、这个立方体壳的上面这个面使用&lt;code&gt;Cgroups&lt;/code&gt;资源限制技术打造，避免程序壮大生长出来抢占其它进程的资源，进而影响其它进程性能，这样就给盖盖上加上了一个紧箍咒，再牛逼的程序也会把你死死的限制住（见下图）；&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;4、最后再来看下这个立方体壳剩下的最下面这个面，其采用&lt;code&gt;UnionFS&lt;/code&gt;技术打造，构建出容器中进程运行时文件系统根基。将操作系统二进制指令、依赖配置文件、程序介质等通过镜像分层叠加构建出程序运行时看到的整个文件系统环境；比如宿主机是&lt;code&gt;Debian系统&lt;/code&gt;，但是基础镜像是&lt;code&gt;CentOS环境&lt;/code&gt;，容器中进程看到的是&lt;code&gt;CentOS系统&lt;/code&gt;，而不是&lt;code&gt;Debian系统&lt;/code&gt;，同时将&lt;code&gt;yum install&lt;/code&gt;安装的依赖介质也通过镜像打包进来，容器中进程就不需要关注宿主机上到底有没有安装该依赖介质等等，这样容器中进程看到是一个拥有程序运行时完整介质，并与宿主机操作系统隔离开的独立操作系统（见下图）；&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;5、所以，程序运行在三大核心技术创造的立方体壳壳中，被蒙蔽双眼傻乎乎的以为运行在一个独立计算机环境中，看不到外界程序运行情况，也影响不到外界程序的运行。&lt;/p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.8699186991869918&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/O2TDJPu7cb33ewbjgnbpvAvFus7FlbfUtUdT8th3FcG6FCXKXQloIF28oJAKdBB8yFeF0h96EOLmTktORwYV8Q/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;984&quot;/&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;如何查看Docker进程在宿主机上的PID？&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;Docker&lt;/code&gt;容器中的进程是直接运行在宿主机上，可以通过&lt;code&gt;docker inspect container&lt;/code&gt;查看到&lt;code&gt;Docker&lt;/code&gt;容器中进程在宿主机上对应的PID信息（见下图）：&lt;/p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.37018425460636517&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/O2TDJPu7cb33ewbjgnbpvAvFus7FlbfUeMnWdlKdmicGXxblJbg1Dp9p0jeHMa0hoNSGXOV07u3SrcS1QukCuVA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1791&quot;/&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;宿主机上&lt;code&gt;ps -ef&lt;/code&gt;查看下容器进程信息：&lt;/p&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.09461538461538462&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/O2TDJPu7cb33ewbjgnbpvAvFus7FlbfULqqiaFeamQgtia4EuqbccibYqlSmiaT76ich3cy8ICicnyvheVZXhPaAky3g/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1300&quot;/&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;因为，这里运行的是一个&lt;code&gt;nginx&lt;/code&gt;容器，所以宿主机上看到对应的是&lt;code&gt;nginx&lt;/code&gt;主进程，同时该进程创建了两个&lt;code&gt;nginx worker&lt;/code&gt;子进程。&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;span&gt;&lt;span/&gt;Docker容器缺陷&lt;/span&gt;&lt;span/&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;strong&gt;「高性能、轻便是容器相较于虚拟机最大的优势，容器本质上是一种特殊的进程。」&lt;/strong&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;不过，有利就有弊，基于&lt;code&gt;Namespace&lt;/code&gt;的资源隔离和&lt;code&gt;Cgroups&lt;/code&gt;的资源限制都不是那么彻底，因为容器之间底层还是共享使用宿主机的&lt;code&gt;Linux&lt;/code&gt;内核，尽管你可以在容器里使用不同版本的操作系统文件，比如&lt;code&gt;CentOS&lt;/code&gt;或者&lt;code&gt;Ubuntu&lt;/code&gt;，但这并不能改变共享宿主机内核的事实。这意味着，如果你要在&lt;code&gt;Windows&lt;/code&gt;宿主机上运行&lt;code&gt;Linux&lt;/code&gt;容器，或者在低版本的&lt;code&gt;Linux&lt;/code&gt;宿主机上运行高版本的&lt;code&gt;Linux&lt;/code&gt;容器，都是行不通的。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;其次，在&lt;code&gt;Linux&lt;/code&gt;内核中，有很多资源和对象是不能被&lt;code&gt;Namespace&lt;/code&gt;化的，最典型的例子就是：时间。这就意味着，如果你的容器中的程序修改了时间，整个宿主机的时间都会被随之修改，这显然不符合用户的预期。&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;另外，跟&lt;code&gt;Namespace&lt;/code&gt;的情况类似，&lt;code&gt;Cgroups&lt;/code&gt;对资源的限制能力也有很多不完善的地方，这里最常见的是&lt;code&gt;/proc &lt;/code&gt;文件系统的问题。&lt;code&gt;Linux&lt;/code&gt;下的&lt;code&gt;/proc&lt;/code&gt;目录存储的是记录当前内核运行状态的一系列特殊文件，用户可以通过访问这些文件，查看系统以及当前正在运行的进程的信息，比如&lt;code&gt;CPU&lt;/code&gt;使用情况、内存占用率等，这些文件也是&lt;code&gt;top&lt;/code&gt;指令查看系统信息的主要数据来源。但是，你如果在容器里执行&lt;code&gt;top&lt;/code&gt;指令，就会发现，它显示的信息居然是宿主机的&lt;code&gt;CPU&lt;/code&gt;和内存数据，而不是当前容器的数据。造成这个问题的原因就是，Docker引擎在启动进程时直接将宿主机&lt;code&gt;/proc&lt;/code&gt;下很多文件挂载到&lt;code&gt;Docker&lt;/code&gt;容器上。&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>5df0838a8f7ffe03731e8dfbda83736b</guid>
-<title>【程序员日记】---当“微服务”遇到了“电饼铛“</title>
-<link>https://toutiao.io/k/w41l6kb</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;p&gt;&lt;strong&gt;作者：京东物流 赵勇萍&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;之后的日子里，我可能会陆陆续续写一写跟编程技术感悟相关的文章，一来可以梳理一下对技术和工作的思考，二来也可以记录一下技术成长的的过程。&lt;/p&gt;
-
-&lt;p&gt;换个叫法的话，就叫做程序员日记吧。&lt;/p&gt;
-
-&lt;h1&gt;电饼铛&lt;/h1&gt;
-
-&lt;p&gt;今天就从电饼铛说起。&lt;/p&gt;
-
-&lt;p&gt;上周，我家的电饼铛坏了，原因可能是清洗过后线路短路导致的。那个老式电饼铛确实用了好些年，且功能单一，基本上除了开关键，再也没有什么可以按钮的地方了，不过老妈却一直用的很顺手。&lt;/p&gt;
-
-&lt;p&gt;而对我来说，这确实个好消息，终于可以换一个好电饼铛了。于是在网上买了一个七百多的苏泊尔的电饼铛，这一下子感觉高大上了许多，很多内置模式，可以支持煎蛋，煎饼，炸鸡翅等多种模式，对温控的把握也十分精准。&lt;/p&gt;
-
-&lt;p&gt;不过，对于我老妈来说，她并没有显得多兴奋，我将使用说明一一教给她用，但老妈最终只选择一种用法：打开开关，选择自定义模式，一切都靠经验去判断电饼铛的温度和对食材的感觉，其他所有的内置模式，对她老人家来说，好像确实是多余的。&lt;/p&gt;
-
-&lt;p&gt;对此，我有点陷入沉思，总觉得有一种似曾相识的感觉。 仔细思考，其实这种情况在编程过程中屡见不鲜。其实这不就是我们微服务架构中经常会遇到的一种情况么....&lt;/p&gt;
-
-&lt;p&gt;好的，接下来，如果把我和我老妈的上述行为抽象为代码，可以写成如下：&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;老妈做煎蛋：&lt;/strong&gt;&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;/**
- *老妈做煎鸡蛋
- */
-public class MainApplicaiton{
-    /**
-     *电饼铛
-     */
-    @Resource
-    private DianBingCheng dianBingCheng;
-    /**
-     *老妈的判断服务类
-     */
-    @Resource
-    private MotherCheckService matherCheckService;
-    /**
-     * 老妈的行为服务 
-     */
-
-    private MotherBehaviorService MotherBehaviorService;
-
-    public void execute() {
-        //打开电饼铛
-        MotherBehaviorService.Open(dianBingCheng);
-        //检查温度
-        matherCheckService.CheckTemperature(dianBingChengAggregate);
-        //开始煎鸡蛋
-        MotherBehaviorService.fryEggs();
-        //检查是否熟了
-        matherCheckService.CheckRipe()；
-        //完成，关机盛盘
-        matherService.complete();
-    }
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;strong&gt;我做煎蛋：&lt;/strong&gt;&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;public class MainApplicaiton {
-    /**
-     * 电饼铛聚合根
-     */
-     @Resource
-     private DianBingChengAggregateRoot dianBingChengAggregate;
-
-     public void execute() {
-        //开机
-        dianBingChengAggregate.open();
-        //煎蛋模式
-        dianBingChengAggregate.fryEggs();
-        //完成，关机盛盘
-        dianBingChengAggregate.complete();
-     }
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;大家可以看出这两者的实现区别，我们有时候需要思考一下，我不就是处理一个日常特别简单的事情，一定要引入那么多的服务类么？&lt;/p&gt;
-
-&lt;h1&gt;贫血模型和充血模型&lt;/h1&gt;
-
-&lt;p&gt;可能大家感觉出来了，这两种实现，就是领域驱动设计中典型的贫血模式和充血模式。这里不得不先说一下贫血模型和充血模型。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;贫血模型是事务脚本模式&lt;/strong&gt;。对于程序员来说，脚本呢肯定是要比写设计说明书要快的多了。比如，我们要设计一个订单流程，包括下单，取消，售后，拆单等情况下的订单流转，那么我们就就会任选一个Service类，写一个方法就能搞定，而这时，原来的那个order类中，就会非常非常的“清爽”，里面全是GET方法和Set方法，没有任何行为。而很多人喜欢给这个order类一个定义，叫OrderDomain，订单领域模型。当然我更喜欢叫这种模型为DB模型，是面向数据库的，而不是面向领域业务的。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;而充血模型是才是典型的领域模型模式&lt;/strong&gt;。他实现起来相对复杂，但这种复杂也是相对的，还是上面的例子，我们会在Order这个对象中放入响应的动作行为的方法，例如我们更新订单状态不会用setStatus（）这种方法，而会封装类似orderCancel()，orderComplete()的这种业务行为方法，当然这种方式会让这个类略显“复杂”。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;总结一句话，真正的领域模型会把数据和行为聚合在一起，形成聚合根，对外提供基于行为的方法，而非脚本化的增删改查。只有这样才能够更好的对微服务进行拆分。&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;如果仅是贫血模型其实不是对系统架构危害最大的，想我们已经很熟悉的MVC，通过贫血模型也可以写出复杂的高效快捷的系统。&lt;/p&gt;
-
-&lt;p&gt;但是，有一种危害就会很大了：&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;就像好多同学用这面向对象的语言，写着面向过程的代码一样，很多同学喜欢用冠以领域驱动设计的噱头，却写着MVC式的“面向数据库编程”， 它最大的问题是你引入了领域模型设计的所有成本，但却没有带来任何一丝的收益&lt;/strong&gt;。&lt;/p&gt;
-
-&lt;p&gt;只有当你充分使用了面向对象设计来组织复杂业务逻辑之后，才能抵消这种成本。如果将所有行为都写入一个一个的Service类，领域是被割裂的，那最终你会得到一组事务处理脚本，从而错过了领域模型带来的好处，而且当业务足够复杂时，你将会得到一堆爆炸的事务处理脚本。&lt;/p&gt;
-
-&lt;p&gt;此外，你还会发现，&lt;/p&gt;
-
-&lt;p&gt;本来属于一个领域的能力，却被散落在了工程的各个角落。这样一来，根本无法形成一个可复用的能力。&lt;/p&gt;
-
-&lt;p&gt;当然有同学也会提出疑问：“&lt;em&gt;我的业务场景中领域之间其实关系比较紧密，我会经常遇到会触发同时跟不同领域行为相关的业务，在这种情况下，我就通过一个个的Service扩展，这就是一种显而易见的解决方案呀~~&lt;/em&gt; ”&lt;/p&gt;
-
-&lt;p&gt;其实有这种想法的同学，主要是对领域驱动设计理解不深刻的，同时又对传统的MVC框架开发根深蒂固。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;其实领域驱动设计早已给出它的最佳实践，那就是领域事件&lt;/strong&gt;。而面向事件的编程思想对于后端来说，是一种非常高效和优秀的思想。通过领域事件，我们可以实现领域之间的解耦，同时也维护了领域模型的独立性和数据一致性。而关于领域事件又是一个很大的话题，以后有机会再聊。&lt;/p&gt;
-
-&lt;h1&gt;思考&lt;/h1&gt;
-
-&lt;p&gt;在我们每个人的大脑里，对于一件事，如果没有概念和理解的话，我们会有意识的躲避那件事，或者用自己熟悉的概念去套用。微服务，DDD，中台这些词汇，恰恰是这样的概念。这是有了这些概念，才让我们不断的努力去学习它，思考他，钻研他。&lt;/p&gt;
-
-&lt;p&gt;在微服务和DDD这波浪潮里，很多同学都想用这些概念来包装自己，就像我面试过的很多候选者，他们中的很多都在简历中写了精通领域驱动设计，同时也能说出一些聚合根，实体，值对象等概念，但是实际落地就变成了贫血模式的代码。&lt;/p&gt;
-
-&lt;p&gt;所以，对于程序员来说，最核心的能力并不是你会几种语言，会几个架构或者几个名词概念，而是理解那些概念并转化成自己的编程思想。&lt;/p&gt;
-
-&lt;p&gt;同时，&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;勇于创新和敢于推翻自己的已有认知，也是一名程序员能否有一直前进的动力的前提&lt;/strong&gt;。&lt;/p&gt;
-&lt;/div&gt;
-  &lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
 <guid>9be1d417e9b9862d22cf37cf34a7796e</guid>
 <title>GRPC 是跨语言的，为何偏偏在 go 语言上这么火？</title>
 <link>https://toutiao.io/k/5dsfu3s</link>
@@ -616,6 +489,133 @@ func main() {
         panic(err)
     }
 }&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://picx.zhimg.com/50/v2-82ded9b086505bf0455e62c4368d7700_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1360&quot; data-rawheight=&quot;351&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic1.zhimg.com/v2-82ded9b086505bf0455e62c4368d7700_r.jpg?source=1940ef5c&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1360&quot; data-rawheight=&quot;351&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic1.zhimg.com/v2-82ded9b086505bf0455e62c4368d7700_r.jpg?source=1940ef5c&quot; data-actualsrc=&quot;https://picx.zhimg.com/50/v2-82ded9b086505bf0455e62c4368d7700_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;h2&gt;5 展望&lt;/h2&gt;&lt;p data-pid=&quot;WEVHnoTN&quot;&gt;本文向大家引入了 grpc-go 框架，介绍了其基本用法，和大家一起梳理了服务端运行的核心方法链路. 实际上，本文内容仅仅是 grpc 领域中的冰山一角，更多细节如序列化协议、服务注册/发现、负载均衡等内容，留待后续的篇章和大家再作分享探讨.&lt;/p&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;p data-pid=&quot;KALiduPA&quot;&gt;文末小广告：&lt;/p&gt;&lt;p data-pid=&quot;XgpxgtyL&quot;&gt;欢迎老板们关注我的个人公众号：小徐先生的编程世界&lt;/p&gt;&lt;p data-pid=&quot;3O9KTEAd&quot;&gt;我会不定期更新个人纯原创的&lt;a href=&quot;https://www.zhihu.com/search?q=%E7%BC%96%E7%A8%8B%E6%8A%80%E6%9C%AF&amp;amp;search_source=Entity&amp;amp;hybrid_search_source=Entity&amp;amp;hybrid_search_extra=%7B%22sourceType%22%3A%22answer%22%2C%22sourceId%22%3A2846169717%7D&quot; class=&quot;internal&quot;&gt;编程技术&lt;/a&gt;博客，技术栈以 go 语言为主，让我们一起点亮更多的编程技能树吧！&lt;/p&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>5df0838a8f7ffe03731e8dfbda83736b</guid>
+<title>【程序员日记】---当“微服务”遇到了“电饼铛“</title>
+<link>https://toutiao.io/k/w41l6kb</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;p&gt;&lt;strong&gt;作者：京东物流 赵勇萍&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;之后的日子里，我可能会陆陆续续写一写跟编程技术感悟相关的文章，一来可以梳理一下对技术和工作的思考，二来也可以记录一下技术成长的的过程。&lt;/p&gt;
+
+&lt;p&gt;换个叫法的话，就叫做程序员日记吧。&lt;/p&gt;
+
+&lt;h1&gt;电饼铛&lt;/h1&gt;
+
+&lt;p&gt;今天就从电饼铛说起。&lt;/p&gt;
+
+&lt;p&gt;上周，我家的电饼铛坏了，原因可能是清洗过后线路短路导致的。那个老式电饼铛确实用了好些年，且功能单一，基本上除了开关键，再也没有什么可以按钮的地方了，不过老妈却一直用的很顺手。&lt;/p&gt;
+
+&lt;p&gt;而对我来说，这确实个好消息，终于可以换一个好电饼铛了。于是在网上买了一个七百多的苏泊尔的电饼铛，这一下子感觉高大上了许多，很多内置模式，可以支持煎蛋，煎饼，炸鸡翅等多种模式，对温控的把握也十分精准。&lt;/p&gt;
+
+&lt;p&gt;不过，对于我老妈来说，她并没有显得多兴奋，我将使用说明一一教给她用，但老妈最终只选择一种用法：打开开关，选择自定义模式，一切都靠经验去判断电饼铛的温度和对食材的感觉，其他所有的内置模式，对她老人家来说，好像确实是多余的。&lt;/p&gt;
+
+&lt;p&gt;对此，我有点陷入沉思，总觉得有一种似曾相识的感觉。 仔细思考，其实这种情况在编程过程中屡见不鲜。其实这不就是我们微服务架构中经常会遇到的一种情况么....&lt;/p&gt;
+
+&lt;p&gt;好的，接下来，如果把我和我老妈的上述行为抽象为代码，可以写成如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;老妈做煎蛋：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;/**
+ *老妈做煎鸡蛋
+ */
+public class MainApplicaiton{
+    /**
+     *电饼铛
+     */
+    @Resource
+    private DianBingCheng dianBingCheng;
+    /**
+     *老妈的判断服务类
+     */
+    @Resource
+    private MotherCheckService matherCheckService;
+    /**
+     * 老妈的行为服务 
+     */
+
+    private MotherBehaviorService MotherBehaviorService;
+
+    public void execute() {
+        //打开电饼铛
+        MotherBehaviorService.Open(dianBingCheng);
+        //检查温度
+        matherCheckService.CheckTemperature(dianBingChengAggregate);
+        //开始煎鸡蛋
+        MotherBehaviorService.fryEggs();
+        //检查是否熟了
+        matherCheckService.CheckRipe()；
+        //完成，关机盛盘
+        matherService.complete();
+    }
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;我做煎蛋：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;public class MainApplicaiton {
+    /**
+     * 电饼铛聚合根
+     */
+     @Resource
+     private DianBingChengAggregateRoot dianBingChengAggregate;
+
+     public void execute() {
+        //开机
+        dianBingChengAggregate.open();
+        //煎蛋模式
+        dianBingChengAggregate.fryEggs();
+        //完成，关机盛盘
+        dianBingChengAggregate.complete();
+     }
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;大家可以看出这两者的实现区别，我们有时候需要思考一下，我不就是处理一个日常特别简单的事情，一定要引入那么多的服务类么？&lt;/p&gt;
+
+&lt;h1&gt;贫血模型和充血模型&lt;/h1&gt;
+
+&lt;p&gt;可能大家感觉出来了，这两种实现，就是领域驱动设计中典型的贫血模式和充血模式。这里不得不先说一下贫血模型和充血模型。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;贫血模型是事务脚本模式&lt;/strong&gt;。对于程序员来说，脚本呢肯定是要比写设计说明书要快的多了。比如，我们要设计一个订单流程，包括下单，取消，售后，拆单等情况下的订单流转，那么我们就就会任选一个Service类，写一个方法就能搞定，而这时，原来的那个order类中，就会非常非常的“清爽”，里面全是GET方法和Set方法，没有任何行为。而很多人喜欢给这个order类一个定义，叫OrderDomain，订单领域模型。当然我更喜欢叫这种模型为DB模型，是面向数据库的，而不是面向领域业务的。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;而充血模型是才是典型的领域模型模式&lt;/strong&gt;。他实现起来相对复杂，但这种复杂也是相对的，还是上面的例子，我们会在Order这个对象中放入响应的动作行为的方法，例如我们更新订单状态不会用setStatus（）这种方法，而会封装类似orderCancel()，orderComplete()的这种业务行为方法，当然这种方式会让这个类略显“复杂”。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;总结一句话，真正的领域模型会把数据和行为聚合在一起，形成聚合根，对外提供基于行为的方法，而非脚本化的增删改查。只有这样才能够更好的对微服务进行拆分。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;如果仅是贫血模型其实不是对系统架构危害最大的，想我们已经很熟悉的MVC，通过贫血模型也可以写出复杂的高效快捷的系统。&lt;/p&gt;
+
+&lt;p&gt;但是，有一种危害就会很大了：&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;就像好多同学用这面向对象的语言，写着面向过程的代码一样，很多同学喜欢用冠以领域驱动设计的噱头，却写着MVC式的“面向数据库编程”， 它最大的问题是你引入了领域模型设计的所有成本，但却没有带来任何一丝的收益&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;只有当你充分使用了面向对象设计来组织复杂业务逻辑之后，才能抵消这种成本。如果将所有行为都写入一个一个的Service类，领域是被割裂的，那最终你会得到一组事务处理脚本，从而错过了领域模型带来的好处，而且当业务足够复杂时，你将会得到一堆爆炸的事务处理脚本。&lt;/p&gt;
+
+&lt;p&gt;此外，你还会发现，&lt;/p&gt;
+
+&lt;p&gt;本来属于一个领域的能力，却被散落在了工程的各个角落。这样一来，根本无法形成一个可复用的能力。&lt;/p&gt;
+
+&lt;p&gt;当然有同学也会提出疑问：“&lt;em&gt;我的业务场景中领域之间其实关系比较紧密，我会经常遇到会触发同时跟不同领域行为相关的业务，在这种情况下，我就通过一个个的Service扩展，这就是一种显而易见的解决方案呀~~&lt;/em&gt; ”&lt;/p&gt;
+
+&lt;p&gt;其实有这种想法的同学，主要是对领域驱动设计理解不深刻的，同时又对传统的MVC框架开发根深蒂固。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;其实领域驱动设计早已给出它的最佳实践，那就是领域事件&lt;/strong&gt;。而面向事件的编程思想对于后端来说，是一种非常高效和优秀的思想。通过领域事件，我们可以实现领域之间的解耦，同时也维护了领域模型的独立性和数据一致性。而关于领域事件又是一个很大的话题，以后有机会再聊。&lt;/p&gt;
+
+&lt;h1&gt;思考&lt;/h1&gt;
+
+&lt;p&gt;在我们每个人的大脑里，对于一件事，如果没有概念和理解的话，我们会有意识的躲避那件事，或者用自己熟悉的概念去套用。微服务，DDD，中台这些词汇，恰恰是这样的概念。这是有了这些概念，才让我们不断的努力去学习它，思考他，钻研他。&lt;/p&gt;
+
+&lt;p&gt;在微服务和DDD这波浪潮里，很多同学都想用这些概念来包装自己，就像我面试过的很多候选者，他们中的很多都在简历中写了精通领域驱动设计，同时也能说出一些聚合根，实体，值对象等概念，但是实际落地就变成了贫血模式的代码。&lt;/p&gt;
+
+&lt;p&gt;所以，对于程序员来说，最核心的能力并不是你会几种语言，会几个架构或者几个名词概念，而是理解那些概念并转化成自己的编程思想。&lt;/p&gt;
+
+&lt;p&gt;同时，&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;勇于创新和敢于推翻自己的已有认知，也是一名程序员能否有一直前进的动力的前提&lt;/strong&gt;。&lt;/p&gt;
+&lt;/div&gt;
+  &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
 <guid>55093012b7db776aee5c8709f5a8cc51</guid>
