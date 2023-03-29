@@ -5,6 +5,71 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
+<guid>82f71f38ca9340ceef155bdb59b80efa</guid>
+<title>聊聊前端性能指标那些事儿</title>
+<link>https://toutiao.io/k/c9wo50i</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;container app-preview post-body&quot;&gt;
+  &lt;div class=&quot;preview&quot;&gt;&lt;p&gt;&lt;strong&gt;作者：京东科技 郝梁&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;前言：作为 C 端前端研发，除了攻克业务难点以外，也要有更深层的自我目标，那就是性能优化。这事儿说大不大，说小也不小，但难度绝对不一般，所涉及的范围优化点深入工程每个细胞。做好前端性能优化绝非简单之事！文章主要内容介绍前端性能考核指标及优化方案。&lt;/p&gt;
+
+&lt;h3&gt;&lt;strong&gt;一、前端性能指标有哪些？&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;根据 chrome Lighthouse 最新规则，前端性能指标考量主要有 FCP（First Contenful Paint）、SI（Speed Index）、LCP（Largest Contentful Paint）、TBT（Total Blocking Time）、CLS（Cumulative Layout Shift） ，占比分别如下。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-03-14-16-249SrcLb4Lba4jxQH.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;h3&gt;&lt;strong&gt;二、什么是 FCP ？&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;FCP： First Contentful Paint 首次内容绘制是指测量页面从开始加载到页面内容（文本、图片、背景图、svg 元素或非白色 canvas 元素）的任何部分在屏幕上完成渲染的时间，是测量加载速度感知的重要指标之一。&lt;/p&gt;
+
+&lt;p&gt;示例：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-03-22-21-16Hx69gwzYIxMYURN.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;从上图可以观察到，页面加载开始到页面渲染完成的时间轴中，FCP 发生在第二帧，首批文本和图片在屏幕上已经渲染完成。&lt;/p&gt;
+
+&lt;p&gt;虽然页面一部分内容已完成渲染，但这并非页面所有内容全部完成渲染；这就是首次内容绘制（FCP）与最大内容绘制（LCP）最重要的区别。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;FCP 性能值：首次内容绘制完成渲染时间应控制在 1.8s 以内。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;我们可以从以下方向点优化 FCP ：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;• 消除阻塞渲染的资源：&lt;/p&gt;
+
+&lt;p&gt;◦ 
+
+
+
+  &lt;/p&gt;&lt;/div&gt;
+
+  &lt;footer&gt;
+    
+
+    &lt;p class=&quot;qrcode&quot;&gt;
+    &lt;/p&gt;
+  &lt;/footer&gt;
+
+  
+
+  &lt;div class=&quot;modal fade&quot; id=&quot;quick-download-app-modal&quot; tabindex=&quot;-1&quot; role=&quot;dialog&quot;&gt;
+    &lt;div class=&quot;modal-dialog&quot; role=&quot;document&quot;&gt;
+      &lt;div class=&quot;modal-content&quot;&gt;
+        &lt;p class=&quot;modal-header&quot;&gt;提示&lt;/p&gt;
+        &lt;p class=&quot;modal-body&quot;&gt;我已安装了开发者头条 App，不再显示该广告&lt;/p&gt;
+        &lt;p class=&quot;modal-footer&quot;&gt;
+          &lt;button type=&quot;button&quot; class=&quot;btn btn-block btn-default&quot; id=&quot;close-quick-download-app-modal&quot;&gt;不再显示&lt;/button&gt;
+        &lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  
+  
+
+&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
 <guid>812df417fd1927d52a066c602da6541c</guid>
 <title>如何高效实现 MySQL 与 elasticsearch 的数据同步</title>
 <link>https://toutiao.io/k/xr4jhju</link>
@@ -218,71 +283,6 @@ values
         ( &#x27;robin&#x27;, &#x27;logs&#x27;, &#x27;id &amp;gt; 1&#x27;, &#x27;maxwell&#x27; );
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;DaosVvsA&quot;&gt; 后续可以在 elasticsearch 检测数据是否同步完成，可以先查看数量是否一致，然后抽样对比详细数据。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;# 检测 elasticsearch  中的数据量
 GET robin_logs/robin_logs/_count&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p/&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>82f71f38ca9340ceef155bdb59b80efa</guid>
-<title>聊聊前端性能指标那些事儿</title>
-<link>https://toutiao.io/k/c9wo50i</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;container app-preview post-body&quot;&gt;
-  &lt;div class=&quot;preview&quot;&gt;&lt;p&gt;&lt;strong&gt;作者：京东科技 郝梁&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;前言：作为 C 端前端研发，除了攻克业务难点以外，也要有更深层的自我目标，那就是性能优化。这事儿说大不大，说小也不小，但难度绝对不一般，所涉及的范围优化点深入工程每个细胞。做好前端性能优化绝非简单之事！文章主要内容介绍前端性能考核指标及优化方案。&lt;/p&gt;
-
-&lt;h3&gt;&lt;strong&gt;一、前端性能指标有哪些？&lt;/strong&gt;&lt;/h3&gt;
-
-&lt;p&gt;根据 chrome Lighthouse 最新规则，前端性能指标考量主要有 FCP（First Contenful Paint）、SI（Speed Index）、LCP（Largest Contentful Paint）、TBT（Total Blocking Time）、CLS（Cumulative Layout Shift） ，占比分别如下。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-03-14-16-249SrcLb4Lba4jxQH.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;h3&gt;&lt;strong&gt;二、什么是 FCP ？&lt;/strong&gt;&lt;/h3&gt;
-
-&lt;p&gt;FCP： First Contentful Paint 首次内容绘制是指测量页面从开始加载到页面内容（文本、图片、背景图、svg 元素或非白色 canvas 元素）的任何部分在屏幕上完成渲染的时间，是测量加载速度感知的重要指标之一。&lt;/p&gt;
-
-&lt;p&gt;示例：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://s3.cn-north-1.jdcloud-oss.com/shendengbucket1/2023-03-22-21-16Hx69gwzYIxMYURN.png&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;从上图可以观察到，页面加载开始到页面渲染完成的时间轴中，FCP 发生在第二帧，首批文本和图片在屏幕上已经渲染完成。&lt;/p&gt;
-
-&lt;p&gt;虽然页面一部分内容已完成渲染，但这并非页面所有内容全部完成渲染；这就是首次内容绘制（FCP）与最大内容绘制（LCP）最重要的区别。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;FCP 性能值：首次内容绘制完成渲染时间应控制在 1.8s 以内。&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;我们可以从以下方向点优化 FCP ：&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;• 消除阻塞渲染的资源：&lt;/p&gt;
-
-&lt;p&gt;◦ 
-
-
-
-  &lt;/p&gt;&lt;/div&gt;
-
-  &lt;footer&gt;
-    
-
-    &lt;p class=&quot;qrcode&quot;&gt;
-    &lt;/p&gt;
-  &lt;/footer&gt;
-
-  
-
-  &lt;div class=&quot;modal fade&quot; id=&quot;quick-download-app-modal&quot; tabindex=&quot;-1&quot; role=&quot;dialog&quot;&gt;
-    &lt;div class=&quot;modal-dialog&quot; role=&quot;document&quot;&gt;
-      &lt;div class=&quot;modal-content&quot;&gt;
-        &lt;p class=&quot;modal-header&quot;&gt;提示&lt;/p&gt;
-        &lt;p class=&quot;modal-body&quot;&gt;我已安装了开发者头条 App，不再显示该广告&lt;/p&gt;
-        &lt;p class=&quot;modal-footer&quot;&gt;
-          &lt;button type=&quot;button&quot; class=&quot;btn btn-block btn-default&quot; id=&quot;close-quick-download-app-modal&quot;&gt;不再显示&lt;/button&gt;
-        &lt;/p&gt;
-      &lt;/div&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;
-
-  
-  
-
-&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
 <guid>f2f0d3d47d25f31cf180091ab10d4465</guid>
