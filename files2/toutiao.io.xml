@@ -298,23 +298,213 @@ def p_sample_loop(model, shape):
   &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>7516b1aa46398c0bf027d3ba990a4806</guid>
-<title>研发提效利器：聊聊 mock 服务化</title>
-<link>https://toutiao.io/k/uw0f4l3</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;profile_inner&quot;&gt;
-                  &lt;strong class=&quot;profile_nickname&quot;&gt;老张的求知思考世界&lt;/strong&gt;
-                  &lt;img class=&quot;profile_avatar&quot; id=&quot;js_profile_qrcode_img&quot; src=&quot;&quot; alt=&quot;&quot;/&gt;
+<guid>990f7ef9bc04df46f960f9a96adba5de</guid>
+<title>如何简单实现 ELT？</title>
+<link>https://toutiao.io/k/ofyvyqz</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;entry-content&quot; itemprop=&quot;articleBody&quot;&gt;&amp;#13;
+&lt;p&gt;在商业中，数据通常和业务、企业前景以及财务状况相关，有效的数据管理可以帮助决策者快速有效地从大量数据中分析出有价值的信息。数据集成(Data Integration)是整个数据管理流程中非常重要的一环，它是指将来自多个数据源的数据组合在一起，提供一个统一的视图。&lt;/p&gt;
+&lt;p&gt;数据集成可以通过各种技术来实现，本文主要介绍如何用ELT(extract, load, transform)实现数据集成。区别于传统的ETL和其他的技术，ELT非常适合为数据湖仓或数据集市提供数据管道，并且可以用更低的成本，根据需求，随时对大量数据进行分析。&lt;/p&gt;
+&lt;p&gt;接下来将通过一个简单的示例（Demo）介绍如何实现ELT流程，具体的需求是将原始的电影票房数据保存到数据仓库，然后再对原始数据进行分析，得出相关的结果并且保存在数据仓库，供数据分析团队使用，帮助他们预测未来的收入。&lt;/p&gt;
+&lt;h2&gt;技术栈选择&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Data Warehouse： Snowflake&lt;br/&gt;
+Snowflake是最受欢迎，最容易使用的数据仓库之一，并且非常灵活，可以很方便地与AWS、Azure以及Google Cloud集成。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Extract：通过k8s的cronjob将数据库的数据存到S3。&lt;/p&gt;
+&lt;p&gt;这里的技术选型比较灵活，取决于源数据库的类型以及部署的平台。Demo中将源数据从数据库提取出来后放在AWS S3，原因是Snowflake可以很方便与S3集成，支持复制数据到仓库并且自动刷新。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Load：通过Snowflake的External Tables将S3中的数据复制进数据仓库。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Transform：dbt&lt;/p&gt;
+&lt;p&gt;dbt支持使用SQL来进行简单的转换，同时提供了命令行工具，使用dbt我们可以进行良好的工程实践比如版本控制，自动化测试以及自动化部署。但对于比较复杂的业务场景来说，转换的过程一般都通过自己写代码实现。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Orchestrator: Airflow&lt;/p&gt;
+&lt;p&gt;Airflow和Oozie相比有更加丰富的监控数据以及更友好的UI界面。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;下图描述了如何使用上述技术栈实现ELT：&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/03/how-to-implement-elt-1.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/03/how-to-implement-elt-1.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;图中使用的Logo来自snowflake，dbt和Airflow的官方网站&lt;/em&gt;&lt;/p&gt;
+&lt;h2&gt;工具介绍&lt;/h2&gt;
+&lt;h3&gt;Snowflake：数据存储&lt;/h3&gt;
+&lt;p&gt;Snowflake是一个将全新的SQL查询引擎与一个专为云设计的创新架构相结合的数据云平台，它支持更快更灵活地进行数据存储、处理以及分析。&lt;/p&gt;
+&lt;p&gt;示例中将Snowflake作为数据仓库，存储原始数据电影院票房数量以及转换后的数据。&lt;/p&gt;
+&lt;h4&gt;权限管理&lt;/h4&gt;
+&lt;p&gt;和AWS类似，注册Snowflake后会持有一个拥有所有权限的root account。 如果直接使用此账号进行操作会非常危险，所以可以通过Snowflake提供的user和role来进行细粒度的权限管理。&lt;/p&gt;
+&lt;p&gt;最佳实践是用root account创建新的user并通过role赋予足够的权限，后续的操作都使用新创建的user来进行。&lt;/p&gt;
+&lt;p&gt;在下面的示例中，创建了一个名为TRANSFORMER的role，并且赋予它足够的权限。然后再创建一个使用这个role的user，在更方便地管理权限的同时，也实践了最小权限原则：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;-- create role
 
-                  &lt;p class=&quot;profile_meta&quot;&gt;
-                  &lt;label class=&quot;profile_meta_label&quot;&gt;Weixin ID&lt;/label&gt;
-                  &lt;span class=&quot;profile_meta_value&quot;&gt;For-Think&lt;/span&gt;
-                  &lt;/p&gt;
+CREATE ROLE TRANSFORMER COMMENT = &#x27;Role for dbt&#x27;;
 
-                  &lt;p class=&quot;profile_meta&quot;&gt;
-                  &lt;label class=&quot;profile_meta_label&quot;&gt;About Feature&lt;/label&gt;
-                  &lt;span class=&quot;profile_meta_value&quot;&gt;专注互联网领域相关技术实践和思考，也分享职场成长、读书杂谈等内容。&lt;/span&gt;
-                  &lt;/p&gt;
-                &lt;/div&gt;
-                &lt;/div&gt;&lt;/div&gt;</content:encoded>
+-- grant permission to the role
+
+GRANT USAGE, OPERATE ON WAREHOUSE TRANSFORMING TO ROLE TRANSFORMER;
+
+GRANT USAGE, CREATE SCHEMA ON DATABASE PROD TO ROLE TRANSFORMER;
+
+GRANT ALL ON SCHEMA &quot;PROD&quot;.&quot;RAW&quot; TO ROLE TRANSFORMER;
+
+GRANT ALL ON SCHEMA &quot;PROD&quot;.&quot;ANALYTICS&quot; TO ROLE TRANSFORMER;
+
+GRANT SELECT ON ALL TABLES IN SCHEMA &quot;PROD&quot;.&quot;RAW&quot; TO ROLE TRANSFORMER;
+
+GRANT SELECT ON FUTURE TABLES IN SCHEMA &quot;PROD&quot;.&quot;RAW&quot; TO ROLE TRANSFORMER;
+
+-- create user with role TRANSFORMER
+
+create user user_demo password=&#x27;abc123&#x27; default_role = TRANSFORMER must_change_password = true;&lt;/code&gt;&lt;/pre&gt;
+&lt;h4&gt;数据结构&lt;/h4&gt;
+&lt;p&gt;每一个Snowflake的数据库都可以有多个schema，这里我们根据常见的实践，创建了schema RAW和ANALYTICS，分别用来存放原始数据和转换之后的数据：&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/03/how-to-implement-elt-2.jpg&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/03/how-to-implement-elt-2.jpg&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;每一个schema下面都可以有table、view和stage等数据库object。&lt;/p&gt;
+&lt;p&gt;stage是snowflake提供的一个空间，它支持我们将数据文件上传到这里，然后通过copy命令把外部数据导入到Snowflake。图中MY_S3_STAGE就是Demo中用来加载存放在AWS S3中的数据文件的，我们过这个stage实现了ELT中的L(Loading)。&lt;/p&gt;
+&lt;h3&gt;dbt (data build tool)：原始数据转化&lt;/h3&gt;
+&lt;p&gt;在完成了原始数据的&lt;strong&gt;E&lt;/strong&gt;xtract和&lt;strong&gt;L&lt;/strong&gt;oading后，怎样根据需求对它们进行&lt;strong&gt;T&lt;/strong&gt;ransform从而获得隐藏在数据中的有效信息呢？&lt;/p&gt;
+&lt;p&gt;这里我们选择dbt来进行数据的转化，它是一个支持我们通过简单地编写select语句来进行数据转换的工具，在Demo中它帮助完成了历史票房数据的统计工作。&lt;/p&gt;
+&lt;h4&gt;Model&lt;/h4&gt;
+&lt;p&gt;一个model就是一个写在.sql文件中的select语句，通常会默认使用文件名作为transform结果的表名。下面是demo中的一个model，from语句后面跟着的是一个dbt提供的引用源数据的方法。在model目录里的配置文件中声明源数据表之后，就可以直接通过source()方法来引用source table了。&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;select *
+
+from {{ source(&#x27;ticket_sales&#x27;,&#x27;annual_ticket_sales&#x27;) }}
+
+where ticket_year &amp;gt; ‘2010’
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h4&gt;Jinja Function&lt;/h4&gt;
+&lt;p&gt;当需求变得更复杂时，如果仅仅通过SQL实现转换将会很困难，所以可以通过Jinja Function来实现在SQL中无法做到的事。&lt;/p&gt;
+&lt;p&gt;比如在有多个Model的dbt工程中，通常会有一些可以复用的逻辑，类似于编程语言中的函数。有了Jinja Function，就可以把要复用的逻辑提取成单独的Model，然后在其他Model中通过表达式{{ ref() }}来引用它：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;select sum(total_inflation_adjusted_office) as total_sales
+
+from {{ ref(&#x27;annual_ticket_sales&#x27;) }}&lt;/code&gt;&lt;/pre&gt;
+&lt;h4&gt;Materializations&lt;/h4&gt;
+&lt;p&gt;在上一部分的场景中，通常不希望把可复用的逻辑持久化在数据仓库中。&lt;/p&gt;
+&lt;p&gt;这里就可以引入配置Materializations来改变dbt对于model的持久化策略，比如将此配置设置为&lt;strong&gt;Ephemeral&lt;/strong&gt;：&lt;/p&gt;
+&lt;p&gt;{{ config(materialized=&#x27;table&#x27;) }}&lt;/p&gt;
+&lt;p&gt;这样model就仅被当作临时表被其他model引用而不会被持久化在数据仓库中。如果设置为View，model就会被在数据仓库中创建为视图。除此之外这个配置还支持类型：Table以及Incremental&lt;strong&gt;。&lt;/strong&gt;&lt;/p&gt;
+&lt;h4&gt;Test&lt;/h4&gt;
+&lt;p&gt;为了防止原始数据有脏数据，所以在这里引入测试帮助保证最后结果的正确性。dbt提供了两种级别的测试：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Generic test：这是一种比较通用的测试，为&lt;strong&gt;字段&lt;/strong&gt;级别，它通常可以加在对Source和Target的声明里，应用于某一个字段并且可以重复使用。比如在demo中，我们希望ticket_year这个字段不为空并且是不会重复的：&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre&gt;&lt;code&gt;    tables:
+
+         - name: annual_ticket_sales
+
+           columns:
+
+             - name: ticket_year
+
+               description: &quot;Which year does the sales amount stands for&quot;
+
+               tests:
+
+                 - not_null
+
+                 - unique
+
+             - name: tickets_sold
+
+               tests:
+
+                 - not_null
+
+             - name: total_box_office
+
+               tests:
+
+                 - not_null
+&lt;/code&gt;&lt;/pre&gt;
+&lt;ul&gt;
+&lt;li&gt;Singular Test：它是通过一段SQL语句来定义的测试，是&lt;strong&gt;表&lt;/strong&gt;级别。&lt;br/&gt;
+比如查询源数据表里total_box_office小于0的记录，当查询不到结果时表示测试通过: &lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre&gt;&lt;code&gt;    select total_box_office
+
+    from {{source(&#x27;ticket_sales&#x27;,&#x27;annual_ticket_sales&#x27;)}}
+
+    where total_box_office &amp;lt; 0&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;Airflow：任务编排&lt;/h3&gt;
+&lt;p&gt;有了把原始数据集成进数据仓库的方法，也完成了数据转化的工程， 那么如何才能让它们有顺序地、定时地运行呢？&lt;/p&gt;
+&lt;p&gt;这里我们选择用Airflow进行任务的编排，它是一个支持通过编程编写data pipeline，并且调度和监控各个任务的平台。&lt;/p&gt;
+&lt;h4&gt;DAG&lt;/h4&gt;
+&lt;p&gt;第一步就是为我们的ELT流程创建一个流水线，在Airflow中，一个DAG(Directed Acyclic Graph)就可以看作是一个pipeline。声明它的时候需要提供一些基本的属性，比如DAG name, 运行间隔以及开始日期等等。&lt;/p&gt;
+&lt;p&gt;Airflow支持使用Python语言编写pipeline的代码，因此也具有较强的扩展性。&lt;/p&gt;
+&lt;p&gt;Demo中我们设置这个DAG的开始日期是2022年5月20号，并且期望它每天运行一次：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;default_args = {
+
+   &#x27;start_date&#x27;: datetime(2022, 5, 20)
+
+}
+
+with DAG(&#x27;annual_ticket_processing&#x27;, schedule_interval=&#x27;@daily&#x27;,
+
+        default_args=default_args, catchup=True) as dag:
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h4&gt;Task&lt;/h4&gt;
+&lt;p&gt;流水线创建完成之后，我们需要将ELT的各个步骤加入到这个流水线中。这里的每一个步骤被称为Task，Task是Airflow中的基本执行单位，类似于pipeline中的step。在Demo中，在数据仓库中创建表、把原始数据加载到数据仓库、测试和数据转化分别是一个task。&lt;/p&gt;
+&lt;p&gt;在Airflow中，可以通过Operator快速声明一个task，Operator是一个提前定义好的模版，只需要提供必要的参数比如task id，SQL语句等即可。&lt;/p&gt;
+&lt;p&gt;下面这个task的功能是在Snowflake中创建表，需要提供的是一个连接Snowflake的Connection，要运行的SQL语句以及目标database和schema：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;snowflake_create_table = SnowflakeOperator(
+
+       task_id=&#x27;snowflake_create_table&#x27;,
+
+       snowflake_conn_id=&#x27;love_tech_snowflake&#x27;,
+
+       sql=CREATE_TABLE_SQL_STRING,
+
+       database=&#x27;PROD&#x27;,
+
+       schema=&#x27;RAW&#x27;,
+
+   )&lt;/code&gt;&lt;/pre&gt;
+&lt;h4&gt;Task dependency&lt;/h4&gt;
+&lt;p&gt;当我们对于task的运行顺序有特定要求时，比如为了保证最后报告的准确性，希望在对原始数据的测试通过之后再进行数据转化。这时可以通过定义task之间的依赖关系，来对它们的运行顺序进行编排，如下的依赖关系表示先在Snowflake创建数据表，然后将原数据加载到其中，完成后对于原始数据进行测试，如果测试失败就不会再运行后续的task：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;snowflake_create_table &amp;gt;&amp;gt; copy_into_table &amp;gt;&amp;gt; dbt_test &amp;gt;&amp;gt; transform_data&lt;/code&gt;&lt;/pre&gt;
+&lt;h4&gt;Backfill&lt;/h4&gt;
+&lt;p&gt;在平时的工作中，我们经常会遇到业务变动导致数据表里新增一个字段的情况，此时就需要将原始数据重新同步一遍。这时就可以利用Airflow提供的Backfill机制，帮助我们一次性回填指定区间内缺失的所有历史任务。&lt;/p&gt;
+&lt;p&gt;比如Demo中DAG的start date是5月20日，所以在打开开关之后，Airflow帮我们回填了start date之后的所有DAG run：&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/03/how-to-implement-elt-3.jpg&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/03/how-to-implement-elt-3.jpg&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;上图中DAG是在5月25日创建的，但Airflow却只从开始日期创建任务到24号，看起来缺失了25号的任务。原因是上图的24号是&lt;strong&gt;logical date&lt;/strong&gt;(execution date)，即trigger DAG run的日期。因为在定义DAG的时候将schedule_interval属性设置为daily，所以在25日(Actually Execute Date)当天只会执行24日(logical date)的任务。&lt;/p&gt;
+&lt;h4&gt;监控和调试&lt;/h4&gt;
+&lt;p&gt;Airflow提供了友好的UI界面让我们可以更方便地从各种维度监控以及调试，比如查看一年的运行情况：&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/03/how-to-implement-elt-4.jpg&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/03/how-to-implement-elt-4.jpg&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;br/&gt;
+或者每一个task的运行时间：&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/03/how-to-implement-elt-5.png&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/03/how-to-implement-elt-5.png&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;以及task的log：&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/03/how-to-implement-elt-6.jpg&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/03/how-to-implement-elt-6.jpg&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;等等，这里只列举了其中几个，大家有兴趣的话可以自己探索。&lt;/p&gt;
+&lt;h4&gt;Parallelism&lt;/h4&gt;
+&lt;p&gt;通常我们需要把多个数据源的数据，集成到同一个数据仓库中便于进行分析，因为这些task之间互相没有影响，所以可以通过同步运行它们来提高效率。&lt;/p&gt;
+&lt;p&gt;这种场景下，一方面可以通过配置参数Parallelism来控制Airflow worker的数量，也就是同时可以运行的task的数量，另一方面也需要更改Executor的类型，因为默认的Sequential Executor只支持同时运行一个task。&lt;/p&gt;
+&lt;p&gt;假设task的依赖关系声明为：task_1 &amp;gt;&amp;gt; [task_3, task_2] &amp;gt;&amp;gt; task_4&lt;/p&gt;
+&lt;p&gt;，在更换到Local Executor并且设置parallelism为5之后，启动Airflow，可以发现Airflow会创建5个worker。这时再触发DAG run，task2和task3就可以同时运行了：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;~ yunpeng$ ps -ax | grep &#x27;airflow worker&#x27;
+
+ 59088 ttys017    0:02.81 airflow worker -- LocalExecutor
+
+ 59089 ttys017    0:02.82 airflow worker -- LocalExecutor
+
+ 59090 ttys017    0:02.81 airflow worker -- LocalExecutor
+
+ 59091 ttys017    0:02.82 airflow worker -- LocalExecutor
+
+ 59092 ttys017    0:02.81 airflow worker -- LocalExecutor&lt;/code&gt;&lt;/pre&gt;
+&lt;h2&gt;DEMO运行结果&lt;/h2&gt;
+&lt;p&gt;原始数据被加载到Snowflake的RAW schema中，dbt project可以随时引用这些数据：&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/03/how-to-implement-elt-7.jpg&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/03/how-to-implement-elt-7.jpg&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;转换结果被持久化在ANALYTICS schema里，这些数据可以直接用来分析，也可以作为源数据被再次引用：&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/03/how-to-implement-elt-8.jpg&quot;&gt;&lt;img src=&quot;https://insights.thoughtworks.cn/wp-content/uploads/2023/03/how-to-implement-elt-8.jpg&quot; alt=&quot;&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;Repo link&lt;/h2&gt;
+&lt;p&gt;dbt project: &lt;a href=&quot;https://github.com/littlepainterdao/dbt_development&quot;&gt;https://github.com/littlepainterdao/dbt_development&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Airflow: &lt;a href=&quot;https://github.com/littlepainterdao/airflow&quot;&gt;https://github.com/littlepainterdao/airflow&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;本文整体比较基础，希望之前没有接触过ELT的同学可以通过这篇文章对它以及Snowflake，dbt和Airflow有初步的了解。&lt;/p&gt;
+&amp;#13;
+&lt;/div&gt;&amp;#13;
+&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
