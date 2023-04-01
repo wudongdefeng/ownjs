@@ -88,163 +88,93 @@ import Sponsor from &#x27;./../markdown/Sponsor.md&#x27;
   &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>f9b1596bd0e7a0a3bf6140b1804c1674</guid>
-<title>连接 AI，NebulaGraph Python ORM 项目 Carina 简化 Web 开发</title>
-<link>https://toutiao.io/k/ol4fi9h</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;post&quot; itemprop=&quot;articleBody&quot;&gt;
-          &lt;p&gt;&lt;img src=&quot;https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-blog/nebula-python-orm.jpg&quot; alt=&quot;&quot; role=&quot;presentation&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;作者：Steam &amp;amp; Hao&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;本文整理自社区第 7 期会议中 13‘21″ 到 44’11″ 的 Python ORM 的分享，视频见 &lt;a href=&quot;https://www.bilibili.com/video/BV1s8411N7Cw&quot;&gt;https://www.bilibili.com/video/BV1s8411N7Cw&lt;/a&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;在做业务开发时，NebulaGraph Python ORM 项目作者：Sword Elucidator（下文简称：Hao）发现图数据库在某些场景下有比较不错的应用实践，而 NebulaGraph 是他觉得不错、较为先进的一款图数据库产品。在 Hao 的开发过程中，他发现：虽然&lt;a href=&quot;https://discuss.nebula-graph.com.cn/c/blog/47-category/47&quot;&gt;图数据库被应用在多个业务场景&lt;/a&gt;中，但对于像是 App 开发之类的 ISO/OSI 高层实践的话，nebula-python 之类的客户端就略显笨重。&lt;/p&gt;
-&lt;p&gt;而 ORM 作为一个能简化 CURD 操作、免去繁琐的查询语句编写的存在，是被广大的 Web 开发者所熟知。但是，目前 NebulaGraph 社区有 Golang 版本的 ORM &lt;a href=&quot;https://github.com/zhihu/norm&quot;&gt;norm&lt;/a&gt;、Java ORM &lt;a href=&quot;https://github.com/nebula-contrib/ngbatis&quot;&gt;NGBatis&lt;/a&gt; 和 &lt;a href=&quot;https://github.com/nebula-contrib/graph-ocean&quot;&gt;graph-ocean&lt;/a&gt; 唯独没有 Hao 所熟悉的 Python 语言的 ORM。&lt;/p&gt;
-&lt;p&gt;于是，做一个 NebulaGraph Python ORM 的想法便诞生了。&lt;/p&gt;
-&lt;h2&gt;
-&lt;a name=&quot;nebulagraph-python-orm-1&quot; class=&quot;anchor&quot; href=&quot;#nebulagraph-python-orm-1&quot;/&gt;NebulaGraph Python ORM&lt;/h2&gt;
-&lt;h3&gt;
-&lt;a name=&quot;nebula-carina-2&quot; class=&quot;anchor&quot; href=&quot;#nebula-carina-2&quot;/&gt;Nebula Carina 名字的由来&lt;/h3&gt;
-&lt;p&gt;NebulaGraph Python ORM，又名 &lt;a href=&quot;https://github.com/nebula-contrib/nebula-carina&quot;&gt;nebula-carina&lt;/a&gt;，虽然目前只是一个雏形，但是已经基本上具备了一个 ORM 的基础功能。在命名 Python ORM 项目之时，Hao 先想到了 nebula-model，见名便知这是一个 ORM，搞了一些封装。但它不够优雅（&lt;s&gt;cool&lt;/s&gt;），所以 nebula-carina 便诞生了。&lt;/p&gt;
-&lt;p&gt;Carina 船底座，/kəˈriːnə/，意为龙骨，是南半球可见最大的星云。而一个组件能成为一个 Nebula（星云）还挺酷的。&lt;/p&gt;
-&lt;h3&gt;
-&lt;a name=&quot;python-orm-3&quot; class=&quot;anchor&quot; href=&quot;#python-orm-3&quot;/&gt;Python ORM 功能设计&lt;/h3&gt;
-&lt;p&gt;Nebula Carina 是用 Python 开发的针对 NebulaGraph + Python 的 ORM 框架。在设计上没有局限于 Web 框架，因此可以被应用在 Django、FastAPI 和 Flask 等主流框架上。&lt;/p&gt;
-&lt;p&gt;目前，Nebula Carina 包含了常规的 schema 定义、对象管理器 object manager（雏形）、Model Builder（雏形），以及常见的图语言、MATCH 语句封装。雏形的意思是，这些功能具备了，但是暂时只有一、两个方法在里面，欢迎阅读本文的你一起来完善。除了基础功能之外，Nebula Carina 还支持了简单的 migration 功能，能够自动计算 schema model 结构与 DB schema 的差异，并同步 schema 到当前 space。但相较于其他成熟的 ORM 项目，例如：Django ORM，Nebula Carina 缺少可回溯性及树状结构来支持 migration 包含依赖、merge 数据。所以，Nebula Carina 未来考虑设计和支持包含依赖关系的 migration 系统。如果你对此有兴趣的话，欢迎来项目：&lt;a href=&quot;https://github.com/nebula-contrib/nebula-carina&quot;&gt;https://github.com/nebula-contrib/nebula-carina&lt;/a&gt; issue 区交流下。&lt;/p&gt;
-&lt;h3&gt;
-&lt;a name=&quot;python-orm-4&quot; class=&quot;anchor&quot; href=&quot;#python-orm-4&quot;/&gt;Python ORM 的神奇之处&lt;/h3&gt;
-&lt;p&gt;上面简单说了下 Nebula Carina 是什么，有什么功能。在这里，我们来解决下“为什么要用 Nebula Carina”的问题。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Nebula Carina 首要应对的问题是快速解决轻量级 App 开发的常规需求&lt;/strong&gt;，虽然 NebulaGraph 具有极好的性能，诸如美团、快手等大企业都在使用。但大企业和小公司不同，大企业用图数据库会用非常重，像美团就直接开发了个图平台对接集团上百的业务线。而小公司的轻量级应用来说，它需要一个快速地生成简洁 schema。小公司的 Web 开发人员能非常容易地定义常用的、供于业务逻辑使用的 schema，再一键快速将 schema 同步到 space，而不需要去写些 SQL（这里指的是查询语句）来处理这些事项。此外，应对小公司的轻量级 App 开发需求，还需要支持 JSON 序列化和逆序列化来简化接口，不需要在接口处封装各类东西。最后，也是最重要的，为什么不用 Golang 之类的语言 ORM。Nebula Carina 采用了易于使用的 Python Data Model。Python 使用人员可以方便地用 Python 来调用、控制程序，像是打印，或者是在 Python Model 里面将 Dictionary 展开时拥有的 fields 都可以符合标准 Python 规范进行使用。&lt;/p&gt;
-&lt;p&gt;此外，除了适用于任何的 Python Web Framework，Nebula Carina 也适用于裸 Python 开发，可与 AI 行业快速集成。毕竟像是 Machine Learning 之类的，十有八九是 Python 语言搞的，Nebula Carina 就可以轻松应用在 GNN、NLP 这些用图数据比较多的技术领域。&lt;/p&gt;
-&lt;p&gt;总之，Nebula Carina 让 Python 开发者使用 NebulaGraph 时能把更多精力运用在业务/模型上，而非繁琐的数据库操作。&lt;/p&gt;
-&lt;h3&gt;
-&lt;a name=&quot;python-orm-5&quot; class=&quot;anchor&quot; href=&quot;#python-orm-5&quot;/&gt;Python ORM 设计实现&lt;/h3&gt;
-&lt;p&gt;目前，Carina 的实现比较简单粗暴，由 4 个部分组成：&lt;strong&gt;settings&lt;/strong&gt;、&lt;strong&gt;nGQL 层&lt;/strong&gt;、&lt;strong&gt;model 层&lt;/strong&gt;和&lt;strong&gt;其他&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-blog/nebula-carina-feature.png&quot; alt=&quot;&quot; role=&quot;presentation&quot;/&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;settings&lt;/strong&gt;，搞环境变量。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;nGQL 层&lt;/strong&gt;，有 connection、query、record、schema 和 statement：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;query，主要是 condition / match / … 语句封装&lt;/li&gt;
-&lt;li&gt;record，主要是 vertex / edge 语句封装&lt;/li&gt;
-&lt;li&gt;schema，封装了 Data Types、schema 语句、space 语句封装&lt;/li&gt;
-&lt;li&gt;statements，主要是 Order By、Limit、Edge 定义、Edge Value、TTL、Alter 等 statements 的语句封装，statement 的意思是 state 某类行为；&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;strong&gt;model 层&lt;/strong&gt;，主要是调用 nGQL 层的封装的 class 和当中的方法，来解决一些具体上层的问题。它包括 nebula-python 的 vertex / edge 转成 Carina 的 vertex model / edge model 的 &lt;strong&gt;protocol&lt;/strong&gt;，以及 field 和 model（schema model &amp;amp; data model）的封装，同绝大数编程语言的 ORM 类似，定义成某类语言常见的 class 进行封装，参见下方 Figure 类的示例说明；&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;lang-python&quot;&gt;class Figure(models.TagModel):
-    name: str = _(data_types.FixedString(30), ..., )
-    age: int = _(data_types.Int16, ..., )
-    valid_until: int = _(data_types.Int64, None, )
-    hp: int = _(data_types.Int16, 100, )
-    style: str = _(data_types.FixedString(10), &#x27;rap&#x27;, )
-    is_virtual: bool = _(data_types.Bool, True)
-    created_on: datetime = _(data_types.Datetime, data_types.Datetime.auto)
-    some_dt: datetime = _(data_types.Datetime, datetime(2022, 1, 1))
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;上述示例代码，用 Figure class 继承 TagModel，在当中定义 tag 所需的这些 field，比如：name、age…Carina 就是采用这种方式来处理 NebulaGraph 中 Schema 结构；&lt;/p&gt;
-&lt;p&gt;model 层中的 model builder 则是位于 nGQL 和纯 model 层之间的桥梁。它可以用来描述高层和低层之间的某种行为，比如说，下面的代码就定义了一个全局 MATCH 语句，而所有的 MATCH 语句都会走这样一个函数同 nGQL 层交互：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;lang-python&quot;&gt;def match(
-    pattern: str, to_model_dict: dict[str, Type[NebulaConvertableProtocol]],
-    *, distinct_field: str = None,
-    condition: Condition = None, order_by: OrderBy = None, limit: Limit = None
-) -&amp;gt; Iterable[SingleMatchResult]:  # should be model
-    output = &#x27;, &#x27;.join(
-    (&quot;DISTINCT &quot; if key == distinct_field else &quot;&quot;) + key
-    for key in to_model_dict.keys()
-)
-results = match(pattern, output, condition, order_by, limit)
-return (
-    SingleMatchResult({
-        key: to_model_dict[key].from_nebula_db_cls(value.value)
-        for key, value in zip(results.keys(), row.values) if key in to_model_dict
-    }) for row in results.rows()
-) 
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;而 model 层的 object manager 会根据应用场景，基于 schema 为出发点，对 model builder 具体 match 语句进行操作，对这些操作行为搞了个高级封装；migrations 则负责封装 schema model 的变更并同步给数据库；&lt;/p&gt;
-&lt;p&gt;在&lt;strong&gt;其他模块&lt;/strong&gt;，则是 Django 适配的 apps 和 setting。因为要支持 Django，它的思路同 FastAPI 不同，所以需要做适配来让 Carina 无缝衔接 Django；&lt;/p&gt;
-&lt;h2&gt;
-&lt;a name=&quot;nebula-carina-6&quot; class=&quot;anchor&quot; href=&quot;#nebula-carina-6&quot;/&gt;Nebula Carina 使用&lt;/h2&gt;
-&lt;p&gt;下面举些例子来让大家了解下 Carina 的使用，主要还是摘录自 Carina 的 README：&lt;a href=&quot;https://github.com/nebula-contrib/nebula-carina&quot;&gt;https://github.com/nebula-contrib/nebula-carina&lt;/a&gt;&lt;/p&gt;
-&lt;h3&gt;
-&lt;a name=&quot;nebula-carina-7&quot; class=&quot;anchor&quot; href=&quot;#nebula-carina-7&quot;/&gt;安装 Nebula Carina&lt;/h3&gt;
-&lt;p&gt;一句命令搞定&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;lang-shell&quot;&gt;pip install nebula-carina
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;如果你用的是 Django，那么需要将 nebula_carina 添加到 INSTALLED_APPS，像是这样：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;lang-shell&quot;&gt;INSTALLED_APPS = [
-    ...
-    &#x27;nebula_carina&#x27;,
-    ...
-]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;再在 &lt;code&gt;settings.py&lt;/code&gt; 文件中设置 CARINA_SETTINGS，主要配置一些同 NebulaGraph 有关的信息。像是这样：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;lang-shell&quot;&gt;CARINA_SETTINGS = {
-    &quot;auto_create_default_space_with_vid_desc&quot;: &quot;FIXED_STRING(20)&quot;, #创建默认图空间
-    &quot;default_space&quot;: &quot;main&quot;, #图空间名
-    &quot;max_connection_pool_size&quot;: 10, #连接数大小
-    &quot;model_paths&quot;: [&quot;nebula.carina&quot;], #model 路径
-    &quot;user_name&quot;: &quot;root&quot;, #登陆 NebulaGraph 的用户名
-    &quot;password&quot;: &quot;1234&quot;, #登陆 NebulaGraph 的密码
-    &quot;servers&quot;: [&quot;192.168.31.248:9669&quot;], # NebulaGraph graphd 服务所在服务器信息，可配置多个
-    &quot;timezone_name&quot;: &quot;UTC&quot;, #服务器所用时区
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;目前 Carina 只有支持上述信息，后续会再增加其他字段。&lt;/p&gt;
-&lt;p&gt;如果你用的是 FastAPI 之类的，用环境变量即可，具体的话可以参考项目文档：&lt;a href=&quot;https://github.com/nebula-contrib/nebula-carina#by-environment-variables&quot;&gt;https://github.com/nebula-contrib/nebula-carina#by-environment-variables&lt;/a&gt;。&lt;/p&gt;
-&lt;h3&gt;
-&lt;a name=&quot;h-8&quot; class=&quot;anchor&quot; href=&quot;#h-8&quot;/&gt;图空间创建&lt;/h3&gt;
-&lt;p&gt;你可以通过下面 Python 语句来创建 Space，当然你也可以像上面 CARINA_SETTINGS 一样，用 &lt;code&gt;&quot;auto_create_default_space_with_vid_desc&quot;: &quot;FIXED_STRING(20)&quot;&lt;/code&gt; 自动创建一个默认图空间。&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;lang-python&quot;&gt;from nebula_carina.ngql.schema.space import create_space, show_spaces, VidTypeEnum
+<guid>b0004eddefc951e1b36a6b5d6aa523fe</guid>
+<title>kafka 中 producer 中的配置参数 linger.ms 的含义是什么，一直不太理解 ？</title>
+<link>https://toutiao.io/k/jwjuo84</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;span class=&quot;RichText ztext CopyrightRichText-richText css-1g0fqss&quot; options=&quot;[object Object]&quot; itemprop=&quot;text&quot;&gt;&lt;blockquote data-first-child=&quot;&quot; data-pid=&quot;BqI7paeV&quot;&gt;   作者： 谢先生。 2014年入行的程序猿。多年开发和架构经验。专注于Java、云原生、大数据等技术。从CRUD入行，负责过亿级流量架构的设计和落地，解决了千万级数据治理问题。&lt;br/&gt;   微信公众号、B站：搜索「&lt;b&gt;谢先生说技术&lt;/b&gt;」不定时更新 ～&lt;br/&gt;   清单： &lt;b&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//gitee.com/mr_sanq/goku-framework&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;goku-framework&lt;/a&gt;&lt;/b&gt;、&lt;b&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//gitee.com/mr_sanq/enjoy-read-ii&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;【定期开源】享阅读II&lt;/a&gt;&lt;/b&gt;&lt;br/&gt; &lt;/blockquote&gt;&lt;h2&gt;&lt;b&gt;前言&lt;/b&gt;&lt;/h2&gt;&lt;blockquote data-pid=&quot;ExE7j5fu&quot;&gt;发句牢骚：&lt;br/&gt;最近真的累。年后第三天就去出差。3月回来马上又投入到新项目中~ ┓(;´_｀)┏&lt;br/&gt;最近老危险了。项目都是别的组的~~&lt;/blockquote&gt;&lt;p data-pid=&quot;xZHoxAFt&quot;&gt;前面我们花了较长的时间对生产者Producer理论、Producer分区做了一个比较细致的介绍。详细大家在认真阅读完前两节的内容之后会对Kafka的生产者有一个比较清晰的认知。&lt;/p&gt;&lt;p data-pid=&quot;RBD_0-XH&quot;&gt;其中我们需要重点掌握的内容是：Producer发送消息的过程，如果有不清楚的建议返回好好品味。&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;H87PTzbG&quot;&gt;《分布式流处理组件-理论篇：Producer入门理论》&lt;/li&gt;&lt;/ul&gt;&lt;p data-pid=&quot;b5QsNcxx&quot;&gt;我们需要注意的是：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;VrvINaDu&quot;&gt;在生产环境由于物理机器等资源配置的影响，也为了更大程度上保证资源的利用率，我们都会对各个组件进行适配。&lt;/li&gt;&lt;/ul&gt;&lt;p data-pid=&quot;sDDTAgUD&quot;&gt;而Kafka的Producer也是一样的。在生产环境中也有很多需要注意的点。本章我们就来好好的聊一聊~&lt;/p&gt;&lt;h2&gt;&lt;b&gt;啰嗦两句Producer的消息发送原理&lt;/b&gt; &lt;/h2&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://picx.zhimg.com/50/v2-23e7b49fdd9aae414bf98ee7ce29114e_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;2771&quot; data-rawheight=&quot;1381&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://picx.zhimg.com/v2-23e7b49fdd9aae414bf98ee7ce29114e_r.jpg?source=1940ef5c&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;2771&quot; data-rawheight=&quot;1381&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://picx.zhimg.com/v2-23e7b49fdd9aae414bf98ee7ce29114e_r.jpg?source=1940ef5c&quot; data-actualsrc=&quot;https://picx.zhimg.com/50/v2-23e7b49fdd9aae414bf98ee7ce29114e_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;blockquote data-pid=&quot;UqeYwcdJ&quot;&gt; 为了让大家清晰的理解优化点，我们简单过一下Producer的发送原理 已经明白的请略过~&lt;br/&gt; &lt;/blockquote&gt;&lt;p data-pid=&quot;qW8MRocw&quot;&gt;如上图所示，消息数据通过主线程调用&lt;code&gt;producer.send()&lt;/code&gt;将其发送出去，其中经过拦截器、序列化器、分区器的层层加工之后，记录缓冲区&lt;code&gt;RecordAccumulator&lt;/code&gt;会将加工之后的消息记录添加到其中。而消息也不是单纯的存在于&lt;code&gt;RecordAccumulator&lt;/code&gt;中，为了降低网络IO，Producer将其按照batch的形式进行存放。&lt;/p&gt;&lt;blockquote data-pid=&quot;jJWlYQoF&quot;&gt;&lt;code&gt;RecordAccumulator&lt;/code&gt;当然不是无限大的，自然这里就是我们的第一个优化点&lt;br/&gt; 而合理的对batch容量进行配置，就是我们所说的第二个优化点&lt;br/&gt; 消息的大小也是我们需要考虑的重点，姑且算是一个优化点&lt;br/&gt; &lt;/blockquote&gt;&lt;p data-pid=&quot;2fSyKuIg&quot;&gt;而batch消息也会根据分区器计算得到的分区号存在于对应的&lt;code&gt;Deque&lt;/code&gt;双端队列中，所以他们的关系就是图中一层包一层的样子&lt;/p&gt;&lt;p data-pid=&quot;sPcaINbU&quot;&gt;当batch满足某个条件或者消息等待指定时间之后，sender线程被拉起，Sender程序将不断从缓冲区取出数据，进而进入到另外一个阶段&lt;/p&gt;&lt;blockquote data-pid=&quot;HhVP_SVu&quot;&gt; 新的优化点：指定等待时间&lt;br/&gt; &lt;/blockquote&gt;&lt;p data-pid=&quot;Qb0X13Le&quot;&gt;从缓冲区拉取出来的数据会被封装为&lt;code&gt;Request&lt;/code&gt;对象，并且与缓存区类似的是：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;8JTWTDRA&quot;&gt;&lt;code&gt;NetworkClient&lt;/code&gt;中同样会存在一个类似缓冲区的存在：&lt;code&gt;InFlightRequests&lt;/code&gt;。其中会按照分区对Request进行存储。所以他们的逻辑关系其实是这样的&lt;/li&gt;&lt;/ul&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pica.zhimg.com/50/v2-b25d1b4917907e93374458110fb62f83_720w.jpg?source=1940ef5c&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;2724&quot; data-rawheight=&quot;1724&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://picx.zhimg.com/v2-b25d1b4917907e93374458110fb62f83_r.jpg?source=1940ef5c&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;2724&quot; data-rawheight=&quot;1724&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://picx.zhimg.com/v2-b25d1b4917907e93374458110fb62f83_r.jpg?source=1940ef5c&quot; data-actualsrc=&quot;https://pica.zhimg.com/50/v2-b25d1b4917907e93374458110fb62f83_720w.jpg?source=1940ef5c&quot;/&gt;&lt;figcaption&gt;2023-03-18-22-05-53&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-pid=&quot;ky4IM1PN&quot;&gt;随后进行发送，而在默认情况下，如果Broker端一直没有响应，每个分区下的Request只能存放5个请求。而超出的情况将会阻塞发送逻辑。&lt;/p&gt;&lt;p data-pid=&quot;ynO_nfcr&quot;&gt;消息发送成功后，将会清空原始数据。否则尝试重试等操作&lt;/p&gt;&lt;h2&gt;&lt;b&gt;Producer高吞吐&lt;/b&gt;&lt;/h2&gt;&lt;blockquote data-pid=&quot;Pe6Mj9HP&quot;&gt; 注意： 本段属于测试阶段，多图模式&lt;br/&gt; &lt;/blockquote&gt;&lt;h2&gt;&lt;b&gt;前置条件&lt;/b&gt; &lt;/h2&gt;&lt;p data-pid=&quot;HzZ4j5NH&quot;&gt;来吧，啰嗦完Producer发送过程之后，就到了精彩的测试验证环节。有句话需要重点说明下：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;avDqLmm9&quot;&gt;以下验证结果不属银弹，实际生产中参数配置如何： 还是需要结合实际业务场景和资源配置给出最佳参数&lt;/li&gt;&lt;/ul&gt;&lt;p data-pid=&quot;humjbTcZ&quot;&gt;机器配置:&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;f-Z-YRzr&quot;&gt;3台 &lt;b&gt;2C4G&lt;/b&gt; 的虚拟机&lt;/li&gt;&lt;li data-pid=&quot;CLtkY65_&quot;&gt;Topic设置分区数为3，副本因子为2&lt;/li&gt;&lt;/ul&gt;&lt;h2&gt;&lt;b&gt;测试脚本&lt;/b&gt; &lt;/h2&gt;&lt;p data-pid=&quot;dMS2pjRL&quot;&gt;本次Producer吞吐量测试脚本在Kafka中已经提供，我们在&lt;code&gt;${KAFKA_HOME}/kafka_2.13-3.3.1/bin&lt;/code&gt;中可以找到&lt;code&gt;kafka-producer-perf-test.sh&lt;/code&gt;。如下对执行参数进行简单说明：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;am-W9Sxh&quot;&gt;--throughput： 限制测试发送消息的最大吞吐量，-1表示不受限制&lt;/li&gt;&lt;li data-pid=&quot;O2nZT1az&quot;&gt;--num-records： 测试消息的数据量。&lt;/li&gt;&lt;li data-pid=&quot;ZVWB6Fjq&quot;&gt;--record-size： 每条消息的大小。&lt;/li&gt;&lt;li data-pid=&quot;YtiXmmyX&quot;&gt;--producer-props： Producer可配置参数信息，我们也可以通过properties文件的方式配置到&lt;code&gt;--producer.config&lt;/code&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3&gt;&lt;b&gt;默认参数负载情况&lt;/b&gt;&lt;/h3&gt;&lt;blockquote data-pid=&quot;O0QbNaiQ&quot;&gt; kafka-producer-perf-test.sh内部也是默认参数，如果机器配置不错可以适当调整JVM参数&lt;br/&gt; &lt;/blockquote&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;kafka-producer-perf-test.sh --topic newTopic_test001 --producer-props bootstrap.servers=master:9092,node01:9092,node02:9092 --throughput -1 --num-records 100000  --record-size 1024
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;UFIEiQ7v&quot;&gt;发送10W条消息大小为1KB的消息到newTopic_test001上，不设置吞吐限制&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;30421 records sent, 6083.0 records/sec (5.94 MB/sec), 2125.8 ms avg latency, 3695.0 ms max latency.
+55005 records sent, 11001.0 records/sec (10.74 MB/sec), 3129.7 ms avg latency, 4864.0 ms max latency.
+100000 records sent, 9042.408898 records/sec (8.83 MB/sec), 2719.28 ms avg latency, 4864.00 ms max latency, 2598 ms 50th, 4250 ms 95th, 4734 ms 99th, 4832 ms 99.9th.&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;HzMOVX-j&quot;&gt;输出表示：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;peN759X9&quot;&gt;成功消费100000记录，吞吐量：10101.010101条/s (9.86 MB/sec)&lt;/li&gt;&lt;li data-pid=&quot;3qPcS5gN&quot;&gt;平均延迟2451.60ms，最大延迟4025.00ms&lt;/li&gt;&lt;li data-pid=&quot;NojdAWx-&quot;&gt;50%消息延迟2455ms, 95%消息延迟3581ms, 99%消息延迟3875ms, 99.9%消息延迟4016ms。&lt;/li&gt;&lt;/ul&gt;&lt;h2&gt;&lt;b&gt;参数介绍&lt;/b&gt; &lt;/h2&gt;&lt;p data-pid=&quot;J6qI925n&quot;&gt;下面要介绍的这几个参数，在Producer端：任意一个都可以称为王牌的存在。接下来我们就一一来看看：&lt;/p&gt;&lt;blockquote data-pid=&quot;LFCfcD48&quot;&gt; 这些参数在&lt;code&gt;ProducerConfig&lt;/code&gt;中都有介绍，我们一一来看~&lt;br/&gt; &lt;/blockquote&gt;&lt;h3&gt;&lt;b&gt;batch.size&lt;/b&gt;&lt;/h3&gt;&lt;p data-pid=&quot;zOQrjhOl&quot;&gt;每当发送多个消息时，为了提高客户端和服务器的性能，生产者将尝试对多个消息进行打包成批，保证这一批可以在同一个分区内。默认为&lt;b&gt;16384【16KB】&lt;/b&gt;&lt;/p&gt;&lt;p data-pid=&quot;w1vnlMO2&quot;&gt;为了尽可能的提高吞吐量，在实际生产中需要对发送的消息进行合理预估，根据实际情况选择一个合理的大小，避免出现如下情况：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;ovJO2JDP&quot;&gt;单条消息超过&lt;code&gt;batch.size&lt;/code&gt;，Producer有可能不会处理此消息&lt;/li&gt;&lt;li data-pid=&quot;CeZqVOBm&quot;&gt;&lt;code&gt;batch.size&lt;/code&gt;过大，有可能会造成Producer端内存空间的浪费&lt;/li&gt;&lt;li data-pid=&quot;jA3EMqX0&quot;&gt;&lt;code&gt;batch.size&lt;/code&gt;过小，频繁的网络IO会降低Producer的吞吐&lt;/li&gt;&lt;/ul&gt;&lt;h3&gt;&lt;b&gt;linger.ms&lt;/b&gt;&lt;/h3&gt;&lt;p data-pid=&quot;8ex_nXV7&quot;&gt;如果消息迟迟没有达到&lt;code&gt;batch.size&lt;/code&gt;，那么将尝试等待&lt;code&gt;linger.ms&lt;/code&gt;时间发送。默认等待时间为0，也就是当消息到达之后立即发送&lt;/p&gt;&lt;blockquote data-pid=&quot;qTF9IQ0D&quot;&gt; 但实际上为了减少发送的请求数量，在没有负载的情况下也会延迟5ms的时间。所以这也不是绝对的立即发送~&lt;br/&gt; &lt;/blockquote&gt;&lt;p data-pid=&quot;UAfc9yfd&quot;&gt;这两个参数我们或多或少都介绍过，但是并没有测试调整它们对吞吐量的影响。接下来我们就先来测试一波吧！！！&lt;/p&gt;&lt;h3&gt;&lt;b&gt;测试&lt;code&gt;batch.size&lt;/code&gt;和&lt;code&gt;linger.ms&lt;/code&gt;对吞吐量的影响&lt;/b&gt;&lt;/h3&gt;&lt;p data-pid=&quot;Z5CsX03W&quot;&gt;对照以上默认测试结果，然后我们开始进行参数调整。&lt;/p&gt;&lt;p data-pid=&quot;4h4KoBWJ&quot;&gt;跟着我的节奏，先对单个参数进行调整，对比差异&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;kafka-producer-perf-test.sh --topic newTopic_test001 --producer-props bootstrap.servers=master:9092,node01:9092,node02:9092 batch.size=32768 --throughput -1 --num-records 100000  --record-size 1024
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote data-pid=&quot;87cFNOBN&quot;&gt; 三次输出结果显示&lt;br/&gt; &lt;/blockquote&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;68697 records sent, 13733.9 records/sec (13.41 MB/sec), 900.0 ms avg latency, 1812.0 ms max latency.
+100000 records sent, 14817.009927 records/sec (14.47 MB/sec), 1129.92 ms avg latency, 1957.00 ms max latency, 1167 ms 50th, 1884 ms 95th, 1932 ms 99th, 1951 ms 99.9th.
 
-main_space_name = &quot;main&quot;
+100000 records sent, 22311.468095 records/sec (21.79 MB/sec), 1036.42 ms avg latency, 1467.00 ms max latency, 1100 ms 50th, 1431 ms 95th, 1449 ms 99th, 1462 ms 99.9th.
 
-if main_space_name not in show_spaces():
-    create_space(main_space_name, (VidTypeEnum.FIXED_STRING, 20))
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3&gt;
-&lt;a name=&quot;schema-9&quot; class=&quot;anchor&quot; href=&quot;#schema-9&quot;/&gt;点边 schema 定义&lt;/h3&gt;
-&lt;p&gt;同点 vertex 不同，一条边只有一个 edgetype，而一个点可以拥有多个 tag。所以在 Carina 中，Model 层的封装，&lt;code&gt;models.py&lt;/code&gt; 文件里引入了 &lt;code&gt;VirtualCharacter&lt;/code&gt; 的概念，在 &lt;code&gt;VirtualCharacter&lt;/code&gt; 类里，定义这个点拥有那些 tag。&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;lang-python&quot;&gt;class VirtualCharacter(models.VertexModel):
-    figure: Figure
-    source: Source
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;一个 &lt;code&gt;figure&lt;/code&gt; 就是一个 tag，&lt;code&gt;source&lt;/code&gt; 是另外一个 tag 的名字。这里 Figure 和 Source 都是具体的某个 tag 在 Carina 中的映射类名，在示例中，它就叫 Figure、Source。&lt;/p&gt;
-&lt;h3&gt;
-&lt;a name=&quot;h-10&quot; class=&quot;anchor&quot; href=&quot;#h-10&quot;/&gt;点边数据操作&lt;/h3&gt;
-&lt;p&gt;上文提过 &lt;code&gt;VirtualCharacter&lt;/code&gt; 的概念，在 Data Model Mathod 里，像下面这种代码：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;lang-auto&quot;&gt;VirtualCharacter(
-    vid=&#x27;char_test1&#x27;, figure=Figure(
-        name=&#x27;test1&#x27;, age=100, is_virtual=False, some_dt=datetime(2021, 3, 3, 0, 0, 0, 12)
-    ), source=Source(name=&#x27;movie1&#x27;)
-).save()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;是定义了一个 VID（唯一标识）为 char_test1 的点，它拥有个名为 Figure 的 tag，这个 tag 中有 name、age、is_virtual 之类的属性。此外，它还有一个 tag Source，Source tag 的属性 name 是 movie1。而 .save() 则是保存这段代码。&lt;/p&gt;
-&lt;p&gt;同点类似，边的定义是这样的：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;lang-python&quot;&gt;EdgeModel(src_vid=&#x27;char_test1&#x27;, dst_vid=&#x27;char_test2&#x27;, ranking=0, edge_type=Love(way=&#x27;gun&#x27;, times=40)).save()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;这个语句主要表达了一条边的起点是 char_test1，终点是 char_test2，边的 rank 是 0，类型是 Love。而 Love 边类型有 2 个属性 way 和 times，&lt;img src=&quot;https://discuss-cdn.nebula-graph.com.cn/images/emoji/apple/joy.png?v=12&quot; title=&quot;:joy:&quot; class=&quot;emoji&quot; alt=&quot;:joy:&quot; loading=&quot;lazy&quot;/&gt; 也许这是一对相杀相爱的恋人，滚了 40 次。&lt;/p&gt;
-&lt;h2&gt;
-&lt;a name=&quot;nebula-carina-11&quot; class=&quot;anchor&quot; href=&quot;#nebula-carina-11&quot;/&gt;Nebula Carina 再升级&lt;/h2&gt;
-&lt;p&gt;因为个人能力有限，在这里希望借助大家的力量。对 Nebula Carina 的未来规划，主要集中在这些方面&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;connection pool (v3.3.0)&lt;/li&gt;
-&lt;li&gt;Indexes&lt;/li&gt;
-&lt;li&gt;Go / Fetch /  Lookup statements封装&lt;/li&gt;
-&lt;li&gt;Bulk操作封装&lt;/li&gt;
-&lt;li&gt;Generic Vertex Model&lt;/li&gt;
-&lt;li&gt;advanced migrations&lt;br/&gt;
-…&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;nebula-python 在 v3.3.0 中对 connection pool 做了原生支持，希望在未来 Carina 能结合这块内容更加完善。&lt;/p&gt;
-&lt;p&gt;再者就是索引，上面其实提到过，Carina 目前就封装了 MATCH 语句，后续将会对 LOOKUP、GO、FETCH 之类的 statement 字句进行封装。&lt;/p&gt;
-&lt;p&gt;然后是 Bulk 操作的封装，可以处理一次性创建大量数据。&lt;/p&gt;
-&lt;p&gt;Generic Vertex Model 则是再抽象 vertex，用户不需要告诉程序它想得到什么样的 vertex，它的结构是如何的。直接通过虚拟结构进行定义，像是上面提到的 Figuer 和 Source，现在我不定义了，Generic Vertex Model 可以把这块抽象好，自己就搞定了。&lt;/p&gt;
-&lt;p&gt;最后，之前也提到过的 advanced migrations，树状的 migration 可以搞定依赖关系。&lt;/p&gt;
-&lt;p&gt;以上，便是 Hao 贡献的 NebulaGraph Python ORM 的简单介绍。如果你有改进、优化它的 idea，欢迎来 Carina issue 和 pr 区交流哟 &lt;a href=&quot;https://github.com/nebula-contrib/nebula-carina/issues/new&quot;&gt;https://github.com/nebula-contrib/nebula-carina/issues/new&lt;/a&gt;~&lt;/p&gt;
-&lt;hr/&gt;
-&lt;p&gt;&lt;strong&gt;谢谢你读完本文&lt;/strong&gt; (///▽///)&lt;/p&gt;
-&lt;p&gt;NebulaGraph Desktop，Windows 和 macOS 用户安装图数据库的绿色通道，10s 拉起搞定海量数据的图服务。通道传送门：&lt;a href=&quot;http://c.nxw.so/c0svX&quot; class=&quot;inline-onebox&quot;&gt;入门概览 - NebulaGraph Database 手册&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;想看源码的小伙伴可以前往 GitHub 阅读、使用、(^з^)-☆ star 它 → &lt;a href=&quot;http://c.nxw.so/8yTlk&quot;&gt;GitHub&lt;/a&gt;；和其他的 NebulaGraph 用户一起交流图数据库技术和应用技能，留下&lt;a href=&quot;http://c.nxw.so/9jvQN&quot;&gt;「你的名片」&lt;/a&gt;一起玩耍呢~&lt;/p&gt;
-        &lt;/div&gt;
+100000 records sent, 21753.317381 records/sec (21.24 MB/sec), 1001.94 ms avg latency, 1646.00 ms max latency, 955 ms 50th, 1614 ms 95th, 1631 ms 99th, 1639 ms 99.9th.&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;e0wc8dyl&quot;&gt;对比默认结果，我们可以看到在吞吐量上已经有了非常明显的提高&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;kafka-producer-perf-test.sh --topic newTopic_test001 --producer-props bootstrap.servers=master:9092,node01:9092,node02:9092 linger.ms=3000 --throughput -1 --num-records 100000  --record-size 1024
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote data-pid=&quot;s6_3er-w&quot;&gt; 三次输出结果显示&lt;br/&gt; &lt;/blockquote&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;60526 records sent, 12102.8 records/sec (11.82 MB/sec), 1632.5 ms avg latency, 2337.0 ms max latency.
+100000 records sent, 12280.486307 records/sec (11.99 MB/sec), 1882.64 ms avg latency, 2591.00 ms max latency, 2050 ms 50th, 2553 ms 95th, 2571 ms 99th, 2584 ms 99.9th.
 
-        &lt;/div&gt;&lt;/div&gt;</content:encoded>
+64966 records sent, 12990.6 records/sec (12.69 MB/sec), 1556.1 ms avg latency, 2757.0 ms max latency.
+100000 records sent, 13540.961408 records/sec (13.22 MB/sec), 1719.67 ms avg latency, 2757.00 ms max latency, 1474 ms 50th, 2701 ms 95th, 2730 ms 99th, 2744 ms 99.9th.
+
+71776 records sent, 14355.2 records/sec (14.02 MB/sec), 1506.2 ms avg latency, 2176.0 ms max latency.
+100000 records sent, 14320.492625 records/sec (13.98 MB/sec), 1577.49 ms avg latency, 2176.00 ms max latency, 1668 ms 50th, 2134 ms 95th, 2154 ms 99th, 2170 ms 99.9th.&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;NOtch6qB&quot;&gt;同样还是要和默认测试结果进行对比，虽然吞吐量没有配置&lt;code&gt;batch.size&lt;/code&gt;的效果差异，但也不能说本次调整不重要&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;kafka-producer-perf-test.sh --topic newTopic_test001 --producer-props bootstrap.servers=master:9092,node01:9092,node02:9092 linger.ms=3000 batch.size=32768 --throughput -1 --num-records 100000  --record-size 1024
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote data-pid=&quot;fWO-A2Vj&quot;&gt; 三次输出结果显示&lt;br/&gt; &lt;/blockquote&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;100000 records sent, 21739.130435 records/sec (21.23 MB/sec), 1007.46 ms avg latency, 1428.00 ms max latency, 995 ms 50th, 1400 ms 95th, 1411 ms 99th, 1424 ms 99.9th.
+100000 records sent, 23041.474654 records/sec (22.50 MB/sec), 952.25 ms avg latency, 1334.00 ms max latency, 919 ms 50th, 1302 ms 95th, 1318 ms 99th, 1328 ms 99.9th.
+100000 records sent, 24271.844660 records/sec (23.70 MB/sec), 916.17 ms avg latency, 1318.00 ms max latency, 912 ms 50th, 1278 ms 95th, 1309 ms 99th, 1314 ms 99.9th.&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;IEHgSAGa&quot;&gt;已经可以看出对比了吧。 我们继续~~~&lt;/p&gt;&lt;h3&gt;&lt;b&gt;compression.type&lt;/b&gt;&lt;/h3&gt;&lt;p data-pid=&quot;oDD25_bf&quot;&gt;该参数对Producer生产的数据进行压缩，主要针对批数据压缩。默认是none【无压缩】，可以用来设置的值：&lt;/p&gt;&lt;p data-pid=&quot;vdHa6yBX&quot;&gt;接下来我们直接测试这几个压缩算法的性能吧，为了方便写个脚本&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;#!/bin/bash
+
+for i in gzip snappy lz4 zstd
+do
+ for ((j=0; j&amp;lt;3; j++))
+ do
+        echo &quot;----$i方式的第$j次测试----&quot;
+
+  kafka-producer-perf-test.sh --topic newTopic_test002 --producer-props bootstrap.servers=master:9092,node01:9092,node02:9092 batch.size=65536 compression.type=$i --throughput -1 --num-records 100000  --record-size 1024
+
+ done
+done
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote data-pid=&quot;FZwbraPJ&quot;&gt; 查看每个级别的三次输出&lt;br/&gt; &lt;/blockquote&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;----gzip方式的第0次测试----
+100000 records sent, 25425.883549 records/sec (24.83 MB/sec), 136.45 ms avg latency, 744.00 ms max latency, 97 ms 50th, 451 ms 95th, 677 ms 99th, 742 ms 99.9th.
+----gzip方式的第1次测试----
+100000 records sent, 27019.724399 records/sec (26.39 MB/sec), 54.22 ms avg latency, 291.00 ms max latency, 27 ms 50th, 174 ms 95th, 228 ms 99th, 288 ms 99.9th.
+----gzip方式的第2次测试----
+100000 records sent, 27940.765577 records/sec (27.29 MB/sec), 21.55 ms avg latency, 267.00 ms max latency, 11 ms 50th, 75 ms 95th, 97 ms 99th, 130 ms 99.9th.
+===========分割线=============
+----snappy方式的第0次测试----
+100000 records sent, 34153.005464 records/sec (33.35 MB/sec), 518.28 ms avg latency, 1047.00 ms max latency, 479 ms 50th, 969 ms 95th, 1029 ms 99th, 1044 ms 99.9th.
+----snappy方式的第1次测试----
+100000 records sent, 32765.399738 records/sec (32.00 MB/sec), 474.20 ms avg latency, 985.00 ms max latency, 476 ms 50th, 921 ms 95th, 971 ms 99th, 984 ms 99.9th.
+----snappy方式的第2次测试----
+100000 records sent, 34578.146611 records/sec (33.77 MB/sec), 450.48 ms avg latency, 932.00 ms max latency, 442 ms 50th, 869 ms 95th, 911 ms 99th, 928 ms 99.9th.
+===========分割线=============
+----lz4方式的第0次测试----
+100000 records sent, 34059.945504 records/sec (33.26 MB/sec), 474.75 ms avg latency, 871.00 ms max latency, 461 ms 50th, 818 ms 95th, 852 ms 99th, 867 ms 99.9th.
+----lz4方式的第1次测试----
+100000 records sent, 37174.721190 records/sec (36.30 MB/sec), 408.28 ms avg latency, 769.00 ms max latency, 418 ms 50th, 716 ms 95th, 753 ms 99th, 767 ms 99.9th.
+----lz4方式的第2次测试----
+100000 records sent, 32404.406999 records/sec (31.64 MB/sec), 483.38 ms avg latency, 1145.00 ms max latency, 372 ms 50th, 1077 ms 95th, 1122 ms 99th, 1142 ms 99.9th.
+===========分割线=============
+----zstd方式的第0次测试----
+100000 records sent, 51975.051975 records/sec (50.76 MB/sec), 57.53 ms avg latency, 279.00 ms max latency, 54 ms 50th, 108 ms 95th, 141 ms 99th, 158 ms 99.9th.
+----zstd方式的第1次测试----
+100000 records sent, 47755.491882 records/sec (46.64 MB/sec), 66.12 ms avg latency, 333.00 ms max latency, 49 ms 50th, 208 ms 95th, 316 ms 99th, 332 ms 99.9th.
+----zstd方式的第2次测试----
+100000 records sent, 51203.277010 records/sec (50.00 MB/sec), 60.27 ms avg latency, 265.00 ms max latency, 49 ms 50th, 148 ms 95th, 172 ms 99th, 193 ms 99.9th.
+===========分割线=============&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;0km5SbTZ&quot;&gt;根据本次测试，而且测试命令也运行了多次，确实是&lt;code&gt;zstd&lt;/code&gt;较好。 而我们再看看官网给出的说明： &lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://picx.zhimg.com/50/v2-014c3d40a4a368c5907a1be5adb7c79b_720w.jpg?source=1940ef5c&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;986&quot; data-rawheight=&quot;932&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://picx.zhimg.com/v2-014c3d40a4a368c5907a1be5adb7c79b_r.jpg?source=1940ef5c&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;986&quot; data-rawheight=&quot;932&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://picx.zhimg.com/v2-014c3d40a4a368c5907a1be5adb7c79b_r.jpg?source=1940ef5c&quot; data-actualsrc=&quot;https://picx.zhimg.com/50/v2-014c3d40a4a368c5907a1be5adb7c79b_720w.jpg?source=1940ef5c&quot;/&gt;&lt;/figure&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;blockquote data-pid=&quot;aEAFA6uE&quot;&gt; 留个坑，下来我重新试试～～～&lt;br/&gt; &lt;/blockquote&gt;&lt;h3&gt;&lt;b&gt;acks&lt;/b&gt;&lt;/h3&gt;&lt;p data-pid=&quot;45gREeYK&quot;&gt;前面章节中其实我们介绍过&lt;code&gt;acks&lt;/code&gt;这个参数。&lt;/p&gt;&lt;blockquote data-pid=&quot;FFICKuTG&quot;&gt; 我们再啰嗦一下acks的可设置值&lt;br/&gt; &lt;/blockquote&gt;&lt;ul&gt;&lt;li data-pid=&quot;uDvX28dO&quot;&gt;&quot;0&quot;： 当消息调用&lt;code&gt;send()&lt;/code&gt;发送出去之后就表示消息已经发送成功，不管消息是否已经到达broker&lt;/li&gt;&lt;li data-pid=&quot;64lI4gpt&quot;&gt;&quot;1&quot;： 消息发送后，Leader接收到消息并记录到本地之后，不需要同步数据到副本就能进行ack返回&lt;/li&gt;&lt;li data-pid=&quot;V51zD3UP&quot;&gt;&quot;all&quot;： 当消息在Leader接收记录，并且等待副本数据同步完成之后，才会返回ack。 该级别也属于&lt;code&gt;Java#Producer&lt;/code&gt;的默认配置&lt;/li&gt;&lt;/ul&gt;&lt;blockquote data-pid=&quot;6pTd4SYs&quot;&gt; 接下来我们针对以上三种级别来做一个效果验证&lt;br/&gt; &lt;/blockquote&gt;&lt;p data-pid=&quot;yMt48vKA&quot;&gt;基本就是默认配置，只不过多了一个&lt;code&gt;acks&lt;/code&gt;的配置项&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;#!/bin/bash
+for i in 0 1 all
+do
+echo &quot;---------------acks=$i------------------&quot;
+        for ((j=0; j&amp;lt;3; j++))
+        do
+        kafka-producer-perf-test.sh --topic newTopic_test001 --producer-props bootstrap.servers=master:9092,node01:9092,node02:9092 acks=$i --throughput -1 --num-records 100000  --record-size 1024
+        done
+done
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote data-pid=&quot;mquZkJpm&quot;&gt; 查看每个级别的三次输出&lt;br/&gt; 有数据有真相&lt;br/&gt; &lt;/blockquote&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;--------------acks=0------------------
+100000 records sent, 43878.894252 records/sec (42.85 MB/sec), 60.90 ms avg latency, 367.00 ms max latency, 20 ms 50th, 218 ms 95th, 297 ms 99th, 363 ms 99.9th.
+100000 records sent, 38699.690402 records/sec (37.79 MB/sec), 121.56 ms avg latency, 823.00 ms max latency, 60 ms 50th, 469 ms 95th, 736 ms 99th, 814 ms 99.9th.
+100000 records sent, 37650.602410 records/sec (36.77 MB/sec), 127.71 ms avg latency, 441.00 ms max latency, 100 ms 50th, 351 ms 95th, 403 ms 99th, 440 ms 99.9th.
+---------------acks=1------------------
+100000 records sent, 30284.675954 records/sec (29.57 MB/sec), 387.87 ms avg latency, 897.00 ms max latency, 340 ms 50th, 799 ms 95th, 855 ms 99th, 893 ms 99.9th.
+100000 records sent, 36995.930448 records/sec (36.13 MB/sec), 247.35 ms avg latency, 826.00 ms max latency, 199 ms 50th, 703 ms 95th, 789 ms 99th, 813 ms 99.9th.
+100000 records sent, 37425.149701 records/sec (36.55 MB/sec), 394.01 ms avg latency, 850.00 ms max latency, 389 ms 50th, 784 ms 95th, 814 ms 99th, 841 ms 99.9th.
+---------------acks=all------------------
+76362 records sent, 15272.4 records/sec (14.91 MB/sec), 1422.4 ms avg latency, 1980.0 ms max latency.
+100000 records sent, 16084.928422 records/sec (15.71 MB/sec), 1463.71 ms avg latency, 1980.00 ms max latency, 1628 ms 50th, 1903 ms 95th, 1960 ms 99th, 1974 ms 99.9th.
+
+81151 records sent, 16223.7 records/sec (15.84 MB/sec), 1404.0 ms avg latency, 2201.0 ms max latency.
+100000 records sent, 16906.170752 records/sec (16.51 MB/sec), 1397.82 ms avg latency, 2201.00 ms max latency, 1491 ms 50th, 2001 ms 95th, 2136 ms 99th, 2193 ms 99.9th.
+
+88156 records sent, 17631.2 records/sec (17.22 MB/sec), 1245.0 ms avg latency, 1688.0 ms max latency.
+100000 records sent, 17969.451932 records/sec (17.55 MB/sec), 1255.73 ms avg latency, 1688.00 ms max latency, 1403 ms 50th, 1598 ms 95th, 1635 ms 99th, 1668 ms 99.9th.&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;SvNP8MU_&quot;&gt;所以：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;hwSXaMAh&quot;&gt;如果是类似日志、行为等不重要的消息，建议将&lt;code&gt;acks&lt;/code&gt;设置为0.&lt;/li&gt;&lt;li data-pid=&quot;r7SmPOuO&quot;&gt;其他的就根据消息的安全程度来进行合理的选择吧~&lt;/li&gt;&lt;/ul&gt;&lt;h2&gt;&lt;b&gt;下期预告&lt;/b&gt;&lt;/h2&gt;&lt;p data-pid=&quot;-GsIZUli&quot;&gt;本期针对Producer调优参数的介绍和测试对比到这里就已经结束了。还是一句话：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;GwpUxOQl&quot;&gt;从数据看结果：实际生产中进行测试，选择合理的配置参数信息是必须得~&lt;/li&gt;&lt;/ul&gt;&lt;p data-pid=&quot;zLLyskFF&quot;&gt;下一期针对数据可靠性我们来做一个详细的介绍。 期待～&lt;/p&gt;&lt;p data-pid=&quot;wAl2Qh_G&quot;&gt;- END -&lt;/p&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
