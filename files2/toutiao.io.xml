@@ -5,491 +5,559 @@
             <link>http://toutiao.io/</link>
             <description></description>
 <item>
-<guid>8283d78ddee8c848a2e12d75fbc74bcf</guid>
-<title>Kubernetes 跨地域扩展，这事远没你想的那么难</title>
-<link>https://toutiao.io/k/5axqa5a</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;RichText ztext Post-RichText css-1g0fqss&quot; options=&quot;[object Object]&quot;&gt;&lt;p data-first-child=&quot;&quot; data-pid=&quot;jCfccNV6&quot;&gt;&lt;b&gt;首先有个好消息告诉大家，为庆祝Linode加入 Akamai解决方案大家庭，现在注册Linode，就可免费获得价值100美元的使用额度，可以随意使用Linode云平台提供的各种服务。立即点击这里了解详情并注册吧↓↓↓&lt;/b&gt;&lt;/p&gt;&lt;a data-draft-node=&quot;block&quot; data-draft-type=&quot;ad-link-card&quot; data-ad-id=&quot;Plugin_7fa5b218696a57e05a7299d2d6ae7f41&quot;/&gt;&lt;p data-pid=&quot;nwW1CWZ8&quot;&gt;对Kubernetes来说，跨越多个地域（Region）部署工作负载，这是个有趣的挑战。虽然从技术上来说，我们可以用分布在多个地域的节点创建集群，但因为会造成额外的延迟，通常并不建议这样做。&lt;/p&gt;&lt;p data-pid=&quot;ZZ3ECexJ&quot;&gt;一种比较流行的替代方法是在每个地域部署一个集群，然后设法对多个集群进行必要的编排。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic4.zhimg.com/v2-197c47abc29bc2b230a02a9ed96b13d3_b.jpg&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1944&quot; data-rawheight=&quot;817&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic4.zhimg.com/v2-197c47abc29bc2b230a02a9ed96b13d3_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1944&quot; data-rawheight=&quot;817&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic4.zhimg.com/v2-197c47abc29bc2b230a02a9ed96b13d3_r.jpg&quot; data-actualsrc=&quot;https://pic4.zhimg.com/v2-197c47abc29bc2b230a02a9ed96b13d3_b.jpg&quot;/&gt;&lt;figcaption&gt;我们可以让一个集群中的节点分布在不同地域，或者在每个地域部署一个集群&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-pid=&quot;HLZSx5RL&quot;&gt;本文将介绍如何：&lt;/p&gt;&lt;ol&gt;&lt;li data-pid=&quot;mzHrod-l&quot;&gt;分别在北美、欧洲和东南亚各自创建一个集群。&lt;/li&gt;&lt;li data-pid=&quot;19HgLo2J&quot;&gt;创建第四个集群，将其作为上述三个集群的编排器。&lt;/li&gt;&lt;li data-pid=&quot;I3pQOLMr&quot;&gt;设置一个将三个集群连接在一起的网络，从而实现跨集群的无缝通信。&lt;/li&gt;&lt;/ol&gt;&lt;p data-pid=&quot;ZQHqIgyJ&quot;&gt;本文涉及的操作均可通过脚本实现，只需最少量人工介入即可适用于Terraform。相关代码请访问&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//github.com/learnk8s/multi-cluster&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;LearnK8s GitHub&lt;/a&gt;。&lt;/p&gt;&lt;h2&gt;创建集群管理器&lt;/h2&gt;&lt;p data-pid=&quot;EYNI0yM8&quot;&gt;首先创建用于管理其余集群的集群。我们可以通过下列命令创建该集群并保存Kubeconfig文件。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ linode-cli lke cluster-create \
- --label cluster-manager \
- --region eu-west \
- --k8s_version 1.23
-$ linode-cli lke kubeconfig-view &quot;insert cluster id here&quot; --text | tail +2 | base64 -d &amp;gt; kubeconfig-cluster-manager&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;CVINRdpE&quot;&gt;随后可通过下列命令验证安装过程已成功完成：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ kubectl get pods -A --kubeconfig=kubeconfig-cluster-manager&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;Fy3VdtNx&quot;&gt;我们还需要在集群管理器中安装&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//github.com/karmada-io/karmada&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;Karmada&lt;/a&gt;，这个管理系统可以帮助我们跨越多个Kubernetes集群或多个云平台运行自己的云原生应用程序。Karmada是一种安装在集群管理器中的控制平面，其他集群中需要安装代理程序。&lt;/p&gt;&lt;p data-pid=&quot;mKbk9YID&quot;&gt;该控制平面包含三个组件：&lt;/p&gt;&lt;ol&gt;&lt;li data-pid=&quot;9xlgLkwG&quot;&gt;一个API服务器（API Server）&lt;/li&gt;&lt;li data-pid=&quot;-g7Z3t3T&quot;&gt;一个控制器管理器（Controller Manager）&lt;/li&gt;&lt;li data-pid=&quot;4xBC6EGq&quot;&gt;一个调度器（Scheduler）&lt;/li&gt;&lt;/ol&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-21404a055cc7103ae1d15f1e1616a726_b.jpg&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1064&quot; data-rawheight=&quot;677&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic3.zhimg.com/v2-21404a055cc7103ae1d15f1e1616a726_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1064&quot; data-rawheight=&quot;677&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic3.zhimg.com/v2-21404a055cc7103ae1d15f1e1616a726_r.jpg&quot; data-actualsrc=&quot;https://pic3.zhimg.com/v2-21404a055cc7103ae1d15f1e1616a726_b.jpg&quot;/&gt;&lt;figcaption&gt;Karmada的控制平面&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-pid=&quot;-Rt3GIPE&quot;&gt;是否看起来觉得很熟悉？这是因为它与&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//www.linode.com/docs/guides/beginners-guide-to-kubernetes-part-2-master-nodes-control-plane/&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;Kubernetes控制平面&lt;/a&gt;功能其实是相同组件，只不过Karmada能适用于多种集群。&lt;/p&gt;&lt;p data-pid=&quot;3sdXYChb&quot;&gt;理论部分说的差不多了，接下来开始看看具体要用的代码。我们可以使用&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//helm.sh/&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;Helm&lt;/a&gt;安装Karmada API服务器。为此可使用下列命令添加Helm仓库：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ helm repo add karmada-charts https://raw.githubusercontent.com/karmada-io/karmada/master/charts
-$ helm repo list
-NAME            URL
-karmada-charts   https://raw.githubusercontent.com/karmada-io/karmada/master/charts&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;hlUZTieu&quot;&gt;由于Karmada API服务器必须能被所有其他集群访问，因此我们必须：&lt;/p&gt;&lt;p data-pid=&quot;zzqFGMGG&quot;&gt;因此首先需要通过下列命令获取承载了控制平面的节点的IP地址：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-kubectl get nodes -o jsonpath=&#x27;{.items[0].status.addresses[?(@.type==\&quot;ExternalIP\&quot;)].address}&#x27; \
- --kubeconfig=kubeconfig-cluster-manager&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;cnRPjwzJ&quot;&gt;随后即可用下列命令安装Karmada控制平面：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ helm install karmada karmada-charts/karmada \
- --kubeconfig=kubeconfig-cluster-manager \
- --create-namespace --namespace karmada-system \
- --version=1.2.0 \
- --set apiServer.hostNetwork=false \
- --set apiServer.serviceType=NodePort \
- --set apiServer.nodePort=32443 \
- --set certs.auto.hosts[0]=&quot;kubernetes.default.svc&quot; \
- --set certs.auto.hosts[1]=&quot;*.etcd.karmada-system.svc.cluster.local&quot; \
- --set certs.auto.hosts[2]=&quot;*.karmada-system.svc.cluster.local&quot; \
- --set certs.auto.hosts[3]=&quot;*.karmada-system.svc&quot; \
- --set certs.auto.hosts[4]=&quot;localhost&quot; \
- --set certs.auto.hosts[5]=&quot;127.0.0.1&quot; \
- --set certs.auto.hosts[6]=&quot;&amp;lt;insert the IP address of the node&amp;gt;&quot;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;_b19vuI2&quot;&gt;安装完成后，即可通过下列命令获得Kubeconfig并连接到Karmada API：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-kubectl get secret karmada-kubeconfig \
- --kubeconfig=kubeconfig-cluster-manager \
- -n karmada-system \
- -o jsonpath={.data.kubeconfig} | base64 -d &amp;gt; karmada-config&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;un9EnRta&quot;&gt;&lt;i&gt;不过为什么这里要用另一个Kubeconfig文件？&lt;/i&gt;&lt;/p&gt;&lt;p data-pid=&quot;DyXMcXvV&quot;&gt;按照设计，Karmada API是为了取代标准的Kubernetes API，同时依然提供了用户需要的全部功能。换句话说，我们可以借助kubectl创建横跨多个集群的部署。&lt;/p&gt;&lt;p data-pid=&quot;To7OTol6&quot;&gt;在测试Karmada API和kubectl之前，还需要调整Kubeconfig文件。默认情况下生成的Kubeconfig只能在集群网络的内部使用。不过我们只需调整这几行内容就可以消除这一限制：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;yaml
-apiVersion: v1
-kind: Config
-clusters:
- - cluster:
-     certificate-authority-data: LS0tLS1CRUdJTi…
-     insecure-skip-tls-verify: false
-     server: https://karmada-apiserver.karmada-system.svc.cluster.local:5443 # &amp;lt;- this works only in the cluster
-   name: karmada-apiserver
-# truncated&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;TdfyfaQp&quot;&gt;请将之前获取的节点IP地址替换进去：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;yaml
-apiVersion: v1
-kind: Config
-clusters:
- - cluster:
-     certificate-authority-data: LS0tLS1CRUdJTi…
-     insecure-skip-tls-verify: false
-     server: https://&amp;lt;node&#x27;s IP address&amp;gt;:32443 # &amp;lt;- this works from the public internet
-   name: karmada-apiserver
-# truncated&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;PIbL6Gr3&quot;&gt;接下来就可以开始测试Karmada了。&lt;/p&gt;&lt;h2&gt;安装Karmada代理程序&lt;/h2&gt;&lt;p data-pid=&quot;r-wI627f&quot;&gt;运行下列命令检索所有部署和所有集群：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ kubectl get clusters,deployments --kubeconfig=karmada-config
-No resources found&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;iNh66UAd&quot;&gt;可想而知，目前没有任何部署，也没有任何额外的集群。我们可以添加几个集群并将其连接到Karmada控制平面。&lt;/p&gt;&lt;p data-pid=&quot;Ad-cEMg3&quot;&gt;请重复执行下列命令三次：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-linode-cli lke cluster-create \
- --label &amp;lt;insert-cluster-name&amp;gt; \
- --region &amp;lt;insert-region&amp;gt; \
- --k8s_version 1.23
-linode-cli lke kubeconfig-view &quot;insert cluster id here&quot; --text | tail +2 | base64 -d &amp;gt; kubeconfig-&amp;lt;insert-cluster-name&amp;gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;YYw7KDPt&quot;&gt;执行时请分别使用如下的值：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;2x82XhQR&quot;&gt;Cluster name eu, region eu-west以及kubeconfig file kubeconfig-eu&lt;/li&gt;&lt;li data-pid=&quot;SVBtfLog&quot;&gt;Cluster name ap, region ap-south以及kubeconfig file kubeconfig-ap&lt;/li&gt;&lt;li data-pid=&quot;fpUOAO7y&quot;&gt;Cluster name us, region us-west以及kubeconfig file kubeconfig-us&lt;/li&gt;&lt;/ul&gt;&lt;p data-pid=&quot;qMmvR8Mp&quot;&gt;随后通过下列命令确认集群已经成功创建：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ kubectl get pods -A --kubeconfig=kubeconfig-eu
-$ kubectl get pods -A --kubeconfig=kubeconfig-ap
-$ kubectl get pods -A --kubeconfig=kubeconfig-us&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;XYCy4jLA&quot;&gt;接下来要将这些集群加入Karmada集群。Karmada需要在其他每个集群中使用代理程序来协调控制平面的部署。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-91bd97c8c3fe1b48933b9860c12dd771_b.jpg&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1944&quot; data-rawheight=&quot;1492&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic2.zhimg.com/v2-91bd97c8c3fe1b48933b9860c12dd771_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1944&quot; data-rawheight=&quot;1492&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic2.zhimg.com/v2-91bd97c8c3fe1b48933b9860c12dd771_r.jpg&quot; data-actualsrc=&quot;https://pic2.zhimg.com/v2-91bd97c8c3fe1b48933b9860c12dd771_b.jpg&quot;/&gt;&lt;figcaption&gt;Karmada代理程序&lt;/figcaption&gt;&lt;/figure&gt;&lt;p data-pid=&quot;2Vgz_o7n&quot;&gt;我们可以使用&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//helm.sh/&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;Helm&lt;/a&gt;安装Karmada代理程序并将其链接至集群管理器：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ helm install karmada karmada-charts/karmada \
- --kubeconfig=kubeconfig-&amp;lt;insert-cluster-name&amp;gt; \
- --create-namespace --namespace karmada-system \
- --version=1.2.0 \
- --set installMode=agent \
- --set agent.clusterName=&amp;lt;insert-cluster-name&amp;gt; \
- --set agent.kubeconfig.caCrt=&amp;lt;karmada kubeconfig certificate authority&amp;gt; \
- --set agent.kubeconfig.crt=&amp;lt;karmada kubeconfig client certificate data&amp;gt; \
- --set agent.kubeconfig.key=&amp;lt;karmada kubeconfig client key data&amp;gt; \
- --set agent.kubeconfig.server=https://&amp;lt;insert node&#x27;s IP address&amp;gt;:32443 \&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;1xZOagZ3&quot;&gt;上述命令同样需要重复三次，每次分别插入下列变量：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;XXUTIZF_&quot;&gt;集群名称：分别为eu、ap和us。&lt;/li&gt;&lt;li data-pid=&quot;B63JbIbM&quot;&gt;集群管理器的证书授权机构。我们可以在karmada-config文件的clusters[0].cluster[&#x27;certificate-authority-data&#x27;]中找到该值，这些值可以通过&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//www.base64decode.org/&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;base64&lt;/a&gt;进行解码。&lt;/li&gt;&lt;li data-pid=&quot;qQP9NrHO&quot;&gt;用户的客户端证书数据。我们可以在karmada-config文件的users[0].user[&#x27;client-certificate-data&#x27;]中找到该值，这些值可以通过base64进行解码。&lt;/li&gt;&lt;li data-pid=&quot;6ZCWphCR&quot;&gt;用户的客户端密钥数据。我们可以在karmada-config文件的users[0].user[&#x27;client-key-data&#x27;]中找到该值，这些值可以通过base64进行解码。&lt;/li&gt;&lt;li data-pid=&quot;YM97L8ap&quot;&gt;承载Karmada控制平面的节点的IP地址。&lt;/li&gt;&lt;/ul&gt;&lt;p data-pid=&quot;qQpE117F&quot;&gt;随后可以运行下列命令来验证安装是否成功完成：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ kubectl get clusters --kubeconfig=karmada-config
-NAME   VERSION   MODE   READY
-eu     v1.23.8   Pull   True
-ap     v1.23.8   Pull   True
-us     v1.23.8   Pull   True&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2&gt;借助Karmada Policies编排多集群部署&lt;/h2&gt;&lt;p data-pid=&quot;FStO9ScF&quot;&gt;只要配置正确无误，我们即可将工作负载提交给Karmada，由它将任务分发给其他集群。&lt;/p&gt;&lt;p data-pid=&quot;UzpFDpTW&quot;&gt;为了进行测试，我们首先需要创建一个部署：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
- name: hello
-spec:
- replicas: 3
- selector:
-   matchLabels:
-     app: hello
- template:
-   metadata:
-     labels:
-       app: hello
-   spec:
-     containers:
-       - image: stefanprodan/podinfo
-         name: hello
----
-apiVersion: v1
-kind: Service
-metadata:
- name: hello
-spec:
- ports:
-   - port: 5000
-     targetPort: 9898
- selector:
-   app: hello&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;_8lUiCqU&quot;&gt;随后通过下列命令将该部署提交至Karmada API服务器：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ kubectl apply -f deployment.yaml --kubeconfig=karmada-config&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;-ULJ4xe9&quot;&gt;该部署包含三个副本，那么是否可以平均分发给这三个集群？一起来验证一下：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ kubectl get deployments --kubeconfig=karmada-config
-NAME    READY   UP-TO-DATE   AVAILABLE
-hello   0/3     0            0&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;aFWvJ0s4&quot;&gt;Karmada为何没有创建Pod？先来看看这个部署：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ kubectl describe deployment hello --kubeconfig=karmada-config
-Name:                   hello
-Namespace:              default
-Selector:               app=hello
-Replicas:               3 desired | 0 updated | 0 total | 0 available | 0 unavailable
-StrategyType:           RollingUpdate
-MinReadySeconds:        0
-RollingUpdateStrategy:  25% max unavailable, 25% max surge
-Events:
- Type     Reason             From               Message
- ----     ------             ----               -------
- Warning  ApplyPolicyFailed  resource-detector  No policy match for resource&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;rx2-5GUX&quot;&gt;Karmada并不知道该如何处理这个部署，因为我们尚未指定策略。&lt;/p&gt;&lt;p data-pid=&quot;LdcGOKht&quot;&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//karmada.io/docs/userguide/scheduling/resource-propagating&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;Karmada调度器&lt;/a&gt;会使用策略将工作负载分配给集群。那么我们就定义一个简单的策略，为每个集群分配一个副本：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;yaml
-apiVersion: policy.karmada.io/v1alpha1
-kind: PropagationPolicy
-metadata:
- name: hello-propagation
-spec:
- resourceSelectors:
-   - apiVersion: apps/v1
-     kind: Deployment
-     name: hello
-   - apiVersion: v1
-     kind: Service
-     name: hello
- placement:
-   clusterAffinity:
-     clusterNames:
-       - eu
-       - ap
-       - us
-   replicaScheduling:
-     replicaDivisionPreference: Weighted
-     replicaSchedulingType: Divided
-     weightPreference:
-       staticWeightList:
-         - targetCluster:
-             clusterNames:
-               - us
-           weight: 1
-         - targetCluster:
-             clusterNames:
-               - ap
-           weight: 1
-         - targetCluster:
-             clusterNames:
-               - eu
-           weight: 1&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;5i3cbULf&quot;&gt;并用下列命令将该策略提交给集群：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ kubectl apply -f policy.yaml --kubeconfig=karmada-config&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;6Konkto6&quot;&gt;然后再来看看部署和Pod：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ kubectl get deployments --kubeconfig=karmada-config
-NAME    READY   UP-TO-DATE   AVAILABLE
-hello   3/3     3            3
-$ kubectl get pods --kubeconfig=kubeconfig-eu
-NAME                    READY   STATUS    RESTARTS
-hello-5d857996f-hjfqq   1/1     Running   0
-$ kubectl get pods --kubeconfig=kubeconfig-ap
-NAME                    READY   STATUS    RESTARTS
-hello-5d857996f-xr6hr   1/1     Running   0
-$ kubectl get pods --kubeconfig=kubeconfig-us
-NAME                    READY   STATUS    RESTARTS
-hello-5d857996f-nbz48   1/1     Running   0&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;i&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic4.zhimg.com/v2-ccd0114559057c05bd1c2edb57b01e9b_b.jpg&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1944&quot; data-rawheight=&quot;1389&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic4.zhimg.com/v2-ccd0114559057c05bd1c2edb57b01e9b_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1944&quot; data-rawheight=&quot;1389&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic4.zhimg.com/v2-ccd0114559057c05bd1c2edb57b01e9b_r.jpg&quot; data-actualsrc=&quot;https://pic4.zhimg.com/v2-ccd0114559057c05bd1c2edb57b01e9b_b.jpg&quot;/&gt;&lt;figcaption&gt;Karmada为每个集群分配一个Pod&lt;/figcaption&gt;&lt;/figure&gt;&lt;/i&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;p data-pid=&quot;T9N09_Dj&quot;&gt;Karmada会为每个集群分配一个Pod，因为策略中为每个集群定义了相等的权重。&lt;/p&gt;&lt;p data-pid=&quot;qzeqRM_d&quot;&gt;我们用下列命令将该部署扩展为10个副本：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ kubectl scale deployment/hello --replicas=10 --kubeconfig=karmada-config&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;nd05F6yQ&quot;&gt;随后查看Pod会看到如下的结果：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ kubectl get deployments --kubeconfig=karmada-config
-NAME    READY   UP-TO-DATE   AVAILABLE
-hello   10/10   10           10
-$ kubectl get pods --kubeconfig=kubeconfig-eu
-NAME                    READY   STATUS    RESTARTS
-hello-5d857996f-dzfzm   1/1     Running   0
-hello-5d857996f-hjfqq   1/1     Running   0
-hello-5d857996f-kw2rt   1/1     Running   0
-hello-5d857996f-nz7qz   1/1     Running   0
-$ kubectl get pods --kubeconfig=kubeconfig-ap
-NAME                    READY   STATUS    RESTARTS
-hello-5d857996f-pd9t6   1/1     Running   0
-hello-5d857996f-r7bmp   1/1     Running   0
-hello-5d857996f-xr6hr   1/1     Running   0
-$ kubectl get pods --kubeconfig=kubeconfig-us
-NAME                    READY   STATUS    RESTARTS
-hello-5d857996f-nbz48   1/1     Running   0
-hello-5d857996f-nzgpn   1/1     Running   0
-hello-5d857996f-rsp7k   1/1     Running   0&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;yYokwUny&quot;&gt;随后修改策略，让EU和US集群各承载40%的Pod，让AP集群只承载20%。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;yaml
-apiVersion: policy.karmada.io/v1alpha1
-kind: PropagationPolicy
-metadata:
- name: hello-propagation
-spec:
- resourceSelectors:
-   - apiVersion: apps/v1
-     kind: Deployment
-     name: hello
-   - apiVersion: v1
-     kind: Service
-     name: hello
- placement:
-   clusterAffinity:
-     clusterNames:
-       - eu
-       - ap
-       - us
-   replicaScheduling:
-     replicaDivisionPreference: Weighted
-     replicaSchedulingType: Divided
-     weightPreference:
-       staticWeightList:
-         - targetCluster:
-             clusterNames:
-               - us
-           weight: 2
-         - targetCluster:
-             clusterNames:
-               - ap
-           weight: 1
-         - targetCluster:
-             clusterNames:
-               - eu
-           weight: 2&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;YotSMFvd&quot;&gt;并通过下列命令提交策略：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ kubectl apply -f policy.yaml --kubeconfig=karmada-config&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;I-4bvcaH&quot;&gt;接着可以看到，Pod的分配情况也酌情产生了变化：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ kubectl get pods --kubeconfig=kubeconfig-eu
-NAME                    READY   STATUS    RESTARTS   AGE
-hello-5d857996f-hjfqq   1/1     Running   0          6m5s
-hello-5d857996f-kw2rt   1/1     Running   0          2m27s
-$ kubectl get pods --kubeconfig=kubeconfig-ap
-hello-5d857996f-k9hsm   1/1     Running   0          51s
-hello-5d857996f-pd9t6   1/1     Running   0          2m41s
-hello-5d857996f-r7bmp   1/1     Running   0          2m41s
-hello-5d857996f-xr6hr   1/1     Running   0          6m19s
-$ kubectl get pods --kubeconfig=kubeconfig-us
-hello-5d857996f-nbz48   1/1     Running   0          6m29s
-hello-5d857996f-nzgpn   1/1     Running   0          2m51s
-hello-5d857996f-rgj9t   1/1     Running   0          61s
-hello-5d857996f-rsp7k   1/1     Running   0          2m51s&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;i&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic4.zhimg.com/v2-7d74f8f7019d776ab02719e415c690e3_b.jpg&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1944&quot; data-rawheight=&quot;1465&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic4.zhimg.com/v2-7d74f8f7019d776ab02719e415c690e3_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1944&quot; data-rawheight=&quot;1465&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic4.zhimg.com/v2-7d74f8f7019d776ab02719e415c690e3_r.jpg&quot; data-actualsrc=&quot;https://pic4.zhimg.com/v2-7d74f8f7019d776ab02719e415c690e3_b.jpg&quot;/&gt;&lt;figcaption&gt;Pod会根据策略的指定进行分配&lt;/figcaption&gt;&lt;/figure&gt;&lt;/i&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;p data-pid=&quot;uqBc5sNZ&quot;&gt;Karmada支持通过多种策略分配工作负载，更多高级用例可以参考&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//karmada.io/docs/userguide/scheduling/resource-propagating&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;文档&lt;/a&gt;。&lt;/p&gt;&lt;p data-pid=&quot;WCZ7H6tT&quot;&gt;&lt;i&gt;Pod在三个集群中运行，但我们该如何访问？&lt;/i&gt;&lt;/p&gt;&lt;p data-pid=&quot;AEAZDJGw&quot;&gt;先来看看Karmada中的服务：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ kubectl describe service hello --kubeconfig=karmada-config
-Name:              hello
-Namespace:         default
-Labels:            propagationpolicy.karmada.io/name=hello-propagation
-                  propagationpolicy.karmada.io/namespace=default
-Selector:          app=hello
-Type:              ClusterIP
-IP Family Policy:  SingleStack
-IP Families:       IPv4
-IP:                10.105.24.193
-IPs:               10.105.24.193
-Port:              &amp;lt;unset&amp;gt;  5000/TCP
-TargetPort:        9898/TCP
-Events:
- Type     Reason                  Message
- ----     ------                  -------
- Normal   SyncSucceed             Successfully applied resource(default/hello) to cluster ap
- Normal   SyncSucceed             Successfully applied resource(default/hello) to cluster us
- Normal   SyncSucceed             Successfully applied resource(default/hello) to cluster eu
- Normal   AggregateStatusSucceed  Update resourceBinding(default/hello-service) with AggregatedStatus successfully.
- Normal   ScheduleBindingSucceed  Binding has been scheduled
- Normal   SyncWorkSucceed         Sync work of resourceBinding(default/hello-service) successful.&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;Boo1AbbR&quot;&gt;&lt;i&gt;这些服务被部署在全部的三个集群中，但彼此之间并未连接。&lt;/i&gt;&lt;/p&gt;&lt;p data-pid=&quot;k_t6G7AT&quot;&gt;尽管Karmada可以管理多个集群，但它&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//github.com/karmada-io/website/blob/1e5cd9b539ddbcad1eb4b87efa62f284f95dbbde/i18n/zh/docusaurus-plugin-content-docs/current/userguide/service/multi-cluster-service.md&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;并未提供任何网络机制&lt;/a&gt;将这三个集群连接在一起。换句话说，Karmada是一种跨越多个集群编排部署的好工具，但我们需要通过其他机制让这些集群相互通信。&lt;/p&gt;&lt;h2&gt;使用Istio连接多个集群&lt;/h2&gt;&lt;p data-pid=&quot;vQhGtqC5&quot;&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//istio.io/&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;Istio&lt;/a&gt;通常被用于控制同一个集群中应用程序之间的网络流量，它可以检查所有传入和传出的请求，并通过Envoy以代理的方式发送这些请求。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic2.zhimg.com/v2-789e80189f57c7e9962ff887972b39a5_b.jpg&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1944&quot; data-rawheight=&quot;1700&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic2.zhimg.com/v2-789e80189f57c7e9962ff887972b39a5_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1944&quot; data-rawheight=&quot;1700&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic2.zhimg.com/v2-789e80189f57c7e9962ff887972b39a5_r.jpg&quot; data-actualsrc=&quot;https://pic2.zhimg.com/v2-789e80189f57c7e9962ff887972b39a5_b.jpg&quot;/&gt;&lt;figcaption&gt;Envoy能够充当所有流量的代理&lt;/figcaption&gt;&lt;/figure&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;p data-pid=&quot;vGwkEFky&quot;&gt;Istio控制平面负责更新并收集来自这些代理的指标，还可以发出指令借此转移流量。&lt;/p&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic4.zhimg.com/v2-f0a1a520a918ee8b0782d168620c1a3f_b.jpg&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1944&quot; data-rawheight=&quot;1506&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic4.zhimg.com/v2-f0a1a520a918ee8b0782d168620c1a3f_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1944&quot; data-rawheight=&quot;1506&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic4.zhimg.com/v2-f0a1a520a918ee8b0782d168620c1a3f_r.jpg&quot; data-actualsrc=&quot;https://pic4.zhimg.com/v2-f0a1a520a918ee8b0782d168620c1a3f_b.jpg&quot;/&gt;&lt;figcaption&gt;借助Istio，我们可以定义策略来管理集群中的流量&lt;/figcaption&gt;&lt;/figure&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;p data-pid=&quot;VS-sYcT3&quot;&gt;因此我们可以用Istio拦截到特定服务的所有流量，并将其重定向至三个集群之一。这就是所谓的Istio多集群配置。&lt;/p&gt;&lt;p data-pid=&quot;d4kHgu3Q&quot;&gt;理论知识这就够了，接下来亲自试试吧。首先需要在三个集群中安装Istio。虽然安装方法很多，但Helm最方便：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ helm repo add istio https://istio-release.storage.googleapis.com/charts
-$ helm repo list
-NAME            URL
-istio                 https://istio-release.storage.googleapis.com/charts&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;juToUmXo&quot;&gt;我们可以用下列命令将Istio安装给三个集群：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ helm install istio-base istio/base \
- --kubeconfig=kubeconfig-&amp;lt;insert-cluster-name&amp;gt; \
- --create-namespace --namespace istio-system \
- --version=1.14.1&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;u1Gc6r9F&quot;&gt;请将cluster-name分别替换为ap、eu和us，并将该命令同样执行三遍。&lt;/p&gt;&lt;p data-pid=&quot;8Yc3QB7W&quot;&gt;Base chart将只安装通用资源，例如Roles和RoleBindings。实际的安装会被打包到istiod chart中。但在执行该操作前，我们首先需要&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//istio.io/latest/docs/tasks/security/cert-management/plugin-ca-cert/&quot; class=&quot; wrap external&quot; target=&quot;_blank&quot; rel=&quot;nofollow noreferrer&quot;&gt;配置Istio Certificate Authority (CA)&lt;/a&gt;，以确保这些集群可以相互连接和信任。&lt;/p&gt;&lt;p data-pid=&quot;blaDdpZ5&quot;&gt;请在一个新目录中使用下列命令克隆Istio代码库：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ git clone https://github.com/istio/istio&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;PNE8ZeFp&quot;&gt;创建一个certs文件夹并进入该目录：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ mkdir certs
-$ cd certs&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;Y7OisuUP&quot;&gt;使用下列命令创建根证书：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ make -f ../istio/tools/certs/Makefile.selfsigned.mk root-ca&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;ZKyrApxT&quot;&gt;该命令将生成下列文件：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;g0IWqeG6&quot;&gt;root-cert.pem：生成的根证书&lt;/li&gt;&lt;li data-pid=&quot;_sv5LZ-P&quot;&gt;root-key.pem：生成的根密钥&lt;/li&gt;&lt;li data-pid=&quot;as13E4m9&quot;&gt;root-ca.conf：供OpenSSL生成根证书的配置&lt;/li&gt;&lt;li data-pid=&quot;FUaveSI8&quot;&gt;root-cert.csr：为根证书生成的CSR&lt;/li&gt;&lt;/ul&gt;&lt;p data-pid=&quot;Hrj_drhX&quot;&gt;对于每个集群，还需要为Istio Certificate Authority生成一个中间证书和密钥：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ make -f ../istio/tools/certs/Makefile.selfsigned.mk cluster1-cacerts
-$ make -f ../istio/tools/certs/Makefile.selfsigned.mk cluster2-cacerts
-$ make -f ../istio/tools/certs/Makefile.selfsigned.mk cluster3-cacerts&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;DTmX7Mq9&quot;&gt;上述命令会在名为cluster1、cluster2和cluster3的目录下生成下列文件：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ kubectl create secret generic cacerts -n istio-system \
- --kubeconfig=kubeconfig-&amp;lt;cluster-name&amp;gt;
- --from-file=&amp;lt;cluster-folder&amp;gt;/ca-cert.pem \
- --from-file=&amp;lt;cluster-folder&amp;gt;/ca-key.pem \
- --from-file=&amp;lt;cluster-folder&amp;gt;/root-cert.pem \
- --from-file=&amp;lt;cluster-folder&amp;gt;/cert-chain.pem&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;nJTYAEOb&quot;&gt;我们需要使用下列变量执行这些命令：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;| cluster name | folder name |
-| :----------: | :---------: |
-|      ap      |  cluster1   |
-|      us      |  cluster2   |
-|      eu      |  cluster3   |&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;e2w2M9fM&quot;&gt;上述操作完成后，可以安装istiod了：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ helm install istiod istio/istiod \
- --kubeconfig=kubeconfig-&amp;lt;insert-cluster-name&amp;gt; \
- --namespace istio-system \
- --version=1.14.1 \
- --set global.meshID=mesh1 \
- --set global.multiCluster.clusterName=&amp;lt;insert-cluster-name&amp;gt; \
- --set global.network=&amp;lt;insert-network-name&amp;gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;fczZ2v0U&quot;&gt;请使用下列变量将上述命令重复执行三遍：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;| cluster name | network name |
-| :----------: | :----------: |
-|      ap      |   network1   |
-|      us      |   network2   |
-|      eu      |   network3   |&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;LykbpFzn&quot;&gt;我们还可以使用拓扑注释来标记Istio的命名空间：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ kubectl label namespace istio-system topology.istio.io/network=network1 --kubeconfig=kubeconfig-ap
-$ kubectl label namespace istio-system topology.istio.io/network=network2 --kubeconfig=kubeconfig-us
-$ kubectl label namespace istio-system topology.istio.io/network=network3 --kubeconfig=kubeconfig-eu&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;lhHnT8sq&quot;&gt;至此几乎就快完成了。&lt;/p&gt;&lt;h2&gt;通过东西网关为流量创建隧道&lt;/h2&gt;&lt;p data-pid=&quot;gSdLwTVi&quot;&gt;接下来我们还需要：&lt;/p&gt;&lt;ul&gt;&lt;li data-pid=&quot;oeSMXocr&quot;&gt;一个网关，借此通过隧道将流量从一个集群发送到另一个&lt;/li&gt;&lt;li data-pid=&quot;Rx7oBPUP&quot;&gt;一种机制，借此发现其他集群中的IP地址&lt;/li&gt;&lt;/ul&gt;&lt;i&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic3.zhimg.com/v2-a5b341f7bd9a82b133614a1c22bb869e_b.jpg&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1944&quot; data-rawheight=&quot;1197&quot; class=&quot;origin_image zh-lightbox-thumb&quot; data-original=&quot;https://pic3.zhimg.com/v2-a5b341f7bd9a82b133614a1c22bb869e_r.jpg&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;1944&quot; data-rawheight=&quot;1197&quot; class=&quot;origin_image zh-lightbox-thumb lazy&quot; data-original=&quot;https://pic3.zhimg.com/v2-a5b341f7bd9a82b133614a1c22bb869e_r.jpg&quot; data-actualsrc=&quot;https://pic3.zhimg.com/v2-a5b341f7bd9a82b133614a1c22bb869e_b.jpg&quot;/&gt;&lt;figcaption&gt;Istio多集群：发现端点并安装东西网关&lt;/figcaption&gt;&lt;/figure&gt;&lt;/i&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;p data-pid=&quot;vP3NjEHH&quot;&gt;我们可以使用Helm安装网关：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ helm install eastwest-gateway istio/gateway \
- --kubeconfig=kubeconfig-&amp;lt;insert-cluster-name&amp;gt; \
- --namespace istio-system \
- --version=1.14.1 \
- --set labels.istio=eastwestgateway \
- --set labels.app=istio-eastwestgateway \
- --set labels.topology.istio.io/network=istio-eastwestgateway \
- --set labels.topology.istio.io/network=istio-eastwestgateway \
- --set networkGateway=&amp;lt;insert-network-name&amp;gt; \
- --set service.ports[0].name=status-port \
- --set service.ports[0].port=15021 \
- --set service.ports[0].targetPort=15021 \
- --set service.ports[1].name=tls \
- --set service.ports[1].port=15443 \
- --set service.ports[1].targetPort=15443 \
- --set service.ports[2].name=tls-istiod \
- --set service.ports[2].port=15012 \
- --set service.ports[2].targetPort=15012 \
- --set service.ports[3].name=tls-webhook \
- --set service.ports[3].port=15017 \
- --set service.ports[3].targetPort=15017 \&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;uCfCsehm&quot;&gt;请使用下列变量将上述命令执行三遍：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;| cluster name | network name |
-| :----------: | :----------: |
-|      ap      |   network1   |
-|      us      |   network2   |
-|      eu      |   network3   |&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;SARZlO1w&quot;&gt;随后对于每个集群，请使用下列资源暴露一个网关：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;yaml
-apiVersion: networking.istio.io/v1alpha3
-kind: Gateway
-metadata:
- name: cross-network-gateway
-spec:
- selector:
-   istio: eastwestgateway
- servers:
-   - port:
-       number: 15443
-       name: tls
-       protocol: TLS
-     tls:
-       mode: AUTO_PASSTHROUGH
-     hosts:
-       - &quot;*.local&quot;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;e1fIUpVC&quot;&gt;并使用下列命令将文件提交至集群：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ kubectl apply -f expose.yaml --kubeconfig=kubeconfig-eu
-$ kubectl apply -f expose.yaml --kubeconfig=kubeconfig-ap
-$ kubectl apply -f expose.yaml --kubeconfig=kubeconfig-us&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;z21K5uy5&quot;&gt;对于发现机制，我们需要共享每个集群的凭据。这是因为集群并不知道彼此的存在。&lt;/p&gt;&lt;p data-pid=&quot;2aAEt-bG&quot;&gt;为了发现其他IP地址，集群必须能彼此访问，并将这些集群注册为流量的可能目的地。为此我们必须使用其他集群的kubeconfig文件创建一个Kubernetes secret。Istio可以借此连接其他集群，发现端点，并指示Envoy代理转发流量。&lt;/p&gt;&lt;p data-pid=&quot;Qs-_ONkI&quot;&gt;我们需要三个Secret：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;yaml
-apiVersion: v1
-kind: Secret
-metadata:
- labels:
-   istio/multiCluster: true
- annotations:
-   networking.istio.io/cluster: &amp;lt;insert cluster name&amp;gt;
- name: &quot;istio-remote-secret-&amp;lt;insert cluster name&amp;gt;&quot;
-type: Opaque
-data:
- &amp;lt;insert cluster name&amp;gt;: &amp;lt;insert cluster kubeconfig as base64&amp;gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;oHdKE0gg&quot;&gt;请使用下列变量创建这三个Secret：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;| cluster name | secret filename |  kubeconfig   |
-| :----------: | :-------------: | :-----------: |
-|      ap      |  secret1.yaml   | kubeconfig-ap |
-|      us      |  secret2.yaml   | kubeconfig-us |
-|      eu      |  secret3.yaml   | kubeconfig-eu |&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;3WpJYESC&quot;&gt;接下来需要向集群提交Secret，但是请注意，不要将AP的Secret提交给AP集群。&lt;/p&gt;&lt;p data-pid=&quot;9pVuSLdN&quot;&gt;为此需要执行下列命令：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ kubectl apply -f secret2.yaml -n istio-system --kubeconfig=kubeconfig-ap
-$ kubectl apply -f secret3.yaml -n istio-system --kubeconfig=kubeconfig-ap
-$ kubectl apply -f secret1.yaml -n istio-system --kubeconfig=kubeconfig-us
-$ kubectl apply -f secret3.yaml -n istio-system --kubeconfig=kubeconfig-us
-$ kubectl apply -f secret1.yaml -n istio-system --kubeconfig=kubeconfig-eu
-$ kubectl apply -f secret2.yaml -n istio-system --kubeconfig=kubeconfig-eu&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;IdyIU5VS&quot;&gt;至此，大部分操作已经完成，我们可以开始测试整个配置了。&lt;/p&gt;&lt;h2&gt;测试多集群网络连接&lt;/h2&gt;&lt;p data-pid=&quot;ocwRvUyf&quot;&gt;首先为一个睡眠中的Pod创建一个部署。我们可以使用该Pod向刚才创建的&lt;i&gt;Hello&lt;/i&gt;部署发出请求：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
- name: sleep
-spec:
- selector:
-   matchLabels:
-     app: sleep
- template:
-   metadata:
-     labels:
-       app: sleep
-   spec:
-     terminationGracePeriodSeconds: 0
-     containers:
-       - name: sleep
-         image: curlimages/curl
-         command: [&quot;/bin/sleep&quot;, &quot;3650d&quot;]
-         imagePullPolicy: IfNotPresent
-         volumeMounts:
-           - mountPath: /etc/sleep/tls
-             name: secret-volume
-     volumes:
-       - name: secret-volume
-         secret:
-           secretName: sleep-secret
-           optional: true&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;pEYtbejc&quot;&gt;请用下列命令创建部署：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ kubectl apply -f sleep.yaml --kubeconfig=karmada-config&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;qQb8_qQ5&quot;&gt;因为该部署尚未指定策略，Karmada将不处理该部署，使其处于“未决”状态。我们可以修改策略以包含该部署：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;yaml
-apiVersion: policy.karmada.io/v1alpha1
-kind: PropagationPolicy
-metadata:
- name: hello-propagation
-spec:
- resourceSelectors:
-   - apiVersion: apps/v1
-     kind: Deployment
-     name: hello
-   - apiVersion: v1
-     kind: Service
-     name: hello
-   - apiVersion: apps/v1
-     kind: Deployment
-     name: sleep
- placement:
-   clusterAffinity:
-     clusterNames:
-       - eu
-       - ap
-       - us
-   replicaScheduling:
-     replicaDivisionPreference: Weighted
-     replicaSchedulingType: Divided
-     weightPreference:
-       staticWeightList:
-         - targetCluster:
-             clusterNames:
-               - us
-           weight: 2
-         - targetCluster:
-             clusterNames:
-               - ap
-           weight: 2
-         - targetCluster:
-             clusterNames:
-               - eu
-           weight: 1&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;kbDKlCid&quot;&gt;使用下列命令应用该策略：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ kubectl apply -f policy.yaml --kubeconfig=karmada-config&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;ffN7JFei&quot;&gt;要了解该Pod被部署到哪里，可以使用下列命令：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-$ kubectl get pods --kubeconfig=kubeconfig-eu
-$ kubectl get pods --kubeconfig=kubeconfig-ap
-$ kubectl get pods --kubeconfig=kubeconfig-us&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;jwgrg1SN&quot;&gt;接下来，假设该Pod被部署到US集群，请执行下列命令：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;bash
-for i in {1..10}
-do
- kubectl exec --kubeconfig=kubeconfig-us -c sleep \
-   &quot;$(kubectl get pod --kubeconfig=kubeconfig-us -l \
-   app=sleep -o jsonpath=&#x27;{.items[0].metadata.name}&#x27;)&quot; \
-   -- curl -sS hello:5000 | grep REGION
-done&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;oaL8GmR8&quot;&gt;我们将会发现，响应会来自不同地域的不同Pod！搞定！&lt;/p&gt;&lt;h2&gt;总结&lt;/h2&gt;&lt;p data-pid=&quot;SqTvM2qQ&quot;&gt;该配置其实非常基础，缺乏真实环境中可能需要的其他很多功能：&lt;/p&gt;&lt;hr/&gt;&lt;p data-pid=&quot;mcTNzEMa&quot;&gt;&lt;b&gt;这篇文章的内容感觉还行吧？有没有想要立即在Linode平台上亲自尝试一下？别忘了，现在注册可以免费获得价值100美元的使用额度，快点自己动手体验本文介绍的功能和服务吧↓↓↓&lt;/b&gt;&lt;/p&gt;&lt;a target=&quot;_blank&quot; href=&quot;https://xg.zhihu.com/plugin/7fa5b218696a57e05a7299d2d6ae7f41?BIZ=ECOMMERCE&quot; data-draft-node=&quot;block&quot; data-draft-type=&quot;link-card&quot; data-is-ecommerce=&quot;1&quot; class=&quot;LinkCard internal old&quot;&gt;&lt;span class=&quot;LinkCard-content LinkCard-ecommerceLoadingCard&quot;&gt;&lt;p class=&quot;LinkCard-ecommerceLoadingCardLoadingbar&quot;&gt;&lt;span/&gt;&lt;span/&gt;&lt;/p&gt;&lt;/span&gt;&lt;/a&gt;&lt;p data-pid=&quot;mnMy9ZyV&quot;&gt;欢迎关注&lt;b&gt;Akamai知乎机构号&lt;/b&gt; ，第一时间了解高可用的MySQL/MariaDB参考架构，以及丰富的应用程序示例。&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>b97b8e968d298d977dca20453cdbf7b5</guid>
-<title>笔记本就能运行的 ChatGPT 平替来了，附完整版技术报告</title>
-<link>https://toutiao.io/k/q1mt252</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content              autoTypeSetting24psection&amp;#10;            &quot; id=&quot;js_content&quot;&gt;&lt;section data-mpa-powered-by=&quot;yiban.io&quot; data-darkmode-bgcolor-16095509242984=&quot;rgb(25, 25, 25)&quot; data-darkmode-original-bgcolor-16095509242984=&quot;rgb(255, 255, 255)&quot; data-style=&quot;white-space: normal; max-width: 100%; letter-spacing: 0.544px; text-size-adjust: auto; background-color: rgb(255, 255, 255); font-family: &amp;quot;Helvetica Neue&amp;quot;, Helvetica, &amp;quot;Hiragino Sans GB&amp;quot;, &amp;quot;Microsoft YaHei&amp;quot;, Arial, sans-serif; box-sizing: border-box !important; overflow-wrap: break-word !important;&quot; mp-original-font-size=&quot;17&quot; mp-original-line-height=&quot;27.200000762939453&quot;&gt;&lt;section data-darkmode-bgcolor-16095509242984=&quot;rgb(25, 25, 25)&quot; data-darkmode-original-bgcolor-16095509242984=&quot;rgb(255, 255, 255)&quot; mp-original-font-size=&quot;17&quot; mp-original-line-height=&quot;27.200000762939453&quot;&gt;&lt;section data-darkmode-bgcolor-16095509242984=&quot;rgb(25, 25, 25)&quot; data-darkmode-original-bgcolor-16095509242984=&quot;rgb(255, 255, 255)&quot; mp-original-font-size=&quot;17&quot; mp-original-line-height=&quot;27.200000762939453&quot;&gt;&lt;section data-id=&quot;85660&quot; data-custom=&quot;rgb(117, 117, 118)&quot; data-darkmode-bgcolor-16095509242984=&quot;rgb(25, 25, 25)&quot; data-darkmode-original-bgcolor-16095509242984=&quot;rgb(255, 255, 255)&quot; mp-original-font-size=&quot;17&quot; mp-original-line-height=&quot;27.200000762939453&quot;&gt;&lt;section data-darkmode-bgcolor-16095509242984=&quot;rgb(25, 25, 25)&quot; data-darkmode-original-bgcolor-16095509242984=&quot;rgb(255, 255, 255)&quot; mp-original-font-size=&quot;17&quot; mp-original-line-height=&quot;27.200000762939453&quot;&gt;&lt;section data-darkmode-bgcolor-16095509242984=&quot;rgb(25, 25, 25)&quot; data-darkmode-original-bgcolor-16095509242984=&quot;rgb(255, 255, 255)&quot; mp-original-font-size=&quot;17&quot; mp-original-line-height=&quot;27.200000762939453&quot;&gt;&lt;section data-darkmode-bgcolor-16095509242984=&quot;rgb(25, 25, 25)&quot; data-darkmode-original-bgcolor-16095509242984=&quot;rgb(255, 255, 255)&quot; mp-original-font-size=&quot;17&quot; mp-original-line-height=&quot;27.200000762939453&quot;&gt;&lt;section data-darkmode-bgcolor-16095509242984=&quot;rgb(25, 25, 25)&quot; data-darkmode-original-bgcolor-16095509242984=&quot;rgb(255, 255, 255)&quot; mp-original-font-size=&quot;17&quot; mp-original-line-height=&quot;27.200000762939453&quot;&gt;&lt;section data-darkmode-bgcolor-16095509242984=&quot;rgb(25, 25, 25)&quot; data-darkmode-original-bgcolor-16095509242984=&quot;rgb(255, 255, 255)&quot; mp-original-font-size=&quot;17&quot; mp-original-line-height=&quot;27.200000762939453&quot;&gt;&lt;section data-id=&quot;85660&quot; data-custom=&quot;rgb(117, 117, 118)&quot; data-darkmode-bgcolor-16095509242984=&quot;rgb(25, 25, 25)&quot; data-darkmode-original-bgcolor-16095509242984=&quot;rgb(255, 255, 255)&quot; mp-original-font-size=&quot;17&quot; mp-original-line-height=&quot;27.200000762939453&quot;&gt;&lt;section data-darkmode-bgcolor-16095509242984=&quot;rgb(25, 25, 25)&quot; data-darkmode-original-bgcolor-16095509242984=&quot;rgb(255, 255, 255)&quot; data-style=&quot;margin-top: 2em; padding-top: 0.5em; padding-bottom: 0.5em; max-width: 100%; border-style: solid none; text-decoration: inherit; border-top-color: rgb(204, 204, 204); border-bottom-color: rgb(204, 204, 204); border-top-width: 1px; border-bottom-width: 1px; box-sizing: border-box !important; overflow-wrap: break-word !important;&quot; mp-original-font-size=&quot;17&quot; mp-original-line-height=&quot;27.200000762939453&quot;&gt;&lt;section&gt;&lt;span&gt;机器之心报道&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;编辑：陈萍、蛋酱&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;/section&gt;&lt;blockquote data-type=&quot;2&quot; data-url=&quot;&quot; data-author-name=&quot;&quot; data-content-utf8-length=&quot;33&quot; data-source-title=&quot;&quot;&gt;&lt;section&gt;&lt;section&gt;&lt;span&gt;G&lt;/span&gt;&lt;span&gt;P&lt;/span&gt;&lt;span&gt;T4All 是基于大量干净的助手数据（包括代码、故事和对话）训练而成的聊天机器人，数据包括～800k 条 GPT-3.5-Turbo 生成数据，基于 LLaMa 完成，M1 Mac、Windows 等环境都能运行。&lt;/span&gt;&lt;span&gt;或许就像它的名字所暗示的那样，人人都能用上个人 GPT 的时代已经来了。&lt;/span&gt;&lt;/section&gt;&lt;/section&gt;&lt;/blockquote&gt;&lt;section&gt;&lt;span/&gt;&lt;span&gt;自从 OpenAI 发布 ChatGPT 后，最近几个月聊天机器人热度不减。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;虽然 ChatGPT 功能强大，但 OpenAI 几乎不可能将其开源。不少人都在做开源方面的努力，比如前段时间 Meta 开源的 LLaMA。其是一系列模型的总称，参数量从 70 亿到 650 亿不等，其中，130 亿参数的 LLaMA 模型「在大多数基准上」可以胜过参数量达 1750 亿的 GPT-3。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;LLaMA 的开源可是利好众多研究者，比如斯坦福在 LLaMA 的基础上加入指令微调（instruct tuning），训练了一个名为 Alpaca（羊驼）的 70 亿参数新模型（基于 LLaMA 7B）。结果显示，只有 7B 参数的轻量级模型 Alpaca 性能可媲美 GPT-3.5 这样的超大规模语言模型。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;又比如，我们接下来要介绍的这个模型 GPT4All，也是一种基于 LLaMA 的新型 7B 语言模型。项目上线两天，Star 量已经突破 7.8k。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.3416666666666667&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/KmXPKA19gW8pSn3sRrWiaUBU7a1AQN7p3wPGPicVNAXhXWsaL1eNQxdxYqyQW2MK4UXDibev0AgicC8vIGJbVbSXVA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1080&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;项目地址：https://github.com/nomic-ai/gpt4all&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;简单来讲，GPT4All 在 GPT-3.5-Turbo 的 800k 条数据上进行训练，包括文字问题、故事描述、多轮对话和代码。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;根据项目显示，M1 Mac、Windows 等环境都能运行。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.22024367385192128&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/KmXPKA19gW8pSn3sRrWiaUBU7a1AQN7p3CibE4OPhylAbxX8HLCquJQicDwsetf1vPGr8LPlTjaFUYraUgOLYFMJA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1067&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;我们先来看看效果。&lt;/span&gt;&lt;span&gt;如下图所示，用户可以和 GPT4All 进行无障碍交流，比如询问该模型：&lt;/span&gt;&lt;span&gt;「我可以在笔记本上运行大型语言模型吗？&lt;/span&gt;&lt;span&gt;」GPT4All 回答是：&lt;/span&gt;&lt;span&gt;「是的，你可以使用笔记本来训练和测试神经网络或其他自然语言（如英语或中文）的机器学习模型。&lt;/span&gt;&lt;span&gt;重要的是，你需要足够可用的内存 （RAM） 来适应这些模型的大小……」&lt;/span&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;接下来，如果你不清楚到底需要多少内存，你还可以继续询问 GPT4All，然后它给出回答。从结果来看，GPT4All 进行多轮对话的能力还是很强的。 &lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.6066666666666667&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_gif/KmXPKA19gW8pSn3sRrWiaUBU7a1AQN7p3icVmrHGMUxsjlZBfKbYfMO7dyS4K2ed6wmv3ia0BVOIajiaicH2wgTJtibA/640?wx_fmt=gif&quot; data-type=&quot;gif&quot; data-w=&quot;600&quot;/&gt;&lt;span&gt;&lt;em&gt;&lt;span&gt;在 M1 Mac 上的实时采样&lt;/span&gt;&lt;/em&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;有人将这项研究称为「改变游戏规则，有了 GPT4All 的加持，现在在 MacBook 上本地就能运行 GPT。」&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.27314814814814814&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/KmXPKA19gW8pSn3sRrWiaUBU7a1AQN7p3T2WyDxh59daLkTmvUacDEVVONAfdeibERo0z1uvbViad4jkfw8xG8Wmw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1080&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;与 GPT-4 相似的是，GPT4All 也提供了一份「技术报告」。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.32685185185185184&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/KmXPKA19gW8pSn3sRrWiaUBU7a1AQN7p3CDQSw1SsBMaaKCQ746FOxMibPgCgEe0GibXAZqsibwFOC0Z6wv7nib0eKA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1080&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;span/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;技术报告地址：https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;这份初步的技术报告简要描述了 GPT4All 的搭建细节。研究者公开了收集的数据、数据整理程序、训练代码和最终的模型权重，以促进开放研究和可重复性，此外还发布了模型的量化 4 位（quantized 4-bit）版本，这意味着几乎任何人都可以在 CPU 上运行该模型。&lt;/span&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;接下来，让我们看看这份报告中写了什么。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;GPT4All 技术报告&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;br/&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;1、数据收集和整理&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;&lt;br/&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;在 2023 年 3 月 20 日至 2023 年 3 月 26 日期间，研究者使用 GPT-3.5-Turbo OpenAI API 收集了大约 100 万对 prompt 回答。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;首先，研究者通过利用三个公开可用的数据集来收集不同的问题 /prompt 样本：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;LAION OIG 的统一 chip2 子集&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;Stackoverflow Questions 的一个随机子样本集 Coding questions&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;Bigscience/P3 子样本集进行指令调优&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;参考斯坦福大学 Alpaca 项目 (Taori et al., 2023)，研究者对数据准备和整理给予了大量关注。&lt;/span&gt;&lt;span&gt;在收集了最初的 prompt 生成对的数据集后，他们将数据加载到 Atlas 进行整理和清理，删除了所有 GPT-3.5-Turbo 未能响应 prompt 并产生畸形输出的样本。&lt;/span&gt;&lt;span&gt;这使得样本总数减少到 806199 个高质量的 prompt - 生成对。&lt;/span&gt;&lt;span&gt;接下来，研究者从最终的训练数据集中删除了整个 Bigscience/P3 子集，因为它的输出多样性非常低。&lt;/span&gt;&lt;span&gt;P3 包含许多同质化的 prompt，这些 prompt 从 GPT-3.5-Turbo 中产生了简短而同质化的反应。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;这种排除法产生了一个包含 437,605 个 prompt - 生成对的最终子集，如图 2 所示。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.5666666666666667&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/KmXPKA19gW8pSn3sRrWiaUBU7a1AQN7p3YvtqK98Nfsd1SN0ZSzuUbv7zk7oC7TzeP2JxHicz26Ciat5SUN2byn7w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1080&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;strong&gt;&lt;span&gt;模型训练&lt;/span&gt;&lt;/strong&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;研究者在 LLaMA 7B (Touvron et al., 2023) 的一个实例中将几个模型进行微调。他们最初的公开版本相关的模型是用 LoRA (Hu et al., 2021) 在 437605 个后处理的例子上以 4 个 epoch 训练的。详细的模型超参数和训练代码可以在相关的资源库和模型训练日志中找到。&lt;/span&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;可重复性&lt;/strong&gt;&lt;/span&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;研究者发布了所有的数据（包括未使用的 P3 generations）、训练代码和模型权重，供社区进行复现。感兴趣的研究者可以在 Git 存储库中找到最新的数据、训练细节和检查点。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;成本&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;研究者大概用了四天的时间制作这些模型，GPU 成本为 800 美元（从 Lambda 实验室和 Paperspace 租的，其中包括几次失败的训练），此外还有 500 美元的 OpenAI API 费用。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;最终发布的模型 gpt4all-lora 可以在 Lambda 实验室的 DGX A100 8x 80GB 上用大约 8 小时训练完成，总成本为 100 美元。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;这个模型可以在普通笔记本上运行，真就像网友说的「除了电费之外，没有任何成本。」&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.5092592592592593&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/KmXPKA19gW8pSn3sRrWiaUBU7a1AQN7p3zePtE2VxAhbbSHQot5gibdBNHEA04LkfgY1wZ4MlXx0H7icmic2COibs5w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1080&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;&lt;strong&gt;评估&lt;/strong&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;研究者使用 SelfInstruct 论文 (Wang et al., 2022) 中的人类评估数据对该模型进行了初步评估。报告还对比了该模型与已知最好的公开的 alpaca-lora 模型（该模型由 huggingface 的用户 chainyo 提供）的 ground truth 困惑度。他们发现，所有的模型在少数任务上都有非常大的困惑度，并且报告的困惑度最大为 100。与 Alpaca 相比，在这个收集的数据集上进行微调的模型在 Self-Instruct 评估中表现出了更低的困惑度。研究者表示，这个评估不是详尽的，仍存在进一步的评估空间 —— 他们欢迎读者在本地 CPU 上运行该模型（文件见 Github），并对它的能力有一个定性的认识。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;最后，需要注意的是，作者公布了数据和训练细节，希望它能加速开放的 LLM 研究，特别是在对齐和可解释性领域。GPT4All 模型的权重和数据仅用于研究目的，并获得许可，禁止任何商业使用。GPT4All 是基于 LLaMA 的，LLaMA 具有非商业许可。助理数据是从 OpenAI 的 GPT-3.5-Turbo 收集的，其使用条款禁止开发与 OpenAI 进行商业竞争的模型。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.8537037037037037&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/KmXPKA19gW8rfthnicskCIM0ozSPyYpjdQwk4A55RS6uvZzwUlicCTfkuS2MDIFEk9q8FjFI1coTFXUx2SA4NN8A/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1080&quot;/&gt;&lt;/p&gt;&lt;p mp-original-font-size=&quot;17&quot; mp-original-line-height=&quot;27.200000762939453&quot;&gt;&lt;span mp-original-font-size=&quot;12&quot; mp-original-line-height=&quot;19.200000762939453&quot;&gt;© THE END &lt;/span&gt;&lt;/p&gt;&lt;p mp-original-font-size=&quot;17&quot; mp-original-line-height=&quot;27.200000762939453&quot;&gt;&lt;span mp-original-font-size=&quot;12&quot; mp-original-line-height=&quot;19.200000762939453&quot;&gt;转载请联系本公众号获得授权&lt;/span&gt;&lt;/p&gt;&lt;p mp-original-font-size=&quot;17&quot; mp-original-line-height=&quot;27.200000762939453&quot;&gt;&lt;span mp-original-font-size=&quot;12&quot; mp-original-line-height=&quot;19.200000762939453&quot;&gt;投稿或寻求报道：content@jiqizhixin.com&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;mp-style-type data-value=&quot;3&quot;/&gt;&lt;/p&gt;&lt;/div&gt;
+<guid>49f81a094050d173cc12d18613bec208</guid>
+<title>利用 Jackson 序列化实现数据脱敏</title>
+<link>https://toutiao.io/k/5x6kx1h</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;preview&quot;&gt;&lt;h4&gt;作者：京东物流 张晓旭&lt;/h4&gt;
 
-          
-        &lt;/div&gt;&lt;/div&gt;</content:encoded>
+&lt;h1&gt;1.背景&lt;/h1&gt;
+
+&lt;p&gt;在项目中有些敏感信息不能直接展示，比如客户手机号、身份证、车牌号等信息，展示时均需要进行数据脱敏，防止泄露客户隐私。脱敏即是对数据的部分信息用脱敏符号（*）处理。&lt;/p&gt;
+
+&lt;h1&gt;2.目标&lt;/h1&gt;
+
+&lt;ul&gt;
+&lt;li&gt;  在服务端返回数据时，利用Jackson序列化完成数据脱敏，达到对敏感信息脱敏展示。&lt;/li&gt;
+&lt;li&gt;  降低重复开发量，提升开发效率&lt;/li&gt;
+&lt;li&gt;  形成统一有效的脱敏规则&lt;/li&gt;
+&lt;li&gt;  可基于重写默认脱敏实现的desensitize方法，实现可扩展、可自定义的个性化业务场景的脱敏需求&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;3.主要实现&lt;/h1&gt;
+
+&lt;h2&gt;3.1基于Jackson的自定义脱敏序列化实现&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;StdSerializer&lt;/strong&gt;：所有标准序列化程序所使用的基类，这个是编写自定义序列化程序所推荐使用的基类。&lt;br/&gt;
+&lt;strong&gt;ContextualSerializer：&lt;/strong&gt;是Jackson 提供的另一个序列化相关的接口，它的作用是通过字段已知的上下文信息定制JsonSerializer。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;package com.jd.ccmp.ctm.constraints.serializer;
+
+
+
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.BeanProperty;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.ContextualSerializer;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.jd.ccmp.ctm.constraints.Symbol;
+import com.jd.ccmp.ctm.constraints.annotation.Desensitize;
+import com.jd.ccmp.ctm.constraints.desensitization.Desensitization;
+import com.jd.ccmp.ctm.constraints.desensitization.DesensitizationFactory;
+import com.jd.ccmp.ctm.constraints.desensitization.DefaultDesensitization;
+
+
+
+
+import java.io.IOException;
+
+
+
+
+/**
+ * 脱敏序列化器
+ *
+ * @author zhangxiaoxu15
+ * @date 2022/2/8 11:10
+ */
+public class ObjectDesensitizeSerializer extends StdSerializer&amp;lt;Object&amp;gt; implements ContextualSerializer {
+    private static final long serialVersionUID = -7868746622368564541L;
+    private transient Desensitization&amp;lt;Object&amp;gt; desensitization;
+    protected ObjectDesensitizeSerializer() {
+        super(Object.class);
+    }
+    public Desensitization&amp;lt;Object&amp;gt; getDesensitization() {
+        return desensitization;
+    }
+    public void setDesensitization(Desensitization&amp;lt;Object&amp;gt; desensitization) {
+        this.desensitization = desensitization;
+    }
+    @Override
+    public JsonSerializer&amp;lt;Object&amp;gt; createContextual(SerializerProvider prov, BeanProperty property) {
+//获取属性注解
+        Desensitize annotation = property.getAnnotation(Desensitize.class);
+        return createContextual(annotation.desensitization());
+    }
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public JsonSerializer&amp;lt;Object&amp;gt; createContextual(Class&amp;lt;? extends Desensitization&amp;lt;?&amp;gt;&amp;gt; clazz) {
+        ObjectDesensitizeSerializer serializer = new ObjectDesensitizeSerializer();
+        if (clazz != DefaultDesensitization.class) {
+            serializer.setDesensitization((Desensitization&amp;lt;Object&amp;gt;) DesensitizationFactory.getDesensitization(clazz));
+        }
+        return serializer;
+    }
+    @Override
+    public void serialize(Object value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        Desensitization&amp;lt;Object&amp;gt; objectDesensitization = getDesensitization();
+        if (objectDesensitization != null) {
+            try {
+                gen.writeObject(objectDesensitization.desensitize(value));
+            } catch (Exception e) {
+                gen.writeObject(value);
+            }
+        } else if (value instanceof String) {
+            gen.writeString(Symbol.getSymbol(((String) value).length(), Symbol.STAR));
+        } else {
+            gen.writeObject(value);
+        }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;注：createContextual可以获得字段的类型以及注解。当字段拥有自定义注解时，取出注解中的值创建定制的序列化方式，这样在serialize方法中便可以得到这个值了。&lt;strong&gt;createContextual&lt;/strong&gt;方法只会在第一次序列化字段时调用（因为字段的上下文信息在运行期不会改变），所以无需关心性能问题。&lt;/p&gt;
+
+&lt;h2&gt;3.2定义脱敏接口、以及工厂实现&lt;/h2&gt;
+
+&lt;h3&gt;3.2.1脱敏器接口定义&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code&gt;package com.jd.ccmp.ctm.constraints.desensitization;
+
+
+/**
+ * 脱敏器
+ *
+ * @author zhangxiaoxu15
+ * @date 2022/2/8 10:56
+ */
+public interface Desensitization&amp;lt;T&amp;gt; {
+    /**
+     * 脱敏实现
+     *
+     * @param target 脱敏对象
+     * @return 脱敏返回结果
+     */
+    T desensitize(T target);
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;3.2.2脱敏器工厂实现&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code&gt;package com.jd.ccmp.ctm.constraints.desensitization;
+
+
+import java.util.HashMap;
+import java.util.Map;
+
+
+/**
+ * 工厂方法
+ *
+ * @author zhangxiaoxu15
+ * @date 2022/2/8 10:58
+ */
+public class DesensitizationFactory {
+    private DesensitizationFactory() {
+    }
+    private static final Map&amp;lt;Class&amp;lt;?&amp;gt;, Desensitization&amp;lt;?&amp;gt;&amp;gt; map = new HashMap&amp;lt;&amp;gt;();
+
+
+
+
+    @SuppressWarnings(&quot;all&quot;)
+    public static Desensitization&amp;lt;?&amp;gt; getDesensitization(Class&amp;lt;?&amp;gt; clazz) {
+        if (clazz.isInterface()) {
+            throw new UnsupportedOperationException(&quot;desensitization is interface, what is expected is an implementation class !&quot;);
+        }
+        return map.computeIfAbsent(clazz, key -&amp;gt; {
+            try {
+                return (Desensitization&amp;lt;?&amp;gt;) clazz.newInstance();
+            } catch (InstantiationException | IllegalAccessException e) {
+                throw new UnsupportedOperationException(e.getMessage(), e);
+            }
+        });
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2&gt;3.3常用的脱敏器实现&lt;/h2&gt;
+
+&lt;h3&gt;3.3.1默认脱敏实现&lt;/h3&gt;
+
+&lt;p&gt;可基于默认实现，扩展实现个性化场景&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;package com.jd.ccmp.ctm.constraints.desensitization;
+
+
+/**
+ * 默认脱敏实现
+ *
+ * @author zhangxiaoxu15
+ * @date 2022/2/8 11:01
+ */
+public interface DefaultDesensitization extends Desensitization&amp;lt;String&amp;gt; {
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;3.3.2手机号脱敏器&lt;/h3&gt;
+
+&lt;p&gt;实现对手机号中间4位号码脱敏&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;package com.jd.ccmp.ctm.constraints.desensitization;
+import com.jd.ccmp.ctm.constraints.Symbol;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+
+/**
+ * 手机号脱敏器，保留前3位和后4位
+ *
+ * @author zhangxiaoxu15
+ * @date 2022/2/8 11:02
+ */
+public class MobileNoDesensitization implements DefaultDesensitization {
+    /**
+     * 手机号正则
+     */
+    private static final Pattern DEFAULT_PATTERN = Pattern.compile(&quot;(13[0-9]|14[579]|15[0-3,5-9]|16[6]|17[0135678]|18[0-9]|19[89])\\d{8}&quot;);
+
+
+
+
+    @Override
+    public String desensitize(String target) {
+        Matcher matcher = DEFAULT_PATTERN.matcher(target);
+        while (matcher.find()) {
+            String group = matcher.group();
+            target = target.replace(group, group.substring(0, 3) + Symbol.getSymbol(4, Symbol.STAR) + group.substring(7, 11));
+        }
+        return target;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2&gt;3.4注解定义&lt;/h2&gt;
+
+&lt;p&gt;通过@JacksonAnnotationsInside实现自定义注解，提高易用性&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;package com.jd.ccmp.ctm.constraints.annotation;
+import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.jd.ccmp.ctm.constraints.desensitization.Desensitization;
+import com.jd.ccmp.ctm.constraints.serializer.ObjectDesensitizeSerializer;
+import java.lang.annotation.*;
+
+
+/**
+ * 脱敏注解
+ *
+ * @author zhangxiaoxu15
+ * @date 2022/2/8 11:09
+ */
+@Target({ElementType.FIELD, ElementType.ANNOTATION_TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@JacksonAnnotationsInside
+@JsonSerialize(using = ObjectDesensitizeSerializer.class)
+@Documented
+public @interface Desensitize {
+    /**
+     * 对象脱敏器实现
+     */
+    @SuppressWarnings(&quot;all&quot;)
+    Class&amp;lt;? extends Desensitization&amp;lt;?&amp;gt;&amp;gt; desensitization();
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;3.4.1默认脱敏注解&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code&gt;package com.jd.ccmp.ctm.constraints.annotation;
+import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
+import com.jd.ccmp.ctm.constraints.desensitization.DefaultDesensitization;
+import java.lang.annotation.*;
+
+
+
+
+/**
+ * 默认脱敏注解
+ *
+ * @author zhangxiaoxu15
+ * @date 2022/2/8 11:14
+ */
+@Target({ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+@JacksonAnnotationsInside
+@Desensitize(desensitization = DefaultDesensitization.class)
+@Documented
+public @interface DefaultDesensitize {
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2&gt;3.4.2手机号脱敏注解&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code&gt;package com.jd.ccmp.ctm.constraints.annotation;
+import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
+import com.jd.ccmp.ctm.constraints.desensitization.MobileNoDesensitization;
+import java.lang.annotation.*;
+
+
+/**
+ * 手机号脱敏
+ *
+ * @author zhangxiaoxu15
+ * @date 2022/2/8 11:18
+ */
+@Target({ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+@JacksonAnnotationsInside
+@Desensitize(desensitization = MobileNoDesensitization.class)
+@Documented
+public @interface MobileNoDesensitize {
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2&gt;3.5定义脱敏符号&lt;/h2&gt;
+
+&lt;p&gt;支持指定脱敏符号，例如* 或是 ^_^&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;package com.jd.ccmp.ctm.constraints;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+
+/**
+ * 脱敏符号
+ *
+ * @author zhangxiaoxu15
+ * @date 2022/2/8 10:53
+ */
+public class Symbol {
+    /**
+     * &#x27;*&#x27;脱敏符
+     */
+    public static final String STAR = &quot;*&quot;;
+    private Symbol() {}
+    /**
+     * 获取符号
+     *
+     * @param number 符号个数
+     * @param symbol 符号
+     */
+    public static String getSymbol(int number, String symbol) {
+        return IntStream.range(0, number).mapToObj(i -&amp;gt; symbol).collect(Collectors.joining());
+    }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1&gt;4.使用样例&amp;amp;执行流程剖析&lt;/h1&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://mp.toutiao.com/mp/agw/article_material/open_image/get?code=YjlmMjI4NmM3Nzg4ZGUzMjRhOTI2ZjgwMzM2MGY2MzQsMTY4MDIyNjI0ODU2Mw==&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;程序类图&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://mp.toutiao.com/mp/agw/article_material/open_image/get?code=MTlmMTk3Y2RhM2MwOTkxZjZhZDYyNjA0YjEyNDlkYmUsMTY4MDIyNjI0ODU2Mw==&quot; alt=&quot;&quot;/&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;**执行流程剖析**
+ 1.调用JsonUtil.toJsonString()开始执行序列化
+ 2.识别属性mobile上的注解@MobileNoDesensitize(上文3.4.2)
+ 3.调用ObjectDesensitizeSerializer#createContextual(上文3.1 &amp;amp; 3.2)，返回JsonSerializer
+ 4.调用手机号脱敏实现MobileNoDesensitization#desensitize(上文3.3.2)
+ 5.输出脱敏后的序列化结果，{&quot;mobile&quot;:&quot;133****5678&quot;}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;不难发现核心执行流程是第3步，但是@MobileNoDesensitize与ObjectDesensitizeSerializer又是如何联系起来的呢？&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;  尝试梳理下引用链路：@MobileNoDesensitize -&amp;gt; @Desensitize -&amp;gt; @JsonSerialize -&amp;gt; ObjectDesensitizeSerializer&lt;/li&gt;
+&lt;li&gt;  但是，在ObjectDesensitizeSerializer的实现中，我们似乎却没有发现上述链路的直接调用关系&lt;/li&gt;
+&lt;li&gt;  这就不得不说下Jackson元注解的概念&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;pre&gt;&lt;code&gt;**Jackson元注解**
+1.提到元注解这个词，大家会想到@Target、@Retention、@Documented、@Inherited
+2.Jackson也以同样的思路设计了@JacksonAnnotationsInside
+
+
+/**
+ * Meta-annotation (annotations used on other annotations)
+ * used for indicating that instead of using target annotation
+ * (annotation annotated with this annotation),
+ * Jackson should use meta-annotations it has.
+ * This can be useful in creating &quot;combo-annotations&quot; by having
+ * a container annotation, which needs to be annotated with this
+ * annotation as well as all annotations it &#x27;contains&#x27;.
+ * 
+ * @since 2.0
+ */
+@Target({ElementType.ANNOTATION_TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@JacksonAnnotation
+public @interface JacksonAnnotationsInside
+{
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;正是通过”combo-annotations”(组合注解、捆绑注解)的机制，实现了指示Jackson应该使用其拥有的元注释，而不是使用目标注释，从而实现了自定义脱敏实现设计目标。&lt;/p&gt;
+
+&lt;h1&gt;5.总结&lt;/h1&gt;
+
+&lt;p&gt;以上就是利用Jackson序列化实现数据脱敏的全过程，如有此类需求的同学可以借鉴上面的实现方法。&lt;/p&gt;
+&lt;/div&gt;
+  &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>ec592c55fe8a731d1f01da12aed24555</guid>
-<title>ChatGPT 为何难注册</title>
-<link>https://toutiao.io/k/7g5005i</link>
+<guid>da45b343ceaab155765b11e1ebf66929</guid>
+<title>Flink 的重试机制</title>
+<link>https://toutiao.io/k/h61szaq</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;RichText ztext Post-RichText css-1g0fqss&quot; options=&quot;[object Object]&quot;&gt;&lt;blockquote data-first-child=&quot;&quot; data-pid=&quot;qCcxlrR6&quot;&gt;当 Task 发生故障时，Flink 需要重启出错的 Task 以及其他受到影响的 Task ，以使得作业恢复到正常执行状态。Flink 通过重启策略和故障恢复策略来控制 Task 重启：重启策略决定是否可以重启以及重启的间隔；故障恢复策略决定哪些 Task 需要重启。&lt;/blockquote&gt;&lt;figure data-size=&quot;normal&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;https://pic4.zhimg.com/v2-f98a3ccee5e0842fe475a6d4fec3a7c3_b.jpg&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;315&quot; data-rawheight=&quot;164&quot; class=&quot;content_image&quot;/&gt;&lt;/noscript&gt;&lt;img src=&quot;&quot; data-caption=&quot;&quot; data-size=&quot;normal&quot; data-rawwidth=&quot;315&quot; data-rawheight=&quot;164&quot; class=&quot;content_image lazy&quot; data-actualsrc=&quot;https://pic4.zhimg.com/v2-f98a3ccee5e0842fe475a6d4fec3a7c3_b.jpg&quot;/&gt;&lt;/figure&gt;&lt;h2&gt;Flink重启策略&lt;/h2&gt;&lt;p data-pid=&quot;YBbKwhR-&quot;&gt;Flink的重试机制主要体现在，Flink Task出现错误的时候，需要恢复异常的Task和受影响的Task，故此需要一定的策略来进行发现和解决。&lt;/p&gt;&lt;h2&gt;Flink重启策略配置方式&lt;/h2&gt;&lt;p data-pid=&quot;xDnW28BL&quot;&gt;通过 Flink 的配置文件&lt;code&gt;flink-conf.yaml&lt;/code&gt;来设置默认的重启策略。配置参数&lt;i&gt;restart-strategy&lt;/i&gt;定义了采取何种策略。 如果没有启用 checkpoint，就采用“不重启”策略。如果启用了 checkpoint 且没有配置重启策略，那么就采用固定延时重启策略， 此时最大尝试重启次数由&lt;code&gt;Integer.MAX_VALUE&lt;/code&gt;参数设置。下表列出了可用的重启策略和与其对应的配置值。&lt;/p&gt;&lt;p data-pid=&quot;1VyFm6XT&quot;&gt;除了定义默认的重启策略以外，还可以为每个 Flink 作业单独定义重启策略。 这个重启策略通过在程序中的 &lt;code&gt;ExecutionEnvironment&lt;/code&gt; 对象上调用 &lt;code&gt;setRestartStrategy&lt;/code&gt; 方法来设置。 当然，对于 &lt;code&gt;StreamExecutionEnvironment&lt;/code&gt; 也同样适用。&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-java&quot;&gt;&lt;span class=&quot;n&quot;&gt;ExecutionEnvironment&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;env&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ExecutionEnvironment&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getExecutionEnvironment&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;env&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setRestartStrategy&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;RestartStrategies&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;fixedDelayRestart&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p data-pid=&quot;j__8JcSz&quot;&gt;下例展示了如何给我们的作业设置固定延时重启策略。 如果发生故障，系统会重启作业 3 次，每两次连续的重启尝试之间等待 10 秒钟。&lt;/p&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;p data-pid=&quot;bdZuTqFP&quot;&gt;在Flink中提供了3种重启策略：&lt;/p&gt;&lt;p data-pid=&quot;enEwDeKY&quot;&gt;1、none：在不配置chechpoint的情况下默认采用的是 不启用策略 即出现错误即停止任务。&lt;/p&gt;&lt;p data-pid=&quot;n81QLA49&quot;&gt;2、固定延迟策略&lt;/p&gt;&lt;p data-pid=&quot;ClpGcI3D&quot;&gt;3、故障率策略&lt;/p&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;h2&gt;Flink重启策略详情&lt;/h2&gt;&lt;p data-pid=&quot;88yvb4l-&quot;&gt;1、固定延迟&lt;/p&gt;&lt;table data-draft-node=&quot;block&quot; data-draft-type=&quot;table&quot; data-size=&quot;normal&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;th&gt;key&lt;/th&gt;&lt;th&gt;type&lt;/th&gt;&lt;th&gt;default&lt;/th&gt;&lt;th&gt;含义&lt;/th&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;restart-strategy.fixed-delay.attempts&lt;/td&gt;&lt;td&gt;Integer&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;重试次数如果超过则任务退出&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;restart-strategy.fixed-delay.delay&lt;/td&gt;&lt;td&gt;Duration&lt;/td&gt;&lt;td&gt;1s&lt;/td&gt;&lt;td&gt;两个任务之间的延迟&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;p data-pid=&quot;xS3-ugTw&quot;&gt;2、故障率重启&lt;/p&gt;&lt;p data-pid=&quot;TwmS5mto&quot;&gt;故障率重启策略在故障发生之后重启作业，但是当&lt;b&gt;故障率&lt;/b&gt;（每个时间间隔发生故障的次数）超过设定的限制时，作业会最终失败。 在连续的两次重启尝试之间，重启策略等待一段固定长度的时间。&lt;/p&gt;&lt;table data-draft-node=&quot;block&quot; data-draft-type=&quot;table&quot; data-size=&quot;normal&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;th&gt;key&lt;/th&gt;&lt;th&gt;type&lt;/th&gt;&lt;th&gt;default&lt;/th&gt;&lt;th&gt;含义&lt;/th&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;restart-strategy.failure-rate.delay&lt;/td&gt;&lt;td&gt;Duration&lt;/td&gt;&lt;td&gt;1 s&lt;/td&gt;&lt;td&gt;重试的时间间隔&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;restart-strategy.failure-rate.failure-rate-interval&lt;/td&gt;&lt;td&gt;Duration&lt;/td&gt;&lt;td&gt;1 min&lt;/td&gt;&lt;td&gt;时间间隔&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;restart-strategy.failure-rate.max-failures-per-interval&lt;/td&gt;&lt;td&gt;Integer&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;时间间隔内最大的错误&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;p data-pid=&quot;WVQYKCjf&quot;&gt;默认配置&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-yaml&quot;&gt;&lt;span class=&quot;nt&quot;&gt;restart-strategy.failure-rate.max-failures-per-interval&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;m&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;w&quot;/&gt;&lt;span class=&quot;nt&quot;&gt;restart-strategy.failure-rate.failure-rate-interval&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;m&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;l&quot;&gt;min&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;w&quot;/&gt;&lt;span class=&quot;nt&quot;&gt;restart-strategy.failure-rate.delay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;m&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;l&quot;&gt;s&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-java&quot;&gt;&lt;span class=&quot;n&quot;&gt;ExecutionEnvironment&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;env&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ExecutionEnvironment&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getExecutionEnvironment&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;env&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setRestartStrategy&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;RestartStrategies&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;failureRateRestart&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 每个时间间隔的最大故障次数
+&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;  &lt;span class=&quot;n&quot;&gt;Time&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;of&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TimeUnit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;MINUTES&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 测量故障率的时间间隔
+&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;  &lt;span class=&quot;n&quot;&gt;Time&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;of&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TimeUnit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;SECONDS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 延时
+&lt;/span&gt;&lt;span class=&quot;c1&quot;/&gt;&lt;span class=&quot;o&quot;&gt;));&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;p data-pid=&quot;hI3FMLZZ&quot;&gt;3、无重启策略&lt;/p&gt;&lt;p data-pid=&quot;k8Wdwz5-&quot;&gt;作业直接失败，不尝试重启。&lt;/p&gt;&lt;p data-pid=&quot;JcPO-ZT0&quot;&gt;不重启策略也可以在程序中设置：&lt;/p&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot;&gt;Environmentalist env = ExecutionEnvironment.getExecutionEnvironment(); 
+env.setRestartStrategy(RestartStrategies.noRestart());&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p class=&quot;ztext-empty-paragraph&quot;&gt;&lt;/p&gt;&lt;p data-pid=&quot;LFJGVEbs&quot;&gt;4、Fallback 重启策略&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>d2c440e3db4bf7620cb7747f8d079630</guid>
+<title>ChatGPT4.0，基础生产力的变革！</title>
+<link>https://toutiao.io/k/w00uzup</link>
 <content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;profile_inner&quot;&gt;
-                  &lt;strong class=&quot;profile_nickname&quot;&gt;独立开发者杂谈&lt;/strong&gt;
+                  &lt;strong class=&quot;profile_nickname&quot;&gt;老张的求知思考世界&lt;/strong&gt;
                   &lt;img class=&quot;profile_avatar&quot; id=&quot;js_profile_qrcode_img&quot; src=&quot;&quot; alt=&quot;&quot;/&gt;
 
                   &lt;p class=&quot;profile_meta&quot;&gt;
                   &lt;label class=&quot;profile_meta_label&quot;&gt;Weixin ID&lt;/label&gt;
-                  &lt;span class=&quot;profile_meta_value&quot;&gt;indie_13601655176&lt;/span&gt;
+                  &lt;span class=&quot;profile_meta_value&quot;&gt;For-Think&lt;/span&gt;
                   &lt;/p&gt;
 
                   &lt;p class=&quot;profile_meta&quot;&gt;
                   &lt;label class=&quot;profile_meta_label&quot;&gt;About Feature&lt;/label&gt;
-                  &lt;span class=&quot;profile_meta_value&quot;&gt;一份专为独立开发者打造的原创杂谈，这里分享的内容包含创业、产品、UED、前端、后端、移动端、Node.js、Flutter以及等等等，简直应有尽有，随心所欲～～&lt;/span&gt;
+                  &lt;span class=&quot;profile_meta_value&quot;&gt;专注互联网领域相关技术实践和思考，也分享职场成长、读书杂谈等内容。&lt;/span&gt;
                   &lt;/p&gt;
                 &lt;/div&gt;
                 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>391a65e2ff8e8aad5480fc5306d4b1d5</guid>
-<title>用 Copliot 帮你搞定 Java 样板代码</title>
-<link>https://toutiao.io/k/acn1s05</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;rich_media_content js_underline_content              autoTypeSetting24psection&amp;#10;            &quot; id=&quot;js_content&quot;&gt;&lt;p&gt;&lt;span&gt;↓推荐关注↓&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;mp-common-profile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzA3MDMyMjkzNg==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/FoiciaVBBCfia7lwoYXhskZPoz1amWibTuvrtIPNNw8NgATQjK17qmP6XaMWJXFAv07oVPiavz5JgbJI3icG6TZmGXOw/0?wx_fmt=png&quot; data-nickname=&quot;Java开发精选&quot; data-alias=&quot;javapick&quot; data-signature=&quot;分享 Java 和 Android 开发相关技术文章&quot; data-from=&quot;0&quot; data-is_biz_ban=&quot;0&quot; data-weui-theme=&quot;light&quot;/&gt;&lt;/section&gt;&lt;blockquote class=&quot;js_blockquote_wrap&quot; data-type=&quot;2&quot; data-url=&quot;&quot; data-author-name=&quot;&quot; data-content-utf8-length=&quot;37&quot; data-source-title=&quot;&quot;&gt;&lt;section class=&quot;js_blockquote_digest&quot;&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;作者：Lucas Jellema&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;链接：technology.amis.nl&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;/blockquote&gt;&lt;p&gt;&lt;span&gt;GitHub Copilot 帮我开发了一个处理 CSV 文件的 Java 应用程序。虽然不是什么很困难的任务，但在 Java 中总是感觉比在 Python 或 Node 中更难。由于这次有了 Copilot 的加持，只需要输入两个简单的命令，选择合适的工具建议点击“接受”就搞定了。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;本文的 GitHub 仓库：&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;https://github.com/lucasjellema/my-codepilot-explorations&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;两个命令：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;加载 CSV 文件并将数据存储在映射列表中的类&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;打印列名&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;下面开始介绍具体的步骤。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;开始使用 Copilot&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;首先，要设置好 Copilot。在安装 Copilot 的 VS Code 扩展之后，&lt;/span&gt;&lt;span&gt;按照说明文档注册并使用 Copilot（可免费&lt;/span&gt;试&lt;span&gt;用 60 天）。我已经在 VS Code 中完成了 Copilot 的前几步，测试它是否可以成为我编程助手，一个真正意义上的“结对编程小伙伴”。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;组装 Java 应用程序以处理 CSV 数据文件&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;第一个试验是创建一个简单的 Java 应用程序，读取一个 CSV 文件并将数据转换为可以轻松处理的数据结构。感觉上似乎比 Node 或 Python 程序更复杂的任务。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;要创建处理 CSV 文件的 Java 类&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;在目录 javapilot 中创建名为 DataProcessor.java 的文件&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;输入 // class for loading a csv file and storing data in a list of maps&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;按下 Ctrl+Enter&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.7060546875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eZzl4LXykQxlb7OiaqpXDVkia6zdWGsBd5Gv5gpiaX1iavgrfWJnzEVLf66up4oXnfRZMZlJDU1hd5SfPKPIQ47RGw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1024&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;从打开的 GitHub Copilot 选项中选择列表中的第一个解决方案。将光标定位在粘贴的代码末尾，按 Ctrl+Enter 获取如何继续的建议。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.72265625&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eZzl4LXykQxlb7OiaqpXDVkia6zdWGsBd5RhFkiaeQebbBY6PWN4X7SiaSrrwYvb0NjnOzKLeOTicfqvuORGtOrG9Vw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1024&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;接受第一个建议：添加 getData 和 getColumnNames 方法以及 main 方法。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;创建带有 Country 数据的示例 CSV 文件&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;按照下面步骤创建包含 Country 数据的 CSV 文件：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;创建名为 data.csv 的文件&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;输入 &lt;/span&gt;&lt;span&gt;// records for countries with comma separated values for country name, language, capital and population&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;按下 Ctrl+Enter&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.4990234375&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eZzl4LXykQxlb7OiaqpXDVkia6zdWGsBd5Pb2sEPvlI8uqwmxCkhVP6QTuAia0eqhOjwYeCjjweibKIicy3n4sMOhkw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1024&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;接受第一个解决方案。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;需要进行一些后处理，以删除 &lt;span&gt; // Example: ” and ” + newline&lt;/span&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.4521484375&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eZzl4LXykQxlb7OiaqpXDVkia6zdWGsBd5bcpdHgETISFFgT3AlgxCRI54vXGicLRp69uP0WUciagrOW2wzJKpHhxA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1024&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;span/&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;接受 Copilot 的建议，使用有列名的第一行。删除原始注释。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;运行 Java 类。输出显示 Java 应用程序处理的 CSV 中的 Country 数据。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.7237635705669482&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eZzl4LXykQxlb7OiaqpXDVkia6zdWGsBd5FP2RleRvyqyvKCftI0DF48icQ1NS9q9prh6abZX2ulyJ2GmibJHPpciaw/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;829&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;为了实现输出列名，需要执行以下步骤：&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;在 main 方法的 for 循环之前添加注释 // print names of columns&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;按 Ctrl+Enter&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;接受第一个解决方案&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.3251953125&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eZzl4LXykQxlb7OiaqpXDVkia6zdWGsBd5sxnAlyJDjbiaP8A2FJlcbPCpRjcMfs4kCzsfyruSRicyK700paDIv8wQ/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1024&quot;/&gt;&lt;/section&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;再次运行 Java 类。现在列名也加进去了。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.6349206349206349&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eZzl4LXykQxlb7OiaqpXDVkia6zdWGsBd5DeX9fms3GIq5ibX7wpXRRWibxwkJsOw5ib1QgPVj1QW9szA09tuLhbuYA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;819&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;br/&gt;&lt;/section&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;结论&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;在创建一个空的 Java 文件后，输入了以下两个建议：&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;// class &lt;span&gt;for&lt;/span&gt; loading a csv file and storing data &lt;span&gt;in&lt;/span&gt; a list of maps&lt;br/&gt;&lt;br/&gt;// &lt;span&gt;print&lt;/span&gt; names of columns&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;然后使用 Ctrl+Enter 三次来获取应用程序的代码片段，就可以成功地编写了一个 Java 程序，实现了我想要的功能。&lt;/span&gt;&lt;span&gt;虽然我现在并不是一位熟练的 Java 程序员，但如果我自己完成这个任务的话，时间会更长（即使只是因为我显然在输入任何文本或代码时都会出现很多错别字），而且可能会导致更多的挫折感。&lt;/span&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;还需要在一个空的 csv 文件中添加一条附加的注释，以生成一个包含 Country 记录的示例 csv 文件：&lt;/span&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span/&gt;&lt;code&gt;// records &lt;span&gt;for&lt;/span&gt; countries with comma separated values &lt;span&gt;for&lt;/span&gt; country name, language, capital and population&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/section&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;section&gt;&lt;span&gt;在接受 Copilot 的提议之后，我需要对文件进行一些微调以便于使用。公平地说，Copilot 建议了一些来自 GitHub 的可用 CSV 文件。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;注意：如果你执行的步骤和我一模一样，也可能会得到不同的结果。Copilot 在不断改进，给出的建议也会随着其演进以及使用环境（以及一些或许没有人完全理解的因素）而有所不同。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt;从 URL 下载 CSV 数据&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;让我们尝试创建一个 Java 应用程序，从 GitHub 获取其 CSV 文件，并执行与之前相似的处理。&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/section&gt;&lt;ul class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;创建一个名为 DataProcessor2.java 的空文件&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;添加注释 // class for downloading a csv file from GitHub and storing data in a list of maps&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;按下 Ctrl+Enter&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;li&gt;&lt;section&gt;&lt;span&gt;从打开的 GitHub Copilot 选项卡中选择第三个解决方案&lt;/span&gt;&lt;/section&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.435546875&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eZzl4LXykQxlb7OiaqpXDVkia6zdWGsBd5lZ4zy6uRekkWBkV6KroIRYxC8Jnyn9jeMOmJw8176UtM8eDaiaia7ic0w/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;1024&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;最终结果与之前的 DataProcessor 非常相似，有三个不同之处：&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;ol class=&quot;list-paddingleft-1&quot;&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;构造函数的输入参数称为 url。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;InputStreamReader 是由 URL 对象创建的。&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;p&gt;&lt;img class=&quot;rich_pages wxw-img js_insertlocalimg&quot; data-ratio=&quot;0.1638709677419355&quot; data-s=&quot;300,640&quot; data-src=&quot;https://mmbiz.qpic.cn/mmbiz_png/eZzl4LXykQxlb7OiaqpXDVkia6zdWGsBd5ibqVjDPU6BttrgicwiaBJRQJoa3IZ417fHdpdcHOQmJTZFyjza38YWeIA/640?wx_fmt=png&quot; data-type=&quot;png&quot; data-w=&quot;775&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;构造函数传入的值应该是 URL 而不是文件位置。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span/&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;span&gt;- EOF -&lt;/span&gt;&lt;/p&gt;&lt;section donone=&quot;shifuMouseDownCard(&#x27;shifu_c_030&#x27;)&quot; label=&quot;Copyright Reserved by PLAYHUDONG.&quot;&gt;&lt;section&gt;&lt;span&gt;推荐阅读&lt;/span&gt;  &lt;span&gt;点击标题可跳转&lt;/span&gt;&lt;/section&gt;&lt;section&gt;&lt;p&gt;&lt;span&gt;0、&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzA3MDMyMjkzNg==&amp;amp;mid=2652274248&amp;amp;idx=1&amp;amp;sn=7259f2ebeb03201eae6b5abb949923b5&amp;amp;chksm=84dc41dfb3abc8c96bf03cc09cae88f6f161cc93873ccf0e2064dbfbeeb2f3c832c04642c1ce&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;极客专属：几十款程序员‍秒懂的卫衣&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;极客专属：几十款程序员秒懂的&lt;/a&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzA3MDMyMjkzNg==&amp;amp;mid=2652274248&amp;amp;idx=1&amp;amp;sn=7259f2ebeb03201eae6b5abb949923b5&amp;amp;chksm=84dc41dfb3abc8c96bf03cc09cae88f6f161cc93873ccf0e2064dbfbeeb2f3c832c04642c1ce&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;极客专属：几十款程序员‍秒懂的卫衣&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;T恤&lt;/a&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;1、&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzA3MDMyMjkzNg==&amp;amp;mid=2652275206&amp;amp;idx=1&amp;amp;sn=490f8137a940ee2b580a922dae3e00ef&amp;amp;chksm=84dcbd91b3ab348757f30b0eedcf1eef4ec9766054c53582516fb995bcf445eb970fca29f80d&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;美团二面：SPI 的原理是什么？&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;11&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;美团二面：SPI 的原理是什么？&lt;/a&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;2、&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzA3MDMyMjkzNg==&amp;amp;mid=2652275232&amp;amp;idx=1&amp;amp;sn=c2393e069aa8a2a9165fef617d7651a1&amp;amp;chksm=84dcbdb7b3ab34a171fb95b946d64a997c50f1befdbcd95de5fa1befbb213d1a9eda80aaa571&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;消灭空指针，Java 8 给我们更好的解决方案&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;消灭空指针，Java 8 给我们更好的解决方案&lt;/a&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;3、&lt;a target=&quot;_blank&quot; href=&quot;http://mp.weixin.qq.com/s?__biz=MzA3MDMyMjkzNg==&amp;amp;mid=2652275161&amp;amp;idx=1&amp;amp;sn=1a3287a635b4c4d2b1242c7219e88b79&amp;amp;chksm=84dcbe4eb3ab3758a1722d78403c6d353c06e6db7dda3a4bb58d79e7559a92ae1ff1cda44db7&amp;amp;scene=21#wechat_redirect&quot; textvalue=&quot;Spring 6 正式“抛弃” feign&quot; linktype=&quot;text&quot; imgurl=&quot;&quot; imgdata=&quot;null&quot; data-itemshowtype=&quot;0&quot; tab=&quot;innerlink&quot; data-linktype=&quot;2&quot;&gt;Spring 6 正式“抛弃” feign&lt;/a&gt;&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/section&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;看完本文有收获？请分享给更多人&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;&lt;strong&gt;&lt;span&gt; 推荐关注「Java开发精选」，提升Java开发技术&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;br data-filtered=&quot;filtered&quot;/&gt;&lt;/p&gt;&lt;section&gt;&lt;mp-common-profile class=&quot;js_uneditable custom_select_card mp_profile_iframe&quot; data-pluginname=&quot;mpprofile&quot; data-id=&quot;MzA3MDMyMjkzNg==&quot; data-headimg=&quot;http://mmbiz.qpic.cn/mmbiz_png/FoiciaVBBCfia7lwoYXhskZPoz1amWibTuvrtIPNNw8NgATQjK17qmP6XaMWJXFAv07oVPiavz5JgbJI3icG6TZmGXOw/0?wx_fmt=png&quot; data-nickname=&quot;Java开发精选&quot; data-alias=&quot;javapick&quot; data-signature=&quot;分享 Java 和 Android 开发相关技术文章&quot; data-from=&quot;0&quot; data-is_biz_ban=&quot;0&quot; data-weui-theme=&quot;light&quot;/&gt;&lt;/section&gt;&lt;p&gt;&lt;span&gt;点赞和在看就是最大的支持&lt;/span&gt;&lt;span&gt;❤️&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;mp-style-type data-value=&quot;3&quot;/&gt;&lt;/p&gt;&lt;/div&gt;
-
-          
-        &lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>49b8a47c2e043a833b5cdbe63c1fd278</guid>
+<title>.NET 中比肩 System.Text.Json 序列化反序列化组件 MessagePack</title>
+<link>https://toutiao.io/k/utc9zwq</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;官方定义：MessagePack是一种高效的二进制序列化格式。它允许像JSON一样在多个语言之间交换数据。但是它更快并且更小。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;MessagePack是一种开源的序列化反序列化组件，可支持JAVA，C#等主流语言。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;在 C# 中使用 MessagePack，需要添加 MessagePack-CSharp组件，在.NET6之后直接添加 MessagePack。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;它支持 .NET Framework、.NET Core 和 Unity 应用程序。提供了一个简单的 API，可以帮助开发人员在应用程序中快速实现对象的序列化和反序列化。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;使用 MessagePack组件，可以将对象序列化为二进制数据，这样可以将数据存储在文件或网络中，以便以后使用。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;也可以将二进制数据反序列化为对象，这样可以在应用程序中轻松地对数据进行操作。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;一、使用方法&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;新建一个.NET项目，使用Nuget工具添加 MessagePack组件；并在使用的代码页面添加命名空间MessagePack；添加完成之后就可以在这个代码页面使用了。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;代码如下：&lt;/span&gt;&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;&lt;span&gt;&lt;span&gt;//本文使用是包MessagePack-CSharp&lt;/span&gt;&lt;br/&gt;&lt;span&gt;using&lt;/span&gt; MessagePack;&lt;br/&gt;&lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;TestMessage&lt;/span&gt;()&lt;/span&gt;&lt;br/&gt;{&lt;br/&gt;     MyClass message = &lt;span&gt;new&lt;/span&gt; MyClass()&lt;br/&gt;     {&lt;br/&gt;         Name = &lt;span&gt;&quot;DOTNET开发跳槽&quot;&lt;/span&gt;,&lt;br/&gt;         Quantity = &lt;span&gt;100&lt;/span&gt;,&lt;br/&gt;         Anything = &lt;span&gt;new&lt;/span&gt; List&amp;lt;&lt;span&gt;object&lt;/span&gt;&amp;gt;(&lt;span&gt;new&lt;/span&gt; &lt;span&gt;object&lt;/span&gt;[] { &lt;span&gt;&quot;欢迎关注公众号DOTNET开发跳槽&quot;&lt;/span&gt;, &lt;span&gt;2&lt;/span&gt;, &lt;span&gt;false&lt;/span&gt;, &lt;span&gt;4.2&lt;/span&gt;d, &lt;span&gt;&quot;祝大家学业有成&quot;&lt;/span&gt; })&lt;br/&gt;     };&lt;br/&gt;&lt;br/&gt;     &lt;span&gt;// 序列化&lt;/span&gt;&lt;br/&gt;     &lt;span&gt;byte&lt;/span&gt;[] buffer = MessagePackSerializer.Serialize(message, MessagePack.Resolvers.ContractlessStandardResolver.Instance);&lt;br/&gt;     &lt;span&gt;var&lt;/span&gt; json= MessagePackSerializer.ToJson(buffer);&lt;br/&gt;     &lt;span&gt;// 反序列化&lt;/span&gt;&lt;br/&gt;     MyClass returnMsg = MessagePackSerializer.Deserialize&amp;lt;MyClass&amp;gt;(buffer,MessagePack.Resolvers.ContractlessStandardResolver.Instance);&lt;br/&gt; }&lt;br/&gt;&lt;br/&gt;&lt;span&gt;//类如下     &lt;/span&gt;&lt;br/&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;class&lt;/span&gt; &lt;span&gt;MyClass&lt;/span&gt;&lt;br/&gt;{&lt;br/&gt;    &lt;span&gt;public&lt;/span&gt; &lt;span&gt;string&lt;/span&gt; Name { &lt;span&gt;get&lt;/span&gt;; &lt;span&gt;set&lt;/span&gt;; }&lt;br/&gt;    &lt;span&gt;public&lt;/span&gt; &lt;span&gt;int&lt;/span&gt; Quantity { &lt;span&gt;get&lt;/span&gt;; &lt;span&gt;set&lt;/span&gt;; }&lt;br/&gt;    &lt;span&gt;public&lt;/span&gt; List&amp;lt;&lt;span&gt;object&lt;/span&gt;&amp;gt; Anything { &lt;span&gt;get&lt;/span&gt;; &lt;span&gt;set&lt;/span&gt;; }&lt;br/&gt;} &lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;效果如下：&lt;/span&gt;&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-backh=&quot;230&quot; data-backw=&quot;578&quot; data-ratio=&quot;0.3978658536585366&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_png/oDaAmt9QDicRTG2so2ofmP5V77ydfEQYpfvekrmD6I6AAzmoT9XosFXBsn2Jlv5WqaR1cLjwoZXuDPVsggglNCg/640?wx_fmt=png&quot; data-w=&quot;656&quot;/&gt;&lt;/figure&gt;&lt;h2 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;二、MessagePack 与 System.Text.Json比较&lt;/span&gt;&lt;/h2&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;MessagePack-CSharp 与 System.Text.Json 都是用于序列化和反序列化数据的工具，但它们有一些不同点。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;1、数据大小&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;MessagePack-CSharp 生成的数据通常比 System.Text.Json 生成的数据更小，因为 MessagePack-CSharp 使用了一些压缩技术。这意味着在网络传输和存储上，使用 MessagePack-CSharp 可能会更加有效。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;2、性能&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;MessagePack-CSharp 在序列化和反序列化上的性能通常比 System.Text.Json 更快。这是因为 MessagePack-CSharp 使用了基于二进制的数据格式，而不是基于文本的格式。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;此外，MessagePack-CSharp 还提供了一些高级选项，例如多线程序列化和反序列化。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;性能方面有博主测试了这两者的性能，大家可以参考一下，结果图片如下：&lt;/span&gt;&lt;/p&gt;&lt;figure data-tool=&quot;mdnice编辑器&quot;&gt;&lt;img class=&quot;rich_pages wxw-img&quot; data-ratio=&quot;0.37987012987012986&quot; data-src=&quot;https://mmbiz.qpic.cn/sz_mmbiz_png/oDaAmt9QDicRTG2so2ofmP5V77ydfEQYpZb8Q03TVjxRuhSTD3pYoROMlhVGiahXRB8bibKRhXmD2wqaaKsibvj2XA/640?wx_fmt=png&quot; data-w=&quot;924&quot;/&gt;&lt;/figure&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;上图方法2和方法4是System.Text.Json的方法，由此可见MessagePack是优于System.Text.Json的。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;3、运行环境支持&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;MessagePack-CSharp 对各种运行环境的支持比 System.Text.Json 更广泛。例如，MessagePack-CSharp 不仅可以在 .NET 和 .NET Core 上运行，还可以在 Unity 和 Xamarin 等其他平台上运行。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;4、数据可读性&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;System.Text.Json 生成的数据通常比 MessagePack-CSharp 生成的数据更易于人类阅读和解码。这是因为 System.Text.Json 使用了 JSON 格式，该格式是一种易于阅读和编写的文本格式。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;综上所述，选择哪种工具取决于你的具体需求。如果需要快速的序列化和反序列化速度和小的数据大小，则 MessagePack-CSharp 是一个不错的选择。如果需要可读性更好的数据并且不太在意性能，则 System.Text.Json 是一个不错的选择。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;三、总结&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;本文介绍了MessagePack和它在C#的使用，以及它与System.Text.Json的比较，总的来说MessagePack优于System.Text.Json，当然使用的话得根据你的项目情况来定。希望本文能对你有所收获，同时欢迎大家吐槽。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;官网：https://msgpack.org/&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
-<guid>586def04daae4eef0707b9de3d0c9c6f</guid>
-<title>C# 异步编程由浅入深</title>
-<link>https://toutiao.io/k/hut5jli</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;section data-tool=&quot;mdnice编辑器&quot; data-website=&quot;https://www.mdnice.com&quot;&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;一、什么算异步？&lt;/span&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;广义来讲，两个工作流能同时进行就算异步，例如，CPU与外设之间的工作流就是异步的。在面向服务的系统中，各个子系统之间通信一般都是异步的，例如，订单系统与支付系统之间的通信是异步的，又如，在现实生活中，你去馆子吃饭，工作流是这样的，点菜-&amp;gt;下单-&amp;gt;做你的事-&amp;gt;上菜-&amp;gt;吃饭，这个也是异步的，具体来讲你和厨师之间是异步的，异步是如此重要，因外它代表者高效率（两者或两者以上的工作可以同时进行），但复杂，同步的世界简单，但效率极极低。&lt;/span&gt;&lt;/p&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;二、在编程中的异步&lt;/span&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;在编程中，除了同步和异步这两个名词，还多了一个阻塞和非阻塞，其中，阻塞和非阻塞是针对线程的概念，那么同步和异步是针对谁呢？其实很多情况下同步和异步并没有具体针对某一事物，所以导致了针对同步阻塞、同步非阻塞、异步阻塞、异步非阻塞这几个概念的模糊不清。并且也确实没有清晰的边界，请看以下例子：&lt;/span&gt;&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;DoWorkA&lt;/span&gt;()&lt;/span&gt;&lt;br/&gt;    {&lt;br/&gt;        Thread thread = &lt;span&gt;new&lt;/span&gt; Thread(() =&amp;gt; &lt;br/&gt;        {&lt;br/&gt;            Console.WriteLine(&lt;span&gt;&quot;WorkA Done!&quot;&lt;/span&gt;);&lt;br/&gt;        });&lt;br/&gt;        thread.Start();&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;DoWordB&lt;/span&gt;()&lt;/span&gt;&lt;br/&gt;    {&lt;br/&gt;        Thread thread = &lt;span&gt;new&lt;/span&gt; Thread(() =&amp;gt;&lt;br/&gt;        {&lt;br/&gt;            Console.WriteLine(&lt;span&gt;&quot;WorkB Done!&quot;&lt;/span&gt;);&lt;br/&gt;        });&lt;br/&gt;        thread.Start();&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;&lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;Main&lt;/span&gt;(&lt;span&gt;&lt;span&gt;string&lt;/span&gt;[] args&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;    {&lt;br/&gt;        DoWorkA();&lt;br/&gt;        DoWordB();&lt;br/&gt;    }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;假设运行该代码的CPU是单核单线程，那么请问？DoWorkA()、DoWorkB()这两个函数是异步的吗？因为CPU是单核，所以根本不能同时运行两个函数，那么从这个层次来讲，他们之间其实是同步的，但是，现实的情况是我们一般都认为他们之间是异步的，因为我们是从代码的执行顺序角度考虑的，而不是从CPU本身的工作流程考虑的。所以要分上下文考虑。再请看下面这个例子：&lt;/span&gt;&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;    &lt;span&gt;&lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;Main&lt;/span&gt;(&lt;span&gt;&lt;span&gt;string&lt;/span&gt;[] args&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;    {&lt;br/&gt;        DoWorkA();&lt;br/&gt;        QueryDataBaseSync();&lt;span&gt;//同步查询数据库&lt;/span&gt;&lt;br/&gt;        DoWorkB();&lt;br/&gt;    }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;从代码的执行顺序角度考虑，这三个函数执行就是同步的，但是，从CPU的角度来讲，数据库查询工作（另一台机器）和CPU计算工作是异步的，在下文中，没有做特别申明，则都是从代码的执行顺序角度来讨论同步和异步。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;再解释一下阻塞和非阻塞以及相关的知识：&lt;/span&gt;&lt;/p&gt;&lt;blockquote data-tool=&quot;mdnice编辑器&quot;&gt;&lt;p&gt;&lt;span&gt;阻塞特指线程由运行状态转换到挂起状态，但CPU并不会阻塞，操作系统会切换另一个处于就绪状态的线程，并转换成运行状态。导致线程被阻塞的原因有很多，如：发生系统调用（应用程序调用系统API，如果调用成功，会发生从应用态-&amp;gt;内核态-&amp;gt;应用态的转换开销），但此时外部条件并没有满足，如从Socket内核缓冲区读数据，此时缓冲区还没有数据，则会导致操作系统挂起该线程，切换到另一个处于就绪态的线程然后给CPU执行，这是主动调用导致的，还有被动导致的，对于现在的分时操作系统，在一个线程时间片到了之后，会发生时钟中断信号，然后由操作系统预先写好的中断函数处理，再按一定策略（如线程优先级）切换至另一个线程执行，导致线程被动地从运行态转换成挂起状态。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;非阻塞一般指函数调用不会导致执行该函数的线程从运行态转换成挂起状态。&lt;/span&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;h3 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;三、原始的异步编程模式之回调函数&lt;/span&gt;&lt;/h3&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;在此之前，我们先稍微了解下图形界面的工作原理，GUI程序大概可以用以下伪代码表示：&lt;/span&gt;&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;While(GetMessage() != &lt;span&gt;&#x27;exit&#x27;&lt;/span&gt;) //从线程消息队列中获取一个消息，线程消息队列由系统维护，例如鼠标移动事件，这个事件由操作系统捕捉，并投递到线程的消息队列中。&lt;br/&gt;{&lt;br/&gt;    msg = TranslateMessage();//转换消息格式&lt;br/&gt;    DispatherMessage(msg);//分发消息到相应的处理函数&lt;br/&gt;}&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;其中DispatherMessage根据不同的消息类型，调用不同的消息处理函数，例如鼠标移动消息(MouseMove)，此时消息处理函数可以根据MouseMove消息中的值，做相应的处理，例如调用绘图相关函数画出鼠标此刻的形状。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;一般来讲，我们称这个循环为消息循环（事件循环、EventLoop），编程模型称为消息驱动模型（事件驱动），在UI程序中，执行这部分代码的线程一般&lt;strong&gt;只有一个线程&lt;/strong&gt;，称为UI线程，为什么是单线程，读者可以去思考。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;以上为背景知识。现在，我们思考，假如在UI线程中执行一个会导致UI线程被阻塞的操作，或者在UI线程执行一个纯CPU计算的工作，会发生什么样的结果？如果执行一个导致UI线程被阻塞的操作，那么这个消息循环就会被迫停止，导致相关的绘图消息不能被相应的消息处理函数处理，表现就是UI界面“假死”，直到UI线程被唤起。如果是纯CPU计算的工作，那么也会导致其他消息不能被及时处理，也会导致界面“假死”现象。如何处理这种情况？写异步代码。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;我们先用控制台程序模拟这个UI程序，后面以此为基础。&lt;/span&gt;&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;string&lt;/span&gt; &lt;span&gt;GetMessage&lt;/span&gt;()&lt;/span&gt;&lt;br/&gt;    {&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; Console.ReadLine();&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt;  &lt;span&gt;string&lt;/span&gt; &lt;span&gt;TranslateMessage&lt;/span&gt;(&lt;span&gt;&lt;span&gt;string&lt;/span&gt; msg&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;    {&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; msg;&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt;  &lt;span&gt;void&lt;/span&gt; &lt;span&gt;DispatherMessage&lt;/span&gt;(&lt;span&gt;&lt;span&gt;string&lt;/span&gt; msg&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;    {&lt;br/&gt;        &lt;span&gt;switch&lt;/span&gt; (msg)&lt;br/&gt;        {&lt;br/&gt;            &lt;span&gt;case&lt;/span&gt; &lt;span&gt;&quot;MOUSE_MOVE&quot;&lt;/span&gt;:&lt;br/&gt;                {&lt;br/&gt;                    OnMOUSE_MOVE(msg);&lt;br/&gt;                    &lt;span&gt;break&lt;/span&gt;;&lt;br/&gt;                }&lt;br/&gt;            &lt;span&gt;default&lt;/span&gt;:&lt;br/&gt;                &lt;span&gt;break&lt;/span&gt;;&lt;br/&gt;        }&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;OnMOUSE_MOVE&lt;/span&gt;(&lt;span&gt;&lt;span&gt;string&lt;/span&gt; msg&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;    {&lt;br/&gt;        Console.WriteLine(&lt;span&gt;&quot;开始绘制鼠标形状&quot;&lt;/span&gt;);&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;Main&lt;/span&gt;(&lt;span&gt;&lt;span&gt;string&lt;/span&gt;[] args&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;    {&lt;br/&gt;        &lt;span&gt;while&lt;/span&gt;(&lt;span&gt;true&lt;/span&gt;)&lt;br/&gt;        {&lt;br/&gt;            &lt;span&gt;string&lt;/span&gt; msg = GetMessage();&lt;br/&gt;            &lt;span&gt;if&lt;/span&gt; (msg == &lt;span&gt;&quot;quit&quot;&lt;/span&gt;) &lt;span&gt;return&lt;/span&gt;;&lt;br/&gt;            &lt;span&gt;string&lt;/span&gt; m = TranslateMessage(msg);&lt;br/&gt;            DispatherMessage(m);&lt;br/&gt;        }&lt;br/&gt;    }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h5 data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;1、回调函数&lt;/span&gt;&lt;/h5&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;上面那个例子，一但外部有消息到来，根据不同的消息类型，调用不同的处理函数，如鼠标移动时产生MOUSE_DOWN消息，相应的消息处理函数就开始重新绘制鼠标的形状，这样一但你鼠标移动，就你会发现屏幕上的鼠标跟着移动了。&lt;/span&gt;&lt;/p&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;现在假设我们增加一个消息处理函数，如OnMOUSE_DOWN,这个函数内部进行了一个阻塞的操作，如发起一个HTTP请求，在HTTP请求回复到来前，该UI程序会“假死”，我们编写异步代码来解决这个问题。&lt;/span&gt;&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;int&lt;/span&gt; &lt;span&gt;Http&lt;/span&gt;()&lt;/span&gt;&lt;br/&gt;    {&lt;br/&gt;        Thread.Sleep(&lt;span&gt;1000&lt;/span&gt;);&lt;span&gt;//模拟网络IO延时&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; &lt;span&gt;1&lt;/span&gt;;&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;HttpAsync&lt;/span&gt;(&lt;span&gt;Action&amp;lt;&lt;span&gt;int&lt;/span&gt;&amp;gt; action,Action error&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;    {&lt;br/&gt;        &lt;span&gt;//这里我们用另一个线程来实现异步IO，由于Http方法内部是通过Sleep来模拟网络IO延时的，这里也只能通过另一个线程来实现异步IO&lt;/span&gt;&lt;br/&gt;        &lt;span&gt;//但记住，多线程是实现异步IO的一个手段而已，它不是必须的，后面会讲到如何通过一个线程来实现异步IO。&lt;/span&gt;&lt;br/&gt;        Thread thread = &lt;span&gt;new&lt;/span&gt; Thread(() =&amp;gt; &lt;br/&gt;        {&lt;br/&gt;            &lt;span&gt;try&lt;/span&gt;&lt;br/&gt;            {&lt;br/&gt;                &lt;span&gt;int&lt;/span&gt; res = Http();&lt;br/&gt;                action(res);&lt;br/&gt;            }&lt;br/&gt;            &lt;span&gt;catch&lt;/span&gt;&lt;br/&gt;            {&lt;br/&gt;                error();&lt;br/&gt;            }&lt;br/&gt;    &lt;br/&gt;        });&lt;br/&gt;&lt;br/&gt;        thread.Start();&lt;br/&gt;    }&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;OnMouse_DOWN&lt;/span&gt;(&lt;span&gt;&lt;span&gt;string&lt;/span&gt; msg&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;    {&lt;br/&gt;        HttpAsync(res =&amp;gt; &lt;br/&gt;        {&lt;br/&gt;            Console.WriteLine(&lt;span&gt;&quot;请求成功！&quot;&lt;/span&gt;);&lt;br/&gt;            &lt;span&gt;//使用该结果做一些工作&lt;/span&gt;&lt;br/&gt;        }, () =&amp;gt; &lt;br/&gt;        {&lt;br/&gt;            Console.WriteLine(&lt;span&gt;&quot;请求发生错误！&quot;&lt;/span&gt;);&lt;br/&gt;        });&lt;br/&gt;    }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;此时界面不再“假死”了，我们看下代码可读性，感觉还行，但是，如果再在回调函数里面再发起类似的异步请求呢？（有人可能有疑问，为什么还需要发起异步请求，我发同步请求不行吗？这都是在另一个线程里了。是的，在这个例子里是没问题的，但真实情况是，执行回调函数的代码，一般都会在UI线程，因为取得结果后需要更新相关UI组件上的界面，例如文字，而更新界面的操作都是放在UI线程里的，如何把回调函数放到UI线程上执行，这里不做讨论，在.NET中，这跟同步上下文（Synchronization context）有关，后面会讲到）,那么代码会变成这样&lt;/span&gt;&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;OnMouse_DOWN&lt;/span&gt;(&lt;span&gt;&lt;span&gt;string&lt;/span&gt; msg&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;    {&lt;br/&gt;        HttpAsync(res =&amp;gt; &lt;br/&gt;        {&lt;br/&gt;            Console.WriteLine(&lt;span&gt;&quot;请求成功！&quot;&lt;/span&gt;);&lt;br/&gt;            &lt;span&gt;//使用该结果做一些工作&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;            HttpAsync(r1 =&amp;gt; &lt;br/&gt;            {&lt;br/&gt;                &lt;span&gt;//使用该结果做一些工作&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;                HttpAsync(r2 =&amp;gt; &lt;br/&gt;                {&lt;br/&gt;                    &lt;span&gt;//使用该结果做一些工作&lt;/span&gt;&lt;br/&gt;                }, () =&amp;gt; &lt;br/&gt;                {&lt;br/&gt;&lt;br/&gt;                });&lt;br/&gt;            }, () =&amp;gt; &lt;br/&gt;            {&lt;br/&gt;&lt;br/&gt;            });&lt;br/&gt;        }, () =&amp;gt; &lt;br/&gt;        {&lt;br/&gt;            Console.WriteLine(&lt;span&gt;&quot;请求发生错误！&quot;&lt;/span&gt;);&lt;br/&gt;        });&lt;br/&gt;    }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;写过JS的同学可能很清楚，这叫做“回调地狱”，如何解决这个问题？JS中有Promise，而C#中有Task，我们先用Task来写这一段代码，然后自己实现一个与Task功能差不多的简单的类库。&lt;/span&gt;&lt;/p&gt;&lt;pre data-tool=&quot;mdnice编辑器&quot;&gt;&lt;code&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; Task&amp;lt;&lt;span&gt;int&lt;/span&gt;&amp;gt; &lt;span&gt;HttpAsync&lt;/span&gt;()&lt;/span&gt;&lt;br/&gt;    {&lt;br/&gt;        &lt;span&gt;return&lt;/span&gt; Task.Run(() =&amp;gt; &lt;br/&gt;        {&lt;br/&gt;            &lt;span&gt;return&lt;/span&gt; Http();&lt;br/&gt;        });&lt;br/&gt;    }&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;    &lt;span&gt;&lt;span&gt;public&lt;/span&gt; &lt;span&gt;static&lt;/span&gt; &lt;span&gt;void&lt;/span&gt; &lt;span&gt;OnMouse_DOWN&lt;/span&gt;(&lt;span&gt;&lt;span&gt;string&lt;/span&gt; msg&lt;/span&gt;)&lt;/span&gt;&lt;br/&gt;    {&lt;br/&gt;        HttpAsync()&lt;br/&gt;            .ContinueWith(t =&amp;gt; &lt;br/&gt;            {&lt;br/&gt;                &lt;span&gt;if&lt;/span&gt;(t.Status == TaskStatus.Faulted)&lt;br/&gt;                {&lt;br/&gt;&lt;br/&gt;                }&lt;span&gt;else&lt;/span&gt; &lt;span&gt;if&lt;/span&gt;(t.Status == TaskStatus.RanToCompletion)&lt;br/&gt;                {&lt;br/&gt;                    &lt;span&gt;//做一些工作&lt;/span&gt;&lt;br/&gt;                }&lt;br/&gt;            })&lt;br/&gt;            .ContinueWith(t =&amp;gt; &lt;br/&gt;            {&lt;br/&gt;                &lt;span&gt;if&lt;/span&gt; (t.Status == TaskStatus.Faulted)&lt;br/&gt;                {&lt;br/&gt;&lt;br/&gt;                }&lt;br/&gt;                &lt;span&gt;else&lt;/span&gt; &lt;span&gt;if&lt;/span&gt; (t.Status == TaskStatus.RanToCompletion)&lt;br/&gt;                {&lt;br/&gt;                    &lt;span&gt;//做一些工作&lt;/span&gt;&lt;br/&gt;                }&lt;br/&gt;            })&lt;br/&gt;            .ContinueWith(t =&amp;gt; &lt;br/&gt;            {&lt;br/&gt;                &lt;span&gt;if&lt;/span&gt; (t.Status == TaskStatus.Faulted)&lt;br/&gt;                {&lt;br/&gt;&lt;br/&gt;                }&lt;br/&gt;                &lt;span&gt;else&lt;/span&gt; &lt;span&gt;if&lt;/span&gt; (t.Status == TaskStatus.RanToCompletion)&lt;br/&gt;                {&lt;br/&gt;                    &lt;span&gt;//做一些工作&lt;/span&gt;&lt;br/&gt;                }&lt;br/&gt;            });&lt;br/&gt;    }&lt;br/&gt;&lt;/code&gt;&lt;/pre&gt;&lt;p data-tool=&quot;mdnice编辑器&quot;&gt;&lt;span&gt;是不是感觉清爽了许多？这是编写异步代码的第一个跃进。下篇将会介绍，如何自己实现一个简单的Task。后面还会提到C#中async/await的本质作用，async/await是怎么跟Task联系起来的，怎么把自己写的Task库与async/await连结起来，以及一个线程如何实现异步IO。&lt;/span&gt;&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<guid>8ba7b1e47bc8a2015d3752216446969f</guid>
+<title>如何当个优秀的文档工程师？从 TC China 看技术文档工程师的自我修养</title>
+<link>https://toutiao.io/k/uvtqqeq</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;div class=&quot;post&quot; itemprop=&quot;articleBody&quot;&gt;
+          &lt;p&gt;&lt;img src=&quot;https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-blog/document-engineering.png&quot; alt=&quot;&quot; role=&quot;presentation&quot;/&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;本文系 NebulaGraph Community Academic 技术文档工程师 Abby 的参会观感，讲述了她在中国技术传播大会分享的收获以及感悟。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;据说，技术内容领域、传播领域的专家和决策者们会在中国技术传播大会「tcworld China 2022」大会上分享心得。作为一名技术文档工程师，本着了解相关行业的发展趋势和提升自我为 NebulaGraph 社区创造更大价值的心态，参加了此次大会。&lt;br/&gt;
+第一次参加 tcworld China 技术传播大会，干货挺多，记录一下参会的收获和感受。&lt;/p&gt;
+&lt;p&gt;tc，技术内容，全称 technical content。既然是技术内容，那么技术内容是如何进行传播呢？&lt;/p&gt;
+&lt;p&gt;初看，会觉得技术传播和作为内容生产者的技术文档工程师或资料开发没有半毛钱关系。然而，是本人坐井观天了：全场听下来，许多课程主题涉及“从内容到营销”，当中不乏营销常出现的词汇——“故事传播”、“内容运营”、“视频传播”等等。即便是针对产品编写的&quot;说明书&quot;，也是需要考虑用户和其使用场景，这正是传播的逻辑。除了涉及“从内容到营销”主题，大会还分享了文档呈现及编辑器的演进和发展、文档工程师的价值等主题内容。&lt;/p&gt;
+&lt;p&gt;下面由我带大家回顾一下这次的技术传播学习之旅。&lt;/p&gt;
+&lt;h2&gt;
+&lt;a name=&quot;h-1&quot; class=&quot;anchor&quot; href=&quot;#h-1&quot;/&gt;课程主题&lt;/h2&gt;
+&lt;p&gt;听了技术传播大会的大部分课程，从「技术文档工程师的价值」到「如何传播运营技术内容中的各个环节」，本次大会都有对应的课程主题。大会课程主题可以形成一条链路：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-blog/docs-insight/01.png&quot; alt=&quot;&quot; role=&quot;presentation&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;注：TW，全称 Technical Writer，即技术文档工程师。&lt;/p&gt;
+&lt;h2&gt;
+&lt;a name=&quot;h-2&quot; class=&quot;anchor&quot; href=&quot;#h-2&quot;/&gt;干货及思考&lt;/h2&gt;
+&lt;p&gt;大会中对&lt;strong&gt;技术文档工程师的价值&lt;/strong&gt;、&lt;strong&gt;文档内容编辑方式&lt;/strong&gt;、&lt;strong&gt;呈现方式&lt;/strong&gt;、&lt;strong&gt;运营方式的现状&lt;/strong&gt;及&lt;strong&gt;发展趋势&lt;/strong&gt;做了相应的分享。在这过程中，我也收获了一些新知识和有了自己的一些思考。&lt;/p&gt;
+&lt;h3&gt;
+&lt;a name=&quot;h-3&quot; class=&quot;anchor&quot; href=&quot;#h-3&quot;/&gt;技术文档工程师的价值&lt;/h3&gt;
+&lt;p&gt;首先，技术文档工程师是什么？引用百科中的一句话———“文档工程师，是指协同开发人员，收集资料，安排开发计划，编写企业项目开发所需的各类文档，同时保证文档的质量、安全等的技术人员，他们肩负着软件开发过程中信息处理与整合的重要职责。面对“文档”，他们需要完成包括安排开发计划、制定各类模板、跟踪编写进度以及编辑管理等在内的一系列工作，实现文档处理的“一条龙”服务。”&lt;/p&gt;
+&lt;p&gt;有人可能会说技术文档工程师就是给产品 / 项目编写文档的人员。这也就延伸出来一个现象：文档工程师的价值经常被挑战。有些老板甚至文档工程师自身会想，为什么企业不训练一个开发工程师来直接写技术文档呢？这样他对技术的理解还会更强。为什么还要设立这样的专职的岗位？&lt;/p&gt;
+&lt;p&gt;首先，这样的技术人员不太好找，具有技术文档编写能力的技术人大多都希望深耕自身的技术领域，而不愿意去写这些对“硬”技能能力提升不多的内容。毕竟，相较于文档更轻量的注释已经够让技术人头疼了。另外，就是&lt;strong&gt;专业的技术文档所呈现的内容无论是可读性，还是对产品的理解会比其他人写出来的更好、更贴近用户&lt;/strong&gt;。目前，全球许多大企业都在大量聘用技术文档工程师，像海康、阿里都有几十人的技术文档团队，人力不足的时候还需要外包。企业愿意付出这样的成本去招聘相关人才，就证明了技术文档工程师有其独特的价值存在。&lt;/p&gt;
+&lt;p&gt;这也是为什么会专门存在这样的部门。因为，之前未设立技术文档部门时，其他人来写这块内容呈现的效果非常差、用户体验不佳。因此，很多企业才会存在技术文档这个部门，来帮助企业解决人员分工问题。假如一个企业里的技术人员既要写东西，还要去做技术或是去设计产品，就会出现超级节点。那么，分工的出现就解决这一痛点：专门的人才从事文档编写，专门的人才来搞技术，这样才能把分工内的东西做精做好。&lt;/p&gt;
+&lt;h3&gt;
+&lt;a name=&quot;h-4&quot; class=&quot;anchor&quot; href=&quot;#h-4&quot;/&gt;如何提升文档团队的影响力&lt;/h3&gt;
+&lt;p&gt;作为文档工程师，首先需要肯定和提升自己的认知维度，提升文档团队的影响力，具体怎么做？参考下列方式：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;打破角色固化的认知，拒绝做边缘人。文档角色只能输出内容吗？不止是这样，文档可以发现 bug、了解和分析用户需求、给产品设计提需求及意见。&lt;/li&gt;
+&lt;li&gt;有意识地训练产品思维，保持对产品的好奇心和敏感度。&lt;/li&gt;
+&lt;li&gt;多接触真实的用户，去现场给用户培训，更好地了解用户实际使用产品中遇到的问题，减轻用户的学习成本。像是 NebulaGraph 这类开源产品，会经常查看社区用户常提到的问题，并将该问题和解决方案写在文档中。&lt;/li&gt;
+&lt;li&gt;学习用户体验法则、尼尔森的十大可用性原则，利用「用户旅程地图」发掘机会点 。&lt;/li&gt;
+&lt;li&gt;从用户痛点出发提出问题，并给出初步解决方案，和产品交互进行沟通并推动提升用户体验，从而提升文档团队的影响力。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3&gt;
+&lt;a name=&quot;h-5&quot; class=&quot;anchor&quot; href=&quot;#h-5&quot;/&gt;招聘和培养英文技术文档&lt;/h3&gt;
+&lt;p&gt;如果技术内容传播还泛指国际上的传播，那么英文技术文档对于产品的国际化具有关键作用。tcworld China 2022 分享中提到，在进行英文技术写作人员招聘过程中，常常遇到三个问题&lt;strong&gt;英文能力不足&lt;/strong&gt;、&lt;strong&gt;技术能力不足&lt;/strong&gt;、&lt;strong&gt;写作能力不足&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;当急需人才、短期内又招不到人的情况下，企业可以转变思维，对英文技术翻译人员进行培训。在语言和写作方面，英文技术翻译人员上手会相对较快。剩下的就是对其技术方面的专门培训。像是英文技术文档这种人群的招聘前提也是需要 ta 们具有很强的学习意愿和能力。&lt;/p&gt;
+&lt;h3&gt;
+&lt;a name=&quot;h-6&quot; class=&quot;anchor&quot; href=&quot;#h-6&quot;/&gt;文档未来&lt;/h3&gt;
+&lt;p&gt;听完全场，我更喜欢 RWS 呼延韶文老师分享的《文档未来》课程，他从内容的创作方式和内容的应用端两个方面分享了文档的发展趋势。&lt;/p&gt;
+&lt;h4&gt;
+&lt;a name=&quot;h-7&quot; class=&quot;anchor&quot; href=&quot;#h-7&quot;/&gt;内容创作方式&lt;/h4&gt;
+&lt;p&gt;文档的创造方式，已经从最初的纸质版转为电子版（Word / PDF）的方式交付。文档正从纸质转变为电子再转变成数字化。文档数字化，指文档内容模块化、结构化、文档生产流程的云化、文档和用户的可交互性。《文档未来》提到 Forrester 预测文档下一个十年，新型基于云端、数据驱动、结构化的文档创作方式将成为主流。基于结构化、模块化主题内容，还可做到文档内容的自动组合、更新自动推送等等。文档内容呈现的发展的最后阶段是交互性内容，用户可以和内容进行交互（多以 HTML + CSS 实现）。与技术的互动，从文本到交互界面，是由产品设计引发的潜意识过程所引导的。技术传播者越是了解这种心理过程，越能创造出互动强的文档。&lt;/p&gt;
+&lt;p&gt;不仅仅《文档未来》提到了文档内容的模块化、结构化，其他的课程《让技术文档智能化交付+多场景呈现》、《如何构建知识百科并营销，共建产业生态》也都提到了文档内容的模块化和结构化。结构化的主题内容可以一源多用，并多格式发布。相对传统的编辑方式，结构化能起到降本增效的作用。这种结构化、模块化的内容呈现是基于 XML 的体系结构，比较火热且流行的标准是 DITA 标准。目前，NebulaGraph 技术文档团队正在使用开源的文档编辑软件 MkDocs Material（参考延伸阅读），满足目前的内容复用需求。随着文档内容量不断增多，后续可以考虑使用结构化、模块化的编辑软件创作文档内容。&lt;/p&gt;
+&lt;h4&gt;
+&lt;a name=&quot;h-8&quot; class=&quot;anchor&quot; href=&quot;#h-8&quot;/&gt;内容应用端&lt;/h4&gt;
+&lt;p&gt;文档内容发布后，用户需要在门户网站浏览文档内容。那么，如何呈现内容或者说如何组合内容以提升用户体验呢？这个部分的内容和后面《开源网站信息架构的攻守之道》提到的信息架构有相似之处。在应用端（文档网站）可以做的用来提升用户体验的事情：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;语义化的搜索能力，搜索引擎可以根据用户的使用场景，搜索词语的意思检索到目标内容。&lt;/li&gt;
+&lt;li&gt;知识模块化，基于 XML 体系的内容发布。&lt;/li&gt;
+&lt;li&gt;智能内容，智能机器人可以推送用户搜索的问题。&lt;/li&gt;
+&lt;li&gt;考虑用户常搜索的关键字，考虑 SEO 创作内容。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3&gt;
+&lt;a name=&quot;ia-9&quot; class=&quot;anchor&quot; href=&quot;#ia-9&quot;/&gt;信息架构 IA&lt;/h3&gt;
+&lt;p&gt;在参加这次技术传播大会之前，我只是知道 IA（Information Architecture）这个词比较火，但不懂什么是真正的信息架构。信息架构是什么？用途是啥？参加了大会后，大概知道了 IA 的概念，但是还是有点模糊具体是 IA 是做什么？于是在网上找到了一篇浅显易懂的&lt;a href=&quot;https://www.woshipm.com/pd/5444940.html&quot;&gt;《如何进行信息架构设计？》&lt;/a&gt;。下文仅列举相关概念。&lt;/p&gt;
+&lt;h4&gt;
+&lt;a name=&quot;h-10&quot; class=&quot;anchor&quot; href=&quot;#h-10&quot;/&gt;什么是信息架构？&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;信息架构=信息+架构&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;信息包括各种文本、图片、影音等元素；架构则对应这些元素的选择、分类、导航和检索。&lt;/p&gt;
+&lt;p&gt;通俗点说，&lt;strong&gt;信息架构就是通过合理的组织和表达各种信息元素，让用户获取并理解信息更容易。为信息与用户认知之间搭建⼀座畅通的桥梁&lt;/strong&gt;。&lt;/p&gt;
+&lt;h4&gt;
+&lt;a name=&quot;h-11&quot; class=&quot;anchor&quot; href=&quot;#h-11&quot;/&gt;为什么需要信息架构？&lt;/h4&gt;
+&lt;p&gt;简言之，引用《通过智能内容提供出色的客户体验》课程中的提到的一张图片（如下图），我们可以直观的看出，&lt;strong&gt;知识点的不同排列组合与连接是提升体验的关键&lt;/strong&gt;。那么，如何来排列和连接这些知识，就需要用到信息架构中的构建方式、类型及设计逻辑。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-blog/docs-insight/02.png&quot; alt=&quot;&quot; role=&quot;presentation&quot;/&gt;&lt;/p&gt;
+&lt;h5&gt;
+&lt;a name=&quot;h-12&quot; class=&quot;anchor&quot; href=&quot;#h-12&quot;/&gt;信息架构的构建方式&lt;/h5&gt;
+&lt;p&gt;自上而下、自下而上和综合运用&lt;/p&gt;
+&lt;p&gt;1.&lt;strong&gt;自上而下的构建方式&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;自上而下的构建方式是由战略层驱动的&lt;/strong&gt;，根据产品目标与用户需求直接进行结构设计，进行新产品规划或者产品重新定义的时候会用到。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-blog/docs-insight/03.png&quot; alt=&quot;&quot; role=&quot;presentation&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;自上而下的构建方式，会先从最广泛的，最有可能满足目标的内容及功能开始分类，再依据逻辑细分次级分类。（MVP 的设计思路）所有分类都是空槽，最后将内容和功能按顺序填入。它有一个明显的缺点是：&lt;strong&gt;可能导致现有重要内容被忽略&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;2.&lt;strong&gt;自下而上的构建方式&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;自下而上的构建方式是由范围层驱动的&lt;/strong&gt;，根据对现有的内容和功能需求的分析进行设计，这是项目实践中大家最常用的一种方式。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-blog/docs-insight/04.png&quot; alt=&quot;&quot; role=&quot;presentation&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;在具体项目实践中，产品或设计师根据对现有内容和功能需求的分析，将它们分别归属到较高一级的类别，从而逐渐构建出能反映我们的产品目标和用户需求的结构。（常用卡片分类法辅助）它也有一个缺点：&lt;strong&gt;可能导致不能灵活兼容未来内容变动或增加&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;3.&lt;strong&gt;综合运用的构建方式&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;正因为自上而下和自下而上都有其明显的缺点，所以，理想的信息架构的构建方式都是综合运用的，同时从战略层和范围层进行驱动，以构建一个适应性强的系统。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-blog/docs-insight/05.png&quot; alt=&quot;&quot; role=&quot;presentation&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;一个适应性强的信息架构系统，能把新内容作为现有结构的一部分容纳进来&lt;/strong&gt;（如图左侧），&lt;strong&gt;也可以把新内容当成一个完整的部分加入&lt;/strong&gt;（如图右侧）。&lt;/p&gt;
+&lt;p&gt;信息架构的基本单位是节点，节点可对应任意信息要素或信息要素的组合，小到一个字段 / 控件，大到一个界面 / 功能都是可以的。不同场景下，节点的颗粒度不相同。&lt;/p&gt;
+&lt;p&gt;这些节点的排列方式有 4 种常见的类型，也就是我们所说的信息架构类型。&lt;/p&gt;
+&lt;h5&gt;
+&lt;a name=&quot;h-13&quot; class=&quot;anchor&quot; href=&quot;#h-13&quot;/&gt;常见的信息架构类型&lt;/h5&gt;
+&lt;p&gt;常见信息架构有 4 种，&lt;strong&gt;层级结构、矩阵结构、自然结构和线性结构&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;1.&lt;strong&gt;层级结构&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;又叫树状结构或中心辐射结构。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-blog/docs-insight/06.png&quot; alt=&quot;&quot; role=&quot;presentation&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;2.&lt;strong&gt;矩阵结构&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;矩阵结构允许用户沿着两 / 多个维度在节点之间移动，最终都可以帮助用户找到想要的信息。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-blog/docs-insight/07.png&quot; alt=&quot;&quot; role=&quot;presentation&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;3.&lt;strong&gt;自然结构&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;自然结构不遵循任何一致的模式。节点被逐一连接起来，节点与节点之间有联系，但没有分类。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-blog/docs-insight/08.png&quot; alt=&quot;&quot; role=&quot;presentation&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;4.&lt;strong&gt;线性结构&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;在线性结构中，用户不能进行跳转，只能一步一步按顺序浏览对应的信息 。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-blog/docs-insight/09.png&quot; alt=&quot;&quot; role=&quot;presentation&quot;/&gt;&lt;/p&gt;
+&lt;h5&gt;
+&lt;a name=&quot;h-5-14&quot; class=&quot;anchor&quot; href=&quot;#h-5-14&quot;/&gt;信息架构的逻辑呈现的 5 个过程&lt;/h5&gt;
+&lt;p&gt;&lt;img src=&quot;https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-blog/docs-insight/10.png&quot; alt=&quot;&quot; role=&quot;presentation&quot;/&gt;&lt;/p&gt;
+&lt;h3&gt;
+&lt;a name=&quot;h-15&quot; class=&quot;anchor&quot; href=&quot;#h-15&quot;/&gt;内容运营&lt;/h3&gt;
+&lt;p&gt;数字时代，媒介演变正在降低信息传播的成本和难度。很多技术内容正在通过短视频、问答、直播等形式传播，让受众有机会了解到更多有价值信息，学习到更多的新知识。&lt;/p&gt;
+&lt;p&gt;除了常规的数据分析、SEO 以外，我对内容运营这块印象最深的是有 3 个课程专门分享通过视频进行技术传播。有个课程分析目前国内有两个视频传播火热的视频平台，抖音和 B 站。&lt;/p&gt;
+&lt;p&gt;B 站中知识类内容的视频较多，抖音视频主要以生活休闲类为主。除了题材之外，B 站的视频基本上为中长视频，抖音视频以短视频为主。所以，技术类内容因为时长、偏知识题材的原因，视频传播更适合放在 B 站上。&lt;/p&gt;
+&lt;p&gt;B 站中播放量较多的视频特征：内容硬核、专业的授课老师、趣味性高、与热点结合。&lt;/p&gt;
+&lt;p&gt;对于制作视频本身，了解到一些视频制作的工具：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-blog/docs-insight/11.png&quot; alt=&quot;&quot; role=&quot;presentation&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;还有印象较深的是制作 VTuber 视频，&lt;strong&gt;以虚拟人物形象在网路影片平台上传影片或进行直播的创作者。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-blog/docs-insight/12.png&quot; alt=&quot;&quot; role=&quot;presentation&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-blog/docs-insight/13.png&quot; alt=&quot;&quot; role=&quot;presentation&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://discuss-cdn.nebula-graph.com.cn/images/emoji/apple/grin.png?v=12&quot; title=&quot;:grin:&quot; class=&quot;emoji&quot; alt=&quot;:grin:&quot; loading=&quot;lazy&quot;/&gt; 如果不想露真人，但又想有人物动作的时候，可以考虑制作 VTuber 视频进行。&lt;/p&gt;
+&lt;h3&gt;
+&lt;a name=&quot;h-16&quot; class=&quot;anchor&quot; href=&quot;#h-16&quot;/&gt;课程笔记&lt;/h3&gt;
+&lt;p&gt;除了一些因时间冲突没参加外，参加的大部分课程名称及分析概参考。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-blog/docs-insight/1.png&quot; alt=&quot;&quot; role=&quot;presentation&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-blog/docs-insight/2.png&quot; alt=&quot;&quot; role=&quot;presentation&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-blog/docs-insight/3.png&quot; alt=&quot;&quot; role=&quot;presentation&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;延伸阅读：&lt;/p&gt;
+
+&lt;hr/&gt;
+&lt;p&gt;&lt;strong&gt;谢谢你读完本文&lt;/strong&gt; (///▽///)&lt;/p&gt;
+&lt;p&gt;NebulaGraph Desktop，Windows 和 macOS 用户安装图数据库的绿色通道，10s 拉起搞定海量数据的图服务。通道传送门：&lt;a href=&quot;http://c.nxw.so/9Rs1u&quot;&gt;http://c.nxw.so/9Rs1u&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;想看源码的小伙伴可以前往 GitHub 阅读、使用、(^з^)-☆ star 它 → &lt;a href=&quot;http://c.nxw.so/8yTlk&quot;&gt;GitHub&lt;/a&gt;；和其他的 NebulaGraph 用户一起交流图数据库技术和应用技能，留下&lt;a href=&quot;http://c.nxw.so/9jvQN&quot;&gt;「你的名片」&lt;/a&gt;一起玩耍呢~&lt;/p&gt;
+        &lt;/div&gt;
+
+        &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 </channel></rss>
