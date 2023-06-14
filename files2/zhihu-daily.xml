@@ -5,174 +5,263 @@
             <link>https://daily.zhihu.com/api/4/stories/latest?client=0</link>
             <description>知乎日报</description>
 <item>
-<guid>52a091023b2e638585c11df58d01c368</guid>
-<title>圆周率 π 在实际工程领域最多用到了多少位？</title>
-<link>https://daily.zhihu.com/story/9762512</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;img alt=&quot;头图&quot; src=&quot;https://picx.zhimg.com/v2-813881c5acfde51a5961bf4824d7a181_fhd.jpg?source=8673f162&quot; /&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;
-&lt;img src=&quot;https://pic1.zhimg.com/v2-b0785862eab4b0f660b276542450e604_l.jpg?source=8673f162&quot; /&gt;
-&lt;span&gt;太空僧，&lt;/span&gt;&lt;span&gt;2022年新知答主｜航天及天文优秀答主&lt;/span&gt;&lt;/div&gt;&lt;div&gt;
-&lt;p&gt;今天是 3 月 14 日，我来说一下发射宇宙探测器需要的π的精度吧。&lt;/p&gt;
-&lt;p&gt;先说答案：在星际航天领域，π最多取到 3.141592653589793，也就是小数点后 15 位，就完完全全够用了。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;15 位真的够用么？&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;目前智人用于宇宙航行的人造航天器中，飞得最远的应该就是“旅行者 1 号”了。&lt;/p&gt;
-&lt;p&gt;它目前离地球已经有 159.258219902 个天文单位（也就是约 238.25 亿公里），那么以地球为圆心，以“旅行者 1 号”与地球的连线为半径 R 画圆，这应该算是人造物体中能达到的最大的一个圆了。&lt;/p&gt;
-&lt;p&gt;那求它的周长，也就是 2πR，应该得到的结果是在 1497 亿公里左右，当我们取 15 位的π=3.141592653589793 并舍去 15 位之后的数字时，那么实际算出来的周长应该是略小于真实世界的周长（本文假设我们附近的宇宙可以这样测量），那差多少呢？差不多是 1 厘米左右的误差。&lt;/p&gt;
-&lt;p&gt;1 厘米！&lt;/p&gt;
-&lt;p&gt;也就是说，我们在丈量整个太阳系的尺寸时，π即使只取小数点后 15 位，误差也只有一只圆珠笔杆那么细。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;可观测宇宙&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;有人会想，这是人造物体限制了想象力。我们的可观测宇宙半径有 460 亿光年&lt;sup&gt;[1]&lt;/sup&gt;呢！那计算我们的可观测宇宙的“腰围”，需要π的精度是多少位呢？&lt;/p&gt;
-&lt;p&gt;我们想的极端一点，如果要把误差控制在一个氢原子的直径那么小（我相信目前应该没有哪个实际工程领域能取到更小的值了），那么只需要取到小数点后面 37 位就可以了。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;实际工作中&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;以上两个都属于钻牛角尖的极端例子了。在实际航天工程的运算中，用到π时也不会刻意去取那么长的数字。&lt;/p&gt;
-&lt;p&gt;比如在让航天器入轨时，比如在设计火星着陆器的降落伞尺寸和确定着陆点时，比如卡西尼号在在土星附近为了改变拍摄角度而进行的被称为“圆周率转移”的变轨时，比如绘制地球表面地图时，比如在观测系外行星在横穿恒星“圆面“时通过恒星光度的变化来求行星大小时，比如在定位月球和火星地震源&lt;sup&gt;[2]&lt;/sup&gt;时，甚至在计算火箭”油箱“要加多少燃料时，等等等等，都需要用到π，（这里我能写上一万字），一般情况下，用小数点后第 8 位就已经很精确了，再多就是浪费宝贵的计算时间了。&lt;/p&gt;
-&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pic1.zhimg.com/v2-055d77a294e39cd8b3cd01f7262e94bf_720w.gif?source=8673f162&quot; /&gt;&lt;/figure&gt;
-&lt;p&gt;也就是说，现在小学生都会背的 山巅一寺一壶酒尔乐苦煞吾（3.1415926535&lt;sup&gt;[3]&lt;/sup&gt;）在实际航天领域就已经够用了。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;程序中的π&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;以下是几个常见计算机语言中对π的定义值：&lt;/p&gt;
-&lt;table&gt;
-&lt;tbody&gt;
-&lt;tr&gt;&lt;th&gt;语言&lt;/th&gt;&lt;th&gt;命令&lt;/th&gt;&lt;th&gt;小数位数&lt;/th&gt;&lt;th&gt;值&lt;/th&gt;&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;Java&lt;/td&gt;
-&lt;td&gt;Math.PI&lt;/td&gt;
-&lt;td&gt;15&lt;/td&gt;
-&lt;td&gt;3.141592653589793&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;C/C++&lt;/td&gt;
-&lt;td&gt;M_PI&lt;/td&gt;
-&lt;td&gt;20&lt;/td&gt;
-&lt;td&gt;3.14159265358979323846&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;Python&lt;/td&gt;
-&lt;td&gt;math.pi&lt;/td&gt;
-&lt;td&gt;20&lt;/td&gt;
-&lt;td&gt;3.14159265358979323846&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;Swift 3.0&lt;/td&gt;
-&lt;td&gt;Double.PI&lt;/td&gt;
-&lt;td&gt;&amp;gt;=15&lt;/td&gt;
-&lt;td&gt;3.141592653589793…&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;Go&lt;/td&gt;
-&lt;td&gt;Pi&lt;/td&gt;
-&lt;td&gt;62&lt;/td&gt;
-&lt;td&gt;3.141592653589793238462643383279&lt;br /&gt;50288419716939937510582097494459&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;由于十进制数字通常需要转换为二进制存储到计算机上，在近 99%的情况下，是采用单精度浮点数和双精度浮点数的典型存储方式。单精度浮点数用 4 个字节（32 位）来存储一个浮点数（7 位十进制有效数字），双精度浮点数用 8 个字节（64 位）来存储一个浮点数（15～16 位十进制有效数字）。&lt;/p&gt;
-&lt;p&gt;按照 IEEE 754 标准，在双精度浮点数的编码规则下，16 个数字（小数点后 15 位）的圆周率π（3.141592653589793）被编码为：&lt;/p&gt;
-&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-c9c58e60e7fea5a6b33b5f93ef404faa_720w.jpg?source=8673f162&quot; /&gt;&lt;/figure&gt;
-&lt;p&gt;但是请注意，这个双精度浮点数的真实值是 3.14159265358979311599796346854&lt;sup&gt;[4]&lt;/sup&gt;。&lt;/p&gt;
-&lt;p&gt;这也许也是本回答开头提到的小数点后 15 位的由来之一吧。&lt;/p&gt;
-&lt;p&gt;注：据吉尼斯世界纪录，背圆周率小数点后数字最多的是日本人原口证，他于 2006 年 10 月 3 日耗时约 16 小时成功背到了小数点后 10 万位，打破了此前印度人拉杰维尔·米纳&lt;sup&gt;[5]&lt;/sup&gt;花 9 小时 27 分钟背到 7 万位的纪录。&lt;/p&gt;
-&lt;p&gt;另外，瑞士人用超级计算机花了 108 天零 9 个小时，算到了小数点后 62.8 万亿位&lt;sup&gt;[6]&lt;/sup&gt;。&lt;/p&gt;
+<guid>7e2d8dae51078290953badb8bba2e262</guid>
+<title>为什么只有葡萄被大量用于酿酒，其他水果却没有？</title>
+<link>https://daily.zhihu.com/story/9762710</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;img alt=&quot;头图&quot; src=&quot;https://picx.zhimg.com/v2-fb7f0ee965fd4e0ee30533faf46dd07e_fhd.jpg?source=8673f162&quot; /&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;
+&lt;img src=&quot;https://pic1.zhimg.com/v2-f3ca086455a065c801c6604b8073bf99_l.jpg?source=8673f162&quot; /&gt;
+&lt;span&gt;庆晓筱，&lt;/span&gt;&lt;span&gt;英语词源，用法，发音，语法，习得。还会写点音韵和其他东西。&lt;/span&gt;&lt;/div&gt;&lt;div&gt;
+&lt;p&gt;用葡萄酿酒的主要原因还是葡萄的含糖量高。&lt;/p&gt;
+&lt;p&gt;只要某种东西含有淀粉，都可以用来酿酒，所以人类的酒文化历史上，就有一些看起来奇奇怪怪的酒。比如有用花瓣酿的酒，文艺复兴时期的意大利雕塑家、金匠、画家本韦努托·切利尼喜欢喝木槿酿成的木槿酒，美国有用蒲公英花瓣酿成的蒲公英酒。但是可以酿和好不好酿又是两回事，一般来说某种作物含糖量越高就越好酿酒，相应地，经济性也就越高。但是具体最后产量如何，还受到工艺难度、作物产量、社会文化等等因素的影响。不过世界这么大，各种“非主流”的酒也总有人喜欢，这些酒也能在市场中找到自己的位置。&lt;/p&gt;
+&lt;p&gt;在东非苏丹，有一种用椰枣制成的饮料叫 Sharbot。每年斋月结束，很多当地的穆斯林会载歌载舞，吃着丰盛的食物，喝这种 sharbot。Sharbot 是一种“Almost Wine”，即是说酒精含量介于酒精饮料和软饮料之间。&lt;/p&gt;
+&lt;p&gt;Sharbot 用椰枣发酵，通常还加入生姜、高良姜等香料调味。制作方法很简单，先熬制糖浆，然后加入香料静置一两天，最多三天，sharbot 就发酵差不多了。&lt;/p&gt;
+&lt;p&gt;尽管 sharbot 算是 almost wine，但还是引起了一定争议。当地对如何正确制作 sharbot 颇有心得，当地人发酵时间绝不超过四天，四天之后，这就真变成了违反教义的酒精饮料。按照他们的说法，酒精饮料得要使人喝醉才算违反教义，按照这么说来，只酿造了两三天的 sharbot 劲很小，对于当地人来说根本就喝不醉，是符合教义饮料。&lt;/p&gt;
+&lt;p&gt;在喝酒问题上打擦边球的苏丹人，在历史上，其社会文化的形成与酒精密不可分。直到 1983 年颁布禁酒令之前，苏丹人喜欢光顾酒庄、酒吧这些消费酒精的地方。当地产有多种名酒。大家都知道，我国有多款优质高粱酒，其实高粱本就是产自非洲的作物，原产地在今天苏丹、南苏丹与埃塞俄比亚交界的那一片土地，苏丹也有一种著名的高粱酒 merisa。&lt;/p&gt;
+&lt;p&gt;看过加勒比海盗的朋友都知道，杰克船长时不时拿着一瓶朗姆酒，喝得醉醺醺。朗姆酒是海盗的最爱，而这种酒的前身，就是一种果酒亚力酒 arak，一种高浓度蒸馏酒，得名于阿拉伯语的&#x27;araq“汗水”。历史上，苏丹流行用椰枣或者番石榴酿成的亚力酒 arak。&lt;/p&gt;
+&lt;p&gt;椰枣甜度非常高，大约五千年前在地中海周边就开始作为农作物种植。古埃及人喜欢将其加水熬煮，做成甜滋滋的椰枣糖浆，再将糖浆发酵。在新王国时期，这种轻微发酵的糖浆经常加到啤酒和葡萄酒中调味，也可以直接当作酒精饮料饮用。直接饮用的椰枣酒，古埃及语中也有专门的词汇表示，叫作：&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pica.zhimg.com/v2-5c54caaf424bf4a307372db298bbd1ca_720w.jpg?source=8673f162&quot; /&gt;&lt;/figure&gt;
+&lt;p&gt;古埃及还流行一种石榴酒，在古埃及语中也有相应的单词。&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pic1.zhimg.com/v2-f02328d053decd3b1d3d571b0bcac3e6_720w.jpg?source=8673f162&quot; /&gt;&lt;/figure&gt;
+&lt;p&gt;石榴也是种植时间特别长的植物，人类从苏美尔文明就开始种植和食用石榴。今天，石榴酒依然在两河、近东、高加索南部和北非等传统石榴种植区流行。&lt;/p&gt;
+&lt;p&gt;在东亚，从古代开始就有用杏子酿成的酒。欧洲也有核果酿酒的传统，从古典文明开始就有用梨子和苹果酿成的酒。&lt;/p&gt;
+&lt;p&gt;梨子酒在英语中叶有专门的单词 perry，今天主要在英格兰、南威尔士、法国的诺曼底和古安茹一带比较流行。历史上，狮心王的母亲，阿基坦的埃莉诺就非常青睐梨子酒。梨子酒在英国和法国至少有上千年的历史，尤其是法国，西罗马帝国覆灭的时代，梨子酒已经在今法国地区非常流行了。最早的梨子酒的记载出现于普林尼的记载，罗马帝国时期，其酿造技术已经成熟。&lt;/p&gt;
+&lt;p&gt;进入到中世纪时期，法国比较好地保存了梨子的种植技术，一些地区现在都保持着喝梨子酒的习惯。当时西欧连续几百年农业萧条，很多农业技术都面临断绝的境地。到加洛林王朝，查理大帝重视农业生产，出台了《庄园敕令》，促进了农业经济的发展，果园面积才逐渐增大，葡萄酒、梨子酒和苹果酒等果酒产量才逐渐提高。&lt;/p&gt;
+&lt;p&gt;英国在诺曼征服之前，基本没有什么梨子酒的记载，也基本没有什么种植，当时英国的梨子基本都来自法国进口。&lt;/p&gt;
+&lt;p&gt;到了十六十七世纪，梨子的种植在英国西部已经非常普遍了，尤其是西部“三郡”，即&lt;span&gt;格洛斯特郡&lt;/span&gt;、赫里福德郡和伍斯特郡这三个传统上农业发达的郡。这三郡也是今天英格兰梨子酒的传统产区。西部三郡的土壤和气候特别适合种植梨子，曾经遍地都是梨园，人们培育了多达一百多个不同的品种，有些品种是专门用来酿酒的梨，这些梨子吃起来很酸，但是用来酿酒却别有一番风味。&lt;/p&gt;
+&lt;p&gt;英国内战结束之后，大量士兵驻扎在西部三郡，梨子酒在这些士兵中非常受欢迎，从而带动了梨子酒的流行。十八世纪，英国和法国短暂交恶，英国难以进口葡萄酒，更是让梨子酒成为当地酒馆里的宠儿。直到上个世纪，梨子酒才开始渐渐式微，不过作为英国一种传统的酒精饮料，最近四五十年又开始复兴。&lt;/p&gt;
+&lt;p&gt;相比梨子酒，英格兰古代更流行苹果酒，甚至还把对苹果酒的喜爱带到了大洋彼岸。被称为“美国孔子”的文学家爱默生曾经这样评价苹果的价值——social fruit of New England“新英格兰的社交水果”。直到上个世纪的禁酒令之前，苹果酒都是美国社会最流行的酒精饮料。&lt;/p&gt;
+&lt;p&gt;最早关于苹果酒的记载来自凯撒的《高卢战记》，他发现不列颠岛的凯尔特人用海棠酿酒。凯撒表示他很喜欢这种酒。随后又有罗马人发现他们帝国北边的一些居民也用苹果酿酒。苹果酒很快在罗马帝国流行起来，到西罗马帝国覆灭的时候，罗马帝国的苹果酒酿造工艺已经非常成熟。&lt;/p&gt;
+&lt;p&gt;到了中世纪，当时穆斯林拥有高超的园艺技术，摩尔人登陆西班牙后，在西班牙培育出不少优秀苹果品种，直到今天，这里人们依然利用这些穆斯林文明的苹果遗产，酿造出上好的苹果酒。而在基督教世界中，苹果酒发展缓慢，后受到前述查理大帝出台的相关恢复农业相关措施，苹果酒在欧洲的发展稍微好了一点，逐渐有了一席之地，在这一段时间，苹果酒主要流行于法国的诺曼底。&lt;/p&gt;
+&lt;p&gt;诺曼征服之后，法国人对苹果酒的喜爱影响了英国人。英国从此开启了一场长达千年的苹果酒和啤酒之间的竞争。&lt;/p&gt;
+&lt;p&gt;古代人对低度酒的喜爱，不仅仅是出于追求快乐，还有饮食安全问题。古代的饮用水都不太干净，而酒精有消毒作用，哪怕是低度的酒精，也能有效抑制细菌的生长，所以人们对酒的需求量非常大。苹果酒传入英国后，英国人对苹果酒倒是非常热衷，整个中世纪，苹果酒和啤酒在英格兰流行程度不相上下，直到十六世纪啤酒花传入英国后苹果酒才开始慢慢式微。这主要是因为啤酒花可以改善啤酒风味，并且延长其保存时间。不过在十七世纪新教兴起之后，伴随着新教徒对苹果的推崇，苹果酒又有了一次发展，也在这一时期，他们也把对苹果酒的喜好带到了北美。&lt;/p&gt;
+&lt;p&gt;今天苹果酒今天的三大产区主要是欧洲三大苹果酒产区——英格兰西南部、法国西北部和西班牙北部。相对于葡萄，苹果更容易在寒冷地区存活。所以苹果酒产区多分布在相对葡萄产区更寒冷的地方。&lt;/p&gt;
+&lt;p&gt;苹果酒在英国流行还有一些其他原因。一方面，苹果酒酿造方便，酒精浓度通常可以达到葡萄酒的一半左右。而且酿造苹果酒不需要加热，而酿造啤酒需要先将麦芽汁煮沸，英国是一个缺乏柴火的国家，出于节约柴火的目的，相对而言，苹果酒在古代酿造成本更低。另一个原因，是出于一些政治上的考量，英国和欧洲大陆国家关系不太稳定，英国不太愿意让酒精饮料受到大陆国家控制，英国苹果可以自给自足，但是大麦做不到，要从欧洲大陆进口。出于以上两个原因，啤酒长期在英国竞争不过苹果酒。&lt;/p&gt;
+&lt;p&gt;工业革命之后，英国的苹果酒产业受到一系列打击，又逐渐在和啤酒的竞争中处于下风，从此雄风不在。当时苹果酒造假成风，很多不良商贩用烂掉的苹果酿酒，损害了苹果酒“健康、卫生”的信誉。这其中德文郡又爆发了一次严重食品安全事件，彻底损坏了苹果酒的名声。当时德文郡突然爆发一种“肠绞痛”病，大量患者死于致命的肠绞痛，后查明是酿酒商的酿酒设备用了铅管。&lt;/p&gt;
+&lt;p&gt;在美国，一直到禁酒令之前，苹果酒都是北美人最喜爱的饮料。但是随着苹果酒在北美越发受欢迎，一些奸商为了让苹果酒酒劲更大，私下兑入朗姆酒，导致苹果酒特别容易喝上头，苹果酒的名声逐渐越来越差，人们对这种酒的印象就是“喝了容易宿醉，第二天醒来浑身酸痛”的不良饮品。等禁酒令颁布之后，苹果酒因为好喝而且后劲足，被视为是“魔鬼的饮料”而受到保守人士广泛谴责。随着被污名化，cider 这个词，在北美也变了味道，指用低劣苹果压榨的劣质饮料。&lt;/p&gt;
+&lt;p&gt;在禁酒令这段时间，北美苹果酒产量急剧下降，种植苹果的收益变少，也导致大量苹果树被砍伐。等禁酒令结束之后，由于苹果树胜场周期过长，民众酒精消费的空白被啤酒顶上，毕竟大麦产出快，一年就可以成熟。今天，尽管苹果酒的恶名已经被消除，但是北美苹果酒的产量也没有恢复到禁酒令之前。&lt;/p&gt;
+&lt;p&gt;法国今天的苹果酒流行，则和 19 世纪 60 年代葡萄根瘤蚜病害爆发有关。这场病害让当时欧洲葡萄产业遭到极大破坏。迫不得已，法国酿酒师做了两项工作，一方面引进了一些美国的葡萄种，另一方面种植了大面积的苹果树填补葡萄死掉的空白。这段时间法国人种植的苹果树又大约 400 万棵之巨，一举让其成为全世界最大的苹果酒生产国。&lt;/p&gt;
+&lt;p&gt;另外，梨子和苹果酿的酒又有和葡萄酒通常采用单一品种葡萄酿酒不同，苹果酒和梨子酒在酿造的时候，通常都是混合多品种果汁再酿造，通过用不同品种果实的味道来平衡酒的味道。而且通常用于酿酒的苹果和梨子，反而比用于食用的品种酸一些。&lt;/p&gt;
+&lt;p&gt;浆果也可以用来酿酒，有蔓越莓酒、黑莓酒、接骨木酒和草莓酒，这些酒又有一些独特的风味和特点。比如草莓酒，富含花青素，在北美夏天很受欢迎，不用醒酒，开瓶即饮。接骨木酒用接骨木莓酿成，接骨木酒颜色与葡萄酒相似。接骨木酒富含单宁，味道醇厚，熟成之后味道更好，能长期保存。&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pic1.zhimg.com/v2-d4ebf63a2180dfc6f84fd1aa3b8ae65b_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;接骨木莓&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;前面我们已经提到了一种蒸馏的果酒亚力酒，欧洲人的蒸馏技术是从阿拉伯人那里学过来。后来荷兰商人在海运的时候，为了节省存储空间，他们把葡萄酒蒸馏浓缩，然后到了终点再稀释。但是后来他们发现蒸馏后的葡萄酒品质极佳，后来就不再稀释，而是直接饮用。有了白兰地之后，很多水果因为糖度不如葡萄，酿出的果酒和葡萄酒相比有些差距，但是很多类似方式蒸馏，做出的果酒白兰地，风味也上了一个档次。比如德国有名的樱桃白兰地 Kirsch 或者叫 Kirschwasser，就是对樱桃蒸馏酒。这种酒源自黑森林，最早是用那里盛产的莫瑞洛（Morello）樱桃酿成，今天这种酒也主要流行于德国、奥地利、阿尔萨斯和瑞士等通行德语的国家和地区。&lt;/p&gt;
+&lt;p&gt;当然还有其他一些果酒，比如热带地区有香蕉酒、菠萝酒等等，其他地区有西瓜酒，猕猴桃酒等等，还有大家可能很少听过的无花果酒和桃子酒，在历史上也是有的，达·芬奇闲暇之余就喜欢来两口这两种酒。&lt;/p&gt;
+&lt;p&gt;已知最早的一壶酒，来自河南舞阳贾湖，这也是人类最早的鸡尾酒，考古学家通过对残渣分析，发现其含有蜂蜜、米、野生葡萄，还有山楂。&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-<pubDate>Mon, 12 Jun 2023 23:06:50 GMT</pubDate>
+<pubDate>Tue, 13 Jun 2023 23:07:11 GMT</pubDate>
 </item>
 <item>
-<guid>106584e0bab7acfb988dac68be955b9b</guid>
-<title>为什么古建筑中瓦片要「压六露四」，也就是每块瓦有十分之六被上一块瓦压住？</title>
-<link>https://daily.zhihu.com/story/9762712</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;img alt=&quot;头图&quot; src=&quot;https://picx.zhimg.com/v2-77fb2adc75bef5f6198f0e1e6f58173a_fhd.jpg?source=8673f162&quot; /&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;
-&lt;img src=&quot;https://picx.zhimg.com/da8e974dc_l.jpg?source=8673f162&quot; /&gt;
-&lt;span&gt;飞檐走壁朴小胖，&lt;/span&gt;&lt;span&gt;见诸学&lt;/span&gt;&lt;/div&gt;&lt;div&gt;
-&lt;p&gt;比较常见的“压六露四”、“压七露三”等做法，并非固定规则，却是一种有效的手段，其目的是要至少满足“三搭头”的要求——就是上中下三块瓦中，最上层的瓦瓦头要能盖住最下层的瓦尾部。&lt;/p&gt;
-&lt;p&gt;这种做法的好处是即便中间瓦件发生意外造成碎裂，靠上下瓦件的位置关系也能保证水不会向瓦面以下灌入。可以理解为一种容错机制。&lt;/p&gt;
-&lt;p&gt;至于“稀瓦檐头密瓦脊”时在檐口处出现的“压五露五”做法，虽然未满足“三搭头”，但因：1.一般处于檐头或飞头挑出位置，向下渗水对室内不会造成影响；2.能够减轻檐头挑出部分所承受的荷载；3.该处椽望维护起来也比较方便。于是也成为常见做法。&lt;/p&gt;
-&lt;p&gt;（脊部位置屋面一般更陡，瓦件难免有缓慢下滑的可能，为满足容错，需要更密瓦瓦）&lt;/p&gt;
-&lt;p&gt;而“压五露五”以下做法，满足不了这种容错设计；至于八二分则过密，经济上和荷载上都不大合理了。&lt;/p&gt;
-&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-a941db39e8c54fd610e09f566f967b68_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;随便画个示意图&lt;/figcaption&gt;&lt;/figure&gt;
+<guid>4bc4dfeae4abeffa626cc5adb0b161cc</guid>
+<title>有没有长相相同，但基因截然不同的生物？</title>
+<link>https://daily.zhihu.com/story/9762613</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;img alt=&quot;头图&quot; src=&quot;https://picx.zhimg.com/v2-62d4c56ac809f56bb87446a679c0bddb_fhd.jpg?source=8673f162&quot; /&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;
+&lt;img src=&quot;https://picx.zhimg.com/v2-17168c8b86f15d94a012eebc61eeb5ad_l.jpg?source=8673f162&quot; /&gt;
+&lt;span&gt;Rara，&lt;/span&gt;&lt;span&gt;动植物爱好者，Playrix头号玩家&lt;/span&gt;&lt;/div&gt;&lt;div&gt;
+&lt;p&gt;有两个术语可以形容这种现象。&lt;/p&gt;
+&lt;p&gt;第一个术语——&lt;strong&gt;趋同演化&lt;/strong&gt;(Convergent evolution)，指的就是两种在亲缘关系上很远的生物，因为长期处于相似的环境中而演化出了相似的特征。&lt;/p&gt;
+&lt;p&gt;另一个当代新新术语——&lt;strong&gt;隐性生物多样性&lt;/strong&gt;(Cryptic biodiversity)，指的是在现有 DNA 技术的加持下，那些看起来很像但是基因却不同的物种所呈现出的生物多样性。&lt;/p&gt;
+&lt;p&gt;所以，地球上的生物多样性实际上可比人类过去单纯用肉眼看、基于形态学判断的要丰富得多哦。&lt;/p&gt;
+&lt;p&gt;敲黑板，举栗子啦~~~~~~&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;1.北美负鼠(Didelphis virginiana)和刺氏鼩蝟(Echinosorex gymnura)&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这两个家伙一个属于有袋类的负鼠科，另一个是猬科的，虽然都是哺乳动物，但大体上可以说是八竿子都打不着的两种动物。&lt;/p&gt;
+&lt;p&gt;而且在分布的地理位置上，北美负鼠主要分布在中美洲及北美洲，而刺氏鼩蝟分布在东南亚地区......。&lt;/p&gt;
+&lt;p&gt;先来看&lt;strong&gt;北美负鼠&lt;/strong&gt;：&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pica.zhimg.com/v2-2f477aae68a4a0d3066b1ad6ca55b479_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;这一只是北美负鼠~~~~~~有长长的 yi 巴。&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;北美负鼠可以说是负鼠中最大只的了，鼻子又扁又长，耳朵上还没毛儿：&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-7540c2563036ed5a1613bba9310cd38e_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;除了后 jio 拇趾没有爪子之外，其它的脚趾都有爪子哦，所以能稳稳地抓住枝干啥的。&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;不要看人家只有 10 来斤，但凶起来的时候还是龇牙咧嘴的，有点威风呢：&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-c133cdb17ef604c57642af931ddbf3f3_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;我超凶 der. 别看我这样，我跟啮齿目没半毛钱关系哈。&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;在面对危险的时候，除了反抗之外，它还会有个有意思的行为是——在遇到危险它慌得不行的时候，它会装死摆烂哈哈哈：&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pic1.zhimg.com/v2-e19dc24f4cef26717a2edd1fae3bc26b_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;眼睛和嘴张开，舌头伸出来的装死状态。表演得真卖力呢。北美负鼠：装死中，憋来找我。&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;在装死的过程中，它甚至还会从肛门儿排除绿色液体，用腐烂的气味驱赶掠食者.....（此时的我：？？？？？？）&lt;/p&gt;
+&lt;p&gt;再来看跟它长得很像的&lt;strong&gt;刺氏鼩蝟：&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这个刺氏鼩蝟有两个亚种，亚种 1 是全身几乎都是白的，只夹杂着一丢丢黑毛；亚种 2 是脑壳和身体前半部分是灰白灰白的，其余部分的都是黑色哒。&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pic1.zhimg.com/v2-0edf37947d59c62c4edda26e33cf3d6b_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;亚种 2，不能说跟北美负鼠一模一样，但也是很像啦！&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;比起亚种 2，亚种 1 因为几乎通体白色所以就不是很像北美负鼠啦：&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pic1.zhimg.com/v2-d4d2114e34fbe9e6b5b1af1628d14929_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;超级喜欢夜行的刺氏鼩蝟，身上有股臭烘烘的氨气味儿。。。。。。&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;&lt;strong&gt;2.小浣熊(Procyon lotor)和日本浣熊犬(Nyctereutes viverrinus)&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;首先出场的是浣熊，杂食性干脆面君小浣熊大家都耳熟能详啦，它就是一个外表可爱的小吃货。&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pic1.zhimg.com/v2-5b055ddd8693626b9fd6befea7f322c1_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;萌哒哒。&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;要说起浣熊，它的经典特征可以归纳为 3 个：1.灵活的前爪爪；2.环形花纹的 yi 巴；3.脸上灰白基调＋黑眼圈儿的”面具“：&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pic1.zhimg.com/v2-e1eaa5c6ac8be58cc0763b71a706b3df_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;这是一只 baby 浣熊，经典特征也很明显啦！&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;敲黑板啦！！！！！！来一个关于浣熊为啥要叫浣熊的冷知识~~~~~~&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-bec108e7680b8cc8dea4541f0feaea35_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;伸出小爪子：V 我 50%.。&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;浣熊命名的由来就在于它的小前爪子哦：&lt;/p&gt;
+&lt;p&gt;这家伙视力其实并不是很好啦，所以触觉对于它来说很重要！！&lt;/p&gt;
+&lt;p&gt;但由于它的前爪遍布了触觉感受器，但是上面又有一层角质层，硬硬的肯定就不咋灵敏了呀。于是它在获得了吃的之后，就会捧着食物把前爪泡在水里软化一下下，以获取食物更多的信息，be like：&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-806e537f2f6126103cd2e8e3dd4b6441_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;虽然本意是软化角质层以便触觉更灵敏，但围观的人表示像在浣洗东西一样~~~~~~。&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;所以，这家伙得名浣熊。&lt;/p&gt;
+&lt;p&gt;再来看与它长得很像的&lt;strong&gt;日本浣熊犬&lt;/strong&gt;（たぬき）哈哈哈。&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pic1.zhimg.com/v2-f058db0ad08091b9ff4259293b66fa48_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;像不像？像得哟它的英语名干脆直接是 Japanese Racoon Dog 了！它是亚洲浣熊犬的日本亚种哦。&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;再来一张瞌睡照：&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pica.zhimg.com/v2-b6ba5d189a0adf4196759c84d1fa7e12_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;毛毛看起来好舒服呀。&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-61366506f077bfa77f89af65fbe36f72_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;主要活动时间：晚上。夜行侠.jpg&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;其实看 yi 巴就很好区分它是不是真假浣熊啦：&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-09bf0e03332ed0e1b6c8ccb488fc90da_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;尾巴上没有环形花纹哟。&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pica.zhimg.com/v2-48aaca30ea7aaaa4335fd6fab3a3f859_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;大头贴，可爱，想 rua。（有没有感觉它们的脸型基本上比干脆面君们的脸型尖一点点？）&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pic1.zhimg.com/v2-c6da37358db773a302179275e087bbee_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;但是咧......注意，这一张是干脆面君的大头贴哦——看起来干脆面君也有脸型尖的哈哈哈。&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;另外，它的音调跟猫咪很相似哦，而且也会拱起背部恐吓威胁敌人。但另一方面呢，它又会降低身体甚至露出肚肚以表服从，就像狗子一样——毕竟它是犬科的嘛。&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-abc2119846a7f410e9eec2072ccc5d99_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;呆。&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;&lt;strong&gt;3.四种长颈鹿！！！！！！&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;我们在各地动物园见过的长颈鹿，大家都有形态上都大差不差的感觉对吧：&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pic1.zhimg.com/v2-9893f89c7813d372c5240ffd95cd3ec5_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;长颈鹿原产于非洲哦。&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;这个就真的是前几年完全借助 DNA 技术来进行的物种分类了。研究者从非洲各地搞来了一百多头长颈鹿的 DNA 样本以比较非洲各地不同长颈鹿族群之间的亲缘关系。&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-55738c45dbae7dd1761597b6e0382ffd_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;此图为长颈鹿们 DNA 的取样地点哟。&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;结果就是这堆长颈鹿可以被分成截然不同的（且没有任何串儿 / 混血）4 群！：&lt;/p&gt;
+&lt;p&gt;南部长颈鹿 Giraffa giraffa、网纹长颈鹿 Giraffa reticulata、马赛长颈鹿 Giraffa tippelskirchi、北部长颈鹿 Giraffa camelopardalis.。&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-bc8b9b1d8e8186880f2996f3f04c26c8_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;4 群长颈鹿几乎没啥串儿混血的情况。&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;类似的其实还有&lt;strong&gt;非洲象&lt;/strong&gt;——非洲象本来就定了那么一种，后来在本世纪初的时候（2001 年）被按照基因又细分成了两种：&lt;strong&gt;非洲草原象&lt;/strong&gt;（就是原种啦，Loxodonta africana）和&lt;strong&gt;非洲森林象&lt;/strong&gt;（Loxodonta cyclotis）。&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-366f8c48baf675ffe73c78a66829b87a_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;左边是非洲草原象，右边是非洲森林象。森林象在体型上要比草原象小一截哦。&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-8485df23522e15460eb91b1df48ddb34_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;森林象（左）和草原象（右）在各种属性上的区别。&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;......&lt;/p&gt;
+&lt;p&gt;类似的例子其实还有很多，比如说上世纪初的欧洲疟疾，就被认为是由同种的蚊子传播的（那时候当然仅仅是基于形态学来判断分类的）——但后来才发现具有传播疾病能力的有 3 种不同的蚊子！！！！！！&lt;/p&gt;
+&lt;p&gt;所以考虑到这个隐性多样性......以前的许多老研究可能已经过时啦——因为生物学研究对象的基本单位是物种，但是在老研究里可能压根儿都没搞清楚研究的具体是个啥物种呢。&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;既然提到了长颈鹿，如果大家对&lt;strong&gt;长颈鹿脖子辣么辣么长且血压很高、但它低头血管却没爆掉&lt;/strong&gt;感兴趣的话，可以戳我下面的这个回答哟：&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://www.zhihu.com/question/403549417/answer/2655257880&quot;&gt;长颈鹿是世界已发现动物中血压最高的，它一低头脑血管为什么不会爆开?&lt;/a&gt;&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-<pubDate>Mon, 12 Jun 2023 23:06:45 GMT</pubDate>
+<pubDate>Tue, 13 Jun 2023 23:07:02 GMT</pubDate>
 </item>
 <item>
-<guid>2c1ec6a9224d7296ac16e89488689eec</guid>
-<title>自然界中有哪些动物战斗力高于大熊猫？</title>
-<link>https://daily.zhihu.com/story/9762752</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;img alt=&quot;头图&quot; src=&quot;https://picx.zhimg.com/v2-70a647603bdba79becc0b09e5f2de5aa_fhd.jpg?source=8673f162&quot; /&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;
-&lt;img src=&quot;https://pica.zhimg.com/v2-6beb866191621ca71f93178ce1792d59_l.jpg?source=8673f162&quot; /&gt;
-&lt;span&gt;猫盟CFCA，&lt;/span&gt;&lt;span&gt;中国12种本土猫科动物，一种都不能少&lt;/span&gt;&lt;/div&gt;&lt;div&gt;
-&lt;p&gt;这个问题也容易回答也不容易回答。&lt;/p&gt;
-&lt;p&gt;能打败大熊猫的动物大概很多，你可以说，亚洲象啊，逆戟鲸啊，阿根廷龙啊，原始人皮克啊……但是这不像个答案。答案还是要有点干货。&lt;/p&gt;
-&lt;p&gt;所以我们把难度提高一些：大熊猫在它生活的自然环境下，有动物可以打赢它吗？&lt;/p&gt;
-&lt;p&gt;有些小说和网文津津乐道地讲熊猫怎样跟豺、豹恶战，我觉得很难作为证据。我们看纪录片和小说，觉得野外宛如宝可梦对战，动物们每天都在上演惊心动魄的戏码。其实在大部分环境里，动物的互动很少能直接被目击到。&lt;/p&gt;
-&lt;p&gt;早期的熊猫调查，没有红外相机，西南地区的山野地形又很复杂，大熊猫又是一种很“宅”的动物，一天也就移动几百米。要想观察到大熊猫与其他动物的互动，千难万难。&lt;/p&gt;
-&lt;p&gt;2014 年 11 月 17 日，四川唐家河国家级自然保护区救助过一只三岁的亚成体大熊猫，腹部有一个很深的露出肠子的伤口。起初被怀疑是黄喉貂攻击所致，但后来发现，应该是摔下来被树杈或者尖石划破了肚子。三岁的大熊猫已经不小了，黄喉貂虽然凶残，能干掉小麂、猕猴，要对付一只三岁的熊还是太勉强。&lt;/p&gt;
-&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-31ebe77bfb28eaf52330ef13afdcf62c_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;受伤的未成年大熊猫&lt;/figcaption&gt;&lt;/figure&gt;
-&lt;p&gt;那么有没有间接的证据，能够表明大熊猫被攻击过呢？&lt;/p&gt;
-&lt;p&gt;研究熊猫的老前辈人物胡锦矗，在他的《卧龙自然保护区华南豹的食性研究》中提到，卧龙自然保护区的豹粪便里，有捕食过很少的年幼大熊猫的证据（毛）。这是我能找到的最直接的证据。果然动物研究还是要捡屎！捡屎万岁！&lt;/p&gt;
-&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-c8759d1d80aaca21ccf99186d916fe8a_720w.jpg?source=8673f162&quot; /&gt;&lt;/figure&gt;
-&lt;p&gt;再说一个借助现代科技的结果。在佛坪自然保护区，使用红外相机对大熊猫育儿的洞穴进行了 5 年半的监测。大熊猫对育儿地点的选择，跟附近的物种有关。亚洲黑熊这样的大型食肉动物，甚至黄喉貂这样的小型食肉动物，对大熊猫选择巢址都是负面的影响。也就是说，熊猫会回避那些威胁到自己幼崽生存的因素。&lt;/p&gt;
-&lt;p&gt;还有一些更间接的证据，证明大熊猫是有捕食者的。比如，它可能已经进化出了防御捕食者的特征。&lt;/p&gt;
-&lt;p&gt;2021 年有一篇很有意思的论文，它提出大熊猫的黑白色看上去很显眼，但它其实是一种伪装。他们使用了图片分析软件 state-of-the-art，分析大熊猫在野外的照片，发现它与环境的重合度很高。大熊猫的黑色与阴影和树干重合，白色与叶面的反光和雪重合，在远距离上，黑白的大色块还可以打破它的轮廓。所以大熊猫可以跟环境融为一体。而且熊猫的伪装对人、猫科、犬科的视力都有效。&lt;/p&gt;
-&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-5ef29491ef14d55082ec3c7ef1a19dde_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;在远距离观察，大熊猫的外表还是很隐蔽的&lt;/figcaption&gt;&lt;/figure&gt;
-&lt;p&gt;如果熊猫真的具有伪装色，那么熊猫应该是经受过捕食的压力的，否则不会向这个方向进化。&lt;/p&gt;
-&lt;p&gt;另一个旁证来源于大熊猫对捕食者气味的反应。2012 年发表的一项研究，在中国大熊猫保护研究中心雅安碧峰峡基地，给 56 只圈养熊猫闻不同动物的尿。熊猫对于捕食者（比如豹）的尿味的关注，显著高于对非捕食者（比如水鹿）的尿和对照组的关注。八只熊猫对捕食者的尿气味表现出明显的警惕，闻到之后，马上后退，10~20 秒后再小心翼翼地接近检查。而对非捕食者的尿，只是嗅一下就回去吃竹子和休息了。&lt;/p&gt;
-&lt;p&gt;熊猫会关注捕食者的气味，但反应也不是非常恐惧，至少没有马上逃跑。这也许是因为，作为大型动物，成年熊猫并不容易被捕食。也许是因为圈养熊猫的本身就是缺乏生存经验的。&lt;/p&gt;
-&lt;p&gt;参考：&lt;/p&gt;
-&lt;p&gt;Nokelainen O, Scott-Samuel N E, Nie Y, et al. The giant panda is cryptic[J]. Scientific Reports, 2021, 11(1): 1-10.&lt;/p&gt;
-&lt;p&gt;Lai X L, Zhou W L, Gao H L, et al. Impact of sympatric carnivores on den selection of wild giant pandas[J]. Zoological Research, 2020, 41(3): 273.&lt;/p&gt;
-&lt;p&gt;Du, Yiping; Huang, Yan; Zhang, Hemin; Li, Desheng; Yang, Bo; Wei, Ming; Zhou, Yingmin; Liu, Yang (2012). Innate Predator Recognition in Giant Pandas. Zoological Science, 29(2), 67–70.&lt;/p&gt;
-&lt;p&gt;胡锦矗. 卧龙自然保护区华南豹的食性研究[J]. 四川师范学院学报: 自然科学版, 1994, 15(4): 320-324.&lt;/p&gt;
+<guid>89c021bf96af3a818f9f17729794cd78</guid>
+<title>日常生活中常见但不知名的昆虫有哪些？</title>
+<link>https://daily.zhihu.com/story/9762708</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;img alt=&quot;头图&quot; src=&quot;https://picx.zhimg.com/v2-ba02c6621cf34ac24416d681ee787a54_fhd.jpg?source=8673f162&quot; /&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;
+&lt;img src=&quot;https://picx.zhimg.com/v2-127d2634c74c6fcbe0fb863a8be1629d_l.jpg?source=8673f162&quot; /&gt;
+&lt;span&gt;斜绿天蛾，&lt;/span&gt;&lt;span&gt;点进主页你会发现，这人真就只在乎虫子&lt;/span&gt;&lt;/div&gt;&lt;div&gt;
+&lt;p&gt;那可太多了。&lt;/p&gt;
+&lt;p&gt;众所周知，知乎或任何一个平台上的昆虫问题基本可以归结为两类，一类叫&lt;strong&gt;“这是什么虫子”&lt;/strong&gt;，另一类叫&lt;strong&gt;“这是不是蟑螂”&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;而在知乎上答了七千多个昆虫问题的&lt;strong&gt;我&lt;/strong&gt;就有很多槽想吐。&lt;/p&gt;
+&lt;p&gt;一言以蔽之，生活中常见的昆虫千千万，&lt;strong&gt;就没几个是知名的&lt;/strong&gt;。那么多问题里问蟑螂问蟋蟀问蚊子的没啥科普价值，今天咱讲大家最难分清、又确实非常非常常见的一类昆虫，室内的各种小甲虫。&lt;/p&gt;
+&lt;p&gt;室内有很多种常见的小甲虫。它们本在野外过着捡烂种子干果子的凄惨生活，不过在遇上了智人这个有着史诗级囤积癖的神奇物种后，它们飞黄腾达。&lt;/p&gt;
+&lt;p&gt;首先是豆象，今天就有人问（虽然基本都是天天有人问）。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;豆象亚科 Bruchinae&lt;/strong&gt;&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-e1cbdfde5a7089e5635bef37f3ecc977_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;绿豆象 Callosobruchus chinensis&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;得益于人们对囤积豆类的极大热情和异常严重的健忘症状，基本天天都有人问豆象。&lt;/p&gt;
+&lt;p&gt;顾名思义，豆象吃豆，干燥的红豆绿豆蚕豆都有对应的豆象。如果没有做好密封措施，那么就会有成堆的豆象从你家厨房角落里飞出来。如果你看到这些小脑袋方屁股的小甲虫，那就赶紧把生虫的豆子丢了。&lt;/p&gt;
+&lt;p&gt;说到象，豆象并不是象，是叶甲。真正的象也很常见：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;象甲科 Curculionidae&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;问的最多的是米象。&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-de57b4342a6d520462cbf9b9001bc7c2_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;米象 Sitophilus oryzae&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;顾名思义，米象吃米。它和它的亲戚也吃其它粮食谷物。在知乎上还有遇到猫草种子滋生的（其实猫草就是小麦。）&lt;/p&gt;
+&lt;p&gt;解决方法就是把米丢了，新买的米记得密封好。&lt;/p&gt;
+&lt;p&gt;另外，板栗之类坚果滋生的&lt;strong&gt;实象&lt;/strong&gt;&lt;em&gt;Curculio &lt;/em&gt;sp.也较常见。它们本来就生活在购买的坚果内，一般活不到羽化，发现的都是爬出来找地方化蛹的幼虫。象甲的幼虫白白胖胖且没有腿，很容易辨认。&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-627a5d5eca4669a5e43f093cd5ff688e_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;来源：https://www.zhihu.com/question/487576724&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;据说很好吃。&lt;/p&gt;
+&lt;p&gt;象甲大家族还有一位也是重量级，就是三锥象科的甘薯蚁象：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;甘薯蚁象 &lt;em&gt;Cylas formicarius&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-8314662ae78df204e2e1b69481bccfe5_720w.jpg?source=8673f162&quot; /&gt;&lt;/figure&gt;
+&lt;p&gt;众所周知，人们除了喜欢囤豆子，还特别喜欢囤地瓜；而地瓜最容易生的就是甘薯蚁象。&lt;/p&gt;
+&lt;p&gt;甘薯蚁象的造型很容易辨识，但人们不认识，看到这奇特的造型经常看成蚂蚁（我自己是看不出来哪里像蚂蚁……），或者因为独特的配色，当做毒隐翅虫……&lt;/p&gt;
+&lt;p&gt;总之，这玩意儿没有毒也不咬人。不过它们啃过的番薯容易变质，不能食用，趁早丢掉！&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;接着讲蛛甲三兄弟。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;烟草甲 &lt;em&gt;Lasioderma serricorne&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-7b683a3a26f5b041f109b51d07f5cf98_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;其实我觉得烟草甲长得很可爱，尤其是装死的时候。&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;烟草甲或许是室内小甲虫中最常见的，有一阵子每天都有至少一个烟草甲问题，以至于我特地做了一张图来敷衍这种问题：&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pica.zhimg.com/v2-428f42c5a95141bc3a0dbb4a952992ef_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;关注我一段时间的很大概率见过这张图。&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;顾名思义，烟草甲会吃烟草。不过烟草甲其它的的也吃，通常是植物性的食物。值得注意的是茶叶、药材和荞麦皮枕头。&lt;/p&gt;
+&lt;p&gt;烟草甲它还有一个好兄弟，在国内似乎稍微少见一些：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;药材甲 &lt;em&gt;Stegobium paniceum&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-ac8f6af0b65896e1885229f23e1ece5a_720w.jpg?source=8673f162&quot; /&gt;&lt;/figure&gt;
+&lt;p&gt;实际生活中它容易和烟草甲混淆，比较明显的区别是触角结构。习性和烟草甲差不太多，可以用相同的方法处理。&lt;/p&gt;
+&lt;p&gt;上面两个好像和蛛甲这个名字没啥关系，蛛甲科的代表是这个：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;拟裸蛛甲 &lt;em&gt;Gibbium aequinoctiale&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pic1.zhimg.com/v2-64ec61c7219f9ead055db1c140f9bbca_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;没脖子&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;顾名思义，拟裸蛛甲吃……啊不，长得像蜘蛛，问拟裸蛛甲的问题表述通常包括“这是不是蜱虫？？！”和“识图出来是蜱虫啊啊啊啊啊啊”之类。&lt;/p&gt;
+&lt;p&gt;与上面那批不同，拟裸蛛甲不会飞，爬的也很慢，繁殖也慢。它们的来源相对不容易定位，不过危害也比较小，可以放着不管。&lt;/p&gt;
+&lt;p&gt;吃仓储物的常见甲虫还有两位：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;锯谷盗 &lt;em&gt;Oryzaephilus surinamensis&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-9b8aa8d92ea888887c2a433ee9d57b80_720w.jpg?source=8673f162&quot; /&gt;&lt;/figure&gt;
+&lt;p&gt;特征是前胸背板上那锯齿状的边缘。主要出现在粮食里。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;赤拟谷盗 &lt;em&gt;Tribolium castaneum&lt;/em&gt;和 杂拟谷盗&lt;em&gt; Tribolium confusum&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pic1.zhimg.com/v2-dcfe5a5bdc81ecaa2f1a248071040988_720w.jpg?source=8673f162&quot; /&gt;&lt;/figure&gt;
+&lt;p&gt;这两个拟步甲也都是粮仓常客。两个种外表上很难区分。&lt;/p&gt;
+&lt;p&gt;除了吃粮食的，还有一类喜欢吃肉的，尤其是最近春季是羽化高峰，也就是皮蠹。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;皮蠹科 Dermestidae&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;皮蠹种类较多，国内常见的有圆皮蠹、毛皮蠹和火腿皮蠹&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pic1.zhimg.com/v2-adfff2fce173af570c242e778f40d3f8_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;最常见的就是小圆皮蠹 Anthrenus verbasci，今天就有人问&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;幼虫更常见。如果看到毛很粗硬的谜之毛虫出现在室内，那大概率是皮蠹的幼虫。&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-5736eef506bbf938e718694721c52af8_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;皮蠹幼虫并不是真正的毛虫，它们没有腹足。腹部末端的长毛可以用来抵御蚂蚁之类的天敌&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;皮蠹的情况比较特殊，它们的成虫是素食主义者，主要吃花粉。&lt;/p&gt;
+&lt;p&gt;但幼虫无肉不欢，吃各种各样的动物制品，包括但不限于腊肉、鱼干、皮革、兽毛人发、昆虫尸体等等（昆虫标本收藏者恨之入骨）&lt;/p&gt;
+&lt;p&gt;如果室内出现了这些阴暗爬行的毛毛幼虫，那应当看看是不是角落里什么动物制品生虫了，或者有死虫子。皮蠹非常耐饥饿，清理掉了之后也不会饿死，但是会自己离开。&lt;/p&gt;
+&lt;p&gt;除了皮蠹外，还有一种甲虫幼虫也喜欢吃肉：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;隐跗郭公属 / 腐郭公属 &lt;em&gt;Necrobia &lt;/em&gt;spp.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;跟本回答内其它灰不拉几的小甲虫不同，这些郭公颜色艳丽，带有绚丽的金属光泽。&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-2d88c943ea6a4b5c9de5bdfea718b983_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;最常见的是赤足郭公 Necrobia rufipes&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;它们幼虫也钟爱吃动物制品，尤其常见于猫粮狗粮中。也吃奶酪和干果之类，也吃仓储物中滋生的蝇蛆。&lt;/p&gt;
+&lt;p&gt;相对而言，郭公不算特别常见，属于室内小甲虫中的稀有款。不过我在知乎上也见了好几次问它们的问题，所以也一并放上来好了。&lt;/p&gt;
+&lt;p&gt;以上这些吃仓储物的甲虫都能用同一个方法处理：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;把生虫的东西丢掉！！！&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;其它还有些大谷盗、米扁虫之类知乎上出现的少，估计没那么常见，就先不讲了。&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;除了上述那些真正跟人抢粮食谷物吃的甲虫，还有一些情况比较特殊，它们不吃粮食，但也喜欢长期住在人居环境。它们是瓢虫总科的两类：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;薪甲科 Latridiidae&lt;/strong&gt;&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pic1.zhimg.com/v2-380df35ec2432dca28b9065c49ba3477_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;特征是身上坑坑洼洼的。体型很小。&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;和伪瓢虫科的&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;日本伪瓢虫&lt;em&gt; Idiophyes niponensis&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pic1.zhimg.com/v2-82287d0fab185df07c49919f8eee7c1a_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;伪瓢虫是真真切切的瓢虫总科昆虫，而且是瓢虫科的姊妹群。那么究竟是真是伪……？&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;这俩位取食真菌，本来勤勤恳恳为民除霉。&lt;/p&gt;
+&lt;p&gt;但因为霉菌会长在人类的建筑物内，因此它们也会聚集于此。&lt;/p&gt;
+&lt;p&gt;如果见到了它们，说明室内有东西（通常是木头）受潮严重，发霉了。通常它们会在雨季结束后消失，如果等不及，除湿除霉即可解决问题。&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;谈到木头，又不得不提室内甲虫中真正的大 boss……甲虫是昆虫纲中最早开始吃木头的类群，可以称得上白蚁的老前辈。如果你家出现了这些，那可能有不小的麻烦：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;天牛科 Cerambycidae&lt;/strong&gt;&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pica.zhimg.com/v2-aeda54a61e632fdb5bea054cb5ddf65b_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;最近问得最多的是 双条杉天牛 Semanotus bifasciatus&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;&lt;strong&gt;小蠹亚科 Scolytinae&lt;/strong&gt;&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pic1.zhimg.com/v2-b3bbfecf01b7db98545000cbd1410e21_720w.jpg?source=8673f162&quot; /&gt;&lt;figcaption&gt;其实小蠹是象甲……&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;小蠹吃的其实是木头里的真菌。它们的幼虫啃食的木头会有密集的蛀道。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;长蠹科 Bostrichidae&lt;/strong&gt;&lt;/p&gt;
+&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-33a5e72ff033d875556dcee6a61d3a8b_720w.jpg?source=8673f162&quot; /&gt;&lt;/figure&gt;
+&lt;p&gt;问得比较少一点，和小蠹长得很像，但触角结构不同。&lt;/p&gt;
+&lt;p&gt;有概率遇到蛀木头的吉丁、窃蠹等其它类群。&lt;/p&gt;
+&lt;p&gt;无论哪种蛀木头的甲虫，都不好处理，先找到羽化孔（就是木头上的小孔），可以向内投药。因为蛀木甲虫很隐蔽而且药物处理比较困难，有时可能要找可靠除虫团队处理。&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-<pubDate>Mon, 12 Jun 2023 23:06:38 GMT</pubDate>
+<pubDate>Tue, 13 Jun 2023 23:06:53 GMT</pubDate>
 </item>
 <item>
-<guid>bbe4eb3c50c071169108f1927f58f1a1</guid>
-<title>有哪些较冷门但意义重大的考古发现？</title>
-<link>https://daily.zhihu.com/story/9762758</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;img alt=&quot;头图&quot; src=&quot;https://pic1.zhimg.com/v2-954cda167818c29b798bad130e757543_fhd.jpg?source=8673f162&quot; /&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;
-&lt;img src=&quot;https://pic1.zhimg.com/v2-2bcc68111a274a99e748f696f9555106_l.jpg?source=8673f162&quot; /&gt;
-&lt;span&gt;魏王煮酒，&lt;/span&gt;&lt;span&gt;做一个言简意赅、有理有据的讲史人&lt;/span&gt;&lt;/div&gt;&lt;div&gt;
-&lt;p&gt;不能不提的苍天乃死砖&lt;/p&gt;
-&lt;p&gt;仓天乃死砖，1976 年安徽省亳县（今亳州市）元宝坑村&lt;span&gt;曹操宗族墓地&lt;/span&gt;出土，长 37.5 厘米，厚 7 厘米，上宽 19.2 厘米，下宽 15 厘米，砖上有作壁匠人刻划出的 26 个汉字。&lt;/p&gt;
-&lt;p&gt;1972 年至 1989 年，考古人员在亳州城南、城西南及涡河以北抢救发掘了近二十座东汉墓葬，其中属于曹氏墓葬的有元宝坑一号墓、董园村一号墓、二号墓、菜市村一号墓、张园村一号墓、马园村汉墓群、袁牌坊村一号墓、二号墓、三号墓等。这些曹氏墓葬中，出土文字砖的有元宝坑一号墓和董园村一号墓。&lt;/p&gt;
-&lt;p&gt;元宝坑一号墓三十二号文字砖就是“仓天乃死”砖（编号“元：32”），这块砖上的文字不是汉砖常见的吉祥语，而是造砖人在砖坯未干之前刻划的愤怒的呐喊：&lt;/p&gt;
-&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://picx.zhimg.com/v2-cdb0d83d334c6eecc4be4cd50d4dee48_720w.jpg?source=8673f162&quot; /&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;strong&gt;王复，汝使我，作此大壁，&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;径冤我，人不知也，&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;但抟汝属。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;仓天乃死，当搏&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;这段文字大意是“我”被一个叫王复的人冤枉，受罚做苦役，被逼着要砌一堵很大的砖室墓墙壁，&lt;/p&gt;
-&lt;p&gt;“我”含冤莫白，无处控诉，唯有徒劳地揉捏着这些泥砖，若是哪一日变天了，&lt;/p&gt;
-&lt;p&gt;“我”就要拼死一搏。&lt;/p&gt;
-&lt;p&gt;如果最后两字解读为“车若”，意思是“等我翻身做主人，就要车裂了你”。&lt;/p&gt;
-&lt;p&gt;这是一股来自东汉末年民间的冲天怨气，即便是千余年后，在博物馆中读到文物上的这些字，仍能感受到作壁人的冤屈、不甘和极大的咒怨。&lt;/p&gt;
-&lt;p&gt;“仓天乃死”，和历史上黄巾起义的口号“苍天已死”非常接近，从“乃”到“已”，一字之差，反映了民怨从暗涌到沸腾，最终老百姓揭竿而起的发展路径，其时间差也就 14 年。元宝坑一号墓其中一块砖上标记年月为“建宁三年四月四日”（元：9），即此墓修建时间在 170 年，而黄巾起义发生在东汉灵帝光和七年（184 年）&lt;/p&gt;
-&lt;p&gt;苍天乃死砖的出现可以说是从实物上证明了东汉末年的生活残酷和民怨滔天的末日背景。从实物上进一步肯定了黄巾起义的必然和老百姓的无奈。&lt;/p&gt;
+<guid>a6cb54bce1cee2e0d81f7adb3af22b48</guid>
+<title>刘备为什么不能扫平天下？</title>
+<link>https://daily.zhihu.com/story/9762781</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;img alt=&quot;头图&quot; src=&quot;https://pic1.zhimg.com/v2-6c8212f1cb9bb8715f60e98f9e80f17c_fhd.jpg?source=8673f162&quot; /&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;
+&lt;img src=&quot;https://picx.zhimg.com/v2-cdda7a572ffa13c6b7f96a82a64712ed_l.jpg?source=8673f162&quot; /&gt;
+&lt;span&gt;司马懿，&lt;/span&gt;&lt;span&gt;三国英雄士，四朝经济臣&lt;/span&gt;&lt;/div&gt;&lt;div&gt;
+&lt;p&gt;蜀汉政权一个特点就是&lt;strong&gt;刘备的儿子比较少，出生也都比较晚，并且亲族凋零&lt;/strong&gt;。这基本上刘备集团最终没有能够扫平天下的重要原因之一。&lt;/p&gt;
+&lt;p&gt;一般来说，扫平天下最好是一代人的事情，刘邦、刘秀、李渊 / 李世民，赵匡胤，朱元璋，都是在自己的生命没有结束之前，就已经平定了中原。因为这是从无到有的创业，创始人的威信、权力、判断都是独一无二的，整个组织都有着创始人个人魅力的支撑&lt;strong&gt;。一旦易代之后，这些独特的东西消失了，再想维持政权就要靠制度，靠政治，&lt;/strong&gt;这么一来，整个组织的进取能力就会瞬间下降一个台阶。&lt;/p&gt;
+&lt;p&gt;像曹操、刘裕、萧衍、陈霸先之辈，也是在自己这一代打下了基础，后代基本上无所作为，而刘备的轨迹基本上其实和他们是相仿的。&lt;/p&gt;
+&lt;p&gt;当整个军事集团政治化之后，会有一系列的后果，比如对最高权力继承人的培养，就会用文人皇帝的标准，就是皇帝主要是用人，平衡朝政。但是这种情况下，一旦皇帝成为了文人，而天下还没有大定，那政权基本上只有两条路可走：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;一直割据下去直到被统一或者推翻；&lt;/li&gt;
+&lt;li&gt;内部出现一个军事天才统一了天下，然后自己被禅位。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;刘备中年得子，等刘禅十来岁的时候，刘备已经是汉中王了，所以刘禅一直没有机会能够跟随刘备戎马倥偬，培养自己统军打仗的经验，在军队内部直接建立自己的威信；诸葛亮同理，诸葛瞻从出生就是丞相的儿子，一直跟着黄月英在成都生活，也没有跟随诸葛亮北伐，在诸葛亮帐下效力。&lt;/p&gt;
+&lt;p&gt;从这个意义上说，蜀汉是一个过早成熟的政权，在一代人的辉煌之后，二代全体进入了守成模式。如果刘备在二十来岁的时候就生了五六个孩子，还有一群自己的堂弟，堂兄和侄子帮着自己打天下，那情况就会有很大的不同。这样等到刘备 40 多岁开始实质性创业的时候，他的儿子中就很可能会有那么一两个能够在军队内部脱颖而出，靠自己的能力年纪轻轻就能够直接掌控军权的。这样等刘备去世之后，继位的皇帝同样是马上天子，到时候留太子监国，刘禅能够亲自率领军队和诸葛亮互相配合，北伐就会顺利很多，蜀汉内部的人心也会整齐很多。&lt;/p&gt;
+&lt;p&gt;再退一步，如果刘备确实没有早年生几个儿子，那么如果宗族势力很强也是一条路。就像北周一样，宇文护就是北周的守护者，能够一直维持北周的国力不衰退，直到出了雄才大略的周武帝，抓住北齐高纬作死的机会，一战成功。&lt;/p&gt;
+&lt;p&gt;但是像现在这个世界的刘备这样，亲族凋零，生子又晚。刘禅这样的皇帝，在宋朝是宋仁宗，在明朝是明孝宗，其实还是不错的，但是就是不适合三国，三国时代要的就是上马管军，下马管民的武人皇帝，才有可能统一天下，并且这个统一天下的大功还得落到自己手里。&lt;/p&gt;
+&lt;p&gt;易代之后还能保持进取的是很少的，基本上都是一代人之后，身死志消是常态。吴三桂、郑成功、李定国，在活着的时候都叱咤风云，有吞并天下的志向，但是一旦去世，整个组织无一不是迅速的消沉了下去。&lt;/p&gt;
+&lt;p&gt;从这一点来说，曹家其实保持的都还可以。曹丕、曹睿都有一定的军事能力，属于乾纲独断的强势帝王，而曹家的宗族能力也还不错。然而无论是宗族还是亲儿子，都在曹睿这一代断掉了，这样才有了司马氏的可乘之机，不然统一天下，笑到最后的本来确实应该是曹家。&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-<pubDate>Mon, 12 Jun 2023 23:06:29 GMT</pubDate>
+<pubDate>Tue, 13 Jun 2023 23:06:47 GMT</pubDate>
 </item>
 <item>
-<guid>9ea1b3b8bb5ca0138c156bbf0d92c6ef</guid>
-<title>瞎扯 · 如何正确地吐槽</title>
-<link>https://daily.zhihu.com/story/9762713</link>
-<content:encoded>&lt;div&gt;&lt;div&gt;&lt;img alt=&quot;头图&quot; src=&quot;https://picx.zhimg.com/v2-06dffce2b502342c24c74a58fcdf6631_fhd.jpg?source=8673f162&quot; /&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;
-&lt;img src=&quot;https://pic1.zhimg.com/v2-624f6eb03f71a1b045034d25185d29f4_l.jpg?source=8673f162&quot; /&gt;
-&lt;span&gt;知乎日报&lt;/span&gt;
-&lt;/div&gt;&lt;div&gt;
-&lt;p&gt;Q：&lt;a href=&quot;https://www.zhihu.com/question/24730447/answer/28778975&quot;&gt;哪本书是对程序员最有影响且最应该读的？&lt;/a&gt;&lt;/p&gt;
-&lt;blockquote&gt;&lt;a href=&quot;http://www.zhihu.com/people/bd76c3ecbe105c9a452231145b823a4a&quot;&gt;@曹斌&lt;/a&gt; ：颈椎康复指南，不谢。&lt;/blockquote&gt;
-&lt;p&gt;Q：&lt;a href=&quot;https://www.zhihu.com/question/21370688/answer/19481863&quot;&gt;向日葵晚上在干嘛，跟着月亮吗？&lt;/a&gt;&lt;/p&gt;
-&lt;blockquote&gt;&lt;a href=&quot;http://www.zhihu.com/people/2dd2fd10b6dda1c754ab6e40fd99fd28&quot;&gt;@death yoyo&lt;/a&gt; ：晚上低头嗑瓜子啦&lt;/blockquote&gt;
-&lt;p&gt;Q：&lt;a href=&quot;https://www.zhihu.com/question/20406077/answer/15803616&quot;&gt;如何回答「证明自己智商孱弱」的面试题？&lt;/a&gt;&lt;/p&gt;
-&lt;blockquote&gt;&lt;a href=&quot;http://www.zhihu.com/people/165808940ff77fe387928c28a51d03fd&quot;&gt;@morpheus&lt;/a&gt; ：啊？&lt;/blockquote&gt;
-&lt;p&gt;Q：&lt;a href=&quot;https://www.zhihu.com/question/48986918/answer/472164439&quot;&gt;如何用尽量短的语言写一个无限循环的脑洞故事？&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;http://www.zhihu.com/people/16132c8e976edf9e6e6117fb5890e005&quot;&gt;@吕不同&lt;/a&gt; ：&lt;span&gt;份子钱&lt;/span&gt;。&lt;/p&gt;
-&lt;p&gt;Q： &lt;a href=&quot;https://www.zhihu.com/question/542741435/answer/2576238007&quot;&gt;这个世界上有什么动物长得像 P 出来的?&lt;/a&gt;&lt;/p&gt;
-&lt;blockquote&gt;&lt;a href=&quot;http://www.zhihu.com/people/49e714a333480514bade1e4573a42308&quot;&gt;@粽子&lt;/a&gt; ：&lt;span&gt;北长尾山雀&lt;/span&gt;，小肥啾，特别像会飞的团子。。。&lt;/blockquote&gt;
-&lt;figure&gt;&lt;img alt=&quot;&quot; src=&quot;https://pic3.zhimg.com/v2-bf64d7fff8b0aa7b05edd874d9478cf6_b.jpg&quot; /&gt;&lt;/figure&gt;&lt;/div&gt;
+<guid>d70e4eb974f6730380a6d9140afd2f4e</guid>
+<title>为什么英文中「狗 dog」和「小狗 puppy」差别那么大？</title>
+<link>https://daily.zhihu.com/story/9762787</link>
+<content:encoded>&lt;div&gt;&lt;div&gt;&lt;img alt=&quot;头图&quot; src=&quot;https://picx.zhimg.com/v2-ac14c185de4ccc95a90e34ce3b257161_fhd.jpg?source=8673f162&quot; /&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;
+&lt;img src=&quot;https://pic1.zhimg.com/v2-663424e3be3de9e05b1ffca226f78c19_l.jpg?source=8673f162&quot; /&gt;
+&lt;span&gt;Tabikore，&lt;/span&gt;&lt;span&gt;一个在云上拾荒的人&lt;/span&gt;&lt;/div&gt;&lt;div&gt;
+&lt;p&gt;因为这两个词根源就不一样吧，puppy并不是dog的衍生，长得不一样是当然的事情。假如长得一样......那只能说是相当难得的巧合了。&lt;/p&gt;
+&lt;p&gt;puppy最初还不是小狗崽的意思，而是玩偶狗的意思，和puppet一样都来自法语poupée，芭比娃娃的那种「玩偶」。&lt;/p&gt;
+&lt;p&gt;dog这个词的起源是个未解之谜。说是未解之谜，是因为这个词就像凭空出现的一样，完全找不到它的过往。根据目前已知的资料显示，它在古英语中最早只是某个品种的狗狗的名称（docga），可能就像国人开店一时兴起整个「艾斯瑞卡拉瓦乔」的洋名字，听起来很酷，但没什么实际含义。&lt;/p&gt;
+&lt;p&gt;而同时期（以及在这之前）作为整体的狗被称作「hund」，这个词也就是现在英语里的hound，不过这个词的所指后来反而缩窄成了狗狗中的某一类（猎狗）。又新又潮的dog则取代了之前的hund，变成了所有的狗共有的名字。&lt;/p&gt;
+&lt;p&gt;虽然地位彻底颠倒了，但hound可比半路杀出来的dog要正统得多，它向上可以一直追溯到原始印欧语字根kwon-，拉丁语的狗「canis」也是这个字根的后代。犬科canidae、犬属canis，都来自这个canis。&lt;/p&gt;
+&lt;p&gt;这里正好提一下犬科所属的目，也就是「食肉目」，写做carnivora，和英语carnivore一个意思，都是吃肉的意思，其中carni-来自caro「肉」，后面的则是「吃」。这个carni-跟canis长得很像，但来源和意思完全不一样，所以就像本文第一段说的那样，长得像只能说是巧合。&lt;/p&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
-<pubDate>Mon, 12 Jun 2023 23:06:23 GMT</pubDate>
+&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</content:encoded>
+<pubDate>Tue, 13 Jun 2023 23:06:37 GMT</pubDate>
 </item>
 </channel></rss>
