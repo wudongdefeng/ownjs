@@ -29,7 +29,7 @@ jobs:
         
         git clone git@github.com:wudongdefeng/anti-AD.git ~/anti-AD    
         git clone git@github.com:dancing-wind/ownadblock.git ~/ad
-        git clone https://codeberg.org/wudongdefeng/adblock.git ~/codeberg
+        git clone https://github.com/wudongdefeng/groceries.git ~/groceries
         #git clone https://gitlab.com/wudongdefeng/ownadblock.git ~/gitlab         
     - name: Run diy.sh 开始定制
       run: |
@@ -43,18 +43,17 @@ jobs:
 
     - name: copy some list files 复制文件
       run: |
-        echo "https://wudongdefeng:${{ secrets.codeberg }}@codeberg.org">~/.git-credentials
-        cp ~/anti-AD/anti-ad-easylist.txt ~/codeberg/ad.txt
+        #echo "https://wudongdefeng:${{ secrets.codeberg }}@codeberg.org">~/.git-credentials
+        cp ~/anti-AD/anti-ad-easylist.txt ~/groceries/ad.txt
         #cp ~/anti-AD/anti-ad-easylist.txt ~/gitlab/ad.txt    
     
         
     - name: Commit files 提交文件
       run: |
-        cd ~/codeberg        
+        cd ~/groceries        
         awk '!a[$0]++' ad.txt
-        git config --global credential.helper store
-        git config user.name github-actions
-        git config user.email github-actions@github.com
+        git config --local user.name "github-actions[bot]"
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git add .
         git commit -m "空投已送达" -a || echo "no change found"
         git push -u origin main
