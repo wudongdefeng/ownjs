@@ -29,7 +29,7 @@ jobs:
         
         git clone git@github.com:wudongdefeng/anti-AD.git ~/anti-AD    
         git clone git@github.com:dancing-wind/ownadblock.git ~/ad
-        git clone https://github.com/wudongdefeng/groceries.git ~/groceries
+        git clone git@github.com:wudongdefeng/groceries.git ~/groceries
         #git clone https://gitlab.com/wudongdefeng/ownadblock.git ~/gitlab         
     - name: Run diy.sh 开始定制
       run: |
@@ -43,7 +43,6 @@ jobs:
 
     - name: copy some list files 复制文件
       run: |
-        #echo "https://wudongdefeng:${{ secrets.codeberg }}@codeberg.org">~/.git-credentials
         cp ~/anti-AD/anti-ad-easylist.txt ~/groceries/ad.txt
         #cp ~/anti-AD/anti-ad-easylist.txt ~/gitlab/ad.txt    
     
