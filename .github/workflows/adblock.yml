@@ -30,13 +30,13 @@ jobs:
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan github.com > ~/.ssh/known_hosts
         git clone $REPO_URL -b $REPO_BRANCH anti-AD
-        git clone git@github.com:wudongdefeng/groceries.git ad          
+        git clone git@github.com:wudongdefeng/groceries.git ad
+        git clone git@github.com:dancing-wind/ownadblock.git ad1
 
     - name: Run mod.sh 
       run: |
-        sudo timedatectl set-timezone "$TZ"
-        curl -O https://raw.githubusercontent.com/dancing-wind/ownadblock/master/diy.sh
-        mv diy.sh ./anti-AD/scripts
+        sudo timedatectl set-timezone "$TZ"        
+        mv ./ad1/diy.sh ./anti-AD/scripts
         chmod +x ./anti-AD/scripts/diy.sh
         sudo ./anti-AD/scripts/diy.sh
         
