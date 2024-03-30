@@ -30,17 +30,19 @@ jobs:
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan github.com > ~/.ssh/known_hosts
         git clone $REPO_URL -b $REPO_BRANCH anti-AD
-        git clone git@github.com:wudongdefeng/groceries.git ad
-        curl -O https://raw.githubusercontent.com/dancing-wind/ownadblock/master/diy.sh  
+        git clone git@github.com:wudongdefeng/groceries.git ad          
     - name: Load custom configuration
       run: |
-        sudo timedatectl set-timezone "$TZ"
-        mkdir -p my
+        
+        
         chmod +x $DIY_P1_SH
         [ -e $DIY_P1_SH ] && mv $DIY_P1_SH anti-AD/scripts/
  
     - name: Run mod.sh 
       run: |
+        sudo timedatectl set-timezone "$TZ"
+        curl -O https://raw.githubusercontent.com/dancing-wind/ownadblock/master/diy.sh
+        mv diy.sh ./anti-AD/scripts
         sudo ./anti-AD/scripts/diy.sh
         
  
