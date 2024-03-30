@@ -50,7 +50,7 @@ jobs:
         git config user.email "action@github.com"
         git add .
         git commit -m "$(date "+%Y-%m-%d %H:%M")~千军万马来相见！" -a
-        git push -u main
+        git push -u origin main
         
     - name: Delete workflow runs
       uses: Mattraks/delete-workflow-runs@main
