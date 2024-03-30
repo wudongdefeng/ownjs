@@ -37,6 +37,7 @@ jobs:
         sudo timedatectl set-timezone "$TZ"
         curl -O https://raw.githubusercontent.com/dancing-wind/ownadblock/master/diy.sh
         mv diy.sh ./anti-AD/scripts
+        chmod +x ./anti-AD/scripts/diy.sh
         sudo ./anti-AD/scripts/diy.sh
         
  
