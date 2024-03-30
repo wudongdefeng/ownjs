@@ -42,9 +42,9 @@ jobs:
         
  
     - name: Push
-      run: |
+      run: |        
+        mv -f ./anti-AD/anti-ad-easylist.txt ./ad/ad.txt      
         cd ad
-        mv -f ./anti-AD/anti-ad-easylist.txt ./ad.txt                
         git init
         git config user.name "一支穿云箭"
         git config user.email "action@github.com"
