@@ -1,4 +1,4 @@
-name: aliyun推送 
+name: anti-AD mod
 
 on:
   workflow_dispatch:
@@ -7,62 +7,56 @@ on:
   watch:
     types: started
 
+ 
+env:
+  REPO_URL: https://github.com/privacy-protection-tools/anti-AD.git
+  REPO_BRANCH: adlist-maker
+  DIY_P1_SH: diy.sh
+  TZ: Asia/Shanghai
+ 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-    
+    if: github.event.repository.owner.id == github.event.sender.id
 
     steps:
-    - uses: actions/checkout@main
-      
-    - name: time GMT+8 北京时间
-      run: |
-        sudo timedatectl set-timezone 'Asia/Shanghai' 
+    - name: Checkout
+      uses: actions/checkout@main
      
-    - name: Clone source code 克隆源码
+    - name: Clone source code 
       run: |
         mkdir -p ~/.ssh
         echo -e "${{ secrets.USER_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan github.com > ~/.ssh/known_hosts
-        
-        git clone git@github.com:wudongdefeng/anti-AD.git ~/anti-AD    
-        git clone git@github.com:dancing-wind/ownadblock.git ~/ad
-        git clone git@github.com:wudongdefeng/groceries.git ~/groceries
-        #git clone https://gitlab.com/wudongdefeng/ownadblock.git ~/gitlab         
-    - name: Run diy.sh 开始定制
+        git clone $REPO_URL -b $REPO_BRANCH anti-AD
+        git clone git@github.com:wudongdefeng/groceries.git ad
+        curl -O https://raw.githubusercontent.com/dancing-wind/ownadblock/master/diy.sh  
+    - name: Load custom configuration
       run: |
-        
-        cd ~/ad
-        chmod +x diy.sh
-        cp -r scripts ~/anti-AD
-        cp -r diy.sh ~/anti-AD/diy.sh
-        cp -r writerFormat.class.php ~/anti-AD/scripts/lib/writerFormat.class.php
-        sudo ~/anti-AD/diy.sh
-
-    - name: copy some list files 复制文件
+        sudo timedatectl set-timezone "$TZ"
+        mkdir -p my
+        chmod +x $DIY_P1_SH
+        [ -e $DIY_P1_SH ] && mv $DIY_P1_SH anti-AD/scripts/
+ 
+    - name: Run mod.sh 
       run: |
-        cp ~/anti-AD/anti-ad-easylist.txt ~/groceries/ad.txt
-        #cp ~/anti-AD/anti-ad-easylist.txt ~/gitlab/ad.txt    
-    
+        sudo ./anti-AD/scripts/diy.sh
         
-    - name: Commit files 提交文件
+ 
+    - name: Push
       run: |
-        cd ~/groceries        
-        awk '!a[$0]++' ad.txt
-        git config --local user.name "github-actions[bot]"
-        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        cd ad
+        mv -f ./anti-AD/anti-ad-easylist.txt ./ad.txt                
+        git init
+        git config user.name "一支穿云箭"
+        git config user.email "action@github.com"
         git add .
-        git commit -m "空投已送达" -a || echo "no change found"
-        git push -u origin main
-        #rm ~/.git-credentials
-        #cd ~/gitlab
-        #awk '!a[$0]++' ad.txt
-        #echo "https://wudongdefeng:${{ secrets.gitlab }}@gitlab.com">~/.git-credentials
-        #git config --global credential.helper store
-        #git config user.name github-actions
-        #git config user.email github-actions@github.com
-        #git add .
-        #git commit -m "空投已送达" -a
-        #git push -u origin master
+        git commit -m "$(date "+%Y-%m-%d %H:%M")~千军万马来相见！" -a
+        ${{ secrets.aam }}
+        
+    - name: Delete workflow runs
+      uses: Mattraks/delete-workflow-runs@main
+      with:
+        retain_days: 1
+        keep_minimum_runs: 3
