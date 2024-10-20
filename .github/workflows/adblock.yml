@@ -46,7 +46,7 @@ jobs:
         cd ad
         git init
         curl -o collect_tv.txt https://raw.githubusercontent.com/kimwang1978/collect-tv-txt/main/merged_output.txt
-        sed -i '1,5d' merged_output.txt
+        sed -i '1,5d' collect_tv.txt
         git config user.name "一支穿云箭"
         git config user.email "action@github.com"
         git add .
