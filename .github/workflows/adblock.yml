@@ -42,11 +42,11 @@ jobs:
  
     - name: Push
       run: |        
-        mv -f ./anti-AD/anti-ad-easylist.txt ./ad/ad.txt 
-        curl -o collect_tv.txt https://raw.githubusercontent.com/kimwang1978/collect-tv-txt/main/merged_output.txt
-        sed -i '1,5d' merged_output.txt
+        mv -f ./anti-AD/anti-ad-easylist.txt ./ad/ad.txt        
         cd ad
         git init
+        curl -o collect_tv.txt https://raw.githubusercontent.com/kimwang1978/collect-tv-txt/main/merged_output.txt
+        sed -i '1,5d' merged_output.txt
         git config user.name "一支穿云箭"
         git config user.email "action@github.com"
         git add .
