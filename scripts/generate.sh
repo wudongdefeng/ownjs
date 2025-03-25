@@ -12,6 +12,7 @@ curl --connect-timeout 10 -O http://254iptv.ml/huoyan.txt || echo "Link huoyan d
 curl --connect-timeout 10 -O http://jiekou.ga/xuancai.txt || echo "Link xuancai doesn't exist" 
 
 curl --connect-timeout 10 -O http://254iptv.ml/liuwei.txt || echo "Link liuwei doesn't exist" 
+
  
        
 curl --connect-timeout 10 -O http://jiekou.ga/xinghuo.txt || echo "Link xinghuo doesn't exist" 
@@ -36,8 +37,10 @@ curl --connect-timeout 10 -O http://139.9.166.60/iptv/CR.txt || echo "Link CR do
 #sed -i "s/\#EXTINF:-1,//g" WEBCAM_CHINA.txt || echo "no m3u"
 #cat WEBCAM_CHINA.txt
 sed -i '/雪上霜/,$d' lfy4482.txt
+node generate.js https://raw.githubusercontent.com/wwb521/live/main/tv.m3u fan.txt
 node generate.js https://raw.githubusercontent.com/zbefine/iptv/main/iptv.m3u iptv.txt
 node generate.js https://raw.githubusercontent.com/goolguy007/radioer/main/TVradio TVradio.txt
+
 rm -rf *.js*
 rm -rf node_modules
 grep -lrIZ '404 Not Found'. | xargs -0 rm -rf --
