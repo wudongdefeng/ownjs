@@ -5,18 +5,6 @@ curl -O https://raw.githubusercontent.com/wudongdefeng/iptv-tools/master/generat
 curl -O https://raw.githubusercontent.com/wudongdefeng/iptv-tools/master/core.js
 npm install iptv-playlist-parser
 
-curl --connect-timeout 10 -O http://254iptv.ml/253.txt || echo "Link 253 doesn't exist"   
-
-curl --connect-timeout 10 -O http://254iptv.ml/huoyan.txt || echo "Link huoyan doesn't exist" 
-
-curl --connect-timeout 10 -O http://jiekou.ga/xuancai.txt || echo "Link xuancai doesn't exist" 
-
-curl --connect-timeout 10 -O http://254iptv.ml/liuwei.txt || echo "Link liuwei doesn't exist" 
-
- 
-       
-curl --connect-timeout 10 -O http://jiekou.ga/xinghuo.txt || echo "Link xinghuo doesn't exist" 
-
 curl --connect-timeout 10 -O https://wds.ecsxs.com/221314.txt || echo "Link 221314 doesn't exist" 
 
 curl --connect-timeout 10 -O https://raw.githubusercontent.com/zhyzjkpa/iptv/master/all2.txt || echo "Link all2 doesn't exist" 
@@ -24,12 +12,10 @@ curl --connect-timeout 10 -O https://raw.githubusercontent.com/zhyzjkpa/iptv/mas
 curl --connect-timeout 10 -O https://raw.githubusercontent.com/40740/dianshi/main/0.txt || echo "Link 0 doesn't exist" 
 curl --connect-timeout 10 -o 直播2.txt https://notabug.org/pglblb/tv/raw/master/直播2.js
 curl --connect-timeout 10 -o xudong.txt https://notabug.org/xudong0518/tv/raw/master/zhibo.txt
+  
 
-     
-curl --connect-timeout 10 -O http://82.156.222.77/iptv/tv2.txt || echo "七彩直播 doesn't exist" 
 curl --connect-timeout 10 -O https://wds.ecsxs.com/221609.json && mv 221609.json 221609.txt || echo "Link 221609 doesn't exist" 
 curl --connect-timeout 10 -O https://raw.githubusercontent.com/Lnjrs520/njrs520-/main/lfy4482.txt || echo "Link lfy4482 doesn't exist"
-curl --connect-timeout 10 -O http://139.9.166.60/iptv/CR.txt || echo "Link CR doesn't exist"
 #curl --connect-timeout 10 -O https://raw.githubusercontent.com/HasBahCa/m3u_Links/main/WEBCAM_CHINA.m3u && mv WEBCAM_CHINA.m3u WEBCAM_CHINA.txt || echo "Link WEBCAM_CHINA doesn't exist"
 #sed -i "s/\#EXTM3U//g" WEBCAM_CHINA.txt || echo "no m3u"
 
