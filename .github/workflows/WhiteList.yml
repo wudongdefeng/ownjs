@@ -23,6 +23,8 @@ jobs:
           pip install opencc-python-reimplemented aiohttp tqdm urllib3
           mkdir -p ~/.ssh
           echo -e "${{ secrets.USER_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com > ~/.ssh/known_hosts
           
       - name: Run Python script
         run: |
