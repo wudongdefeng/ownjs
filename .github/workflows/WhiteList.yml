@@ -31,9 +31,13 @@ jobs:
           git clone git@github.com:wudongdefeng/tv.git tv
           cd tv
           python stream_checker.py
+          python blacklist.py
+          rm -rf results*.*
+          sed -i "1,2!d" ./assets/whitelist-blacklist/whitelist*.txt
+          python main.py
           git config --local user.email "actions@github.com"
           git config --local user.name "github_actions[bot]"
           #git add ./assets/whitelist-blacklist/*
           git add .
-          git commit -m "黑白名单 AutoUpdate $(date +'%Y%m%d')"
+          git commit -m "AutoUpdate $(date +'%Y%m%d')"
           git push
