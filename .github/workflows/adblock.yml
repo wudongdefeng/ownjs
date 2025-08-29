@@ -31,7 +31,7 @@ jobs:
         git clone $REPO_URL -b $REPO_BRANCH anti-AD
         git clone git@github.com:wudongdefeng/groceries.git ad
         git clone git@github.com:dancing-wind/ownadblock.git ad1
-        git clone git@github.com:wudongdefeng/tv.git tv
+        #git clone git@github.com:wudongdefeng/tv.git tv
 
     - name: Run mod.sh 
       run: |
@@ -47,9 +47,7 @@ jobs:
         cd ad
         git init
         #curl -o collect_tv.txt https://raw.githubusercontent.com/kimwang1978/collect-tv-txt/main/merged_output.txt
-        cp ../tv/live_lite.txt collect_tv.txt
-        cp ../tv/live_lite.m3u collect_tv.m3u
-        #sed -i '1,5d' collect_tv.txt
+        
         
         git config user.name "一支穿云箭"
         git config user.email "action@github.com"
