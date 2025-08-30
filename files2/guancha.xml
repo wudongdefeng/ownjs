@@ -114,6 +114,374 @@
 &lt;/div&gt;&lt;/div&gt;</content:encoded>
 </item>
 <item>
+<guid>fa07ab142b5801075b281c2c83c639e0</guid>
+<title>从DS这串“乱码”到寒武纪爆发，更大惊喜是……</title>
+<link>https://www.guancha.cn/haoping/2025_08_30_788338.shtml</link>
+<content:encoded>&lt;div&gt;&lt;div class=&quot;content all-txt&quot;&gt;
+&lt;p style=&quot;text-align:center;&quot;&gt;
+&lt;img src=&quot;https://i.guancha.cn/news/2025/08/30/20250830175241409.jpg&quot; style=&quot;width:600px;&quot;&gt; 
+&lt;/p&gt;
+&lt;blockquote class=&quot;content-quote&quot;&gt;
+&lt;p&gt;
+DeepSeek V3.1提及的UE8M0 FP8引爆了舆论，但我们也要清醒看到，其意义并非在于技术上的原创性突破，而是标志着国产AI产业链协同迈入新阶段。它的核心意图在于串联起芯片厂商适配、大模型工具链优化，打破“单点创新”困局。尽管国产算力仍有短板，但上下游企业从协同设计到生态联盟的探索，正以“1+1&amp;gt;2”的合力，为中国AI全产业链突围筑牢根基。
+&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;
+最近一周，半导体成为A股表现最强的板块。上半年利润仅10亿的寒武纪，以超过6000亿的市值跃居科创板首位，滚动市盈率高达500余倍，股价也一度超过茅台成为A股“股王”。
+&lt;/p&gt;
+&lt;p&gt;
+引爆市场情绪的，是上周DeepSeek V3.1的发布——准确来说，甚至不是这款模型的能力本身，而是短短不到20个字的一则官方留言：“UE8M0 FP8是针对即将发布的下一代国产芯片设计。”
+&lt;/p&gt;
+&lt;p style=&quot;text-align:center;&quot;&gt;
+&lt;img src=&quot;https://i.guancha.cn/news/2025/08/30/20250830175242403.jpg&quot; style=&quot;width:600px;&quot;&gt; 
+&lt;/p&gt;
+&lt;p&gt;
+UE8M0 FP8，立即成了国产AI技术突破的最新代名词。
+&lt;/p&gt;
+&lt;p&gt;
+在一周高涨的情绪之后，今天的市场出现正常回落。而与之相伴的，是中芯国际冷暖参半的半年报——上半年营收增长22%，Q2产能利用率高达92.5%，中国区收入占比提升至84.2%；但单看二季度，净利润和毛利润都出现下滑。
+&lt;/p&gt;
+&lt;p&gt;
+事实上，如果把DeepSeek、寒武纪、中芯国际们近期的一系列信息串联起来，我们在欣喜于其进步之余，也能够看到国产AI生态仍受到严重限制，距离世界先进水平仍有差距。
+&lt;/p&gt;
+&lt;p&gt;
+但更大的惊喜在于，中国产业链的协同程度正在迅速提升。
+&lt;/p&gt;
+&lt;p style=&quot;text-align:center;&quot;&gt;
+&lt;img src=&quot;https://i.guancha.cn/news/2025/08/30/20250830175242130.png&quot; width=&quot;100&quot; height=&quot;50&quot; alt=&quot;&quot;&gt; 
+&lt;/p&gt;
+&lt;p style=&quot;text-align:center;&quot;&gt;
+&lt;strong&gt;DeepSeek到底干了什么&lt;/strong&gt; 
+&lt;/p&gt;
+&lt;p&gt;
+UE8M0 FP8，这串如同乱码一般的字符，究竟有什么魔力？
+&lt;/p&gt;
+&lt;p&gt;
+我们不妨先从FP8说起。
+&lt;/p&gt;
+&lt;p&gt;
+FP8是一种8位浮点数，其基本原理是用较少的字符来表示更复杂的数字，这对于使用二进制语言的计算机来说是非常重要的。
+&lt;/p&gt;
+&lt;p&gt;
+这是因为，二进制数字只有0和1两个字符，一个较短的十进制数字，写成二进制可能会变得很长。举个例子，一个随机的十进制数字56.89，如果直接转化计算机使用的二进制数字，是111000.11100011，字符非常多，也就意味着会占用更多存储空间。
+&lt;/p&gt;
+&lt;p&gt;
+那么为了节省字符，人们发明了浮点数。
+&lt;/p&gt;
+&lt;p&gt;
+具体来说，所谓浮点数，是指一种特殊的数字表示格式，其基本格式是把数字a写成m×b^e的形式。
+&lt;/p&gt;
+&lt;p&gt;
+例如，上述的111000.11100011，可以写成1.1100011100011×2⁵。如果我们愿意损失一定的精度，规定小数点后只保留3位，就约等于1.110×2⁵。这样一来，只需要记录下小数点后的110和5次幂这两个信息，就能还原出原来的数字了，存储空间占用量大大减少。
+&lt;/p&gt;
+&lt;p&gt;
+FP8就是这样一种记录方式，规定用8位二进制数来记录上述信息。例如拿出4位数记录幂值，另外3位数来记录110，剩下1位数记录正负。这种格式叫做E4M3 FP8。
+&lt;/p&gt;
+&lt;p&gt;
+但是这里面仍然有个问题：当数字比较大时，幂值会变大，而4位二进制数最大仅相当于十进制的15，更大幂值就无法记录。E4M3 FP8最大就只能记录十进制-480到+480之间的数字。
+&lt;/p&gt;
+&lt;p&gt;
+想要表示更大数字，就要增加用于记录幂值的字符，减少记录前面数字的字符，但这会导致精确度继续变差。
+&lt;/p&gt;
+&lt;p&gt;
+而UE8M0 FP8，就意味着把全部8位数字都用来记录幂值，而完全舍弃小数点后的信息，以及正负值。
+&lt;/p&gt;
+&lt;p&gt;
+换句话说，UE8M0 FP8只能记录2,4,8,16……这样2的整数次幂，其它数字都只能近似成这些数字，极大地牺牲了精度，以换取存储范围。
+&lt;/p&gt;
+&lt;p&gt;
+理解了这一点，我们就可以来讨论DeepSeek为什么要使用UE8M0 FP8。
+&lt;/p&gt;
+&lt;p&gt;
+大模型的基本原理，是把文字、图像等信息，全部用数字来表示，并预测哪些数字的相关性更高。
+&lt;/p&gt;
+&lt;p&gt;
+这些数字，就是人们常说的参数，而参数自然是范围越大、越精确越好。
+&lt;/p&gt;
+&lt;p&gt;
+想要范围和精度两者兼得，就需要用更多的二进制字符来记录。因此，过去很多大模型会使用FP16、FP32等格式，这意味着更大的存储量和算力消耗。
+&lt;/p&gt;
+&lt;p&gt;
+而DeepSeek V3和R1这样的模型，之所以能够降低算力成本，就是因为使用了FP8，以牺牲精度来换取速度。
+&lt;/p&gt;
+&lt;p&gt;
+但是，这种牺牲真的不可避免吗？这就要说到UE8M0了。
+&lt;/p&gt;
+&lt;p&gt;
+事实上，DeepSeek并非所有数据都使用UE8M0格式。如前所述，UE8M0的极端取舍，导致精度极差，是难以满足大模型训练需求的。
+&lt;/p&gt;
+&lt;p&gt;
+DeepSeek所做的，是引入UE8M0作为“缩放因子”，使用了microscaling的方法。简单理解，其参数仍然以E4M3 FP8等格式存储，以保证精度，并通过与另一个UE8M0 FP8数字相乘的方式，实现类似FP32的效果，并节省75%的存储需求。
+&lt;/p&gt;
+&lt;p&gt;
+这种做法尽管增加了算法的复杂程度，但是仅仅在必要时才去做计算，仍然能够大大节省算力和通信带宽需求。
+&lt;/p&gt;
+&lt;p&gt;
+这对于算力受到严重限制的国内大模型行业来说，自然是极为契合的思路。
+&lt;/p&gt;
+&lt;p style=&quot;text-align:center;&quot;&gt;
+&lt;img src=&quot;https://i.guancha.cn/news/2025/08/30/20250830175242884.png&quot; width=&quot;100&quot; height=&quot;50&quot; alt=&quot;&quot;&gt; 
+&lt;/p&gt;
+&lt;p style=&quot;text-align:center;&quot;&gt;
+&lt;strong&gt;国产芯片“补课”&lt;/strong&gt; 
+&lt;/p&gt;
+&lt;p&gt;
+但是，我们也无需过度拔高DeepSeek V3.1的独创程度。
+&lt;/p&gt;
+&lt;p&gt;
+早在2023年，Meta、英特尔、谷歌等科技巨头推动的“开放计算项目（OCP）”就提出了MXFP8的microscaling数据格式标准，以UE8M0作为缩放因子，而英伟达显卡也早已支持UE8M0。国内的阿里、腾讯、百度等头部大厂，也都参与了这个项目。
+&lt;/p&gt;
+&lt;p style=&quot;text-align:center;&quot;&gt;
+&lt;img src=&quot;https://i.guancha.cn/news/2025/08/30/20250830175242101.png&quot; style=&quot;width:600px;&quot;&gt; 
+&lt;/p&gt;
+&lt;p class=&quot;content-pic-desc&quot;&gt;
+2023年10月，OCP全球峰会在美国加州圣何塞举办&lt;span&gt;&lt;/span&gt; 
+&lt;/p&gt;
+&lt;p&gt;
+2023年，英伟达首席科学家比尔·戴利曾指出，驱动英伟达芯片性能大幅提升的秘密，已经不是芯片制程驱动的“摩尔定律”，而是数据格式等因素共同驱动的“黄氏定律”，即通过引入较低精度的数字表示法，来减少对存储空间和计算资源的消耗，从而可以加快计算速度和效率。英伟达H100等显卡，就已经开始支持FP8格式。
+&lt;/p&gt;
+&lt;p&gt;
+如果把目光放到学术界，英伟达和加州理工的研究人员更是在2021年时就曾经发表过一篇论文《LNS-Madam：在对数数值系统中采用乘法式权重更新的低精度训练》，提出了类似的数据转换方法。
+&lt;/p&gt;
+&lt;p&gt;
+DeepSeek今年2月发布的高性能计算库DeepGEMM中，也使用了UE8M0缩放因子。DeepGEMM正是针对英伟达显卡所做的优化，而国产显卡当时却普遍并不支持这种格式。
+&lt;/p&gt;
+&lt;p&gt;
+以至于当DeepSeek V3和R1问世时，国产显卡需要借助软件优化将FP8格式转化成FP16，适配效果大打折扣。
+&lt;/p&gt;
+&lt;p&gt;
+因此，DeepSeek此次透露的信息，或许重点并不在前半部分的UE8M0，而是后半部分的“针对下一代国产芯片设计”。
+&lt;/p&gt;
+&lt;p&gt;
+近期，摩尔线程、芯原等国产芯片厂商也同步释放了适配UE8M0 FP8的消息。
+&lt;/p&gt;
+&lt;p&gt;
+摩尔线程对观察者网指出，其旗舰产品MTT S5000是国内首批原生支持FP8并已大规模量产的GPU。摩尔线程的MUSA架构原生支持硬件FP8张量加速计算，能够完美支持UE8M0 FP8 Scale，利用硬件原生FP8，相对于传统的FP16计算能够实现两倍的浮点算力提升、访存和通信带宽效率提升和存储容量利用率提升，同时最优化张量表达精度。
+&lt;/p&gt;
+&lt;p style=&quot;text-align:center;&quot;&gt;
+&lt;img src=&quot;https://i.guancha.cn/news/2025/08/30/20250830175243633.png&quot; style=&quot;width:600px;&quot;&gt; 
+&lt;/p&gt;
+&lt;p class=&quot;content-pic-desc&quot;&gt;
+摩尔线程在WAIC 2025上发布了MTT S5000&lt;span&gt;&lt;/span&gt; 
+&lt;/p&gt;
+&lt;p&gt;
+但需要注意的是，尽管国产芯片逐步开始支持FP8格式，由于不同品牌显卡在底层硬件架构上的差异，原本针对英伟达显卡设计的算法也并非可以直接移植到国产芯片上。因此，大模型针对国产芯片的适配调整仍是一项重要工作。
+&lt;/p&gt;
+&lt;p&gt;
+“补课”，或许才是对现阶段工作更合适的表述。
+&lt;/p&gt;
+&lt;p&gt;
+这或许也解释了为什么DeepSeek R2延宕许久尚未问世。
+&lt;/p&gt;
+&lt;p&gt;
+因此，DeepSeek V3.1真正的意义，应该不是对UE8M0 FP8这种数据格式本身的应用，而是类似于DeepGEMM这样针对国产芯片的工具链设计。
+&lt;/p&gt;
+&lt;p&gt;
+而且，DeepSeek特意提到是针对“下一代国产芯片”，这意味着国产大模型厂商与芯片厂商之间的协同配合达到了更高的层次，双方可以在硬件开发阶段就共同参与优化。
+&lt;/p&gt;
+&lt;p&gt;
+摩尔线程对观察者网表示，此举能够充分发挥出已量产的国产芯片架构特性，通过国产大模型和国产芯片协同设计优化，实现1+1&amp;gt;2。
+&lt;/p&gt;
+&lt;p style=&quot;text-align:center;&quot;&gt;
+&lt;img src=&quot;https://i.guancha.cn/news/2025/08/30/20250830175243249.png&quot; width=&quot;100&quot; height=&quot;50&quot; alt=&quot;&quot;&gt; 
+&lt;/p&gt;
+&lt;p style=&quot;text-align:center;&quot;&gt;
+&lt;strong&gt;生态协同新高度&lt;/strong&gt; 
+&lt;/p&gt;
+&lt;p&gt;
+事实上，谈到国产大模型与芯片的协同开发，DeepSeek也不是唯一的参与者。
+&lt;/p&gt;
+&lt;p&gt;
+一方面，头部大厂往往已经通过自建生态的方式，早早布局软硬件协同，如华为昇腾、阿里平头哥、百度昆仑芯等。
+&lt;/p&gt;
+&lt;p&gt;
+本周，百度发布了百舸AI计算平台5.0，基于昆仑芯实现超节点，并针对DeepSeek引领的强化学习风潮，推出强化学习框架，极致压榨算力资源。
+&lt;/p&gt;
+&lt;p style=&quot;text-align:center;&quot;&gt;
+&lt;img src=&quot;https://i.guancha.cn/news/2025/08/30/20250830175244686.jpg&quot; style=&quot;width:600px;&quot;&gt; 
+&lt;/p&gt;
+&lt;p class=&quot;content-pic-desc&quot;&gt;
+2025百度云智大会上，百度智能云正式发布百度百舸AI计算平台5.0全新版本。
+&lt;/p&gt;
+&lt;p&gt;
+而更多的大模型初创公司，则通过与芯片厂商联合的方式来提升适配效率。
+&lt;/p&gt;
+&lt;p&gt;
+今年7月，阶跃星辰联合近10家芯片及基础设施厂商发起“模芯生态创新联盟”，首批成员包括华为昇腾、沐曦、壁仞科技、燧原科技、天数智芯、无问芯穹、寒武纪、摩尔线程、硅基流动等。
+&lt;/p&gt;
+&lt;p&gt;
+阶跃星辰联合创始人、副总裁朱亦博对观察者网指出，一款芯片的开发周期需要两年以上，而如今模型迭代的速度只有半年到一年，如果让芯片厂商去适配模型，必然是低效的。如今，阶跃星辰希望在国产芯片的开发阶段，就主动去进行适配，是一种更高效的方式。
+&lt;/p&gt;
+&lt;p&gt;
+但我们也要清醒地看到，国产算力生态仍然处于一种“带着镣铐跳舞”的状态。
+&lt;/p&gt;
+&lt;p&gt;
+从中芯国际的财报可以看到，尽管国内旺盛的需求推动其产能利用率不断攀升，并且还有大规模扩产计划，但是其主要业务仍来自成熟制程。因此，其业绩并如台积电那样未充分受益于当下的算力热潮。
+&lt;/p&gt;
+&lt;p&gt;
+包括制程能力、HBM技术等限制，也让国产AI产业往往采用极限创新的方式，在硬件受限的情况下用更高的成本、更复杂的算法来压榨效率。
+&lt;/p&gt;
+&lt;p&gt;
+例如，华为不得不使用384个超多节点、昂贵的光通信等方式来对标英伟达的NVLink72。其AI推理加速“黑科技”UCM，也是在HBM受限的情况下，主要针对“节流”进行的创新；而原理类似的英伟达Dynamo，则更多聚焦于发挥高端算力集群的能力。
+&lt;/p&gt;
+&lt;p&gt;
+近期华为盘古大模型遭遇的争议和收缩，也显示出中国企业尚难以凭借单打独斗去全方位赢得全球AI竞争。以开放和协同的方式汇聚国内全部力量，才是更好的突围之道。
+&lt;/p&gt;
+&lt;p&gt;
+因此，近期国产AI产业一系列突破固然令人欣喜，但仍然要看到，其真正意义并非在于单点的进步，而是在于产业链上下游的信任和协作达到了一个新的高度，为未来中国全产业链的领先打下坚实基础。
+&lt;/p&gt;
+&lt;p style=&quot;text-align:center;&quot;&gt;
+&lt;img src=&quot;https://i.guancha.cn/news/2025/08/30/20250830175244893.jpg&quot; style=&quot;width:600px;&quot;&gt; 
+&lt;/p&gt;
+&lt;p align=&quot;center&quot;&gt;
+&lt;img src=&quot;https://i.guancha.cn/shiping-banner.jpg&quot; width=&quot;530px&quot;&gt; 
+&lt;/p&gt;
+&lt;p&gt;
+&lt;strong&gt;本文系观察者网独家稿件，文章内容纯属作者个人观点，不代表平台观点，未经授权，不得转载，否则将追究法律责任。关注观察者网微信guanchacn，每日阅读趣味文章。&lt;/strong&gt; 
+&lt;/p&gt;
+&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
+<guid>a17666afcb4ef5b22dc5d1432ba14926</guid>
+<title>佩通坦下台：那个家族的传奇，可能再也没有续集了</title>
+<link>https://www.guancha.cn/yuehan/2025_08_30_788274.shtml</link>
+<content:encoded>&lt;div&gt;&lt;div class=&quot;content all-txt&quot;&gt;
+&lt;p&gt;
+【文/观察者网专栏作者 岳汉】
+&lt;/p&gt;
+&lt;p&gt;
+泰国女总理佩通坦，下台了。
+&lt;/p&gt;
+&lt;p&gt;
+我们跟着泰国人民，又见证了一次历史。一种在过去20年中反复上演，看得大家都已经麻木的，鬼打墙一般的历史。
+&lt;/p&gt;
+&lt;p&gt;
+在泰国，大多数人内心已然毫无波动。毕竟见得多了，便也容易猜得到了。
+&lt;/p&gt;
+&lt;p&gt;
+佩通坦政府的下台，早已是板上钉钉的事情，泰国人民情绪十分稳定，输家没有多么悲愤，赢家也谈不上多么喜悦。
+&lt;/p&gt;
+&lt;p style=&quot;text-align:center;&quot;&gt;
+&lt;img src=&quot;https://i.guancha.cn/news/vcg/2025/08/30/20250830121627146.jpg&quot; title=&quot;点击查看大图&quot; width=&quot;530&quot; class=&quot;bigimg&quot;&gt; 
+&lt;/p&gt;
+&lt;p class=&quot;content-pic-desc&quot;&gt;
+泰国宪法法院裁定被停职的总理佩通坦·钦那瓦有罪后，佩通坦在政府大楼举行新闻发布会。&lt;span&gt;&lt;/span&gt; 
+&lt;/p&gt;
+&lt;p&gt;
+外人看起来，或许荒诞，而荒诞的背后，又隐藏着更大的荒诞。泰国历史难以挣脱的宿命，又一次写进命格的轮回。
+&lt;/p&gt;
+&lt;p&gt;
+只是，这一次，没有续集了。
+&lt;/p&gt;
+&lt;p&gt;
+&lt;strong&gt;佩通坦：苦日子，还在后头&lt;/strong&gt; 
+&lt;/p&gt;
+&lt;p&gt;
+佩通坦下台的直接原因，大家应该多少有所耳闻——那就是“通话门事件”。
+&lt;/p&gt;
+&lt;p&gt;
+当时，泰柬两国爆发冲突，佩通坦政府拼命息事宁人，但是泰国军方控制边境，不断拱火，眼瞅着两国就要打起来。
+&lt;/p&gt;
+&lt;p&gt;
+为了让柬埔寨冷静，佩通坦与洪森打电话，说了些“叔不要上了军方的当，军方是咱们死对头，您有啥要求我来替您安排”之类的体己话，结果被洪森反手卖了。
+&lt;/p&gt;
+&lt;p&gt;
+正值两国交兵，民心求战，佩通坦这种低三下四的套近乎，激怒了群情激奋的泰国民众反对佩通坦的参议员，向宪法法院控告佩通坦叛国违宪。佩通坦的辩护是：那些话，只是我与洪森谈判时的忽悠套路。
+&lt;/p&gt;
+&lt;p&gt;
+当然，辩解没用。
+&lt;/p&gt;
+&lt;p&gt;
+泰国宪法法院的判决书，堪称一片对佩通坦杀人诛心的道德训诫，里头用了大量篇幅去训导年轻的总理，什么叫“总理应当达到的道德标准”，什么叫“诚实不欺”，什么叫“以国为本”，像是教导主任教训小学生一样，从头到尾骂了个透。最后，判定佩通坦在通话门中“未能达到泰国宪法对总理的道德要求”，因此将佩通坦彻底解职，整个泰国内阁也一并归西。
+&lt;/p&gt;
+&lt;p style=&quot;text-align:center;&quot;&gt;
+&lt;img src=&quot;https://i.guancha.cn/news/vcg/2025/08/30/20250830121858924.jpg&quot; title=&quot;点击查看大图&quot; width=&quot;530&quot; class=&quot;bigimg&quot;&gt; 
+&lt;/p&gt;
+&lt;p class=&quot;content-pic-desc&quot;&gt;
+军事冲突升级后的柬埔寨泰国边境&lt;span&gt;&lt;/span&gt; 
+&lt;/p&gt;
+&lt;p&gt;
+泰国宪法法院实际上整了一个大活，在未能证明佩通坦贪赃枉法、作奸犯科、卖国求荣的情况下，单纯以“不道德”为由，开除了一个国家的总理。
+&lt;/p&gt;
+&lt;p&gt;
+其实，佩通坦的下台，真的是因为不道德么？
+&lt;/p&gt;
+&lt;p&gt;
+佩通坦治国能力确实有问题，危机处理的经验也很不足，但唯独在通话门事件中说的那些真心话，没有一句是谎言，都是掏心窝子的大实话——泰国军方确实是为泰党政府的死敌，军队确实不听政府调度，在泰柬冲突爆发的最后关头，泰国军方确实不断拱火，让佩通坦和谈的努力成了一个笑话。
+&lt;/p&gt;
+&lt;p&gt;
+假如，佩通坦政府有足够的战略自主权，能够有效调动军队，那么后来的泰柬之战其实根本打不起来，死在炮击和轰炸之下的两国百姓，冒着炮火倒在山林中的两国士兵，其实都可以不用死。
+&lt;/p&gt;
+&lt;p&gt;
+宪法法院用这么长的篇幅教导总理什么叫“诚实”，偏偏在这一切当中，唯有佩通坦在电话里向洪森讲的东西，才是整件事当中唯一的真实。
+&lt;/p&gt;
+&lt;p&gt;
+然而，说你不道德，你就是不道德。因为这几句实话，佩通坦被本国的宪法法院以“不道德”的名义，押上了政治生涯的风波亭。
+&lt;/p&gt;
+&lt;p&gt;
+如今，等待佩通坦的，恐怕是相当不妙的未来。
+&lt;/p&gt;
+&lt;p&gt;
+首先不用说，以后肯定要从政坛彻底退圈了，佩通坦不是自己辞职的，而是被宪法法院开除的，此生都再无可能重返政坛。
+&lt;/p&gt;
+&lt;p style=&quot;text-align:center;&quot;&gt;
+&lt;img src=&quot;https://i.guancha.cn/news/vcg/2025/08/30/20250830122033743.jpg&quot; title=&quot;点击查看大图&quot; width=&quot;530&quot; class=&quot;bigimg&quot;&gt; 
+&lt;/p&gt;
+&lt;p class=&quot;content-pic-desc&quot;&gt;
+佩通坦在被泰国宪法法院解职后离开政府大楼时挥手致意。&lt;span&gt;&lt;/span&gt; 
+&lt;/p&gt;
+&lt;p&gt;
+而且，丢了工作不算完，佩通坦还因为“通话门”事件而面临着很多刑事指控和追责，任内推出的一些政策，也会成为被司法追究的由头。就和当年姑姑英拉一样，赶下台不算，还得把你弄到吃牢饭才算功德圆满。而这也将成为一项牵制他信的政治筹码——女儿成了人质，他信岂敢造次。
+&lt;/p&gt;
+&lt;p&gt;
+佩通坦从像素级别，完成了对英拉的颗粒度对齐。不久的将来，等待她的，或许又是一场流亡吧。
+&lt;/p&gt;
+&lt;p&gt;
+&lt;strong&gt;为泰党：分崩离析，近在眼前&lt;/strong&gt; 
+&lt;/p&gt;
+&lt;p&gt;
+说完了佩通坦，我们来说为泰党。
+&lt;/p&gt;
+&lt;p&gt;
+总理倒台，“内阁”也随之倒台，整个泰国政治陷入彻底停摆，因此当务之急，是再选一个总理出来。而这，又将是一个非常艰难而漫长的过程。
+&lt;/p&gt;
+&lt;p&gt;
+你这个党，要推谁？别的党，会不会来支持你推的这个人？要不你再换一个？或者干脆放弃这个没前途的烂党，咱们再去支持另一个政党推的人？
+&lt;/p&gt;
+&lt;p&gt;
+多党林立的议会制，在缺乏强势政党时，必然会陷入永无止尽的合纵连横。从原则上讲，佩通坦下台了，为泰党暂时还是执政党，应该是由为泰党提出一个替代人选。问题是，为泰党的预备队里就剩一个老人家猜卡森，这位大爷年岁大了，身体不好，而且自己身上也背着一些当年的黑历史，真上台了也坐不稳。
+&lt;/p&gt;
+&lt;p&gt;
+最本质的问题是：为泰党已经没有一言九鼎优势，合纵连横的本钱了。
+&lt;/p&gt;
+&lt;p&gt;
+选新总理，必须有50个议员发起，得到国会全员半数同意。而为泰党本来席位就不多，靠和各个保守派政党的结盟，才勉强把佩通坦扶上了总理宝座，而现在为泰党已经和主要合作伙伴——泰自豪党——彻底决裂，这么一来，票数就更凑不够了。
+&lt;/p&gt;
+&lt;p&gt;
+为泰党的解决方案是，再吸收一些更小型的新政党，填补自豪党出走之后的空白。然而这些“小政党”，都是一些什么人呢？一言以蔽之，他们绝大多数都是当初为巴育上将干活的政客，军方坐大，他们加入军方；他信归来，他们投奔他信；如今他信不成了，你又怎么能指望这些毫无道德操守的人能不离不弃？
+&lt;/p&gt;
+&lt;p style=&quot;text-align:center;&quot;&gt;
+&lt;img src=&quot;https://i.guancha.cn/news/vcg/2025/08/30/20250830122101217.jpg&quot; title=&quot;点击查看大图&quot; width=&quot;530&quot; class=&quot;bigimg&quot;&gt; 
+&lt;/p&gt;
+&lt;p class=&quot;content-pic-desc&quot;&gt;
+他信与他的支持者&lt;span&gt;&lt;/span&gt; 
+&lt;/p&gt;
+&lt;p&gt;
+因此，以为泰党为核心的执政联盟，实际上已经没戏了，不但总理要换，执政党也要换。呼声最高，实力最强的阿努廷，此前一直宣称“没有计划当总理”，现在已经不装了，说是自己已经获得了足够的支持，准备主导重组政府。意思是，他信临时招来救场的小兄弟，有一些已经被阿努廷收购了。
+&lt;/p&gt;
+&lt;p&gt;
+泰国政治（乃至大多数东南亚议会政治）都是如此，没有稳固的政党，没有一贯的理念，就是一帮投机倒把的议员政客，反复在不同的派系和政党之间来回跳槽，朝秦暮楚，待价而沽。
+&lt;/p&gt;
+&lt;p&gt;
+为泰党，如今已经是风雨飘摇，没有能力招兵买马，甚至无法保障自身党员不会流失跳槽。最终最有可能的结果，是为泰党被踢出局，然后逐渐走向分崩离析，议员逐渐被其他政党吸收。曾经无比辉煌，逢选必胜的为泰党，最终的结局也不过是流水落花春去也，潇潇一梦了无痕。
+&lt;/p&gt;
+&lt;p&gt;
+接下来的一段时间，泰国国会将上演一场“鱿鱼游戏”式的乱战，各个党派都会推出自己的总理人选，并且拼命收买对手麾下的议员，乱哄哄你方唱罢我登场。
+&lt;/p&gt;
+
+&lt;/div&gt;&lt;/div&gt;</content:encoded>
+</item>
+<item>
 <guid>09dfb181844347a81f6d177c9860b9d6</guid>
 <title>用大豆“拿捏”特朗普选区基本盘，还有效吗？</title>
 <link>https://www.guancha.cn/mengweizhan/2025_08_30_788264.shtml</link>
@@ -361,208 +729,6 @@ MAGA阵营在这方面的分裂也不是一天两天了。早在2025年年初的
 &lt;/p&gt;
 &lt;p&gt;
 所以可以预料的是，即便特朗普现在放出了什么“欢迎中国学生”的话，用来安抚一些学校或者当地政府，等真到了执行的时候，欢迎中国学生的就不知道是什么东西了。除了留学移民中介，能信美国真的欢迎中国学生的人，有一个算一个都是诈骗的好目标。不要看他们怎么说，要看他们怎么做，这两天外交部提醒注意赴美安全风险可不是白提醒的。
-&lt;/p&gt;
-
-&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>f40846e5efd3f352bfe0ecc49b9b97e4</guid>
-<title>军工国有化？特朗普要大干快干“美国特色资本主义”</title>
-<link>https://www.guancha.cn/ChenFeng3/2025_08_30_788258.shtml</link>
-<content:encoded>&lt;div&gt;&lt;div class=&quot;content all-txt&quot;&gt;
-&lt;p&gt;
-【文/观察者网专栏作者 晨枫】
-&lt;/p&gt;
-&lt;p&gt;
-8月25日，美国商务部长卢特尼克称，美国政府正在考虑购入洛克希德、波音、帕兰蒂尔等军工公司的股份。“洛克希德·马丁97%的收入来自美国政府。他们本质上是美国政府的一个部门。……但这从经济角度来说怎么样？……我告诉你，一直以来的做法是一种送钱。”
-&lt;/p&gt;
-&lt;p&gt;
-从特朗普思维出发，既然美国政府一直在送钱，持有这些基本上靠吃政府订单存活的公司的一部分，这自然是理所应当的。
-&lt;/p&gt;
-&lt;p&gt;
-这只是最近的一章。此前的8月22日，特朗普在社交媒体上表示，美国政府获得英特尔10%的股份。在更早的6月，美国政府介入促成日本制铁收购美国钢铁公司，并获得特朗普声称的“黄金股权”，这赋予美国政府对经营的话语权。相比之下，美国政府对英特尔的持股还只是普通股，没有投票权。
-&lt;/p&gt;
-&lt;p&gt;
-&lt;strong&gt;欧洲使得，美国使不得？&lt;/strong&gt; 
-&lt;/p&gt;
-&lt;p&gt;
-美国号称资本主义舵把子，资本主义的核心就是私有制。在美国朝野的概念中，政府持股是国有化的一种形式，持股多少只是国有化程度的差别，而“国有化=社会主义”这样的思维又深入骨髓，因此长期以来也一直受到抨击。
-&lt;/p&gt;
-&lt;p&gt;
-相比之下，欧洲国家政府早有控股大公司的先例。欧洲是资本主义的发源地，欧洲也首先从竞争力为本的自由资本主义和工业资本主义，走到食利为先的垄断资本主义和金融资本主义。在由俭入奢、用钱赚钱的过程中，经济由实入虚了。先是有来自美国的竞争，后又有来自战后德国和日本的竞争，老欧洲的制造业和实体经济越来越不行，公司的世界从灿若繁星变为寥若晨星。
-&lt;/p&gt;
-&lt;p&gt;
-有过靠坚船利炮殖民世界历史的老欧洲很理解制造业的重要性，更理解税入和就业的重要性，极力保护残存的关键制造业，尤其是与国防相关的汽车、造船、飞机、电子等“战略工业”，主要做法常常就是政府控股甚至全资，并通过合并、精简而打造垄断行业的大公司。
-&lt;/p&gt;
-&lt;p&gt;
-这方面英国一马当先，在70年代把一众大小汽车公司合并为不列颠汽车公司（British Motor Corp，简称BMC），后改名为不列颠利兰汽车公司（British Leyland Motor Corp，简称BLMC），旗下在不同时代拥有过Austin、Morris、MG、Austin-Healey、Wolseley、Riley、Vanden Plas、Jaguar、Daimler、Rover、Land Rover等品牌。换句话说，英国的大众品牌除了在20年代已经划入通用汽车旗下的Vauxhaull，基本上通通划拉到BMC/BLMC旗下了。
-&lt;/p&gt;
-&lt;p&gt;
-英国政府认定，只有国有化，才能保住这些品牌及相关的就业，但事与愿违，英国汽车的衰落在继续。在80年代，BLMC变卖大量品牌并重新私有化，同时改名Rover Group，在1988-1994年间成为英国宇航旗下的一个分部，最后还是被五马分尸，残骸散落在宝马、上汽、塔塔等旗下。
-&lt;/p&gt;
-&lt;p&gt;
-英国宇航（BAe）也是国有化、垄断化的结果，由英国飞机公司（British Aircraft Corp，简称BAC）、霍克-西德利和其他公司合并而成。而BAC和霍克-西德利也是合并的结果。
-&lt;/p&gt;
-&lt;p&gt;
-这样错综复杂的合并史只说明一个问题：随着新技术门槛的迅速提高和军购量的降低，军工公司只有精简、合并才能存活。英国这样的小国弄到最后，只“养得起”一个既有规模、又有技术的大公司，而且靠国内市场的话，只有国有化。
-&lt;/p&gt;
-&lt;p&gt;
-BAe1981年就在撒切尔的私有化大潮中重新私有化了，但也傍上了美国。如今BAe与其说是英国公司，不如说是美国公司，是美国军工“六大”之一，另外“五大”是洛克希德、波音、诺斯罗普、通用动力、雷锡恩。
-&lt;/p&gt;
-&lt;p&gt;
-法国也是一样，法国宇航（Aerospatiale）、汤姆森-CSF都是国有垄断公司，如今前者并入空客，后者并入泰利斯集团。意大利的菲亚特也“在国家鼓励下代行国家汽车公司”的角色，大部分叫得出名字的意大利品牌在不同时代都曾在菲亚特旗下，如Fiat、Lancia、Alfa Romeo、Abarth、Ferrari（现已独立）、Maserati、Iveco等。
-&lt;/p&gt;
-&lt;p&gt;
-如今，空客、泰利斯、莱奥纳多等欧洲军工巨头在理论上都不再是国有的，但相关政府拥有很大股份。所以说起来，欧洲使得，美国也使得。只是凡事都有一个“但是”。
-&lt;/p&gt;
-&lt;p style=&quot;text-align:center;&quot;&gt;
-&lt;img src=&quot;https://i.guancha.cn/news/external/2025/08/29/20250829171112893.webp&quot; title=&quot;点击查看大图&quot; width=&quot;530&quot; class=&quot;bigimg&quot;&gt; 
-&lt;/p&gt;
-&lt;p class=&quot;content-pic-desc&quot;&gt;
-联邦政府现在是英特尔最大的股东，特朗普称这只是刚刚开始&lt;span&gt;&lt;/span&gt; 
-&lt;/p&gt;
-&lt;p&gt;
-&lt;strong&gt;军工企业最适合“国有化”？&lt;/strong&gt; 
-&lt;/p&gt;
-&lt;p&gt;
-老欧洲的军工在主要部类上在很大程度上“一国一公司”化了。国有化也好，国家部分控股也好，私有也好（达索依然是私有的），都改变不了一个事实：除非进口，政府军购只此一家，别无分店。这是很多弊病的根源，但也解决了利益冲突问题：政府军购中，没有在政府控股公司和非政府控股公司之间偏袒的问题。
-&lt;/p&gt;
-&lt;p&gt;
-美国还没有走到这一步，更不想走到这一步，但也在路上了。
-&lt;/p&gt;
-&lt;p&gt;
-在二战结束时，美国研发和制造空军飞机的有共和、北美、康维尔、波音、洛克希德、诺斯罗普、马丁，还有偏门一点的瑞安、贝尔和专注小型飞机的塞斯纳、比奇、派普等，研发和制造海军飞机的则有道格拉斯、麦克唐纳、格鲁曼、沃特。现在只有洛克希德、波音、诺斯罗普。如果不是美国政府出手制止，洛克希德和诺斯罗普在90年代也会合并。
-&lt;/p&gt;
-&lt;p&gt;
-目前只有洛克希德拥有第五代战斗机的设计和制造经验，但在第六代战斗机竞标中被波音F-47偷营，一般认为这是美国为保持战斗机工业基础的特意为之。波音在历次战斗机竞标中屡战屡败，从麦道承接过来的F-18E和F-15E顶多四代半，也只剩最后一口气了，如果这一次不中标，可能就要永远远离战斗机设计和制造了。诺斯罗普算上格鲁曼，也已经快六十年没有设计和投产一架全新的战斗机了，在美国海军的FA-XX项目里蹦跶也难说是第二春，还是绝命前的猖狂一跳。
-&lt;/p&gt;
-&lt;p&gt;
-除这三家之外，美国已经没有战斗机设计、制造能力了。通用动力已经退出飞机研发和制造，雷锡恩专注小众的特型飞机。
-&lt;/p&gt;
-&lt;p&gt;
-美国也坚决避免陷入仅有一家公司能够研发和制造战斗机的局面，以防在技术路线上偏离正轨而难以自拔，更要防范出现“店大欺客”的现象。在F-35战斗机的研发与制造过程中，美国军方与洛克希德公司之间的关系可谓是相爱相杀。
-&lt;/p&gt;
-
-&lt;/div&gt;&lt;/div&gt;</content:encoded>
-</item>
-<item>
-<guid>718409e098400d6896763b75d08d06f3</guid>
-<title>至少6440亿日元！日本外务省是怎么花掉这些钱的？</title>
-<link>https://www.guancha.cn/yaochun/2025_08_30_788246.shtml</link>
-<content:encoded>&lt;div&gt;&lt;div class=&quot;content all-txt&quot;&gt;
-&lt;p&gt;
-【文/复旦大学新闻学博士研究生 姚春】
-&lt;/p&gt;
-&lt;p&gt;
-近日，媒体报道&lt;span style=&quot;display:none;&quot; id=&quot;__kindeditor_bookmark_end_3__&quot;&gt;&lt;/span&gt;日本外务省花费数百亿日元大搞“形象工程”，引发国内外舆论场关注。在纪念抗战胜利暨世界反法西斯胜利80周年之际，日本不仅不反思历史，反而试图通过这种手段重塑历史，不得不引起我们的警惕。
-&lt;/p&gt;
-&lt;p&gt;
-实际上，为了扭转二战时的侵略者形象，日本外务省长期以来一直在不遗余力地进行“记忆重塑”工程，企图摆脱战败国、侵略者的身份，成为“正常国家”。因此对内长期肆意篡改二战日本侵略史、淡化二战日本侵略形象、刻意塑造受害者形象，对外塑造本国在被侵略国家中的形象、培养目标国家亲日群体。此次曝光的日本外务省形象经费，就是其对外“记忆重塑”工程的具体实践。
-&lt;/p&gt;
-&lt;p&gt;
-微博上也有博主（ID：&lt;a href=&quot;https://weibo.com/n/%E6%B8%A3%E5%AD%90%E7%9A%84%E6%9F%A5&quot; target=&quot;_blank&quot;&gt;渣子的查&lt;/a&gt;）针对这个问题做了调查，从所调查的数据来看，我们可以得到两个重要信息：一是资金量远远不止数百亿日元，二是日本的安排是非常细致的。
-&lt;/p&gt;
-&lt;p&gt;
-这里有个统计范畴的问题。所谓的“海外战略信息传播”工作，涉及的内容非常庞杂。如果根据日本外务省历年来的“战略性对外传播”预算统计，除去2021年因为疫情导致的畸形情况，实际上日本用于海外战略传播和亲日派培养的费用累计可以达到约6440亿日元！具体来说：
-&lt;/p&gt;
-&lt;p&gt;
-·2015年（平成27年）为700亿日元
-&lt;/p&gt;
-&lt;p style=&quot;text-align:center;&quot;&gt;
-&lt;img src=&quot;https://i.guancha.cn/news/official/2025/08/29/20250829171029578.png&quot; width=&quot;600&quot; height=&quot;497&quot; alt=&quot;&quot;&gt; 
-&lt;/p&gt;
-&lt;p style=&quot;text-align:center;&quot;&gt;
-&lt;img src=&quot;https://i.guancha.cn/news/official/2025/08/29/20250829171039718.png&quot; width=&quot;600&quot; height=&quot;339&quot; alt=&quot;&quot;&gt; 
-&lt;/p&gt;
-&lt;p&gt;
-·2016年（平成28年）为541亿日元
-&lt;/p&gt;
-&lt;p style=&quot;text-align:center;&quot;&gt;
-&lt;img src=&quot;https://i.guancha.cn/news/official/2025/08/29/20250829171132618.png&quot; width=&quot;600&quot; height=&quot;455&quot; alt=&quot;&quot;&gt; 
-&lt;/p&gt;
-&lt;p style=&quot;text-align:center;&quot;&gt;
-&lt;img src=&quot;https://i.guancha.cn/news/official/2025/08/29/20250829171142344.png&quot; width=&quot;600&quot; height=&quot;621&quot; alt=&quot;&quot;&gt; 
-&lt;/p&gt;
-&lt;p&gt;
-·2017年（平成29年）为559亿日元
-&lt;/p&gt;
-&lt;p style=&quot;text-align:center;&quot;&gt;
-&lt;img src=&quot;https://i.guancha.cn/news/official/2025/08/29/20250829171415299.png&quot; width=&quot;600&quot; height=&quot;425&quot; alt=&quot;&quot;&gt; 
-&lt;/p&gt;
-&lt;p style=&quot;text-align:center;&quot;&gt;
-&lt;img src=&quot;https://i.guancha.cn/news/official/2025/08/29/20250829171426799.png&quot; width=&quot;600&quot; height=&quot;257&quot; alt=&quot;&quot;&gt; 
-&lt;/p&gt;
-&lt;p&gt;
-·2018年（平成30年）为810亿日元
-&lt;/p&gt;
-&lt;p style=&quot;text-align:center;&quot;&gt;
-&lt;img src=&quot;https://i.guancha.cn/news/official/2025/08/29/20250829171515129.png&quot; width=&quot;600&quot; height=&quot;411&quot; alt=&quot;&quot;&gt; 
-&lt;/p&gt;
-&lt;p style=&quot;text-align:center;&quot;&gt;
-&lt;img src=&quot;https://i.guancha.cn/news/official/2025/08/29/20250829171529235.png&quot; width=&quot;600&quot; height=&quot;445&quot; alt=&quot;&quot;&gt; 
-&lt;/p&gt;
-&lt;p&gt;
-·2019年（平成31年）为712亿日元
-&lt;/p&gt;
-&lt;p style=&quot;text-align:center;&quot;&gt;
-&lt;img src=&quot;https://i.guancha.cn/news/official/2025/08/29/20250829171604350.png&quot; width=&quot;600&quot; height=&quot;419&quot; alt=&quot;&quot;&gt; 
-&lt;/p&gt;
-&lt;p&gt;
-·2020年（令和2年）为742亿日元
-&lt;/p&gt;
-&lt;p style=&quot;text-align:center;&quot;&gt;
-&lt;img src=&quot;https://i.guancha.cn/news/official/2025/08/29/20250829171638842.png&quot; width=&quot;600&quot; height=&quot;411&quot; alt=&quot;&quot;&gt; 
-&lt;/p&gt;
-&lt;p style=&quot;text-align:center;&quot;&gt;
-&lt;img src=&quot;https://i.guancha.cn/news/official/2025/08/29/20250829171652861.png&quot; width=&quot;600&quot; height=&quot;471&quot; alt=&quot;&quot;&gt; 
-&lt;/p&gt;
-&lt;p&gt;
-·2021年（令和3年）为2531亿日元
-&lt;/p&gt;
-&lt;p style=&quot;text-align:center;&quot;&gt;
-&lt;img src=&quot;https://i.guancha.cn/news/official/2025/08/29/20250829171720813.png&quot; width=&quot;600&quot; height=&quot;431&quot; alt=&quot;&quot;&gt; 
-&lt;/p&gt;
-&lt;p style=&quot;text-align:center;&quot;&gt;
-&lt;img src=&quot;https://i.guancha.cn/news/mainland/2025/08/29/20250829180842235.png&quot; title=&quot;点击查看大图&quot; width=&quot;530&quot; class=&quot;bigimg&quot;&gt; 
-&lt;/p&gt;
-&lt;p&gt;
-·2022年（令和4年）为638亿日元
-&lt;/p&gt;
-&lt;p style=&quot;text-align:center;&quot;&gt;
-&lt;img src=&quot;https://i.guancha.cn/news/official/2025/08/29/20250829171803136.png&quot; width=&quot;600&quot; height=&quot;401&quot; alt=&quot;&quot;&gt; 
-&lt;/p&gt;
-&lt;p style=&quot;text-align:center;&quot;&gt;
-&lt;img src=&quot;https://i.guancha.cn/news/official/2025/08/29/20250829171811137.png&quot; width=&quot;600&quot; height=&quot;405&quot; alt=&quot;&quot;&gt; 
-&lt;/p&gt;
-&lt;p&gt;
-·2023年（令和5年）为479亿日元
-&lt;/p&gt;
-&lt;p style=&quot;text-align:center;&quot;&gt;
-&lt;img src=&quot;https://i.guancha.cn/news/official/2025/08/29/20250829171843401.png&quot; width=&quot;600&quot; height=&quot;333&quot; alt=&quot;&quot;&gt; 
-&lt;/p&gt;
-&lt;p&gt;
-·2024年（令和6年）为597亿日元
-&lt;/p&gt;
-&lt;p style=&quot;text-align:center;&quot;&gt;
-&lt;img src=&quot;https://i.guancha.cn/news/official/2025/08/29/20250829171916357.png&quot; width=&quot;600&quot; height=&quot;328&quot; alt=&quot;&quot;&gt; 
-&lt;/p&gt;
-&lt;p style=&quot;text-align:center;&quot;&gt;
-&lt;img src=&quot;https://i.guancha.cn/news/official/2025/08/29/20250829171929632.png&quot; width=&quot;600&quot; height=&quot;338&quot; alt=&quot;&quot;&gt; 
-&lt;/p&gt;
-&lt;p style=&quot;text-align:center;&quot;&gt;
-&lt;img src=&quot;https://i.guancha.cn/news/official/2025/08/29/20250829171945781.png&quot; width=&quot;600&quot; height=&quot;337&quot; alt=&quot;&quot;&gt; 
-&lt;/p&gt;
-&lt;p&gt;
-·2025年（令和7年）为662亿日元
-&lt;/p&gt;
-&lt;p style=&quot;text-align:center;&quot;&gt;
-&lt;img src=&quot;https://i.guancha.cn/news/official/2025/08/29/20250829172049739.png&quot; width=&quot;600&quot; height=&quot;324&quot; alt=&quot;&quot;&gt; 
-&lt;/p&gt;
-&lt;p style=&quot;text-align:center;&quot;&gt;
-&lt;img src=&quot;https://i.guancha.cn/news/official/2025/08/29/20250829172121106.png&quot; width=&quot;600&quot; height=&quot;335&quot; alt=&quot;&quot;&gt; 
-&lt;/p&gt;
-&lt;p&gt;
-如此巨额费用，日本又是如何花掉的呢？可以说，在这一点上，日本再一次体现了其独特民族性，即“专注于战术细节的雕琢，而从无战略之考量”。
 &lt;/p&gt;
 
 &lt;/div&gt;&lt;/div&gt;</content:encoded>
