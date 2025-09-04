@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: '0 16 * * *' # UTC
   workflow_dispatch:
+  repository_dispatch:
+    types: whitelist
 
 jobs:
   run_job:
