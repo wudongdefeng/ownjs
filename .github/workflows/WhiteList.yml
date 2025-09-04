@@ -30,7 +30,7 @@ jobs:
         run: |
           git clone git@github.com:wudongdefeng/tv.git tv
           cd tv
-          python stream_checker.py
+          #python stream_checker.py
           python blacklist.py
           rm -rf results*.*
           rm ./assets/whitelist-blacklist/blacklist_auto.txt
