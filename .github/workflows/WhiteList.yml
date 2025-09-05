@@ -35,7 +35,7 @@ jobs:
           #python stream_checker.py
           python blacklist.py
           rm -rf results*.*
-          rm ./assets/whitelist-blacklist/blacklist_auto.txt
+          #rm ./assets/whitelist-blacklist/blacklist_auto.txt
           sed -i "1,2!d" ./assets/whitelist-blacklist/whitelist*.txt          
           #wget -O ./assets/whitelist-blacklist/blacklist_auto.txt https://github.com/wudongdefeng/tvdaima/raw/refs/heads/master/live_valid.txt
           python main.py
