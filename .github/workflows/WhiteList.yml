@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install opencc-python-reimplemented aiohttp tqdm urllib3
+          pip install requests ffmpeg-python opencc-python-reimplemented aiohttp tqdm urllib3
           mkdir -p ~/.ssh
           echo -e "${{ secrets.USER_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
