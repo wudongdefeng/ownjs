@@ -42,6 +42,7 @@ jobs:
           git config --local user.email "actions@github.com"
           git config --local user.name "github_actions[bot]"
           #git add ./assets/whitelist-blacklist/*
+          touch init.ini
           git add .
           git commit -m "AutoUpdate $(date +'%Y%m%d')"
           git push
