@@ -61,6 +61,10 @@ jobs:
           git init
           cp ../tv/result.txt collect_tv.txt
           cp ../tv/result.m3u collect_tv.m3u
+          curl -O https://raw.githubusercontent.com/ljlfct01/ljlfct01.github.io/refs/heads/main/4K2
+          curl -O https://raw.githubusercontent.com/ljlfct01/ljlfct01.github.io/refs/heads/main/4K1
+          mv 4K1 ljlfct01/4K1.json
+          mv 4K2 ljlfct01/4K2.json
           git config user.name "一支穿云箭"
           git config user.email "action@github.com"
           git add .
