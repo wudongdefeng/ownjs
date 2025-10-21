@@ -56,6 +56,7 @@ jobs:
           git add .
           git commit -m "$(date "+%Y-%m-%d %H:%M")~千军万马来相见！" -a
           git push -u origin main
+          cd ..
           git clone git@github.com:wudongdefeng/tvbackup.git tvbox
           cd tvbox
           git init
