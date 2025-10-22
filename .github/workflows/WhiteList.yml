@@ -30,40 +30,17 @@ jobs:
           
       - name: Run Python script
         run: |
-          git clone git@github.com:wudongdefeng/tv.git tv
-          cd tv
-          python stream_checker.py
-          #python blacklist.py
-          #rm -rf results*.*
-          #rm ./assets/whitelist-blacklist/blacklist_auto.txt
-          #sed -i "1,2!d" ./assets/whitelist-blacklist/whitelist*.txt          
-          #wget -O ./assets/whitelist-blacklist/blacklist_auto.txt https://github.com/wudongdefeng/tvdaima/raw/refs/heads/master/live_valid.txt
-          #python main.py
-          git config --local user.email "actions@github.com"
-          git config --local user.name "github_actions[bot]"
-          #git add ./assets/whitelist-blacklist/*          
-          git add .
-          git commit -m "AutoUpdate $(date +'%Y%m%d')"
-          git push
-          cd ..
-          git clone git@github.com:wudongdefeng/groceries.git ad
-          cd ad
-          git init
-          cp ../tv/result.txt collect_tv.txt
-          cp ../tv/result.m3u collect_tv.m3u
-          git config user.name "一支穿云箭"
-          git config user.email "action@github.com"
-          git add .
-          git commit -m "$(date "+%Y-%m-%d %H:%M")~千军万马来相见！" -a
-          git push -u origin main
-          cd ..
+          git clone git@github.com:wudongdefeng/tv.git tv         
+          git clone git@github.com:wudongdefeng/groceries.git ad         
+        
           git clone git@github.com:wudongdefeng/tvbackup.git tvbox
           cp tv/dowload.py tvbox/download.py
           cp tv/diy.sh tvbox/diy.sh
           cd tvbox
           git init
           cp ../tv/result.txt collect_tv.txt
-          cp ../tv/result.m3u collect_tv.m3u         
+          cp ../tv/result.m3u collect_tv.m3u
+          sh diy.sh
           rm download.py
           rm diy.sh
           git config user.name "一支穿云箭"
