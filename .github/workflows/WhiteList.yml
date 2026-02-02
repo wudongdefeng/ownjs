@@ -34,12 +34,13 @@ jobs:
           git clone git@github.com:wudongdefeng/groceries.git ad
           git clone git@github.com:wudongdefeng/tvbackup.git tvbox          
           sh tv/diy.sh
+          
       - name: git-sync
         uses: wei/git-sync@v3
         with:
           source_repo: "git@github.com:wudongdefeng/tvbackup.git"
           source_branch: "main"
-          destination_repo: "ssh://git@gos.5212496.xyz:7443/wddf/tvbox.git"
+          destination_repo: "ssh://git@gogs.5212496.xyz:1022/wddf/tvbox.git"
           destination_branch: "master"
           
           source_ssh_private_key: ${{ secrets.USER_PRIVATE_KEY }} # optional, will override `SSH_PRIVATE_KEY`
