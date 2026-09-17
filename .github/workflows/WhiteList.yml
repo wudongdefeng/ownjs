@@ -45,7 +45,17 @@ jobs:
           
           source_ssh_private_key: ${{ secrets.USER_PRIVATE_KEY }} # optional, will override `SSH_PRIVATE_KEY`
           destination_ssh_private_key: ${{ secrets.GOGS_SSH }} # optional, will override `SSH_PRIVATE_KEY`
+
+      - name: git-sync
+        uses: wei/git-sync@v3
+        with:
+          source_repo: "git@github.com:wudongdefeng/tvbox_api.git"
+          source_branch: "main"
+          destination_repo: "ssh://git@gogs.5212496.xyz:1022/wddf/tvbox_api.git"
+          destination_branch: "master"
           
+          source_ssh_private_key: ${{ secrets.USER_PRIVATE_KEY }} # optional, will override `SSH_PRIVATE_KEY`
+          destination_ssh_private_key: ${{ secrets.GOGS_SSH }} # optional, will override `SSH_PRIVATE_KEY`          
       - name: Delete workflow runs
         uses: Mattraks/delete-workflow-runs@main
         with:
