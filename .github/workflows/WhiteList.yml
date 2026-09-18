@@ -32,7 +32,8 @@ jobs:
         run: |
           git clone git@github.com:wudongdefeng/tv.git tv
           git clone git@github.com:wudongdefeng/groceries.git ad
-          git clone git@github.com:wudongdefeng/tvbackup.git tvbox          
+          git clone git@github.com:wudongdefeng/tvbackup.git tvbox
+          git clone git@github.com:wudongdefeng/tvbox_api.git tvbox_api
           sh tv/diy.sh
           
       - name: git-sync
