@@ -23,7 +23,14 @@ jobs:
         run: |
           pip install telethon requests
 
-      - name: Restore session
+      - name: download file
         run: |
           curl -O https://raw.githubusercontent.com/wudongdefeng/groceries/refs/heads/main/test/tg_to_wx.py
           python tg_to_wx.py
+          rm tg_to_wx.py
+          git config user.name "一支穿云箭"
+          git config user.email "action@github.com"
+          git add .
+          git commit -m "$(date "+%Y-%m-%d %H:%M")~千军万马来相见！" -a
+          git push -u origin main
+          
