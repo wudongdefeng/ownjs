@@ -1,0 +1,29 @@
+name: 转发tg文件
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '50 */6 * * *'  
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+
+    env:
+      TG_SESSION_ENV: ${{ secrets.TG_SESSION_ENV }}
+      QYWX_KEY: ${{ secrets.QYWX_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+
+      - name: Install dependencies
+        run: |
+          pip install telethon requests
+
+      - name: Restore session
+        run: |
+          curl -O https://raw.githubusercontent.com/wudongdefeng/groceries/refs/heads/main/test/tg_to_wx.py
+          python tg_to_wx.py
