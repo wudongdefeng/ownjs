@@ -31,6 +31,6 @@ jobs:
           git config user.name "一支穿云箭"
           git config user.email "action@github.com"
           git add .
-          git commit -m "$(date "+%Y-%m-%d %H:%M")~千军万马来相见！" -a || "nothing"
+          git commit -m "$(date "+%Y-%m-%d %H:%M")~千军万马来相见！" -a || echo "nothing"
           git push -u origin master
           
